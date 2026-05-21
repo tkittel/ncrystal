@@ -195,8 +195,16 @@ namespace NCRYSTAL_NAMESPACE {
   public:
     //Numerically stable summation, based on Neumaier's
     //algorithm (doi:10.1002/zamm.19740540106).
-    void add(double x);
+    void add(double);
+    void add(const StableSum&);
     double sum() const;
+    double value() const { return sum(); }
+    void mult(double f) { m_sum *= f; m_correction *= f; }
+    StableSum() = default;
+    StableSum( double v ) : m_sum(v) {}
+    StableSum( const StableSum& o )
+      : m_sum(o.m_sum), m_correction(o.m_correction) {}
+    StableSum clone() const { return StableSum(*this); }
   private:
     double m_sum = 0.0, m_correction = 0.0;
   };
@@ -527,6 +535,18 @@ inline void NCrystal::StableSum::add( double x )
 {
   double t = m_sum + x;
   m_correction += ncabs(m_sum)>=ncabs(x)  ? (m_sum-t)+x : (x-t)+m_sum;
+  m_sum = t;
+}
+
+inline void NCrystal::StableSum::add( const StableSum& o )
+{
+  //fixme: unit test various scenarios with this and other new stablesum
+  //functions, involving all kinds of catastrophic cancellation.!
+  double t = m_sum + o.m_sum;
+  double c( ncabs(m_sum) >= ncabs(o.m_sum)
+            ? ((m_sum - t) + o.m_sum)
+            : ((o.m_sum - t) + m_sum) );
+  m_correction = c + m_correction + o.m_correction;
   m_sum = t;
 }
 
