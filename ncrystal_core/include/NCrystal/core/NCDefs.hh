@@ -161,6 +161,18 @@ namespace NCRYSTAL_NAMESPACE {
     MoveOnly& operator=( MoveOnly&& ) = default;
   };
 
+  //For classes that can not even be instantiated:
+  class NCRYSTAL_API NonInstantiable {
+  protected:
+    //fixme: remove if not ultimately needed
+    NonInstantiable() = delete;
+    ~NonInstantiable() = delete;
+    NonInstantiable( const NonInstantiable& ) = delete;
+    NonInstantiable& operator=( const NonInstantiable& ) = delete;
+    NonInstantiable( NonInstantiable&& ) = delete;
+    NonInstantiable& operator=( NonInstantiable&& ) = delete;
+  };
+
   class NCRYSTAL_API RNG : private MoveOnly  {
   public:
     //Random number stream base class with interfaces for generating
