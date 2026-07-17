@@ -92,7 +92,7 @@ namespace NCRYSTAL_NAMESPACE {
     //Derived data factory:
     typedef std::pair<UniqueIDValue, shared_obj<const SABData>* > D2DDKey;
     typedef SAB::SABSamplerAtE_Alg1::CommonCache DerivedData;
-    class SABData2DerivedDataFactory : public NC::CachedFactoryBase<D2DDKey,DerivedData> {
+    class SABData2DerivedDataFactory : public CachedFactoryBase<D2DDKey,DerivedData> {
     public:
       const char* factoryName() const final { return "SABData2DerivedDataFactory"; }
       std::string keyToString( const D2DDKey& key ) const final
@@ -269,7 +269,7 @@ void NS::SABIntegrator::Impl::setupEnergyGrid()
     nc_assert_always(emin>0.0);
     nc_assert_always(emax>emin);
     nc_assert_always(npts>=2);
-    m_egrid = NC::geomspace(emin,emax,npts);
+    m_egrid = geomspace(emin,emax,npts);
   }
 
   if ( m_egrid.size() < 10 )
