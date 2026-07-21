@@ -1,5 +1,7 @@
 v4.4.7 (work in progress)
      * Add ncmake_unique_array_noinit helper function.
+     * Py API: Add DynamicInfo.displayLabel and add .lbl shortcuts for
+       .displayLabel to both AtomInfo and DynamicInfo
      * ...
 
 v4.4.6 2026-06-30
