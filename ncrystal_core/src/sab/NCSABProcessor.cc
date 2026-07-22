@@ -38,10 +38,10 @@ namespace NCRYSTAL_NAMESPACE {
 #ifndef NDEBUG
       static bool dummy_testsabidx = [](){
         namespace SI = SABIdx;
-        nc_assert(SI::PackedIndex::from_ia_ib(2,6).unpack_ialpha()==2);
-        nc_assert(SI::PackedIndex::from_ia_ib(2,6).unpack_ibeta()==6);
-        nc_assert(SI::PackedIndex::from_ia_ib(0,0).unpack_ialpha()==0);
-        nc_assert(SI::PackedIndex::from_ia_ib(0,0).unpack_ibeta()==0);
+        nc_assert(SI::PackedIndex::fromAlphaIdxBetaIdx(2,6).unpackAlphaIdx()==2);
+        nc_assert(SI::PackedIndex::fromAlphaIdxBetaIdx(2,6).unpackBetaIdx()==6);
+        nc_assert(SI::PackedIndex::fromAlphaIdxBetaIdx(0,0).unpackAlphaIdx()==0);
+        nc_assert(SI::PackedIndex::fromAlphaIdxBetaIdx(0,0).unpackBetaIdx()==0);
         nc_assert(SI::NAlpha{4}.value() == 4);
         nc_assert(SI::NAlphaCells(SI::NAlpha{4}).value() == 3);
         nc_assert(SI::NAlphaCells{4}.value() == 4);
@@ -119,7 +119,7 @@ namespace NCRYSTAL_NAMESPACE {
               nc_assert(itA<alpha.end());
 #ifndef NDEBUG
               //Verify consistency of indexing:
-              auto dbg_ialpha = static_cast<SABIdx::raw_sab_idx_t>( itA-alpha.begin() );
+              auto dbg_ialpha = static_cast<std::size_t>( itA-alpha.begin() );
 #endif
               const double a_low = *itA++;
               const double s_low = *itS++;
@@ -156,8 +156,8 @@ namespace NCRYSTAL_NAMESPACE {
 
         CellData lookupCellInfo( cellidx_t packed_idx ) const
         {
-          auto ia = packed_idx.unpack_ialpha();
-          auto ib = packed_idx.unpack_ibeta();
+          auto ia = packed_idx.unpackAlphaIdx();
+          auto ib = packed_idx.unpackBetaIdx();
           auto& sab = m_sab->sab();
           auto& alpha = m_sab->alphaGrid();
           auto& beta = m_sab->betaGrid();
@@ -259,7 +259,6 @@ namespace NCRYSTAL_NAMESPACE {
         //sample at a particular energy point (fixme: pack all this more
         //efficiently, avoid large amounts of small vectors and just use offsets
         //into a single large vector?):
-      public://fixme: making BCEnergyPoint public as a quick fix
         struct BCEnergyPoint {
           //fixme: something different than vectors? ~std::vector<>() uses ~1% of
           //the total time in benchmarks.
@@ -271,7 +270,7 @@ namespace NCRYSTAL_NAMESPACE {
           std::vector<CellInfo> cellInfo;
         };
       private:
-        std::vector<BCEnergyPoint> m_bcEptInfo;//fixme vector<vector> -> malloc/free/brk showing up in benchmarks!
+        std::vector<BCEnergyPoint> m_bcEptInfo;
         //sample info (indexed by the .bcSampleInfoIndex properties):
         MixedDataVector m_bcSample;
         CellMgr m_cellmgr;
@@ -340,7 +339,7 @@ namespace NCRYSTAL_NAMESPACE {
         //FIXME: Why do we need the binary search? Why not just proceed over all
         //cells until e < ci.e_touch?
 
-        auto itSearchBegin =survCells.begin();
+        auto itSearchBegin = survCells.begin();
         if ( prev_E >= 0.0 && prev.nLastTouched > 2 )
           itSearchBegin += prev.nLastTouched-1;//fixme: is this actually helping in a measurable way??
 
@@ -910,6 +909,8 @@ namespace NCRYSTAL_NAMESPACE {
             m_cumulFCInt.push_back(sum_cumulFCInt.sum());
             m_cumulFCInt_cellidx.push_back(itCellInfo->cellidx);
           }
+          nc_assert( m_cumulFCInt.size() == nTouchedCellsMax );
+          nc_assert( m_cumulFCInt_cellidx.size() == nTouchedCellsMax );
           m_bcEptInfo.shrink_to_fit();
         }
 
