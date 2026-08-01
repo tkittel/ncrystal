@@ -226,6 +226,27 @@ namespace NCRYSTAL_NAMESPACE {
       }
     };
 
+    struct vardef_knllux final : public ValInt<vardef_knllux> {
+      static constexpr auto name = "knllux";
+      static constexpr auto group = VarGroupId::ScatterBase;
+      static constexpr auto description =
+        "Setting affecting \"luxury\" level when integrating and sampling"
+        " inelastic scattering kernels. Currently this parameter is only"
+        " intended to be modified by NCrystal developers and should be"
+        " left at its default value of -1, but this will certainly"
+        " change in the future so stay tuned."
+        ;
+
+      static constexpr value_type default_value() { return -1; }
+      static value_type value_validate( value_type value )
+      {
+        if ( value < -6 || value > 6 )
+          NCRYSTAL_THROW2(BadInput,name
+                          <<" must be an integral value from -7 to 6");
+        return value;
+      }
+    };
+
     struct vardef_lcaxis final : public ValVector<vardef_lcaxis> {
       static constexpr auto name = "lcaxis";
       static constexpr auto group = VarGroupId::ScatterExtra;
@@ -678,6 +699,7 @@ namespace NCRYSTAL_NAMESPACE {
       make_varinfo<vardef_incoh_elas>(),
       make_varinfo<vardef_inelas>(),
       make_varinfo<vardef_infofactory>(),
+      make_varinfo<vardef_knllux>(),
       make_varinfo<vardef_lcaxis>(),
       make_varinfo<vardef_lcmode>(),
       make_varinfo<vardef_mos>(),
@@ -704,6 +726,7 @@ namespace NCRYSTAL_NAMESPACE {
       dirtol = constexpr_varName2Idx("dirtol"),
       mosprec = constexpr_varName2Idx("mosprec"),
       vdoslux = constexpr_varName2Idx("vdoslux"),
+      knllux = constexpr_varName2Idx("knllux"),
       lcmode = constexpr_varName2Idx("lcmode"),
       lcaxis = constexpr_varName2Idx("lcaxis"),
       ucnmode = constexpr_varName2Idx("ucnmode"),
