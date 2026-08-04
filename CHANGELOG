@@ -4,6 +4,7 @@ v4.4.7 (work in progress)
        .displayLabel to both AtomInfo and DynamicInfo
      * NCMATComposer.set_dyninfo_scatknl now correctly trims 1D sab tables for
        vanishing edges.
+     * Py lint fixes for ruff 0.16.x.
      * ...
 
 v4.4.6 2026-06-30
