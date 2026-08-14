@@ -226,13 +226,11 @@ namespace NCRYSTAL_NAMESPACE {
             m_4e(4.0 * i.E_div_kT),
             m_a2minusa1( i.a2 - i.a1 ),
             m_b1(i.b1), m_b2(i.b2), m_invdb(1.0/(i.b2-i.b1)),
-            m_is_bounded_by_betaminus(i.is_bounded_by_betaminus),
-            m_is_bounded_by_betaplus(i.is_bounded_by_betaplus),
             m_is_bounded_by_both( i.is_bounded_by_betaminus
                                   && i.is_bounded_by_betaplus )
         {
           //only for crossed cells:
-          nc_assert( m_is_bounded_by_betaminus ||  m_is_bounded_by_betaplus );
+          nc_assert( i.is_bounded_by_betaminus ||  i.is_bounded_by_betaplus );
           nc_assert( (i.b2-i.b1) > 0.0 );
           //We always initialise to 4 levels (16 bins, 17 pts) with the points
           //in reverse order (the reverse order makes it easy to ignore the
@@ -287,16 +285,24 @@ namespace NCRYSTAL_NAMESPACE {
 
         double contrib(const AlphaSlice& slice) const
         {
+          nc_assert(m_b2>m_b1);
           const double a = slice.alpha;
           const double dbpm = std::sqrt( m_4e * a );//NB: Most expensive
                                                     //per-point calc might be in
                                                     //this line?
-          const double bl( m_is_bounded_by_betaminus ? a - dbpm : m_b1 );
-          const double bu( m_is_bounded_by_betaplus ? a + dbpm : m_b2 );
+          const double bl = ncclamp( a - dbpm, m_b1, m_b2 );
+          const double bu = ncclamp( a + dbpm, m_b1, m_b2 );
+          //Used to be like this, but gave results outside the clamp:
+          // const double bl( m_is_bounded_by_betaminus ? a - dbpm : m_b1 );
+          // const double bu( m_is_bounded_by_betaplus ? a + dbpm : m_b2 );
+
+
+
           //To find the contribution we integrate S(a,b) over [bl,bu]. This is
           //easy, since we always interpolate linearly in b:
           const double bmiddle( m_is_bounded_by_both ? a : (bu+bl)*0.5 );
-          const double rb = (bmiddle-m_b1)*m_invdb;
+          nc_assert(valueInInterval(-0.01,1.01,(bmiddle-m_b1)*m_invdb));
+          const double rb = ncclamp((bmiddle-m_b1)*m_invdb,0.0,1.0);
           const double smiddle = slice.s_at_b1*(1.0-rb)+slice.s_at_b2*rb;
           return calc_bu_minus_bl_times_smiddle( m_is_bounded_by_both,
                                                  dbpm, bu, bl, smiddle );
@@ -344,8 +350,6 @@ namespace NCRYSTAL_NAMESPACE {
         double m_a2minusa1;
         double m_b1, m_b2, m_invdb;
         double m_stepcache_at_b1, m_stepcache_at_b2;
-        bool m_is_bounded_by_betaminus;
-        bool m_is_bounded_by_betaplus;
         bool m_is_bounded_by_both;
       };
 
