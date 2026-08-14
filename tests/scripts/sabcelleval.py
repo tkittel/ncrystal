@@ -31,6 +31,7 @@ from NCTestUtils.env import ncsetenv
 from NCrystalDev.misc import evaluate_query as ncquery
 
 def evalcell(*,E_div_kT, alpha, beta, svals = None, do_plot=False ):
+
     a1, a2 = alpha
     b1, b2 = beta
     if svals is None:
@@ -55,8 +56,16 @@ def evalcell(*,E_div_kT, alpha, beta, svals = None, do_plot=False ):
 
     bfprec_fullint = float(abs(bfres['full_integral']/mprefval_fullint-1))
     bfprec_psint = float(abs(bfres['phasespace_integral']/mprefval-1))
-    print(f"bruteforce/mpref precision (full integral): {bfprec_fullint:g}")
-    print(f"bruteforce/mpref precision (phasespace integral): {bfprec_psint:g}")
+    def fmtprecbf(v):
+        if do_plot:
+            return '%g'%v
+        if v < 1e-14:
+            return '<1e-14'
+        return '%.3g'%v
+
+
+    print(f"bruteforce/mpref precision (full integral): {fmtprecbf(bfprec_fullint)}")
+    print(f"bruteforce/mpref precision (phasespace integral): {fmtprecbf(bfprec_psint)}")
     assert bfres['phasespace_integral'] <= bfres['full_integral']
 
     tgt_bfrec_fullint = 0.005
@@ -70,9 +79,19 @@ def evalcell(*,E_div_kT, alpha, beta, svals = None, do_plot=False ):
     assert bfprec_fullint < tgt_bfrec_fullint
     assert bfprec_psint < tgt_bfrec_psint
 
-    vals = sorted( ( float(abs(v/mprefval-1)), v, name )
+    def val_entry( value, name ):
+        #return tuple of (sortkey,reldiff,value,name).
+        rd = float(abs(value/mprefval-1))
+        if do_plot or rd > 1e-14:
+            sortkey = (rd,name)
+        else:
+            sortkey = (0.0,name)
+        return (sortkey,rd,value,name)
+
+    vals = sorted( val_entry( v, name )
                    for name, v
                    in res['cellintegral']['phasespace_integral'] )
+
     def fmtprec(v):
         if do_plot:
             return '%g'%v
@@ -80,13 +99,13 @@ def evalcell(*,E_div_kT, alpha, beta, svals = None, do_plot=False ):
             return '<1e-14'
         return '%.1g'%v
 
-    for prec, v, name in vals:
+    for _, prec, v, name in vals:
         print(f" {name.rjust(10)} : {v:.11g}  [precision lvl {fmtprec(prec)}]")
     resfullint = res['cellintegral']['full_integral']
     prec = float(abs(resfullint/mprefval_fullint-1))
     print(f" full integral : {resfullint:.11g} [precision lvl {fmtprec(prec)}]")
 
-    f65 = [e for e in vals if e[2]=='Flex65'][0]
+    f65 = [e for e in vals if e[3]=='Flex65'][0]
     if do_plot:
         from NCTestUtils.sabcelleval import plot_celleval
         plot_celleval( res )
@@ -94,7 +113,7 @@ def evalcell(*,E_div_kT, alpha, beta, svals = None, do_plot=False ):
     f65prec = 5e-6
     if a2<a1*(1+1e-10):
         f65prec = 1e-3
-    assert f65[0] < f65prec, "Romberg65 not suitable as reference"
+    assert f65[1] < f65prec, "Romberg65 not suitable as reference"
 
 def main(do_plot,test_select):
     if not do_plot:
@@ -165,7 +184,19 @@ def main(do_plot,test_select):
              alpha=(8.36433e-50,8.36433e-10),
              beta=(-2.78659e-05,-2.60257e-08),
              svals=[2.09324e-51,2.09324e-11,2.09321e-51,2.09321e-11]),
+        dict(E_div_kT=0.0040353391997826763,
+             alpha=(72.2692,75.2226),
+             beta=(73.9986, 74.7986),
+             svals=[1,2,0,3]),
+        dict(E_div_kT=0.0040353391997826763,
+             alpha=(72.2692,75.2226),
+             beta=(73.9986, 74.7986),
+             svals=[9.24041818707935e-53,
+                    2.2531578033820765e-52,
+                    0,
+                    3.5557933330843412e-53]),
     ]
+
 
     if test_select:
         test_select = set(test_select)
