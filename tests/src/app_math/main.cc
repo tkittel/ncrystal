@@ -21,8 +21,11 @@
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include <iostream>
+
 namespace NC=NCrystal;
 
+#define REQUIRE(x) nc_assert_always(x)
+#define REQUIREFLTEQ(x, y) nc_assert_always(::NC::floateq((x), (y)))
 
 namespace {
   template <class Func>
@@ -70,6 +73,218 @@ namespace {
     val = NC::integrateRomberg33(f,a,b);
     std::cout<<"  Romberg(n=33)        : "<<val<<" (relative deviation: "<<rd(val)<<")"<<std::endl;
   }
+
+
+  // Tests powspace for endpoint, size, monotonicity, and shape.
+  // Covers ascending, descending, constant, linear, and nonlinear ranges.
+  // Checks p values below, equal to, and above one.
+  // Also checks small and large point counts and representative values.
+  // Invalid inputs are not called because their behavior is not specified.
+  // Requires the project VectD, powspace, floateq, and assertion utilities.
+
+  static void checkPowspace(double a, double b, unsigned n, double p)
+  {
+    using NC::fmtg;
+    std::cout<<"  -> powspace("<<fmtg(a)<<","<<fmtg(b)<<", "<<n<<","<<fmtg(p)
+             <<")"<<std::endl;
+
+    using namespace NCrystal;
+    if ( !(a>0.0) || !(b>a) || !(p>0) || !(n>=2)
+         || !std::isfinite(a)
+         || !std::isfinite(b)
+         || !std::isfinite(p) ) {
+      std::cout<<"    -> invalid powspace input -> trigger LogicError in dbg blds"
+               <<std::endl;
+#ifndef NDEBUG //powspace checks for invalid input happens in debug builds only.
+      bool threw = false;
+      try {
+        powspace(a, b, n, p);
+      } catch (const NC::Error::LogicError&) {
+        threw = true;
+      }
+      REQUIRE(threw);
+#endif
+      return;
+    }
+    const VectD x = powspace(a, b, n, p);
+    REQUIRE(x.size() == n);
+    REQUIREFLTEQ(x.front(), a);
+    REQUIREFLTEQ(x.back(), b);
+
+    for (unsigned i = 0; i < n; ++i) {
+      const double t = static_cast<double>(i) /
+        static_cast<double>(n - 1);
+      const double want = a + (b - a) * std::pow(t, p);
+      REQUIREFLTEQ(vectAt(x, i), want);
+      REQUIRE(std::isfinite(vectAt(x, i)));
+    }
+
+    if (b >= a) {
+      for (unsigned i = 1; i < n; ++i)
+        REQUIRE(vectAt(x, i) >= vectAt(x, i - 1));
+    } else {
+      for (unsigned i = 1; i < n; ++i)
+        REQUIRE(vectAt(x, i) <= vectAt(x, i - 1));
+    }
+  }
+
+  void testPowspace()
+  {
+    using NC::VectD;
+    using NC::vectAt;
+    using NC::powspace;
+
+    constexpr auto nan = std::numeric_limits<double>::quiet_NaN();
+
+    checkPowspace(0.5, 1.0, 2, 0.25);
+    checkPowspace(0.5, 1.0, 2, 0.0);
+    checkPowspace(0.5, 1.0, 2, -0.1);
+
+    checkPowspace(0.5, 1.0, 1, 0.25);
+    checkPowspace(0.5, 1.0, 0, 0.25);
+
+    checkPowspace(0.5, 1.0, 2, nan);
+    checkPowspace(nan, 1.0, 2, 0.25);
+    checkPowspace(0.5, nan, 2, 0.25);
+
+    checkPowspace(0.5, 1.0, 2, NC::kInfinity);
+    checkPowspace(NC::kInfinity, 1.0, 2, 0.25);
+    checkPowspace(0.5, NC::kInfinity, 2, 0.25);
+
+    checkPowspace(0.0, 1.0, 2, 0.25);
+    checkPowspace(0.0, 1.0, 2, 1.0);
+    checkPowspace(0.0, 1.0, 2, 100.0);
+
+    checkPowspace(0.0, 1.0, 3, 0.5);
+    checkPowspace(0.0, 1.0, 3, 1.0);
+    checkPowspace(0.0, 1.0, 3, 2.0);
+
+    checkPowspace(1e-10, 1.0, 2, 0.25);
+    checkPowspace(1e-10, 1.0, 2, 1.0);
+    checkPowspace(1e-10, 1.0, 2, 100.0);
+
+    checkPowspace(1e-10, 1.0, 3, 0.5);
+    checkPowspace(1e-10, 1.0, 3, 1.0);
+    checkPowspace(1e-10, 1.0, 3, 2.0);
+
+    checkPowspace(2.0, 10.0, 5, 2.0);
+    checkPowspace(10.0, 2.0, 5, 2.0);
+    checkPowspace(-7.0, 13.0, 17, 0.25);
+    checkPowspace(-7.0, 13.0, 17, 1.0);
+    checkPowspace(-7.0, 13.0, 17, 4.0);
+    checkPowspace(3.25, 3.25, 101, 0.1);
+    checkPowspace(3.25, 3.25, 101, 10.0);
+    checkPowspace(-1.0e6, 1.0e6, 1001, 3.0);
+
+    {
+      const VectD x = powspace(2.0, 10.0, 5, 2.0);
+      REQUIREFLTEQ(vectAt(x, 0), 2.0);
+      REQUIREFLTEQ(vectAt(x, 1), 2.5);
+      REQUIREFLTEQ(vectAt(x, 2), 4.0);
+      REQUIREFLTEQ(vectAt(x, 3), 6.5);
+      REQUIREFLTEQ(vectAt(x, 4), 10.0);
+    }
+
+    {
+      const VectD x = powspace(2.0, 10.0, 5, 0.4);
+      REQUIREFLTEQ(vectAt(x, 0), 2.0);
+      REQUIREFLTEQ(vectAt(x, 1), 6.59479341998814);
+      REQUIREFLTEQ(vectAt(x, 2), 8.06286626604159);
+      REQUIREFLTEQ(vectAt(x, 3), 9.13040983191);
+      REQUIREFLTEQ(vectAt(x, 4), 10.0);
+    }
+
+    {
+      const VectD x = powspace(2.0, 10.0, 5, 0.5);
+      REQUIREFLTEQ(vectAt(x, 0), 2.0);
+      REQUIREFLTEQ(vectAt(x, 1), 6.0);
+      REQUIREFLTEQ(vectAt(x, 2), 7.65685424949238);
+      REQUIREFLTEQ(vectAt(x, 3), 8.92820323027551);
+      REQUIREFLTEQ(vectAt(x, 4), 10.0);
+    }
+
+    {
+      const VectD x = powspace(2.0, 10.0, 5, 1.0);
+      REQUIREFLTEQ(vectAt(x, 0), 2.0);
+      REQUIREFLTEQ(vectAt(x, 1), 4.0);
+      REQUIREFLTEQ(vectAt(x, 2), 6.0);
+      REQUIREFLTEQ(vectAt(x, 3), 8.0);
+      REQUIREFLTEQ(vectAt(x, 4), 10.0);
+    }
+
+    {
+      const VectD x = powspace(2.0, 10.0, 5, 1.5);
+      REQUIREFLTEQ(vectAt(x, 0), 2.0);
+      REQUIREFLTEQ(vectAt(x, 1), 3.0);
+      REQUIREFLTEQ(vectAt(x, 2), 4.82842712474619);
+      REQUIREFLTEQ(vectAt(x, 3), 7.19615242270663);
+      REQUIREFLTEQ(vectAt(x, 4), 10.0);
+    }
+
+    {
+      const VectD x = powspace(2.0, 10.0, 5, 2.0);
+      REQUIREFLTEQ(vectAt(x, 0), 2.0);
+      REQUIREFLTEQ(vectAt(x, 1), 2.5);
+      REQUIREFLTEQ(vectAt(x, 2), 4.0);
+      REQUIREFLTEQ(vectAt(x, 3), 6.5);
+      REQUIREFLTEQ(vectAt(x, 4), 10.0);
+    }
+
+    {
+      const VectD x = powspace(2.0, 10.0, 5, 2.1);
+      REQUIREFLTEQ(vectAt(x, 0), 2.0);
+      REQUIREFLTEQ(vectAt(x, 1), 2.43527528164806);
+      REQUIREFLTEQ(vectAt(x, 2), 3.86606598307359);
+      REQUIREFLTEQ(vectAt(x, 3), 6.37238676007);
+      REQUIREFLTEQ(vectAt(x, 4), 10.0);
+    }
+
+    {
+      const VectD x = powspace(2.0, 10.0, 5, 2.5);
+      REQUIREFLTEQ(vectAt(x, 0), 2.0);
+      REQUIREFLTEQ(vectAt(x, 1), 2.25);
+      REQUIREFLTEQ(vectAt(x, 2), 3.41421356237310);
+      REQUIREFLTEQ(vectAt(x, 3), 5.89711431702997);
+      REQUIREFLTEQ(vectAt(x, 4), 10.0);
+    }
+
+    {
+      const VectD x = powspace(2.0, 10.0, 5, 3.0);
+      REQUIREFLTEQ(vectAt(x, 0), 2.0);
+      REQUIREFLTEQ(vectAt(x, 1), 2.125);
+      REQUIREFLTEQ(vectAt(x, 2), 3.0);
+      REQUIREFLTEQ(vectAt(x, 3), 5.375);
+      REQUIREFLTEQ(vectAt(x, 4), 10.0);
+    }
+
+    {
+      const VectD x = powspace(2.0, 10.0, 5, 3.5);
+      REQUIREFLTEQ(vectAt(x, 0), 2.0);
+      REQUIREFLTEQ(vectAt(x, 1), 2.0625);
+      REQUIREFLTEQ(vectAt(x, 2), 2.70710678118655);
+      REQUIREFLTEQ(vectAt(x, 3), 4.92283573777248);
+      REQUIREFLTEQ(vectAt(x, 4), 10.0);
+    }
+
+    {
+      const VectD x = powspace(2.0, 10.0, 5, 4.0);
+      REQUIREFLTEQ(vectAt(x, 0), 2.0);
+      REQUIREFLTEQ(vectAt(x, 1), 2.03125);
+      REQUIREFLTEQ(vectAt(x, 2), 2.5);
+      REQUIREFLTEQ(vectAt(x, 3), 4.53125);
+      REQUIREFLTEQ(vectAt(x, 4), 10.0);
+    }
+
+    {
+      const VectD x = powspace(2.0, 10.0, 5, 8.0);
+      REQUIREFLTEQ(vectAt(x, 0), 2.0);
+      REQUIREFLTEQ(vectAt(x, 1), 2.0001220703125);
+      REQUIREFLTEQ(vectAt(x, 2), 2.03125);
+      REQUIREFLTEQ(vectAt(x, 3), 2.8009033203125);
+      REQUIREFLTEQ(vectAt(x, 4), 10.0);
+    }
+  }
+
 }
 
 int main() {
@@ -145,4 +360,7 @@ int main() {
     nc_assert_always( (NC::ncisnan(val)&&NC::ncisnan(backconv))
                       || val==backconv);
   }
+  std::cout<<"powspace testing start..."<<std::endl;
+  testPowspace();
+  std::cout<<"powspace testing done."<<std::endl;
 }
