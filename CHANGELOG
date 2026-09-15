@@ -7,6 +7,7 @@ v4.4.7 (work in progress)
      * Py lint fixes for ruff 0.16.x.
      * Introduce StableDbl utility class for double-double arithmetic for better
        reproducibility and precision in select parts of the code.
+     * Introduce (axis-aligned) Rectangle utility class.
      * ...
 
 v4.4.6 2026-06-30
