@@ -5,6 +5,8 @@ v4.4.7 (work in progress)
      * NCMATComposer.set_dyninfo_scatknl now correctly trims 1D sab tables for
        vanishing edges.
      * Py lint fixes for ruff 0.16.x.
+     * Introduce StableDbl utility class for double-double arithmetic for better
+       reproducibility and precision in select parts of the code.
      * ...
 
 v4.4.6 2026-06-30
