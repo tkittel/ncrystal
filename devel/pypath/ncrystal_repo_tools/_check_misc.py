@@ -51,6 +51,7 @@ def main():
         'ncrystal_python/src/NCrystal/core.py' : 100,
         'tests/data/QE_pw_Al.out' : 2000,
         'tests/src/app_mmcgeom/main.cc' : 80,
+        'tests/src/app_fft/refvals.hh' : 200,
     }
     for f in all_files_iter():
         lim = max_size_kb_log if f.suffix == '.log' else max_size_kb_other
