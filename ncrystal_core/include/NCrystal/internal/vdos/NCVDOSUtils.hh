@@ -68,6 +68,12 @@ namespace NCRYSTAL_NAMESPACE {
     // course be called again if needed, possibly with a lower rtol).
     void topOffGrid( VectD& g, std::size_t npts, double rtol = 0.1 );
 
+    // Position of point i of an equidistant grid: x0+i*binWidth, but calculated
+    // with a single rounding (using an explicit std::fma). For consistency, all
+    // node positions of equidistant grids and piecewise linear functions must
+    // be calculated with this function.
+    double equidistantGridPoint( double x0, double binWidth, std::size_t i );
+
     // The makeCommonGrid function merges several evenly spaced input grids into
     // a single grid.
     //
@@ -80,11 +86,8 @@ namespace NCRYSTAL_NAMESPACE {
     struct EquidistantGrid final {
       double x0, binWidth;
       std::size_t npts;
-      double x1() const
-      {
-        //x0 + binWidth*(npts-1)
-        return std::fma( binWidth,static_cast<double>(npts - 1),x0);
-      }
+      double xAt( std::size_t i ) const;//x{i}=x0+i*binWidth (safely)
+      double x1() const { return xAt( npts - 1 ); }
     };
     VectD makeCommonGrid( Span<const EquidistantGrid> );
 
