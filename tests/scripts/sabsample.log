@@ -70,6 +70,21 @@
 
 
 =============>
+=============> Launching test 15
+=============>
+
+
+=============>
+=============> Launching test 16
+=============>
+
+
+=============>
+=============> Launching test 17
+=============>
+
+
+=============>
 =============> Final summary
 =============>
 
@@ -87,3 +102,6 @@ P-value for test #11 : OK
 P-value for test #12 : OK
 P-value for test #13 : OK
 P-value for test #14 : OK
+P-value for test #15 : OK
+P-value for test #16 : OK
+P-value for test #17 : OK
