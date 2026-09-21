@@ -437,7 +437,7 @@ NC::VectD NC::VDOS::makeCommonGrid(Span<const EquidistantGrid> grids )
     nc_assert(item.point < g.npts);
     item.x = ( item.point == g.npts - 1
                ? g.x1()
-               : g.x0 + g.binWidth * static_cast<double>(item.point) );
+               : g.xAt(item.point) );
     heap.front() = item;
     siftDown();
     nc_assert( heap.empty()
@@ -473,7 +473,11 @@ NC::VDOS::coverEquidistantGrids( const EquidistantGrid& g1,
     const double q = (g.x0 - x0) / g.binWidth;
     nc_assert(std::isfinite(q));
     nc_assert(q >= 0.0);
-    const double first = std::ceil(q);
+    //Tolerance, since (for our VDOS-Gn usage) g.x0-x0 is often an exact integer
+    //number of bins (grids on the same lattice), and we should not get a
+    //different result depending on which side of the integer rounding errors
+    //put us:
+    const double first = std::ceil(q - 1e-6);
     nc_assert(first
               < static_cast<double>(std::numeric_limits<std::size_t>::max()));
     const std::size_t i0 = static_cast<std::size_t>(first);
@@ -492,4 +496,196 @@ NC::VDOS::coverEquidistantGrids( const EquidistantGrid& g1,
   (void)szdblmax;
   nc_assert( last+1 <= szdblmax );
   return EquidistantGrid{x0, g1.binWidth, last + 1};
+}
+
+NC::VDOS::PWLFct NC::VDOS::pwlNarrowToPos( const PWLFct& p, double tol )
+{
+  nc_assert( p.binWidth > 0.0 );
+  const double t = tol * p.binWidth;//threshold
+  std::size_t i = ( p.x0 < t ? static_cast<std::size_t>
+                    (std::ceil((t - p.x0) / p.binWidth)) : 0u );
+  i = std::min<std::size_t>(i, p.f.size());
+  PWLFct res;
+  res.x0 = p.xAt(i);
+  res.binWidth = p.binWidth;
+  res.dataHolder.assign(p.f.begin() + i, p.f.end());
+  res.f = res.dataHolder;
+  nc_assert_always( res.x0 >= t );
+  nc_assert_always( res.f.size() >= 2 );
+  nc_assert( res.dataHolder.size() == res.f.size() );
+  return res;
+}
+
+NC::VectD NC::VDOS::evalPWLSum( Span<const PWLFct> fs,
+                                Span<const double> grid,
+                                Span<const double> ws )
+{
+  VectD out(grid.size(), 0.0);
+
+  const double* ncrestrict gridPtr = grid.data();
+  double* ncrestrict outPtr = out.data();
+
+  const bool weighted = !ws.empty();
+
+  for (std::size_t n = 0; n < fs.size(); ++n) {
+    const PWLFct& p = fs[n];
+    const auto& f = p.f;
+
+    const std::size_t lastBin = f.size() - 1;
+    const double invbw = 1.0 / p.binWidth;
+    const double weight = weighted ? ws[n] : 1.0;
+    const double xmax = p.x1();
+
+    // Grid points which are meant to be at the endpoints of the function (e.g.
+    // because they are nodes of another function with the same endpoint) can be
+    // a few ulps outside, due to rounding errors in the calculation of one or
+    // the other. Since the function value at an endpoint might be very
+    // different from the (zero) value just outside it, we treat points within a
+    // tiny tolerance of the endpoints as being at the endpoints.
+    const double xtol = 1e-9 * p.binWidth;
+
+    std::size_t g = static_cast<std::size_t>
+      (std::lower_bound(grid.begin(), grid.end(), p.x0 - xtol) - grid.begin());
+
+    if (g == grid.size() || gridPtr[g] > xmax + xtol)
+      continue;
+
+    // For consistency, the bin edges must be calculated exactly like the node
+    // positions (p.xAt(i)). Otherwise a grid point at a node can end up in the
+    // neighbouring bin and get a value affected by rounding errors instead of
+    // exactly the value at the node.
+    double xLeft = p.x0;
+    for (std::size_t i = 0; i < lastBin && g < grid.size(); ++i) {
+      const double xRight = p.xAt(i + 1);
+      const double y0 = vectAt(f, i);
+      const double y1 = vectAt(f, i + 1);
+      const double slope = (y1 - y0) * invbw;
+      const double ylo = ncmin(y0, y1);
+      const double yhi = ncmax(y0, y1);
+      std::size_t end = g;
+      while (end < grid.size() && gridPtr[end] < xRight)
+        ++end;
+
+      // The result is exactly y0 at x=xLeft, and the clamping ensures that the
+      // result never falls outside [y0,y1] (or below 0 for non-negative data)
+      // due to rounding errors.
+      for (std::size_t k = g; k < end; ++k)
+        outPtr[k] += weight * ncclamp(y0 + slope * (gridPtr[k] - xLeft),
+                                      ylo, yhi);
+      g = end;
+      xLeft = xRight;
+    }
+
+    // Handle the final sample at x == xmax.
+    if (g < grid.size() && gridPtr[g] <= xmax + xtol) {
+      const double y = vectAt(f, lastBin);
+      std::size_t end = g;
+      while (end < grid.size() && gridPtr[end] <= xmax + xtol)
+        ++end;
+      for (std::size_t k = g; k < end; ++k)
+        outPtr[k] += weight * y;
+    }
+  }
+
+  return out;
+}
+
+void NC::VDOS::trimTailByIntegral( VectD& x, VectD& y, double frac )
+{
+#ifndef NDEBUG
+  const auto npts = x.size();
+  nc_assert(npts == y.size());
+  nc_assert(npts >= 2);
+  nc_assert(std::isfinite(frac) && frac >= 0.0);
+  nc_assert( nc_is_grid(x) );
+  for (auto& g : y) {
+    nc_assert(std::isfinite(g));
+    nc_assert(g >= 0.0);
+  }
+#endif
+  double integral;
+  {
+    StableSumKahan sum;
+    for (std::size_t i = 1; i < x.size(); ++i) {
+      const double dx = vectAt(x, i) - vectAt(x, i - 1);
+      sum.add( dx * (vectAt(y, i - 1) + vectAt(y, i)) );
+    }
+    integral = sum.sum()*0.5;
+  }
+
+  const double limit = frac * integral;
+  double removed = 0.0;
+
+  while (x.size() > 2) {
+    const auto i = x.size() - 2;
+    const double dx = vectAt(x, i + 1) - vectAt(x, i);
+    const double area = 0.5 * dx * (vectAt(y, i) + vectAt(y, i + 1));
+    if (removed + area > limit)
+      break;
+    removed += area;
+    x.pop_back();
+    y.pop_back();
+  }
+}
+
+void NC::VDOS::trimEquidistantGridUpperEdge(EquidistantGrid& g, double xmax)
+{
+  //A tiny tolerance ensures that a node which mathematically is at xmax is
+  //always kept, rather than randomly dropped or kept depending on rounding
+  //errors in xmax or in the node position:
+  xmax += 1e-9 * g.binWidth;
+#ifndef NDEBUG
+  nc_assert(g.npts >= 2);
+  nc_assert(std::isfinite(g.x0));
+  nc_assert(std::isfinite(g.binWidth));
+  nc_assert(g.binWidth > 0.0);
+  nc_assert(std::isfinite(g.x1()));
+  nc_assert(std::isfinite(xmax));
+  EquidistantGrid expected = g;
+  auto check = [&expected,&g] {
+    return ( expected.x0 == g.x0
+             && expected.binWidth == g.binWidth
+             && expected.npts == g.npts );
+  };
+  nc_assert(check());
+  while ( expected.npts > 2 && expected.x1()>xmax )
+    --expected.npts;
+#endif
+  if ( g.npts <= 2 || g.x1() <= xmax ) {
+    nc_assert(check());
+    return;
+  }
+
+  if ( xmax <= g.x0 + g.binWidth ) {
+    g.npts = 2;
+    nc_assert(check());
+    return;
+  }
+
+  const std::size_t orig_npts = g.npts;
+  const double q = (xmax - g.x0) / g.binWidth;
+  nc_assert( std::isfinite(q) && q >= 0.0 );
+  if (q < 1.0) {
+    g.npts = 2;
+  } else if (q >= static_cast<double>(orig_npts - 1)) {
+    nc_assert( g.npts == orig_npts );
+  } else {
+    const double k = std::floor(q);
+    nc_assert(std::isfinite(k) && k >= 1.0);
+    nc_assert(k < static_cast<double>(orig_npts - 1));
+    const std::size_t npts = static_cast<std::size_t>(k) + 1;
+    g.npts = orig_npts < npts ? orig_npts : npts;
+  }
+
+  // Correct rounding errors:
+  while (g.npts > 2 && g.x1() > xmax)
+    --g.npts;
+  while (g.npts < orig_npts) {
+    ++g.npts;
+    if (g.x1() > xmax) {
+      --g.npts;
+      break;
+    }
+  }
+  nc_assert(check());
 }
