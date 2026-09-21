@@ -35,105 +35,6 @@ namespace NCRYSTAL_NAMESPACE {
 
     namespace {
 
-      // evalPWLSum: Evaluates the weighted sum of piecewise-linear functions on
-      // the supplied grid.
-      //
-      // Each function is zero outside its own [x0, xmax()] interval.
-      // Values inside an interval are obtained by linear interpolation.
-      // `fs` contains the input functions and `ws` their corresponding weights.
-      // The returned vector has one value for each point in `grid`.
-
-      struct PWLFct {
-        double x0; //x{i=0}
-        double binWidth;//distance between x{i} and x{i+1}
-        Span<const double> f;//values of f at the x{i} points. The size of the
-                             //span encodes the number of points.
-        double x1() const { return x0 + (f.size()-1)*binWidth; }
-        VectD dataHolder;//optional, so can hold its data if needed.
-        Span<double> f_mutable()
-        {
-          //only possible when we hold our data
-          nc_assert( dataHolder.size() == f.size() );
-          return dataHolder;
-        }
-      };
-
-      PWLFct pwlNarrowToPos(const PWLFct& p, double tol = 1e-3 )
-      {
-        nc_assert( p.binWidth > 0.0 );
-        const double t = tol * p.binWidth;//threshold
-        std::size_t i = ( p.x0 < t ? static_cast<std::size_t>
-                          (std::ceil((t - p.x0) / p.binWidth)) : 0u );
-        i = std::min<std::size_t>(i, p.f.size());
-        PWLFct res;
-        res.x0 = p.x0 + i * p.binWidth;
-        res.binWidth = p.binWidth;
-        res.dataHolder.assign(p.f.begin() + i, p.f.end());
-        res.f = res.dataHolder;
-        nc_assert_always( res.x0 >= t );
-        nc_assert_always( res.f.size() >= 2 );
-        return res;
-      }
-
-      VectD evalPWLSum(Span<const PWLFct> fs,
-                       Span<const double> grid,
-                       Span<const double> ws = {})
-      {
-        VectD out(grid.size(), 0.0);
-
-        const double* ncrestrict gridPtr = grid.data();
-        double* ncrestrict outPtr = out.data();
-
-        const bool weighted = !ws.empty();
-
-        for (std::size_t n = 0; n < fs.size(); ++n) {
-          const PWLFct& p = fs[n];
-          const auto& f = p.f;
-
-          const std::size_t lastBin = f.size() - 1;
-          const double invbw = 1.0 / p.binWidth;
-          const double weight = weighted ? ws[n] : 1.0;
-          const double xmax = p.x1();
-
-          std::size_t g = static_cast<std::size_t>
-            (std::lower_bound(grid.begin(), grid.end(), p.x0) - grid.begin());
-
-          if (g == grid.size() || gridPtr[g] > xmax)
-            continue;
-
-          for (std::size_t i = 0; i < lastBin && g < grid.size(); ++i) {
-            const double xLeft =
-              p.x0 + static_cast<double>(i) * p.binWidth;
-            const double xRight = xLeft + p.binWidth;
-            const double y0 = vectAt(f, i);
-            const double y1 = vectAt(f, i + 1);
-            const double slope = (y1 - y0) * invbw;
-            const double intercept = y0 - slope * xLeft;
-            std::size_t end = g;
-            while (end < grid.size() && gridPtr[end] < xRight)
-              ++end;
-
-            // This loop is deliberately simple so the compiler can
-            // auto-vectorize it.
-            for (std::size_t k = g; k < end; ++k)
-              outPtr[k] += weight * (intercept + slope * gridPtr[k]);
-            g = end;
-          }
-
-          // Handle the final sample at x == xmax.
-          if (g < grid.size() && gridPtr[g] <= xmax) {
-            const double y = vectAt(f, lastBin);
-            std::size_t end = g;
-            while (end < grid.size() && gridPtr[end] <= xmax)
-              ++end;
-            for (std::size_t k = g; k < end; ++k)
-              outPtr[k] += weight * y;
-          }
-        }
-
-        return out;
-      }
-
       // Merge two finite, sorted, unique grids.
       // Endpoint values always take priority over averaging.
       VectD mergeGridsWithTol( const VectD& a, const VectD& b,
@@ -200,107 +101,6 @@ namespace NCRYSTAL_NAMESPACE {
         constexpr double a = 1.0/p1-2.0;
         constexpr double ap1 = a + 1.0;
         return ap1 / ((n.value()+a)*(n.value()+ap1));
-      }
-
-      // Calculates the trapezoidal integral of a non-negative piecewise-linear
-      // function represented by x and y.
-      // Removes as many points from the back as possible while keeping the
-      // discarded integral at most frac times the original integral.
-      // The vectors are modified in place; the original integral is returned.
-      void trimTailByIntegral( VectD& x, VectD& y, double frac )
-      {
-#ifndef NDEBUG
-        const auto npts = x.size();
-        nc_assert(npts == y.size());
-        nc_assert(npts >= 2);
-        nc_assert(std::isfinite(frac) && frac >= 0.0);
-        nc_assert( nc_is_grid(x) );
-        for (auto& g : y) {
-          nc_assert(std::isfinite(g));
-          nc_assert(g >= 0.0);
-        }
-#endif
-        double integral;
-        {
-          StableSumKahan sum;
-          for (std::size_t i = 1; i < x.size(); ++i) {
-            const double dx = vectAt(x, i) - vectAt(x, i - 1);
-            sum.add( dx * (vectAt(y, i - 1) + vectAt(y, i)) );
-          }
-          integral = sum.sum()*0.5;
-        }
-
-        const double limit = frac * integral;
-        double removed = 0.0;
-
-        while (x.size() > 2) {
-          const auto i = x.size() - 2;
-          const double dx = vectAt(x, i + 1) - vectAt(x, i);
-          const double area = 0.5 * dx * (vectAt(y, i) + vectAt(y, i + 1));
-          if (removed + area > limit)
-            break;
-          removed += area;
-          x.pop_back();
-          y.pop_back();
-        }
-      }
-
-      void trimEquidistantGridUpperEdge(EquidistantGrid& g, double xmax)
-      {
-#ifndef NDEBUG
-        nc_assert(g.npts >= 2);
-        nc_assert(std::isfinite(g.x0));
-        nc_assert(std::isfinite(g.binWidth));
-        nc_assert(g.binWidth > 0.0);
-        nc_assert(std::isfinite(g.x1()));
-        nc_assert(std::isfinite(xmax));
-        EquidistantGrid expected = g;
-        auto check = [&expected,&g] {
-          return ( expected.x0 == g.x0
-                   && expected.binWidth == g.binWidth
-                   && expected.npts == g.npts );
-        };
-        nc_assert(check());
-        while ( expected.npts > 2 && expected.x1()>xmax )
-          --expected.npts;
-#endif
-        if ( g.npts <= 2 || g.x1() <= xmax ) {
-          nc_assert(check());
-          return;
-        }
-
-        if ( xmax <= g.x0 + g.binWidth ) {
-          g.npts = 2;
-          nc_assert(check());
-          return;
-        }
-
-        const std::size_t orig_npts = g.npts;
-        const double q = (xmax - g.x0) / g.binWidth;
-        nc_assert( std::isfinite(q) && q >= 0.0 );
-        if (q < 1.0) {
-          g.npts = 2;
-        } else if (q >= static_cast<double>(orig_npts - 1)) {
-          nc_assert( g.npts == orig_npts );
-        } else {
-          const double k = std::floor(q);
-          nc_assert(std::isfinite(k) && k >= 1.0);
-          nc_assert(k < static_cast<double>(orig_npts - 1));
-          const std::size_t npts = static_cast<std::size_t>(k) + 1;
-          g.npts = orig_npts < npts ? orig_npts : npts;
-        }
-
-        // Correct rounding errors:
-        while (g.npts > 2 && g.x1() > xmax)
-          --g.npts;
-        while (g.npts < orig_npts) {
-          ++g.npts;
-          if (g.x1() > xmax) {
-            --g.npts;
-            break;
-          }
-        }
-        nc_assert(check());
       }
 
     }
@@ -380,6 +180,23 @@ NC::VDOS::getCombinedGnFct( const GnExpansion& gnexpn )
   }
 
   VectD grid = makeCommonGrid( individual_grids );
+
+  //All Gn functions are on lattices which (mathematically) have a node at
+  //beta=0, but numerically the node positions there are off by a few ulps
+  //from 0, with random sign. Snap them to exactly 0, otherwise a random tiny
+  //value (rather than exactly 0) can end up in the final beta grid, which
+  //must contain exactly 0. Since points closer than 10% of the smallest bin
+  //width are merged, there is at most a single point which can be affected.
+  {
+    double minbw = kInfinity;
+    for ( auto& g : individual_grids )
+      minbw = ncmin( minbw, g.binWidth );
+    for ( auto& x : grid ) {
+      if ( ncabs(x) < 1e-6 * minbw )
+        x = 0.0;
+    }
+  }
+
   VectD vals = evalPWLSum(fs,grid,ws);
   std::pair<VectD,VectD> res;
   res.first = std::move(grid);
@@ -437,22 +254,28 @@ NC::VDOS::determineAlphaBetaGridFromGn( const GnExpansion& gnexpn,
     //Discard pts outside betaRange, but occasionally keep one point extra, to
     //avoid an edge-effects due to an inadvertent extrapolation towards 0 in the
     //edge region.
+    //
+    //All comparisons with the edges have a tiny tolerance, since with all Gn on
+    //lattices anchored at 0, points can be mathematically exactly at the edges
+    //(which are given by nodes of the Gn), and whether they end up on one or
+    //the other side of it should not depend on rounding errors.
+    const double etol = 1e-9 * ( betaRange.second - betaRange.first );
     std::size_t i = 0;
-    while ( bvals_view[i] < betaRange.first )
+    while ( bvals_view[i] < betaRange.first - etol )
       ++i;
-    if ( i > 0 && bvals_view[i] > betaRange.first )
+    if ( i > 0 && bvals_view[i] > betaRange.first + etol )
       --i;//keep one point going over the edge.
 
     bvals_view = bvals_view.subspan(i);
     gnprojvals_view = gnprojvals_view.subspan(i);
-    if ( bvals_view.back() > betaRange.second ) {
+    if ( bvals_view.back() > betaRange.second + etol ) {
       //Do the same for the upper limit, although this is expected to happen
       //only extremely rarely in usual operations.
       auto newsize = bvals_view.size();
       nc_assert_always( bvals_view.size() >= 5 );
       while ( newsize > 2
               && ncmin(bvals_view[newsize-1],
-                       bvals_view[newsize-2]) > betaRange.second ) {
+                       bvals_view[newsize-2]) > betaRange.second + etol ) {
         --newsize;
       }
       bvals_view = bvals_view.subspan(0,newsize);
@@ -551,6 +374,11 @@ NC::VDOS::determineAlphaBetaGridFromGn( const GnExpansion& gnexpn,
     {
       double rtol_try = 10*rtol;
       while ( v.size() < n ) {
+        //Below this, no further points could be added anyway (and
+        //1+rtol_try would eventually be indistinguishable from 1):
+        if ( rtol_try < 1e-12 )
+          NCRYSTAL_THROW(CalcError,"Unable to add enough points to"
+                         " reach requested grid size");
         topOffGrid(v, n, rtol_try );
         rtol_try *= 0.25;
       }
@@ -661,7 +489,7 @@ NC::VDOS::setupE0ABGrid( const GnExpansion& gnexpn, unsigned npts )
     //Now add alpha and phase space factors:
     for (std::size_t i = 0; i < f.f.size(); ++i) {
       //note alpha=beta on the E->0 phasespace, so x=beta*alpha2x
-      const double beta = f.x0 + i * f.binWidth;
+      const double beta = f.xAt(i);
       //relative phasespace width is proportional to sqrt(b) as E->0
       double factor = std::sqrt(beta);
       //Add also alpha factor: exp(-x)*x^n/n!:
@@ -690,12 +518,16 @@ NC::VDOS::setupE0ABGrid( const GnExpansion& gnexpn, unsigned npts )
       nc_assert( g.binWidth > 0.0 );
       g.npts = f.f.size();
       trimEquidistantGridUpperEdge(g, gridmax);
-      nc_assert( g.x1() <= gridmax );
+      nc_assert( g.x1() <= gridmax + 2e-9*g.binWidth );
     }
 
     grid = makeCommonGrid( allgrids );
 
     nc_assert_always(!grid.empty());
+    //trimEquidistantGridUpperEdge has a tiny tolerance, so we might be
+    //marginally above gridmax:
+    if ( grid.back() > gridmax )
+      grid.back() = gridmax;
     nc_assert( grid.back() <= gridmax );
     nc_assert_always( grid.size() >= 10 );
     //ensure we have 0.0 in this:
