@@ -680,6 +680,8 @@ v4.4.7 (work in progress)
        (1e-4/1e-5/1e-6), and several test apps gained real assertions
        instead of relying purely on byte-exact log comparisons of
        FMA-sensitive diagnostic values.
+     * Bug fix: Python API functions accepting numpy arrays now work correctly
+       for non-float64 or non-contiguous arrays.
      * Add ncmake_unique_array_noinit helper function.
      * Py API: Add DynamicInfo.displayLabel and add .lbl shortcuts for
        .displayLabel to both AtomInfo and DynamicInfo
@@ -689,6 +691,7 @@ v4.4.7 (work in progress)
      * Introduce StableDbl utility class for double-double arithmetic for better
        reproducibility and precision in select parts of the code.
      * Introduce (axis-aligned) Rectangle utility class.
+     * ...
 
 v4.4.6 2026-06-30
      * Support Numpy 2.5 by reworking usage of obsoleted array reshaping
