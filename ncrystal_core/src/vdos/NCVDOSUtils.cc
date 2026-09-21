@@ -516,23 +516,6 @@ NC::VDOS::PWLFct NC::VDOS::pwlNarrowToPos( const PWLFct& p, double tol )
   return res;
 }
 
-namespace NCRYSTAL_NAMESPACE {
-  namespace {
-    NCRYSTAL_FMADISPATCH_ATTR
-    void pwlSumAccumulateSegment( double* out, const double* gridPtr,
-                                  std::size_t g, std::size_t end,
-                                  double y0, double slope, double xLeft,
-                                  double ylo, double yhi, double weight )
-    {
-      for ( std::size_t k = g; k < end; ++k ) {
-        const double v = ncclamp( std::fma(slope,gridPtr[k]-xLeft,y0),
-                                  ylo, yhi );
-        out[k] = std::fma( weight, v, out[k] );
-      }
-    }
-  }
-}
-
 NC::VectD NC::VDOS::evalPWLSum( Span<const PWLFct> fs,
                                 Span<const double> grid,
                                 Span<const double> ws )
