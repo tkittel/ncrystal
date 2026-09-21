@@ -1,4 +1,6 @@
 v4.4.7 (work in progress)
+     * Bug fix: Python API functions accepting numpy arrays now work
+       correctly for non-float64 or non-contiguous arrays.
      * New NCMAT v8 format (cf. docs/ncmat_doc.md): @DYNINFO sections
        gain the msd (with optional at_temperature part), debye_temp
        (now also for scatknl) and effective_temperature keywords; the
