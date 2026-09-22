@@ -659,12 +659,13 @@ std::pair<NC::VectD,NC::VectD> NC::regulariseVDOSGrid( const VectD& orig_egrid, 
   double mm = std::floor( oldEmaxMinusEminDivEmin * best.second );
   nc_assert_always ( mm <= 20000 );
   unsigned new_npts = static_cast<unsigned>( mm + 0.5 ) + 1;
-  double new_emax = emin + new_binwidth * ( new_npts - 1 );
-
+  double new_emax = std::fma( new_binwidth,
+                              static_cast<double>(new_npts - 1), emin );
   if ( new_emax < oldEmax ) {
     //Add one extra point to make sure new range encompasses old range.
     ++new_npts;
-    new_emax = emin + new_binwidth * ( new_npts - 1 );
+    new_emax = std::fma( new_binwidth,
+                         static_cast<double>(new_npts - 1), emin );
   }
   nc_assert( new_emax >= oldEmax);
   if ( extra_verbose )
@@ -705,7 +706,8 @@ std::pair<NC::VectD,NC::VectD> NC::regulariseVDOSGrid( const VectD& orig_egrid, 
   for ( auto ieval : ncrange(new_npts) ) {
     const double eval = ( ieval + 1 == new_npts
                           ? new_emax
-                          : emin + new_binwidth * ieval++ );
+                          : std::fma( new_binwidth,
+                                      static_cast<double>(ieval++), emin ) );
     //Increment position in old grid if needed:
     while ( it != itLast && eval >= *std::next(it) )
       ++it;
