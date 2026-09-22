@@ -1,4 +1,13 @@
 v4.4.7 (work in progress)
+     * Bug fix: Python API functions accepting numpy arrays now work correctly
+       for non-float64 or non-contiguous arrays.
+     * Cmdline script errors in case of invalid choices now always gives output
+       like latest (Py3.14.7) argparse, thus ensuring consistent output.
+     * Use explicit std::fma in several utilities for improved reproducibility.
+       Uses new NCRYSTAL_FMADISPATCH_ATTR so this does not cost performance on
+       portably built binaries such as the published wheels and conda
+       packages. Utilities affected include FastConvolve (FFT), nclerp (new
+       linear interpolation fct), and finally VDOS and Gn evaluation.
      * Add ncmake_unique_array_noinit helper function.
      * Py API: Add DynamicInfo.displayLabel and add .lbl shortcuts for
        .displayLabel to both AtomInfo and DynamicInfo
