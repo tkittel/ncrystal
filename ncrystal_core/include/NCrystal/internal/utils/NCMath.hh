@@ -320,6 +320,17 @@ namespace NCRYSTAL_NAMESPACE {
                                                   std::size_t targetN,
                                                   const PtReduceCfg& cfg = {} );
 
+  //Alternative to reducePtsInDistribution which is intended to be more stable
+  //in the presence of noise. Thus, rather than iteratively removing the least
+  //important point (which causes unstable cascading changes in point
+  //selections, if there are many unimportant points only distinguished by
+  //noise), it creates the cumulative distribution of point importance, and
+  //places points at equal steps therein.
+  std::pair<VectD,VectD> reducePtsByEquidistribution( Span<const double> x,
+                                                      Span<const double> y,
+                                                      std::size_t targetN,
+                                                      const PtReduceCfg& cfg = {} );
+
   //Vector utilities:
   inline void vectorAppend(VectD& v1, const VectD& v2);//appends contents of v2 to v1
   template<class TVector, class Func>
