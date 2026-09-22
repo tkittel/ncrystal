@@ -1,4 +1,7 @@
 v4.4.7 (work in progress)
+     * Cmdline script errors in case of invalid choices now always gives
+       output like latest (Py3.14.7) argparse, thus ensuring consistent
+       output.
      * Bug fix: Python API functions accepting numpy arrays now work
        correctly for non-float64 or non-contiguous arrays.
      * New NCMAT v8 format (cf. docs/ncmat_doc.md): @DYNINFO sections
