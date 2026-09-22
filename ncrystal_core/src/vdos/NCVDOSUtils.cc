@@ -713,8 +713,6 @@ NC::VectD NC::VDOS::mergeGridsWithTol( const VectD& a, const VectD& b,
   nc_assert( rtol < 0.5 );
   nc_assert(nc_is_grid(a));
   nc_assert(nc_is_grid(b));
-  nc_assert(!a.empty());
-  nc_assert(!b.empty());
   nc_assert(std::isfinite(rtol) && rtol > 0.0);
   const double fac = 1.0 + rtol;
   const double lo = ncmin(a.front(), b.front());
@@ -725,6 +723,10 @@ NC::VectD NC::VDOS::mergeGridsWithTol( const VectD& a, const VectD& b,
   {
     if (g.empty() || x != g.back())
       g.push_back(x);
+  };
+  auto nearlyEqual = [](double x, double y)
+  {
+    return ncabs(x - y) <= 1e-11 * ncmax(ncabs(x), ncabs(y));
   };
   auto farEnough = [fac](double x, double y)
   {
@@ -744,6 +746,17 @@ NC::VectD NC::VDOS::mergeGridsWithTol( const VectD& a, const VectD& b,
       ++ia;
     }
     bool keep = x == lo || x == hi;
+    //A point which is the same as one in a, up to rounding errors, is not
+    //kept. Notably the same node of a lattice might have been calculated in
+    //different ways for the two grids. Without this, whether they end up
+    //bitwise identical (and thus one of them is removed by add) or an ulp
+    //apart (in which case both would be kept) would depend on rounding errors.
+    if (!keep) {
+      if (ia < a.size() && nearlyEqual(x, vectAt(a, ia)))
+        continue;
+      if (ia > 0 && nearlyEqual(x, vectAt(a, ia - 1)))
+        continue;
+    }
     if (!keep && ia < a.size())
       keep = farEnough(x, vectAt(a, ia));
     if (!keep && ia > 0)
