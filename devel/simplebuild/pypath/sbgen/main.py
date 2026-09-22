@@ -193,6 +193,15 @@ f"""
 #define NCRYSTAL_VERSION_PATCH {cfg.ncrystal_version_patch}
 #define NCRYSTAL_VERSION_STR "{cfg.ncrystal_version_str}"
 #define NCRYSTAL_VERSION {cfg.ncrystal_version_int}
+//Try to mimic the NCRYSTAL_FMADISPATCH_ATTR logic from out CMake code.
+#if defined(__x86_64__) || defined(__i386__)
+#  if ( defined(__clang__) && __clang_major__ >= 14 ) || ( defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 6 )
+#    if !defined(__clang__) || defined(NDEBUG)
+#      define NCRYSTAL_FMADISPATCH_ATTR __attribute__((target_clones("default,fma")))
+#      define NCRYSTAL_FMADISPATCH_ENABLED 1
+#    endif
+#  endif
+#endif
 //Uncomment to debug deadlocks: #define NCRYSTAL_DEBUG_LOCKS
 #ifndef NDEBUG
 // Specifically test aligned allocs in simplebuild debug mode:
