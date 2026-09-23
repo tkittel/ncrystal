@@ -35,6 +35,21 @@ namespace NCRYSTAL_NAMESPACE {
     //Interval where f(x) = x^n*exp(-x) is above eps*fpeak.
     PairDD rangeXNexpMX(unsigned n, double eps, double accuracy = 1e-13 );
 
+    // Estimate the interval [x0,x1] outside of which a tabulated Gn spectrum
+    // (density values at the equidistant grid points egrid_lower+i*
+    // egrid_binwidth, i=0..spec.size()-1) is everywhere below
+    // relcontriblvl*max(spec) (0<relcontriblvl<1). Takes the grid as
+    // (lower,binwidth) rather than a materialised array, since it only ever
+    // needs a handful of points from a small local window around each
+    // crossing (computed on demand via equidistantGridPoint) -- avoiding an
+    // O(spec.size()) allocation on every call, which matters since this is
+    // called ~twice per phonon order from VDOSGn::eRange. See app_gnerange
+    // and docs/claude_session_vdos_fma_reprod.md for the reproducibility
+    // investigation this is part of.
+    PairDD estimateGnErange( double egrid_lower, double egrid_binwidth,
+                             Span<const double> spec,
+                             double relcontriblvl );
+
     // Returns the intersection between the provided Rectangle in the alpha-beta
     // plane, and the kinematically available phasespace for a neutron of a
     // given E/kT (i.e. the set of points satisfying (alpha-beta)^2 <
