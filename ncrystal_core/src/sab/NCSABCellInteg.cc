@@ -287,16 +287,12 @@ namespace NCRYSTAL_NAMESPACE {
         {
           nc_assert(m_b2>m_b1);
           const double a = slice.alpha;
-          const double dbpm = std::sqrt( m_4e * a );//NB: Most expensive
-                                                    //per-point calc might be in
-                                                    //this line?
-          const double bl = ncclamp( a - dbpm, m_b1, m_b2 );
-          const double bu = ncclamp( a + dbpm, m_b1, m_b2 );
-          //Used to be like this, but gave results outside the clamp:
-          // const double bl( m_is_bounded_by_betaminus ? a - dbpm : m_b1 );
-          // const double bu( m_is_bounded_by_betaplus ? a + dbpm : m_b2 );
-
-
+          //bl/bu via the robust getBetaMinus/getBetaPlus
+          //(the naive a-+dbpm formula cancels catastrophically for a~=4E):
+          const double bl = ncclamp( getBetaMinus(m_4e*0.25,a), m_b1, m_b2 );
+          const double bu = ncclamp( getBetaPlus(m_4e*0.25,a), m_b1, m_b2 );
+          const double dbpm = std::sqrt( m_4e * a );
+          //FIXME: ^^^ This calculates sqrt(4E*a) thrice instead of just once!
 
           //To find the contribution we integrate S(a,b) over [bl,bu]. This is
           //easy, since we always interpolate linearly in b:
@@ -511,11 +507,14 @@ namespace NCRYSTAL_NAMESPACE {
             double Sb1 = *(itSb1++);
             double Sb2 = *(itSb2++);
             double a = *(itA++);
+            //bl/bu via the robust getBetaMinus/getBetaPlus
+            //(fixme: calculating expensive sqrt(4E*a) thrice instead of once!)
             double dbpm = std::sqrt( foure * a );//nb: expensive
             if ( is_bounded_by_betaminus )
-              bl = a - dbpm;
+              bl = getBetaMinus(E_div_kT,a);
             if ( is_bounded_by_betaplus )
-              bu = ncmax(bl,a + dbpm);//ncmax as a safeguard against FP issues
+              bu = ncmax(bl,getBetaPlus(E_div_kT,a));//ncmax as a safeguard
+                                                     //against FP issues
             //To find the contribution we integrate S(a,b) over [bl,bu]. This is
             //easy, since we always interpolate linearly in b:
             const double bmiddle( is_bounded_on_both_sides ? a : (bu+bl)*0.5 );
