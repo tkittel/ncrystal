@@ -200,10 +200,13 @@ namespace NCRYSTAL_NAMESPACE {
             const double wb2 = std::sqrt( foure * a2 );
             if ( b1 >= a2 + wb2 )
               continue;
-            //Check against beta-(alpha) is a bit more complicated:
-            if ( a1 >= E_div_kT && b2 <= a1 - std::sqrt( foure * a1 ) )
+            //beta-(alpha) check written as squared comparisons: subtracting a
+            //computed sqrt from a raw alpha cancels catastrophically near the
+            //boundary. Since dbpm>=0, "b2<=a-dbpm" <=> "a-b2>=0 &&
+            //(a-b2)^2>=foure*a":
+            if ( a1 >= E_div_kT && a1-b2 >= 0.0 && ncsquare(a1-b2) >= foure*a1 )
               continue;
-            if ( a2 <= E_div_kT && b2 <= a2 - wb2 )
+            if ( a2 <= E_div_kT && a2-b2 >= 0.0 && ncsquare(a2-b2) >= foure*a2 )
               continue;
 
             //Ok, we have an overlap. Let us check that S is not zero in entire
