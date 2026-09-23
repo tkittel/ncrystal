@@ -289,9 +289,17 @@ namespace NCRYSTAL_NAMESPACE {
           const double a = slice.alpha;
           const double dbpm = std::sqrt( m_4e * a );//NB: Most expensive
                                                     //per-point calc might be in
-                                                    //this line?
-          const double bl = ncclamp( a - dbpm, m_b1, m_b2 );
-          const double bu = ncclamp( a + dbpm, m_b1, m_b2 );
+                                                    //this line. Also used below
+                                                    //for the bu-bl width via
+                                                    //2*dbpm, which (unlike
+                                                    //bl/bu themselves) is
+                                                    //cancellation-free since
+                                                    //it involves no subtraction.
+          //bl/bu via the cancellation-hardened getBetaMinus/getBetaPlus
+          //(the naive a-+dbpm formula cancels catastrophically for a near
+          //4*E, exactly the regime entered here):
+          const double bl = ncclamp( getBetaMinus(m_4e*0.25,a), m_b1, m_b2 );
+          const double bu = ncclamp( getBetaPlus(m_4e*0.25,a), m_b1, m_b2 );
           //Used to be like this, but gave results outside the clamp:
           // const double bl( m_is_bounded_by_betaminus ? a - dbpm : m_b1 );
           // const double bu( m_is_bounded_by_betaplus ? a + dbpm : m_b2 );
@@ -512,10 +520,14 @@ namespace NCRYSTAL_NAMESPACE {
             double Sb2 = *(itSb2++);
             double a = *(itA++);
             double dbpm = std::sqrt( foure * a );//nb: expensive
+            //bl/bu via the cancellation-hardened getBetaMinus/getBetaPlus
+            //(the naive a-+dbpm formula cancels catastrophically for a near
+            //4*E, exactly the regime entered here):
             if ( is_bounded_by_betaminus )
-              bl = a - dbpm;
+              bl = getBetaMinus(E_div_kT,a);
             if ( is_bounded_by_betaplus )
-              bu = ncmax(bl,a + dbpm);//ncmax as a safeguard against FP issues
+              bu = ncmax(bl,getBetaPlus(E_div_kT,a));//ncmax as a safeguard
+                                                     //against FP issues
             //To find the contribution we integrate S(a,b) over [bl,bu]. This is
             //easy, since we always interpolate linearly in b:
             const double bmiddle( is_bounded_on_both_sides ? a : (bu+bl)*0.5 );

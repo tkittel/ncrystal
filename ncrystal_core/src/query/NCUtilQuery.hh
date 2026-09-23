@@ -24,6 +24,7 @@
 #include "NCrystal/internal/query/NCQuery.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
+#include "NCrystal/internal/phys_utils/NCKinUtils.hh"
 #include <chrono>
 
 namespace NCRYSTAL_NAMESPACE {
@@ -151,6 +152,63 @@ namespace NCRYSTAL_NAMESPACE {
       streamJSONDictEntry( os, "str", vstr.str(), JSONDictPos::LAST );
     }
 
+    //Reachable via ["util","kinutils"] (tests/scripts/kinutils.py): dumps
+    //getAlphaMinus/getAlphaPlus/getBetaMinus/getBetaPlus on a grid of
+    //ekin_div_kT values, with offsets landing densely around the two
+    //singular points, for validation against an mpmath reference:
+    void queryimpl_kinutils( std::ostream& os )
+    {
+      const VectD evals = { 1e-6, 1e-3, 0.1, 1.0, 1e2, 1e4, 1e8 };
+      const VectD offsets = { -2.0, -1.0, -0.5, -0.2, -0.1, -0.06, -0.055,
+                              -0.051, -0.05, -0.04, -0.02, -0.01, -0.001,
+                              -1e-4, -1e-6, -1e-9, -1e-12, -1e-15, 0.0,
+                              1e-15, 1e-12, 1e-9, 1e-6, 1e-4, 0.001, 0.01,
+                              0.02, 0.04, 0.05, 0.051, 0.055, 0.06, 0.1,
+                              0.2, 0.5, 1.0, 2.0, 5.0 };
+      VectD ab_e, ab_beta, ab_aminus, ab_aplus;
+      VectD bb_e, bb_alpha, bb_bminus, bb_bplus;
+      for ( auto e : evals ) {
+        for ( auto x : offsets ) {
+          //alpha_minus/alpha_plus(e,beta), beta=x*e, singular at x=0.
+          //Valid domain needs beta>=-e (kk=e+beta>=0), i.e. x>=-1:
+          if ( x >= -1.0 ) {
+            const double beta = x*e;
+            ab_e.push_back(e);
+            ab_beta.push_back(beta);
+            ab_aminus.push_back( getAlphaMinus(e,beta) );
+            ab_aplus.push_back( getAlphaPlus(e,beta) );
+          }
+          //beta_minus/beta_plus(e,alpha), alpha=(4+x)*e, singular at
+          //x=0. Valid domain needs alpha>=0, i.e. x>=-4 (always true
+          //here since offsets>=-2):
+          {
+            const double alpha = (4.0+x)*e;
+            bb_e.push_back(e);
+            bb_alpha.push_back(alpha);
+            bb_bminus.push_back( getBetaMinus(e,alpha) );
+            bb_bplus.push_back( getBetaPlus(e,alpha) );
+          }
+        }
+      }
+      os << "{\"alphabounds\":{\"e\":";
+      streamJSON(os,ab_e);
+      os << ",\"beta\":";
+      streamJSON(os,ab_beta);
+      os << ",\"aminus\":";
+      streamJSON(os,ab_aminus);
+      os << ",\"aplus\":";
+      streamJSON(os,ab_aplus);
+      os << "},\"betabounds\":{\"e\":";
+      streamJSON(os,bb_e);
+      os << ",\"alpha\":";
+      streamJSON(os,bb_alpha);
+      os << ",\"bminus\":";
+      streamJSON(os,bb_bminus);
+      os << ",\"bplus\":";
+      streamJSON(os,bb_bplus);
+      os << "}}";
+    }
+
     void queryimpl_util( std::ostream& os, const Query& query )
     {
       auto invalid = [&query](const char * reason){
@@ -177,15 +235,22 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr auto sv_ekin2wl = StrView::make("ekin2wl");
       constexpr auto sv_mathval = StrView::make("mathval");
       constexpr auto sv_fmadiagnose = StrView::make("fmadiagnose");
+      constexpr auto sv_kinutils = StrView::make("kinutils");
       if ( key == sv_list ) {
         if ( nargs != 0 )
           invalid("no arguments should come after: [\"util\",\"list\"]");
-        os<<"[\"wl2ekin\", \"ekin2wl\", \"mathval\", \"fmadiagnose\"]";
+        os<<"[\"wl2ekin\", \"ekin2wl\", \"mathval\", \"fmadiagnose\","
+          " \"kinutils\"]";
       } else if ( key == sv_fmadiagnose ) {
         if ( nargs != 0 )
           invalid("no arguments should come after:"
                   " [\"util\",\"fmadiagnose\"]");
         queryimpl_fmadiagnose( os );
+      } else if ( key == sv_kinutils ) {
+        if ( nargs != 0 )
+          invalid("no arguments should come after:"
+                  " [\"util\",\"kinutils\"]");
+        queryimpl_kinutils( os );
       } else if ( isOneOf(key,sv_wl2ekin,sv_ekin2wl) ) {
         double val = ( nargs == 1
                        ? arg(0).toDbl().value_or(-1.0)

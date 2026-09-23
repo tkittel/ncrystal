@@ -1,4 +1,14 @@
 v4.4.7 (work in progress)
+     * Fix several catastrophic-cancellation-prone inline re-derivations
+       of the alpha/beta kinematic boundary formulas in the sab component
+       (cell sampling, surveying, and cross-section integration), which
+       could give platform/compiler dependent results; all now go through
+       the Taylor-hardened utilities in NCKinUtils.hh. Added
+       tests/scripts/kinutils.py validating those utilities against an
+       mpmath reference.
+     * Fix another unaudited a*b-c (feeding straight into std::exp) in
+       fillSABFromVDOS's high-phonon-order alpha factor
+       (NCVDOSToScatKnl.cc), now an explicit std::fma.
      * Rewrite NC::stable_exp/stable_expm1 to be fully libm-free
        (Cody-Waite reduction, 14th-order std::fma Horner Taylor expansion,
        exact std::ldexp reconstruction; stable_exp via 1+expm1(x), with a

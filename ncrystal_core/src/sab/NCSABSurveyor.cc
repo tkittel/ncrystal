@@ -21,6 +21,7 @@
 #include "NCrystal/internal/sab/NCSABSurveyor.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCString.hh"
+#include "NCrystal/internal/phys_utils/NCKinUtils.hh"
 
 namespace NC = NCrystal;
 namespace NCS = NCrystal::SABUtils;
@@ -328,19 +329,17 @@ NCS::SABCellSurvey::SABCellSurvey( double alpha1, double alpha2,
 
   if (b2 <= -e)
     return;//no overlap
-  const double twoe = e+e;
-  const double tmp = 2*std::sqrt(e*(b2+e));
-  const double ap2 = twoe+b2+tmp;//alpha^+(b2)
+  //alpha^-/alpha^+(beta) via the cancellation-hardened
+  //getAlphaMinus/getAlphaPlus (naive formula cancels for beta near 0):
+  const double ap2 = getAlphaPlus(e,b2);//alpha^+(b2)
   if ( a1 >= ap2 )
     return;//no overlap
-  double am2 = twoe+b2-tmp;//alpha^-(b2)
+  double am2 = getAlphaMinus(e,b2);//alpha^-(b2)
 
   double am1(-1.0), ap1(-1.0);
   if ( b1 >= -e ) {
-    const double tmp2 = 2*std::sqrt(e*(b1+e));
-    const double twoe_plus_b1 = twoe+b1;
-    am1 = twoe_plus_b1-tmp2;//alpha^-(b1)
-    ap1 = twoe_plus_b1+tmp2;//alpha^+(b1)
+    am1 = getAlphaMinus(e,b1);//alpha^-(b1)
+    ap1 = getAlphaPlus(e,b1);//alpha^+(b1)
   }
 
   //snap along alpha:
