@@ -110,6 +110,14 @@ namespace NCRYSTAL_NAMESPACE {
   double atan_approx(double x);//calling atan_smallarg_approx when |x|<0.442 and falling back to std::atan and exact results otherwise.
   double expm1_smallarg_approx(double x);//7th order Taylor expansion
 
+  //Cross platform reproducible alternatives to libm functions for which the std
+  //libm variant might differ slightly across platforms.:
+  double stable_exp(double);
+  double stable_expm1(double);
+  double stable_tanh(double);
+  double stable_sinh(double);
+  double stable_log(double);
+
   //Evaluate erfc(a)-erfc(b) in a relatively numerically safe
   //manner and with as few actual calls to std::erfc as possible:
   double erfcdiff(double a, double b);
@@ -835,6 +843,24 @@ namespace NCRYSTAL_NAMESPACE {
     for ( const auto& e : v )
       hash_combine(seed,e);
     return seed;
+  }
+
+
+  inline double stable_exp( double x )
+  {
+    if ( x < 0.0 )
+      return 1.0 / stable_exp( -x );//1 + expm1(x) when expm1(x)~=1 here has
+                                    //catastrophic cancellation
+    return 1.0 + stable_expm1( x );
+  }
+
+
+  inline double stable_tanh( double x )
+  {
+    //tanh(x) = expm1(2x)/(expm1(2x)+2) with no catastrophic cancellations, but
+    //clamps with ncmin to avoid an inf/inf FPE (at no loss of precision):
+    const double t = ncmin(1e100,stable_expm1(2.0*x));
+    return t/(t+2.0);
   }
 
 }
