@@ -402,6 +402,171 @@ double NC::findRoot(const Fct1D*f,double a, double b, double acc)
 
 NC::Fct1D::~Fct1D(){}
 
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    //Cody-Waite argument reduction constants for splitting x = n*ln(2) + r
+    //with |r|<=ln(2)/2: ln2_hi carries only the top ~32 bits of ln(2) (all
+    //lower bits exactly 0), so n*ln2_hi is exact for any |n| relevant here,
+    //and the two-step fma reduction below recovers r to near full double
+    //precision even though x and n*ln(2) can be far larger than r itself.
+    //Standard constants (as used by e.g. fdlibm's exp()):
+    constexpr double ln2_hi = 6.93147180369123816490e-01;
+    constexpr double ln2_lo = 1.90821492927058770002e-10;
+    constexpr double invln2 = 1.44269504088896338700e+00;
+
+    //Taylor expansion of expm1(x)=exp(x)-1. Enough terms to be fully accurate
+    //for |r|<ln2/2 and using std::fma for max portability.
+    double expm1_taylor14( double x )
+    {
+      //fixme: consider making this always use hardware fma.
+      constexpr double c1 = 1.0;
+      constexpr double c2 = 1.0/2.0;
+      constexpr double c3 = 1.0/6.0;
+      constexpr double c4 = 1.0/24.0;
+      constexpr double c5 = 1.0/120.0;
+      constexpr double c6 = 1.0/720.0;
+      constexpr double c7 = 1.0/5040.0;
+      constexpr double c8 = 1.0/40320.0;
+      constexpr double c9 = 1.0/362880.0;
+      constexpr double c10 = 1.0/3628800.0;
+      constexpr double c11 = 1.0/39916800.0;
+      constexpr double c12 = 1.0/479001600.0;
+      constexpr double c13 = 1.0/6227020800.0;
+      constexpr double c14 = 1.0/87178291200.0;
+      double tmp = c14;
+      tmp = std::fma( x, tmp, c13 );
+      tmp = std::fma( x, tmp, c12 );
+      tmp = std::fma( x, tmp, c11 );
+      tmp = std::fma( x, tmp, c10 );
+      tmp = std::fma( x, tmp, c9 );
+      tmp = std::fma( x, tmp, c8 );
+      tmp = std::fma( x, tmp, c7 );
+      tmp = std::fma( x, tmp, c6 );
+      tmp = std::fma( x, tmp, c5 );
+      tmp = std::fma( x, tmp, c4 );
+      tmp = std::fma( x, tmp, c3 );
+      tmp = std::fma( x, tmp, c2 );
+      tmp = std::fma( x, tmp, c1 );
+      return x*tmp;
+    }
+  }
+}
+
+//FIXME: STILL WORKING ON expm1 and sinh...
+
+double NC::stable_expm1( double x )
+{
+  // Evaluating expm1(x) by first finding integer n so that
+  // x=n*ln2+r and |r|<ln2/2. Then use:
+  //
+  // exp(x)-1 = exp(n*ln2+r)-1
+  //          = exp(r)*exp(n*ln2)-1
+  //          = exp(r)*(2**n)-1
+  //          = expm1(r)*(2**n) + (2**n-1)
+  //
+  // Evaluate expm1(r) via Taylor, and 2**n = std::ldexp(1,n).
+  //
+  // And use special branches for large |x|.
+
+  if ( x >= 709 ) {
+    //really tricky => for simplicity we let std::expm1 handle this annoying case.
+    if ( x >= 709.7827128933841 )
+      return kInfinity;
+    //There are probably better ways to handle this, but this one at least kind
+    //of works: exp(x)-1 = exp(a)*(expm1(x-a)-expm1(-a)), so if we pick a=10:
+    constexpr double exp10 = 2.2026465794806718e4;
+    constexpr double expm1_minus10 = -0.9999546000702375151484644;
+    return exp10 * ( stable_expm1(x-10.0) - expm1_minus10 );
+  }
+  if ( x <= -40.0 )
+    return -1.0;
+  if ( ncisnan(x) )
+    NCRYSTAL_THROW(BadInput,"stable_expm1 called with NaN");
+  const double n = std::round( x * invln2 );
+  double r = std::fma( -n, ln2_hi, x );
+  r = std::fma( -n, ln2_lo, r );
+  //|r| is now less than ln2/2 ~= 0.34657359028, so ok for 14th order taylor:
+  const double expm1_of_r = expm1_taylor14( r );
+  //static cast to int is safe since x in (-40,710):
+  const double pow2n = std::ldexp( 1.0, static_cast<int>(n) );
+  return std::fma( pow2n, expm1_of_r, pow2n - 1.0 );
+}
+
+double NC::stable_log( double x )
+{
+  const double y0 = std::log(x);
+  if ( !std::isfinite(y0) )
+    return y0;//x<=0 (-inf/nan) or x=+inf: nothing to refine.
+  //One Newton-Raphson step on f(y)=exp(y)-x=0 (f'(y)=exp(y)):
+  //y1 = y0 - (exp(y0)-x)/exp(y0) = y0 + (x-exp(y0))/exp(y0). The
+  //subtraction x-exp(y0) is close to exact (Sterbenz's lemma: exp(y0) is
+  //within a handful of ULP of x by construction, well within the 2x
+  //factor Sterbenz's lemma requires for an exact FP subtraction), so no
+  //separate stabilisation is needed there -- just a plain division and
+  //sum (no std::fma: the correction here has unit scale, so a plain sum
+  //is already a single rounding, unlike stable_exp's multiply-add):
+  const double expy0 = std::exp(y0);
+  if ( !( expy0 > 0.0 ) || !std::isfinite(expy0) )
+    return y0;//underflow/overflow reconstructing exp(y0): nothing to refine.
+  const double correction = (x - expy0)/expy0;
+  return y0 + correction;
+}
+
+// #include "NCrystal/internal/utils/NCMsg.hh"//fixme
+
+double NC::stable_sinh( double x )
+{
+  //sinh(x) = t*(t+2)/(2*(1+t)) for t=expm1(x)=e^x-1, since
+  //t*(t+2)/(1+t) = (e^x-1)(e^x+1)/e^x = e^x-e^-x = 2*sinh(x). Well
+  //conditioned for x>=0 (then t>=0, so 1+t>=1), but the (1+t) denominator
+  //goes to 0 as x->-infinity (t->-1), amplifying t's own tiny relative
+  //error into a large one -- confirmed empirically (e.g. off by ~2e-8
+  //relative for x=-20, far more than a rounding-level error). Sidestep
+  //this entirely using the odd-function symmetry sinh(-x)=-sinh(x) (an
+  //exact identity: negation is a free, lossless sign-bit flip), so the
+  //division is only ever evaluated in the well-conditioned x>=0 branch:
+  if ( x < 0.0 )
+    return -stable_sinh(-x);
+
+
+  if (x >= 20.0) {
+    //for x > 20, we have in double precision that sinh(x) and expm1(x-ln2)+1
+    //evaluates to the same. So let expm1 deal with all the high x edge cases:
+    constexpr double ln2 = 0.6931471805599453;
+    return stable_expm1(x - ln2) + 1.0;
+  } else {
+    const double t = stable_expm1(x);
+    return (0.5*t*(t+2.0))/(1.0+t);
+  }
+}
+
+  // // The first overflowing x value is around:
+  // constexpr double x_sinh_overflow = 710.4758600739439;
+  // constexpr double ln2 = 0.6931471805599453;
+
+  // // Here exp(x) itself may overflow, but exp(x)/2 is still finite.
+  // if (x >= 709.0) {
+  //   if (x >= x_sinh_overflow)
+  //     return kInfinity;
+  //   return stable_expm1(x - ln2) + 1.0;
+  // }
+
+  // //Avoid both overflow and inf/inf FPE:
+  // constexpr double thr = 1.8961503816e154;
+  // //x creating thr: 355.23793003696045
+
+  // if ( t >= thr ) {
+  //   //0.5*t*(t+2.0) would overflow, use different expression here.
+  //   //real expression, but second parantheses is just 1.0 at double precision at
+  //   //these high t values, and it also allows us to avoid inf/inf:
+  //   //    NCRYSTAL_MSG("TKTEST "<<fmt((0.5*t))<<" "<<fmt(( (t + 2.0) / (t + 1.0) )));
+  //   nc_assert( ncisinf(t) || (0.5*t)  == (0.5*t)*( (t + 2.0) / (t + 1.0) ) );
+  //   return 0.5 * t;
+  // }
+  // const double v = 0.5*t*(t+2.0);
+  // nc_assert(std::isfinite(v));//finite due to the thr above
+  // return (0.5*t*(t+2.0))/(1.0+t);
+}
 
 namespace NCRYSTAL_NAMESPACE {
   double erfcdiff_notaylor(double a, double b)
