@@ -147,8 +147,11 @@ def extractKnl( vdos, mass_amu, temperature, vdoslux = 3, scatxs = 1.0,
     v = AnyVDOS(vdos)
     from ._chooks import _get_raw_cfcts
     f = _get_raw_cfcts()['raw_vdos2knl']
-    a, b, sab, suggested_emax = f( v.egrid(),
-                                   v.dos(),
+    #expand=False, norm=False in the next call is to not do normalisation both
+    #here and in the C++ VDOSEval which the raw_vdos2kernel is using. Not only
+    #is that wasteful, it also introduces additional rounding errors.
+    a, b, sab, suggested_emax = f( v.egrid(expand=False),
+                                   v.dos(norm=False),
                                    scatxs,
                                    mass_amu,
                                    temperature,
