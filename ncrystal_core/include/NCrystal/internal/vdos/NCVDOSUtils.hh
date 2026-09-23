@@ -35,6 +35,11 @@ namespace NCRYSTAL_NAMESPACE {
     //Interval where f(x) = x^n*exp(-x) is above eps*fpeak.
     PairDD rangeXNexpMX(unsigned n, double eps, double accuracy = 1e-13 );
 
+    // Estimate the interval [x0,x1] outside of which a tabulated Gn spectrum is
+    // everywhere below relcontriblvl*max(spec) (0<relcontriblvl<1).
+    PairDD estimateGnErange( double egrid_lower, double egrid_binwidth,
+                             Span<const double> spec, double relcontriblvl );
+
     // Returns the intersection between the provided Rectangle in the alpha-beta
     // plane, and the kinematically available phasespace for a neutron of a
     // given E/kT (i.e. the set of points satisfying (alpha-beta)^2 <

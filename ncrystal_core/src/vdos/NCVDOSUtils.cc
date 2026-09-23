@@ -20,6 +20,7 @@
 
 #include "NCrystal/internal/vdos/NCVDOSUtils.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCIter.hh"
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
 
 namespace NC=NCrystal;
@@ -769,4 +770,146 @@ NC::VectD NC::VDOS::mergeGridsWithTol( const VectD& a, const VectD& b,
     ++ia;
   }
   return g;
+}
+
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    //Estimate where a locally-Gaussian-like curve on the equidistant grid
+    //x0+i*binwidth crosses yval, given a bracket (idxLo,idxHi=idxLo+1) with
+    //min(spec[idxLo],spec[idxHi]) < yval <= max(...).
+    //
+    //High-order Gn spectra are locally Gaussian (ln(spec) locally
+    //quadratic), so fit a quadratic to ln(spec) over a window extending
+    //nExtra points beyond the bracket (clipped to array bounds and spec>0
+    //points) and take the root nearest the bracket. Falls back to plain
+    //2-point (log-linear or linear) interpolation when the fit is
+    //degenerate; result clamped to the window's own x-extent:
+    double gnErangeCrossing( double x0, double binwidth, Span<const double> spec,
+                             std::size_t idxLo,
+                             double yval, std::size_t nExtra )
+    {
+      const std::size_t idxHi = idxLo + 1;
+      nc_assert( ncmin(spec[idxLo],spec[idxHi]) < yval
+                && yval <= ncmax(spec[idxLo],spec[idxHi]) );
+      auto xAt = [x0,binwidth](std::size_t i) { return VDOS::equidistantGridPoint(x0,binwidth,i); };
+
+      auto twoPointFallback = [&]( bool logspace )
+      {
+        //Simple two point interpolation for when the more fancy approach didn't
+        //work.
+        const double v0 = spec[idxLo];
+        const double v1 = spec[idxHi];
+        const double t = ( logspace && v0 > 0.0 && v1 > 0.0
+                          ? (std::log(yval)-std::log(v0))/(std::log(v1)-std::log(v0))
+                          : (yval-v0)/(v1-v0) );
+        return nclerp( xAt(idxLo), xAt(idxHi), ncclamp(t,0.0,1.0) );
+      };
+      if ( !( spec[idxLo] > 0.0 && spec[idxHi] > 0.0 ) )
+        return twoPointFallback(false);//can't do log-space at all
+
+      const std::size_t wlo = ( idxLo >= nExtra ? idxLo-nExtra : 0 );
+      const std::size_t whi = std::min<std::size_t>( idxHi+nExtra, spec.size()-1 );
+
+      //Fit ln(spec) = a + b*xc + c*xc^2, xc=x-xmid (centred on the bracket
+      //midpoint for conditioning), via the normal equations for an
+      //ordinary least-squares quadratic fit:
+      const double xmid = 0.5*( xAt(idxLo) + xAt(idxHi) );
+      double S0(0.0), S1(0.0), S2(0.0), S3(0.0), S4(0.0);
+      double T0(0.0), T1(0.0), T2(0.0);
+      for ( auto i : ncrange(wlo,whi+1) ) {
+        if ( !(spec[i]>0.0) )
+          continue;
+        const double x = xAt(i)-xmid;
+        const double y = std::log(spec[i]);
+        const double x2 = x*x;
+        S0 += 1.0;
+        S1 += x;
+        S2 += x2;
+        S3 += x2*x;
+        S4 += x2*x2;
+        T0 += y;
+        T1 += x*y;
+        T2 += x2*y;
+      }
+      if ( S0 < 5.0 )
+        return twoPointFallback(true);
+      //Solve linear (matrix mult) equation
+      //   [S0 S1 S2; S1 S2 S3; S2 S3 S4]*[a;b;c] = [T0;T1;T2]
+      //via Cramer's rule:
+      const double D  = S0*(S2*S4-S3*S3) - S1*(S1*S4-S3*S2) + S2*(S1*S3-S2*S2);
+      if ( !( ncabs(D) > 0.0 ) )
+        return twoPointFallback(true);//determinant not >0
+      const double Da = T0*(S2*S4-S3*S3) - S1*(T1*S4-S3*T2) + S2*(T1*S3-S2*T2);
+      const double Db = S0*(T1*S4-S3*T2) - T0*(S1*S4-S3*S2) + S2*(S1*T2-T1*S2);
+      const double Dc = S0*(S2*T2-T1*S3) - S1*(S1*T2-T1*S2) + T0*(S1*S3-S2*S2);
+      const double a = Da/D, b = Db/D, c = Dc/D;
+      const double target = std::log(yval) - a;//solve c*xc^2+b*xc-target=0
+      double xcross;
+      if ( !std::isfinite(c) || ncabs(c) < 1e-8*ncabs(b) ) {
+        //Effectively linear (flat curvature in this window):
+        if ( !( std::isfinite(b) && ncabs(b) > 0.0 ) )
+          return twoPointFallback(true);
+        xcross = target/b;
+      } else {
+        const double disc = b*b + 4.0*c*target;
+        if ( !(disc >= 0.0) )
+          return twoPointFallback(true);
+        const double sq = std::sqrt(disc);
+        const double r1 = (-b+sq)/(2.0*c);
+        const double r2 = (-b-sq)/(2.0*c);
+        //Both roots solve the fitted quadratic; pick whichever is nearest
+        //the bracket (i.e. smallest in the centred coordinate), since the
+        //other root is some unrelated, far-away crossing of the same
+        //parabola:
+        xcross = ( ncabs(r1) < ncabs(r2) ? r1 : r2 );
+      }
+      const double result = xcross + xmid;
+      if ( !std::isfinite(result) )
+        return twoPointFallback(true);
+      return ncclamp( result, xAt(wlo), xAt(whi) );
+    }
+  }
+}
+
+NC::PairDD NC::VDOS::estimateGnErange( double egrid_lower, double egrid_binwidth,
+                                       Span<const double> spec,
+                                       double relcontriblvl )
+{
+  nc_assert( spec.size() >= 2 );
+  nc_assert( relcontriblvl > 0.0 && relcontriblvl < 1.0 );
+  nc_assert( std::isfinite(egrid_lower) && egrid_binwidth > 0.0 );
+  nc_assert( *std::min_element(spec.begin(),spec.end()) >= 0.0 );
+  auto xAt = [egrid_lower,egrid_binwidth](std::size_t i)
+  {
+    return equidistantGridPoint(egrid_lower,egrid_binwidth,i);
+  };
+  const double spec_max = *std::max_element( spec.begin(), spec.end() );
+  const double threshold = relcontriblvl * spec_max;
+  PairDD erange( xAt(0), xAt(spec.size()-1) );
+
+  constexpr std::size_t nExtra = 2;//extra points on each side of the
+                                   //immediate bracket to include in the
+                                   //windowed log-linear fit.
+
+  for ( auto e : enumerate(spec) ) {
+    if ( e.val >= threshold ) {
+      erange.first = ( e.idx == 0 )
+        ? xAt(0)
+        : gnErangeCrossing( egrid_lower, egrid_binwidth, spec,
+                            e.idx-1, threshold, nExtra );
+      break;
+    }
+  }
+  for ( std::size_t i = spec.size(); i > 0; --i ) {
+    if ( spec[i-1] >= threshold ) {
+      const double x = ( i == spec.size() )
+        ? xAt(i-1)
+        : gnErangeCrossing( egrid_lower, egrid_binwidth, spec,
+                           i-1, threshold, nExtra );
+      erange.second = ncmin( erange.second, x );
+      break;
+    }
+  }
+  nc_assert( erange.second >= erange.first );
+  return erange;
 }
