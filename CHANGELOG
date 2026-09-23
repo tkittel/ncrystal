@@ -8,6 +8,9 @@ v4.4.7 (work in progress)
        vectorisable hot loops with hardware FMA, even in portably built binaries
        such as the published wheels and conda packages.
      * Introduce new FMA-based nclerp (linear interpolation) function.
+     * VDOSGn::eRange now locates the threshold crossing via a quadratic fit of
+       ln(spectrum) vs energy. This is more stable and less noise sensitive than
+       the old approach of snapping to a particular grid point
      * Add ncmake_unique_array_noinit helper function.
      * Py API: Add DynamicInfo.displayLabel and add .lbl shortcuts for
        .displayLabel to both AtomInfo and DynamicInfo
