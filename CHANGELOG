@@ -1,4 +1,8 @@
 v4.4.7 (work in progress)
+     * Make the sabxs reproducibility test tolerance depend on vdoslux
+       (1e-4/1e-5/1e-6 for 2000/2001/>=2002); XSMonitor's test_rdtol now
+       also accepts a callable. Affected sabxs_A/B reference data
+       regenerated.
      * Fix several catastrophic-cancellation-prone inline re-derivations
        of the alpha/beta kinematic boundary formulas in the sab component
        (cell sampling, surveying, and cross-section integration), which
