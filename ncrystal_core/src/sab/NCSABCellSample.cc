@@ -491,8 +491,8 @@ NCS::BoundedCellSampler::prepareBCSData( double probability_b1_edge,
         };
         pt(r.alpha_up,true,true);
         pt(r.alpha_low,true,true);
-        const double amax1 = ncsquare( std::sqrt(e+b2)- sqrte );
-        const double amax2 = ncsquare( std::sqrt(e+b1)- sqrte );
+        const double amax1 = getAlphaMinus(e,b2);
+        const double amax2 = getAlphaMinus(e,b1);
         if ( valueInInterval( r.alpha_low, r.alpha_up, amax1 ) )
           pt( amax1, true, false );
         if ( valueInInterval( r.alpha_low, r.alpha_up, amax2 ) )
@@ -504,11 +504,9 @@ NCS::BoundedCellSampler::prepareBCSData( double probability_b1_edge,
       }
     } else {
       if ( r.is_bounded_by_betaminus ) {
-        //bound by [betaminus(alpha),b2]
-        const double sqrte = std::sqrt(e);
-        const double twosqrte = 2.0 * sqrte;
-        auto pt = [b2,updateO12,twosqrte]( double a ) {
-          const double bminus = a - twosqrte*std::sqrt(a);
+        auto pt = [b2,updateO12,e]( double a ) {
+          //Fixme: we used to cache sqrt(E) outside this lambda
+          const double bminus = getBetaMinus(e,a);
           updateO12((bminus+b2)*0.5,b2-bminus,a);
         };
         pt( r.alpha_up );
@@ -735,17 +733,14 @@ namespace NCRYSTAL_NAMESPACE {
         const double e = E_div_kT;
         if (c.b2 <= -e)
           return NullOpt;//no overlap
-        const double twoe = 2.0*e;
-        const double tmp = 2.0*std::sqrt(e*(b2+e));
-        const double ap2 = twoe+b2+tmp;//alpha^+(b2)
+        //fixme: reuse sqrt(e) in the next calls?:
+        const double ap2 = getAlphaPlus(e,b2);//alpha^+(b2)
         if ( a1 >= ap2 )
           return NullOpt;//no overlap
-        const double am2 = twoe+b2-tmp;//alpha^-(b2)
+        const double am2 = getAlphaMinus(e,b2);//alpha^-(b2)
         double am1(-1.0);
         if ( b1 >= -e ) {
-          const double tmp2 = 2.0*std::sqrt(e*(b1+e));
-          const double twoe_plus_b1 = twoe+b1;
-          am1 = twoe_plus_b1-tmp2;//alpha^-(b1)
+          am1 = getAlphaMinus(e,b1);//alpha^-(b1)
         }
         //snap along alpha:
         a2 = ncmin(a2,ap2);
@@ -776,14 +771,15 @@ namespace NCRYSTAL_NAMESPACE {
           nc_assert(m_aup>m_alow);
           nc_assert(valueInInterval(m_alow,m_aup,a));
           AlphaPtGeom res;
-          double tmp = 2.0*std::sqrt( a * m_e);
-          double bl = a - tmp;
-          double bu = a + tmp;
+          //fixme: avoid repeated sqrt(e):
+          const double bl = getBetaMinus(m_e,a);
+          const double bu = getBetaPlus(m_e,a);
           res.blow = ncmax(m_cell.b1,bl);
           res.bup = ncmin(m_cell.b2,bu);
           if ( bl >= m_cell.b1 && bu <= m_cell.b2 ) {
             res.bmid = a;
-            res.bwidth = 2.0*tmp;
+            res.bwidth = bu-bl;//fixme: is this hardened against catastrophic
+                               //cancellation?
           } else {
             res.bmid = 0.5*(res.blow+res.bup);
             res.bwidth = res.bup - res.blow;
@@ -846,26 +842,26 @@ namespace NCRYSTAL_NAMESPACE {
           //added safety, we must also evaluate on these if they fall in a given
           //alpha-bin. Otherwise the overlay value determined purely from the
           //alpha-bin edges could be underestimated.
-          TinyVector<double,9> special_avals;
+          TinyVector<double,7> special_avals;
           {
-            //candidates (the ncabs(..) inside the sqrt is inserted for safety,
-            //it is no harm to add spurious candidates here if that candidate
-            //did not actually exist in the given setup.
-            const double sqrte = std::sqrt(m_e);
-            const double da1 = 2*std::sqrt(ncabs(m_e*(m_cell.b1+m_e)));
-            const double da2 = 2*std::sqrt(ncabs(m_e*(m_cell.b2+m_e)));
-
-            std::array<double,9> special_avals_candidates
-              = { m_e, m_cell.b1/3, m_cell.b2/3,
-                  ncsquare( std::sqrt( ncabs(m_e + m_cell.b1) ) - sqrte ),
-                  ncsquare( std::sqrt( ncabs(m_e + m_cell.b2) ) - sqrte ),
-                  2*m_e+m_cell.b1-da1,
-                  2*m_e+m_cell.b1+da1,
-                  2*m_e+m_cell.b2-da2,
-                  2*m_e+m_cell.b2+da2 };
-            for ( auto a : special_avals_candidates ) {
+            //Candidates. It is no harm to add spurious candidates here if that
+            //candidate did not actually exist in the given setup.
+            //
+            //fixme: check if we can avoid repeated sqrt with the same args:
+            auto addIfValid = [&]( double a ) {
               if ( valueInInterval(m_alow,m_aup,a) )
                 special_avals.push_back(a);
+            };
+            addIfValid( m_e );
+            addIfValid( m_cell.b1/3 );
+            addIfValid( m_cell.b2/3 );
+            if ( m_cell.b1 + m_e >= 0.0 ) {
+              addIfValid( getAlphaMinus(m_e,m_cell.b1) );
+              addIfValid( getAlphaPlus(m_e,m_cell.b1) );
+            }
+            if ( m_cell.b2 + m_e >= 0.0 ) {
+              addIfValid( getAlphaMinus(m_e,m_cell.b2) );
+              addIfValid( getAlphaPlus(m_e,m_cell.b2) );
             }
           }
 
