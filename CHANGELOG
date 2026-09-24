@@ -1,4 +1,8 @@
 v4.4.7 (work in progress)
+     * Added FastConvolve::convolveDirect (StableSum-accumulated direct
+       convolution, no FFT round-off floor) and VDOSGn::Cfg::MaxLux routing
+       every phonon order through it -- tested reference infrastructure,
+       not yet wired to any vdoslux level.
      * Bug fix: Python API functions accepting numpy arrays now work correctly
        for non-float64 or non-contiguous arrays.
      * Cmdline script errors in case of invalid choices now always gives output
