@@ -40,7 +40,7 @@ def main():
         'data/LiquidWaterH2O_T293.6K.ncmat' : 600,
         'data/LiquidHeavyWaterD2O_T293.6K.ncmat' : 1600,
         'tests/data/refnc2d5/LiquidWaterH2O_T293.6K.ncmat' : 530,
-        'CHANGELOG' : 150,
+        'CHANGELOG' : 200,
         'ncrystal_core/include/NCrystal/cinterface/ncrystal.h' : 100,
         'ncrystal_core/src/cinterface/ncrystal.cc' : 100,
         'ncrystal_core/src/sab/NCSABProcessor.cc' : 100,#fixme
@@ -52,6 +52,8 @@ def main():
         'tests/data/QE_pw_Al.out' : 2000,
         'tests/src/app_mmcgeom/main.cc' : 80,
         'tests/src/app_fft/refvals.hh' : 200,
+        'tests/data/ptreduce/li_from_li2o_e0grid.txt' : 100,
+        'tests/data/ptreduce/al_e0grid.txt' : 100,
     }
     for f in all_files_iter():
         lim = max_size_kb_log if f.suffix == '.log' else max_size_kb_other
