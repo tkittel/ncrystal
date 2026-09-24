@@ -35,6 +35,60 @@ namespace NCRYSTAL_NAMESPACE {
     //Interval where f(x) = x^n*exp(-x) is above eps*fpeak.
     PairDD rangeXNexpMX(unsigned n, double eps, double accuracy = 1e-13 );
 
+    // Estimate where a tabulated, locally-Gaussian-like spectrum on the
+    // equidistant grid x0+i*binwidth crosses yval, given the immediate
+    // bracket (idxLo,idxHi=idxLo+1) with min(spec[idxLo],spec[idxHi]) <
+    // yval <= max(...). Fits a quadratic (ordinary least squares) to
+    // ln(spec) vs x over a window extending nExtra points beyond the
+    // bracket on each side (clipped to the array bounds and to spec>0
+    // points), solved for the root nearest the bracket, so the estimate
+    // depends on several neighbouring points rather than trusting only the
+    // single point on each side of the bracket -- much less sensitive to a
+    // last-ULP-level fluctuation landing on any one of those points than a
+    // plain two-point interpolation (confirmed empirically in app_gnerange:
+    // injecting a 1e-3 relative perturbation at the bracket points moves
+    // the estimate by only ~1e-6 relative on a synthetic Gaussian case).
+    // The result is always clamped to the window's own x-extent, and falls
+    // back to a plain two-point (log-linear, or linear) interpolation
+    // whenever the windowed fit is degenerate (fewer than 5 usable points,
+    // a non-finite/non-positive discriminant, or a fit that is not really
+    // quadratic). Used by estimateGnErange below (with nExtra=2), and by
+    // NCVDOSGn.cc's produceNewOrderByConvolutionImpl (with a larger nExtra)
+    // to make the per-order truncation edge itself far less sensitive to
+    // which side of a threshold a single noisy point happens to fall on --
+    // see docs/claude_session_vdos_fma_reprod.md.
+    double estimateSpectrumCrossing( double x0, double binwidth,
+                                     Span<const double> spec,
+                                     std::size_t idxLo, std::size_t idxHi,
+                                     double yval, std::size_t nExtra );
+
+    // Applies a smooth (quintic "smootherstep", C2-continuous) taper to
+    // spec in-place, multiplying by a factor that ramps between 0 and 1
+    // over the window [xcross-halfwidth,xcross+halfwidth] (clamped to the
+    // array bounds); values outside the window are left untouched (factor
+    // 0 or 1 exactly). With risingEdge=true the factor ramps 0->1 with
+    // increasing index (for a front/rising truncation edge); with
+    // risingEdge=false it ramps 1->0 (back/falling edge).
+    //
+    // Used together with estimateSpectrumCrossing to make a threshold
+    // truncation edge robust to which exact integer index a caller
+    // ultimately decides to truncate at: xcross is a continuous estimate
+    // that, right at a genuine near-tie (xcross within noise distance of a
+    // half-integer), can flip which neighbouring index gets chosen between
+    // platforms/compilers/builds (confirmed in NCVDOSGn.cc's per-order
+    // truncation: a real material showed xcross shift by up to ~0.75
+    // index units between a plain and an -mfma build, near an array edge
+    // where the estimator's own fit window is asymmetric and hence less
+    // averaged/stable than mid-array). Applying this taper BEFORE that
+    // integer decision means both plausible truncation indices near such a
+    // tie already hold a near-identical (near-zero, tapered) value, so
+    // whichever one is picked makes a numerically negligible difference --
+    // rather than the current hard, untapered cut, where the disputed bin
+    // still holds a value of order the truncation threshold itself. See
+    // docs/claude_session_vdos_fma_reprod.md.
+    void applyCrossingTaper( Span<double> spec, double xcross,
+                             bool risingEdge, double halfwidth );
+
     // Estimate the interval [x0,x1] outside of which a tabulated Gn spectrum
     // (density values at the equidistant grid points egrid_lower+i*
     // egrid_binwidth, i=0..spec.size()-1) is everywhere below
@@ -49,6 +103,24 @@ namespace NCRYSTAL_NAMESPACE {
     PairDD estimateGnErange( double egrid_lower, double egrid_binwidth,
                              Span<const double> spec,
                              double relcontriblvl );
+
+    // Estimate a numerical noise floor for a spectrum of length n and peak
+    // magnitude peak, as produced by FastConvolve's FFT-based linear
+    // convolution (NCFastConvolve.hh). FFT round-off accumulates roughly as
+    // peak*eps*sqrt(n) (a standard bound for a length-n discrete Fourier
+    // transform); safetyFactor scales this into a value comfortably above
+    // where convolution round-off is actually observed in practice
+    // (calibrated in app_gnconvnoisefloor against a Neumaier-summed O(n^2)
+    // reference convolution, both on synthetic spectra and on real Gn
+    // spectra generated live from production VDOSEval/FastConvolve). Used
+    // by NCVDOSGn.cc's produceNewOrderByConvolutionImpl to gate whether the
+    // per-order truncation edge (see estimateSpectrumCrossing and
+    // applyCrossingTaper above) needs refining at all: only attempted where
+    // the plain truncation threshold is not safely above this noise floor,
+    // since elsewhere the plain crossing is already far more reliable than
+    // the floor. See docs/claude_session_vdos_fma_reprod.md.
+    double estimateFFTConvolutionNoiseFloor( double peak, std::size_t n,
+                                             double safetyFactor = 8.0 );
 
     // Returns the intersection between the provided Rectangle in the alpha-beta
     // plane, and the kinematically available phasespace for a neutron of a
@@ -130,7 +202,8 @@ namespace NCRYSTAL_NAMESPACE {
       double binWidth = 0.0;//distance between x{i} and x{i+1}
       Span<const double> f;//values of f at the x{i} points. The size of the
                            //span encodes the number of points.
-      double x1() const { return x0 + (f.size()-1)*binWidth; }
+      double xAt( std::size_t i ) const;//x{i}=x0+i*binWidth (safely)
+      double x1() const { return xAt( f.size()-1 ); }
       VectD dataHolder;//optional, so can hold its data if needed.
 
       //Move semantics (re-points f if it refers to dataHolder):
@@ -150,6 +223,8 @@ namespace NCRYSTAL_NAMESPACE {
 
     // Evaluates the weighted sum of functions on the supplied grid. Optionally
     // weights can be applied to each function (unit weights if empty).
+    // For stability, grid points within a tiny tolerance (1e-9*binWidth) of the
+    // endpoints of a function are considered to be exactly at the endpoint.
     VectD evalPWLSum( Span<const PWLFct> fs,
                       Span<const double> grid,
                       Span<const double> weights = {} );
@@ -160,7 +235,9 @@ namespace NCRYSTAL_NAMESPACE {
     void trimTailByIntegral( VectD& x, VectD& y, double frac );
 
     // Remove points from the top of the grid until g.x1() <= xmax, but always
-    // keeping at least 2 points.
+    // keeping at least 2 points. A tolerance of 1e-9*binWidth is applied, so a
+    // node which mathematically is at xmax is kept regardless of rounding
+    // errors.
     void trimEquidistantGridUpperEdge( EquidistantGrid& g, double xmax );
 
   }
@@ -204,6 +281,22 @@ namespace NCRYSTAL_NAMESPACE {
     {
       nc_assert( dataHolder.size() == f.size() );
       return dataHolder;
+    }
+
+    inline double equidistantGridPoint( double x0, double binWidth,
+                                        std::size_t i )
+    {
+      return std::fma( binWidth, static_cast<double>(i), x0 );
+    }
+
+    inline double PWLFct::xAt( std::size_t i ) const
+    {
+      return equidistantGridPoint( x0, binWidth, i );
+    }
+
+    inline double EquidistantGrid::xAt( std::size_t i ) const
+    {
+      return equidistantGridPoint( x0, binWidth, i );
     }
 
   }
