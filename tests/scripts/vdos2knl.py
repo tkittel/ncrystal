@@ -29,11 +29,12 @@
 #  * G1 must be sampled finely enough, even when the input VDOS grid is
 #    coarse (as for the H VDOS in the acrylic glass stdlib file, where the
 #    grid spacing corresponds to ~5.8kT at 5K).
-#  * Gn spectra must only be thinned when smooth. This is tested with a VDOS
-#    with features a few meV wide (a soft mode), but extending to 0.55eV (an
-#    oscillator), whose Gn spectra at 14K extend over thousands of kT while
-#    having structure on the scale of kT. Thinning such spectra based on
-#    their number of points only, gave cross sections wrong by 50%.
+#  * Gn spectra must only be thinned when smooth. This is tested with the
+#    unusual VDOS curves in the test data (vdos_*.ncmat), most notably one
+#    with features a few meV wide (a soft mode), but extending to 0.55eV
+#    (an oscillator), whose Gn spectra at 14K extend over thousands of kT
+#    while having structure on the scale of kT. Thinning such spectra based
+#    on their number of points only, gave cross sections wrong by 50%.
 #  * Expansions needing excessive resources must fail with a CalcError.
 #
 # The resolution is tested via the detailed balance relation,
@@ -84,19 +85,20 @@ def main( do_plot ):
     with ensure_error(nc_exceptions.NCCalcError,expected_error):
         t( vdos, m = 27.0, T = 0.5, vdoslux = 1, target_emax = 5000 )
     test_g1_resolution()
-    test_thinning()
+    test_unusual_vdos()
     test_resource_limits()
 
 def gn_dbcheck( egrid, gn, temp, relfloor = 0.0 ):
     #Returns binwidth/kT and largest deviation from detailed balance, in the
-    #middle of bins with energies in 0.25kT..10kT:
+    #middle of bins with energies in 0.25kT..10kT (None if no such bins):
     kt = constant_boltzmann * temp
     emid = 0.5 * ( egrid[1:] + egrid[:-1] )
     emid = emid[ ( emid >= 0.25*kt ) & ( emid <= 10.0*kt ) ]
     gn_up = np.interp( emid, egrid, gn )
     gn_down = np.interp( -emid, egrid, gn )
     ok = gn_down > relfloor * gn.max()
-    assert ok.any()
+    if not ok.any():
+        return ( egrid[1] - egrid[0] ) / kt, None
     ratio = gn_up[ok] * np.exp( emid[ok] / kt ) / gn_down[ok]
     return ( egrid[1] - egrid[0] ) / kt, np.abs( ratio - 1.0 ).max()
 
