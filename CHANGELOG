@@ -15,6 +15,7 @@ v4.4.7 (work in progress)
      * VDOSGn::eRange now locates the threshold crossing via a quadratic fit of
        ln(spectrum) vs energy. This is more stable and less noise sensitive than
        the old approach of snapping to a particular grid point
+     * More robust and less noise sensitive Gn truncation during VDOS expansions.
      * Add ncmake_unique_array_noinit helper function.
      * Py API: Add DynamicInfo.displayLabel and add .lbl shortcuts for
        .displayLabel to both AtomInfo and DynamicInfo

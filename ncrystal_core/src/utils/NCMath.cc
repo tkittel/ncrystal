@@ -643,6 +643,22 @@ double NC::erfc_rescaled(double x, double b)
   return kInvSqrtPi*std::exp(bxx)*(y+y2*(c3+y2*(c5+y2*(c7+y2*(c9+y2*c11)))));
 }
 
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    //Smooth alternative to ncmax(tail_floor,f): (f^4+tail_floor^4)^(1/4)
+    //approaches f for f>>tail_floor and tail_floor for f<<tail_floor, like
+    //max(), but with a continuous derivative everywhere instead of a kink
+    //exactly at f==tail_floor.
+    double tailFloorSmooth( double f, double tail_floor )
+    {
+      //fixme: check if we have an overlap with VDOSUtil's applyCrossingTaper
+      const double f2 = f*f;
+      const double t2 = tail_floor*tail_floor;
+      return std::sqrt( std::sqrt( f2*f2 + t2*t2 ) );
+    }
+  }
+}
+
 std::pair<NC::VectD, NC::VectD>
 NC::reducePtsInDistribution(Span<const double> x,
                             Span<const double> y,
@@ -701,8 +717,7 @@ NC::reducePtsInDistribution(Span<const double> x,
 
     for (std::size_t i = 0; i < ncur; ++i) {
       vectAt(plny, i) =
-        std::log(ncmax(cfg.tail_floor,
-                       vectAt(py, i) * invYmax));
+        std::log(tailFloorSmooth(vectAt(py, i) * invYmax, cfg.tail_floor));
     }
   };
 
@@ -945,7 +960,7 @@ NC::reducePtsByEquidistribution(Span<const double> x,
       vectAt(f, i) = y[i] * invymax;
     dlin = sqrtCurvatureDensity(f);
     for (std::size_t i = 0; i < n; ++i)
-      vectAt(f, i) = std::log(ncmax(cfg.tail_floor, vectAt(f, i)));
+      vectAt(f, i) = std::log(tailFloorSmooth(vectAt(f, i), cfg.tail_floor));
     dlog = sqrtCurvatureDensity(f);
   }
 
