@@ -649,6 +649,13 @@ NCV::VDOSGn::Impl::produceNewOrderByConvolutionImpl( Order order,
     // => do truncation
     const double spec_max = *std::max_element(phonon_spe.begin(),phonon_spe.end());
     const double spec_cutoff = m_cfg.truncationThreshold * spec_max;
+    //FFT noise can exceed the fixed spec_cutoff for high order Gn, so add some
+    //safety:
+    constexpr double noiseFloorSafetyFactor = 8.0;
+    const double noiseFloorGate
+      = VDOS::estimateFFTConvolutionNoiseFloor( spec_max, phonon_spe.size(),
+                                                noiseFloorSafetyFactor );
+    const double cleanupThreshold = ncmax( spec_cutoff, noiseFloorGate );
     std::size_t ifront(0), iback(phonon_spe.size()-1);
     for (;ifront<iback;++ifront) {
       if (phonon_spe.at(ifront)>spec_cutoff)
@@ -666,10 +673,7 @@ NCV::VDOSGn::Impl::produceNewOrderByConvolutionImpl( Order order,
     //safely below spec_cutoff, and never for legacy/direct convolution.
     if ( iback > ifront && !m_cfg.legacyConvolve && !m_cfg.directConvolve ) {
       constexpr std::size_t crossingNExtra = 6;
-      constexpr double noiseFloorSafetyFactor = 8.0;
       constexpr double noiseFloorGateFactor = 2.0;
-      const double noiseFloorGate = VDOS::estimateFFTConvolutionNoiseFloor(
-        spec_max, phonon_spe.size(), noiseFloorSafetyFactor );
       if ( noiseFloorGate > noiseFloorGateFactor*spec_cutoff ) {
         //Taper half-width matches the crossing estimate's own fit window
         //(comfortably covers the largest cross-build xcross shift seen):
@@ -702,12 +706,10 @@ NCV::VDOSGn::Impl::produceNewOrderByConvolutionImpl( Order order,
       VectD truncated_spec(phonon_spe.begin()+ifront,phonon_spe.begin()+iback+1);
       truncated_spec.swap(phonon_spe);
     }
-    //Remove non-cross-platform-reproducible noise from the FFT alg by snapping
-    //tiny noise to 0.0 (also internally, not just at the edges):
-    //fixme: with non-legacy convolve we MUST do this, or we can get negative values in the spectra
+    //Snap tiny FFT noise to 0.0 (also internally, not just at the edges):
     if ( !m_cfg.legacyConvolve ) {
       for ( auto&e : phonon_spe) {
-        if ( e < spec_cutoff ) {
+        if ( e < cleanupThreshold ) {
           nc_assert( e > -1e-12*spec_max );
           e = 0.0;
         }

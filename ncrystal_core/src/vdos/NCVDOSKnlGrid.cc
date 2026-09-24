@@ -449,8 +449,10 @@ NC::VDOS::setupE0ABGrid( const GnExpansion& gnexpn, unsigned npts )
       double factor = std::sqrt(beta);
       //Add also alpha factor: exp(-x)*x^n/n!:
       const double x = alpha2x*beta;//alpha = beta in the E->0 limit
-      factor *= std::exp( -x + static_cast<double>(n)*std::log(x)
-                          + minus_log_nfactorial);
+      //NB: fma usage is extra relevant in argument to exp(..) which amplifies
+      //    its arguments:
+      factor *= std::exp( std::fma( static_cast<double>(n), std::log(x),
+                                    minus_log_nfactorial ) - x );
       f_fmut[i] *= factor;
     }
   }
