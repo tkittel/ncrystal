@@ -93,6 +93,59 @@ namespace {
     check(y, VectD{0.0,0.0,0.0,0.0});
   }
 
+  void testConvolveDirect()
+  {
+    //With .directConvolve we expect ~exact results, and results compatible with
+    //.convolve.
+    NC::FastConvolve c;
+    VectD y;
+
+    c.convolveDirect(VectD{1.0}, VectD{-2.0}, y, 1.0);
+    check(y, VectD{-2.0});
+    c.convolveDirect(VectD{1.0,-2.0}, VectD{3.0,4.0}, y, 1.0);
+    check(y, VectD{3.0,-2.0,-8.0});
+    c.convolveDirect(VectD{1.0,2.0,3.0},
+                     VectD{4.0,5.0}, y, 1.0);
+    check(y, VectD{4.0,13.0,22.0,15.0});
+    c.convolveDirect(VectD{1.0,2.0},
+                     VectD{3.0,4.0}, y, 0.25);
+    check(y, VectD{0.75,2.5,2.0});
+    c.convolveDirect(VectD{1.0,2.0,3.0,4.0},
+                     VectD{2.0,-1.0,0.5}, y, 1.0);
+    check(y, VectD{2.0,3.0,4.5,6.0,-2.5,2.0});
+    c.convolveDirect(VectD{0.0,0.0,0.0},
+                     VectD{2.0,-3.0}, y, 1.0);
+    check(y, VectD{0.0,0.0,0.0,0.0});
+
+    using NC::ncabs;
+    using NC::ncmax;
+    using NC::fmtg;
+    //Gentle enough decay that the whole output stays within ~1e-9 of the peak,
+    //making it meaningful to compare against .convolve()'s FFT result (a less
+    //gentle choice might have output under the FFT noise floor.
+    VectD a1(37), a2(29);
+    for ( auto i : NC::ncrange(a1.size()) )
+      a1[i] = std::exp( -0.01*double(i)*double(i) );
+    for ( auto i : NC::ncrange(a2.size()) ) {
+      const double di = double(i) - 10.0;
+      a2[i] = std::exp( -0.016*di*di );
+    }
+    VectD y_direct, y_fft;
+    c.convolveDirect(a1,a2,y_direct,0.37);
+    c.convolve(a1,a2,y_fft,0.37);
+    REQUIRE( y_direct.size() == y_fft.size() );
+    double maxrd = 0.0;
+    for ( auto i : NC::ncrange(y_direct.size()) ) {
+      const double v1 = y_direct.at(i), v2 = y_fft.at(i);
+      const double denom = ncmax( ncabs(v1), ncabs(v2) );
+      if ( denom > 0.0 )
+        maxrd = ncmax( maxrd, ncabs(v1-v2)/denom );
+    }
+    std::cout<<"convolveDirect vs convolve max reldiff on smooth-bump case: "
+             <<fmtg(maxrd)<<std::endl;
+    REQUIRE( maxrd < 1e-5 );
+  }
+
   void testCalcPhase()
   {
     using NC::ncabs;
@@ -185,6 +238,9 @@ int main() {
   std::cout<<"testFastConvolve start..."<<std::endl;
   testFastConvolve();
   std::cout<<"testFastConvolve done."<<std::endl;
+  std::cout<<"testConvolveDirect start..."<<std::endl;
+  testConvolveDirect();
+  std::cout<<"testConvolveDirect done."<<std::endl;
   std::cout<<"testCalcPhase start..."<<std::endl;
   testCalcPhase();
   std::cout<<"testCalcPhase done."<<std::endl;
