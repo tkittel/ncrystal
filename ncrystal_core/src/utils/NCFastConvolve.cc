@@ -22,6 +22,7 @@
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCStableDbl.hh"
 #include "NCrystal/internal/utils/NCTinyVector.hh"
+#include "NCrystal/internal/utils/NCIter.hh"
 #include <complex>
 namespace NC = NCrystal;
 
@@ -224,6 +225,24 @@ void NC::FastConvolve::convolveLegacy( const VectD& a1, const VectD& a2,
   m_impl->convolve(a1,a2,y,dt,true);
 }
 
+void NC::FastConvolve::convolveDirect( const VectD& a1, const VectD& a2,
+                                       VectD& y, double dt )
+{
+  const std::size_t n1 = a1.size();
+  const std::size_t n2 = a2.size();
+  nc_assert( n1 >= 2 && n2 >= 2 );
+  y.resize( n1 + n2 - 1 );
+  for ( auto k : ncrange(y.size()) ) {
+    const std::size_t ilo = ( k + 1 >= n2 ) ? k + 1 - n2 : std::size_t(0);
+    const std::size_t ihi = ncmin( k, n1 - 1 );
+    StableSum sum;
+    for ( auto i : ncrange( ilo, ihi + 1 ) )
+      sum.add( vectAt(a1,i) * vectAt(a2,k-i) );
+    y[k] = sum.sum();
+  }
+  for ( auto& e : y )
+    e *= dt;
+}
 
 namespace NCRYSTAL_NAMESPACE {
   namespace {
