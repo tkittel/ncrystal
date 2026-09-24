@@ -484,10 +484,11 @@ namespace {
 
   void testTailFloorMakesSmallValuesIrrelevant()
   {
-    //Values far below the tail_floor (relative to the maximum) have no
-    //influence on the density. The two inputs here are identical where the
-    //function is above 1e-6, and differ only below 1e-11 with different
-    //patterns, so the result must be the same.
+    //Values far below tail_floor (relative to the maximum) must have no
+    //influence: the two inputs here are identical above 1e-6 and differ
+    //(with different patterns) only below 1e-11, so the result must be
+    //identical. The quartic smooth floor ((f^4+tail_floor^4)^(1/4)) is
+    //what guarantees this exact irrelevance.
     VectD x = linspaceN( 0.0, 100.0, 4001 );
     NC::PtReduceCfg cfg;
     cfg.tail_floor = 1e-8;
