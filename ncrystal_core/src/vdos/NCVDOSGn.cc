@@ -658,6 +658,46 @@ NCV::VDOSGn::Impl::produceNewOrderByConvolutionImpl( Order order,
       if (phonon_spe.at(iback)>spec_cutoff)
         break;
     }
+    //Refine the two truncation edges with a windowed crossing estimate
+    //(estimateSpectrumCrossing) and smoothly taper the spectrum around it
+    //(applyCrossingTaper) before truncating a safe margin beyond, so a
+    //near-tie cannot flip a discrete decision by more than a negligible,
+    //already-tapered amount. Only done where the FFT noise floor is not
+    //safely below spec_cutoff, and never for legacy/direct convolution.
+    if ( iback > ifront && !m_cfg.legacyConvolve && !m_cfg.directConvolve ) {
+      constexpr std::size_t crossingNExtra = 6;
+      constexpr double noiseFloorSafetyFactor = 8.0;
+      constexpr double noiseFloorGateFactor = 2.0;
+      const double noiseFloorGate = VDOS::estimateFFTConvolutionNoiseFloor(
+        spec_max, phonon_spe.size(), noiseFloorSafetyFactor );
+      if ( noiseFloorGate > noiseFloorGateFactor*spec_cutoff ) {
+        //Taper half-width matches the crossing estimate's own fit window
+        //(comfortably covers the largest cross-build xcross shift seen):
+        constexpr double taperHalfWidth = double(crossingNExtra);
+        if ( ifront > 0 ) {
+          const double x = VDOS::estimateSpectrumCrossing( 0.0, 1.0, phonon_spe,
+                                                           ifront-1,
+                                                           spec_cutoff, crossingNExtra );
+          VDOS::applyCrossingTaper( phonon_spe, x, true, taperHalfWidth );
+          //Truncate well past the taper's zero-plateau (floor, not round),
+          //so both plausible integer choices hold a negligible value:
+          const double cut = x - taperHalfWidth - 1.0;
+          ifront = ( cut > 0.0 ? static_cast<std::size_t>(std::floor(cut)) : 0 );
+          ifront = ncmin( ifront, iback );
+        }
+        if ( iback+1 < phonon_spe.size() ) {
+          const double x = VDOS::estimateSpectrumCrossing( 0.0, 1.0, phonon_spe,
+                                                           iback,
+                                                           spec_cutoff, crossingNExtra );
+          VDOS::applyCrossingTaper( phonon_spe, x, false, taperHalfWidth );
+          const double cut = x + taperHalfWidth + 1.0;
+          iback = ( cut < double(phonon_spe.size()-1)
+                    ? static_cast<std::size_t>(std::ceil(cut))
+                    : phonon_spe.size()-1 );
+          iback = ncmax( iback, ifront );
+        }
+      }
+    }
     if (iback>ifront) {
       VectD truncated_spec(phonon_spe.begin()+ifront,phonon_spe.begin()+iback+1);
       truncated_spec.swap(phonon_spe);
