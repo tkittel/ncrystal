@@ -399,15 +399,32 @@ namespace NCRYSTAL_NAMESPACE {
             sumCoveredCells.add(fullCellIntegral);
           } else {
             double contrib;
-            if ( fullCellIntegral < (sumFullCells.sumUncorrected()+prev_contrib)*threshold ) {
-              contrib = 0.0;//don't waste time on irrelevant cell
+            const double cutoffref = (sumFullCells.sumUncorrected()+prev_contrib)*threshold;
+            //Taper the "don't waste time on irrelevant cell" shortcut over
+            //a factor-of-taperBand log-band around the threshold instead of
+            //a hard cut: many cells sit extremely close to the threshold,
+            //so last-ULP noise in fullCellIntegral could otherwise flip a
+            //cell between contributing exactly 0 and its full integral.
+            //Cells safely below the band keep the cheap shortcut:
+            constexpr double taperBand = 10.0;
+            if ( fullCellIntegral < cutoffref/taperBand ) {
+              contrib = 0.0;//safely below threshold, don't waste time
             } else {
               CellData cellData = mgr.lookupCellInfo( it->cellidx );
               StableSumKahan crossedRes;
               StdLogLinCellIntegrator::integrateWithinKB( cellData, E_div_kT,
                                                           scheme, crossedRes );
-              sum.add( crossedRes );
               contrib = crossedRes.sum();
+              if ( fullCellIntegral < cutoffref*taperBand ) {
+                const double t = ncclamp( ( std::log(fullCellIntegral/cutoffref)
+                                            + std::log(taperBand) )
+                                          / ( 2.0*std::log(taperBand) ), 0.0, 1.0 );
+                //Quintic smootherstep (Ken Perlin): 0 and 1 derivatives
+                //vanish at both ends, so no kink at the band edges either:
+                const double s = t*t*t*(t*(t*6.0-15.0)+10.0);
+                contrib *= s;
+              }
+              sum.add( contrib );
             }
             if ( do_sample ) {
               result.crossedIntegrals.emplace_back( contrib, it->cellidx );
@@ -532,9 +549,28 @@ namespace NCRYSTAL_NAMESPACE {
           }
         }
 
+        //Crude narrowing before the fine root refinement below: the root
+        //usually sits at a small fraction of e2, so a cheap exponential
+        //"galloping" walk up from the known-below e1 narrows the bracket
+        //before handing off to the general root finder:
+        double bracket_lo = loge1, bracket_hi = loge2;
+        {
+          constexpr double stepFactor = 100.0;//~2 decades per step
+          const double logStep = std::log(stepFactor);
+          double cand = bracket_lo;
+          while ( cand + logStep < bracket_hi ) {
+            cand += logStep;
+            if ( froot(cand) >= 0.0 ) {
+              bracket_hi = cand;
+              break;
+            }
+            bracket_lo = cand;
+          }
+        }
+
         double logemin;
         try {
-          logemin = findRoot2(froot,loge1,loge2, root_acc);
+          logemin = findRoot2(froot,bracket_lo,bracket_hi, root_acc);
         } catch ( NC::Error::CalcError& e ) {
           logemin = -1.0;
           //Write fct to file for debugging:
@@ -584,17 +620,14 @@ namespace NCRYSTAL_NAMESPACE {
           nc_assert_always( i1+8 < ns );
         }
 
-        std::size_t i2 = i1+1;
-        {
-          constexpr double eps_emin2 = 0.1;
-          const double tgt_s2 = (s1?s1*std::pow(s2/s1,eps_emin2):s2*eps_emin2);
-          while ( i2<ns && vectAt(s,i2)<tgt_s2 )
-            ++i2;
-          nc_assert_always( i2+4 < ns );
-        }
-
+        //Upper reference point: use EMax_div_kT directly rather than a
+        //touched-cell-array crossing index (near-degenerate cell "touch"
+        //energies can swap order under FMA-contraction noise, perturbing
+        //the Emin found downstream). EMax_div_kT is a single well-defined
+        //energy, and the real S-integral is still evaluated there via
+        //f_of_e:
         constexpr double safety1 = 0.001;
-        PairDD res( vectAt(e,i1)*safety1, ncmin(vectAt(e,i2)*10,0.5*EMax_div_kT) );
+        PairDD res( vectAt(e,i1)*safety1, EMax_div_kT );
         nc_assert_always( std::isfinite(res.first) );
         nc_assert_always( std::isfinite(res.second) );
         nc_assert_always( std::isfinite(res.first) );
