@@ -399,15 +399,41 @@ namespace NCRYSTAL_NAMESPACE {
             sumCoveredCells.add(fullCellIntegral);
           } else {
             double contrib;
-            if ( fullCellIntegral < (sumFullCells.sumUncorrected()+prev_contrib)*threshold ) {
-              contrib = 0.0;//don't waste time on irrelevant cell
+            const double cutoffref = (sumFullCells.sumUncorrected()+prev_contrib)*threshold;
+            //Taper the "don't waste time on irrelevant cell" shortcut over a
+            //factor-of-taperBand log-band around the threshold, rather than
+            //a hard cut exactly at it: confirmed on real production data
+            //(Li2O, vdoslux=2004) that hundreds of cells sit within 10% of
+            //this threshold for a given E_div_kT, some within 0.01%, so
+            //ordinary cross-platform noise in fullCellIntegral (itself a
+            //numerically integrated quantity) can readily flip which side
+            //of a hard cut such a cell falls on -- a real, not just
+            //last-digit, difference, since the skipped branch contributes
+            //exactly 0 while the other contributes the cell's actual
+            //integral. Cells safely below the band still take the cheap
+            //shortcut (untouched performance-wise); only the comparatively
+            //few cells within the band pay for the real per-cell
+            //integration, tapered smoothly to 0 as they approach the lower
+            //edge of the band. See docs/claude_session_vdos_fma_reprod.md.
+            constexpr double taperBand = 10.0;
+            if ( fullCellIntegral < cutoffref/taperBand ) {
+              contrib = 0.0;//safely below threshold, don't waste time
             } else {
               CellData cellData = mgr.lookupCellInfo( it->cellidx );
               StableSumKahan crossedRes;
               StdLogLinCellIntegrator::integrateWithinKB( cellData, E_div_kT,
                                                           scheme, crossedRes );
-              sum.add( crossedRes );
               contrib = crossedRes.sum();
+              if ( fullCellIntegral < cutoffref*taperBand ) {
+                const double t = ncclamp( ( std::log(fullCellIntegral/cutoffref)
+                                            + std::log(taperBand) )
+                                          / ( 2.0*std::log(taperBand) ), 0.0, 1.0 );
+                //Quintic smootherstep (Ken Perlin): 0 and 1 derivatives
+                //vanish at both ends, so no kink at the band edges either:
+                const double s = t*t*t*(t*(t*6.0-15.0)+10.0);
+                contrib *= s;
+              }
+              sum.add( contrib );
             }
             if ( do_sample ) {
               result.crossedIntegrals.emplace_back( contrib, it->cellidx );
@@ -532,9 +558,37 @@ namespace NCRYSTAL_NAMESPACE {
           }
         }
 
+        //Crude narrowing before the fine root refinement below: the root is
+        //not expected to sit centrally within [loge1,loge2] (which spans
+        //e1, deep in the low-E "1/v law" plateau, to e2=EMax_div_kT, the
+        //material's overall energy scale -- often a dozen or more decades
+        //wide) but rather at some comparatively small fraction of e2.
+        //Rather than guessing a fixed fraction (which was found not to
+        //generalise well: for one real material the root sits at ~55% of
+        //the way from loge1 to loge2 in natural-log terms, i.e. not
+        //dramatically skewed either way), do a cheap exponential/"galloping"
+        //walk up from the already-known-below e1, narrowing the bracket to
+        //wherever froot's sign actually flips before handing off to the
+        //(for a still-wide bracket, more f_of_e-call-expensive) general
+        //root finder below:
+        double bracket_lo = loge1, bracket_hi = loge2;
+        {
+          constexpr double stepFactor = 100.0;//~2 decades per step
+          const double logStep = std::log(stepFactor);
+          double cand = bracket_lo;
+          while ( cand + logStep < bracket_hi ) {
+            cand += logStep;
+            if ( froot(cand) >= 0.0 ) {
+              bracket_hi = cand;
+              break;
+            }
+            bracket_lo = cand;
+          }
+        }
+
         double logemin;
         try {
-          logemin = findRoot2(froot,loge1,loge2, root_acc);
+          logemin = findRoot2(froot,bracket_lo,bracket_hi, root_acc);
         } catch ( NC::Error::CalcError& e ) {
           logemin = -1.0;
           //Write fct to file for debugging:
@@ -584,17 +638,28 @@ namespace NCRYSTAL_NAMESPACE {
           nc_assert_always( i1+8 < ns );
         }
 
-        std::size_t i2 = i1+1;
-        {
-          constexpr double eps_emin2 = 0.1;
-          const double tgt_s2 = (s1?s1*std::pow(s2/s1,eps_emin2):s2*eps_emin2);
-          while ( i2<ns && vectAt(s,i2)<tgt_s2 )
-            ++i2;
-          nc_assert_always( i2+4 < ns );
-        }
-
+        //Upper reference point: use EMax_div_kT directly, rather than
+        //searching the touched-cell array for where the cumulative integral
+        //first crosses some intermediate (here: 10%-of-range) threshold.
+        //That threshold-crossing index was found to differ by several tens
+        //of index positions between an -mfma and a plain build on real
+        //production data (Li2O sabxs), because near-degenerate cell "touch"
+        //energies can swap relative order under ordinary FMA-contraction
+        //noise. Unlike the (already robust) i1 endpoint below, which lands
+        //in the flat 1/v-law region where f(e) barely depends on the exact
+        //e chosen, the old intermediate point sat in the middle of the
+        //transition region where f(e) is still visibly rising, so that
+        //index tie directly perturbed the Emin found downstream by
+        //determineEMinDivKT (which uses f at this endpoint to help define
+        //its own target criterion, not merely as a search-bracket bound).
+        //EMax_div_kT is already a single, well-defined energy -- often an
+        //explicit, non-fluctuating value from the VDOS expansion rather
+        //than one derived from this touched-cell machinery at all -- and
+        //determineEMinDivKT already evaluates the real S-integral there via
+        //f_of_e to define its search target, so no touched-cell-derived
+        //proxy is needed. See docs/claude_session_vdos_fma_reprod.md.
         constexpr double safety1 = 0.001;
-        PairDD res( vectAt(e,i1)*safety1, ncmin(vectAt(e,i2)*10,0.5*EMax_div_kT) );
+        PairDD res( vectAt(e,i1)*safety1, EMax_div_kT );
         nc_assert_always( std::isfinite(res.first) );
         nc_assert_always( std::isfinite(res.second) );
         nc_assert_always( std::isfinite(res.first) );

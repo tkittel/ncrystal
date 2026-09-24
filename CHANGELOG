@@ -1,4 +1,51 @@
 v4.4.7 (work in progress)
+     * Harden a discrete-cutoff instability in the next-gen (vdoslux>=2000)
+       SAB machinery: sIntegralAtE (called on every energy point evaluated
+       while building a material's cross-section table and while searching
+       for Emin) has a "don't waste time on irrelevant cell" shortcut,
+       skipping a cell's contribution entirely (treating it as exactly 0)
+       whenever its full-cell integral falls below a small threshold
+       relative to the running total. Confirmed on real production data
+       (Li2O, vdoslux=2004) that hundreds of cells routinely sit within 10%
+       of this threshold for a given energy, some within 0.01% -- so
+       ordinary last-few-ULP noise in a cell's integral (itself a numerical
+       result) can flip it between contributing exactly 0 and its actual,
+       non-negligible value, a real (not just last-digit) difference. Now
+       tapers the shortcut smoothly over a decade-wide band around the
+       threshold (full computation, quintic-smootherstep-scaled) rather
+       than a hard cut exactly at it; cells safely outside the band are
+       unaffected (same shortcut, same performance). Note: verified via a
+       real-CI re-run that this did not, on its own, resolve a separate,
+       still-open cross-platform sabxs instability for the same Li2O/
+       vdoslux=2004 case (see docs/claude_session_vdos_fma_reprod.md for
+       the ongoing investigation) -- it addresses a real, independently
+       confirmed source of discrete-cutoff sensitivity, but is not a
+       complete fix for that remaining issue.
+     * Fix cross-platform (plain vs -mfma-forced) instability in the next-gen
+       (vdoslux>=2000) SAB cross-section table's Emin determination
+       (NCSABProcessor.cc's determineEMinDivKTminRange): the upper reference
+       point used there was found via a discrete search for where a
+       cumulative per-cell integral first crosses 10% of its total range.
+       That crossing index could differ by several tens of positions between
+       builds, because two cells with near-degenerate kinematic "touch"
+       energies can swap relative processing order under ordinary
+       FMA-contraction noise. Since that reference point still sat within
+       the visibly-rising part of the underlying curve (unlike the already-
+       robust lower reference point, which sits in the flat low-E "1/v law"
+       region), the index tie propagated into a ~2% shift of the returned
+       Emin, and hence of the entire cross-section table anchored on it.
+       Replaced with the material's own EMax (in E/kT units), already
+       computed before this search runs and, for most SABData (including
+       that produced by our VDOS expansion), an explicit, non-fluctuating
+       input value rather than one derived from any per-cell touched-cell
+       machinery at all; the real S-integral is evaluated there via the same
+       function used everywhere else in this search, so no separate
+       touched-cell-derived proxy is needed. Verified on the previously
+       failing case (Li2O, vdoslux=2004): reldiff between a plain and an
+       -mfma build dropped from ~4e-5 (just above the test's 1e-5 tolerance)
+       to ~5e-9. This changes sabxs/long_sabxsb reference data for vdoslux
+       2000-2004 Li2O materials, up to ~0.7% at the lowest tested energies
+       (where this Emin-anchored region of the table matters most).
      * Bug fix: Python API functions accepting numpy arrays now work correctly
        for non-float64 or non-contiguous arrays.
      * Cmdline script errors in case of invalid choices now always gives output
