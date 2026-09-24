@@ -1007,7 +1007,13 @@ NC::reducePtsByEquidistribution(Span<const double> x,
     std::size_t hi = static_cast<std::size_t>
       (std::lower_bound(cum.begin(), cum.end(), q) - cum.begin());
     std::size_t idx = hi;
-    if (hi > 0 && (q - vectAt(cum, hi - 1)) <= (vectAt(cum, hi) - q))
+    //Bias the "which neighbour is closer" tie-break by a tolerance well
+    //above the ~1e-15 relative noise cum[] can carry from upstream libm
+    //calls, so a cross-platform last-ULP difference cannot flip which
+    //discrete point is kept:
+    constexpr double tieBreakRelTol = 1e-9;
+    if (hi > 0 && (q - vectAt(cum, hi - 1))
+        <= (vectAt(cum, hi) - q) + tieBreakRelTol*mtot)
       idx = hi - 1;
     const std::size_t lo_allowed = sel.back() + 1;
     const std::size_t hi_allowed = n - targetN + k;
