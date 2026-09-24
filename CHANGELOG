@@ -1,4 +1,99 @@
 v4.4.7 (work in progress)
+     * Add reducePtsByEquidistributionRobust (NCMath.hh/.cc) alongside the
+       existing reducePtsByEquidistribution, for callers whose y-values carry
+       more numerical noise than a typical closed-form function evaluation
+       (e.g. the output of an FFT-based convolution). Same algorithm and
+       contract, except the |y''| curvature estimate driving point selection
+       uses a wider stencil (points further apart in x, not just immediate
+       neighbours) -- a standard technique for reducing a numerical
+       derivative's sensitivity to noise in the underlying values, at some
+       cost in resolution for genuinely sharp, few-point-wide features.
+       Motivated by the still-open residual noted above: on the exact real
+       (x,y) data that exposed it (captured from
+       VDOS::determineAlphaBetaGridFromGn's setupE0ABGrid call), a synthetic
+       noise-injection test at the actually-observed magnitude (~1e-8
+       relative) flips reducePtsByEquidistribution's selection in 1/50
+       trials, and at 1e-7 in 49/50 (with up to 2 points affected); the new
+       function is unaffected at 1e-8 and only 14/50 at 1e-7 (never more
+       than 1 point). Checked, using the same synthetic-noise methodology,
+       against six more real (x,y) datasets from other materials/elements to
+       confirm this is not just a fix for the one known case at the expense
+       of others: summed over all seven datasets and two noise levels, the
+       new function is more than 5x as stable in aggregate, with no
+       individual case worse. tests/src/app_ptreduceequi/main.cc now runs
+       its entire existing test battery (contract, quality and synthetic
+       robustness checks) against both functions, plus dedicated tests using
+       the real datasets (added under tests/data/ptreduce/). Not yet wired
+       into any production call site -- see
+       docs/claude_session_vdos_fma_reprod.md for the residual this targets
+       and why it is a real, if smaller, structural sensitivity rather than
+       something a threshold/tolerance tweak could fix (several were tried
+       and made other cases worse).
+     * Fix the actual root cause of the long-standing cross-platform sabxs
+       instability for high-order VDOS phonon expansions (real production
+       case: Li2O, vdoslux=2004): VDOSGn's convolution
+       (produceNewOrderByConvolutionImpl, NCVDOSGn.cc) already snapped
+       spectrum values below a fixed truncationThreshold*peak cutoff to
+       exactly 0.0, specifically to remove non-cross-platform-reproducible
+       FFT round-off noise. But FastConvolve's own (already-calibrated,
+       already used elsewhere to gate a related edge-refinement decision)
+       size-dependent noise floor -- peak*eps*sqrt(n) -- can exceed that
+       fixed cutoff for large/high-order spectra, so values kept "because
+       they cleared the cutoff" could still be pure FFT round-off, which
+       genuinely differs (not just last-ULP) between platforms/compilers:
+       confirmed via a real CI-log comparison (an intermediate diagnostic
+       app, since reverted) across six legs that the spectrum's own tail
+       values differed by 1e-4 to 1e-3 relative on the two/three legs known
+       to fail sabxs, while agreeing to ~1e-16 elsewhere -- feeding directly
+       into VDOS::determineAlphaBetaGridFromGn's grid-point selection
+       (reducePtsByEquidistribution) and cascading into a genuinely
+       different alpha/beta grid point (not last-bit noise) being chosen.
+       Now uses max(that fixed cutoff, the calibrated noise floor) for the
+       cleanup, so values within the known-unreliable range are zeroed
+       everywhere. Also hardens setupE0ABGrid's low-beta-limit
+       `factor *= exp(-x+n*log(x)+minus_log_nfactorial)` with an explicit
+       std::fma for the multiply-add feeding the exponent (found while
+       chasing a much smaller residual -mfma-vs-plain difference; had no
+       measurable effect on that residual, but is a real, independently
+       justified hardening of an until-now-unaudited expression of exactly
+       the shape this project's standing FMA policy targets).
+       A smaller residual (~2e-5 relative, matching the magnitude of one
+       of the originally-reported CI failures) remains locally reproducible
+       under -mfma even after both fixes, rooted in the same grid-point
+       selection algorithm's inherent sensitivity to near-ties in an
+       accumulated cumulative sum -- widening the existing tie-break bias
+       tolerance to cover it was tried and made things markedly worse (up
+       to 5.6e-4 relative, versus 2.3e-5 before) by flipping decisions that
+       were previously correct, so was reverted; this residual is left
+       for a follow-up. Regenerated affected reference data
+       (tests/data/sabxs_A, tests/data/sabxs_B, tests/scripts/vdosgn.log,
+       tests/src/app_gnerange/test.log), all shifting by an amount
+       consistent with the noise being cleaned up (see
+       docs/claude_session_vdos_fma_reprod.md for the full trace).
+     * Harden a discrete grid-point selection tie-break in
+       reducePtsByEquidistribution (NCMath.cc), used when building the
+       alpha/beta grid for next-gen (vdoslux>=2000) SAB data
+       (VDOS::determineAlphaBetaGridFromGn). For each target quantile along
+       a cumulative point-density curve, the function picks whichever
+       candidate input point is closest; that density is itself built from
+       std::exp/std::log evaluations of the Gn phonon expansion, so a
+       last-few-ULP difference in those (e.g. from differing libm
+       implementations/dispatch across platforms) can flip a near-tie in
+       the raw floating-point "closest neighbour" comparison, causing a
+       genuinely different discrete grid point (not just a perturbed value
+       of the same point) to be selected between builds. Traced this way
+       (via glibc's own runtime FMA-hwcap IFUNC dispatch for log/exp,
+       toggled locally while holding compiler/flags/binary fixed) on real
+       production data (Li2O, vdoslux=2004): a downstream SAB integration
+       cell was found to differ by ~0.4% (not last-ULP) between builds at
+       the same position in a per-cell survey. Now biases the tie-break by
+       a fixed tolerance well above realistic cross-platform noise, so
+       only a clearly-closer neighbour can win. Verified locally (full
+       test suite unaffected, no reference-log changes, bit-identical vs.
+       an -mfma-forced rebuild); whether this resolves the specific
+       still-open two-platform sabxs CI failure it was found investigating
+       can only be confirmed by a real CI re-run (see
+       docs/claude_session_vdos_fma_reprod.md).
      * Harden a discrete-cutoff instability in the next-gen (vdoslux>=2000)
        SAB machinery: sIntegralAtE (called on every energy point evaluated
        while building a material's cross-section table and while searching
