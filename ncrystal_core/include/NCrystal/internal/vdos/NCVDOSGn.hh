@@ -78,7 +78,7 @@ namespace NCRYSTAL_NAMESPACE {
       // Cfg options and Constructor: //
       //////////////////////////////////
 
-      enum class Cfg { Default, Legacy };
+      enum class Cfg { Default, Legacy, MaxLux };
 
       //Initialise based on VDOS and cfg:
       VDOSGn( const VDOSEval&, Cfg = Cfg::Default );

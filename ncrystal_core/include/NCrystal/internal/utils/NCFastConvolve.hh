@@ -54,6 +54,11 @@ namespace NCRYSTAL_NAMESPACE {
     //Legacy version actually use |y| instead if y.real() for output production:
     void convolveLegacy( const VectD& a1, const VectD& a2, VectD& y, double dt);
 
+    //Direct (non-FFT) O(N1*N2) linear convolution, with each output point
+    //accumulated via stable Neumaier summation. This has the benefit of not
+    //introducing any FFT noise, but is far slower for large inputs.
+    void convolveDirect( const VectD& a1, const VectD& a2, VectD& y, double dt );
+
     //Internal function for calculating exp(i*2pi*k/2^n), exposed for unit
     //testing:
     static PairDD calcPhase(unsigned long k, unsigned long n);
