@@ -1,4 +1,6 @@
 v4.4.7 (work in progress)
+     * Updated point reduction algorithms to be both more robust, accurate, and
+       tolerant of noise from FFT convolutions.
      * Added FastConvolve::convolveDirect (StableSum-accumulated direct
        convolution, no FFT round-off floor) and VDOSGn::Cfg::MaxLux routing
        every phonon order through it -- tested reference infrastructure,
