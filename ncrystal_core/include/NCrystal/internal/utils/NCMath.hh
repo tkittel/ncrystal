@@ -331,6 +331,18 @@ namespace NCRYSTAL_NAMESPACE {
                                                       std::size_t targetN,
                                                       const PtReduceCfg& cfg = {} );
 
+  //Another alternative, as reducePtsByEquidistribution, except that the
+  //curvature estimate uses more points on either side (halfWidth points on
+  //either side; halfWidth=1 use a 3-point estimate), making the point selection
+  //less sensitive to numerical noise in the y-values (e.g. from FFT-based
+  //convolutions).
+  std::pair<VectD,VectD>
+  reducePtsByEquidistributionRobust( Span<const double> x,
+                                     Span<const double> y,
+                                     std::size_t targetN,
+                                     std::size_t halfWidth = 3,
+                                     const PtReduceCfg& cfg = {} );
+
   //Vector utilities:
   inline void vectorAppend(VectD& v1, const VectD& v2);//appends contents of v2 to v1
   template<class TVector, class Func>

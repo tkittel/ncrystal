@@ -32,7 +32,9 @@
 
 
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCTestUtils/NCTestFindData.hh"
 #include <iostream>
+#include <fstream>
 
 namespace NC=NCrystal;
 
@@ -42,6 +44,13 @@ namespace {
 
   using NC::VectD;
   using Res = std::pair<VectD,VectD>;
+
+  //The whole test battery below runs once per algorithm (see main()), by
+  //rebinding this to either reducePtsByEquidistribution or
+  //reducePtsByEquidistributionRobust before each run:
+  using ReduceFct = std::function
+    <Res(const VectD&,const VectD&,std::size_t,const NC::PtReduceCfg&)>;
+  ReduceFct g_reduce;
 
   //Deterministic pseudo-random numbers in [-1,1]:
   //Fixme: Do not repeat here, put in NCTestUtils or use NCrystal's own.
@@ -89,7 +98,7 @@ namespace {
   Res checkedReduce( const VectD& x, const VectD& y, std::size_t k,
                      const NC::PtReduceCfg& cfg = {} )
   {
-    auto r = NC::reducePtsByEquidistribution( x, y, k, cfg );
+    auto r = g_reduce( x, y, k, cfg );
     REQUIRE( r.first.size() == std::min( k, x.size() ) );
     REQUIRE( r.second.size() == r.first.size() );
     REQUIRE( r.first.front() == x.front() );
@@ -213,7 +222,7 @@ namespace {
     VectD x = linspaceN( 0.0, 1.0, 50 );
     VectD y = applyF( x, [](double v){ return v*v + 0.1; } );
     for ( std::size_t k : { 50u, 51u, 100u, 100000u } ) {
-      auto r = NC::reducePtsByEquidistribution( x, y, k );
+      auto r = g_reduce( x, y, k, {} );
       REQUIRE( r.first == x );
       REQUIRE( r.second == y );
     }
@@ -676,7 +685,7 @@ namespace {
     VectD x = linspaceN( 0.0, 1000.0, 10000 );
     VectD y = applyF( x, testFct );
     auto r1 = checkedReduce( x, y, 200 );
-    auto r1b = NC::reducePtsByEquidistribution( r1.first, r1.second, 200 );
+    auto r1b = g_reduce( r1.first, r1.second, 200, {} );
     REQUIRE( r1b.first == r1.first );
     auto r2 = checkedReduce( r1.first, r1.second, 50 );
     const auto e = interpolationErrors( x, y, r2 );
@@ -722,32 +731,210 @@ namespace {
     std::cout << "randomised inputs ok" << std::endl;
   }
 
+  //Full battery of contract/quality tests above, run against whichever
+  //algorithm g_reduce is currently bound to (see main()):
+  void runSharedTestBattery()
+  {
+    testContractManySizes();
+    testTargetAtLeastInputSizeIsNoop();
+    testTwoAndThreePoints();
+    testConstantFunctionGivesEquidistantPoints();
+    testExponentialHasNoLogCurvature();
+    testExactScaleInvariance();
+    testSymmetry();
+    testPointsConcentrateWhereFunctionVaries();
+    testMaxGapGuarantee();
+    testEquidistantFractionOneIgnoresFunction();
+    testStepFunctionPutsPointsAtTheStep();
+    testZeroRegionsAndAllZero();
+    testNonUniformInputGrid();
+    testTailsAreResolvedThroughLogTerm();
+    testTailFloorMakesSmallValuesIrrelevant();
+    testRobustToNoiseInY();
+    testRobustToRemovalOfSinglePoints();
+    testMoreRobustThanGreedyAlgorithm();
+    testContinuousDependenceOnInput();
+    testQualityComparedToOtherApproaches();
+    testResultCanBeReducedAgain();
+    testLargeInput();
+    testRandomizedContract();
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Real (VDOS/SAB-derived) data tests, on (x,y) arrays captured from     //
+  // NCVDOSKnlGrid.cc's setupE0ABGrid: the known-bad li_from_li2o_e0grid    //
+  // case plus six more materials (so a fix for one cannot silently         //
+  // regress another).                                                      //
+  ////////////////////////////////////////////////////////////////////////////
+
+  struct RealDataset { const char* name; VectD x, y; std::size_t targetN; };
+
+  RealDataset loadRealDataset( const char* name )
+  {
+    RealDataset ds;
+    ds.name = name;
+    std::string fn = std::string(name) + ".txt";
+    std::ifstream ifs( nctest::find_test_data( "ptreduce", fn.c_str() ) );
+    REQUIRE( bool(ifs) );
+    std::size_t n;
+    ifs >> n >> ds.targetN;
+    ds.x.resize(n);
+    ds.y.resize(n);
+    for ( auto& v : ds.x ) ifs >> v;
+    for ( auto& v : ds.y ) ifs >> v;
+    REQUIRE( NC::nc_is_grid( ds.x ) );
+    return ds;
+  }
+
+  std::vector<const char*> realDatasetNames()
+  {
+    return { "li_from_li2o_e0grid", "al_e0grid", "cu_e0grid", "pb_e0grid",
+             "lih_e0grid", "polyethylene_e0grid_c", "polyethylene_e0grid_h" };
+  }
+
+  //Indices in x selected by a result (by value, since the result is a subset
+  //of x with unique, ordered elements):
+  std::vector<std::size_t> selectedIndices( const VectD& x, const VectD& rx )
+  {
+    std::vector<std::size_t> v;
+    std::size_t j = 0;
+    for ( double e : rx ) {
+      while ( j < x.size() && x[j] != e )
+        ++j;
+      REQUIRE( j < x.size() );
+      v.push_back( j++ );
+    }
+    return v;
+  }
+
+  std::size_t nDiffIndices( const std::vector<std::size_t>& a,
+                            const std::vector<std::size_t>& b )
+  {
+    REQUIRE( a.size() == b.size() );
+    std::size_t d = 0;
+    for ( std::size_t i = 0; i < a.size(); ++i )
+      d += ( a[i] != b[i] ) ? 1 : 0;
+    return d;
+  }
+
+  double linInterpErrRelToMax( const VectD& x, const VectD& y,
+                               const Res& r )
+  {
+    const double ymax = *std::max_element( y.begin(), y.end() );
+    double e = 0.0;
+    std::size_t j = 0;
+    for ( std::size_t i = 0; i < x.size(); ++i ) {
+      while ( j + 2 < r.first.size() && r.first[j+1] < x[i] )
+        ++j;
+      const double f = ( x[i] - r.first[j] ) / ( r.first[j+1] - r.first[j] );
+      const double v = r.second[j] + f * ( r.second[j+1] - r.second[j] );
+      e = std::max( e, std::abs( v - y[i] ) / ymax );
+    }
+    return e;
+  }
+
+  //For a given algorithm and dataset, count how many of ntrials independent
+  //relative perturbations of y at level sigma change the selection at all
+  //(nchanged), and the largest number of selected points that differ from
+  //the unperturbed reference in any single trial (maxdiff):
+  struct NoiseResult { std::size_t nchanged, maxdiff; };
+  NoiseResult noiseRobustness( const ReduceFct& fct, const RealDataset& ds,
+                              double sigma, int ntrials = 50,
+                              std::uint64_t seed = 12345 )
+  {
+    auto ref = fct( ds.x, ds.y, ds.targetN, {} );
+    auto refIdx = selectedIndices( ds.x, ref.first );
+    Rng rng( seed );
+    NoiseResult res{ 0, 0 };
+    for ( int t = 0; t < ntrials; ++t ) {
+      VectD yn( ds.y );
+      for ( auto& v : yn )
+        v *= ( 1.0 + sigma * rng.u() );
+      auto r = fct( ds.x, yn, ds.targetN, {} );
+      auto idx = selectedIndices( ds.x, r.first );
+      const auto d = nDiffIndices( refIdx, idx );
+      res.nchanged += ( d > 0 ? 1 : 0 );
+      res.maxdiff = std::max( res.maxdiff, d );
+    }
+    return res;
+  }
+
+  ReduceFct oldFct()
+  {
+    return []( const VectD& x, const VectD& y, std::size_t k,
+              const NC::PtReduceCfg& cfg )
+    { return NC::reducePtsByEquidistribution( x, y, k, cfg ); };
+  }
+
+  ReduceFct robustFct()
+  {
+    return []( const VectD& x, const VectD& y, std::size_t k,
+              const NC::PtReduceCfg& cfg )
+    { return NC::reducePtsByEquidistributionRobust( x, y, k, 3, cfg ); };
+  }
+
+  void testRealDataKnownBugCaseIsFixed()
+  {
+    //The exact scenario traced from a real CI run: at the observed noise
+    //level (~1e-8 relative, and at 1e-7) the standard algorithm can select
+    //a different point than with clean input; the robust one must not:
+    auto ds = loadRealDataset( "li_from_li2o_e0grid" );
+    auto old_ = oldFct();
+    auto rob = robustFct();
+    const auto oldAt8 = noiseRobustness( old_, ds, 1e-8 );
+    const auto robAt8 = noiseRobustness( rob, ds, 1e-8 );
+    REQUIRE( oldAt8.nchanged >= 1 );//the known bug: reproduced here
+    REQUIRE( robAt8.nchanged == 0 );//fixed
+    const auto oldAt7 = noiseRobustness( old_, ds, 1e-7 );
+    const auto robAt7 = noiseRobustness( rob, ds, 1e-7 );
+    REQUIRE( oldAt7.nchanged >= 1 );
+    REQUIRE( robAt7.maxdiff <= oldAt7.maxdiff );
+    std::cout << "known bug case (li_from_li2o_e0grid) fixed ok" << std::endl;
+  }
+
+  void testRealDataAcrossMaterialsNoRegression()
+  {
+    //Same check across the other materials' real data: the robust
+    //algorithm must not be less robust than the standard one on any of
+    //them, nor degrade interpolation quality beyond a generous bound:
+    double sumOldMaxdiff = 0.0, sumRobMaxdiff = 0.0;
+    auto old_ = oldFct();
+    auto rob = robustFct();
+    for ( auto* name : realDatasetNames() ) {
+      auto ds = loadRealDataset( name );
+      for ( double sigma : { 1e-8, 1e-7 } ) {
+        const auto o = noiseRobustness( old_, ds, sigma );
+        const auto r = noiseRobustness( rob, ds, sigma );
+        sumOldMaxdiff += static_cast<double>( o.maxdiff );
+        sumRobMaxdiff += static_cast<double>( r.maxdiff );
+      }
+      auto refOld = old_( ds.x, ds.y, ds.targetN, {} );
+      auto refRob = rob( ds.x, ds.y, ds.targetN, {} );
+      const double eOld = linInterpErrRelToMax( ds.x, ds.y, refOld );
+      const double eRob = linInterpErrRelToMax( ds.x, ds.y, refRob );
+      //Generous bound: quality may vary either way with a wider stencil,
+      //but must not collapse:
+      REQUIRE( eRob < 4.0 * eOld + 1e-6 );
+    }
+    //In aggregate (summed over all seven materials and both noise levels),
+    //the robust algorithm must be substantially more stable, not just on
+    //the one known-bad case:
+    std::cout << "  [real data] sum(maxdiff) old=" << sumOldMaxdiff
+              << " robust=" << sumRobMaxdiff << std::endl;
+    REQUIRE( sumRobMaxdiff < 0.5 * sumOldMaxdiff );
+    std::cout << "real data across materials: no regression ok" << std::endl;
+  }
+
 }
 
 int main()
 {
-  testContractManySizes();
-  testTargetAtLeastInputSizeIsNoop();
-  testTwoAndThreePoints();
-  testConstantFunctionGivesEquidistantPoints();
-  testExponentialHasNoLogCurvature();
-  testExactScaleInvariance();
-  testSymmetry();
-  testPointsConcentrateWhereFunctionVaries();
-  testMaxGapGuarantee();
-  testEquidistantFractionOneIgnoresFunction();
-  testStepFunctionPutsPointsAtTheStep();
-  testZeroRegionsAndAllZero();
-  testNonUniformInputGrid();
-  testTailsAreResolvedThroughLogTerm();
-  testTailFloorMakesSmallValuesIrrelevant();
-  testRobustToNoiseInY();
-  testRobustToRemovalOfSinglePoints();
-  testMoreRobustThanGreedyAlgorithm();
-  testContinuousDependenceOnInput();
-  testQualityComparedToOtherApproaches();
-  testResultCanBeReducedAgain();
-  testLargeInput();
-  testRandomizedContract();
+  g_reduce = oldFct();
+  runSharedTestBattery();
+  g_reduce = robustFct();
+  runSharedTestBattery();
+
+  testRealDataKnownBugCaseIsFixed();
+  testRealDataAcrossMaterialsNoRegression();
   return 0;
 }

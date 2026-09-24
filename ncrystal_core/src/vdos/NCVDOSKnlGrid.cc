@@ -235,9 +235,10 @@ NC::VDOS::determineAlphaBetaGridFromGn( const GnExpansion& gnexpn,
     nc_assert_always( bvals_view.size() == gnprojvals_view.size() );
   }
 
-  //Reduce number of points:
+  //Reduce number of points. Values usually originate in FFT-based convolutions,
+  //important that this is using a very noise tolerant algorithm:
   std::tie(bvals, gnprojvals)
-    = reducePtsByEquidistribution( bvals_view, gnprojvals_view, nbeta );
+    = reducePtsByEquidistributionRobust( bvals_view, gnprojvals_view, nbeta );
   nc_assert_always( bvals.size() >= 2 );
   nc_assert_always( bvals.size() <= nbeta );
   nc_assert_always( bvals.size() == gnprojvals.size() );
@@ -504,8 +505,15 @@ NC::VDOS::setupE0ABGrid( const GnExpansion& gnexpn, unsigned npts )
   trimTailByIntegral( grid, contrib, 1e-9 );
 
   nc_assert_always( grid.size() == contrib.size() );
-  if ( npts < grid.size() )
-    std::tie(grid, contrib) = reducePtsByEquidistribution( grid, contrib, npts );
+
+  if ( grid.size() > npts ) {
+    //Find the most important points for contrib @ E=0, Must be robut in the
+    //presence of FFT-convolution noise:
+    std::tie(grid, contrib) = reducePtsByEquidistributionRobust( grid,
+                                                                 contrib,
+                                                                 npts );
+  }
+
   nc_assert_always( grid.size() <= npts );
   nc_assert_always( grid.size() == contrib.size() );
   nc_assert_always( grid.front() >= 0.0 );
