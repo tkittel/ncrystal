@@ -35,10 +35,35 @@ namespace NCRYSTAL_NAMESPACE {
     //Interval where f(x) = x^n*exp(-x) is above eps*fpeak.
     PairDD rangeXNexpMX(unsigned n, double eps, double accuracy = 1e-13 );
 
-    // Estimate the interval [x0,x1] outside of which a tabulated Gn spectrum is
-    // everywhere below relcontriblvl*max(spec) (0<relcontriblvl<1).
+    // Estimate where a spectrum on the grid x0+i*binwidth crosses yval,
+    // given that spec[idxLo] and spec[idxLo+1] bracket yval. Based on a
+    // windowed fit extending nExtra points beyond the bracket on each
+    // side, with the result clamped to the window's x-extent.
+    double estimateSpectrumCrossing( double x0, double binwidth,
+                                     Span<const double> spec,
+                                     std::size_t idxLo,
+                                     double yval, std::size_t nExtra );
+
+    // Multiply the entries of spec (in-place) by a factor which is 0 on one
+    // side of xcross and 1 on the other, with a smooth transition across
+    // [xcross-halfwidth,xcross+halfwidth]. With risingEdge=true the factor
+    // rises with increasing index (zeroing the front of the spectrum),
+    // otherwise it falls (zeroing the back). Entries outside the transition
+    // window are untouched.
+    void applyCrossingTaper( Span<double> spec, double xcross,
+                             bool risingEdge, double halfwidth );
+
+    // Estimate the interval [x0,x1] outside of which a Gn spectrum is
+    // everywhere below relcontriblvl*max(spectrum) (0<relcontriblvl<1).
     PairDD estimateGnErange( double egrid_lower, double egrid_binwidth,
                              Span<const double> spec, double relcontriblvl );
+
+    // Estimate a numerical noise floor (roughly safetyFactor*peak*eps*
+    // sqrt(n)) for a spectrum of length n and peak magnitude peak, as
+    // produced by FastConvolve's FFT-based convolution (calibrated and
+    // validated in app_gnconvnoisefloor).
+    double estimateFFTConvolutionNoiseFloor( double peak, std::size_t n,
+                                             double safetyFactor = 8.0 );
 
     // Returns the intersection between the provided Rectangle in the alpha-beta
     // plane, and the kinematically available phasespace for a neutron of a
@@ -141,6 +166,8 @@ namespace NCRYSTAL_NAMESPACE {
 
     // Evaluates the weighted sum of functions on the supplied grid. Optionally
     // weights can be applied to each function (unit weights if empty).
+    // For stability, grid points within a tiny tolerance (1e-9*binWidth) of the
+    // endpoints of a function are considered to be exactly at the endpoint.
     VectD evalPWLSum( Span<const PWLFct> fs,
                       Span<const double> grid,
                       Span<const double> weights = {} );
@@ -151,7 +178,9 @@ namespace NCRYSTAL_NAMESPACE {
     void trimTailByIntegral( VectD& x, VectD& y, double frac );
 
     // Remove points from the top of the grid until g.x1() <= xmax, but always
-    // keeping at least 2 points.
+    // keeping at least 2 points. A tolerance of 1e-9*binWidth is applied, so a
+    // node which mathematically is at xmax is kept regardless of rounding
+    // errors.
     void trimEquidistantGridUpperEdge( EquidistantGrid& g, double xmax );
 
   }
