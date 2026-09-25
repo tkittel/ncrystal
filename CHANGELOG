@@ -1,4 +1,11 @@
 v4.4.7 (work in progress)
+     * Fix the root cause of a cross-platform divergence in
+       NC::VDOS::estimateSpectrumCrossing (previously only tapered around):
+       its least-squares fit accumulation, Cramer 2x2 minors and
+       discriminant were unaudited a+-b*c shapes, now explicit std::fma
+       (with the minors shared between D/Da/Db/Dc reused). A
+       default-vs--mfma comparison of 2000 synthetic Gaussian-tail trials
+       is now bit-identical.
      * Audit sIntegralAtE's quintic smootherstep and impl_numIntRegion's
        lerp forms to explicit std::fma/nclerp, extracting the per-alpha
        contribution loop into a new fillContribAtAlpha function decorated
