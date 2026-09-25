@@ -173,7 +173,7 @@ namespace NCRYSTAL_NAMESPACE {
           res.a2 = vectAt(alpha,ia+1);
           res.b1 = vectAt(beta,ib);
           res.b2 = vectAt(beta,ib+1);
-          SABIdx::NAlpha na(m_sab->alphaGrid());//fixme cache?
+          SABIdx::NAlpha na(m_nalpham1+1);
           SABIdx::SABIdx idx_sab( na, ia, ib );
           //const auto na = alpha.size();
           //auto idx_sab = ib*na + ia;
@@ -379,6 +379,13 @@ namespace NCRYSTAL_NAMESPACE {
         const double threshold = ncclamp( 1.0/(1e10*result.nTouchedCells),
                                           1e-30,1e-6 );
 
+        //Constants for the tapered shortcut below:
+        constexpr double taperBand = 10.0;
+        constexpr double invTaperBand = 1.0/taperBand;
+        constexpr double logTaperBand = 2.3025850929940456840179914546843642;
+        nc_assert( floateq( std::log(taperBand), logTaperBand ) );
+        constexpr double twoLogTaperBand = 2.0*logTaperBand;
+
         for ( auto it = survCells.begin(); it!=itLastTouchedE; ++it) {
           nc_assert( E_div_kT >= it->e_touch );
           if ( prev_E >= it->e_cover ) {
@@ -405,8 +412,6 @@ namespace NCRYSTAL_NAMESPACE {
             //cut, but it becomes too sensitive to FFT-convolution noise in the
             //input SAB if we use a hard threshold. So we instead use a smooth
             //tapering.
-            constexpr double taperBand = 10.0;
-            constexpr double invTaperBand = 1.0/taperBand;
             if ( fullCellIntegral < cutoffref*invTaperBand ) {
               contrib = 0.0;//safely below threshold, don't waste time
             } else {
@@ -416,9 +421,10 @@ namespace NCRYSTAL_NAMESPACE {
                                                           scheme, crossedRes );
               contrib = crossedRes.sum();
               if ( fullCellIntegral < cutoffref*taperBand ) {
+                //fixme replace /twoLogTaperBand with *invTwoLogTaperBand
                 const double t = ncclamp( ( std::log(fullCellIntegral/cutoffref)
-                                            + std::log(taperBand) )
-                                          / ( 2.0*std::log(taperBand) ), 0.0, 1.0 );
+                                            + logTaperBand )
+                                          / twoLogTaperBand, 0.0, 1.0 );
                 //Quintic smootherstep (Ken Perlin): 0 and 1 derivatives
                 //vanish at both ends, so no kink at the band edges either.
                 //FIXME: Code duplicated with NCVDOSUtils.cc, need common NCMath
@@ -1218,8 +1224,6 @@ namespace NCRYSTAL_NAMESPACE {
         const double foure = 4.0*E_div_kT;
         Span<const double> cumulContrib( m_cumulFCInt.data(),
                                          m_cumulFCInt.data()+nCellsTouched );
-        //fixme: possible optimisation: cache last few (idx,FullCellSampler)
-        //objects, in case a few cells are hit often?
         while ( true ) {
           std::size_t randidx = pickRandIdxByWeight( rng, cumulContrib );
           auto cellidx = vectAt(m_cumulFCInt_cellidx,randidx);
