@@ -418,7 +418,6 @@ namespace NCRYSTAL_NAMESPACE {
     NCRYSTAL_FMADISPATCH_ATTR
     double expm1_taylor14( double x )
     {
-      //fixme: consider making this always use hardware fma.
       constexpr double c1 = 1.0;
       constexpr double c2 = 1.0/2.0;
       constexpr double c3 = 1.0/6.0;
@@ -987,9 +986,9 @@ NC::reducePtsByEquidistribution(Span<const double> x,
   for (std::size_t i = 0; i + 1 < n; ++i) {
     double d = w_uniform * invL;
     if (w_lin > 0.0)
-      d += w_lin * vectAt(dlin, i);
+      d = std::fma(w_lin, vectAt(dlin, i), d);
     if (w_log > 0.0)
-      d += w_log * vectAt(dlog, i);
+      d = std::fma(w_log, vectAt(dlog, i), d);
     csum.add(d * vectAt(width, i));
     vectAt(cum, i + 1) = csum.sum();
   }
@@ -1148,9 +1147,9 @@ NC::reducePtsByEquidistributionRobust(Span<const double> x,
   for (std::size_t i = 0; i + 1 < n; ++i) {
     double d = w_uniform * invL;
     if (w_lin > 0.0)
-      d += w_lin * vectAt(dlin, i);
+      d = std::fma(w_lin, vectAt(dlin, i), d);
     if (w_log > 0.0)
-      d += w_log * vectAt(dlog, i);
+      d = std::fma(w_log, vectAt(dlog, i), d);
     csum.add(d * vectAt(width, i));
     vectAt(cum, i + 1) = csum.sum();
   }
