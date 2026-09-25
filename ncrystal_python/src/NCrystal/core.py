@@ -1043,7 +1043,7 @@ class Info(RCBase):
             return self.__loadVDOSOrig()[0]
 
         def vdosOrigDensity(self):
-            """Access the original un-regularised VDOS energy grid"""
+            """Access the original un-regularised VDOS density"""
             return self.__loadVDOSOrig()[1]
 
         @property
