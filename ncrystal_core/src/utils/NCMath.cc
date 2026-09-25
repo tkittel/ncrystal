@@ -454,12 +454,37 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
+//extern "C" + NCRYSTAL_APPLY_C_NAMESPACE: stable_expm1 is exported
+//(declared in NCMath.hh, called from other .cc files), unlike
+//expm1_taylor14 above (anon-namespace, internal linkage, not affected by
+//any of this) -- Apple Clang's target_clones lowering on Mach-O has been
+//confirmed (a real basictest.yml CI failure) to silently produce no
+//linkable definition for a *namespaced or member* (i.e. C++-mangled)
+//target_clones target, while the identical attribute on a plain
+//extern "C" function links and runs fine there. Giving the actual
+//(dispatched) definition C linkage sidesteps that gap; the public
+//NC::stable_expm1 below becomes a thin wrapper. NCRYSTAL_APPLY_C_NAMESPACE
+//keeps the resulting unmangled symbol from colliding with a
+//differently-namespaced NCrystal build in the same process, the same way
+//e.g. register_stdscat_factory already does for unrelated reasons -- see
+//docs/devel_fma_attribute.md for the full reasoning.
+//
+//Lexically nested inside namespace NCRYSTAL_NAMESPACE (unlike
+//register_stdscat_factory's plain file-scope extern "C" elsewhere in the
+//codebase) purely so unqualified names from this namespace (kInfinity,
+//ncisnan, the anon-namespace constants/expm1_taylor14 above) remain
+//visible exactly as they were when this was a NC::-qualified definition
+//-- extern "C" strips C++ name mangling regardless of lexical namespace
+//nesting, so the resulting symbol is unaffected by this.
+//
 //NCRYSTAL_FMADISPATCH_ATTR: straight-line code (no loops, no nc_assert),
 //every arithmetic expression either explicit std::fma or one of the exact
 //operations (std::round/std::ldexp/additions free of a*b+c shapes) --
 //audited per rule 1:
+namespace NCRYSTAL_NAMESPACE {
+extern "C"
 NCRYSTAL_FMADISPATCH_ATTR
-double NC::stable_expm1( double x )
+double NCRYSTAL_APPLY_C_NAMESPACE(detail_stable_expm1)( double x )
 {
   // Evaluating expm1(x) by first finding integer n so that
   // x=n*ln2+r and |r|<ln2/2. Then use:
@@ -502,6 +527,12 @@ double NC::stable_expm1( double x )
   //static cast to int is safe since x in (-40,710):
   const double pow2n = std::ldexp( 1.0, static_cast<int>(n) );
   return std::fma( pow2n, expm1_of_r, pow2n - 1.0 );
+}
+}//namespace NCRYSTAL_NAMESPACE
+
+double NC::stable_expm1( double x )
+{
+  return NCRYSTAL_APPLY_C_NAMESPACE(detail_stable_expm1)( x );
 }
 
 double NC::stable_log( double x )
