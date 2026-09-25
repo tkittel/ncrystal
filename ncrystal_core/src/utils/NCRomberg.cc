@@ -262,12 +262,14 @@ void NCrystal::Romberg::fixedOrderIntegration129pts( const double* fvals,
     tgt.add( coeffs129[i]*fvals[i] );
 }
 
+extern "C"
 NCRYSTAL_FMADISPATCH_ATTR
-double NCrystal::Romberg::integrate(double a, double b) const
+double NCRYSTAL_APPLY_C_NAMESPACE(detail_romberg_integrate)( const NCrystal::Romberg* self,
+                                                             double a, double b )
 {
   double h = (b-a);
   double fvals[17];//R(4,4) needs 17 equally spaced evaluations, we do them in one go:
-  evalFuncMany(&fvals[0], 17, a, h*0.0625);
+  self->evalFuncMany(&fvals[0], 17, a, h*0.0625);
 
   //To reduce overhead, we unroll the calculations for R(n,k) up to R(5,5),
   //since they are anyway short enough to carry out before entering the main
@@ -293,11 +295,11 @@ double NCrystal::Romberg::integrate(double a, double b) const
   const double R43 = std::fma( (64./63.), R42, (-1./63.)*R32 );
   const double R44 = std::fma( (256./255.), R43, (-1./255.)*R33 );
 
-  if (accept(4,R33,R44,a,b))
+  if (self->accept(4,R33,R44,a,b))
     return R44;
 
   //R(4,4) was not enough, try R(5,5):
-  const double c5 = evalFuncManySum(16, a+h*0.5, h);
+  const double c5 = self->evalFuncManySum(16, a+h*0.5, h);
   h *= 0.5;
   const double R50 = std::fma( h, c5, 0.5*R40 );
   const double R51 = std::fma( (4./3.), R50, (-1./3.)*R40 );
@@ -306,7 +308,7 @@ double NCrystal::Romberg::integrate(double a, double b) const
   const double R54 = std::fma( (256./255.), R53, (-1./255.)*R43 );
   const double R55 = std::fma( (1024./1023.), R54, (-1./1023.)*R44 );
 
-  if (accept(5,R44,R55,a,b))
+  if (self->accept(5,R44,R55,a,b))
     return R55;
 
   //Still not accepted. Use generic loop for R(6,6) or higher.
@@ -328,7 +330,7 @@ double NCrystal::Romberg::integrate(double a, double b) const
     double hh = h;
     h *= 0.5;
     nj *= 2;
-    double c = evalFuncManySum(nj, a+h, hh);
+    double c = self->evalFuncManySum(nj, a+h, hh);
 
     row[0] = std::fma( h, c, 0.5*row_prev[0] ); //R(i,0)
 
@@ -339,16 +341,21 @@ double NCrystal::Romberg::integrate(double a, double b) const
       row[j+1] = std::fma( n_k, row[j], -row_prev[j] ) / (n_k-1.0);
     }
 
-    if (accept(i,row_prev[i-1],row[i],a,b))
+    if (self->accept(i,row_prev[i-1],row[i],a,b))
       return row[i];
 
     std::swap(row_prev,row);
   }
 
   //Did not converge:
-  convergenceError(a,b);
+  self->convergenceError(a,b);
 
   return row_prev[maxlevel-1];//convergenceError() did not throw or otherwise die, so return best estimate.
+}
+
+double NCrystal::Romberg::integrate(double a, double b) const
+{
+  return NCRYSTAL_APPLY_C_NAMESPACE(detail_romberg_integrate)( this, a, b );
 }
 
 #include "NCrystal/internal/utils/NCFileUtils.hh"
