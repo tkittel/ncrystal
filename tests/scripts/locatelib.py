@@ -30,8 +30,8 @@ import pathlib
 import tempfile
 
 def main():
-    orig = dict( (k,os.environ.get(k)) for k in
-                 ('NCRYSTAL_LIB','NCRYSTAL_LIB_NAMESPACE_PROTECTION') )
+    orig = { k: os.environ.get(k) for k in
+             ('NCRYSTAL_LIB','NCRYSTAL_LIB_NAMESPACE_PROTECTION') }
     os.environ.pop('NCRYSTAL_LIB_NAMESPACE_PROTECTION',None)
     try:
         with tempfile.TemporaryDirectory() as td:
@@ -44,7 +44,7 @@ def main():
                     f = d / fn
                     f.touch()
                     os.environ['NCRYSTAL_LIB'] = str(f)
-                    lib, ns, version = _search_env_overrides()
+                    lib, ns, _version = _search_env_overrides()
                     assert pathlib.Path(lib) == f
                     print(f'{sub+"/"+fn:>35} -> namespace {ns!r}')
     finally:
@@ -54,5 +54,31 @@ def main():
             else:
                 os.environ[k] = v
 
+def test_failed_load():
+    #A failed library load must fail again on retry (not return False):
+    import subprocess
+    import sys
+    code = '''
+from NCrystalDev import _chooks
+for i in range(2):
+    try:
+        _chooks._get_raw_cfcts()
+        print(f'call {i}: no error')
+    except OSError:
+        print(f'call {i}: OSError')
+'''
+    with tempfile.TemporaryDirectory() as td:
+        f = pathlib.Path(td) / 'libNCrystal.so'
+        f.write_text('not a shared library')
+        env = os.environ.copy()
+        env['NCRYSTAL_LIB'] = str(f)
+        env['NCRYSTAL_SLIMPYINIT'] = '1'
+        rv = subprocess.run( [sys.executable,'-c',code], env = env,
+                             capture_output = True, text = True,
+                             check = True )
+    print('Loading bogus library twice:')
+    print(rv.stdout,end='')
+
 if __name__ == '__main__':
     main()
+    test_failed_load()
