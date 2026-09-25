@@ -483,6 +483,8 @@ v4.4.7 (work in progress)
        state, and ["util","atomdb"] providing the database of isotopes and
        natural elements (also browsable with "ncrystal browse --atomdb" and
        NCrystal.browse.AtomDBBrowser).
+     * New NCrystal.browse Python module for browsing and searching available
+       data, optionally based on physics properties of the loaded materials.
      * New JSON queries ["util","browsedb",...] and ["util","browsefactories"]
        providing data file listings with NCMAT header comments and physics
        properties (loaded in parallel if factory threads are enabled), and
