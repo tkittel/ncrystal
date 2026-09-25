@@ -64,7 +64,7 @@ def test( vdos, m, T, do_plot, vdoslux, target_emax = None ):
                               plot = do_plot )
     for k,v in knl.items():
         if hasattr(v,'shape'):
-            v = 'NumpyArray( shape=%s )'%(v.shape)
+            v = 'NumpyArray( shape={} )'.format(*v.shape)
         print(f" Got {k} : {v}")
     print()
 
@@ -201,29 +201,6 @@ def test_unusual_vdos():
             print(f'{fn}: vdoslux={lux} Emax >= {emax_min:g}eV and cross'
                   f' sections within {tol*100:g}% of reference: {ok}')
             assert ok
-
-def test_resource_limits():
-    #A VDOS extending to 8eV needs more than 1e6 points in G1 at a
-    #temperature of 0.4K. The expansion is thus stopped before the second
-    #order, leaving it unable to cover neutron energies up to the required
-    #0.1eV. The same VDOS works at a higher temperature.
-    c = NC.NCMATComposer()
-    c.set_dyninfo_vdos( 'H', vdos_egrid = ( 0.01, 8.0 ), vdos = [ 1.0 ] * 20 )
-    c.set_density( 1.0 )
-    c.set_state_of_matter( 'solid' )
-    NC.registerInMemoryFileData( 'widevdos.ncmat', c.create_ncmat() )
-    for temp, lux, expect_error in [ ( 0.4, 2000, True ),
-                                     ( 5.0, 2000, False ) ]:
-        cfgstr = f'widevdos.ncmat;temp={temp}K;comp=inelas;vdoslux={lux}'
-        try:
-            NC.createScatter( cfgstr )
-            print(f'{cfgstr}: OK')
-            assert not expect_error
-        except NC.NCCalcError as e:
-            msg = str(e)
-            print(f'{cfgstr}: CalcError: {msg.split("(")[0].strip()}')
-            assert expect_error
-            assert 'excessive resources' in msg
 
 def test_resource_limits():
     #A VDOS extending to 8eV needs more than 1e6 points in G1 at a
