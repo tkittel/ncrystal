@@ -360,6 +360,8 @@ v4.4.7 (work in progress)
        state, and ["util","atomdb"] providing the database of isotopes and
        natural elements (also browsable with "ncrystal browse --atomdb" and
        NCrystal.browse.AtomDBBrowser).
+     * Exceptions in jobs run by the factory thread pool are now transferred
+       to and rethrown in the calling thread (github issue #339).
      * NCRYSTAL_FACTORY_THREADS is now handled by the thread-pool itself (read
        on first use); explicit enableFactoryThreads calls take precedence.
      * New NCrystal.browse Python module for browsing and searching available
