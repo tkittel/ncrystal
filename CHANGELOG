@@ -1,4 +1,16 @@
 v4.4.7 (work in progress)
+     * Add NC::fastLowerBoundIdx/fastUpperBoundIdx (NCFastSearch.hh):
+       drop-in replacements for std::lower_bound/upper_bound on sorted
+       double arrays, with the inner comparison compiling to a branchless
+       cmov (binary-search branches are ~50/50 and mispredict half the
+       time). Measured 4-5x faster on representative grids with GCC and
+       Clang, validated exhaustively in tests/src/app_fastsearch.
+     * Wire fastLowerBoundIdx/fastUpperBoundIdx into all qualifying hot
+       call sites (SABProcessor's phaseSpaceIntegral/sampleAlphaBeta,
+       PCHIPInterp::eval, PowderBragg plane searches, pickRandIdxByWeight,
+       reducePtsByEquidistribution(Robust), evalPWLSum, and more);
+       measured up to ~24% faster Bragg sampling and ~15% faster SAB
+       sampling. Cold or custom-comparator sites left alone.
      * Hoist a loop-invariant std::log call out of sIntegralAtE's per-cell
        loop.
      * Added a Windows/MSVC-specific runtime FMA dispatch mechanism
