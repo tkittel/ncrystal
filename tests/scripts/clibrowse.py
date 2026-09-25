@@ -133,6 +133,34 @@ def test_physics():
     run('-w','"scatknl" in dyninfo and "O" in elements','-f','stdlib',
         'Liquid','--names')
     run('-w','elements <= {"Al","O"} and nphases==1','-f','virtual')
+    #Tables, sorting and JSON:
+    run('-f','virtual','--columns','formula,sg,density,dyninfo,description')
+    run('-f','virtual','--sort','density','--reverse')
+    run('-f','virtual','--sort','sg')#unavailable values last
+    run('-f','virtual','--sort','name','--reverse')
+    import json
+    out = run('-f','virtual','mycrystal','--json',show=False)
+    import NCTestUtils.stabilise_ncpprint # noqa F401
+    import NCrystalDev._common as nc_common
+    nc_common.ncpprint( json.loads(out) )#FP precision clipped
+    out = run('-f','virtual','--sort','density','--columns','formula,sg,'
+              'dyninfo,description','--json',show=False)
+    nc_common.ncpprint( json.loads(out) )
+    #CSV (full precision, so check values rather than printing them):
+    out = run('-f','virtual','--sort','sg','--columns','formula,density,'
+              'debyetemps,elements,description','--csv',show=False)
+    import csv
+    import io
+    rows = list( csv.reader( io.StringIO(out) ) )
+    print('CSV header:',rows[0])
+    for r in rows[1:]:
+        dens = float(r[2]) if r[2] else None
+        print('CSV row:',r[0],r[1],None if dens is None else '%.6g'%dens,
+              r[3].split(':')[0] if r[3] else None,r[4],repr(r[5]))
+    #No truncation:
+    run('-f','virtual','mytestmat','--no-truncate')
+    run('-f','virtual','mytestmat','--columns','description','--no-truncate')
+    run('-f','virtual','mytestmat','-s','truncated','--no-truncate')
     import argparse
     def bad_where( expr, errmsg ):
         with ensure_error(argparse.ArgumentError,errmsg):
@@ -146,6 +174,25 @@ def test_physics():
                                      ' "elements.__class__" (private'
                                      ' attributes are not allowed)'))
     bad_where('absxs >', 'Invalid --where expression "absxs >": invalid syntax')
+    def bad_args( errmsg, *args ):
+        with ensure_error(argparse.ArgumentError,errmsg):
+            run(*args)
+    propnames = ('elements, atoms, nelements, formula, absxs, scatxs,'
+                 ' density, numdens, temp, state, crystal, sg, natoms,'
+                 ' dyninfo, nphases')
+    bad_args('Invalid column "foo" (must be "description" or one of: '
+             + propnames + ')', '--columns','sg,foo')
+    bad_args('Invalid sort key "foo" (must be "name" or one of: '
+             + propnames + ')', '--sort','foo')
+    bad_args('--reverse requires --sort.','--reverse')
+    bad_args('Do not specify --props together with --columns or --sort.',
+             '--columns','sg','--props')
+    bad_args(('Do not specify --json together with --names, --comments,'
+              ' or --props.'),'--json','--props')
+    bad_args('--csv requires --columns or --sort.','--csv')
+    bad_args('Do not specify both --csv and --json.','--csv','--json',
+             '--sort','sg')
+    bad_args('Do not specify both --names and --json.','--json','--names')
     with ensure_error(NC.NCBadInput,'Error evaluating --where expression'
                       ' "absxs/0 > 1": float division by zero'):
         run('-w','absxs/0 > 1','-f','virtual')
