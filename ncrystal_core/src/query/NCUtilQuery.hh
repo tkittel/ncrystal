@@ -22,6 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/query/NCQuery.hh"
+#include "NCrystal/threads/NCFactThreads.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
@@ -226,11 +227,26 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr auto sv_mathval = StrView::make("mathval");
       constexpr auto sv_fmadiagnose = StrView::make("fmadiagnose");
       constexpr auto sv_kinutils = StrView::make("kinutils");
+      constexpr auto sv_factthreads = StrView::make("factorythreads");
       if ( key == sv_list ) {
         if ( nargs != 0 )
           invalid("no arguments should come after: [\"util\",\"list\"]");
         os<<"[\"wl2ekin\", \"ekin2wl\", \"mathval\", \"fmadiagnose\","
-          " \"kinutils\"]";
+          " \"kinutils\", \"factorythreads\"]";
+      } else if ( key == sv_factthreads ) {
+        if ( nargs != 0 )
+          invalid("no arguments should come after:"
+                  " [\"util\",\"factorythreads\"]");
+        //NB: These also apply any NCRYSTAL_FACTORY_THREADS setting:
+        streamJSONDictEntry( os, "threads_available",
+                             FactoryThreadPool::threadsAvailable(),
+                             JSONDictPos::FIRST );
+        streamJSONDictEntry( os, "user_configured",
+                             FactoryThreadPool::userConfigured() );
+        const auto nt = FactoryThreadPool::currentThreadCount().get();
+        streamJSONDictEntry( os, "nthreads",
+                             static_cast<unsigned>( nt ),
+                             JSONDictPos::LAST );
       } else if ( key == sv_fmadiagnose ) {
         if ( nargs != 0 )
           invalid("no arguments should come after:"
