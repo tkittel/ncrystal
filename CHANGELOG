@@ -1,4 +1,6 @@
 v4.4.7 (work in progress)
+     * Hoist a loop-invariant std::log call out of sIntegralAtE's per-cell
+       loop.
      * Added a Windows/MSVC-specific runtime FMA dispatch mechanism
        (NCRYSTAL_WIN_FMA/NCRYSTAL_DISPATCH_TO_WIN_FMA, NCFMADispatch.hh):
        MSVC has no target_clones, so std::fma fell back to slow software
