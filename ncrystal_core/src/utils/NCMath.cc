@@ -451,8 +451,10 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
+namespace NCRYSTAL_NAMESPACE {
+extern "C"
 NCRYSTAL_FMADISPATCH_ATTR
-double NC::stable_expm1( double x )
+double NCRYSTAL_APPLY_C_NAMESPACE(detail_stable_expm1)( double x )
 {
   // Evaluating expm1(x) by first finding integer n so that
   // x=n*ln2+r and |r|<ln2/2. Then use:
@@ -495,6 +497,12 @@ double NC::stable_expm1( double x )
   //static cast to int is safe since x in (-40,710):
   const double pow2n = std::ldexp( 1.0, static_cast<int>(n) );
   return std::fma( pow2n, expm1_of_r, pow2n - 1.0 );
+}
+}//namespace NCRYSTAL_NAMESPACE
+
+double NC::stable_expm1( double x )
+{
+  return NCRYSTAL_APPLY_C_NAMESPACE(detail_stable_expm1)( x );
 }
 
 double NC::stable_log( double x )
