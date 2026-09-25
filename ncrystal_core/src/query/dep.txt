@@ -2,9 +2,12 @@ cfgutils
 core
 dyninfoutils
 extd_utils
+fact_utils
 factories
 minimc
+misc
 phys_utils
 sab
+threads
 utils
 vdos
