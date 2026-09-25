@@ -2394,7 +2394,8 @@ def _extractInitialHeaderCommentsFromNCMATData( ncmat_data, dedent = True ):
             comments.append(line[1:].rstrip())
     #dedent and return:
     if comments and dedent:
-        while all( ( e.startswith(' ') or not e) for e in comments ):
+        while any( comments ) and all( ( e.startswith(' ') or not e)
+                                       for e in comments ):
             comments = [ e[1:] for e in comments ]
     return comments
 
