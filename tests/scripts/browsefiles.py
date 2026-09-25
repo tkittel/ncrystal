@@ -22,6 +22,9 @@
 
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
+import contextlib
+import io
+from NCrystalDev._common import capture_print_ctxmgr
 
 #Testing presence of data "files", as well as their sorting.
 
