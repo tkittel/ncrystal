@@ -22,6 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/query/NCQuery.hh"
+#include "NCBrowseQuery.hh"
 #include "NCrystal/threads/NCFactThreads.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
@@ -227,12 +228,15 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr auto sv_mathval = StrView::make("mathval");
       constexpr auto sv_fmadiagnose = StrView::make("fmadiagnose");
       constexpr auto sv_kinutils = StrView::make("kinutils");
+      constexpr auto sv_browsedb = StrView::make("browsedb");
+      constexpr auto sv_browsefacts = StrView::make("browsefactories");
       constexpr auto sv_factthreads = StrView::make("factorythreads");
       if ( key == sv_list ) {
         if ( nargs != 0 )
           invalid("no arguments should come after: [\"util\",\"list\"]");
         os<<"[\"wl2ekin\", \"ekin2wl\", \"mathval\", \"fmadiagnose\","
-          " \"kinutils\", \"factorythreads\"]";
+          " \"kinutils\", \"browsedb\", \"browsefactories\","
+          " \"factorythreads\"]";
       } else if ( key == sv_factthreads ) {
         if ( nargs != 0 )
           invalid("no arguments should come after:"
@@ -247,6 +251,16 @@ namespace NCRYSTAL_NAMESPACE {
         streamJSONDictEntry( os, "nthreads",
                              static_cast<unsigned>( nt ),
                              JSONDictPos::LAST );
+      } else if ( key == sv_browsedb ) {
+        std::vector<StrView> args;
+        for ( auto i : ncrange( nargs ) )
+          args.push_back( arg(i) );
+        BrowseQuery::browseDB( os, args );
+      } else if ( key == sv_browsefacts ) {
+        if ( nargs != 0 )
+          invalid("no arguments should come after:"
+                  " [\"util\",\"browsefactories\"]");
+        BrowseQuery::browseFactories( os );
       } else if ( key == sv_fmadiagnose ) {
         if ( nargs != 0 )
           invalid("no arguments should come after:"
