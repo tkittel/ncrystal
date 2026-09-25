@@ -35,7 +35,8 @@ The data is provided by the C++ layer (via the JSON queries
 """
 
 __all__ = [ 'DataEntry', 'PhysicsProps', 'browse', 'filter_entries', 'find',
-            'list_all_factories', 'list_factories', 'physics_props_doc' ]
+            'list_all_factories', 'list_factories', 'physics_props_doc',
+            'sort_entries' ]
 
 def list_factories():
     """Returns a dictionary with the names of all TextData factories and the
@@ -72,28 +73,32 @@ class PhysicsProps:
                         { (1,2):'D', (1,3):'T' }.get( (Z,A), f'{en}{A}' ) )
                 atomfracs[lbl] = atomfracs.get(lbl,0.0) + fr
         elements = frozenset( elementZToName(Z) for Z,_ in compos )
-        self.__d = {
-            'elements': elements,
-            'atoms': frozenset( atomfracs ),
-            'nelements': len( elements ),
-            'formula': format_chemform( sorted( atomfracs.items() ) ),
-            'absxs': info['xsect_absorption'],
-            'scatxs': info['xsect_free'],
-            'density': info['density'],
-            'numdens': info['numberdensity'],
-            'temp': info['temperature'],
-            'state': info['stateofmatter'].lower(),
-            'crystal': info['crystalline'],
-            'sg': info['spacegroup'],
-            'natoms': info['natoms_unitcell'],
-            'dyninfo': frozenset( info['dyninfo_types'] ),
-            'nphases': info['nphases'],
-        }
+        self.__d = dict(
+            elements = elements,
+            atoms = frozenset( atomfracs ),
+            nelements = len( elements ),
+            formula = format_chemform( sorted( atomfracs.items() ) ),
+            absxs = info['xsect_absorption'],
+            scatxs = info['xsect_free'],
+            density = info['density'],
+            numdens = info['numberdensity'],
+            temp = info['temperature'],
+            state = info['stateofmatter'].lower(),
+            crystal = info['crystalline'],
+            sg = info['spacegroup'],
+            natoms = info['natoms_unitcell'],
+            dyninfo = frozenset( info['dyninfo_types'] ),
+            nphases = info['nphases'],
+        )
         self.__compos = compos
 
-    def as_dict( self ):
-        """The properties as a (new) dictionary."""
-        return dict( self.__d )
+    def as_dict( self, json_compatible = False ):
+        """The properties as a (new) dictionary. If json_compatible=True,
+        sets are replaced with sorted lists."""
+        if not json_compatible:
+            return dict( self.__d )
+        return dict( ( k, sorted(v) if isinstance(v,frozenset) else v )
+                     for k,v in self.__d.items() )
 
     @property
     def composition( self ):
@@ -108,8 +113,8 @@ class PhysicsProps:
         raise AttributeError(f'PhysicsProps has no attribute "{name}"')
 
     def __str__( self ):
-        s = ', '.join( f'{k}={_fmt_prop(v)}' for k,v in self.__d.items() )
-        return f'PhysicsProps({s})'
+        return 'PhysicsProps(%s)'%( ', '.join( f'{k}={_fmt_prop(v)}'
+                                               for k,v in self.__d.items() ) )
 
     def __repr__( self ):
         return str(self)
@@ -202,6 +207,21 @@ class DataEntry:
         res = _compile_words( search, regex )
         return [ ll.strip() for ll in ( self.__comments or [] )
                  if any( r.search(ll) for r in res ) ]
+
+    def as_dict( self ):
+        """JSON-compatible dictionary with all information about the
+        entry (props is None if not loaded)."""
+        p = self.__props
+        return dict( name = self.name, fullkey = self.fullkey,
+                     factory = self.factory, source = self.source,
+                     priority = self.priority, hidden = self.hidden,
+                     datatype = self.datatype,
+                     description = self.description,
+                     comments = ( list(self.__comments)
+                                  if self.__comments is not None else None ),
+                     props = ( p.as_dict( json_compatible = True )
+                               if p is not None else None ),
+                     error = self.error )
 
     def textdata( self ):
         """Returns the NCrystal.TextData object of the entry."""
@@ -307,6 +327,29 @@ def filter_entries( entries, *, patterns = (), search = (), regex = False,
         res.append( e )
     return res
 
+def sort_entries( entries, key, *, reverse = False ):
+    """Returns list of entries sorted by the given key, which is either
+    "name" or the name of a physics property (which requires loaded
+    entries). Entries without a value (None, e.g. materials which could not
+    be loaded, or with an unavailable property) are always placed last.
+    Sets are compared by their sorted contents."""
+    names = [ n for n,d in _propdocs ]
+    if key != 'name' and key not in names:
+        from .exceptions import NCBadInput
+        raise NCBadInput(f'Invalid sort key "{key}" (must be "name" or one of:'
+                         f' {", ".join(names)})')
+    def value( e ):
+        if key == 'name':
+            return e.display_name
+        if e.props is None:
+            return None
+        v = getattr( e.props, key )
+        return tuple(sorted(v)) if isinstance( v, frozenset ) else v
+    have = [ e for e in entries if value(e) is not None ]
+    missing = [ e for e in entries if value(e) is None ]
+    #NB: sorted(..) is stable, so ties keep their original order:
+    return sorted( have, key = value, reverse = reverse ) + missing
+
 def find( *patterns, search = (), regex = False, where = (),
           factory = None, load = None, nthreads = 'auto', quiet = True,
           progress = None ):
@@ -345,8 +388,8 @@ _propdocs = [
     ('nphases', 'number of phases (1 for single-phase materials)'),
 ]
 
-_where_funcs = { 'len': len, 'min': min, 'max': max, 'any': any, 'all': all,
-                 'abs': abs, 'round': round, 'set': set, 'sorted': sorted }
+_where_funcs = dict( len = len, min = min, max = max, any = any, all = all,
+                     abs = abs, round = round, set = set, sorted = sorted )
 
 def _q( *args ):
     from .misc import evaluate_query
@@ -413,7 +456,7 @@ def _fmt_prop( v ):
     if isinstance( v, frozenset ):
         return '{' + ','.join( repr(e) for e in sorted(v) ) + '}'
     if isinstance( v, float ):
-        return f'{v:g}'
+        return '%g'%v
     return repr(v)
 
 class _WhereExpr:
@@ -428,7 +471,7 @@ class _WhereExpr:
         except SyntaxError as e:
             raise NCBadInput(f'Invalid where expression "{expr}":'
                              f' {e.msg}') from e
-        allowed = { n for n,d in _propdocs } | set( _where_funcs )
+        allowed = set( n for n,d in _propdocs ) | set( _where_funcs )
         for node in ast.walk( tree ):
             if isinstance( node, ast.Name ) and node.id not in allowed:
                 raise NCBadInput(f'Unknown name "{node.id}" in where'
