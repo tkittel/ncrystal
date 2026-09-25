@@ -1,4 +1,13 @@
 v4.4.7 (work in progress)
+     * Decorate stable_exp/stable_expm1 (and their Taylor helper) and
+       Romberg::integrate() with NCRYSTAL_FMADISPATCH_ATTR, recovering
+       hardware FMA speed on portable builds via runtime dispatch.
+     * Fix a contraction ambiguity in NCRomberg.cc's Richardson
+       extrapolation: its "a*b+c*d" updates have two valid single-fusion
+       readings, so platforms could legitimately disagree on the result;
+       now written with explicit std::fma always fusing the same term.
+       This closed the remaining sabxs cross-platform residual (testsabxs
+       green under an -mfma-forced rebuild).
      * Make the sabxs reproducibility test tolerance depend on vdoslux
        (1e-4/1e-5/1e-6 for 2000/2001/>=2002); XSMonitor's test_rdtol now
        also accepts a callable. Affected sabxs_A/B reference data

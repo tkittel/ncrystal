@@ -415,6 +415,9 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Taylor expansion of expm1(x)=exp(x)-1. Enough terms to be fully accurate
     //for |r|<ln2/2 and using std::fma for max portability.
+    //NCRYSTAL_FMADISPATCH_ATTR: entirely explicit std::fma, no loops, no
+    //nc_assert -- safe per doc/devel_fma_attribute.md rule 1:
+    NCRYSTAL_FMADISPATCH_ATTR
     double expm1_taylor14( double x )
     {
       //fixme: consider making this always use hardware fma.
@@ -451,6 +454,11 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
+//NCRYSTAL_FMADISPATCH_ATTR: straight-line code (no loops, no nc_assert),
+//every arithmetic expression either explicit std::fma or one of the exact
+//operations (std::round/std::ldexp/additions free of a*b+c shapes) --
+//audited per rule 1:
+NCRYSTAL_FMADISPATCH_ATTR
 double NC::stable_expm1( double x )
 {
   // Evaluating expm1(x) by first finding integer n so that
