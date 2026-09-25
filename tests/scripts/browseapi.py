@@ -95,12 +95,12 @@ def main():
     for e in nb.browse('virtual',load=True):
         print(f'  {e.display_name}: {e.props}' if e.props
               else f'  {e.display_name}: ERROR {e.error!r}')
-    p = next( e for e in nb.browse('virtual',load=True)
-              if e.name=='crystal.ncmat' ).props
+    p = [ e for e in nb.browse('virtual',load=True)
+          if e.name=='crystal.ncmat' ][0].props
     assert p.sg == 225 and p.as_dict()['natoms'] == 4
     assert p.composition == ((13,((0,1.0),)),)
     with ensure_error(AttributeError,'PhysicsProps has no attribute "foo"'):
-        _ = p.foo
+        p.foo
 
     all_entries = nb.browse(load=True)
     al = [ e for e in all_entries if e.name == 'Al_sg225.ncmat' ]
@@ -111,8 +111,8 @@ def main():
 
     def find( *a, **kw ):
         res = names( nb.find( *a, **kw ) )
-        kwstr = { k: ( '<function>' if callable(v) else v )
-                  for k,v in kw.items() }
+        kwstr = dict( (k,( '<function>' if callable(v) else v ))
+                      for k,v in kw.items() )
         print(f'find{a if a else ""}{kwstr if kwstr else ""}:',res)
         return res
     find('crystal')
@@ -127,6 +127,25 @@ def main():
     find(where='sg > 200',factory='virtual')#None comparisons are false
     find(where=lambda p : p.state == 'gas',factory='virtual')
     find('gas',where='absxs < 1',factory='virtual')
+
+    #Sorting and dicts:
+    loaded = nb.browse('virtual',load=True)
+    print('sorted by absxs:',names(nb.sort_entries(loaded,'absxs')))
+    print('sorted by sg (reverse):',
+          names(nb.sort_entries(loaded,'sg',reverse=True)))
+    print('sorted by name (reverse):',
+          names(nb.sort_entries(loaded,'name',reverse=True)))
+    with ensure_error(NC.NCBadInput,'Invalid sort key "foo" (must be "name"'
+                      ' or one of: elements, atoms, nelements, formula,'
+                      ' absxs, scatxs, density, numdens, temp, state,'
+                      ' crystal, sg, natoms, dyninfo, nphases)'):
+        nb.sort_entries(loaded,'foo')
+    d = [ e for e in loaded if e.name == 'crystal.ncmat' ][0].as_dict()
+    print('as_dict keys:',list(d))
+    assert d['props']['dyninfo'] == ['vdosdebye'] and d['error'] is None
+    assert d['description'] == 'A small Al crystal.'
+    d = [ e for e in loaded if e.name == 'broken.ncmat' ][0].as_dict()
+    assert d['props'] is None and d['error']
 
     e = nb.find('crystal')[0]
     print('matching_lines:',e.matching_lines(['togo','A SMALL']))
