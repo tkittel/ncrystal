@@ -28,8 +28,12 @@ namespace NC = NCrystal;
 int main( int argc, char** argv )
 {
   //Parse args:
-  if ( argc!=4 ) {
-    std::cout << "Please provide args: [cfgstr] [ekin_eV] [nsample]"
+  if ( argc!=4 && argc!=5 ) {
+    std::cout << "Please provide args: [cfgstr] [ekin_eV] [nsample] [ekin_hi_eV]"
+              << std::endl;
+    std::cout << "(ekin_hi_eV is optional: if given, a fresh energy is drawn"
+                 " log-uniformly in [ekin_eV,ekin_hi_eV] for every sample,"
+                 " rather than reusing the single ekin_eV value throughout)."
               << std::endl;
     return 1;
   }
@@ -43,13 +47,41 @@ int main( int argc, char** argv )
   nc_assert_always(opt_nsample.has_value());
   const std::uint64_t nsample = opt_nsample.value();
 
+  NC::Optional<double> opt_ekin_hi;
+  if ( argc==5 ) {
+    auto v = NC::StrView(argv[4]).toDbl();
+    nc_assert_always(v.has_value());
+    nc_assert_always(v.value()>=ekin.dbl());
+    opt_ekin_hi = v.value();
+  }
+
   auto scatter = NC::FactImpl::createScatter(cfgstr);
   auto rng = NC::getRNG();
 
-  std::cout<<"Sampling "<<nsample<<" times at ekin = "<<ekin<<std::endl;
+  if ( !opt_ekin_hi.has_value() ) {
+    std::cout<<"Sampling "<<nsample<<" times at ekin = "<<ekin<<std::endl;
+    NC::CachePtr cache;
+    for ( std::uint64_t i = 0; i < nsample; ++i )
+      (void)scatter->sampleScatterIsotropic(cache,rng,ekin);
+    return 0;
+  }
 
+  //Fresh (log-uniform) random energy per call rather than reusing one fixed
+  //ekin throughout: a single repeated ekin always lands in the same
+  //cell/grid region, which is unrepresentative of an actual simulation (and
+  //can make some costs -- e.g. anything that only runs once per distinct
+  //region and is then effectively free on every subsequent identical call --
+  //look artificially cheap in a profile).
+  const double ekin_lo = ekin.dbl();
+  const double ekin_hi = opt_ekin_hi.value();
+  std::cout<<"Sampling "<<nsample<<" times at ekin = "
+           <<ekin_lo<<" .. "<<ekin_hi<<" eV"<<std::endl;
+  const double logratio = std::log(ekin_hi/ekin_lo);
   NC::CachePtr cache;
-  for ( std::uint64_t i = 0; i < nsample; ++i )
-    (void)scatter->sampleScatterIsotropic(cache,rng,ekin);
+  for ( std::uint64_t i = 0; i < nsample; ++i ) {
+    const NC::NeutronEnergy ekin_i{ NC::DoValidate,
+      ekin_lo*std::exp(logratio*rng->generate()) };
+    (void)scatter->sampleScatterIsotropic(cache,rng,ekin_i);
+  }
   return 0;
 }
