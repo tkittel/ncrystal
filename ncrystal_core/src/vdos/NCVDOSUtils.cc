@@ -837,23 +837,31 @@ double NC::VDOS::estimateSpectrumCrossing( double x0, double binwidth,
     S0 += 1.0;
     S1 += x;
     S2 += x2;
-    S3 += x2*x;
-    S4 += x2*x2;
+    S3 = std::fma( x2, x, S3 );
+    S4 = std::fma( x2, x2, S4 );
     T0 += y;
-    T1 += x*y;
-    T2 += x2*y;
+    T1 = std::fma( x, y, T1 );
+    T2 = std::fma( x2, y, T2 );
   }
   if ( S0 < 5.0 )
     return twoPointFallback(true);
   //Solve linear (matrix mult) equation
   //   [S0 S1 S2; S1 S2 S3; S2 S3 S4]*[a;b;c] = [T0;T1;T2]
-  //via Cramer's rule:
-  const double D  = S0*(S2*S4-S3*S3) - S1*(S1*S4-S3*S2) + S2*(S1*S3-S2*S2);
+  //via Cramer's rule and, with every 2x2 minor and determinant as explicit
+  //std::fma:
+  const double m00  = std::fma( S2, S4, -(S3*S3) );
+  const double m01  = std::fma( S1, S4, -(S3*S2) );
+  const double m02  = std::fma( S1, S3, -(S2*S2) );
+  const double m01T = std::fma( T1, S4, -(S3*T2) );
+  const double m02T = std::fma( T1, S3, -(S2*T2) );
+  const double m12T = std::fma( S1, T2, -(T1*S2) );
+  const double m02TT= std::fma( S2, T2, -(T1*S3) );
+  const double D  = std::fma( S2, m02,  std::fma( -S1, m01,  S0*m00 ) );
   if ( !( ncabs(D) > 0.0 ) )
     return twoPointFallback(true);//determinant not >0
-  const double Da = T0*(S2*S4-S3*S3) - S1*(T1*S4-S3*T2) + S2*(T1*S3-S2*T2);
-  const double Db = S0*(T1*S4-S3*T2) - T0*(S1*S4-S3*S2) + S2*(S1*T2-T1*S2);
-  const double Dc = S0*(S2*T2-T1*S3) - S1*(S1*T2-T1*S2) + T0*(S1*S3-S2*S2);
+  const double Da = std::fma( S2, m02T, std::fma( -S1, m01T, T0*m00 ) );
+  const double Db = std::fma( S2, m12T, std::fma( -T0, m01,  S0*m01T) );
+  const double Dc = std::fma( T0, m02,  std::fma( -S1, m12T, S0*m02TT) );
   const double a = Da/D, b = Db/D, c = Dc/D;
   const double target = std::log(yval) - a;//solve c*xc^2+b*xc-target=0
   double xcross;
@@ -863,7 +871,7 @@ double NC::VDOS::estimateSpectrumCrossing( double x0, double binwidth,
       return twoPointFallback(true);
     xcross = target/b;
   } else {
-    const double disc = b*b + 4.0*c*target;
+    const double disc = std::fma( 4.0*c, target, b*b );
     if ( !(disc >= 0.0) )
       return twoPointFallback(true);
     const double sq = std::sqrt(disc);
