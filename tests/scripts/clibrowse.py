@@ -73,7 +73,7 @@ _ncmat_crystal = """NCMAT v7
  Al 400
 """
 
-def run( *args, show = True ):
+def run( *args, show = True, sanitize_paths = False ):
     print(f"============= CLI >>browse {shlex.join(args)}<< =============")
     with capture_print_ctxmgr() as cap:
         nc_cli.run('browse',*args)
@@ -81,6 +81,10 @@ def run( *args, show = True ):
     #Location of stdlib depends on installation:
     out = re.sub(r'from "stdlib" \(.*, priority=',
                  'from "stdlib" (<stdlib-location>, priority=', out)
+    if sanitize_paths:
+        out = re.sub(r'(Source        : ).*( \(factory "stdlib")',
+                     r'\1<stdlib-location>\2', out)
+        out = re.sub(r'(On-disk path  : ).*', r'\1<location-dependent>', out)
     out = out.replace('\x1b','<ESC>')#make color codes visible in log
     if show:
         print(out,end='')
@@ -137,6 +141,21 @@ def test_physics():
     run('-w','crystalsystem=="cubic" and braggthreshold > 4','-f','virtual')
     run('-w','max(debyetemps.values()) > 300','-f','virtual')#None is false
     run('-f','virtual','--columns','a,volume,debyetemps,msds,mass,cohxs')
+    #Info view:
+    run('-f','virtual','--info','mycrystal','notncmat')
+    run('--info','stdlib::Al_sg225',sanitize_paths=True)#hidden entry
+    run('-f','virtual','--info','mycrystl')
+    #Counting, paths and suggestions:
+    run('-f','virtual','--count')
+    run('-f','virtual','-w','crystal','--count')
+    run('-f','virtual','--path')#in-memory files have no path
+    out = run('-f','stdlib','Al_sg225','--path',show=False).strip()
+    #NB: Location depends on installation (might even be embedded):
+    assert out == '' or out.replace('\\','/').endswith('/Al_sg225.ncmat')
+    run('-f','virtual','mycrystl')
+    run('-f','virtual','mycrystl','--columns','sg')
+    run('-f','virtual','mycrystal','-w','absxs > 100')#no suggestions
+    run('-f','virtual','qwertyzzz')
     #Tables, sorting and JSON:
     run('-f','virtual','--columns','formula,sg,density,dyninfo,description')
     run('-f','virtual','--sort','density','--reverse')
@@ -190,6 +209,12 @@ def test_physics():
     bad_args('Invalid sort key "foo" (must be "name" or one of: '
              + propnames_sortable + ')', '--sort','foo')
     bad_args('--reverse requires --sort.','--reverse')
+    bad_args('Do not specify both --names and --count.','--names','--count')
+    bad_args('Do not specify both --info and --json.','--info','--json')
+    bad_args(('Do not specify --info together with --comments, --props,'
+              ' --columns, or --sort.'),'--info','--props')
+    bad_args(('Do not specify --path together with --comments, --props,'
+              ' --columns, or --sort.'),'--path','--sort','name')
     bad_args('Invalid sort key "debyetemps" (must be "name" or one of: '
              + propnames_sortable + ')', '--sort','debyetemps')
     with ensure_error(NC.NCBadInput,'Error evaluating --where expression'
