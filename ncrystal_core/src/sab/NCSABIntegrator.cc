@@ -538,7 +538,8 @@ NS::SABIntegrator::Impl::analyseEnergyPoint(double ekin, bool doSampler ) const
       //SABSamplerAtE_Alg1 instance.
       next_bin_has_kinematic_endpoint = false;
       double db_real = (beta.val - prev_betaxs.first);
-      prev_betaxs.first -= db_real * (1.0 / 3.0);
+      constexpr double minusonethird = (-1.0/3.0);
+      prev_betaxs.first = std::fma( db_real, minusonethird, prev_betaxs.first );
       if ( doSampler ) {
         nc_assert( betasampler_vals.size() == 1 );
         betasampler_vals.front() = prev_betaxs.first;
