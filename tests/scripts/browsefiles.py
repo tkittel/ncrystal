@@ -61,3 +61,11 @@ else:
     print()
     pprint.pprint(files_sorted_order)
     raise SystemExit("ERROR: Inconsistent sorting order observed!!")
+
+#browseFiles(dump=True) must use the (redirectable) NCrystal print:
+_leaked = io.StringIO()
+with contextlib.redirect_stdout(_leaked), capture_print_ctxmgr() as _cap:
+    NC.browseFiles(dump=True,factory='stdlib')
+assert not _leaked.getvalue(), 'output bypassed NCrystal print'
+assert _cap.data and _cap.data[0].startswith('==> ')
+print('browseFiles(dump=True) output redirected OK')
