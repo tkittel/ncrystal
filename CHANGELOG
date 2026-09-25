@@ -1,4 +1,224 @@
 v4.4.7 (work in progress)
+     * Fix another unaudited a*b-c shape found while continuing the
+       performance/reproducibility pass into the VDOS side of the pipeline:
+       NCVDOSToScatKnl.cc's fillSABFromVDOS computed the high-phonon-order
+       (n>=stirling_threshold) alpha factor's exponent as "n*(...)-x.val",
+       feeding straight into std::exp() -- same class of hazard as
+       setupE0ABGrid's logarg fixed earlier this session, just not caught
+       at the time since this is a different function. Fixed with explicit
+       std::fma. Full sb -t --long green, zero reference-log changes.
+     * Hoist a loop-invariant std::log(taperBand) call (taperBand is a
+       compile-time constant) out of sIntegralAtE's per-cell loop --
+       unrelated to fma, just plain redundant recomputation on every cell
+       that lands in the tapering band, found while re-profiling after the
+       fixes below made sIntegralAtE the single largest remaining
+       self-time hotspot (~17-19%) across every material tried. Bit-
+       identical by construction (same values, computed once instead of
+       per-cell); sb -t --long confirms zero reference-log changes.
+     * Extend the SAB cell-integration performance pass below:
+       NCSABProcessor.cc's sIntegralAtE had an unaudited plain-Horner
+       quintic smootherstep (t*t*t*(t*(t*6.0-15.0)+10.0), evaluated per
+       cell within the tapering band) -- fixed with explicit std::fma.
+       impl_numIntRegion's per-alpha-point contribution loop (up to 33
+       iterations per region, itself per touched cell -- effectively a
+       second, duplicated implementation of IntegrandOfA::contrib's
+       calculation, pre-existing duplication noted in the file's own
+       "fixme: cleanup and consolidation" comment) had the same unaudited
+       lerp form fixed elsewhere this session; switched to nclerp and
+       extracted the whole loop into a new function (fillContribAtAlpha)
+       decorated with NCRYSTAL_FMADISPATCH_ATTR (confirmed multiversioned).
+       Re-profiling after this and the previous commit: SOfAlphaGrid's own
+       self-time dropped from ~13% to ~10% (its fma ramp-fill work moved
+       into the now-dispatched fmaRampFill, visible separately at ~2%), and
+       fillContribAtAlpha shows up as a clean ~7% line where its cost was
+       previously invisible, buried inline in impl_numIntRegion. Full
+       sb -t --long green, no reference-log changes needed this time.
+     * Performance pass over the SAB cell-integration hot path (motivated by
+       profiling inelastic-scattering initialisation with the new
+       parse_gperf tool across 5 materials spanning element mass/VDOS shape
+       -- Al, Pb, LiH's H, polyethylene's H, Debye-VDOS Ca -- swept over
+       next-gen vdoslux=2000/2002/2004, knllux=0/2/4 and temp=10/293.15/
+       1000K; the vdoslux=2000..2006/knllux=0..6 next-gen code specifically,
+       not the legacy 0..5 path this app defaults to if vdoslux/knllux
+       aren't given explicitly). Findings: temperature dominates cost
+       (2.5-5x from 10K to 1000K, more phonon orders needed), vdoslux has a
+       moderate effect (1.3-2.5x), knllux only matters for the downstream
+       SABProcessor/table-construction phase (~2.8x from 0 to 4), not VDOS
+       expansion. At the high end of that range, NCSABCellInteg.cc's
+       SOfAlphaGrid construction and IntegrandOfA::contrib (the per-alpha-
+       slice integrand) are consistently hot across every material tried:
+       - SOfAlphaGrid's constructor already used explicit std::fma for its
+         two linear ramps but, being a constructor, could not carry
+         NCRYSTAL_FMADISPATCH_ATTR; extracted into a new free function
+         (fmaRampFill) that can.
+       - NCKinUtils.hh's getAlphaLimits/getAlphaLimitsWithDiff/getAlphaMinus/
+         getAlphaPlus/getBetaMinus/getBetaPlus/getBetaLimits (called from
+         IntegrandOfA::contrib, among many other places) all had a
+         previously-unaudited "u +- 2*sqrt(v)" shape -- confirmed
+         empirically (disassembly) to actually get fused under -mfma even
+         though written across separate statements, unlike a similar
+         StableSum::add pattern audited earlier this session that does not
+         -- fixed with explicit std::fma throughout, along with the
+         alphaMinusTaylor/betaMinusTaylor Taylor expansions (plain Horner,
+         same unaudited-a*b+c class as elsewhere this session).
+       - IntegrandOfA::contrib's smiddle computation, and half a dozen
+         interpolation functions in NCSABUtils.hh (interpolate_loglin_
+         fallbacklinlin[_fast[2]], interpolate_linlin_NEW, interpolate_
+         linear, sampleLogLinDist[_fast]), used the unaudited "a*(1-t)+b*t"
+         lerp form instead of the project's existing fma-based nclerp
+         helper; switched to nclerp throughout.
+       - With NCKinUtils.hh's functions and nclerp now explicit-fma-safe,
+         IntegrandOfA::contrib itself is now fully audited and was decorated
+         with NCRYSTAL_FMADISPATCH_ATTR (a non-static, non-virtual member
+         function -- confirmed both multiversioning, via nm, and real
+         vfmadd instructions in the compiled .fma clone, via objdump,
+         including the inlined Taylor expansion).
+       Full sb -t --long green throughout (one reference log needed
+       regenerating: a near-degenerate E_div_kT~0 case in the *_OBSOLETE
+       comparison path of testsabcelleval, whose own pass/fail assertions
+       against the mpmath/brute-force references were unaffected -- only
+       the exact printed value shifted, as expected whenever a computation
+       moves from two roundings to a single fma rounding). A stashed
+       before/after wall-clock comparison at the worst-case settings across
+       all 5 materials showed differences within the ~3% trial-to-trial
+       noise of this measurement method, i.e. inconclusive either way at
+       that resolution; the change is kept regardless as real,
+       independently-justified correctness+dispatch hardening in a
+       genuinely hot path, consistent with this session's standing policy
+       for such patterns.
+     * Decorate stable_exp/stable_expm1 (NCMath.cc, along with their
+       expm1_reducedarg_taylor14 helper) with NCRYSTAL_FMADISPATCH_ATTR too,
+       for the same reason as Romberg::integrate() below: both are now
+       straight-line, loop-free, explicit-std::fma code (no libm calls at
+       all -- see the earlier stable_exp/expm1 rewrite), so this recovers
+       hardware FMA speed on a portable (non--mfma) build via runtime CPU
+       dispatch. Confirmed real multiversioning ([clone .default]/[clone
+       .fma]/[clone .resolver] symbols for all three) and the full sb -t
+       --long suite stays green. Motivated by profiling (valgrind/callgrind,
+       since this sandbox's perf_event_paranoid=4 blocks perf) a cold-start
+       app_benchsab run on Al_sg225.ncmat;knllux=3: stable_expm1 was ~1% of
+       total instructions, and this session's other touched functions
+       (Romberg::integrate, fixedOrderIntegration9pts) collectively ~2%
+       more -- confirming none of this session's fixes are a dominant cost
+       (the pre-existing, already-hardened FastConvolve/VDOSGn FFT machinery
+       remains the actual hot path, at ~45% combined, untouched this
+       session) while still finding this additional, real dispatch win.
+     * Decorate Romberg::integrate() (NCRomberg.cc) with
+       NCRYSTAL_FMADISPATCH_ATTR, so its now-fully-explicit-std::fma
+       Richardson-extrapolation arithmetic (see the Romberg fix above) gets
+       hardware FMA speed on a portable (non--mfma) x86 build too, via
+       runtime dispatch, rather than paying for a real (undispatched)
+       std::fma library call on hardware that actually has the instruction.
+       Confirmed real multiversioning occurred (nm shows [clone .default]/
+       [clone .fma]/[clone .resolver] symbols) and the full sb -t --long
+       suite stays green. evalFuncMany/evalFuncManySum (called from
+       integrate(), themselves also now using explicit std::fma per the fix
+       above) are virtual and so cannot be decorated (the attribute is
+       rejected outright on virtual member functions); their std::fma calls
+       remain an ordinary library call. Investigated whether NCRomberg.cc's
+       fixed-order integration helpers (used from NCSABCellInteg.cc) needed
+       similar treatment: empirically confirmed (via disassembly, zero
+       vfmadd instructions under -mfma) that the compiler does not fuse
+       across StableSum::add's inlined call boundary, so unlike the
+       Richardson-extrapolation code there is no latent reproducibility
+       hazard there to fix -- left unchanged pending a decision on whether
+       to trade StableSum's Neumaier compensation for raw std::fma-based
+       accumulation speed there, which is a real accuracy/speed tradeoff
+       rather than a mechanical audit fix.
+     * Fix the last-standing piece of the long-chased sabxs cross-platform
+       residual: NCRomberg.cc's generic Romberg-integration Richardson
+       extrapolation (R(i,j), used throughout via integrateRomberg17/33 --
+       notably VDOSEval::calcGamma0, called once per material and feeding
+       every subsequent G1 evaluation) combined every level's update as a
+       plain "a*b+c*d". Unlike a plain "a*b+c" (one obvious fusion), this
+       shape has *two* valid single-fusion readings (fma(a,b,c*d) or
+       fma(c,d,a*b)), so different platforms/flags were free to pick either
+       -- not just contract-or-not, but which term. Traced directly via the
+       existing SABXSDIAG diagnostic instrumentation (tests/src/
+       app_sabxsdiag): the earliest observed default-vs--mfma divergence
+       was at order n=1's raw G1 value, i.e. upstream of any convolution,
+       exactly where calcGamma0's result first enters the pipeline.
+       Rewrote every such combination (~20 across the unrolled R(4,4)/R(5,5)
+       fast path and the generic R(i,j) loop, plus evalFuncMany/
+       evalFuncManySum's own "offset+delta*i" argument) with an explicit
+       std::fma always fusing the same, fixed term. Verified: full sb -t
+       (incl. --long) green after regenerating the handful of reference
+       cases this legitimately shifted (a discrete grid-size decision in
+       app_gnerange's test.log, and default-build sabxs_A/B drift too small
+       to matter under the old flat tolerance but caught by the new
+       per-vdoslux one below); and, the actual point of this investigation,
+       testsabxs now passes cleanly under a full -mfma-forced rebuild --
+       "ALL OK", not a single case above tolerance, closing the residual
+       that survived every fix so far this session (reducePtsBy
+       Equidistribution's own fma hardening, stable_exp/stable_expm1's full
+       rewrite) because none of them were the actual remaining cause.
+     * Make the sabxs cross-platform reproducibility test's tolerance depend
+       on vdoslux (tests/pypath/NCTestUtils/xs.py's XSMonitor now accepts a
+       callable(teststr)->float for test_rdtol, not just a plain float;
+       tests/pypath/NCTestUtils/sabxs.py wires up 1e-4 for vdoslux=2000
+       (not a priority setting), 1e-5 for vdoslux=2001 (the historical
+       default), 1e-6 for vdoslux>=2002 (the more refined next-gen settings
+       where a still-open residual is being chased, see above -- tightening
+       here is what's actually driving the investigation, not a courtesy).
+       tests/data/sabxs_A and sabxs_B reference data regenerated for the
+       small number of cases that needed it at the new 1e-6 bar (pure
+       default-build drift relative to this session's other fixes above,
+       not a cross-platform issue).
+     * Rewrite NC::stable_exp/stable_expm1 (NCMath.cc) to no longer call
+       std::exp/std::log/std::expm1/std::log1p at all: the previous
+       implementation refined a libm call with one Newton-Raphson step, which
+       is very accurate but still depends on the platform's libm for its
+       starting point, so is not actually guaranteed reproducible across
+       platforms. Replaced with a portable, from-scratch implementation
+       (standard Cody-Waite range reduction x=n*ln(2)+r via std::fma with a
+       split ln(2) constant, a 14th-order std::fma Horner-scheme Taylor
+       expansion of expm1(r) for the reduced range |r|<=ln(2)/2, then
+       std::ldexp -- exact, pure exponent adjustment -- to reconstruct);
+       stable_exp(x) is now 1.0+stable_expm1(x) for x>=0 (exact: an addition
+       of same-signed quantities, no cancellation) and 1.0/stable_exp(-x) for
+       x<0 (the "1+expm1(x)" identity alone loses all precision once exp(x)
+       drops below ulp(1), regardless of how accurately expm1 itself is
+       computed -- confirmed empirically, e.g. 1+expm1(-199.3) rounds to 0.0
+       vs the true ~1.4e-87 -- sidestepped with the same reciprocal trick
+       this file's existing exp_approx/exp_negarg_approx already use).
+       Verified bit-identical between a plain and an -mfma-forced build
+       across a dense grid spanning [-700,700] (as expected: every
+       floating-point combination step is either an explicit std::fma or an
+       exact operation), and against tests/src/app_stablemathfct's
+       mpmath-derived 60-digit references (all within 1-2 ULP, comfortably
+       inside its existing 8 ULP bar; an earlier iterative-doubling-based
+       range reduction was tried first and rejected here, since each
+       doubling step roughly doubles the running relative error, compounding
+       ~15 such steps into several ULP and failing that bar for |x|>~10).
+       Motivated by tracing exactly which libm calls are reachable when
+       constructing and evaluating a VDOSEval (relevant to the still-open
+       sabxs residual noted above): turned out to be only these two
+       functions, via stable_tanh/stable_sinh/the safe_x{cothx,3cothx,
+       divsinhx}/safe_rec_expm1 helpers in NCVDOSEval.cc, all otherwise pure
+       arithmetic already. Does not by itself close that residual -- an
+       -mfma-forced rebuild shows it unmasks a different, still-unaudited
+       divergence elsewhere in the pipeline (a different, larger sabxs case
+       now fails first) -- but is real, independently-justified hardening of
+       a hitherto-not-fully-reproducible pair of functions used throughout
+       the VDOS/SAB code, kept regardless.
+     * Harden reducePtsByEquidistribution and reducePtsByEquidistributionRobust
+       (NCMath.cc) against a previously-unaudited FMA-contraction hazard: both
+       accumulated their combined density as "d += w_lin*dlin[i]; d +=
+       w_log*dlog[i]", a plain "a += b*c" shape a compiler may silently fuse
+       into a hardware FMA depending on target/flags (contracted by default on
+       AArch64, not on baseline x86-64) -- feeding straight into the cum[]
+       array the near-tie point-selection decision compares against. Rewrote
+       both with explicit std::fma, per the project's standing FP-contraction
+       policy (docs/devel_fma_attribute.md). Verified: default-vs-`-mfma`
+       output is now byte-identical for all seven committed real (x,y)
+       datasets (tests/data/ptreduce/), full sb -t suite green with zero
+       reference-log changes. Note: this is real, independently-justified
+       hardening, but a direct measurement (an `-mfma`-forced full rebuild,
+       comparing sabxs group A's worst-case reldiff before/after) showed it
+       has zero effect on the still-open sabxs residual described below --
+       that residual is driven by genuinely-differing (not contraction-
+       related) ~1e-14 relative upstream noise in Gn.getRawSpectrum, not by
+       this function's own arithmetic.
      * Add reducePtsByEquidistributionRobust (NCMath.hh/.cc) alongside the
        existing reducePtsByEquidistribution, for callers whose y-values carry
        more numerical noise than a typical closed-form function evaluation
