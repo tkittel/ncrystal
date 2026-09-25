@@ -62,6 +62,7 @@ def parseArgs( progname, arglist, return_parser = False ):
       %(prog)s -E -s "boron|b4c"   # search with regular expression
       %(prog)s -c Al_sg225.ncmat   # show header comments of a file
       %(prog)s -x Al_sg225.ncmat   # show full content of a file
+      %(prog)s --info Al_sg225.ncmat # show all info about a file
       %(prog)s --plugins           # list loaded plugins
       %(prog)s -w "'B' in elements and absxs > 100"
       %(prog)s -w "'vdos' in dyninfo" -w "crystal and sg == 225"
@@ -138,6 +139,17 @@ def parseArgs( progname, arglist, return_parser = False ):
                               ' text to fit the line width.'))
     parser.add_argument('-c','--comments', action='store_true',
                         help='Show full NCMAT header comments of the files.')
+    parser.add_argument('--info', action='store_true',
+                        help=('Show all available information about each'
+                              ' selected file, including physics properties,'
+                              ' header comments, and usage examples.'))
+    parser.add_argument('--count', action='store_true',
+                        help='Only print the number of selected files.')
+    parser.add_argument('--path', action='store_true',
+                        help=('Only print the on-disk paths of the selected'
+                              ' files, one per line (files which are not'
+                              ' on disk, e.g. in-memory files, are'
+                              ' skipped).'))
     parser.add_argument('--names', action='store_true',
                         help=('Only print the names of the files, one per'
                               ' line (useful for scripting).'))
@@ -191,6 +203,10 @@ def parseArgs( progname, arglist, return_parser = False ):
     if args.names and ( args.comments or args.props ):
         parser.error('Do not specify --names together with --comments'
                      ' or --props.')
+    if ( args.count or args.path or args.info ) and (
+            args.comments or args.props or args.columns or args.sort ):
+        parser.error(f'Do not specify {outmodes[0]} together with'
+                     ' --comments, --props, --columns, or --sort.')
     table = bool( args.columns or args.sort )
     others = [ o for o,v in [ ('--names',args.names),
                               ('--comments',args.comments),
@@ -373,7 +389,7 @@ def _truncate( s, n ):
 def _collect( args ):
     from . import browse as nb
     from .exceptions import NCBadInput
-    load = bool( args.where or args.props or args.json
+    load = bool( args.where or args.props or args.json or args.info
                  or [ c for c in args.columns if c != 'description' ]
                  or ( args.sort and args.sort != 'name' ) )
     progress = _Progress( 'Loading materials' ) if load else None
@@ -381,6 +397,7 @@ def _collect( args ):
                          progress = progress.update if progress else None )
     if progress:
         progress.done()
+    args.all_entries = entries#for suggestions
     try:
         return nb.filter_entries( entries, patterns = args.pattern,
                                   search = args.search, regex = args.regex,
@@ -388,19 +405,20 @@ def _collect( args ):
     except NCBadInput as e:
         raise NCBadInput( _cli_msg( str(e) ) ) from e
 
-def _print_props( entry, linewidth ):
+def _print_props( entry, linewidth, indent = 8 ):
+    pre = ' '*indent
     if entry.props is None:
-        print(_truncate(f'        [could not load: {entry.error}]',
+        print(_truncate(f'{pre}[could not load: {entry.error}]',
                         linewidth))
         return
     import textwrap
 
     from .browse import _fmt_prop
     parts = [ f'{k}={_fmt_prop(v)}' for k,v in entry.props.as_dict().items() ]
-    for line in textwrap.wrap( '  '.join(parts), width = linewidth - 8,
+    for line in textwrap.wrap( '  '.join(parts), width = linewidth - indent,
                                break_long_words = False,
                                break_on_hyphens = False ):
-        print(f'        {line}')
+        print(f'{pre}{line}')
 
 def _table_value( entry, col ):
     if col == 'description':
@@ -456,7 +474,7 @@ def _print_table( entries, args ):
     #NB: Rows are never truncated (no data should be lost), except for the
     #free-text description column which is shortened to fit if possible.
     if not entries:
-        print('No matching files found.')
+        _print_no_matches( args )
         return
     cols = args.columns
     header = [ 'NAME' ] + [ c.upper() for c in cols ]
@@ -478,6 +496,90 @@ def _print_table( entries, args ):
     print( fmt(header) )
     for r in rows:
         print( fmt(r) )
+
+def _print_info( entries, args ):
+    if not entries:
+        _print_no_matches( args )
+        return
+    import textwrap
+    linewidth = _linewidth()
+    for n, e in enumerate( entries ):
+        if n:
+            print()
+        name = e.display_name
+        print(f'==> {name}')
+        srcdescr = ( f'{e.source} (factory "{e.factory}",'
+                     f' priority {e.priority})' )
+        fields = [ ('Description', e.description or '-'),
+                   ('Full key', e.fullkey),
+                   ('Source', srcdescr),
+                   ('Data type', e.datatype or '-'),
+                   ('On-disk path', e.path or '-') ]
+        if e.hidden:
+            fields.append( ('Hidden', ( 'yes, by a higher priority entry'
+                                        ' with the same name' ) ) )
+        for k, v in fields:
+            ll = textwrap.wrap( v, width = linewidth - 20,
+                                break_long_words = False,
+                                break_on_hyphens = False ) or ['']
+            print(f'    {k:<14}: {ll[0]}')
+            for x in ll[1:]:
+                print(f'{"":20}{x}')
+        print('  Physics properties:')
+        _print_props( e, linewidth, indent = 4 )
+        comments = _strip_empty( e.comments )
+        if comments:
+            print('  Header comments:')
+            for ll in comments:
+                print(f'    # {ll}'.rstrip())
+        print('  Usage examples:')
+        pycmd = ( f'python3 -c \'import NCrystal as NC;'
+                  f' NC.load("{name}").dump()\'' )
+        for d, c in [ ( 'Plot cross sections', f'nctool "{name}"' ),
+                      ( 'Show full content',
+                        f'ncrystal browse -x "{name}"' ),
+                      ( 'Load in Python', pycmd ) ]:
+            print(f'    # {d}:')
+            print(f'    {c}')
+
+def _print_no_matches( args ):
+    print('No matching files found.')
+    if not args.regex and any( c in w for w in args.search + args.pattern
+                               for c in '|^$+()\\{}' ):
+        print('Note: Search WORDs are matched literally. Use -E/--regex'
+              ' for regular expressions (e.g. -E -s "boron|b4c").')
+    sugg = _suggestions( args )
+    if sugg:
+        print('Did you mean: %s?'%( ', '.join(sugg) ))
+
+def _suggestions( args ):
+    #Suggest similar names if (plain) name patterns alone matched nothing:
+    from .browse import _is_glob, filter_entries
+    patterns = [ p for p in args.pattern if not _is_glob(p) ]
+    if args.regex or not patterns or patterns != args.pattern:
+        return []
+    entries = getattr( args, 'all_entries', [] )
+    if filter_entries( entries, patterns = patterns ):
+        return []
+    import difflib
+    def stem( n ):
+        return n.rsplit('.',1)[0].lower() if '.' in n else n.lower()
+    #Compare with full names (without extension), and with their parts
+    #(e.g. "diamond" in "C_sg227_Diamond.ncmat"):
+    cands = {}
+    for e in entries:
+        st = stem(e.name)
+        cands.setdefault( st, e.name )
+        for part in st.split('_'):
+            if len(part) >= 4:
+                cands.setdefault( part, e.name )
+    res = []
+    for p in patterns:
+        for m in difflib.get_close_matches( stem(p), list(cands), n = 3,
+                                            cutoff = 0.7 ):
+            if cands[m] not in res:
+                res.append( cands[m] )
+    return res
 
 def _strip_empty( lines ):
     lines = list( lines or [] )
@@ -531,11 +633,7 @@ def _print_listing( items, args ):
                 if comments:
                     print()
     if not items:
-        print('No matching files found.')
-        if not args.regex and any( c in w for w in args.search + args.pattern
-                                   for c in '|^$+()\\{}' ):
-            print('Note: Search WORDs are matched literally. Use -E/--regex'
-                  ' for regular expressions (e.g. -E -s "boron|b4c").')
+        _print_no_matches( args )
 
 @cli_entry_point
 def main( progname, arglist ):
@@ -559,6 +657,17 @@ def _main_impl( args ):
     if args.sort:
         from .browse import sort_entries
         items = sort_entries( items, args.sort, reverse = args.reverse )
+    if args.count:
+        print( len(items) )
+        return
+    if args.info:
+        _print_info( items, args )
+        return
+    if args.path:
+        for i in items:
+            if i.path:
+                print( i.path )
+        return
     if args.json:
         import json
         print( json.dumps( [ i.as_dict() for i in items ], indent = 1 ) )
