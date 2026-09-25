@@ -415,6 +415,7 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Taylor expansion of expm1(x)=exp(x)-1. Enough terms to be fully accurate
     //for |r|<ln2/2 and using std::fma for max portability.
+    NCRYSTAL_FMADISPATCH_ATTR
     double expm1_taylor14( double x )
     {
       //fixme: consider making this always use hardware fma.
@@ -451,6 +452,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
+NCRYSTAL_FMADISPATCH_ATTR
 double NC::stable_expm1( double x )
 {
   // Evaluating expm1(x) by first finding integer n so that
