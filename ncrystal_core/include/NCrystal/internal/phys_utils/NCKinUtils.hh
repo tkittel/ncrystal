@@ -128,7 +128,7 @@ namespace NCRYSTAL_NAMESPACE {
     const double sq = std::sqrt( ekin_div_kT * kk );
     const double aminus = ( detail::alphaMinusNeedsTaylor( ekin_div_kT, beta )
                             ? detail::alphaMinusTaylor( ekin_div_kT, beta )
-                            : ncmax(0.0, std::fma(-2.0, sq, a)) );
+                            : std::max(0.0, std::fma(-2.0, sq, a)) );
     const double aplus = std::fma(2.0, sq, a);
     nc_assert( aplus >= aminus );
     return { aminus, aplus };

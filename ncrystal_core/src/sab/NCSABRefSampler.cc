@@ -344,7 +344,8 @@ NC::SABRef::refSampleAlphaBeta( RNG& rng,
       = ext.extender->crossSection(ext.emax).dbl();
     const double ext_xs_E
       = ext.extender->crossSection(NeutronEnergy(E_div_kT*kT)).dbl();
-    double extS = 4.0 * ( ext_xs_E*E_div_kT - ext_xs_Ecell*E_div_kT_cell );
+    double extS = 4.0 * std::fma( ext_xs_E, E_div_kT,
+                                  -(ext_xs_Ecell*E_div_kT_cell) );
     probabilityExtension = extS / ( extS + analysedEpt.cumul.back() );
   }
   nc_assert( probabilityExtension >= 0.0 && probabilityExtension <= 1.0 );
