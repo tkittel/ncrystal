@@ -1,4 +1,13 @@
 v4.4.7 (work in progress)
+     * Audit sIntegralAtE's quintic smootherstep and impl_numIntRegion's
+       lerp forms to explicit std::fma/nclerp, extracting the per-alpha
+       contribution loop into a new fillContribAtAlpha function decorated
+       with NCRYSTAL_FMADISPATCH_ATTR.
+     * Performance/reproducibility pass over the SAB cell-integration hot
+       path: extract fmaRampFill (dispatch-decorated), convert
+       NCKinUtils.hh's alpha/beta limit functions and several NCSABUtils.hh
+       interpolation helpers to explicit std::fma/nclerp, and decorate
+       IntegrandOfA::contrib with NCRYSTAL_FMADISPATCH_ATTR.
      * Decorate stable_exp/stable_expm1 (and their Taylor helper) and
        Romberg::integrate() with NCRYSTAL_FMADISPATCH_ATTR, recovering
        hardware FMA speed on portable builds via runtime dispatch.
