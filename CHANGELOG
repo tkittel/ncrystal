@@ -1,4 +1,8 @@
 v4.4.7 (work in progress)
+     * Fix a Windows-only crash (STATUS_ACCESS_VIOLATION) affecting any
+       scatter process created for a crystalline material: VDOSGn's
+       destructor dereferenced a moved-from Pimpl, unnoticed on GCC/Clang
+       (whose NRVO elides the move in the affected return) but not on MSVC.
      * Add NC::fastLowerBoundIdx/fastUpperBoundIdx (NCFastSearch.hh):
        drop-in replacements for std::lower_bound/upper_bound on sorted
        double arrays, with the inner comparison compiling to a branchless
