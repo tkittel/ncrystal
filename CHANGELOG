@@ -1,4 +1,11 @@
 v4.4.7 (work in progress)
+     * Windows correctness fixes: environment variables are now read via
+       the wide Win32 API with explicit UTF-8 conversion (std::getenv's
+       CRT-cached table misses changes made from a different CRT module in
+       the same process, e.g. Python's os.environ vs the NCrystal DLL);
+       removed a dangling pointer in FlexVDOS's Debye-model query path and
+       some undefined iterator arithmetic. C++ standard library assertion
+       modes are now also enabled in CMake Debug builds on all platforms.
      * Fix a Windows-only crash (STATUS_ACCESS_VIOLATION) affecting any
        scatter process created for a crystalline material: VDOSGn's
        destructor dereferenced a moved-from Pimpl, unnoticed on GCC/Clang
