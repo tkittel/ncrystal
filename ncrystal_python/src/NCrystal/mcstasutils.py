@@ -301,8 +301,8 @@ def cfgstr_2_hkl(*, cfgstr, tgtformat, verbose=True, fp_format = '%.14g' ):
                 debye_temp_sumw += _dtw
 
             d[ai.atomData.elementName()] = d.get(ai.atomData.elementName(),0) + ai.count
-            nformula_per_unitcell = functools.reduce(math.gcd, list(c for _,c in d.items()))
-        formula = ''.join(( '%s%i'%(k,v/nformula_per_unitcell) if v!=nformula_per_unitcell else k) for k,v in sorted(d.items()))
+            nformula_per_unitcell = functools.reduce(math.gcd, [c for _,c in d.items()])
+        formula = ''.join(( f'{k}{v//nformula_per_unitcell}' if v!=nformula_per_unitcell else k) for k,v in sorted(d.items()))
         yield f'# formula {formula}'
         yield f'# nformula_per_unitcell {nformula_per_unitcell}'
         if debye_temp_sum:
