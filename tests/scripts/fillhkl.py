@@ -31,6 +31,47 @@ import NCTestUtils.enable_fpe  # noqa: F401
 from NCTestUtils.env import ncsetenv
 
 
+# Without a space group, HKL planes are grouped into families by their
+# (d-spacing, |F|^2) values. Check that this never splits the true symmetry
+# families (i.e. those found when the space group is known).
+def test_nosgfamilies():
+    def families( ncmat, cfg ):
+        info = NC.directLoad( ncmat, cfg + ';comp=bragg', doScatter = False,
+                              doAbsorption = False ).info
+        res = []
+        for e in info.hklObjects():
+            hkl = set( zip( e.h.tolist(), e.k.tolist(), e.l.tolist() ) )
+            hkl |= { (-a,-b,-c) for a,b,c in hkl }
+            assert len(hkl) == e.mult
+            res.append( ( float(e.d), hkl ) )
+        return res
+
+    def check( fn, cfg ):
+        txt = NC.createTextData( f'stdlib::{fn}' ).rawData
+        nosg_txt = re.sub( r'@SPACEGROUP\s*\n\s*\d+\s*\n', '', txt )
+        assert nosg_txt != txt
+        sgfams = families( txt, cfg )
+        nosgfams = families( nosg_txt, cfg )
+        hkl2fam = {}
+        for i, ( _, hkl ) in enumerate( nosgfams ):
+            for e in hkl:
+                hkl2fam[e] = i
+        for d, hkl in sgfams:
+            ids = { hkl2fam.get( e ) for e in hkl }
+            assert len(ids) == 1, f'{fn}: symmetry family at d={d} split'
+        print(f'{fn:<40} [{cfg}]: {len(sgfams)} families with space group,'
+              f' {len(nosgfams)} without')
+
+    #Materials where some families used to be split (depending on rounding of the
+    #d-spacing):
+    for fn, cfg in [ ( 'GaSe_sg194_GalliumSelenide.ncmat', 'dcutoff=0.4' ),
+                     ( 'AlN_sg186_AluminumNitride.ncmat', 'dcutoff=0.15' ),
+                     ( 'BeF2_sg152_Beryllium_Fluoride.ncmat', 'dcutoff=0.3' ),
+                     ( 'BaO_sg225_BariumOxide.ncmat', 'dcutoff=0.35' ),
+                     ( 'NaF_sg225_SodiumFlouride.ncmat', 'dcutoff=0.19' ),
+                     ( 'Al_sg225.ncmat', 'dcutoff=0.3' ) ]:
+        check( fn, cfg )
+
 # Tests selection of a single HKL plane with the FILLHKL_SELECTHKL environment
 # variable (for validation plots), with and without space group. The selected
 # plane must get the values of its family in the full list of planes.
@@ -226,9 +267,122 @@ def test_selectphys():
             assert abs( ( x / res[0][0] ) / ( df2 / res[0][1] ) - 1 ) < 1e-9
     print('  Powder cross sections of selected planes scale as d*|F|^2')
 
+# Tests the bookkeeping table used when generating HKL planes with space group
+# symmetry: its memory limit (FILLHKL_MEMLIM env var), and that results are
+# correct with large hkl indices (compared with results without space group).
+def test_memlim():
+    def strip_sg( txt ):
+        return re.sub( r'@SPACEGROUP\s*\n\s*\d+\s*\n', '', txt )
+
+    def load( txt, cfg ):
+        NC.clearCaches()
+        return NC.directLoad( txt, cfg + ';comp=bragg', doScatter = False,
+                              doAbsorption = False ).info
+
+    def families( info ):
+        res = []
+        for e in info.hklObjects():
+            s = set( zip( e.h.tolist(), e.k.tolist(), e.l.tolist() ) )
+            s |= { (-a,-b,-c) for a,b,c in s }
+            assert len(s) == e.mult
+            res.append( ( float(e.d), float(e.f2), s ) )
+        return res
+
+    def errmsg( e ):
+        #Remove the build dependent env var prefix:
+        return re.sub( r'NCRYSTAL[A-Z]*_FILLHKL', 'NCRYSTAL_FILLHKL', str(e) )
+
+    def compare_sg_nosg( label, txt, cfg ):
+        """Symmetry families must be exactly those found without space group,
+    except that the latter might merge several of them."""
+        sgf = families( load( txt, cfg ) )
+        nosgf = families( load( strip_sg( txt ), cfg ) )
+        h2i = {}
+        for i, ( _, _, s ) in enumerate( nosgf ):
+            for hkl in s:
+                h2i[hkl] = i
+        #F2 sums (weighted with multiplicity) must match in each nosg family:
+        f2sum = [ 0.0 ] * len(nosgf)
+        npts = 0
+        maxhkl = 0
+        for d, f2, s in sgf:
+            ids = { h2i.get( hkl ) for hkl in s }
+            assert len(ids) == 1 and None not in ids
+            i = ids.pop()
+            assert abs( nosgf[i][0] - d ) < 1e-6 * d
+            f2sum[i] += f2 * len(s)
+            npts += len(s)
+            maxhkl = max( maxhkl, max( max(abs(x) for x in hkl) for hkl in s ) )
+        assert npts == len(h2i)
+        for ( _, f2, s ), f2s in zip( nosgf, f2sum ):
+            assert abs( f2 * len(s) - f2s ) < 1e-6 * f2s
+        print(f'{label}: {len(sgf)} symmetry families (max |h|,|k|,|l| = {maxhkl}),'
+              f' {len(nosgf)} families without space group, all consistent')
+
+    #Large c axis, so indices >128 (which used to require a 67MB table):
+    large_cell = '''NCMAT v7
+@CELL
+  lengths 3 3 40
+  angles 90 90 90
+@SPACEGROUP
+  123
+@ATOMPOSITIONS
+  Al 0 0 0
+  O 1/2 1/2 1/2
+@DYNINFO
+  element Al
+  fraction 1/2
+  type vdosdebye
+  debye_temp 300
+@DYNINFO
+  element O
+  fraction 1/2
+  type vdosdebye
+  debye_temp 300
+'''
+    compare_sg_nosg( 'Large tetragonal cell', large_cell, 'dcutoff=0.25' )
+    for fn, cfg in [ ( 'BO3H3_sg2_BoricAcid.ncmat', 'dcutoff=0.5' ),
+                     ( 'GaSe_sg194_GalliumSelenide.ncmat', 'dcutoff=0.3' ),
+                     ( 'Al2O3_sg167_Corundum.ncmat', 'dcutoff=0.3' ) ]:
+        compare_sg_nosg( fn, NC.createTextData( f'stdlib::{fn}' ).rawData, cfg )
+
+    #Memory limit (default 20MB), which must trigger before any time is spent:
+    yag = NC.createTextData( 'stdlib::Y3Al5O12_sg230_YAG.ncmat' ).rawData
+    al = NC.createTextData( 'stdlib::Al_sg225.ncmat' ).rawData
+    def expect_error( errtype, txt, cfg, memlim = None ):
+        ncsetenv( 'FILLHKL_MEMLIM', memlim )
+        t0 = time.time()
+        try:
+            load( txt, cfg ).nHKL()
+        except errtype as e:
+            assert time.time() - t0 < 10.0
+            assert 'NCRYSTAL_FILLHKL_MEMLIM' in errmsg(e)
+            print(f'  {cfg} (memlim={memlim}): {errtype.__name__}:'
+                  f' {errmsg(e)[:95]}...')
+        else:
+            raise RuntimeError('expected error did not happen')
+        finally:
+            ncsetenv( 'FILLHKL_MEMLIM', None )
+
+    expect_error( NC.NCCalcError, yag, 'dcutoff=0.02' )
+    expect_error( NC.NCCalcError, al, 'dcutoff=0.1', memlim = '0.01' )
+    for bad in ( '0', '-1', 'abc' ):
+        expect_error( NC.NCBadInput, al, 'dcutoff=0.1', memlim = bad )
+
+    #Works when the limit is raised, and does not affect crystals without space
+    #group:
+    ncsetenv( 'FILLHKL_MEMLIM', '1' )
+    print('  Al (memlim=1):', load( al, 'dcutoff=0.1' ).nHKL(), 'families')
+    ncsetenv( 'FILLHKL_MEMLIM', '0.01' )
+    print('  Al without space group (memlim=0.01):',
+          load( strip_sg( al ), 'dcutoff=0.1' ).nHKL(), 'families')
+    ncsetenv( 'FILLHKL_MEMLIM', None )
+
 def main():
+    test_nosgfamilies()
     test_select()
     test_selectphys()
+    test_memlim()
 
 if __name__ == '__main__':
     main()
