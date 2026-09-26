@@ -88,13 +88,31 @@ def analyseVDOS(emin,emax,density,temperature,atom_mass_amu):
     density = _np.asarray(density,dtype=float)
     return _get_raw_cfcts()['nc_vdoseval'](emin,emax,density,temperature,atom_mass_amu)
 
+def _check_gn_order( n, nmax = 99999 ):
+    try:
+        ok = ( int(n) == n and 1 <= n <= nmax )
+    except (TypeError,ValueError,OverflowError):
+        ok = False
+    if not ok:
+        from .exceptions import NCBadInput
+        raise NCBadInput(f'Invalid Gn order n={n!r} (must be an integer'
+                         f' in 1..{nmax})')
+    return int(n)
+
 def extractGn( vdos, n, mass_amu, temperature, scatxs = 1.0, expand_egrid = True ):
     """Extract Sjolander's Gn function of order n."""
-    assert 1 <= n <= 99999
+    n = _check_gn_order( n )
     from .misc import AnyVDOS
     v = AnyVDOS(vdos)
     from ._chooks import _get_raw_cfcts
-    emin, emax, Gn =  _get_raw_cfcts()['raw_vdos2gn'](v.egrid(),v.dos(),scatxs, mass_amu, temperature, int(n) )
+    #NB: Important to use expand=norm=False, since the VDOSEval C++ object
+    #    constructed from this always expands/regularises/renormalises
+    #    internally anyway - and numpy pre-processing would only add redundant,
+    #    numpy-version-dependent rounding:
+    emin, emax, Gn =  _get_raw_cfcts()['raw_vdos2gn'](v.egrid(expand=False),
+                                                      v.dos(norm=False),
+                                                      scatxs, mass_amu,
+                                                      temperature, n )
     if not expand_egrid:
         return (emin,emax),Gn
     else:
@@ -768,7 +786,7 @@ class PhononDOSAnalyser:
         return res
 
     def __sjolanderGn_args( self, selected, n=1, masses = None, temperature = 293.15 ):
-        assert 1<=n<=9999
+        n = _check_gn_order( n, nmax = 9999 )
         assert temperature >= 0.001
         from .exceptions import NCBadInput
         if masses is None:
@@ -857,7 +875,7 @@ class PhononDOSAnalyser:
 
         pctx.axis.set_xlabel('Frequency (%s)'%unitname)
         if sjolanderGn is not None:
-            pctx.axis.set_ylabel('G%i (arbitrary scale)'%sjolanderGn['n'])
+            pctx.axis.set_ylabel(f'G{sjolanderGn["n"]} (arbitrary scale)')
         else:
             pctx.axis.set_ylabel('DOS (arbitrary scale)')
         if ymin is not None or ymax is not None:
