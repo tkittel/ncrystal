@@ -496,6 +496,8 @@ NCV::VDOSGn::Impl::Impl(const VDOSEval& vde,
 }
 
 NCV::VDOSGn::~VDOSGn() {
+  if ( !m_impl )
+    return;//was moved-from
   if ( m_impl->m_mt_jobs.has_value() ) {
     //End running jobs, so they don't write to suddenly non-existent buffers:
     m_impl->m_mt_jobs.value().waitAll();
