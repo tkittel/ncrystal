@@ -1,0 +1,1189 @@
+==== Space group table ====
+All settings (Hall number, setting, Hall symbol, flags):
+  1 1 "P 1" [default] [single]
+  2 2 "-P 1" [default] [single]
+  3 3:b "P 2y" [default]
+  4 3:c "P 2"
+  5 3:a "P 2x"
+  6 4:b "P 2yb" [default]
+  7 4:c "P 2c"
+  8 4:a "P 2xa"
+  9 5:b1 "C 2y" [default]
+  10 5:b2 "A 2y"
+  11 5:b3 "I 2y"
+  12 5:c1 "A 2"
+  13 5:c2 "B 2"
+  14 5:c3 "I 2"
+  15 5:a1 "B 2x"
+  16 5:a2 "C 2x"
+  17 5:a3 "I 2x"
+  18 6:b "P -2y" [default]
+  19 6:c "P -2"
+  20 6:a "P -2x"
+  21 7:b1 "P -2yc" [default]
+  22 7:b2 "P -2yac"
+  23 7:b3 "P -2ya"
+  24 7:c1 "P -2a"
+  25 7:c2 "P -2ab"
+  26 7:c3 "P -2b"
+  27 7:a1 "P -2xb"
+  28 7:a2 "P -2xbc"
+  29 7:a3 "P -2xc"
+  30 8:b1 "C -2y" [default]
+  31 8:b2 "A -2y"
+  32 8:b3 "I -2y"
+  33 8:c1 "A -2"
+  34 8:c2 "B -2"
+  35 8:c3 "I -2"
+  36 8:a1 "B -2x"
+  37 8:a2 "C -2x"
+  38 8:a3 "I -2x"
+  39 9:b1 "C -2yc" [default]
+  40 9:b2 "A -2yab"
+  41 9:b3 "I -2ya"
+  42 9:-b1 "A -2ya"
+  43 9:-b2 "C -2yac"
+  44 9:-b3 "I -2yc"
+  45 9:c1 "A -2a"
+  46 9:c2 "B -2ab"
+  47 9:c3 "I -2b"
+  48 9:-c1 "B -2b"
+  49 9:-c2 "A -2ab"
+  50 9:-c3 "I -2a"
+  51 9:a1 "B -2xb"
+  52 9:a2 "C -2xac"
+  53 9:a3 "I -2xc"
+  54 9:-a1 "C -2xc"
+  55 9:-a2 "B -2xab"
+  56 9:-a3 "I -2xb"
+  57 10:b "-P 2y" [default]
+  58 10:c "-P 2"
+  59 10:a "-P 2x"
+  60 11:b "-P 2yb" [default]
+  61 11:c "-P 2c"
+  62 11:a "-P 2xa"
+  63 12:b1 "-C 2y" [default]
+  64 12:b2 "-A 2y"
+  65 12:b3 "-I 2y"
+  66 12:c1 "-A 2"
+  67 12:c2 "-B 2"
+  68 12:c3 "-I 2"
+  69 12:a1 "-B 2x"
+  70 12:a2 "-C 2x"
+  71 12:a3 "-I 2x"
+  72 13:b1 "-P 2yc" [default]
+  73 13:b2 "-P 2yac"
+  74 13:b3 "-P 2ya"
+  75 13:c1 "-P 2a"
+  76 13:c2 "-P 2ab"
+  77 13:c3 "-P 2b"
+  78 13:a1 "-P 2xb"
+  79 13:a2 "-P 2xbc"
+  80 13:a3 "-P 2xc"
+  81 14:b1 "-P 2ybc" [default]
+  82 14:b2 "-P 2yn"
+  83 14:b3 "-P 2yab"
+  84 14:c1 "-P 2ac"
+  85 14:c2 "-P 2n"
+  86 14:c3 "-P 2bc"
+  87 14:a1 "-P 2xab"
+  88 14:a2 "-P 2xn"
+  89 14:a3 "-P 2xac"
+  90 15:b1 "-C 2yc" [default]
+  91 15:b2 "-A 2yab"
+  92 15:b3 "-I 2ya"
+  93 15:-b1 "-A 2ya"
+  94 15:-b2 "-C 2yac"
+  95 15:-b3 "-I 2yc"
+  96 15:c1 "-A 2a"
+  97 15:c2 "-B 2ab"
+  98 15:c3 "-I 2b"
+  99 15:-c1 "-B 2b"
+  100 15:-c2 "-A 2ab"
+  101 15:-c3 "-I 2a"
+  102 15:a1 "-B 2xb"
+  103 15:a2 "-C 2xac"
+  104 15:a3 "-I 2xc"
+  105 15:-a1 "-C 2xc"
+  106 15:-a2 "-B 2xab"
+  107 15:-a3 "-I 2xb"
+  108 16 "P 2 2" [default] [single]
+  109 17 "P 2c 2" [default]
+  110 17:cab "P 2a 2a"
+  111 17:bca "P 2 2b"
+  112 18 "P 2 2ab" [default]
+  113 18:cab "P 2bc 2"
+  114 18:bca "P 2ac 2ac"
+  115 19 "P 2ac 2ab" [default] [single]
+  116 20 "C 2c 2" [default]
+  117 20:cab "A 2a 2a"
+  118 20:bca "B 2 2b"
+  119 21 "C 2 2" [default]
+  120 21:cab "A 2 2"
+  121 21:bca "B 2 2"
+  122 22 "F 2 2" [default] [single]
+  123 23 "I 2 2" [default] [single]
+  124 24 "I 2b 2c" [default] [single]
+  125 25 "P 2 -2" [default]
+  126 25:cab "P -2 2"
+  127 25:bca "P -2 -2"
+  128 26 "P 2c -2" [default]
+  129 26:ba-c "P 2c -2c"
+  130 26:cab "P -2a 2a"
+  131 26:-cba "P -2 2a"
+  132 26:bca "P -2 -2b"
+  133 26:a-cb "P -2b -2"
+  134 27 "P 2 -2c" [default]
+  135 27:cab "P -2a 2"
+  136 27:bca "P -2b -2b"
+  137 28 "P 2 -2a" [default]
+  138 28:ba-c "P 2 -2b"
+  139 28:cab "P -2b 2"
+  140 28:-cba "P -2c 2"
+  141 28:bca "P -2c -2c"
+  142 28:a-cb "P -2a -2a"
+  143 29 "P 2c -2ac" [default]
+  144 29:ba-c "P 2c -2b"
+  145 29:cab "P -2b 2a"
+  146 29:-cba "P -2ac 2a"
+  147 29:bca "P -2bc -2c"
+  148 29:a-cb "P -2a -2ab"
+  149 30 "P 2 -2bc" [default]
+  150 30:ba-c "P 2 -2ac"
+  151 30:cab "P -2ac 2"
+  152 30:-cba "P -2ab 2"
+  153 30:bca "P -2ab -2ab"
+  154 30:a-cb "P -2bc -2bc"
+  155 31 "P 2ac -2" [default]
+  156 31:ba-c "P 2bc -2bc"
+  157 31:cab "P -2ab 2ab"
+  158 31:-cba "P -2 2ac"
+  159 31:bca "P -2 -2bc"
+  160 31:a-cb "P -2ab -2"
+  161 32 "P 2 -2ab" [default]
+  162 32:cab "P -2bc 2"
+  163 32:bca "P -2ac -2ac"
+  164 33 "P 2c -2n" [default]
+  165 33:ba-c "P 2c -2ab"
+  166 33:cab "P -2bc 2a"
+  167 33:-cba "P -2n 2a"
+  168 33:bca "P -2n -2ac"
+  169 33:a-cb "P -2ac -2n"
+  170 34 "P 2 -2n" [default]
+  171 34:cab "P -2n 2"
+  172 34:bca "P -2n -2n"
+  173 35 "C 2 -2" [default]
+  174 35:cab "A -2 2"
+  175 35:bca "B -2 -2"
+  176 36 "C 2c -2" [default]
+  177 36:ba-c "C 2c -2c"
+  178 36:cab "A -2a 2a"
+  179 36:-cba "A -2 2a"
+  180 36:bca "B -2 -2b"
+  181 36:a-cb "B -2b -2"
+  182 37 "C 2 -2c" [default]
+  183 37:cab "A -2a 2"
+  184 37:bca "B -2b -2b"
+  185 38 "A 2 -2" [default]
+  186 38:ba-c "B 2 -2"
+  187 38:cab "B -2 2"
+  188 38:-cba "C -2 2"
+  189 38:bca "C -2 -2"
+  190 38:a-cb "A -2 -2"
+  191 39 "A 2 -2b" [default]
+  192 39:ba-c "B 2 -2a"
+  193 39:cab "B -2a 2"
+  194 39:-cba "C -2a 2"
+  195 39:bca "C -2a -2a"
+  196 39:a-cb "A -2b -2b"
+  197 40 "A 2 -2a" [default]
+  198 40:ba-c "B 2 -2b"
+  199 40:cab "B -2b 2"
+  200 40:-cba "C -2c 2"
+  201 40:bca "C -2c -2c"
+  202 40:a-cb "A -2a -2a"
+  203 41 "A 2 -2ab" [default]
+  204 41:ba-c "B 2 -2ab"
+  205 41:cab "B -2ab 2"
+  206 41:-cba "C -2ac 2"
+  207 41:bca "C -2ac -2ac"
+  208 41:a-cb "A -2ab -2ab"
+  209 42 "F 2 -2" [default]
+  210 42:cab "F -2 2"
+  211 42:bca "F -2 -2"
+  212 43 "F 2 -2d" [default]
+  213 43:cab "F -2d 2"
+  214 43:bca "F -2d -2d"
+  215 44 "I 2 -2" [default]
+  216 44:cab "I -2 2"
+  217 44:bca "I -2 -2"
+  218 45 "I 2 -2c" [default]
+  219 45:cab "I -2a 2"
+  220 45:bca "I -2b -2b"
+  221 46 "I 2 -2a" [default]
+  222 46:ba-c "I 2 -2b"
+  223 46:cab "I -2b 2"
+  224 46:-cba "I -2c 2"
+  225 46:bca "I -2c -2c"
+  226 46:a-cb "I -2a -2a"
+  227 47 "-P 2 2" [default] [single]
+  228 48:1 "P 2 2 -1n" [default]
+  229 48:2 "-P 2ab 2bc"
+  230 49 "-P 2 2c" [default]
+  231 49:cab "-P 2a 2"
+  232 49:bca "-P 2b 2b"
+  233 50:1 "P 2 2 -1ab" [default]
+  234 50:2 "-P 2ab 2b"
+  235 50:1cab "P 2 2 -1bc"
+  236 50:2cab "-P 2b 2bc"
+  237 50:1bca "P 2 2 -1ac"
+  238 50:2bca "-P 2a 2c"
+  239 51 "-P 2a 2a" [default]
+  240 51:ba-c "-P 2b 2"
+  241 51:cab "-P 2 2b"
+  242 51:-cba "-P 2c 2c"
+  243 51:bca "-P 2c 2"
+  244 51:a-cb "-P 2 2a"
+  245 52 "-P 2a 2bc" [default]
+  246 52:ba-c "-P 2b 2n"
+  247 52:cab "-P 2n 2b"
+  248 52:-cba "-P 2ab 2c"
+  249 52:bca "-P 2ab 2n"
+  250 52:a-cb "-P 2n 2bc"
+  251 53 "-P 2ac 2" [default]
+  252 53:ba-c "-P 2bc 2bc"
+  253 53:cab "-P 2ab 2ab"
+  254 53:-cba "-P 2 2ac"
+  255 53:bca "-P 2 2bc"
+  256 53:a-cb "-P 2ab 2"
+  257 54 "-P 2a 2ac" [default]
+  258 54:ba-c "-P 2b 2c"
+  259 54:cab "-P 2a 2b"
+  260 54:-cba "-P 2ac 2c"
+  261 54:bca "-P 2bc 2b"
+  262 54:a-cb "-P 2b 2ab"
+  263 55 "-P 2 2ab" [default]
+  264 55:cab "-P 2bc 2"
+  265 55:bca "-P 2ac 2ac"
+  266 56 "-P 2ab 2ac" [default]
+  267 56:cab "-P 2ac 2bc"
+  268 56:bca "-P 2bc 2ab"
+  269 57 "-P 2c 2b" [default]
+  270 57:ba-c "-P 2c 2ac"
+  271 57:cab "-P 2ac 2a"
+  272 57:-cba "-P 2b 2a"
+  273 57:bca "-P 2a 2ab"
+  274 57:a-cb "-P 2bc 2c"
+  275 58 "-P 2 2n" [default]
+  276 58:cab "-P 2n 2"
+  277 58:bca "-P 2n 2n"
+  278 59:1 "P 2 2ab -1ab" [default]
+  279 59:2 "-P 2ab 2a"
+  280 59:1cab "P 2bc 2 -1bc"
+  281 59:2cab "-P 2c 2bc"
+  282 59:1bca "P 2ac 2ac -1ac"
+  283 59:2bca "-P 2c 2a"
+  284 60 "-P 2n 2ab" [default]
+  285 60:ba-c "-P 2n 2c"
+  286 60:cab "-P 2a 2n"
+  287 60:-cba "-P 2bc 2n"
+  288 60:bca "-P 2ac 2b"
+  289 60:a-cb "-P 2b 2ac"
+  290 61 "-P 2ac 2ab" [default]
+  291 61:ba-c "-P 2bc 2ac"
+  292 62 "-P 2ac 2n" [default]
+  293 62:ba-c "-P 2bc 2a"
+  294 62:cab "-P 2c 2ab"
+  295 62:-cba "-P 2n 2ac"
+  296 62:bca "-P 2n 2a"
+  297 62:a-cb "-P 2c 2n"
+  298 63 "-C 2c 2" [default]
+  299 63:ba-c "-C 2c 2c"
+  300 63:cab "-A 2a 2a"
+  301 63:-cba "-A 2 2a"
+  302 63:bca "-B 2 2b"
+  303 63:a-cb "-B 2b 2"
+  304 64 "-C 2ac 2" [default]
+  305 64:ba-c "-C 2ac 2ac"
+  306 64:cab "-A 2ab 2ab"
+  307 64:-cba "-A 2 2ab"
+  308 64:bca "-B 2 2ab"
+  309 64:a-cb "-B 2ab 2"
+  310 65 "-C 2 2" [default]
+  311 65:cab "-A 2 2"
+  312 65:bca "-B 2 2"
+  313 66 "-C 2 2c" [default]
+  314 66:cab "-A 2a 2"
+  315 66:bca "-B 2b 2b"
+  316 67 "-C 2a 2" [default]
+  317 67:ba-c "-C 2a 2a"
+  318 67:cab "-A 2b 2b"
+  319 67:-cba "-A 2 2b"
+  320 67:bca "-B 2 2a"
+  321 67:a-cb "-B 2a 2"
+  322 68:1 "C 2 2 -1ac" [default]
+  323 68:2 "-C 2a 2ac"
+  324 68:1ba-c "C 2 2 -1ac"
+  325 68:2ba-c "-C 2a 2c"
+  326 68:1cab "A 2 2 -1ab"
+  327 68:2cab "-A 2a 2b"
+  328 68:1-cba "A 2 2 -1ab"
+  329 68:2-cba "-A 2ab 2b"
+  330 68:1bca "B 2 2 -1ab"
+  331 68:2bca "-B 2ab 2b"
+  332 68:1a-cb "B 2 2 -1ab"
+  333 68:2a-cb "-B 2b 2ab"
+  334 69 "-F 2 2" [default] [single]
+  335 70:1 "F 2 2 -1d" [default]
+  336 70:2 "-F 2uv 2vw"
+  337 71 "-I 2 2" [default] [single]
+  338 72 "-I 2 2c" [default]
+  339 72:cab "-I 2a 2"
+  340 72:bca "-I 2b 2b"
+  341 73 "-I 2b 2c" [default]
+  342 73:ba-c "-I 2a 2b"
+  343 74 "-I 2b 2" [default]
+  344 74:ba-c "-I 2a 2a"
+  345 74:cab "-I 2c 2c"
+  346 74:-cba "-I 2 2b"
+  347 74:bca "-I 2 2a"
+  348 74:a-cb "-I 2c 2"
+  349 75 "P 4" [default] [single]
+  350 76 "P 4w" [default] [single]
+  351 77 "P 4c" [default] [single]
+  352 78 "P 4cw" [default] [single]
+  353 79 "I 4" [default] [single]
+  354 80 "I 4bw" [default] [single]
+  355 81 "P -4" [default] [single]
+  356 82 "I -4" [default] [single]
+  357 83 "-P 4" [default] [single]
+  358 84 "-P 4c" [default] [single]
+  359 85:1 "P 4ab -1ab" [default]
+  360 85:2 "-P 4a"
+  361 86:1 "P 4n -1n" [default]
+  362 86:2 "-P 4bc"
+  363 87 "-I 4" [default] [single]
+  364 88:1 "I 4bw -1bw" [default]
+  365 88:2 "-I 4ad"
+  366 89 "P 4 2" [default] [single]
+  367 90 "P 4ab 2ab" [default] [single]
+  368 91 "P 4w 2c" [default] [single]
+  369 92 "P 4abw 2nw" [default] [single]
+  370 93 "P 4c 2" [default] [single]
+  371 94 "P 4n 2n" [default] [single]
+  372 95 "P 4cw 2c" [default] [single]
+  373 96 "P 4nw 2abw" [default] [single]
+  374 97 "I 4 2" [default] [single]
+  375 98 "I 4bw 2bw" [default] [single]
+  376 99 "P 4 -2" [default] [single]
+  377 100 "P 4 -2ab" [default] [single]
+  378 101 "P 4c -2c" [default] [single]
+  379 102 "P 4n -2n" [default] [single]
+  380 103 "P 4 -2c" [default] [single]
+  381 104 "P 4 -2n" [default] [single]
+  382 105 "P 4c -2" [default] [single]
+  383 106 "P 4c -2ab" [default] [single]
+  384 107 "I 4 -2" [default] [single]
+  385 108 "I 4 -2c" [default] [single]
+  386 109 "I 4bw -2" [default] [single]
+  387 110 "I 4bw -2c" [default] [single]
+  388 111 "P -4 2" [default] [single]
+  389 112 "P -4 2c" [default] [single]
+  390 113 "P -4 2ab" [default] [single]
+  391 114 "P -4 2n" [default] [single]
+  392 115 "P -4 -2" [default] [single]
+  393 116 "P -4 -2c" [default] [single]
+  394 117 "P -4 -2ab" [default] [single]
+  395 118 "P -4 -2n" [default] [single]
+  396 119 "I -4 -2" [default] [single]
+  397 120 "I -4 -2c" [default] [single]
+  398 121 "I -4 2" [default] [single]
+  399 122 "I -4 2bw" [default] [single]
+  400 123 "-P 4 2" [default] [single]
+  401 124 "-P 4 2c" [default] [single]
+  402 125:1 "P 4 2 -1ab" [default]
+  403 125:2 "-P 4a 2b"
+  404 126:1 "P 4 2 -1n" [default]
+  405 126:2 "-P 4a 2bc"
+  406 127 "-P 4 2ab" [default] [single]
+  407 128 "-P 4 2n" [default] [single]
+  408 129:1 "P 4ab 2ab -1ab" [default]
+  409 129:2 "-P 4a 2a"
+  410 130:1 "P 4ab 2n -1ab" [default]
+  411 130:2 "-P 4a 2ac"
+  412 131 "-P 4c 2" [default] [single]
+  413 132 "-P 4c 2c" [default] [single]
+  414 133:1 "P 4n 2c -1n" [default]
+  415 133:2 "-P 4ac 2b"
+  416 134:1 "P 4n 2 -1n" [default]
+  417 134:2 "-P 4ac 2bc"
+  418 135 "-P 4c 2ab" [default] [single]
+  419 136 "-P 4n 2n" [default] [single]
+  420 137:1 "P 4n 2n -1n" [default]
+  421 137:2 "-P 4ac 2a"
+  422 138:1 "P 4n 2ab -1n" [default]
+  423 138:2 "-P 4ac 2ac"
+  424 139 "-I 4 2" [default] [single]
+  425 140 "-I 4 2c" [default] [single]
+  426 141:1 "I 4bw 2bw -1bw" [default]
+  427 141:2 "-I 4bd 2"
+  428 142:1 "I 4bw 2aw -1bw" [default]
+  429 142:2 "-I 4bd 2c"
+  430 143 "P 3" [default] [single]
+  431 144 "P 31" [default] [single]
+  432 145 "P 32" [default] [single]
+  433 146:H "R 3" [default]
+  434 146:R "P 3*"
+  435 147 "-P 3" [default] [single]
+  436 148:H "-R 3" [default]
+  437 148:R "-P 3*"
+  438 149 "P 3 2" [default] [single]
+  439 150 "P 3 2"" [default] [single]
+  440 151 "P 31 2 (0 0 4)" [default] [single]
+  441 152 "P 31 2"" [default] [single]
+  442 153 "P 32 2 (0 0 2)" [default] [single]
+  443 154 "P 32 2"" [default] [single]
+  444 155:H "R 3 2"" [default]
+  445 155:R "P 3* 2"
+  446 156 "P 3 -2"" [default] [single]
+  447 157 "P 3 -2" [default] [single]
+  448 158 "P 3 -2"c" [default] [single]
+  449 159 "P 3 -2c" [default] [single]
+  450 160:H "R 3 -2"" [default]
+  451 160:R "P 3* -2"
+  452 161:H "R 3 -2"c" [default]
+  453 161:R "P 3* -2n"
+  454 162 "-P 3 2" [default] [single]
+  455 163 "-P 3 2c" [default] [single]
+  456 164 "-P 3 2"" [default] [single]
+  457 165 "-P 3 2"c" [default] [single]
+  458 166:H "-R 3 2"" [default]
+  459 166:R "-P 3* 2"
+  460 167:H "-R 3 2"c" [default]
+  461 167:R "-P 3* 2n"
+  462 168 "P 6" [default] [single]
+  463 169 "P 61" [default] [single]
+  464 170 "P 65" [default] [single]
+  465 171 "P 62" [default] [single]
+  466 172 "P 64" [default] [single]
+  467 173 "P 6c" [default] [single]
+  468 174 "P -6" [default] [single]
+  469 175 "-P 6" [default] [single]
+  470 176 "-P 6c" [default] [single]
+  471 177 "P 6 2" [default] [single]
+  472 178 "P 61 2 (0 0 5)" [default] [single]
+  473 179 "P 65 2 (0 0 1)" [default] [single]
+  474 180 "P 62 2 (0 0 4)" [default] [single]
+  475 181 "P 64 2 (0 0 2)" [default] [single]
+  476 182 "P 6c 2c" [default] [single]
+  477 183 "P 6 -2" [default] [single]
+  478 184 "P 6 -2c" [default] [single]
+  479 185 "P 6c -2" [default] [single]
+  480 186 "P 6c -2c" [default] [single]
+  481 187 "P -6 2" [default] [single]
+  482 188 "P -6c 2" [default] [single]
+  483 189 "P -6 -2" [default] [single]
+  484 190 "P -6c -2c" [default] [single]
+  485 191 "-P 6 2" [default] [single]
+  486 192 "-P 6 2c" [default] [single]
+  487 193 "-P 6c 2" [default] [single]
+  488 194 "-P 6c 2c" [default] [single]
+  489 195 "P 2 2 3" [default] [single]
+  490 196 "F 2 2 3" [default] [single]
+  491 197 "I 2 2 3" [default] [single]
+  492 198 "P 2ac 2ab 3" [default] [single]
+  493 199 "I 2b 2c 3" [default] [single]
+  494 200 "-P 2 2 3" [default] [single]
+  495 201:1 "P 2 2 3 -1n" [default]
+  496 201:2 "-P 2ab 2bc 3"
+  497 202 "-F 2 2 3" [default] [single]
+  498 203:1 "F 2 2 3 -1d" [default]
+  499 203:2 "-F 2uv 2vw 3"
+  500 204 "-I 2 2 3" [default] [single]
+  501 205 "-P 2ac 2ab 3" [default] [single]
+  502 206 "-I 2b 2c 3" [default] [single]
+  503 207 "P 4 2 3" [default] [single]
+  504 208 "P 4n 2 3" [default] [single]
+  505 209 "F 4 2 3" [default] [single]
+  506 210 "F 4d 2 3" [default] [single]
+  507 211 "I 4 2 3" [default] [single]
+  508 212 "P 4acd 2ab 3" [default] [single]
+  509 213 "P 4bd 2ab 3" [default] [single]
+  510 214 "I 4bd 2c 3" [default] [single]
+  511 215 "P -4 2 3" [default] [single]
+  512 216 "F -4 2 3" [default] [single]
+  513 217 "I -4 2 3" [default] [single]
+  514 218 "P -4n 2 3" [default] [single]
+  515 219 "F -4a 2 3" [default] [single]
+  516 220 "I -4bd 2c 3" [default] [single]
+  517 221 "-P 4 2 3" [default] [single]
+  518 222:1 "P 4 2 3 -1n" [default]
+  519 222:2 "-P 4a 2bc 3"
+  520 223 "-P 4n 2 3" [default] [single]
+  521 224:1 "P 4n 2 3 -1n" [default]
+  522 224:2 "-P 4bc 2bc 3"
+  523 225 "-F 4 2 3" [default] [single]
+  524 226 "-F 4a 2 3" [default] [single]
+  525 227:1 "F 4d 2 3 -1d" [default]
+  526 227:2 "-F 4vw 2vw 3"
+  527 228:1 "F 4d 2 3 -1ad" [default]
+  528 228:2 "-F 4ud 2vw 3"
+  529 229 "-I 4 2 3" [default] [single]
+  530 230 "-I 4bd 2c 3" [default] [single]
+Numbers with multiple settings: 90
+Examples:
+  "227" -> 227:1 (Hall number 525, Hall symbol "F 4d 2 3 -1d")
+  "227:1" -> 227:1 (Hall number 525, Hall symbol "F 4d 2 3 -1d")
+  "227:2" -> 227:2 (Hall number 526, Hall symbol "-F 4vw 2vw 3")
+  "166" -> 166:H (Hall number 458, Hall symbol "-R 3 2"")
+  "166:H" -> 166:H (Hall number 458, Hall symbol "-R 3 2"")
+  "166:R" -> 166:R (Hall number 459, Hall symbol "-P 3* 2")
+  "14" -> 14:b1 (Hall number 81, Hall symbol "-P 2ybc")
+  "14:b1" -> 14:b1 (Hall number 81, Hall symbol "-P 2ybc")
+  "14:c1" -> 14:c1 (Hall number 84, Hall symbol "-P 2ac")
+  "62" -> 62 (Hall number 292, Hall symbol "-P 2ac 2n")
+  "62:cab" -> 62:cab (Hall number 294, Hall symbol "-P 2c 2ab")
+  "68:1cab" -> 68:1cab (Hall number 326, Hall symbol "A 2 2 -1ab")
+  "70:2" -> 70:2 (Hall number 336, Hall symbol "-F 2uv 2vw")
+  "15:-b2" -> 15:-b2 (Hall number 94, Hall symbol "-C 2yac")
+  "1" -> 1 (Hall number 1, Hall symbol "P 1")
+  "225" -> 225 (Hall number 523, Hall symbol "-F 4 2 3")
+Invalid input:
+  "" -> BadInput: Invalid space group specification: "" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+  "0" -> BadInput: Invalid space group specification: "0" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+  "231" -> BadInput: Invalid space group specification: "231" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+  "999" -> BadInput: Invalid space group specification: "999" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+  "1000" -> BadInput: Invalid space group specification: "1000" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+  "-1" -> BadInput: Invalid space group specification: "-1" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+  "+1" -> BadInput: Invalid space group specification: "+1" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+  " 227" -> BadInput: Invalid space group specification: " 227" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+  "227 " -> BadInput: Invalid space group specification: "227 " (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+  "abc" -> BadInput: Invalid space group specification: "abc" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+  "227:" -> BadInput: Invalid space group specification: "227:" (invalid setting choice for space group 227, available choices are: 1 2)
+  "227:3" -> BadInput: Invalid space group specification: "227:3" (invalid setting choice for space group 227, available choices are: 1 2)
+  "227:1:2" -> BadInput: Invalid space group specification: "227:1:2" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+  "166:h" -> BadInput: Invalid space group specification: "166:h" (invalid setting choice for space group 166, available choices are: H R)
+  "62:abc" -> BadInput: Invalid space group specification: "62:abc" (invalid setting choice for space group 62, available choices are: (none) ba-c cab -cba bca a-cb)
+  "225:1" -> BadInput: Invalid space group specification: "225:1" (invalid setting choice for space group 225, which has only one setting)
+  "14:b" -> BadInput: Invalid space group specification: "14:b" (invalid setting choice for space group 14, available choices are: b1 b2 b3 c1 c2 c3 a1 a2 a3)
+  "3:b1" -> BadInput: Invalid space group specification: "3:b1" (invalid setting choice for space group 3, available choices are: b c a)
+  ":2" -> BadInput: Invalid space group specification: ":2" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+  "22a" -> BadInput: Invalid space group specification: "22a" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+  Hall number 0 -> BadInput: Invalid space group Hall number: 0 (must be in range 1..530)
+  Hall number 531 -> BadInput: Invalid space group Hall number: 531 (must be in range 1..530)
+All OK
+==== Symmetry operations ====
+Accepted rotation matrices: 64
+Products of two accepted rotations which are invalid: 1280 (of 4096)
+  Example: Invalid composition of symmetry operations x-y,x,z and z,x,y (they can not belong to the same space group, since one of their rotation parts refers to hexagonal axes and the other to orthogonal-type axes)
+Numbers per rotation type: -6:2 -4:6 -3:10 -2:13 -1:1 1:1 2:13 3:10 4:6 6:2
+Closure of z,x,y -y+1/4,x+3/4,z+1/4 -x,-y,-z: 96 operations (modulo 1)
+Closure of x-y,x,z+1/6 y,x,-z -x,-y,-z: 72 operations (modulo 1)
+Accepted input:
+  "x,y,z" -> x,y,z
+  " X , Y , Z " -> x,y,z
+  "1/2+x,1/2-y,z" -> x+1/2,-y+1/2,z
+  "-y+x,x,z+1/6" -> x-y,x,z+1/6
+  "+x,-y,+z" -> x,-y,z
+  "x+1/2+1/4,y,z" -> x+3/4,y,z
+  "x-1/2,y,z" -> x+1/2,y,z
+  "x+3/2,y,z" -> x+1/2,y,z
+  "x+2/4,y,z" -> x+1/2,y,z
+  "x+1/8,y,z" -> x+1/8,y,z
+  "x,y,z+1" -> x,y,z
+  "x,y,z-1/24" -> x,y,z+23/24
+  "-x+y,-x,z+2/3" -> -x+y,-x,z+2/3
+  "y,x,-z+5/12" -> y,x,-z+5/12
+Invalid input:
+  "" -> BadInput: Invalid symmetry operation "": expected three comma-separated components
+  "x,y" -> BadInput: Invalid symmetry operation "x,y": expected three comma-separated components
+  "x,y,z,x" -> BadInput: Invalid symmetry operation "x,y,z,x": expected three comma-separated components
+  ",y,z" -> BadInput: Invalid symmetry operation ",y,z": empty component
+  "2x,y,z" -> BadInput: Invalid symmetry operation "2x,y,z": coefficients of x, y, z must be +1 or -1
+  "x,x,z" -> BadInput: Invalid symmetry operation "x,x,z": Symmetry operations must have a rotation part belonging to point group m-3m with orthogonal-type axes (i.e. a signed permutation matrix) or point group 6/mmm with hexagonal axes
+  "x+y+z,y,z" -> BadInput: Invalid symmetry operation "x+y+z,y,z": Symmetry operations must have a rotation part belonging to point group m-3m with orthogonal-type axes (i.e. a signed permutation matrix) or point group 6/mmm with hexagonal axes
+  "x+1/5,y,z" -> BadInput: Invalid symmetry operation "x+1/5,y,z": translations must be multiples of 1/24
+  "x+0.5,y,z" -> BadInput: Invalid symmetry operation "x+0.5,y,z": decimal translations are not supported (use fractions like 1/2)
+  "x,y,z+.5" -> BadInput: Invalid symmetry operation "x,y,z+.5": decimal translations are not supported (use fractions like 1/2)
+  "a,b,c" -> BadInput: Invalid symmetry operation "a,b,c": unexpected character
+  "x y,y,z" -> BadInput: Invalid symmetry operation "x y,y,z": missing sign between terms
+  "x+,y,z" -> BadInput: Invalid symmetry operation "x+,y,z": incomplete term
+  "x+1/0,y,z" -> BadInput: Invalid symmetry operation "x+1/0,y,z": division by zero
+  "x-x,y,z" -> BadInput: Invalid symmetry operation "x-x,y,z": repeated variable within component
+  "x+1//2,y,z" -> BadInput: Invalid symmetry operation "x+1//2,y,z": invalid fraction
+  "x,y,-z-" -> BadInput: Invalid symmetry operation "x,y,-z-": incomplete term
+  "--x,y,z" -> BadInput: Invalid symmetry operation "--x,y,z": unexpected character
+  "x,y,1/2" -> BadInput: Invalid symmetry operation "x,y,1/2": Symmetry operations must have a rotation part belonging to point group m-3m with orthogonal-type axes (i.e. a signed permutation matrix) or point group 6/mmm with hexagonal axes
+  "x+1234567890,y,z" -> BadInput: Invalid symmetry operation "x+1234567890,y,z": number too long
+  (2,0,0,0,1,0,0,0,1) -> BadInput: Symmetry operations must have rotation matrix entries in {-1,0,1}
+All OK
+==== Symmetry of space groups ====
+Hall number, setting, order, number of representatives, lattice symbol, centrosymmetric:
+  1 1 1 1 P 0
+  2 2 2 2 P 1
+  3 3:b 2 2 P 0
+  4 3:c 2 2 P 0
+  5 3:a 2 2 P 0
+  6 4:b 2 2 P 0
+  7 4:c 2 2 P 0
+  8 4:a 2 2 P 0
+  9 5:b1 4 2 C 0
+  10 5:b2 4 2 A 0
+  11 5:b3 4 2 I 0
+  12 5:c1 4 2 A 0
+  13 5:c2 4 2 B 0
+  14 5:c3 4 2 I 0
+  15 5:a1 4 2 B 0
+  16 5:a2 4 2 C 0
+  17 5:a3 4 2 I 0
+  18 6:b 2 2 P 0
+  19 6:c 2 2 P 0
+  20 6:a 2 2 P 0
+  21 7:b1 2 2 P 0
+  22 7:b2 2 2 P 0
+  23 7:b3 2 2 P 0
+  24 7:c1 2 2 P 0
+  25 7:c2 2 2 P 0
+  26 7:c3 2 2 P 0
+  27 7:a1 2 2 P 0
+  28 7:a2 2 2 P 0
+  29 7:a3 2 2 P 0
+  30 8:b1 4 2 C 0
+  31 8:b2 4 2 A 0
+  32 8:b3 4 2 I 0
+  33 8:c1 4 2 A 0
+  34 8:c2 4 2 B 0
+  35 8:c3 4 2 I 0
+  36 8:a1 4 2 B 0
+  37 8:a2 4 2 C 0
+  38 8:a3 4 2 I 0
+  39 9:b1 4 2 C 0
+  40 9:b2 4 2 A 0
+  41 9:b3 4 2 I 0
+  42 9:-b1 4 2 A 0
+  43 9:-b2 4 2 C 0
+  44 9:-b3 4 2 I 0
+  45 9:c1 4 2 A 0
+  46 9:c2 4 2 B 0
+  47 9:c3 4 2 I 0
+  48 9:-c1 4 2 B 0
+  49 9:-c2 4 2 A 0
+  50 9:-c3 4 2 I 0
+  51 9:a1 4 2 B 0
+  52 9:a2 4 2 C 0
+  53 9:a3 4 2 I 0
+  54 9:-a1 4 2 C 0
+  55 9:-a2 4 2 B 0
+  56 9:-a3 4 2 I 0
+  57 10:b 4 4 P 1
+  58 10:c 4 4 P 1
+  59 10:a 4 4 P 1
+  60 11:b 4 4 P 1
+  61 11:c 4 4 P 1
+  62 11:a 4 4 P 1
+  63 12:b1 8 4 C 1
+  64 12:b2 8 4 A 1
+  65 12:b3 8 4 I 1
+  66 12:c1 8 4 A 1
+  67 12:c2 8 4 B 1
+  68 12:c3 8 4 I 1
+  69 12:a1 8 4 B 1
+  70 12:a2 8 4 C 1
+  71 12:a3 8 4 I 1
+  72 13:b1 4 4 P 1
+  73 13:b2 4 4 P 1
+  74 13:b3 4 4 P 1
+  75 13:c1 4 4 P 1
+  76 13:c2 4 4 P 1
+  77 13:c3 4 4 P 1
+  78 13:a1 4 4 P 1
+  79 13:a2 4 4 P 1
+  80 13:a3 4 4 P 1
+  81 14:b1 4 4 P 1
+  82 14:b2 4 4 P 1
+  83 14:b3 4 4 P 1
+  84 14:c1 4 4 P 1
+  85 14:c2 4 4 P 1
+  86 14:c3 4 4 P 1
+  87 14:a1 4 4 P 1
+  88 14:a2 4 4 P 1
+  89 14:a3 4 4 P 1
+  90 15:b1 8 4 C 1
+  91 15:b2 8 4 A 1
+  92 15:b3 8 4 I 1
+  93 15:-b1 8 4 A 1
+  94 15:-b2 8 4 C 1
+  95 15:-b3 8 4 I 1
+  96 15:c1 8 4 A 1
+  97 15:c2 8 4 B 1
+  98 15:c3 8 4 I 1
+  99 15:-c1 8 4 B 1
+  100 15:-c2 8 4 A 1
+  101 15:-c3 8 4 I 1
+  102 15:a1 8 4 B 1
+  103 15:a2 8 4 C 1
+  104 15:a3 8 4 I 1
+  105 15:-a1 8 4 C 1
+  106 15:-a2 8 4 B 1
+  107 15:-a3 8 4 I 1
+  108 16 4 4 P 0
+  109 17 4 4 P 0
+  110 17:cab 4 4 P 0
+  111 17:bca 4 4 P 0
+  112 18 4 4 P 0
+  113 18:cab 4 4 P 0
+  114 18:bca 4 4 P 0
+  115 19 4 4 P 0
+  116 20 8 4 C 0
+  117 20:cab 8 4 A 0
+  118 20:bca 8 4 B 0
+  119 21 8 4 C 0
+  120 21:cab 8 4 A 0
+  121 21:bca 8 4 B 0
+  122 22 16 4 F 0
+  123 23 8 4 I 0
+  124 24 8 4 I 0
+  125 25 4 4 P 0
+  126 25:cab 4 4 P 0
+  127 25:bca 4 4 P 0
+  128 26 4 4 P 0
+  129 26:ba-c 4 4 P 0
+  130 26:cab 4 4 P 0
+  131 26:-cba 4 4 P 0
+  132 26:bca 4 4 P 0
+  133 26:a-cb 4 4 P 0
+  134 27 4 4 P 0
+  135 27:cab 4 4 P 0
+  136 27:bca 4 4 P 0
+  137 28 4 4 P 0
+  138 28:ba-c 4 4 P 0
+  139 28:cab 4 4 P 0
+  140 28:-cba 4 4 P 0
+  141 28:bca 4 4 P 0
+  142 28:a-cb 4 4 P 0
+  143 29 4 4 P 0
+  144 29:ba-c 4 4 P 0
+  145 29:cab 4 4 P 0
+  146 29:-cba 4 4 P 0
+  147 29:bca 4 4 P 0
+  148 29:a-cb 4 4 P 0
+  149 30 4 4 P 0
+  150 30:ba-c 4 4 P 0
+  151 30:cab 4 4 P 0
+  152 30:-cba 4 4 P 0
+  153 30:bca 4 4 P 0
+  154 30:a-cb 4 4 P 0
+  155 31 4 4 P 0
+  156 31:ba-c 4 4 P 0
+  157 31:cab 4 4 P 0
+  158 31:-cba 4 4 P 0
+  159 31:bca 4 4 P 0
+  160 31:a-cb 4 4 P 0
+  161 32 4 4 P 0
+  162 32:cab 4 4 P 0
+  163 32:bca 4 4 P 0
+  164 33 4 4 P 0
+  165 33:ba-c 4 4 P 0
+  166 33:cab 4 4 P 0
+  167 33:-cba 4 4 P 0
+  168 33:bca 4 4 P 0
+  169 33:a-cb 4 4 P 0
+  170 34 4 4 P 0
+  171 34:cab 4 4 P 0
+  172 34:bca 4 4 P 0
+  173 35 8 4 C 0
+  174 35:cab 8 4 A 0
+  175 35:bca 8 4 B 0
+  176 36 8 4 C 0
+  177 36:ba-c 8 4 C 0
+  178 36:cab 8 4 A 0
+  179 36:-cba 8 4 A 0
+  180 36:bca 8 4 B 0
+  181 36:a-cb 8 4 B 0
+  182 37 8 4 C 0
+  183 37:cab 8 4 A 0
+  184 37:bca 8 4 B 0
+  185 38 8 4 A 0
+  186 38:ba-c 8 4 B 0
+  187 38:cab 8 4 B 0
+  188 38:-cba 8 4 C 0
+  189 38:bca 8 4 C 0
+  190 38:a-cb 8 4 A 0
+  191 39 8 4 A 0
+  192 39:ba-c 8 4 B 0
+  193 39:cab 8 4 B 0
+  194 39:-cba 8 4 C 0
+  195 39:bca 8 4 C 0
+  196 39:a-cb 8 4 A 0
+  197 40 8 4 A 0
+  198 40:ba-c 8 4 B 0
+  199 40:cab 8 4 B 0
+  200 40:-cba 8 4 C 0
+  201 40:bca 8 4 C 0
+  202 40:a-cb 8 4 A 0
+  203 41 8 4 A 0
+  204 41:ba-c 8 4 B 0
+  205 41:cab 8 4 B 0
+  206 41:-cba 8 4 C 0
+  207 41:bca 8 4 C 0
+  208 41:a-cb 8 4 A 0
+  209 42 16 4 F 0
+  210 42:cab 16 4 F 0
+  211 42:bca 16 4 F 0
+  212 43 16 4 F 0
+  213 43:cab 16 4 F 0
+  214 43:bca 16 4 F 0
+  215 44 8 4 I 0
+  216 44:cab 8 4 I 0
+  217 44:bca 8 4 I 0
+  218 45 8 4 I 0
+  219 45:cab 8 4 I 0
+  220 45:bca 8 4 I 0
+  221 46 8 4 I 0
+  222 46:ba-c 8 4 I 0
+  223 46:cab 8 4 I 0
+  224 46:-cba 8 4 I 0
+  225 46:bca 8 4 I 0
+  226 46:a-cb 8 4 I 0
+  227 47 8 8 P 1
+  228 48:1 8 8 P 1
+  229 48:2 8 8 P 1
+  230 49 8 8 P 1
+  231 49:cab 8 8 P 1
+  232 49:bca 8 8 P 1
+  233 50:1 8 8 P 1
+  234 50:2 8 8 P 1
+  235 50:1cab 8 8 P 1
+  236 50:2cab 8 8 P 1
+  237 50:1bca 8 8 P 1
+  238 50:2bca 8 8 P 1
+  239 51 8 8 P 1
+  240 51:ba-c 8 8 P 1
+  241 51:cab 8 8 P 1
+  242 51:-cba 8 8 P 1
+  243 51:bca 8 8 P 1
+  244 51:a-cb 8 8 P 1
+  245 52 8 8 P 1
+  246 52:ba-c 8 8 P 1
+  247 52:cab 8 8 P 1
+  248 52:-cba 8 8 P 1
+  249 52:bca 8 8 P 1
+  250 52:a-cb 8 8 P 1
+  251 53 8 8 P 1
+  252 53:ba-c 8 8 P 1
+  253 53:cab 8 8 P 1
+  254 53:-cba 8 8 P 1
+  255 53:bca 8 8 P 1
+  256 53:a-cb 8 8 P 1
+  257 54 8 8 P 1
+  258 54:ba-c 8 8 P 1
+  259 54:cab 8 8 P 1
+  260 54:-cba 8 8 P 1
+  261 54:bca 8 8 P 1
+  262 54:a-cb 8 8 P 1
+  263 55 8 8 P 1
+  264 55:cab 8 8 P 1
+  265 55:bca 8 8 P 1
+  266 56 8 8 P 1
+  267 56:cab 8 8 P 1
+  268 56:bca 8 8 P 1
+  269 57 8 8 P 1
+  270 57:ba-c 8 8 P 1
+  271 57:cab 8 8 P 1
+  272 57:-cba 8 8 P 1
+  273 57:bca 8 8 P 1
+  274 57:a-cb 8 8 P 1
+  275 58 8 8 P 1
+  276 58:cab 8 8 P 1
+  277 58:bca 8 8 P 1
+  278 59:1 8 8 P 1
+  279 59:2 8 8 P 1
+  280 59:1cab 8 8 P 1
+  281 59:2cab 8 8 P 1
+  282 59:1bca 8 8 P 1
+  283 59:2bca 8 8 P 1
+  284 60 8 8 P 1
+  285 60:ba-c 8 8 P 1
+  286 60:cab 8 8 P 1
+  287 60:-cba 8 8 P 1
+  288 60:bca 8 8 P 1
+  289 60:a-cb 8 8 P 1
+  290 61 8 8 P 1
+  291 61:ba-c 8 8 P 1
+  292 62 8 8 P 1
+  293 62:ba-c 8 8 P 1
+  294 62:cab 8 8 P 1
+  295 62:-cba 8 8 P 1
+  296 62:bca 8 8 P 1
+  297 62:a-cb 8 8 P 1
+  298 63 16 8 C 1
+  299 63:ba-c 16 8 C 1
+  300 63:cab 16 8 A 1
+  301 63:-cba 16 8 A 1
+  302 63:bca 16 8 B 1
+  303 63:a-cb 16 8 B 1
+  304 64 16 8 C 1
+  305 64:ba-c 16 8 C 1
+  306 64:cab 16 8 A 1
+  307 64:-cba 16 8 A 1
+  308 64:bca 16 8 B 1
+  309 64:a-cb 16 8 B 1
+  310 65 16 8 C 1
+  311 65:cab 16 8 A 1
+  312 65:bca 16 8 B 1
+  313 66 16 8 C 1
+  314 66:cab 16 8 A 1
+  315 66:bca 16 8 B 1
+  316 67 16 8 C 1
+  317 67:ba-c 16 8 C 1
+  318 67:cab 16 8 A 1
+  319 67:-cba 16 8 A 1
+  320 67:bca 16 8 B 1
+  321 67:a-cb 16 8 B 1
+  322 68:1 16 8 C 1
+  323 68:2 16 8 C 1
+  324 68:1ba-c 16 8 C 1
+  325 68:2ba-c 16 8 C 1
+  326 68:1cab 16 8 A 1
+  327 68:2cab 16 8 A 1
+  328 68:1-cba 16 8 A 1
+  329 68:2-cba 16 8 A 1
+  330 68:1bca 16 8 B 1
+  331 68:2bca 16 8 B 1
+  332 68:1a-cb 16 8 B 1
+  333 68:2a-cb 16 8 B 1
+  334 69 32 8 F 1
+  335 70:1 32 8 F 1
+  336 70:2 32 8 F 1
+  337 71 16 8 I 1
+  338 72 16 8 I 1
+  339 72:cab 16 8 I 1
+  340 72:bca 16 8 I 1
+  341 73 16 8 I 1
+  342 73:ba-c 16 8 I 1
+  343 74 16 8 I 1
+  344 74:ba-c 16 8 I 1
+  345 74:cab 16 8 I 1
+  346 74:-cba 16 8 I 1
+  347 74:bca 16 8 I 1
+  348 74:a-cb 16 8 I 1
+  349 75 4 4 P 0
+  350 76 4 4 P 0
+  351 77 4 4 P 0
+  352 78 4 4 P 0
+  353 79 8 4 I 0
+  354 80 8 4 I 0
+  355 81 4 4 P 0
+  356 82 8 4 I 0
+  357 83 8 8 P 1
+  358 84 8 8 P 1
+  359 85:1 8 8 P 1
+  360 85:2 8 8 P 1
+  361 86:1 8 8 P 1
+  362 86:2 8 8 P 1
+  363 87 16 8 I 1
+  364 88:1 16 8 I 1
+  365 88:2 16 8 I 1
+  366 89 8 8 P 0
+  367 90 8 8 P 0
+  368 91 8 8 P 0
+  369 92 8 8 P 0
+  370 93 8 8 P 0
+  371 94 8 8 P 0
+  372 95 8 8 P 0
+  373 96 8 8 P 0
+  374 97 16 8 I 0
+  375 98 16 8 I 0
+  376 99 8 8 P 0
+  377 100 8 8 P 0
+  378 101 8 8 P 0
+  379 102 8 8 P 0
+  380 103 8 8 P 0
+  381 104 8 8 P 0
+  382 105 8 8 P 0
+  383 106 8 8 P 0
+  384 107 16 8 I 0
+  385 108 16 8 I 0
+  386 109 16 8 I 0
+  387 110 16 8 I 0
+  388 111 8 8 P 0
+  389 112 8 8 P 0
+  390 113 8 8 P 0
+  391 114 8 8 P 0
+  392 115 8 8 P 0
+  393 116 8 8 P 0
+  394 117 8 8 P 0
+  395 118 8 8 P 0
+  396 119 16 8 I 0
+  397 120 16 8 I 0
+  398 121 16 8 I 0
+  399 122 16 8 I 0
+  400 123 16 16 P 1
+  401 124 16 16 P 1
+  402 125:1 16 16 P 1
+  403 125:2 16 16 P 1
+  404 126:1 16 16 P 1
+  405 126:2 16 16 P 1
+  406 127 16 16 P 1
+  407 128 16 16 P 1
+  408 129:1 16 16 P 1
+  409 129:2 16 16 P 1
+  410 130:1 16 16 P 1
+  411 130:2 16 16 P 1
+  412 131 16 16 P 1
+  413 132 16 16 P 1
+  414 133:1 16 16 P 1
+  415 133:2 16 16 P 1
+  416 134:1 16 16 P 1
+  417 134:2 16 16 P 1
+  418 135 16 16 P 1
+  419 136 16 16 P 1
+  420 137:1 16 16 P 1
+  421 137:2 16 16 P 1
+  422 138:1 16 16 P 1
+  423 138:2 16 16 P 1
+  424 139 32 16 I 1
+  425 140 32 16 I 1
+  426 141:1 32 16 I 1
+  427 141:2 32 16 I 1
+  428 142:1 32 16 I 1
+  429 142:2 32 16 I 1
+  430 143 3 3 P 0
+  431 144 3 3 P 0
+  432 145 3 3 P 0
+  433 146:H 9 3 R 0
+  434 146:R 3 3 P 0
+  435 147 6 6 P 1
+  436 148:H 18 6 R 1
+  437 148:R 6 6 P 1
+  438 149 6 6 P 0
+  439 150 6 6 P 0
+  440 151 6 6 P 0
+  441 152 6 6 P 0
+  442 153 6 6 P 0
+  443 154 6 6 P 0
+  444 155:H 18 6 R 0
+  445 155:R 6 6 P 0
+  446 156 6 6 P 0
+  447 157 6 6 P 0
+  448 158 6 6 P 0
+  449 159 6 6 P 0
+  450 160:H 18 6 R 0
+  451 160:R 6 6 P 0
+  452 161:H 18 6 R 0
+  453 161:R 6 6 P 0
+  454 162 12 12 P 1
+  455 163 12 12 P 1
+  456 164 12 12 P 1
+  457 165 12 12 P 1
+  458 166:H 36 12 R 1
+  459 166:R 12 12 P 1
+  460 167:H 36 12 R 1
+  461 167:R 12 12 P 1
+  462 168 6 6 P 0
+  463 169 6 6 P 0
+  464 170 6 6 P 0
+  465 171 6 6 P 0
+  466 172 6 6 P 0
+  467 173 6 6 P 0
+  468 174 6 6 P 0
+  469 175 12 12 P 1
+  470 176 12 12 P 1
+  471 177 12 12 P 0
+  472 178 12 12 P 0
+  473 179 12 12 P 0
+  474 180 12 12 P 0
+  475 181 12 12 P 0
+  476 182 12 12 P 0
+  477 183 12 12 P 0
+  478 184 12 12 P 0
+  479 185 12 12 P 0
+  480 186 12 12 P 0
+  481 187 12 12 P 0
+  482 188 12 12 P 0
+  483 189 12 12 P 0
+  484 190 12 12 P 0
+  485 191 24 24 P 1
+  486 192 24 24 P 1
+  487 193 24 24 P 1
+  488 194 24 24 P 1
+  489 195 12 12 P 0
+  490 196 48 12 F 0
+  491 197 24 12 I 0
+  492 198 12 12 P 0
+  493 199 24 12 I 0
+  494 200 24 24 P 1
+  495 201:1 24 24 P 1
+  496 201:2 24 24 P 1
+  497 202 96 24 F 1
+  498 203:1 96 24 F 1
+  499 203:2 96 24 F 1
+  500 204 48 24 I 1
+  501 205 24 24 P 1
+  502 206 48 24 I 1
+  503 207 24 24 P 0
+  504 208 24 24 P 0
+  505 209 96 24 F 0
+  506 210 96 24 F 0
+  507 211 48 24 I 0
+  508 212 24 24 P 0
+  509 213 24 24 P 0
+  510 214 48 24 I 0
+  511 215 24 24 P 0
+  512 216 96 24 F 0
+  513 217 48 24 I 0
+  514 218 24 24 P 0
+  515 219 96 24 F 0
+  516 220 48 24 I 0
+  517 221 48 48 P 1
+  518 222:1 48 48 P 1
+  519 222:2 48 48 P 1
+  520 223 48 48 P 1
+  521 224:1 48 48 P 1
+  522 224:2 48 48 P 1
+  523 225 192 48 F 1
+  524 226 192 48 F 1
+  525 227:1 192 48 F 1
+  526 227:2 192 48 F 1
+  527 228:1 192 48 F 1
+  528 228:2 192 48 F 1
+  529 229 96 48 I 1
+  530 230 96 48 I 1
+Total number of operations: 7388, representatives: 4462, distinct rotations: 64
+Laue classes consistent with EqRefl for 460 settings (334880 hkl points in total)
+Examples:
+  14:b1 (Hall symbol "-P 2ybc"):
+    representatives: x,y,z -x,-y,-z -x,y+1/2,-z+1/2 x,-y+1/2,z+1/2
+    centring vectors: x,y,z
+  15:b1 (Hall symbol "-C 2yc"):
+    representatives: x,y,z -x,-y,-z -x,y,-z+1/2 x,-y,z+1/2
+    centring vectors: x,y,z x+1/2,y+1/2,z
+  166:H (Hall symbol "-R 3 2""):
+    representatives: x,y,z -x,-x+y,-z -x,-y,-z -x+y,-x,z -x+y,y,z -y,-x,z -y,x-y,z y,-x+y,-z y,x,-z x-y,-y,-z x-y,x,-z x,x-y,z
+    centring vectors: x,y,z x+1/3,y+2/3,z+2/3 x+2/3,y+1/3,z+1/3
+  166:R (Hall symbol "-P 3* 2"):
+    representatives: x,y,z -x,-y,-z -x,-z,-y -y,-x,-z -y,-z,-x -z,-x,-y -z,-y,-x z,y,x z,x,y y,z,x y,x,z x,z,y
+    centring vectors: x,y,z
+  194 (Hall symbol "-P 6c 2c"):
+    representatives: x,y,z -x,-x+y,-z -x,-x+y,z+1/2 -x,-y,-z -x,-y,z+1/2 -x+y,-x,-z+1/2 -x+y,-x,z -x+y,y,-z+1/2 -x+y,y,z -y,-x,-z+1/2 -y,-x,z -y,x-y,-z+1/2 -y,x-y,z y,-x+y,-z y,-x+y,z+1/2 y,x,-z y,x,z+1/2 x-y,-y,-z x-y,-y,z+1/2 x-y,x,-z x-y,x,z+1/2 x,y,-z+1/2 x,x-y,-z+1/2 x,x-y,z
+    centring vectors: x,y,z
+  227:2 (Hall symbol "-F 4vw 2vw 3"):
+    representatives: x,y,z -x,-y,-z -x+1/4,-y+1/4,z -x,-z,-y -x+1/4,-z+1/4,y -x+1/4,z,-y+1/4 -x,z+1/4,y+1/4 -x+1/4,y,-z+1/4 -x,y+1/4,z+1/4 -y,-x,-z -y+1/4,-x+1/4,z -y,-z,-x -y+1/4,-z+1/4,x -y+1/4,z,-x+1/4 -y,z+1/4,x+1/4 -y+1/4,x,-z+1/4 -y,x+1/4,z+1/4 -z,-x,-y -z+1/4,-x+1/4,y -z,-y,-x -z+1/4,-y+1/4,x -z+1/4,y,-x+1/4 -z,y+1/4,x+1/4 -z+1/4,x,-y+1/4 -z,x+1/4,y+1/4 z,-x+1/4,-y+1/4 z+1/4,-x,y+1/4 z,-y+1/4,-x+1/4 z+1/4,-y,x+1/4 z+1/4,y+1/4,-x z,y,x z+1/4,x+1/4,-y z,x,y y,-x+1/4,-z+1/4 y+1/4,-x,z+1/4 y,-z+1/4,-x+1/4 y+1/4,-z,x+1/4 y+1/4,z+1/4,-x y,z,x y+1/4,x+1/4,-z y,x,z x,-y+1/4,-z+1/4 x+1/4,-y,z+1/4 x,-z+1/4,-y+1/4 x+1/4,-z,y+1/4 x+1/4,z+1/4,-y x,z,y x+1/4,y+1/4,-z
+    centring vectors: x,y,z x,y+1/2,z+1/2 x+1/2,y,z+1/2 x+1/2,y+1/2,z
+Invalid Hall symbols:
+  "" -> BadInput: Invalid Hall symbol "": empty symbol
+  "X 1" -> BadInput: Invalid Hall symbol "X 1": invalid lattice symbol
+  "-" -> BadInput: Invalid Hall symbol "-": invalid lattice symbol
+  "P 5" -> BadInput: Invalid Hall symbol "P 5": invalid rotation symbol "5"
+  "P 2q" -> BadInput: Invalid Hall symbol "P 2q": invalid rotation symbol "2q"
+  "P 22" -> BadInput: Invalid Hall symbol "P 22": invalid screw translation in "22"
+  "P 2 2 2 2" -> BadInput: Invalid Hall symbol "P 2 2 2 2": can not determine axis of "2"
+  "P 3* 2"" -> BadInput: Invalid Hall symbol "P 3* 2"": invalid rotation symbol "2""
+  "P 6 3*" -> BadInput: Invalid Hall symbol "P 6 3*": inconsistent rotation symbols (mixing hexagonal and orthogonal-type axes)
+  "P 4 (0 0" -> BadInput: Invalid Hall symbol "P 4 (0 0": invalid change-of-basis vector
+  "P 1 (0 0 1 1)" -> BadInput: Invalid Hall symbol "P 1 (0 0 1 1)": change-of-basis vector must have three components
+  "P 2 (a b c)" -> BadInput: Invalid Hall symbol "P 2 (a b c)": invalid change-of-basis vector component
+  "P 1 (0 0 1) x" -> BadInput: Invalid Hall symbol "P 1 (0 0 1) x": invalid change-of-basis vector
+  "P 32z*" -> BadInput: Invalid Hall symbol "P 32z*": invalid rotation symbol "32z*"
+  "P 3 3" -> BadInput: Invalid Hall symbol "P 3 3": can not determine axis of "3"
+All OK
