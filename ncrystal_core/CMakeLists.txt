@@ -424,10 +424,15 @@ if ( MSVC AND CMAKE_CXX_COMPILER_ARCHITECTURE_ID MATCHES "^(x64|X86)$" )
       list( APPEND ncrystal_winfma_srcfiles "${f}" )
     endif()
   endforeach()
+  #FIXME: Should the /EHc- only be set in debug builds?
   set_source_files_properties(
     ${ncrystal_winfma_srcfiles}
     PROPERTIES
-      COMPILE_OPTIONS "/arch:AVX2"
+      #/EHc- explicitly disables just the "extern C never throws" modifier
+      #CMake's own MSVC default (/EHsc) otherwise sets project-wide: the extern
+      #"C" twin functions defined in these FMA files can genuinely throw in
+      #debug builds (nc_assert):
+      COMPILE_OPTIONS "/arch:AVX2;/EHc-"
       COMPILE_DEFINITIONS "NCRYSTAL_WIN_FMA"
   )
 endif()
