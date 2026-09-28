@@ -57,12 +57,18 @@ namespace NCRYSTAL_NAMESPACE {
         double g1MaxBinWidthKT = 0.25;//Thicken G1 until its binwidth is at
         //most this value times kT (0 disables). Needed since we must always
         //keep enough detail to describe the detailed balance factor
-        //FIXME: Make g1MaxBinWidthKT depend on vdoslux?
 
         double g1InterpTol = 3e-3;//0 disables, see g1InterpThickenFactor
         unsigned long g1InterpMaxNBins = 100000;//caps g1InterpTol thickening
 
         double minTemperature = 0.1;//Kelvin (0 disables)
+        double thinSmoothTol = 0.1;//Only thin spectra as long as the points
+        //removed are reproduced by linear interpolation of the points kept,
+        //to within this relative tolerance (0 disables).
+        double thinSmoothFloor = 1e-6;//Points below this fraction of the
+        //spectrum maximum are ignored when applying thinSmoothTol.
+
+        //FIXME: Revisit all of the above for a dependency on vdoslux
       };
       CfgDecoded decodeCfg( VDOSGn::Cfg choice ) {
         CfgDecoded res;
@@ -76,6 +82,7 @@ namespace NCRYSTAL_NAMESPACE {
           res.g1MaxBinWidthKT = 0.0;
           res.g1InterpTol = 0.0;
           res.minTemperature = 0.0;
+          res.thinSmoothTol = 0.0;
         } else if (choice == VDOSGn::Cfg::MaxLux) {
           res.directConvolve = true;
         } else {
@@ -871,12 +878,21 @@ NCV::VDOSGn::Impl::produceNewOrderByConvolutionImpl( Order order,
       //minThinOrder and (minThinOrder-1)*2:
       extraThinFactor /= 2;
     }
-
-    if ( anchored )
-      phonon_spe = thinVectorAnchored( extraThinFactor, phonon_spe, startIdx );
-    else
-      phonon_spe = thinVector( extraThinFactor, phonon_spe );
-    dt *= extraThinFactor;
+    if ( m_cfg.thinSmoothTol > 0.0 ) {
+      nc_assert( anchored );
+      extraThinFactor = maxSmoothThinFactor( phonon_spe, startIdx,
+                                             extraThinFactor,
+                                             m_cfg.thinSmoothTol,
+                                             m_cfg.thinSmoothFloor );
+    }
+    if ( extraThinFactor > 1 ) {
+      if ( anchored )
+        phonon_spe = thinVectorAnchored( extraThinFactor,
+                                         phonon_spe, startIdx );
+      else
+        phonon_spe = thinVector( extraThinFactor, phonon_spe );
+      dt *= extraThinFactor;
+    }
   }
 
   if ( anchored )
