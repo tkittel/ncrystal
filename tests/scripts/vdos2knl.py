@@ -24,16 +24,23 @@
 
 # Test expansion of VDOS curves into scattering kernels. Apart from basic
 # usage, this includes tests of non-legacy expansions (vdoslux 2000..2006) at
-# low temperatures, where structure on the scale of kT must be resolved. In
-# particular G1 must be sampled finely enough, even when the input VDOS grid
-# is coarse (as for the H VDOS in the acrylic glass stdlib file, where the
-# grid spacing corresponds to ~5.8kT at 5K).
+# low temperatures, where structure on the scale of kT must be resolved:
+#
+#  * G1 must be sampled finely enough, even when the input VDOS grid is
+#    coarse (as for the H VDOS in the acrylic glass stdlib file, where the
+#    grid spacing corresponds to ~5.8kT at 5K).
+#  * Gn spectra must only be thinned when smooth. This is tested with a VDOS
+#    with features a few meV wide (a soft mode), but extending to 0.55eV (an
+#    oscillator), whose Gn spectra at 14K extend over thousands of kT while
+#    having structure on the scale of kT. Thinning such spectra based on
+#    their number of points only, gave cross sections wrong by 50%.
 #
 # The resolution is tested via the detailed balance relation,
 # Gn(+E)=exp(-E/kT)*Gn(-E), evaluated in the middle of the Gn bins (i.e.
 # testing the linear interpolation).
 
 import NCTestUtils.enable_fpe # noqa F401
+import NCTestUtils.enable_testdatapath # noqa F401
 import NCrystalDev as NC
 import NCrystalDev.exceptions as nc_exceptions
 import NCrystalDev.vdos as nc_vdos
@@ -76,8 +83,9 @@ def main( do_plot ):
     with ensure_error(nc_exceptions.NCCalcError,expected_error):
         t( vdos, m = 27.0, T = 0.5, vdoslux = 1, target_emax = 5000 )
     test_g1_resolution()
+    test_thinning()
 
-def gn_dbcheck( egrid, gn, temp ):
+def gn_dbcheck( egrid, gn, temp, relfloor = 0.0 ):
     #Returns binwidth/kT and largest deviation from detailed balance, in the
     #middle of bins with energies in 0.25kT..10kT:
     kt = constant_boltzmann * temp
@@ -85,7 +93,9 @@ def gn_dbcheck( egrid, gn, temp ):
     emid = emid[ ( emid >= 0.25*kt ) & ( emid <= 10.0*kt ) ]
     gn_up = np.interp( emid, egrid, gn )
     gn_down = np.interp( -emid, egrid, gn )
-    ratio = gn_up * np.exp( emid / kt ) / gn_down
+    ok = gn_down > relfloor * gn.max()
+    assert ok.any()
+    ratio = gn_up[ok] * np.exp( emid[ok] / kt ) / gn_down[ok]
     return ( egrid[1] - egrid[0] ) / kt, np.abs( ratio - 1.0 ).max()
 
 def test_g1_resolution():
