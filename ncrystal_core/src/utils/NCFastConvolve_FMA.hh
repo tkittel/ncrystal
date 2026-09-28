@@ -44,11 +44,11 @@ namespace NCRYSTAL_NAMESPACE {
 #endif
 
     NCRYSTAL_FMADISPATCH_WINFMA_DECLARE(
-      fastConvolveSpectralMultiply,
+      void, fastConvolveSpectralMultiply,
       ( double* ncrestrict data1, const double* ncrestrict data2, std::size_t n )
     )
     NCRYSTAL_FMADISPATCH_WINFMA_DECLARE(
-      fastConvolveButterflyRun,
+      void, fastConvolveButterflyRun,
       ( double* ncrestrict data_j, double* ncrestrict data_sympos,
         const double* ncrestrict wtable,
         std::ptrdiff_t wtable_stride, bool is_forward, int count )
@@ -56,12 +56,11 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Pointwise complex multiply of two interleaved-[re,im,re,im,...] arrays, in
     //place into the first (data1 *= data2). Done with std::fma+FMADISPATCH_ATTR
-    //and without std::complex, for precision, speed, and platform independence.
-NCRYSTAL_FMADISPATCH_ATTR. data1/data2 are ncrestrict since
-    //they are always two distinct std::complex<double> buffers at the call
-    //site (see NCFastConvolve.cc's convolve()); verified (not just assumed)
-    //below:
-    NCRYSTAL_FMADISPATCH_DECLARATOR(fastConvolveSpectralMultiply)
+    //and without std::complex, for precision, speed, and platform
+    //independence. data1/data2 are ncrestrict since they are always two
+    //distinct std::complex<double> buffers at the call site (see
+    //NCFastConvolve.cc's convolve()); verified (not just assumed) below:
+    NCRYSTAL_FMADISPATCH_DECLARATOR(void,fastConvolveSpectralMultiply)
     ( double* ncrestrict data1, const double* ncrestrict data2, std::size_t n )
     {
       NCRYSTAL_FMADISPATCH_WINFMA_FORWARD(fastConvolveSpectralMultiply,(data1,data2,n));
@@ -76,8 +75,13 @@ NCRYSTAL_FMADISPATCH_ATTR. data1/data2 are ncrestrict since
 
     //One stage of the FFT butterfly, applied to a run of count consecutive
     //j-values. Again, using std::fma+FMADISPATCH and no std::complex, to be
-    //precise, portable, and fast.
-NCRYSTAL_FMADISPATCH_DECLARATOR(fastConvolveButterflyRun)
+    //precise, portable, and fast. data_j/data_sympos/wtable are ncrestrict:
+    //at the call site, data_j/data_sympos are always the two disjoint halves
+    //of one butterfly stage's index range (data_sympos = data_j - i1*2, run
+    //length i1*2, so [data_sympos,data_j) and [data_j,data_j+i1*2) are
+    //adjacent, not overlapping), and wtable is always a separate, cached
+    //W-table array:
+    NCRYSTAL_FMADISPATCH_DECLARATOR(void,fastConvolveButterflyRun)
     ( double* ncrestrict data_j, double* ncrestrict data_sympos,
       const double* ncrestrict wtable, std::ptrdiff_t wtable_stride,
       bool is_forward, int count )
