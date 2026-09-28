@@ -24,6 +24,7 @@
 #include "NCrystal/internal/vdos/NCVDOSKnlGrid.hh"
 #include "NCrystal/internal/vdos/NCVDOSExpand.hh"
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
+#include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCString.hh"//fixme?
 #include "NCrystal/internal/utils/NCIter.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"//fixme?
@@ -91,9 +92,11 @@ namespace NCRYSTAL_NAMESPACE {
     //sab[i] += aFact[i]*c, for i in [0,n) with explicit std::fma. Used in the
     //hottest loop below:
     NCRYSTAL_FMADISPATCH_ATTR
-    void vdosScatKnlAccumulate( double* sab, const double* aFact,
+    void vdosScatKnlAccumulate( double* ncrestrict sab,
+                                const double* ncrestrict aFact,
                                 double c, std::size_t n )
     {
+      nc_assert( buffersDisjoint( sab, n, aFact, n ) );
       for ( std::size_t i = 0; i < n; ++i )
         sab[i] = std::fma( aFact[i], c, sab[i] );
     }
