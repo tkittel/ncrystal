@@ -26,6 +26,62 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
+  ////////////////////////////////////////////////////////////////////////////
+  //Crystal system of a space group:
+  enum class SGCrystalSystem { Triclinic, Monoclinic, Orthorhombic, Tetragonal,
+                               Trigonal, Hexagonal, Cubic };
+
+  ////////////////////////////////////////////////////////////////////////////
+  //Description of the setting of a space group, derived from the ITVB choice
+  //code. Fields which do not apply to a given space group are NotApplicable.
+
+  //Axes of the hexagonal crystal family (i.e. trigonal and hexagonal crystal
+  //systems). The R space groups can be described in either (Hexagonal in
+  //their default setting), all other space groups of the family always use
+  //Hexagonal:
+  enum class SGHexFamilyAxes { NotApplicable, Hexagonal, Rhombohedral };
+
+  //Unique axis of monoclinic space groups. The default settings use b, the
+  //other values occur only in the other settings. The minus_ values
+  //correspond to ITVB choice codes like "-b" (same unique axis, but with the
+  //two other axes interchanged, i.e. a reversed cell orientation):
+  enum class SGUniqueAxis { NotApplicable, a, b, c, minus_a, minus_b, minus_c };
+
+  //Cell choice of monoclinic space groups with centring or glide planes. The
+  //default settings use Choice1, Choice2 and Choice3 occur only in the other
+  //settings:
+  enum class SGCellChoice { NotApplicable, Choice1, Choice2, Choice3 };
+
+  //Origin choice of the 24 space groups which have two (Choice1 in their
+  //default setting):
+  enum class SGOriginChoice { NotApplicable, Choice1, Choice2 };
+
+  //Axis permutations of orthorhombic space groups (ITVB notation abc, ba-c,
+  //cab, -cba, bca, a-cb, where "m" here stands for the minus sign). The
+  //default settings use abc, the other values occur only in the other
+  //settings:
+  enum class SGAxisPermutation { NotApplicable, abc, ba_mc, cab, mcba, bca,
+                                 a_mcb };
+
+  struct SGSettingInfo {
+    SGHexFamilyAxes hexFamilyAxes;
+    SGUniqueAxis uniqueAxis;
+    SGCellChoice cellChoice;
+    SGOriginChoice originChoice;
+    SGAxisPermutation axisPermutation;
+  };
+
+  //Output (using ITVB spellings, e.g. "ba-c" or "-b", and "n/a" for
+  //NotApplicable):
+  std::ostream& operator<<( std::ostream&, SGCrystalSystem );
+  std::ostream& operator<<( std::ostream&, SGHexFamilyAxes );
+  std::ostream& operator<<( std::ostream&, SGUniqueAxis );
+  std::ostream& operator<<( std::ostream&, SGCellChoice );
+  std::ostream& operator<<( std::ostream&, SGOriginChoice );
+  std::ostream& operator<<( std::ostream&, SGAxisPermutation );
+  std::ostream& operator<<( std::ostream&, const SGSettingInfo& );
+
+  ////////////////////////////////////////////////////////////////////////////
   //Immutable class representing one of the 530 space group settings of ITVB
   //2010 Table A1.4.2.7 (see NCSGSymTable.hh), i.e. a space group number
   //(1..230) along with a setting (e.g. an origin choice, a monoclinic unique
@@ -78,6 +134,9 @@ namespace NCRYSTAL_NAMESPACE {
     bool hasMultipleSettings() const ncnoexceptndebug;//number has other settings?
     std::string toString() const;//e.g. "227:2", "62:cab", "62:abc", or "225"
 
+    SGCrystalSystem crystalSystem() const ncnoexceptndebug;
+    SGSettingInfo settingInfo() const ncnoexceptndebug;
+
     //Note: Symmetry operations etc. are available via the SGSymmetry class.
 
     bool operator==( const SpaceGroup& o ) const noexcept;
@@ -89,6 +148,11 @@ namespace NCRYSTAL_NAMESPACE {
 
   //streams as .toString():
   std::ostream& operator<<( std::ostream&, const SpaceGroup& );
+
+  //Fixme: Migrate crystalSystem(), checkAndCompleteLattice[Angles](),
+  //isRhombohedralSpaceGroup() and usesRhombohedralAxes() from NCLatticeUtils.hh
+  //to the sgsym component (where they naturally belong, cf. SGCrystalSystem and
+  //SGCellConstraints).
 
 }
 
