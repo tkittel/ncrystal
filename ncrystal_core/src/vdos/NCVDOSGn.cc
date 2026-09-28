@@ -39,7 +39,15 @@ namespace NCRYSTAL_NAMESPACE {
   namespace VDOS {
 
     namespace {
-      static std::atomic<bool> s_verbose_vdosgn( ncgetenv_bool("DEBUG_PHONON") );
+      static std::atomic<unsigned> s_injectfailure_minorder( 0 );
+      //NB: Function-local static, since exceptions due to invalid values of
+      //environment variables could not be caught by anyone if thrown during
+      //initialisation of global variables.
+      std::atomic<bool>& s_verbose_vdosgn()
+      {
+        static std::atomic<bool> b( ncgetenv_bool("DEBUG_PHONON") );
+        return b;
+      }
 
       struct CfgDecoded {
         int minThinOrder = 4;//Below this order, no thinning takes place
@@ -438,7 +446,7 @@ NCV::VDOSGn::Impl::Impl(const VDOSEval& vde,
       vde, gamma0, gridinfo.emax, nbins * thicken_factor,
       m_cfg.g1InterpTol, m_cfg.g1InterpMaxNBins );
 
-  if ( s_verbose_vdosgn && thicken_factor != 1 )
+  if ( s_verbose_vdosgn() && thicken_factor != 1 )
     NCRYSTAL_MSG("VDOSGn Thickening provided VDOS egrid for G1 by a"
                  " factor of "<<thicken_factor<<" resulting in number of grid"
                  " points for [-emax,emax] increasing "<<nbins*2+1
@@ -507,7 +515,7 @@ NCV::VDOSGn::Impl::Impl(const VDOSEval& vde,
                            binwidth, 1, g1StartIdx );
   }
 
-  if (s_verbose_vdosgn)
+  if (s_verbose_vdosgn())
     NCRYSTAL_MSG("VDOSGn constructed (input spectrum size: "<<G1spectrum.size()
                  <<", thinning with minOrder="<<m_cfg.minThinOrder
                  <<" and thinNBins="<<m_cfg.thinNBins
@@ -533,7 +541,7 @@ NCV::VDOSGn::~VDOSGn() {
     //End running jobs, so they don't write to suddenly non-existent buffers:
     m_impl->m_mt_jobs.value().waitAll();
   }
-  if (s_verbose_vdosgn) {
+  if (s_verbose_vdosgn()) {
     NCRYSTAL_MSG("VDOSGn destructed (final max order: "
                  <<maxOrder().value()<<")");
   }
@@ -597,12 +605,12 @@ NC::PairDD NCV::VDOSGn::eRange( Order n ) const
 
 void NCV::VDOSGn::enableVerboseOutput(bool status)
 {
-  s_verbose_vdosgn = status;
+  s_verbose_vdosgn() = status;
 }
 
 bool NCV::VDOSGn::verboseOutputEnabled()
 {
-  return s_verbose_vdosgn;
+  return s_verbose_vdosgn();
 }
 
 void NCV::VDOSGn::Impl::produceNewOrderByConvolution( Order order )
@@ -906,7 +914,7 @@ NCV::VDOSGn::Impl::produceNewOrderByConvolutionImpl( Order order,
   if ( anchored )
     start_energy = static_cast<double>(startIdx) * dt;
 
-  if (s_verbose_vdosgn) {
+  if (s_verbose_vdosgn()) {
     std::ostringstream msg;
     msg<<"VDOSGn Convolved G"<<order1.value()<<"(x)G"<<order2.value()
        <<" -> G"<<order.value()
