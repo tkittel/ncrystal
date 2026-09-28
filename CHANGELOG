@@ -1,4 +1,15 @@
 v4.4.7 (work in progress)
+     * Added tests/src/app_perfsab, a self-timed benchmark (same
+       min/median/max convention as app_perfvdos) of the *simulation-time*
+       SAB cross-section/scattering-sampling cost (crossSectionIsotropic/
+       sampleScatterIsotropic on a vdoslux>=2000 "next-gen" material,
+       exercising NCSABCellInteg.cc's StdLogLinCellIntegrator), as opposed
+       to app_perfvdos's one-time VDOS->SAB kernel construction cost at
+       material load. Wired into benchmark.yml alongside perfvdos. Also
+       fixed a latent bug in that workflow's benchmark-running step,
+       found while extending it: without "set -o pipefail", a genuine
+       crash or missing-binary failure inside the piped-to-tee block was
+       silently swallowed (the step would report success regardless).
      * Windows correctness fixes: environment variables are now read via
        the wide Win32 API with explicit UTF-8 conversion (std::getenv's
        CRT-cached table misses changes made from a different CRT module in
