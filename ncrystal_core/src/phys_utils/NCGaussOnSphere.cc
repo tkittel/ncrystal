@@ -122,9 +122,8 @@ namespace NCRYSTAL_NAMESPACE {
       if (m_acc<5e-4&&ncabs(prev_estimate-estimate)<=10.0*m_acc*ncabs(estimate))
         return true;
 
-      static bool first = true;
-      if (first) {
-        first = false;
+      static std::atomic<bool> first(true);
+      if ( first.exchange(false) ) {
         unsigned twotolevelm1 = 1<<(level-1);//2^(level-1)
         NCRYSTAL_WARN("Problems during numerical integration of Gaussian density on sphere. Romberg integration"
                       " did not converge after "<<2*twotolevelm1+1<<" function evaluations (requested acc="<<m_acc<<", got acc="<<
@@ -143,7 +142,8 @@ namespace NCRYSTAL_NAMESPACE {
     const double m_sasg;
     const double m_cacg;
     const double m_acc;
-    mutable unsigned m_nevals;//mutable here is MT-safe, since we are only using local GOSCircleInt instances.
+    mutable unsigned m_nevals;//mutable here is MT-safe, since we are only using
+                              //local GOSCircleInt instances.
   };
 
   class SLTFct_EvalCosX : public Fct1D {
@@ -472,9 +472,8 @@ bool NC::GaussOnSphere::genPointOnCircle( RNG& rng, double cg, double sg, double
     double cd_at_t = sasg*ct+cacg;
     double density_at_t = evalCosXInRange(cd_at_t);
     if ( density_at_t > densitymax ) {
-      static bool first = true;
-      if (first) {
-        first = false;
+      static std::atomic<bool> first(true);
+      if ( first.exchange(false) ) {
         NCRYSTAL_WARN("Problems sampling with rejection method during GaussOnSphere::genPointOnCircle "
                       "invocation. Overlay value was not larger than actual cross-section value at sampled point "
                       "(overshot by factor of "<<(densitymax?density_at_t/densitymax:kInfinity)<<"). Further warnings"
@@ -493,9 +492,8 @@ bool NC::GaussOnSphere::genPointOnCircle( RNG& rng, double cg, double sg, double
   }
 #endif
   if (triesleft<=0) {
-    static bool first = true;
-    if (first) {
-      first = false;
+    static std::atomic<bool> first(true);
+    if ( first.exchange(false) ) {
       NCRYSTAL_WARN("Problems sampling with rejection method during GaussOnSphere::genPointOnCircle "
                     "invocation. Did not accept sampled value after "<<maxtriesplus1-1<<" attempts. Further warnings"
                     " of this type will not be emitted.");
