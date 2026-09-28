@@ -375,6 +375,39 @@ include( "ncrystal_coresrc" )
 ncrystal_detectsrc()
 ncrystal_process_core_srcfiles()
 
+# MSVC has no equivalent of GCC/Clang's NCRYSTAL_FMADISPATCH_ATTR
+# (target_clones), so on MSVC we instead give any specially named
+# "NC*_WINFMA.cc" source file (by convention, under ncrystal_core/src/*/ only)
+# an extra, per-file /arch:AVX2 clone-and-dispatch treatment - see
+# NCFMADispatch.hh for the full mechanism and rationale. x86 only, like the
+# (unrelated, GCC/Clang) FMA dispatch probe in ncrystal_fmadispatch.cmake, so
+# skipped on non-x86 targets (e.g. Windows-on-ARM64, where MSVC is also the
+# compiler but the whole technique does not apply, since hardware FMA is
+# baseline there already).  Checking the compiler's *target* architecture, since
+# CMAKE_SYSTEM_PROCESSOR is the host one when e.g. cross-building ARM64 wheels
+# on x64 via "-A ARM64":
+if ( MSVC AND CMAKE_CXX_COMPILER_ARCHITECTURE_ID MATCHES "^(x64|X86)$" )
+  add_compile_definitions( NCRYSTAL_DISPATCH_TO_WIN_FMA )
+  set( ncrystal_winfma_srcfiles "" )
+  foreach( f ${ncpkg_all_ncrystal_lib_srcfiles} )
+    get_filename_component( f_name "${f}" NAME )
+    if ( "${f_name}" MATCHES "^NC.*_WINFMA\\.cc$" )
+      list( APPEND ncrystal_winfma_srcfiles "${f}" )
+    endif()
+  endforeach()
+  #FIXME: Should the /EHc- only be set in debug builds?
+  set_source_files_properties(
+    ${ncrystal_winfma_srcfiles}
+    PROPERTIES
+      #/EHc- explicitly disables just the "extern C never throws" modifier
+      #CMake's own MSVC default (/EHsc) otherwise sets project-wide: the extern
+      #"C" twin functions defined in these FMA files can genuinely throw in
+      #debug builds (nc_assert):
+      COMPILE_OPTIONS "/arch:AVX2;/EHc-"
+      COMPILE_DEFINITIONS "NCRYSTAL_WIN_FMA"
+  )
+endif()
+
 #We must additionally install a few special top-level include files:
 
 ncinstall(
