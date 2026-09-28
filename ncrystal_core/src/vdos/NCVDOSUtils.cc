@@ -22,6 +22,7 @@
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCIter.hh"
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
+#include "NCVDOSUtils_FMA.hh"
 
 namespace NC=NCrystal;
 
@@ -533,6 +534,8 @@ NC::VDOS::PWLFct NC::VDOS::pwlNarrowToPos( const PWLFct& p, double tol )
   nc_assert( res.dataHolder.size() == res.f.size() );
   return res;
 }
+
+//pwlSumAccumulateSegment: see NCVDOSUtils_FMA.hh (included above).
 
 NC::VectD NC::VDOS::evalPWLSum( Span<const PWLFct> fs,
                                 Span<const double> grid,
