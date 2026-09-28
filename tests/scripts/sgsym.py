@@ -115,6 +115,27 @@ def test_table():
         nsettings[number] = nsettings.get( number, 0 ) + 1
         first_hn.setdefault( number, hn )
         assert lib.nctest_sgsym_parse( str(number) ) == first_hn[number]
+        #Crystal system and setting info vs. gemmi's crystal system and choice
+        #fields (ext: origin choice or H/R axes; qualifier: monoclinic unique axis
+        #and cell choice, or orthorhombic axis permutation):
+        cs, hexaxes, uaxis, cellch, origin, perm = (
+            lib.nctest_sgsym_settinginfo( hn ).split() )
+        assert cs == g.crystal_system_str(), hn
+        ext = g.ext.strip('\x00 ')
+        qual = g.qualifier
+        assert origin == ( ext if ext in ('1','2') else 'n/a' ), hn
+        if cs in ('trigonal','hexagonal'):
+            assert hexaxes == ( 'rhombohedral' if ext == 'R' else 'hexagonal' ), hn
+        else:
+            assert hexaxes == 'n/a', hn
+        if cs == 'monoclinic':
+            assert uaxis + ( cellch if cellch != 'n/a' else '' ) == qual, hn
+        else:
+            assert uaxis == 'n/a' and cellch == 'n/a', hn
+        if cs == 'orthorhombic':
+            assert perm == ( qual or 'abc' ), hn
+        else:
+            assert perm == 'n/a', hn
     assert sorted( first_hn ) == list( range( 1, 231 ) )
     assert lib.nctest_sgsym_parse( '227:3' ) == 0
     #Strict parsing only accepts a bare number for the 140 single-setting
@@ -130,7 +151,8 @@ def test_table():
     assert 'has only one setting, which is written as just "225"' in err('225:1')
     assert err('227:2') == ''
     print('All 530 space group settings (numbers, choice codes, Hermann-Mauguin'
-          ' and Hall symbols) consistent with spglib and gemmi')
+          ' and Hall symbols, crystal systems and setting info) consistent with'
+          ' spglib and gemmi')
 
 # Verifies NCrystal's parsing and formatting of symmetry operations (like
 # "-x,y+1/2,-z+1/2") against gemmi, using all operations of the 530 space

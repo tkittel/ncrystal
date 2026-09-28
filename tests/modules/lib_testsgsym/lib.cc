@@ -48,6 +48,7 @@ NCTEST_CTYPE_DICTIONARY
     "const char * nctest_sgsym_symop( const char * );"
     "const char * nctest_sgsym_symmetry( int );"
     "const char * nctest_sgsym_rawhall( const char * );"
+    "const char * nctest_sgsym_settinginfo( int );"
     ;
 }
 
@@ -217,6 +218,23 @@ NCTEST_CTYPES const char * nctest_sgsym_rawhall( const char * hall )
     } catch ( NC::Error::BadInput& e ) {
       s_buf = std::string( "ERROR: " ) + e.what();
     }
+  } NCCATCH;
+  return s_buf.c_str();
+}
+
+NCTEST_CTYPES const char * nctest_sgsym_settinginfo( int hn )
+{
+  //Returns "<crystal system> <hex family axes> <unique axis> <cell choice>
+  //<origin choice> <axis permutation>":
+  static std::string s_buf;//NB: Not thread-safe, but fine for this test
+  try {
+    const auto sg = sgFromSettingIdx( hn );
+    const auto si = sg.settingInfo();
+    std::ostringstream ss;
+    ss << sg.crystalSystem() << ' ' << si.hexFamilyAxes << ' '
+       << si.uniqueAxis << ' ' << si.cellChoice << ' ' << si.originChoice
+       << ' ' << si.axisPermutation;
+    s_buf = ss.str();
   } NCCATCH;
   return s_buf.c_str();
 }
