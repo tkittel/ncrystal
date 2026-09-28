@@ -154,6 +154,20 @@ namespace NCRYSTAL_NAMESPACE {
   bool intervalsOverlap( const PairDD&, const PairDD& );
   bool intervalsDisjoint(double a0, double b0, double a1, double b1);
 
+#ifndef NDEBUG
+  //For checking ncrestrict marked arrays in nc_assert(..).
+  template <class TValue>
+  inline bool buffersDisjoint( const TValue* a, std::size_t an,
+                               const TValue* b, std::size_t bn )
+  {
+    const auto ab = reinterpret_cast<std::uintptr_t>(a);
+    const auto ae = ab + an * sizeof(TValue);
+    const auto bb = reinterpret_cast<std::uintptr_t>(b);
+    const auto be = bb + bn * sizeof(TValue);
+    return ae <= bb || be <= ab;
+  }
+#endif
+
   //Quick check that a<=x<=b (do not use if a or b might be infinite):
   bool valueInInterval(double a, double b, double x);
   bool valueInInterval( const PairDD& ab, double x);
