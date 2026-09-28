@@ -426,7 +426,8 @@ int ncrystal_valid(void* object)
   return i ? 1 : 0;
 }
 
-#define NCCATCH catch (std::exception& e) { ncc::handleError(e); }
+#define NCCATCH catch (std::exception& e) { ncc::handleError(e); } \
+  catch (...) { ncc::setError("<unknown>","unknown non-standard exception"); }
 
 ncrystal_process_t ncrystal_cast_scat2proc(ncrystal_scatter_t s)
 {
@@ -895,21 +896,28 @@ void ncrystal_raw_vdos2kernel( const double* vdos_egrid,
       // it unpredictable:
       *suggested_emax = sabdata.suggestedEmax();
     }
+    //Use unique_ptr for exception safety:
     auto na = sabdata.alphaGrid().size();
-    double * arr_a = new double[na];
-    std::copy( sabdata.alphaGrid().begin(), sabdata.alphaGrid().end(), arr_a );
     auto nb = sabdata.betaGrid().size();
-    double * arr_b = new double[nb];
-    std::copy( sabdata.betaGrid().begin(), sabdata.betaGrid().end(), arr_b );
     auto ns = sabdata.sab().size();
-    nc_assert_always( ns = na*nb );
-    double * arr_s = new double[ns];
-    std::copy( sabdata.sab().begin(), sabdata.sab().end(), arr_s );
-    *alpha = arr_a;
-    *beta = arr_b;
-    *sab = arr_s;
-    *nalpha = na;
-    *nbeta = nb;
+    nc_assert_always( static_cast<std::uint64_t>(na)
+                      <= std::numeric_limits<unsigned>::max() );
+    nc_assert_always( static_cast<std::uint64_t>(nb)
+                      <= std::numeric_limits<unsigned>::max() );
+    nc_assert_always( ns == na*nb );
+    auto arr_a = NC::ncmake_unique_array_noinit<double>( na );
+    auto arr_b = NC::ncmake_unique_array_noinit<double>( nb );
+    auto arr_s = NC::ncmake_unique_array_noinit<double>( ns );
+    std::copy( sabdata.alphaGrid().begin(), sabdata.alphaGrid().end(),
+               arr_a.get() );
+    std::copy( sabdata.betaGrid().begin(), sabdata.betaGrid().end(),
+               arr_b.get() );
+    std::copy( sabdata.sab().begin(), sabdata.sab().end(), arr_s.get() );
+    *alpha = arr_a.release();
+    *beta = arr_b.release();
+    *sab = arr_s.release();
+    *nalpha = static_cast<unsigned>(na);
+    *nbeta = static_cast<unsigned>(nb);
   } NCCATCH;
 }
 
@@ -1973,13 +1981,21 @@ namespace NCRYSTAL_NAMESPACE {
       }
       nc_assert_always( l.size() < std::numeric_limits<unsigned>::max() );
       unsigned len = static_cast<unsigned>(l.size());
-      char ** out = new char*[len];
+      char ** out = new char*[len]();//NB: all entries initialised to nullptr
       char ** it = out;
-      for ( auto& e : l ) {
-        nc_assert(it<(out + len));
-        *it = new char[e.size()+1];
-        std::memcpy(*it,&e[0],e.size()+1);
-        ++it;
+      try {
+        for ( auto& e : l ) {
+          nc_assert(it<(out + len));
+          *it = new char[e.size()+1];
+          std::memcpy(*it,&e[0],e.size()+1);
+          ++it;
+        }
+      } catch (...) {
+        //Avoid leaks if an allocation failed:
+        for ( unsigned i = 0; i < len; ++i )
+          delete[] out[i];
+        delete[] out;
+        throw;
       }
       *tgtlen = len;
       *tgt = out;
@@ -2526,7 +2542,8 @@ void ncrystal_fill_jsonarray( const char* key_raw, double* dst )
       return;
     }
     NC::VectD data = NC::getJSONQueryHugeArray(key.to_string());
-    std::memcpy(dst,data.data(),sizeof(double)*data.size());
+    if ( !data.empty() )
+      std::memcpy(dst,data.data(),sizeof(double)*data.size());
   } NCCATCH;
 }
 
