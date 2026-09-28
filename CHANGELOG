@@ -399,14 +399,6 @@ v4.4.7 (work in progress)
        expandSiteToOrbit(..) expands sites into symmetry-equivalent positions
        (symmetrising sites within 5e-4 of special positions, and rejecting
        sites within 1e-2 but not on them).
-     * New internal sgsym component with SpaceGroup/SpaceGroupHallNumber
-       classes for the 530 space group settings of ITVB Table A1.4.2.7 (table
-       verified against several independent sources), and a SymOp class for
-       symmetry operations (exact, verified against gemmi). SGSymmetry::get(sg)
-       gives the operations of each setting, derived from its Hall symbol and
-       verified against spglib and gemmi for all 530 settings. Also crystal
-       systems, setting info (axes, unique axis, cell/origin choice, axis
-       permutation), and cell constraints derived from the operations.
      * HKL |F|^2 values no longer skip contributions from heavily damped atoms,
        which biased weak planes (up to ~2*fsquarecut, e.g. 5% errors) for no
        measurable speedup. Planes near fsquarecut may thus change slightly.
@@ -502,17 +494,6 @@ v4.4.7 (work in progress)
        state, and ["util","atomdb"] providing the database of isotopes and
        natural elements (also browsable with "ncrystal browse --atomdb" and
        NCrystal.browse.AtomDBBrowser).
-     * Exceptions in jobs run by the factory thread pool are now transferred
-       to and rethrown in the calling thread (github issue #339).
-     * NCRYSTAL_FACTORY_THREADS is now handled by the thread-pool itself (read
-       on first use); explicit enableFactoryThreads calls take precedence.
-     * New NCrystal.browse Python module for browsing and searching available
-       data, optionally based on physics properties of the loaded materials.
-     * New JSON queries ["util","browsedb",...] and ["util","browsefactories"]
-       providing listings of available data with NCMAT header comments and
-       physics properties (loaded in parallel if factory threads are
-       enabled), and ["util","factorythreads"] providing the factory
-       thread-pool state.
      * C API: error state (ncrystal_error, ncrystal_lasterror, ...) is now
        kept per thread, so errors are no longer reported in the wrong thread
        when the C API (or the Python API) is used from several threads.
@@ -521,8 +502,6 @@ v4.4.7 (work in progress)
        creating materials in different threads) could corrupt file contents.
      * New command-line tool "ncrystal browse" for browsing and searching
        available data and plugins, more powerful than the --browse,
-     * New command-line tool "ncrystal browse" for browsing and searching
-       available data files and plugins, more powerful than the --browse,
        --extract and --plugins flags of nctool (kept for now): it shows short
        NCMAT descriptions, filters by source and name (substrings, globs or
        -E regexes), searches NCMAT header comments with grep-like colored
@@ -530,12 +509,6 @@ v4.4.7 (work in progress)
        of the loaded materials (e.g. -w "'B' in elements and absxs > 100"),
        with --columns/--sort tables (also as --csv or --json), --json,
        --info, --count and --path.
-       for now) it can filter by name patterns and data source, search in the
-       header comments of NCMAT files (e.g. "ncrystal browse -s togo", with
-       grep-like colored highlighting of hits controlled by --color=WHEN),
-       show those comments, and shows a short description of each NCMAT file.
-       of the loaded materials (e.g. -w "'B' in elements and absxs > 100").
-       with --columns/--sort tables, --json, --info, --count and --path.
      * Python: fix infinite loop when extracting NCMAT header comments
        consisting only of empty comment lines.
      * Python: Info.dyninfos no longer fails (with an AttributeError) for
