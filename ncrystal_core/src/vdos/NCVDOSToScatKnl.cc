@@ -43,7 +43,11 @@ namespace NCRYSTAL_NAMESPACE {
                                     ScaleGnContributionFct );
 
       namespace {
-        static bool s_verbose = ncgetenv_bool("DEBUG_PHONON");
+        bool s_verbose()
+        {
+          static const bool b = ncgetenv_bool("DEBUG_PHONON");
+          return b;
+        }
       }
 
       static VectD setupLegacyAlphaGrid( double, double, unsigned );
@@ -285,7 +289,7 @@ NCV::createScatteringKernel( const VDOSData& vdosdata,
     suggestedEmax = 0.0;
   }
 
-  if (detail::s_verbose)
+  if (detail::s_verbose())
     NCRYSTAL_MSG("VDOS2SK created SK with vdos expansion order N="
                  <<max_phonon_order<<", Emax="<<suggestedEmax
                  <<"eV, nalpha="<<alphaGrid.size()
