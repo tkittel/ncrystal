@@ -24,29 +24,17 @@
 #include "NCrystal/internal/utils/NCFMADispatch.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 
-//Both the ordinary (NCRYSTAL_FMADISPATCH_ATTR) and the MSVC/x86-only
-//Windows-fast (NCRYSTAL_WIN_FMA) variants of NCFastConvolve.cc's two hottest
-//inner loops, kept side by side -- see NCFMADispatch.hh for the macros used
-//below and the full mechanism/rationale, and NCFastConvolve_WINFMA.cc for the
-//other half. Each function is only actually written once: the parameter list
-//and body are plain, unconditional source, so there is nothing for the two
-//variants to drift out of sync on.
-
 namespace NCRYSTAL_NAMESPACE {
-  //The anonymous namespace below gives the ordinary (non-extern-"C") variant
-  //real internal, per-TU-private linkage -- not needed (and not applied) for
-  //the extern "C" NCRYSTAL_WIN_FMA variant, which already gets external
-  //linkage from "C" language linkage regardless of namespace nesting:
 #ifndef NCRYSTAL_WIN_FMA
   namespace {
 #endif
 
     NCRYSTAL_FMADISPATCH_WINFMA_DECLARE(
-      fastConvolveSpectralMultiply,
+      void, fastConvolveSpectralMultiply,
       ( double* ncrestrict data1, const double* ncrestrict data2, std::size_t n )
     )
     NCRYSTAL_FMADISPATCH_WINFMA_DECLARE(
-      fastConvolveButterflyRun,
+      void, fastConvolveButterflyRun,
       ( double* ncrestrict data_j, double* ncrestrict data_sympos,
         const double* ncrestrict wtable,
         std::ptrdiff_t wtable_stride, bool is_forward, int count )
@@ -55,7 +43,7 @@ namespace NCRYSTAL_NAMESPACE {
     //Pointwise complex multiply of two interleaved-[re,im,re,im,...] arrays, in
     //place into the first (data1 *= data2). Done with std::fma+FMADISPATCH_ATTR
     //and without std::complex, for precision, speed, and platform independence.
-    NCRYSTAL_FMADISPATCH_DECLARATOR(fastConvolveSpectralMultiply)
+    NCRYSTAL_FMADISPATCH_DECLARATOR(void,fastConvolveSpectralMultiply)
     ( double* ncrestrict data1, const double* ncrestrict data2, std::size_t n )
     {
       NCRYSTAL_FMADISPATCH_WINFMA_FORWARD(fastConvolveSpectralMultiply,(data1,data2,n));
@@ -71,7 +59,7 @@ namespace NCRYSTAL_NAMESPACE {
     //One stage of the FFT butterfly, applied to a run of count consecutive
     //j-values. Again, using std::fma+FMADISPATCH and no std::complex, to be
     //precise, portable, and fast.
-NCRYSTAL_FMADISPATCH_DECLARATOR(fastConvolveButterflyRun)
+    NCRYSTAL_FMADISPATCH_DECLARATOR(void,fastConvolveButterflyRun)
     ( double* ncrestrict data_j, double* ncrestrict data_sympos,
       const double* ncrestrict wtable, std::ptrdiff_t wtable_stride,
       bool is_forward, int count )

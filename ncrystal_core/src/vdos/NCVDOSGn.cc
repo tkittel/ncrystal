@@ -27,6 +27,7 @@
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/fact_utils/NCFactoryJobs.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
+#include "NCVDOSGn_FMA.hh"
 #include <deque>
 
 namespace NC=NCrystal;
@@ -253,28 +254,6 @@ double NCV::VDOSGnData::interpolateDensity(double energy) const
   nc_assert( index+1 < m_spec.size() );
   const double * valptr = &m_spec[index];
   return nclerp( *valptr, *(valptr+1), f );
-}
-
-namespace NCRYSTAL_NAMESPACE {
-  namespace {
-    //Array form of interpolateDensity's nclerp(spec[ix],spec[ix+1],f) call
-    //above; must match it bit for bit (see the debug assertion in
-    //interpolateDensityMany below):
-    NCRYSTAL_FMADISPATCH_ATTR
-    void vdosGnInterpolateDensityRun( double* ncrestrict out,
-                                      const double* ncrestrict f,
-                                      const double* ncrestrict ix_as_dbl,//indices, as double
-                                      const double* ncrestrict spec, std::size_t count )
-    {
-      nc_assert( buffersDisjoint( out, count, f, count ) );
-      nc_assert( buffersDisjoint( out, count, ix_as_dbl, count ) );
-      nc_assert( buffersDisjoint( f, count, ix_as_dbl, count ) );
-      for ( std::size_t k = 0; k < count; ++k ) {
-        const std::size_t ix = static_cast<std::size_t>(ix_as_dbl[k]);
-        out[k] = nclerp( spec[ix], spec[ix+1], f[k] );
-      }
-    }
-  }
 }
 
 void NCV::VDOSGnData::interpolateDensityMany( Span<const double> energy,
