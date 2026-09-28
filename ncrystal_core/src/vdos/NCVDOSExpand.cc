@@ -158,14 +158,19 @@ NC::VDOS::expandVDOSToGnFcts( const VDOSData& vdosdata,
     if ( vdoslux.lvl()==0 )
       order_limit /= 10;
   } else {
-    //fixme: this seems reasonable but when vdoslux=0 or 1 we might wish to
-    //adjust the trunc and thinning parameters.
-    order_limit = ( ( targetEmax_requested.has_value() || vdoslux.lvl() >= 5 )
-                    ? 10000 : 1000 );
+    //For next-gen the main resource limiter is max_gn_npts, so we set
+    //order_limit extremely high:
+    order_limit = 60000;
   }
 
+  //If running out of resources before reaching targetEmax, we reduce targetEmax
+  //(as little as possible of course).
+  //FIXME: The value of 0.1eV is just a first guess. Investigate to find the
+  //best value (which might depend on VDOS, temperature or mass).
   const NeutronEnergy emax_lowest_allowed
-    = targetEmax_requested.value_or(lowestEmaxPossible);
+    = targetEmax_requested.value_or( vdoslux.isLegacy()
+                                     ? lowestEmaxPossible
+                                     : NeutronEnergy{ 0.1 } );
 
   //Now increase order dynamically until the last order only has contributions
   //to S(alpha,beta) outside the kinematic reach of Emax:
@@ -198,43 +203,89 @@ NC::VDOS::expandVDOSToGnFcts( const VDOSData& vdosdata,
       return Rectangle(alphaRange,betaRange);
     };
 
+  //Expansions stop adding orders if it would need excessive resources. CPU and
+  //memory usage both scale with the number of points in the Gn spectra (~0.2us
+  //and 8 bytes per point), which is limited depending on vdoslux. Additionally
+  //the number of points in a single convolution is limited, since the FFT
+  //buffers need ~64 bytes per point.
+  constexpr std::uint64_t max_conv_npts = 5000000;
+  const std::uint64_t max_gn_npts = [&vdoslux]() -> std::uint64_t
+  {
+    switch ( vdoslux.lvl() ) {
+    case 0: return   1000000;
+    case 1: return   2000000;
+    case 2: return   3000000;
+    case 3: return   5000000;
+    case 4: return  10000000;
+    case 5: return  30000000;
+    default:
+      nc_assert_always(false);
+    case 6: return 100000000;
+    }
+  }();
+  std::uint64_t gn_npts = 0;//points in orders 1..gn_npts_norders
+  unsigned gn_npts_norders = 0;
+
   while (true) {
     Gn_asym.growMaxOrder(max_phonon_order);
-    auto abRange = findAlphaBetaRangeOfOrder(Gn_asym.maxOrder().value());
-    if (!findABExtentWithinKB(abRange,targetEmax_div_kT).isEmpty()) {
-      //Could consider larger stepsize, but need to carefully check usage in the
-      //following.
-      ++max_phonon_order;
-    } else {
+    nc_assert( Gn_asym.maxOrder().value() == max_phonon_order );
+    auto abRange = findAlphaBetaRangeOfOrder(max_phonon_order);
+    if ( findABExtentWithinKB(abRange,targetEmax_div_kT).isEmpty() )
       break;
+
+    //Must add another order (could consider larger stepsize, but need to
+    //carefully check usage in the following), unless a limit was reached:
+    bool limit_reached = ( max_phonon_order >= order_limit );
+    if ( !limit_reached && !vdoslux.isLegacy() ) {
+      for ( ; gn_npts_norders < max_phonon_order; ++gn_npts_norders )
+        gn_npts += Gn_asym.getRawSpectrum( gn_npts_norders + 1 ).size();
+      //Next order is produced as G(nnext-nnext/2) x G(nnext/2):
+      const unsigned nnext = max_phonon_order + 1;
+      const std::uint64_t nconv
+        = Gn_asym.getRawSpectrum( nnext - nnext/2 ).size()
+        + Gn_asym.getRawSpectrum( nnext/2 ).size();
+      limit_reached = ( gn_npts + nconv > max_gn_npts
+                        || nconv > max_conv_npts );
     }
-    if (max_phonon_order>order_limit) {
-      //Too slow - unfeasible to fill out S(alpha,beta) all the way out to the
-      //kinematic curve for E=targetEmax. In this case it is better to reduce
-      //targetEmax, to at least get a consistent table (and hope the free-gas
-      //extrapolation mechanisms will be adequate already at this lower
-      //threshold).
-      NeutronEnergy targetEmax_reduced  = targetEmax;
-      do {
-        targetEmax_reduced.dbl() *= 0.99;
-        if ( targetEmax_reduced < emax_lowest_allowed )
+    if ( !limit_reached ) {
+      ++max_phonon_order;
+      continue;
+    }
+
+    //Getting here means it is unfeasible to fill out S(alpha,beta) all the way
+    //out to the kinematic boundary for E=targetEmax. In this case it is better
+    //to reduce targetEmax, to at least get a consistent table (and hope the
+    //free-gas/sct extrapolation mechanisms will be adequate already at this
+    //lower threshold).
+    NeutronEnergy targetEmax_reduced  = targetEmax;
+    do {
+      targetEmax_reduced.dbl() *= 0.99;
+      if ( targetEmax_reduced < emax_lowest_allowed ) {
+        if ( vdoslux.isLegacy() )
           NCRYSTAL_THROW2(CalcError,"VDOS expansion too slow - can not reach E="
                           <<emax_lowest_allowed<<" after "<<order_limit
                           <<" phonon convolutions (likely causes: either"
                           " the target energy value is too high, vdoslux too"
                           " low, the temperature too high, or the VDOS is"
                           " very unusual).");
-      } while (!findABExtentWithinKB(abRange,
-                                     targetEmax_reduced.dbl()*invkT).isEmpty());
+        NCRYSTAL_THROW2(CalcError,"VDOS expansion would require excessive"
+                        " resources to reach E="<<emax_lowest_allowed
+                        <<" (stopped after "<<max_phonon_order<<" phonon"
+                        " orders). The VDOS-temperature combination might be"
+                        " too unusual (a lower temperature or higher vdoslux"
+                        " value might help).");
+      }
+    } while (!findABExtentWithinKB(abRange,
+                                   targetEmax_reduced.dbl()*invkT).isEmpty());
 
-      if (s_verbose)
-        NCRYSTAL_WARN("VDOS expansion could only reach Emax="
-                      <<targetEmax_reduced
-                      <<" and not the requested Emax="<<targetEmax);
-      targetEmax = targetEmax_reduced;
-      targetEmax_div_kT = targetEmax.dbl() * invkT;
-      break;
-    }
+    if ( !vdoslux.isLegacy() || s_verbose )
+      NCRYSTAL_WARN("VDOS expansion could only reach Emax="<<targetEmax_reduced
+                    <<" and not the target Emax="<<targetEmax);
+    targetEmax = targetEmax_reduced;
+    targetEmax_div_kT = targetEmax.dbl() * invkT;
+    if ( vdoslux.isLegacy() )
+      ++max_phonon_order;//legacy behaviour adds one more order
+    break;
   }
   Gn_asym.growMaxOrder(max_phonon_order);
 
