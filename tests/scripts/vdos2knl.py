@@ -34,6 +34,7 @@
 #    oscillator), whose Gn spectra at 14K extend over thousands of kT while
 #    having structure on the scale of kT. Thinning such spectra based on
 #    their number of points only, gave cross sections wrong by 50%.
+#  * Expansions needing excessive resources must fail with a CalcError.
 #
 # The resolution is tested via the detailed balance relation,
 # Gn(+E)=exp(-E/kT)*Gn(-E), evaluated in the middle of the Gn bins (i.e.
@@ -83,6 +84,7 @@ def main( do_plot ):
     with ensure_error(nc_exceptions.NCCalcError,expected_error):
         t( vdos, m = 27.0, T = 0.5, vdoslux = 1, target_emax = 5000 )
     test_g1_resolution()
+    test_resource_limits()
 
 def gn_dbcheck( egrid, gn, temp, relfloor = 0.0 ):
     #Returns binwidth/kT and largest deviation from detailed balance, in the
