@@ -152,4 +152,17 @@ namespace NCRYSTAL_NAMESPACE {
 #  define NCRYSTAL_FMADISPATCH_WINFMA_FORWARD(name,args) do {} while(0)
 #endif
 
+//NCRYSTAL_FMADISPATCH_INLINE: force-inlining for small helpers called from
+//NCRYSTAL_FMADISPATCH_ATTR functions, so they are compiled into each dispatch
+//variant of their caller (a non-inlined helper would only get the baseline
+//ISA, and a separately dispatched one costs an ifunc call). Helpers must obey
+//the same rules as their callers (e.g. explicit std::fma everywhere):
+#if defined(__GNUC__) || defined(__clang__)
+#  define NCRYSTAL_FMADISPATCH_INLINE inline __attribute__((always_inline))
+#elif defined(_MSC_VER)
+#  define NCRYSTAL_FMADISPATCH_INLINE __forceinline
+#else
+#  define NCRYSTAL_FMADISPATCH_INLINE inline
+#endif
+
 #endif

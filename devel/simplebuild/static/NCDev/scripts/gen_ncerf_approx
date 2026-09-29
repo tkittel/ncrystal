@@ -1,0 +1,366 @@
+#!/usr/bin/env python3
+
+################################################################################
+##                                                                            ##
+##  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   ##
+##                                                                            ##
+##  Copyright 2015-2026 NCrystal developers                                   ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+"""Derives every constant of NC::ncerf/ncerfc (in NCMath_FMA.hh) from first
+principles with mpmath, validates them and prints the C++ block to paste.
+
+Approximations (all fits done here):
+
+  |x| < 1/2      : erf(x) = x*(c0 + t*A(t)), t=x^2, c0=2/sqrt(pi) (as hi+lo
+                   doubles), A of degree 7: Chebyshev fit in t on [0,1/4].
+
+  1/2 <= x < x0  : erfc(x) = exp(-x^2) * c3/(x+c3) * (1+eps(x)), with
+                   c3=1/sqrt(pi) rounded to double (so the anchor
+                   c3/(x+c3) has the right x->inf limit, and eps is a small
+                   correction, 0<eps<0.19). eps is a degree 9/10 rational
+                   P(x)/Q(x), Q(0)=1, fitted for minimal max |error|/(1+eps)
+                   by linearised least squares with Sanathanan-Koerner
+                   denominator reweighting and Lawson (minimax) weights.
+
+Thresholds x0 (first double where erfc rounds to 0) and x1 (first double where
+erf rounds to 1, implying erfc(-x) rounds to 2) are found by bisection over
+doubles. exp(-x^2) uses the pre-existing Cody-Waite constants and expm1
+Taylor kernel of NCMath_FMA.hh (not generated here).
+
+Usage (python>=3.13 needed for --validate, which uses math.fma; in a
+simplebuild environment the script is available as sb_ncdev_gen_ncerf_approx):
+
+  gen_ncerf_approx                 : print C++ constant block
+  gen_ncerf_approx --validate N    : also simulate the C++ algorithm at N
+                                     random points per range and report the
+                                     worst ULP errors vs. mpmath
+  gen_ncerf_approx --testref       : print reference table for app_ncerf
+"""
+
+import math
+import struct
+import sys
+
+import mpmath as mp
+
+mp.mp.dps = 40
+
+DEG_A = 7           #degree of A(t)
+DEG_P, DEG_Q = 9, 10
+XSPLIT = 0.5        #|x| boundary between the two approximations
+
+def rnd( v ):
+    """Round to nearest double (incl. subnormals), ties to even."""
+    v = mp.mpf(v)
+    if v == 0:
+        return 0.0
+    if abs(v) < mp.ldexp(1,-1022):
+        return math.ldexp(float(mp.nint(mp.ldexp(v,1074))),-1074)
+    with mp.workprec(53):
+        return float(+v)
+
+def dbl2bits( x ):
+    return struct.unpack('<Q',struct.pack('<d',x))[0]
+
+def bits2dbl( b ):
+    return struct.unpack('<d',struct.pack('<Q',b))[0]
+
+def first_double_where( pred, lo, hi ):
+    """Smallest positive double in (lo,hi] with pred true (pred monotonic)."""
+    blo, bhi = dbl2bits(lo), dbl2bits(hi)
+    assert not pred(lo) and pred(hi)
+    while bhi - blo > 1:
+        bm = (blo+bhi)//2
+        if pred(bits2dbl(bm)):
+            bhi = bm
+        else:
+            blo = bm
+    return bits2dbl(bhi)
+
+def polyval( c, x ):
+    #c[0] is the constant term
+    r = mp.mpf(0)
+    for ci in reversed(c):
+        r = r*x + ci
+    return r
+
+def thresholds():
+    #x0: erfc(x) rounds to 0 (<= 2^-1075, ties to even). x1: 1-erfc(x)
+    #rounds to 1 (erfc <= 2^-54), implying also 2-erfc(x) rounds to 2.
+    x0 = first_double_where(lambda x : mp.erfc(x) <= mp.ldexp(1,-1075),
+                            20.0, 30.0 )
+    x1 = first_double_where(lambda x : mp.erfc(x) <= mp.ldexp(1,-54),
+                            4.0, 8.0 )
+    return x0, x1
+
+def fit_small():
+    c0 = 2/mp.sqrt(mp.pi)
+    c0hi = rnd(c0)
+    c0lo = rnd(c0-c0hi)
+    def A(t):
+        t = mp.mpf(t)
+        if t == 0:
+            return -c0/3
+        x = mp.sqrt(t)
+        return (mp.erf(x)/x - c0)/t
+    poly = mp.chebyfit(A,[0,XSPLIT**2],DEG_A+1)
+    coefs = [ rnd(c) for c in reversed(poly) ]
+    #validate relative error of x*(c0hi+c0lo+t*A(t)) vs erf(x) (exact
+    #evaluation of the double coefficients):
+    maxerr = mp.mpf(0)
+    for i in range(1,2001):
+        x = mp.mpf(XSPLIT)*i/2000
+        t = x*x
+        approx = x*(mp.mpf(c0hi)+mp.mpf(c0lo)+t*polyval(coefs,t))
+        maxerr = max(maxerr, abs(approx/mp.erf(x)-1))
+    return c0hi, c0lo, coefs, maxerr
+
+def lawson_rational( xs, fs, ws, m, n, iters = 30 ):
+    """Rational P_m/Q_n (Q[0]=1) minimising max(ws*|P/Q-fs|) on points xs."""
+    npts = len(xs)
+    qprev = [ mp.mpf(1) ]*npts
+    lw = [ mp.mpf(1) ]*npts
+    best = None
+    for it in range(iters):
+        A = mp.matrix(npts,m+1+n)
+        b = mp.matrix(npts,1)
+        for i,(x,f,wt) in enumerate(zip(xs,fs,ws)):
+            w = mp.sqrt(lw[i])*wt/qprev[i]
+            for j in range(m+1):
+                A[i,j] = w*x**j
+            for j in range(1,n+1):
+                A[i,m+j] = -w*f*x**j
+            b[i] = w*f
+        sol = mp.qr_solve(A,b)[0]
+        P = [ sol[j] for j in range(m+1) ]
+        Q = [ mp.mpf(1) ] + [ sol[m+j] for j in range(1,n+1) ]
+        qprev = [ polyval(Q,x) for x in xs ]
+        errs = [ (polyval(P,x)/q - f)*wt
+                 for x,f,wt,q in zip(xs,fs,ws,qprev) ]
+        emax = max( abs(e) for e in errs )
+        if best is None or emax < best[0]:
+            best = ( emax, P, Q )
+        lw = [ w*abs(e) for w,e in zip(lw,errs) ]
+        s = sum(lw)
+        lw = [ w*npts/s for w in lw ]
+    return best
+
+def fit_tail( x0 ):
+    c3 = rnd(1/mp.sqrt(mp.pi))
+    invc3 = rnd(mp.sqrt(mp.pi))
+    def eps( x ):
+        x = mp.mpf(x)
+        return mp.exp(x*x)*mp.erfc(x)*(x+c3)/c3 - 1
+    a, b = mp.log(XSPLIT), mp.log(x0)
+    npts = 120
+    #Chebyshev(-Lobatto) points in log(x):
+    xs = [ mp.exp( (a+b)/2 - (b-a)/2*mp.cos(mp.pi*k/(npts-1)) )
+           for k in range(npts) ]
+    fs = [ eps(x) for x in xs ]
+    ws = [ 1/(1+f) for f in fs ]
+    _, P, Q = lawson_rational( xs, fs, ws, DEG_P, DEG_Q )
+    Pd = [ rnd(c) for c in P ]
+    Qd = [ rnd(c) for c in Q ]
+    assert Qd[0] == 1.0
+    #Q>0 on x>0 (no poles), checked via its coefficients:
+    assert all( c > 0 for c in Qd )
+    #validate on dense grid (error relative to 1+eps, exact evaluation of the
+    #double coefficients):
+    maxerr = mp.mpf(0)
+    nval = 4000
+    for i in range(nval+1):
+        x = mp.exp(a+(b-a)*i/nval)
+        e = eps(x)
+        maxerr = max(maxerr,abs(polyval(Pd,x)/polyval(Qd,x)-e)/(1+e))
+    return c3, invc3, Pd, Qd, maxerr
+
+def fmtd( v ):
+    s = f'{v:.17g}'
+    assert float(s) == v
+    if 'e' not in s and '.' not in s:
+        s += '.0'
+    return s
+
+def generate():
+    x0, x1 = thresholds()
+    c0hi, c0lo, acoefs, errA = fit_small()
+    c3, invc3, Pd, Qd, errB = fit_tail( x0 )
+    sys.stderr.write(f'max rel. approx error |x|<{XSPLIT:g}:'
+                     f' {mp.nstr(errA,3)}\n')
+    sys.stderr.write(f'max approx error of eps/(1+eps): {mp.nstr(errB,3)}\n')
+    assert errA < 3e-17 and errB < 1e-17
+    o = []
+    o.append('    //Generated by the NCDev script gen_ncerf_approx'
+             ' (do not edit):')
+    o.append(f'    constexpr double ncerf_xsplit = {fmtd(XSPLIT)};')
+    o.append(f'    constexpr double ncerf_x1 = {fmtd(x1)};')
+    o.append(f'    constexpr double ncerfc_x0 = {fmtd(x0)};')
+    o.append(f'    constexpr double ncerf_c0hi = {fmtd(c0hi)};')
+    o.append(f'    constexpr double ncerf_c0lo = {fmtd(c0lo)};')
+    o.append(f'    constexpr double ncerf_c3 = {fmtd(c3)};')
+    o.append(f'    constexpr double ncerf_invc3 = {fmtd(invc3)};')
+    for i,c in enumerate(acoefs):
+        o.append(f'    constexpr double ncerf_a{i} = {fmtd(c)};')
+    for i,c in enumerate(Pd):
+        o.append(f'    constexpr double ncerf_p{i} = {fmtd(c)};')
+    for i,c in enumerate(Qd[1:],start=1):
+        o.append(f'    constexpr double ncerf_q{i} = {fmtd(c)};')
+    o.append('    //End of generated block.')
+    return { 'x0':x0, 'x1':x1, 'c0hi':c0hi, 'c0lo':c0lo, 'c3':c3,
+             'invc3':invc3, 'a':acoefs, 'p':Pd, 'q':Qd }, '\n'.join(o)
+
+################################################################################
+#Simulation of the C++ algorithm in NCMath_FMA.hh (keep in sync with it):
+
+#Pre-existing Cody-Waite constants from NCMath_FMA.hh (not generated here):
+LN2_HI = 6.93147180369123816490e-01
+LN2_LO = 1.90821492927058770002e-10
+INVLN2 = 1.44269504088896338700e+00
+
+def sim_expm1_p2( r ):
+    #(expm1(r)-r)/r^2 as in expm1_taylor14_p2: Taylor coefs 1/k!, k=2..14
+    tmp = 1.0/math.factorial(14)
+    for k in range(13,1,-1):
+        tmp = math.fma( r, tmp, 1.0/math.factorial(k) )
+    return tmp
+
+def sim_pow2( m ):
+    assert -1022 <= m <= 0
+    return bits2dbl( (m+1023) << 52 )
+
+def sim_horner( c, x ):
+    p = c[-1]
+    for ci in reversed(c[:-1]):
+        p = math.fma( x, p, ci )
+    return p
+
+def sim_tail( C, x ):
+    fma = math.fma
+    h = x*x
+    lo = fma( x, x, -h )
+    k = int( fma( h, INVLN2, 0.5 ) )
+    kd = float(k)
+    r = fma( kd, LN2_HI, -h )
+    c = fma( kd, LN2_LO, -lo )
+    cc = fma( 0.5*c, c, c )
+    rq = r*sim_expm1_p2( r )
+    em1 = fma( r, rq, r )
+    T = em1 + fma( cc, em1, cc )
+    eps = sim_horner( C['p'], x ) / sim_horner( C['q'], x )
+    W = fma( eps, T, eps + T )
+    c3 = C['c3']
+    s = x + c3
+    sb = s - x
+    slo = ( x - ( s - sb ) ) + ( c3 - sb )
+    y0 = c3 / s
+    d = fma( -slo, y0, fma( -s, y0, c3 ) ) * C['invc3']
+    S = W + fma( W, d, d )
+    return fma( y0, S, y0 ), k
+
+def sim_small_q( C, x ):
+    t = x*x
+    return math.fma( t, sim_horner( C['a'], t ), C['c0lo'] )
+
+def sim_erf( C, x ):
+    if math.isnan(x):
+        return x
+    ax = abs(x)
+    if ax < XSPLIT:
+        return math.fma( x, C['c0hi'], x*sim_small_q(C,x) )
+    if ax >= C['x1']:
+        return math.copysign(1.0,x)
+    v, k = sim_tail( C, ax )
+    return math.copysign( math.fma( -v, sim_pow2(-k), 1.0 ), x )
+
+def sim_erfc( C, x ):
+    fma = math.fma
+    if math.isnan(x):
+        return x
+    ax = abs(x)
+    if ax < XSPLIT:
+        return 1.0 - sim_erf( C, x )
+    if x >= C['x0']:
+        return 0.0
+    if x <= -C['x1']:
+        return 2.0
+    v, k = sim_tail( C, ax )
+    if x < 0.0:
+        return fma( -v, sim_pow2(-k), 2.0 )
+    k1 = k//2
+    return ( v*sim_pow2(-k1) ) * sim_pow2( k1 - k )
+
+def ulpdist( a, b ):
+    def key(x):
+        i = dbl2bits(x)
+        return i if i < (1<<63) else (1<<63)-i
+    return abs(key(a)-key(b))
+
+def validate( C, n ):
+    import random
+    rng = random.Random(12345)
+    ranges = [ (-6.0,-0.5), (-0.5,0.0), (0.0,0.5), (0.5,1.0), (1.0,2.0),
+               (2.0,4.0), (4.0,8.0), (8.0,16.0), (16.0,C['x0']) ]
+    for lo,hi in ranges:
+        werf, werfc = (0,None), (0,None)
+        for _ in range(n):
+            x = rng.uniform(lo,hi)
+            xm = mp.mpf(x)
+            e = ulpdist( sim_erf(C,x), rnd(mp.erf(xm)) )
+            refc = rnd(mp.erfc(xm))
+            ec = ulpdist( sim_erfc(C,x), refc )
+            if e > werf[0]:
+                werf = (e,x)
+            if ec > werfc[0] and refc >= 2.0**-1022:
+                werfc = (ec,x)
+        print(f'range [{lo:g},{hi:g}]: worst erf {werf[0]} ULP'
+              f' (x={werf[1]!r}), erfc {werfc[0]} ULP (x={werfc[1]!r})')
+    worst = 0
+    for _ in range(n):
+        x = math.ldexp(1.0,-rng.randint(2,1070))*rng.uniform(1,2)
+        worst = max(worst,ulpdist( sim_erf(C,x), rnd(mp.erf(mp.mpf(x))) ))
+    print(f'tiny x (2^-1070..2^-1): worst erf {worst} ULP')
+
+################################################################################
+
+def testref_points():
+    """Exactly representable double inputs spread over all regions."""
+    pts = [ 1e-300, 1e-20, 1e-8, 0.001, 0.0625, 0.1, 0.25, 0.375, 0.45,
+            0.49999999999999994, 0.5, 0.50000000000000011, 0.6, 0.75, 1.0,
+            1.25, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 5.8, 5.9,
+            6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 18.0, 20.0, 22.0, 24.0, 25.0,
+            26.0, 26.5, 26.55, 26.6, 27.0, 27.2 ]
+    return pts + [ -x for x in pts if 0.001 <= x <= 6.0 ]
+
+def testref():
+    print('    //{ x, erf(x), erfc(x) }, mpmath values rounded to nearest:')
+    for x in testref_points():
+        xm = mp.mpf(x)
+        print(f'    {{ {fmtd(x)}, {fmtd(rnd(mp.erf(xm)))},'
+              f' {fmtd(rnd(mp.erfc(xm)))} }},')
+
+def main():
+    args = sys.argv[1:]
+    if args == ['--testref']:
+        testref()
+        return
+    C, block = generate()
+    print(block)
+    if args[0:1] == ['--validate']:
+        validate( C, int(args[1]) if len(args) > 1 else 10000 )
+
+if __name__ == '__main__':
+    main()

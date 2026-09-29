@@ -118,6 +118,12 @@ namespace NCRYSTAL_NAMESPACE {
   double stable_sinh(double);
   double stable_log(double);
 
+  //Portable erf(x) and erfc(x)=1-erf(x), bit-identical on all platforms and
+  //within 1-2 ULP of the exact values (erfc also deep in its tail, until it
+  //underflows at x~27.2). Monotonic (tested), no libm calls. NaN gives NaN:
+  double ncerf( double x );
+  double ncerfc( double x );
+
   //Evaluate erfc(a)-erfc(b) in a relatively numerically safe
   //manner and with as few actual calls to std::erfc as possible:
   double erfcdiff(double a, double b);
