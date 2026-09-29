@@ -23,6 +23,7 @@
 
 #include "NCrystal/core/NCDefs.hh"
 #include "NCrystal/internal/phys_utils/NCFreeGasUtils.hh"
+#include "NCrystal/internal/phys_utils/NCSCTUtils.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -62,6 +63,21 @@ namespace NCRYSTAL_NAMESPACE {
     private:
       FreeGasXSProvider m_xsprovider;
       Temperature m_t;
+      AtomMass m_m;
+    };
+
+    class SABSCTExtender : public SABExtender {
+    public:
+      SABSCTExtender( Temperature, Temperature teff, AtomMass, SigmaBound,
+                      unsigned sct_table_npts = 90 );
+      virtual ~SABSCTExtender();
+      CrossSect crossSection(NeutronEnergy) const override;
+      PairDD sampleAlphaBeta(RNG&, NeutronEnergy) const override;
+      Optional<std::string> shortName() const override { return {"sct"}; }
+      Temperature effectiveTemperature() const noexcept { return m_teff; }
+    private:
+      SCTXSProvider m_xsprovider;
+      Temperature m_t, m_teff;
       AtomMass m_m;
     };
 

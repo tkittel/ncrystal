@@ -90,6 +90,7 @@ namespace NCRYSTAL_NAMESPACE {
       SIntegralInterpolation sIntegralInterp = SIntegralInterpolation::Default;
 
       unsigned egrid_npts = 300;
+      unsigned sct_table_npts = 90;//SCT extender lookup table npts
       double egrid_emin_accuracy = 1e-8;//fixme: just use 1e-11 for all levels? To improve reproducibility! Also, increase trunc level in vdosgn to 1e-12-ish ?
       double fullCellSamplingARThreshold = 0.15;
       double bcSamplingLargeSRatioThreshold = 1e-5;//fixme: not used yet
