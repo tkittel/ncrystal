@@ -1,4 +1,12 @@
 v4.4.7 (work in progress)
+     * Added short-collision-time (SCT) model infrastructure: NCSCTUtils.hh's
+       SCTXSProvider/SCTSampler implement the ENDF/GA SCT law (free gas at
+       Teff on the downscatter side, detailed balance at the actual T),
+       with sampling via an exact mapping onto FreeGasSampler and cross
+       sections via a closed erf-form correction plus a luxury-dependent
+       spline table. A thin SABSCTExtender exposes it through the
+       SABExtender interface, validated in tests/src/app_sctext. No factory
+       selects it yet.
      * Added ncerf/ncerfc (NCMath.hh): portable error functions with no
        math-library calls at all (rational approximations after W. J.
        Cody's CALERF with a stable_exp-style tail factor), giving
