@@ -86,12 +86,19 @@ Errors OK
 Lazy loading OK
   virtual::mem.lau: comments=None error=None
      sg=225 crystalsystem=cubic formula=Al natoms=4 braggthreshold=4.67605 vdos=False scatknl=False
+     load OK
   virtual::mem.laz: comments=None error=None
      sg=225 crystalsystem=cubic formula=Al natoms=4 braggthreshold=4.67605 vdos=False scatknl=False
+     load OK
   relpath::disk.lau: comments=None error=None
      sg=225 crystalsystem=cubic formula=Al natoms=4 braggthreshold=4.67605 vdos=False scatknl=False
+     load OK
   relpath::disk.laz: comments=None error=None
      sg=225 crystalsystem=cubic formula=Al natoms=4 braggthreshold=4.67605 vdos=False scatknl=False
+     load OK
+lazlau: leaving tmpdir
+lazlau: tmpdir cleaned up
+lazlau: relative paths disabled again
 LAZ/LAU data OK
 with_elements('B',): ['stdlib::B4C_sg166_BoronCarbide.ncmat', 'stdlib::BO3H3_sg2_BoricAcid.ncmat']
 with_elements('B10',): ['virtual::b10.ncmat', 'gasmix::BF3/2atm/25C/B_is_0.95_B10_0.05_B11', 'solid::B4C/2.52gcm3/B_is_0.95_B10_0.05_B11']
