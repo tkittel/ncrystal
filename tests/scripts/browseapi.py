@@ -228,7 +228,13 @@ def test_lazlau():
                   f' braggthreshold={p.braggthreshold:.6g}'
                   f' vdos={p.vdos} scatknl={p.scatknl}')
             assert e.load().info.hasStructureInfo()
+            print('     load OK',flush=True)
+        #Staged flushed markers: this area was observed to hang on the
+        #Windows Debug CI legs, and these localise the next such hang:
+        print('lazlau: leaving tmpdir',flush=True)
+    print('lazlau: tmpdir cleaned up',flush=True)
     NC.enableRelativePaths(False)
+    print('lazlau: relative paths disabled again',flush=True)
     print('LAZ/LAU data OK')
 
 def test_elements():
