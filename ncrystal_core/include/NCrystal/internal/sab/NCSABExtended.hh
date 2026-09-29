@@ -42,8 +42,7 @@ namespace NCRYSTAL_NAMESPACE {
       SABExtended( shared_obj<const SABProcessor>,
                    shared_obj<const SAB::SABExtender> );
 
-      //Convenience function for initialising using a free-gas extension and/or
-      //directly from SABData:
+      //Convenience functions for initialising using a free-gas extension:
       static shared_obj<const SABExtended>
       createWithFGExtender( shared_obj<const SABProcessor> );
 
@@ -52,6 +51,12 @@ namespace NCRYSTAL_NAMESPACE {
                             shared_obj<const SABData>,
                             std::shared_ptr<const VectD>
                             energyGrid = nullptr );
+
+      //Same, for short-collision-time extension:
+      static shared_obj<const SABExtended>
+      createWithSCTExtender( shared_obj<const SABProcessor>,
+                             Temperature teff,
+                             const SABCfg::Cfg& );
 
       //Access cross sections, always assuming SigmaBound=1barn.
       CrossSect crossSectionUnitSigmaBound( NeutronEnergy ekin ) const;
