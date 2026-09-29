@@ -411,6 +411,9 @@ relpath::disk.laz
 virtual::mem.lau
 virtual::mem.laz
 virtual::mycrystal.ncmat
+lazlau: leaving tmpdir
+lazlau: tmpdir cleaned up
+lazlau: relative paths disabled again
 ============= CLI >>browse Al_sg225<< =============
   -> 2 lines of output
 ============= CLI >>browse Al<< =============
