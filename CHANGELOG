@@ -1099,6 +1099,83 @@ v4.4.7 (work in progress)
        (typically at the level of the last few significant digits, though
        rare threshold-sensitive cases can shift by more), without any
        expected impact on physical accuracy.
+     * stable_exp/stable_expm1 were rewritten to use no math-library
+       calls at all (Cody-Waite range reduction plus an explicit-fma
+       Taylor core), making their results bit-identical on every
+       platform; verified against mpmath-derived references to 1-2 ULP.
+       The newly added ncerf/ncerfc (NCMath.hh) do the same for the
+       error functions (rational approximations after W. J. Cody's
+       CALERF with the same portable exponential tail), while also being
+       significantly faster than typical libm implementations (2-8x
+       measured against glibc, whose correctly-rounded erfc tail path is
+       particularly slow). All erf/erfc evaluations in the library
+       (free-gas cross sections and sampling, single-crystal mosaic
+       setup) now use them: affected results shift at the few-ULP level
+       but become identical across platforms and toolchains.
+     * Use explicit std::fma widely for improved reproducibility, with
+       the new NCRYSTAL_FMADISPATCH_ATTR runtime-dispatch mechanism
+       ensuring this costs no performance on portably built binaries
+       such as the published wheels and conda packages. Affected
+       utilities include FastConvolve (FFT), nclerp (new linear
+       interpolation helper, now used instead of hand-rolled
+       a*(1-t)+b*t forms throughout the SAB code), VDOS and Gn
+       evaluation, VDOS grid regularisation, kinematic-limit utilities,
+       random isotropic-mu mappings, randKPowX's Taylor branch, and
+       Stirling's-series alpha factors. Notably this also fixed Romberg
+       integration's Richardson extrapolation, whose plain "a*b+c*d"
+       update has two valid single-fusion readings that platforms were
+       free to pick between -- the final root cause of a long-standing
+       cross-platform sabxs test divergence, which now passes
+       bit-cleanly under forced-FMA rebuilds.
+     * Added a Windows/MSVC-specific runtime FMA dispatch mechanism
+       (NCFMADispatch.hh): MSVC has no equivalent of the target_clones
+       attribute, so every std::fma() there fell back to slow software
+       emulation -- a real Windows CPU trace found 65% of a VDOS
+       expansion benchmark's runtime spent in it. Every
+       dispatch-decorated function now gets a second, /arch:AVX2-compiled
+       clone in a dedicated translation unit, used at runtime only when
+       CPUID/XGETBV confirm FMA3 support (x86-64 only;
+       Windows-on-ARM64 has hardware FMA as baseline and never sees the
+       machinery). Also added ncrestrict + assertion-verified
+       non-overlap declarations to these functions' pointer arguments,
+       to help auto-vectorisation.
+     * Performance: new branchless NC::fastLowerBoundIdx/
+       fastUpperBoundIdx (NCFastSearch.hh) replace
+       std::lower_bound/upper_bound on the hot sorted-double-array
+       lookups. For NCrystal's typical grid sizes the dominant binary
+       search cost is branch mispredictions (each comparison is
+       data-dependent ~50/50), which a conditional move avoids: measured
+       4-5x faster in isolation (with care taken so both GCC and Clang
+       actually emit cmov), and results verified identical to the
+       standard library across millions of queries including
+       duplicate/tied-value edge cases. Wired into the SAB sampling hot
+       path, PowderBragg, pickRandIdxByWeight and the remaining
+       qualifying call sites: measured ~15% faster inelastic sampling
+       for polyethylene, ~24% faster Bragg sampling for alpha-quartz,
+       and ~8% end-to-end in a full simulation loop benchmark.
+     * Performance/audit pass over the SAB cell-integration hot path
+       (guided by profiling across materials spanning element mass and
+       VDOS shape): the hottest integrand loops were extracted into
+       dispatch-decorated free functions, unaudited fma-contractable
+       shapes in them and in the kinematic-limit utilities were made
+       explicit, a loop-invariant logarithm was hoisted out of
+       sIntegralAtE's per-cell loop, and misc small cleanups landed
+       (e.g. a flagged NAlpha reconstruction now reuses a cached value).
+     * Test/benchmark infrastructure: PYTHON_COLORS=0 is now forced for
+       all test-script invocations (simplebuild, CMake and the shipped
+       ncrystal-verify alike), since Python 3.13+ colourises
+       argparse/traceback output based on ambient environment variables
+       like FORCE_COLOR even when stdout is not a terminal, spuriously
+       breaking golden-log comparisons. New self-timed benchmarks
+       app_perfvdos (one-time VDOS -> kernel construction cost) and
+       app_perfsab (per-event cross-section/sampling cost) are wired
+       into a cross-platform benchmark CI workflow, alongside a
+       WPR-based Windows CPU-profiling workflow; Windows Debug+Release
+       CI legs were added to the basic test workflow. The sabxs
+       reproducibility test tolerances are now vdoslux-dependent
+       (1e-4/1e-5/1e-6), and several test apps gained real assertions
+       instead of relying purely on byte-exact log comparisons of
+       FMA-sensitive diagnostic values.
      * Add ncmake_unique_array_noinit helper function.
      * Py API: Add DynamicInfo.displayLabel and add .lbl shortcuts for
        .displayLabel to both AtomInfo and DynamicInfo
@@ -1108,7 +1185,6 @@ v4.4.7 (work in progress)
      * Introduce StableDbl utility class for double-double arithmetic for better
        reproducibility and precision in select parts of the code.
      * Introduce (axis-aligned) Rectangle utility class.
-     * ...
 
 v4.4.6 2026-06-30
      * Support Numpy 2.5 by reworking usage of obsoleted array reshaping
