@@ -139,7 +139,12 @@ def test_lazlau():
         run('-s','disk','-f','relpath')
         run('-f','relpath','sg=225')
         run('-f','virtual','sg==225')
+        #Staged flushed markers: this area was observed to hang on the
+        #Windows Debug CI legs, and these localise the next such hang:
+        print('lazlau: leaving tmpdir',flush=True)
+    print('lazlau: tmpdir cleaned up',flush=True)
     NC.enableRelativePaths(False)
+    print('lazlau: relative paths disabled again',flush=True)
 
 def test_physics():
     run('formula=o','-f','virtual')#case-insensitive
