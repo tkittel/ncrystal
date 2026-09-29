@@ -149,7 +149,12 @@ def test_lazlau():
         run('-s','disk')
         run('-f','relpath','--info','disk.laz',sanitize_paths=True)
         run('-f','virtual','-w','sg==225','--count')
+        #Staged flushed markers: this area was observed to hang on the
+        #Windows Debug CI legs, and these localise the next such hang:
+        print('lazlau: leaving tmpdir',flush=True)
+    print('lazlau: tmpdir cleaned up',flush=True)
     NC.enableRelativePaths(False)
+    print('lazlau: relative paths disabled again',flush=True)
 
 def test_physics():
     run('--props','-f','virtual')
@@ -215,7 +220,7 @@ def test_physics():
     print('CSV header:',rows[0])
     for r in rows[1:]:
         dens = float(r[2]) if r[2] else None
-        print('CSV row:',r[0],r[1],None if dens is None else '%.6g'%dens,
+        print('CSV row:',r[0],r[1],None if dens is None else f'{dens:.6g}',
               r[3].split(':')[0] if r[3] else None,r[4],repr(r[5]))
     #No truncation:
     run('-f','virtual','mytestmat','--no-truncate')
@@ -280,8 +285,8 @@ def test_physics():
 
 def main():
     #Colors in output must not depend on the environment of the test:
-    orig_env = dict( (k,os.environ.get(k)) for k in _color_envvars )
-    setenv( **dict( (k,None) for k in _color_envvars ) )
+    orig_env = { k: os.environ.get(k) for k in _color_envvars }
+    setenv( **{ k: None for k in _color_envvars } )
     try:
         main_impl()
         test_colors()
