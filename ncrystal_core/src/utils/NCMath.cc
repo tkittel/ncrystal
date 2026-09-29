@@ -406,6 +406,16 @@ NC::Fct1D::~Fct1D(){}
 //expm1_taylor14/detail_stable_expm1: see NCMath_FMA.hh
 //(included above).
 
+double NC::ncerf( double x )
+{
+  return NCRYSTAL_APPLY_C_NAMESPACE(detail_ncerf)( x );
+}
+
+double NC::ncerfc( double x )
+{
+  return NCRYSTAL_APPLY_C_NAMESPACE(detail_ncerfc)( x );
+}
+
 double NC::stable_expm1( double x )
 {
   //NaN check here rather than in the extern "C" detail function, which MSVC
