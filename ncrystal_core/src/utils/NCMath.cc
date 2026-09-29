@@ -415,6 +415,18 @@ double NC::stable_expm1( double x )
   return NCRYSTAL_APPLY_C_NAMESPACE(detail_stable_expm1)( x );
 }
 
+//ncerf/ncerfc: see detail_ncerf/detail_ncerfc in NCMath_FMA.hh.
+
+double NC::ncerf( double x )
+{
+  return NCRYSTAL_APPLY_C_NAMESPACE(detail_ncerf)( x );
+}
+
+double NC::ncerfc( double x )
+{
+  return NCRYSTAL_APPLY_C_NAMESPACE(detail_ncerfc)( x );
+}
+
 double NC::stable_log( double x )
 {
   const double y0 = std::log(x);
@@ -501,7 +513,7 @@ namespace NCRYSTAL_NAMESPACE {
       //erfc(b) contribution negligible at double precision
       return erfca;
     }
-    const double erfcb = b>27.3 ? 0.0 : std::erfc(b);
+    const double erfcb = b>27.3 ? 0.0 : std::erfc(b);//fixme: ncerfc?
     return erfca - erfcb;
   }
 }
