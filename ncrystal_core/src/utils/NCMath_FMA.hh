@@ -52,6 +52,12 @@
 //fast twin, so the call still ends up on the fast path, just via one extra
 //indirection.
 
+#if defined(_MSC_VER) && !defined(__clang__)
+#  define NCMATHFMA_ALWAYS_INLINE __forceinline
+#else
+#  define NCMATHFMA_ALWAYS_INLINE inline __attribute__((always_inline))
+#endif
+
 namespace NCRYSTAL_NAMESPACE {
   namespace {
 
@@ -63,8 +69,14 @@ namespace NCRYSTAL_NAMESPACE {
     //~4e-18 relative (first omitted term, r^15/15!), comfortably below
     //double precision. Coefficients are exact rationals rounded to the
     //nearest double, so identical on every platform by construction:
-    NCRYSTAL_FMADISPATCH_ATTR
-    double expm1_reducedarg_taylor14( double r )
+    //The Horner sum p with expm1(r)=r*p, factored out (without the
+    //dispatch attribute, so it can also inline fully into the ncerfc
+    //machinery further below; every operation is an explicit std::fma,
+    //so inlining into an fma clone cannot introduce contraction
+    //differences). expm1_reducedarg_taylor14 wraps it with the exact
+    //same operation sequence as always:
+    NCMATHFMA_ALWAYS_INLINE
+    double expm1_taylor14_over_r( double r )
     {
       constexpr double c1 = 1.0;
       constexpr double c2 = 1.0/2;
@@ -94,7 +106,13 @@ namespace NCRYSTAL_NAMESPACE {
       p = std::fma( r, p, c3 );
       p = std::fma( r, p, c2 );
       p = std::fma( r, p, c1 );
-      return r*p;
+      return p;
+    }
+
+    NCRYSTAL_FMADISPATCH_ATTR
+    double expm1_reducedarg_taylor14( double r )
+    {
+      return r * expm1_taylor14_over_r( r );
     }
 
   }
