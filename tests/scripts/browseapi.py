@@ -164,7 +164,7 @@ def main():
     bad('Invalid where expression "elements.__class__" (private attributes'
         ' are not allowed)',where='elements.__class__')
     bad('Invalid where expression "absxs >": invalid syntax',where='absxs >')
-    bad('Error evaluating where expression "absxs/0 > 1": float division by'
+    bad('Error evaluating where expression "absxs/0 > 1": division by'
         ' zero',where='absxs/0 > 1',factory='virtual')
     bad('Where conditions require entries loaded with load=True',
         where='absxs > 1',factory='virtual',load=False)

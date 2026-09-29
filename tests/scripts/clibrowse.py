@@ -147,7 +147,7 @@ def test_physics():
                                      ' attributes are not allowed)'))
     bad_where('absxs >', 'Invalid --where expression "absxs >": invalid syntax')
     with ensure_error(NC.NCBadInput,'Error evaluating --where expression'
-                      ' "absxs/0 > 1": float division by zero'):
+                      ' "absxs/0 > 1": division by zero'):
         run('-w','absxs/0 > 1','-f','virtual')
 
 def main():

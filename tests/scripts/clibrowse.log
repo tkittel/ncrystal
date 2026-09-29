@@ -241,7 +241,7 @@ Caught expected ArgumentError('Invalid --where expression "elements.__class__" (
 ============= CLI >>browse -w 'absxs >'<< =============
 Caught expected ArgumentError('Invalid --where expression "absxs >": invalid syntax')
 ============= CLI >>browse -w 'absxs/0 > 1' -f virtual<< =============
-Caught expected NCBadInput('Error evaluating --where expression "absxs/0 > 1": float division by zero')
+Caught expected NCBadInput('Error evaluating --where expression "absxs/0 > 1": division by zero')
 ============= CLI >>browse -c stdlib::Al_sg225<< =============
 ==> 1 file from "stdlib" (<stdlib-location>, priority=120):
     stdlib::Al_sg225.ncmat (hidden)

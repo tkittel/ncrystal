@@ -426,8 +426,14 @@ class _WhereExpr:
         try:
             tree = ast.parse( expr, mode = 'eval' )
         except SyntaxError as e:
+            msg = e.msg
+            import sys
+            if ( sys.version_info < (3,10)
+                 and msg == 'unexpected EOF while parsing' ):
+                #Mimic the wording of newer Pythons:
+                msg = 'invalid syntax'
             raise NCBadInput(f'Invalid where expression "{expr}":'
-                             f' {e.msg}') from e
+                             f' {msg}') from e
         allowed = set( n for n,d in _propdocs ) | set( _where_funcs )
         for node in ast.walk( tree ):
             if isinstance( node, ast.Name ) and node.id not in allowed:
@@ -443,6 +449,25 @@ class _WhereExpr:
         ns['__builtins__'] = {}
         return eval( self.__code, ns, props.as_dict() )
 
+def _excmsg( e ):
+    #Python 3.14 unified the various ZeroDivisionError messages ("float
+    #division by zero", ...) to just "division by zero"; make older
+    #versions mimic that so messages are version-independent:
+    import sys
+    msg = str( e )
+    if ( sys.version_info < (3,14)
+         and isinstance( e, ZeroDivisionError )
+         and msg in ( 'float division by zero',
+                      'division by zero',
+                      'integer division or modulo by zero',
+                      'float floor division by zero',
+                      'integer modulo by zero',
+                      'float modulo',
+                      'divmod()',
+                      'float divmod()' ) ):
+        return 'division by zero'
+    return msg
+
 def _eval_where( fct, props ):
     #Comparisons with unavailable values (None) are considered false:
     try:
@@ -454,4 +479,4 @@ def _eval_where( fct, props ):
             raise
         from .exceptions import NCBadInput
         raise NCBadInput(f'Error evaluating where expression "{fct.expr}":'
-                         f' {e}') from e
+                         f' {_excmsg(e)}') from e
