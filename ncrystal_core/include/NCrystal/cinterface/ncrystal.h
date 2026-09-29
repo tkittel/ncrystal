@@ -871,7 +871,11 @@ extern "C" {
                                            double* temperature,
                                            unsigned* ditypeid );
 
-  /* Extract scattering kernel for ditype 2,3,4 (vdoslux ignored for type 2).      */
+  /* Extract scattering kernel for ditype 2,3,4 (vdoslux ignored for type 2). The  */
+  /* returned pointers are only guaranteed to be valid until the next call to the  */
+  /* function (from any thread) or to ncrystal_clear_caches. Data must therefore   */
+  /* be copied immediately, and multi-threaded callers must use a lock to prevent  */
+  /* concurrent calls while doing so.                                              */
   NCRYSTAL_API void ncrystal_dyninfo_extract_scatknl( ncrystal_info_t,
                                                       unsigned idyninfo,
                                                       unsigned vdoslux,
@@ -1037,7 +1041,12 @@ extern "C" {
 
   /*If not halting on error, these functions can be used to access information     */
   /*about errors encountered. The error state is kept separately for each thread,  */
-  /*so these functions only report errors encountered in the calling thread:       */
+  /*so these functions only report errors encountered in the calling thread.       */
+  /*Threads should call ncrystal_clearerror before they end, since an error state  */
+  /*left behind might otherwise be seen by a new thread (if the system reuses the  */
+  /*thread ID). At most 1024 threads can have error states at the same time: if    */
+  /*more are needed, the oldest are discarded (invalidating any strings returned   */
+  /*for them):                                                                     */
   NCRYSTAL_API int ncrystal_error(void);/* returns 1 if an error condition occurred. */
   NCRYSTAL_API const char * ncrystal_lasterror(void);/* returns description of last error (NULL if none) */
   NCRYSTAL_API const char * ncrystal_lasterrortype(void);/* returns description of last error (NULL if none) */

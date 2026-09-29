@@ -27,6 +27,13 @@ Internal implementation details for functionality in core.py
 
 __all__ = []
 
+import _thread
+
+#The C function ncrystal_dyninfo_extract_scatknl provides pointers which are
+#only valid until the next call, so calls and subsequent copying of data must
+#be protected with this lock:
+extract_scatknl_lock = _thread.allocate_lock()
+
 class divdos_methods:
 
     """Common methods shared between DI_VDOS and DI_VDOSDebye"""
