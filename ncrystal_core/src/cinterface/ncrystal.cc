@@ -290,7 +290,9 @@ namespace NCRYSTAL_NAMESPACE {
     //Error state is kept per thread (keyed on thread id, guarded by a
     //mutex, since thread_local is avoided), so an error in one thread is
     //never reported in another. Entries only change via their own thread,
-    //so returned char pointers stay valid until that thread clears them.
+    //so returned char pointers stay valid until that thread clears them. The
+    //exception is that the oldest entries are discarded if there are too
+    //many, since threads might end without clearing their error state.
 #ifndef NCRYSTAL_DISABLE_THREADS
     using ThreadID = std::thread::id;
     ThreadID currentThreadID() { return std::this_thread::get_id(); }
@@ -301,10 +303,13 @@ namespace NCRYSTAL_NAMESPACE {
     struct ErrorState {
       char errmsg[512];
       char errtype[64];
+      std::uint64_t seqno = 0;//higher means more recent
     };
     struct ErrorStates {
       std::mutex mtx;
       std::map<ThreadID,ErrorState> states;
+      std::uint64_t nextseqno = 1;
+      static constexpr std::size_t max_nstates = 1024;
     };
     ErrorStates& errorStates()
     {
@@ -327,6 +332,15 @@ namespace NCRYSTAL_NAMESPACE {
         auto& es = errorStates();
         NCRYSTAL_LOCK_GUARD(es.mtx);
         state = &es.states[ currentThreadID() ];
+        state->seqno = es.nextseqno++;
+        if ( es.states.size() > ErrorStates::max_nstates ) {
+          //Discard the oldest entry (which can not be the current one):
+          auto itOldest = es.states.begin();
+          for ( auto it = es.states.begin(); it != es.states.end(); ++it )
+            if ( it->second.seqno < itOldest->second.seqno )
+              itOldest = it;
+          es.states.erase( itOldest );
+        }
       }
       char * errmsg = state->errmsg;
       char * errtype = state->errtype;
@@ -876,8 +890,10 @@ void ncrystal_raw_vdos2kernel( const double* vdos_egrid,
                                double target_emax_raw,
                                double* suggested_emax )
 {
+  *nalpha = *nbeta = 0;
+  *alpha = *beta = *sab = nullptr;
+  *suggested_emax = 0.0;
   try {
-    *suggested_emax = 0.0;
     NC::VDOS::VDOSLux vdoslux(vdoslux_raw);
     auto vdosData = ncc::createVDOSDataFromRaw( vdos_egrid, vdos_density,
                                                 vdos_egrid_npts, vdos_density_npts,
@@ -947,16 +963,12 @@ void ncrystal_dyninfo_extract_scatknl( ncrystal_info_t ci,
       shptr_egrid = di_sk->energyGrid();
       //In case the sabdata factory does not keep strong references, we must
       //keep the newly created object in shptr_sabdata alive when returning to
-      //C/Python code without shared pointers. For now we do this by adding to a
-      //global static array here:
-      static std::vector<std::shared_ptr<const NC::SABData>> s_keepAlive;
+      //C/Python code without shared pointers. As documented, this is only
+      //guaranteed until the next call:
+      static std::shared_ptr<const NC::SABData> s_keepAlive;
       static std::mutex s_keepAlive_mutex;
-      //fixme: we should check how this is used in the python api, and when we
-      //are able to clear the cache in case it grows out of hand. It might be
-      //better to just return via a json query and obsolete this complicated
-      //function.
       NCRYSTAL_LOCK_GUARD(s_keepAlive_mutex);
-      s_keepAlive.push_back(shptr_sabdata);
+      s_keepAlive = shptr_sabdata;
       static bool first = true;
       if (first) {
         //Register for clearance by global clearCaches function:
@@ -964,7 +976,7 @@ void ncrystal_dyninfo_extract_scatknl( ncrystal_info_t ci,
         NC::registerCacheCleanupFunction([]()
         {
           NCRYSTAL_LOCK_GUARD(s_keepAlive_mutex);
-          s_keepAlive.clear();
+          s_keepAlive.reset();
         });
       }
 
@@ -1850,14 +1862,15 @@ void ncrystal_atomdata_getfields( ncrystal_atomdata_t o,
     return;
   } NCCATCH;
   *displaylabel = *description = "";
-  *cohsl_fm = *absxs = -99999.0;
-  *ncomponents = *zval = *aval;
+  *mass = *incxs = *cohsl_fm = *absxs = -99999.0;
+  *ncomponents = *zval = *aval = 0;
 }
 
 ncrystal_atomdata_t ncrystal_create_atomdata_subcomp( ncrystal_atomdata_t o,
                                                       unsigned icomponent,
                                                       double* fraction )
 {
+  *fraction = -1.0;
   try {
     const auto& comp = ncc::extract(o).atomData().getComponent(icomponent);
     *fraction = comp.fraction;
@@ -2178,6 +2191,8 @@ void ncrystal_get_file_list( unsigned* nstrs, char*** strs )
 {
   //Return list of: ["name", "source", "factname", "priority", "name", ...]
   //(priority is str(integer), "Unable", or "OnlyOnExplicitRequest")
+  *nstrs = 0;
+  *strs = nullptr;
   try {
     auto fl = NC::DataSources::listAvailableFiles();
     NC::VectS strlist;
@@ -2200,6 +2215,8 @@ void ncrystal_get_file_list( unsigned* nstrs, char*** strs )
 void ncrystal_get_plugin_list( unsigned* nstrs,
                                char*** strs )
 {
+  *nstrs = 0;
+  *strs = nullptr;
   try {
     auto plugins = NC::Plugins::loadedPlugins();
     NC::VectS strlist;
