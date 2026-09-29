@@ -671,6 +671,17 @@ namespace NCRYSTAL_NAMESPACE {
     DB& getDB()
     {
       static DB db;
+      static const bool dummy = []()
+      {
+        registerCacheCleanupFunction([]()
+        {
+          auto& thedb = getDB();
+          NCRYSTAL_LOCK_GUARD(thedb.mtx);
+          thedb.data.clear();
+        });
+        return false;
+      }();
+      (void) dummy;
       return db;
     }
 
@@ -679,6 +690,10 @@ namespace NCRYSTAL_NAMESPACE {
       auto& db = getDB();
       NCRYSTAL_LOCK_GUARD(db.mtx);
       db.enabled = f;
+      //Discard any data left over from previous usage (e.g. because the
+      //caller encountered an error before retrieving it):
+      if ( f )
+        db.data.clear();
     }
 
     VectD retrieveData( const std::string& key ) {
