@@ -222,9 +222,17 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
     _wrap('ncrystal_valid',_int,(_voidp,),take_ref=True)
 
     #NB: For ncrystal_unref we use take_ref=False, so RCBase.__del__ can cache
-    #the result of ctypes.byref(rawobj). This is needed since the ctypes module
-    #might have been unloaded before RCBase.__del__ is called:
-    _wrap('ncrystal_unref',None,(_voidp,),take_ref=False)
+    #    the result of ctypes.byref(rawobj). This is needed since the ctypes
+    #    module might have been unloaded before RCBase.__del__ is called:
+    #
+    #NB: Also crucial for ncrystal_unref is error_check=False:
+    #    ncrystal_unref itself never errors, and RCBase.__del__ can run via
+    #    python gc between any other raw call and that call's own error check.
+    #    So an error-checking unref wrapper would steal the pending error,
+    #    uselessly raising it inside __del__ while making the original call
+    #    appear to succeed:
+
+    _wrap('ncrystal_unref',None,(_voidp,),take_ref=False,error_check=False)
 
     _wrap('ncrystal_cast_scat2proc',ncrystal_process_t,(ncrystal_scatter_t,))
     _wrap('ncrystal_cast_abs2proc',ncrystal_process_t,(ncrystal_absorption_t,))
