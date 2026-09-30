@@ -715,11 +715,11 @@ class Info(RCBase):
             ll=[str(self.atomData.displayLabel()),str(self.__n)]
             #Like C++ dump, omit unavailable values (None):
             if self.__dt is not None:
-                ll.append('DebyeT=%gK'%self.__dt)
+                ll.append(f'DebyeT={self.__dt:g}K')
             if self.__msd is not None:
-                ll.append('MSD=%gAa^2'%self.__msd)
-            ll.append('hasPositions=%s'%('yes' if self.__pos else 'no'))
-            return 'AtomInfo(%s)'%(', '.join(ll))
+                ll.append(f'MSD={self.__msd:g}Aa^2')
+            ll.append(f'hasPositions={"yes" if self.__pos else "no"}')
+            return f'AtomInfo({", ".join(ll)})'
 
     def hasAtomInfo(self):
         """Whether or no getAtomInfo()/atominfos are available"""
@@ -933,8 +933,7 @@ class Info(RCBase):
 
         def __str__(self):
             n=self.__class__.__name__
-            if n.startswith('DI_'):
-                n=n[3:]
+            n = n.removeprefix('DI_')
             s=f', {self._extradescr()}' if hasattr(self,'_extradescr') else ''
             return ( f'DynamicInfo({self.atomData.displayLabel()},'
                      f' fraction={self.__fraction*100.0:.4g}%, type={n}{s})' )
@@ -1917,7 +1916,7 @@ class TextData:
         """Line-iteration, yielding lines without terminating newline characters"""
         from io import StringIO
         def chomp(x):
-            return x[:-2] if x.endswith('\r\n') else (x[:-1] if x.endswith('\n') else x)
+            return x[:-2] if x.endswith('\r\n') else (x.removesuffix('\n'))
         for e in StringIO(self.__rd):
             yield chomp(e)
 
