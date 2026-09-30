@@ -52,6 +52,20 @@ def main():
         'tests/data/QE_pw_Al.out' : 2000,
         'tests/src/app_mmcgeom/main.cc' : 80,
         'tests/src/app_fft/refvals.hh' : 200,
+        #Living session log of the ongoing VDOS/FMA cross-platform
+        #reproducibility investigation:
+        #Trimmed low-precision direct-kernel solid for tests (the
+        #vdoslux{0..4} ones below are huge, mistakenly committed, and
+        #pending removal from history -- do not rely on them):
+        'tests/data/Li2O_sg225_LithiumOxide_sabsmall_temp10K.ncmat' : 300,
+        #Living session log for the ongoing VDOS/FMA cross-platform
+        #reproducibility investigation (tk_volatile branch); deliberately
+        #kept as a single growing file rather than split, so it stays a
+        #single coherent narrative:
+        'docs/claude_session_vdos_fma_reprod.md' : 200,
+        #Real (VDOS/SAB-derived) point-selection input data for
+        #app_ptreduceequi (several materials); real-world array sizes do
+        #not fit under the generic 60kb limit:
         'tests/data/ptreduce/li_from_li2o_e0grid.txt' : 100,
         'tests/data/ptreduce/al_e0grid.txt' : 100,
     }
