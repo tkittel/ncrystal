@@ -1,4 +1,9 @@
 v4.4.7 (work in progress)
+     * Windows: loading an invalid/corrupt shared library (e.g. a bad
+       NCRYSTAL_LIB) no longer risks hanging on a modal loader error
+       dialog: the ctypes load in _chooks.py now runs under a
+       thread-scoped SEM_FAILCRITICALERRORS|SEM_NOOPENFILEERRORBOX
+       error mode, so it fails with a clean OSError instead.
      * Added tests/src/app_perfsab, a self-timed benchmark (same
        min/median/max convention as app_perfvdos) of the *simulation-time*
        SAB cross-section/scattering-sampling cost (crossSectionIsotropic/
