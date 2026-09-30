@@ -213,14 +213,13 @@ namespace NCRYSTAL_NAMESPACE {
         void removeFactoryIfExists(const std::string& name)
         {
           NCRYSTAL_LOCK_GUARD(m_dbmutex);//lock while accessing m_db
-          auto it(m_db.begin()), itE(m_db.end());
-          for ( ; it!=itE; ++it ) {
+          //NB: names are unique (enforced by addFactory), so there is
+          //    at most one matching entry:
+          for ( auto it = m_db.begin(); it != m_db.end(); ++it ) {
             if ( (*it)->name() == name ) {
-              //Remove!
-              for ( ; std::next(it)!=itE; ++it )
-                *it = std::move(*std::next(it));
-              m_db.pop_back();
+              m_db.erase( it );
               cleanup();//invalidate all caches
+              return;
             }
           }
         }
