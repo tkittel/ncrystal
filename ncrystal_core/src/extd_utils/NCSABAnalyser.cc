@@ -43,6 +43,12 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr double opt_msd_m0_low = 0.05;     //1/N and 1/(1-N) error
       constexpr double opt_msd_m0_high = 0.95;    //  amplification guards
       constexpr unsigned opt_n_sigma_iter = 2;    //converged (1 vs 2: <0.1%)
+      //msd rows: require the trapezoidal m0 to be converged, tested by
+      //halving the beta resolution (error ratio 4:1), relative to the
+      //deficit 1-m0 which sets the msd error scale. Catches coarse
+      //kernels whose sharp small-alpha quasi-elastic peak is
+      //under-sampled (bias invisible to the spread metric):
+      constexpr double opt_msd_m0_convergence = 0.15;
 
       //Median and relative IQR spread of a scratch vector (modified):
       double calcMedian( VectD& v )
@@ -64,6 +70,36 @@ namespace NCRYSTAL_NAMESPACE {
         const double q1 = vectAt( v, n/4 );
         const double q3 = vectAt( v, (3*n)/4 );
         return ( q3 - q1 ) / median;
+      }
+
+      //Zeroth beta-moment of a row using only every second retained
+      //point, for the msd trapezoid-convergence self-test (an
+      //under-resolved quasi-elastic peak converges badly):
+      double calcRowM0Stride2( const VectD& beta, const VectD& sab,
+                               std::size_t nalpha, std::size_t ia,
+                               double floor )
+      {
+        StableSum m0;
+        double bprev(0.0), wprev(0.0);
+        unsigned nkept(0);
+        bool have_prev(false), take(true);
+        const std::size_t nb = beta.size();
+        for ( std::size_t j = 0; j < nb; ++j ) {
+          const double w = vectAt( sab, j*nalpha + ia );
+          if ( !( w > floor ) )
+            continue;
+          if ( !take ) {
+            take = true;
+            continue;
+          }
+          take = false;
+          ++nkept;
+          const double b = vectAt( beta, j );
+          if ( have_prev )
+            m0.add( 0.5*( b - bprev )*( w + wprev ) );
+          bprev = b; wprev = w; have_prev = true;
+        }
+        return nkept >= 2 ? m0.sum() : -1.0;
       }
 
       //Row moments over the floor-masked polyline (trapezoidal):
@@ -229,6 +265,10 @@ NC::SABAnalyser::analyse( const SABData& sab, const Options& opt )
         } else if ( !( rm.m0 > opt_msd_m0_low
                        && rm.m0 < opt_msd_m0_high ) ) {
           setstat( RowStatus::M0OutOfWindow, false );
+        } else if ( ncabs( calcRowM0Stride2( bgrid, S, na, ia, floor )
+                           - rm.m0 )
+                    > opt_msd_m0_convergence * ( 1.0 - rm.m0 ) ) {
+          setstat( RowStatus::Unresolved, false );
         } else {
           const double c = -std::log1p( -rm.m0 ) / a;
           const double msd_row = c / ( alpha2x_factor * kT );
@@ -291,15 +331,30 @@ namespace NCRYSTAL_NAMESPACE {
   namespace SABAnalyser {
     namespace {
 
-      //Acceptance policy for the turn-key estimates (tuned on
-      //ENDF8-converted kernels with recorded effective temperatures,
-      //plus stdlib/tests-data kernels at temperature extremes; the msd
-      //values are provisional pending similar ground truth). The 0.03
-      //spread cut (vs an earlier 0.05) refuses the self-flagged tail,
-      //e.g. U in UO2 at 5K (spread 0.035, error 3%), cutting the worst
-      //accepted error 3% -> 0.77% at the cost of 3 of 283 kernels:
-      constexpr unsigned policy_min_nrows = 20;
-      constexpr double policy_max_relspread = 0.03;
+      //Acceptance policies for the turn-key estimates, per quantity
+      //since the two consumers have opposite failure asymmetries:
+      //
+      //Teff: refusal is NOT neutral -- the consumer then extends with
+      //free gas at T, an error of (Teff_true-T), usually far larger
+      //than any credible estimate's error (e.g. H in 100K solid
+      //ethanol: fallback ~12x off vs a refused 3% estimate). Hence a
+      //loose policy: over 501 pooled truth-records (ENDF8- and
+      //JENDL5-converted, stdlib and tests/data kernels incl.
+      //temperature extremes), nrows>=10 && relspread<=0.1 never
+      //accepted an estimate worse than the fallback, worst error 5.3%
+      //(p95 well under 1%); garbage only appears below the row floor
+      //(140% error at nrows=2).
+      //
+      //msd: refusal IS the status quo (no elastic component), while a
+      //wrong value adds wrong physics, so strictness is correct. The
+      //0.03 spread cut refuses the self-flagged tail, e.g. U in UO2
+      //at 5K (spread 0.035, error 3%), for a worst accepted error of
+      //0.77% (the msd values remain provisional pending ENDF-grade
+      //ground truth):
+      constexpr unsigned policy_teff_min_nrows = 10;
+      constexpr double policy_teff_max_relspread = 0.1;
+      constexpr unsigned policy_msd_min_nrows = 20;
+      constexpr double policy_msd_max_relspread = 0.03;
       constexpr double policy_msd_sanity_max = 10.0;//[Aa^2]
 
       struct TeffMSDCacheDB {
@@ -357,8 +412,8 @@ NC::SABAnalyser::estimateTeffMSD( const SABData& sab )
   TeffMSD res;
   const double T = sab.temperature().dbl();
   if ( r.teff.has_value()
-       && r.teff_nrows >= policy_min_nrows
-       && r.teff_relspread <= policy_max_relspread ) {
+       && r.teff_nrows >= policy_teff_min_nrows
+       && r.teff_relspread <= policy_teff_max_relspread ) {
     double tv = r.teff.value().dbl();
     //Same semantics as sct_checkedTeff, but discarding rather than
     //throwing:
@@ -370,8 +425,8 @@ NC::SABAnalyser::estimateTeffMSD( const SABData& sab )
     }
   }
   if ( r.msd.has_value()
-       && r.msd_nrows >= policy_min_nrows
-       && r.msd_relspread <= policy_max_relspread
+       && r.msd_nrows >= policy_msd_min_nrows
+       && r.msd_relspread <= policy_msd_max_relspread
        && std::isfinite( r.msd.value() )
        && r.msd.value() > 0.0
        && r.msd.value() < policy_msd_sanity_max )
