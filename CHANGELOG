@@ -1,4 +1,19 @@
 v4.4.7 (work in progress)
+     * New NCMAT v8 format (cf. docs/ncmat_doc.md): @DYNINFO sections
+       gain the msd (with optional at_temperature part), debye_temp
+       (now also for scatknl) and effective_temperature keywords; the
+       @DEBYETEMPERATURE section is removed, @STATEOFMATTER becomes
+       mandatory for non-crystalline materials, freegas/sterile
+       sections are banned from crystals, and crystalline materials
+       may now use scatknl dynamics, with Debye-Waller msd from the
+       explicit keywords or confident automatic kernel analysis
+       (load-time error otherwise). Automatic kernel-msd extraction
+       (and hence the elastic physics of solid scatknl materials) is
+       deliberately gated to v8+ files so older files keep their
+       exact physics; explicit values take precedence over automatic
+       estimation everywhere, and partially-covered solids emit a
+       warning naming the components without msd. The in-memory
+       solid::/gasmix:: writers remain at v7 for now.
      * Added short-collision-time (SCT) model infrastructure: NCSCTUtils.hh's
        SCTXSProvider/SCTSampler implement the ENDF/GA SCT law (free gas at
        Teff on the downscatter side, detailed balance at the actual T),
@@ -349,58 +364,6 @@ v4.4.7 (work in progress)
        expressions), and can search in and show the header comments of NCMAT
        files (e.g. "ncrystal browse -E -s 'boron|b4c'"), with grep-like
        colored highlighting of hits (controlled by --color=WHEN).
-     * Tests: add VDOS curves with unusual features (mostly from plugins) as
-       tests/data/vdos_*.ncmat, and exercise them in VDOS tests.
-     * C-API: output parameters of ncrystal_atomdata_getfields,
-       ncrystal_create_atomdata_subcomp, ncrystal_raw_vdos2kernel,
-       ncrystal_get_file_list and ncrystal_get_plugin_list are now always
-       well defined after errors.
-     * C-API: at most 1024 threads can now have error states at the same
-       time (the oldest are discarded), to avoid unbounded memory usage when
-       threads end without clearing their error state.
-     * Pointers returned by ncrystal_dyninfo_extract_scatknl are now only
-       valid until the next call (kernels were previously kept alive
-       indefinitely). The Python API copies the data while holding a lock.
-     * Huge arrays of JSON queries which are never collected, are now
-       discarded by clearCaches() and when the mode is enabled again. The
-       Python API now serialises such queries with a lock.
-     * FastConvolve: add static currentCacheMemUsage(), clearCaches() and
-       trimCaches() methods for the cached FFT tables. VDOS expansions now
-       trim these to 10MB when finishing, if they take up more than 100MB.
-     * Invalid values of the environment variables NCRYSTAL_DEBUG_PHONON,
-       NCRYSTAL_DEBUG_FACTORY and NCRYSTAL_NCMAT_NOWARNFORCUSTOM now give
-       BadInput exceptions when used, rather than terminating the process
-       when the library is loaded.
-     * Fix process termination (rather than an exception) when several Gn
-       functions failed at once during multi-threaded VDOS expansion.
-     * C-API: exceptions not deriving from std::exception no longer escape,
-       but result in the usual error state. Also fix ineffective consistency
-       check (assignment instead of comparison) in ncrystal_raw_vdos2knl, and
-       avoid memory leaks if allocations fail while preparing return values.
-     * COWPimpl: fix mutex being left locked if copy-on-write fails, and
-       missing return statement in move assignment of Modifier objects.
-     * DI_ScatKnlDirect: kernels with wrong temperature now give errors in all
-       calls to ensureBuildThenReturnSAB, not just the first.
-     * Fix data races on several static flags (warn-once flags in sampling
-       code for Gaussian mosaicity and layered crystals, and the C-API error
-       settings).
-     * Fix potential deadlock if clearCaches() is called concurrently with
-       code using a cache for the first time (or if cleanup functions
-       themselves register cleanup functions).
-     * Fix out-of-bounds read when iterating over lines of text data starting
-       with a newline (in the worst case giving memory corruption).
-     * Non-legacy VDOS expansion (vdoslux 2000..2006) no longer has fixed
-       limits of 1000 or 10000 phonon orders. Instead orders are added until
-       the Gn spectra hold 1e6, 2e6, 3e6, 5e6, 1e7, 3e7 or 1e8 points (for
-       levels 0..6), a single convolution would need more than 5e6 points, or
-       60000 orders are reached. As before, the kernel then covers a reduced
-       Emax, but a CalcError is now raised if that would be below 0.1eV
-       (where the free-gas extrapolation above Emax gave errors of 15-20%).
-     * Non-legacy VDOS expansion now only thins Gn spectra (i.e. increases
-       their binwidth) as long as they are smooth on the scale of the new
-       binwidth, rather than just based on their number of points. This fixes
-       cross sections being wrong by up to 50% for VDOS curves with narrow
-       features but wide range, at low temperatures.
      * Non-legacy VDOS expansion (vdoslux 2000..2006) now samples the G1
        function with bins of at most 0.25*kT, further reduced if needed for
        linear interpolation between the points to reproduce G1 (which can
@@ -566,6 +529,18 @@ v4.4.7 (work in progress)
        broken callback rather than restoring the C++ default handler.
      * Python: fix internal ncpprint(..,do_sort=True) (called non-existent
        pprint.print) and route its output through the NCrystal print function.
+     * Added a Windows/MSVC-specific runtime FMA dispatch mechanism
+       (NCFMADispatch.hh): MSVC has no equivalent of the target_clones
+       attribute, so every std::fma() there fell back to slow software
+       emulation -- a real Windows CPU trace found 65% of a VDOS
+       expansion benchmark's runtime spent in it. Every
+       dispatch-decorated function now gets a second, /arch:AVX2-compiled
+       clone in a dedicated translation unit, used at runtime only when
+       CPUID/XGETBV confirm FMA3 support (x86-64 only;
+       Windows-on-ARM64 has hardware FMA as baseline and never sees the
+       machinery). Also added ncrestrict + assertion-verified
+       non-overlap declarations to these functions' pointer arguments,
+       to help auto-vectorisation.
      * Introduce and use new NCRYSTAL_FMADISPATCH_ATTR solution for portable and
        fast std::fma (fused-multiply-add) usage. This solution is enables
        vectorisable hot loops with hardware FMA, even in portably built binaries
