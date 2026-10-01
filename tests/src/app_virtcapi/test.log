@@ -1,0 +1,40 @@
+interface: OK
+xs(1.8 Aa, dir=(0,0,1)) = 1.44866 barn for stdlib::Al_sg225.ncmat
+xs(1.8 Aa, dir=(0,0,1)) = 39.3976 barn for stdlib::Polyethylene_CH2.ncmat;temp=250K
+xs(1.8 Aa, dir=(0,0,1)) = 7.19096 barn for stdlib::Cu_sg225.ncmat;dcutoff=0.5
+xs(1.8 Aa, dir=(0,0,1)) = 0.962542 barn for gasmix::He/2bar
+xs(1.8 Aa, dir=(0,0,1)) = 17.0706 barn for stdlib::Ge_sg227.ncmat;mos=40arcmin;dir1=@crys_hkl:5,1,1@lab:0,0,1;dir2=@crys_hkl:0,-1,1@lab:0,1,0
+cross sections: 270 interleaved calls agree with the C API: OK
+clones: OK
+sampling: mean final energy 0.0572444 eV for stdlib::Al_sg225.ncmat
+sampling: mean final energy 0.0452357 eV for stdlib::Polyethylene_CH2.ncmat;temp=250K
+sampling: mean final energy 0.0556203 eV for stdlib::Cu_sg225.ncmat;dcutoff=0.5
+sampling: mean final energy 0.0544619 eV for gasmix::He/2bar
+sampling: mean final energy 0.0590476 eV for stdlib::Ge_sg227.ncmat;mos=40arcmin;dir1=@crys_hkl:5,1,1@lab:0,0,1;dir2=@crys_hkl:0,-1,1@lab:0,1,0
+sampling: OK
+errors:
+  expected error (missing file): [FileNotFound] Requested factory "stdlib" can not provide data: "doesnotexist.ncmat".
+  expected error (null cfgstr): [BadInput] Invalid (null) cfgstr
+  expected error (bad parameter): [BadInput] Out of range temperature value -5K provided for parameter "temp" (valid temperatures must be in the range 0.001K .. 1e+06K)
+  expected error (clone of null handle): [BadInput] Invalid (null) scatter handle
+  expected error (cross_section with invalid neutron): [BadInput] Invalid neutron energy: -1
+  expected error (sample_scatter with invalid neutron): [BadInput] Invalid neutron energy: -1
+  expected error (cross_section with invalid neutron): [BadInput] Invalid neutron energy: nan
+  expected error (sample_scatter with invalid neutron): [BadInput] Invalid neutron energy: nan
+  expected error (cross_section with invalid neutron): [BadInput] Invalid neutron energy: inf
+  expected error (sample_scatter with invalid neutron): [BadInput] Invalid neutron energy: inf
+  expected error (cross_section with invalid neutron): [BadInput] Invalid neutron direction: (0, 0, 0)
+  expected error (sample_scatter with invalid neutron): [BadInput] Invalid neutron direction: (0, 0, 0)
+  expected error (cross_section with invalid neutron): [BadInput] Invalid neutron direction: (nan, 0, 1)
+  expected error (sample_scatter with invalid neutron): [BadInput] Invalid neutron direction: (nan, 0, 1)
+  expected error (cross_section with invalid neutron): [BadInput] Invalid neutron direction: (inf, 0, 1)
+  expected error (sample_scatter with invalid neutron): [BadInput] Invalid neutron direction: (inf, 0, 1)
+  expected error (cross_section with null handle): [BadInput] Invalid (null) argument
+  expected error (cross_section with null neutron): [BadInput] Invalid (null) argument
+  expected error (cross_section with null result): [BadInput] Invalid (null) argument
+  expected error (sample_scatter with null rng): [BadInput] Invalid (null) argument
+  expected error (rng returning 1.5): [BadInput] Random number function returned invalid value: 1.5
+  expected error (rng returning NaN): [BadInput] Random number function returned invalid value: nan
+  long message truncated to 1023 characters: OK
+errors: OK
+null error pointer: printed "NCrystal ERROR [FileNotFound]: Requested factory "stdlib" can not provide data: "doesnotexist.ncmat"." and exited with code 1: OK

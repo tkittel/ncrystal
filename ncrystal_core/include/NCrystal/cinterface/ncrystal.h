@@ -53,6 +53,10 @@ extern "C" {
 #  undef ncrystal_absorption_t
 #endif
 #define ncrystal_absorption_t NCRYSTAL_APPLY_C_NAMESPACE(absorption_t)
+#ifdef ncrystal_access_virtual_c_api
+#  undef ncrystal_access_virtual_c_api
+#endif
+#define ncrystal_access_virtual_c_api NCRYSTAL_APPLY_C_NAMESPACE(access_virtual_c_api)
 #ifdef ncrystal_add_custom_search_dir
 #  undef ncrystal_add_custom_search_dir
 #endif
@@ -1251,6 +1255,12 @@ extern "C" {
   /* is bound to change between NCrystal versions.                           */
   /* Must free returned string with call to ncrystal_dealloc_string.         */
   NCRYSTAL_API char* ncrystal_jsonquery( const char * );
+
+  /* Access the virtual C APIs defined in NCrystal/virtualapi/ncvirtapi.h. It */
+  /* returns a pointer to the struct of the requested interface (which must   */
+  /* be cast to the struct type for the given interface id), or NULL if the   */
+  /* interface is not available:                                              */
+  NCRYSTAL_API const void * ncrystal_access_virtual_c_api( unsigned interface_id );
 
   /* The MiniMC is usually invoked via the ncrystal_jsonquery function, but  */
   /* in case it is needed to have access to all tallied neutrons via a       */
