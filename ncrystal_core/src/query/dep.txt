@@ -3,6 +3,7 @@ core
 dyninfoutils
 extd_utils
 factories
+filter
 minimc
 sab
 utils
