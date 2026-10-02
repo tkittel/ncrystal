@@ -5,3 +5,15 @@ Caught expected NCBadInput('Spacegroup (191) requires alpha=beta=90 and gamma=12
 SG-4 with unique axis b: loaded with beta=100
 Caught expected NCBadInput('Spacegroup (4) requires alpha=gamma=90 (only monoclinic settings with unique axis b are supported)')
 Caught expected NCBadInput('Spacegroup (4) requires alpha=gamma=90 (only monoclinic settings with unique axis b are supported)')
+Coinciding atoms (across x boundary) rejected
+Coinciding atoms (across y and z boundaries) rejected
+Coinciding atoms (not adjacent in x-, y- or z-sorted lists) rejected
+Nearby positions accepted (n_atoms=2)
+P1 structure in cubic cell (no SG): True
+P1 structure declared as SG-221 rejected
+P312 structure as SG-149: True
+P312 structure declared as SG-150 rejected
+R-3m in rhombohedral axes: loaded with angles=57.3,57.3,57.3 (planes available: True)
+Rhombohedral axes with 4.7 4.7 4.8 / 57.3 57.3 57.3 rejected
+Rhombohedral axes with 4.7 4.7 4.7 / 57.3 57.3 58 rejected
+Rhombohedral axes with 4.7 4.7 4.7 / 125 125 125 rejected
