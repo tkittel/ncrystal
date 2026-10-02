@@ -109,7 +109,7 @@ static ncrystal_vapi_t1v2_scatter_t * create( const char * cfgstr )
 
 static void test_interface( void )
 {
-  const unsigned bad_ids[6] = { 0, 1, 1001, 1003, 2001, 4294967295u };
+  const unsigned long bad_ids[6] = { 0, 1, 1001, 1003, 2001, 4294967295UL };
   unsigned i;
   api = (const ncrystal_vapi_type1_v2_t*)ncrystal_access_virtual_c_api( 1002 );
   require( api != NULL, "interface 1002 available" );

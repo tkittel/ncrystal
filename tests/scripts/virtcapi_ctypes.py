@@ -45,8 +45,8 @@ rngfct_t = ctypes.CFUNCTYPE( ctypes.c_double, ctypes.c_void_p )
 
 class APIType1V2(ctypes.Structure):
     _fields_ = [
-        ('interface_id', ctypes.c_uint),
-        ('struct_size', ctypes.c_uint),
+        ('interface_id', ctypes.c_ulong),
+        ('struct_size', ctypes.c_size_t),
         ('create_scatter', ctypes.CFUNCTYPE( handle_t, ctypes.c_char_p, err_p )),
         ('clone_scatter', ctypes.CFUNCTYPE( handle_t, handle_t, err_p )),
         ('deallocate_scatter', ctypes.CFUNCTYPE( None, handle_t )),
@@ -61,7 +61,7 @@ def load_api( interface_id ):
     lib = ctypes.CDLL( str(libpath) )
     fct = getattr( lib, f'ncrystal{ns}_access_virtual_c_api' )
     fct.restype = ctypes.c_void_p
-    fct.argtypes = [ ctypes.c_uint ]
+    fct.argtypes = [ ctypes.c_ulong ]
     return fct( interface_id )
 
 class CountingRNG:
@@ -83,7 +83,7 @@ def main():
     api = APIType1V2.from_address( addr )
     assert api.interface_id == 1002
     assert api.struct_size == ctypes.sizeof( APIType1V2 )
-    print(f'Interface 1002 found, struct_size={api.struct_size}: OK')
+    print('Interface 1002 found, with struct_size matching ctypes: OK')
 
     err = ErrorInfo()
     for cfg in ( 'stdlib::Al_sg225.ncmat',

@@ -227,7 +227,7 @@ namespace {
   };
 }
 
-const void * ncrystal_access_virtual_c_api( unsigned interface_id )
+const void * ncrystal_access_virtual_c_api( unsigned long interface_id )
 {
   if ( interface_id == 1002 )
     return &s_vapi_type1_v2;

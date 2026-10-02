@@ -65,7 +65,7 @@
 /* the NCrystal shared library (e.g. located via "ncrystal-config --show      */
 /* shlibpath namespace") and looks up the function:                           */
 /*                                                                            */
-/*   const void * ncrystal<ns>_access_virtual_c_api( unsigned interface_id ); */
+/*   const void * ncrystal<ns>_access_virtual_c_api( unsigned long id );      */
 /*                                                                            */
 /* where <ns> is the NCrystal symbol namespace (usually empty). It returns a  */
 /* pointer to a struct of function pointers (one struct type per interface    */
@@ -83,7 +83,16 @@
 /* formatting). Changed or added functionality will result in new interface   */
 /* structs with new interface ids.                                            */
 /*                                                                            */
+/* To be compatible with C90, the following conventions are used for numbers: */
+/*                                                                            */
+/* * Counts and array lengths are size_t.                                     */
+/* * Unique ids are returned as double, and are guaranteed to be integral     */
+/*   values between 0 and 2^53 (so they are represented exactly).             */
+/* * Status codes are int, and other integers are unsigned long.              */
+/*                                                                            */
 /******************************************************************************/
+
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -125,8 +134,8 @@ extern "C" {
   typedef struct ncrystal_vapi_t1v2_scatter_s ncrystal_vapi_t1v2_scatter_t;
 
   typedef struct {
-    unsigned interface_id;/* Always 1002.                                   */
-    unsigned struct_size;/* sizeof(ncrystal_vapi_type1_v2_t) in NCrystal.   */
+    unsigned long interface_id;/* Always 1002.                              */
+    size_t struct_size;/* sizeof(ncrystal_vapi_type1_v2_t) in NCrystal.     */
 
     ncrystal_vapi_t1v2_scatter_t * (*create_scatter)( const char * cfgstr,
                                                       ncrystal_vapi_error_t * );

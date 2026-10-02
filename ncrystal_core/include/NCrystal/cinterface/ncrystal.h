@@ -1260,7 +1260,7 @@ extern "C" {
   /* returns a pointer to the struct of the requested interface (which must   */
   /* be cast to the struct type for the given interface id), or NULL if the   */
   /* interface is not available:                                              */
-  NCRYSTAL_API const void * ncrystal_access_virtual_c_api( unsigned interface_id );
+  NCRYSTAL_API const void * ncrystal_access_virtual_c_api( unsigned long interface_id );
 
   /* The MiniMC is usually invoked via the ncrystal_jsonquery function, but  */
   /* in case it is needed to have access to all tallied neutrons via a       */

@@ -1,4 +1,4 @@
-Interface 1002 found, struct_size=48: OK
+Interface 1002 found, with struct_size matching ctypes: OK
 stdlib::Al_sg225.ncmat: xs(1.8Aa)=1.44866 barn, same as the Python API: OK
 stdlib::Al_sg225.ncmat: 100 samples with a Python RNG: OK
 stdlib::Polyethylene_CH2.ncmat;temp=250K: xs(1.8Aa)=39.3976 barn, same as the Python API: OK
