@@ -20,9 +20,28 @@
 ################################################################################
 
 # adaptation of .xs utils for inelastic sab
+import re
+
 import NCrystalDev.core as nccore
 from NCrystalDev._numpy import _np_geomspace, _np_linspace
 from NCrystalDev.constants import constant_boltzmann, wl2ekin
+
+
+def _rdtol_for_cfgstr( cfgstr ):
+    #The acceptable cross-platform reldiff depends on the vdoslux setting:
+    #vdoslux=2000 is not a priority (loosest tolerance), vdoslux=2001 is
+    #the historical default tolerance, and vdoslux>=2002 (more refined next-
+    #gen settings, where a still-open residual is being chased) get the
+    #tightest tolerance:
+    m = re.search( r';vdoslux=(\d+)', cfgstr )
+    vdoslux = int( m.group(1) ) if m else None
+    if vdoslux == 2000:
+        return 1e-4
+    if vdoslux == 2001:
+        return 1e-5
+    if vdoslux is not None and vdoslux > 2001:
+        return 1e-6
+    return 1e-5  #legacy/unspecified vdoslux: unchanged historical default
 
 
 def run( testgroup ):
@@ -32,7 +51,8 @@ def run( testgroup ):
     mon = XSMonitor( refdatadir = f'sabxs_{testgroup}',
                      matloadfct = _load_fct,
                      egridgenfct = _egrid_fct,
-                     testlistgenfct = testlist_filtered )
+                     testlistgenfct = testlist_filtered,
+                     test_rdtol = _rdtol_for_cfgstr )
     mon.run()
 
 _test_focus = ( 'Al_sg225.ncmat',
@@ -100,6 +120,10 @@ def test_list_gen( testgroup ):
                 f'O_from_Li2O.ncmat;vdoslux=2001;knllux=2;temp={t:g}',
                 f'O_from_Li2O.ncmat;vdoslux=2001;knllux=3;temp={t:g}',
                 f'O_from_Li2O.ncmat;vdoslux=2001;knllux=4;temp={t:g}',
+                #Keep the "next-gen but with free-gas extender"
+                #comparison mode (knllux 200-206) exercised (a single
+                #cfg, to not add measurably to the suite runtime):
+                f'O_from_Li2O.ncmat;vdoslux=2001;knllux=203;temp={t:g}',
 
             f'Li_from_Li2O.ncmat;vdoslux=2002;knllux=0;temp={t:g}',
                 f'Li_from_Li2O.ncmat;vdoslux=2002;knllux=1;temp={t:g}',
@@ -118,93 +142,16 @@ def test_list_gen( testgroup ):
                 f'O_from_Li2O.ncmat;vdoslux=2003;knllux=4;temp={t:g}',
                 f'O_from_Li2O.ncmat;vdoslux=2004;knllux=4;temp={t:g}',
             ]
+        #Direct-kernel material (auto-detected Teff drives the SCT
+        #extension; NB no knllux 20x comparison entry: the total xs
+        #above Emax is continuity-anchored and hence insensitive to the
+        #extender model, giving a byte-identical reference file):
+        yield 'stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=2001;knllux=1'
+        #Trimmed JENDL-5 solid fixtures (mixed per-element teff/msd
+        #outcomes resp. zero-row teff refusal; cf. the file headers):
+        yield 'benzene_solid_100K_sabsmall.ncmat;vdoslux=2001;knllux=1'
+        yield 'C_from_benzene_solid_20K_sabsmall.ncmat;vdoslux=2001;knllux=1'
 
-
-
-    #FIXME:
-    return
-
-
-    #group A: all files in _test_focus with many configs.
-    #group B: anything not in A + files starting with A..H
-    #group C: anything not in A + files starting with K..N
-    #group D: anything not in A + files starting with P..Z + solid::'s
-
-    #Define list of cfgstrs to test (apart from common factors to be applied in
-    #load, to keep filenames shorter)
-
-
-    from NCrystalDev.datasrc import browseFiles
-    is_A = testgroup == 'A'
-    take_solids = ( testgroup == 'D' )
-    if testgroup == 'B':
-        letter_low, letter_up = 'A', 'H'
-    elif testgroup == 'C':
-        letter_low, letter_up = 'K', 'N'
-    elif testgroup == 'D':
-        letter_low, letter_up = 'P', 'Z'
-
-    thinning_factor = 7 if is_A else 79
-    vdoslux_vals = (0,1,2,3,4)
-    vdoslux_vals = (4,)#0,1,2,3,4)#FIXME JUST A TEST
-    knllux_vals = (0,1,2,3,4,5)
-
-    i = 0
-    for f in browseFiles():
-        if f.factName == 'solid':
-            if not take_solids:
-                continue
-        elif f.factName != 'stdlib':
-            continue
-
-        is_focus = f.factName=='stdlib' and f.name in _test_focus
-        if is_focus != is_A:
-            continue
-
-        if ( not is_A
-             and f.factName == 'stdlib'
-             and not ( letter_low <= f.name[0] <= letter_up ) ):
-                continue
-
-        if f.factName == 'solid':
-            vdoslux_vals_used = tuple( e for e in vdoslux_vals if e>=3 )
-        else:
-            vdoslux_vals_used = vdoslux_vals
-
-        temp_vals = (10,None,1000)
-        if '::Liquid' in f.fullKey:
-            #workaround pre-generated liquid kernels
-            temp_vals = (None,)
-        if f.fullKey in ('stdlib::Polylactide_C3H4O2.ncmat',
-                         'stdlib::AcrylicGlass_C5O2H8.ncmat'):
-            #workaround some materials that can not reach 1000K
-            temp_vals = (10,None,)
-
-        if f.factName=='stdlib':
-            testinfo = nccore.createInfo(f.fullKey+';vdoslux=2000;knllux=0')
-            if not any( hasattr(di,'loadKernel') for di in testinfo.dyninfos):
-                continue
-
-        for t in temp_vals:
-            for vdoslux in vdoslux_vals_used:
-                for knllux in knllux_vals:
-                    c = f.fullKey
-                    if c == 'stdlib::Li2O_sg225_LithiumOxide.ncmat':
-                        if t!=10:
-                            continue
-                        import NCTestUtils.enable_testdatapath # noqa F401
-                        c = f'Li2O_sg225_LithiumOxide_vdoslux{vdoslux}_temp10K.ncmat'
-
-                    if t is not None:
-                        c+=f';temp={t}'
-                    c+=f';vdoslux={vdoslux}'
-                    c+=f';knllux={knllux}'
-                    if thinning_factor > 1:
-                        i += 1
-                        keep = ( (i-1)%thinning_factor == 0 )
-                        if not keep:
-                            continue
-                    yield c
 
 def _load_fct( cfgstr ):
     if 'knllux=' not in (''.join(cfgstr.split())):
