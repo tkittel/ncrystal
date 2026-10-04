@@ -193,5 +193,6 @@ checking : stable_log(3.7182818284590451
 checking : stable_log(4.9406564584124654e-324
 checking : stable_log(2.2250738585072014e-308
 stable_log: 36 cases checked
+Overflow-range saturation checks passed
 All checks passed
 boundary checks passed
