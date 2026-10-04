@@ -144,7 +144,7 @@ NC::VDOS::expandVDOSToGnFcts( const VDOSData& vdosdata,
   nc_assert_always( floateq( msd, alpha2x/(alpha2x_factor*kT) ) );
 
   GnExpansion res{ VDOSGn(vdoseval,vdosgn_cfg), alpha2x,
-                   NeutronEnergy{0.0}, Rectangle() };
+                   NeutronEnergy{0.0}, Rectangle(), {} };
   auto& Gn_asym = res.Gn;
 
   Gn_asym.growMaxOrder(max_phonon_order);
@@ -249,13 +249,15 @@ NC::VDOS::expandVDOSToGnFcts( const VDOSData& vdosdata,
   if( dump_vdosabranges )
     abRangesForWrite.reserve(max_phonon_order);
 
+  res.abRanges.reserve(max_phonon_order);
   for ( unsigned n = 1; n<=max_phonon_order; ++n ) {
     auto abRange = findAlphaBetaRangeOfOrder(n);
     auto abOverlap = findABExtentWithinKB( abRange, targetEmax_div_kT );
     //FIXME: Also store abOverlap for each order n, so the combinedGnFunction
     //knows which parts of each Gn (and alpha) function to consider. Also
-    //fillSABFromVDOS could perhaps take advantage.
+    //fillSABFromVDOS could perhaps take advantage (if using same thresholds).
     res.sabRange = res.sabRange.getUnion( abOverlap );
+    res.abRanges.push_back( abRange );
     if ( dump_vdosabranges )
       abRangesForWrite.push_back( { abRange, abOverlap } );
   }

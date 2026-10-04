@@ -55,6 +55,11 @@ namespace NCRYSTAL_NAMESPACE {
       //the minimum rectangular range of (alpha,beta) values that table must
       //cover (Rectangle x is alpha, Rectangle y is beta):
       Rectangle sabRange;
+
+      //The (alpha,beta) region covered by each individual phonon: (fixme:
+      //diagnostics only? Make optional? Use for anything, or just future
+      //plotting tools?).
+      std::vector<Rectangle> abRanges;
     };
 
     //Perform Sjolander expansion. The targetEmax default value is given by
