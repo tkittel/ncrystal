@@ -18,25 +18,15 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
-// Diagnostic dump of NC::VDOS::createScatteringKernel +                     //
-// NC::SABUtils::transformKernelToStdFormat -- the exact same two calls the  //
-// C API's ncrystal_raw_vdos2kernel (and hence NCrystal.vdos.extractKnl, and //
-// hence ncmat2endf) uses to expand a VDOS into a full S(alpha,beta) kernel. //
-// Written to help bisect a gcc-10-only reproducibility divergence seen in   //
-// tests/scripts/n2endf_bad.py, for the ThO2 material's Thorium element      //
-// (vdoslux=1, requested emax=1eV, T=293.15K) -- see that test for the       //
-// original symptom. Also dumps Oxygen (same material) as a same-run,       //
-// known-good comparison point.                                             //
-//                                                                            //
-// Deliberately very verbose (full alpha/beta/sab grids) for bisecting a     //
-// divergence report from CI without needing the failing compiler locally;   //
-// trim once the underlying bug is found and fixed.                         //
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////
+// Test dumping VDOS expansions //
+//////////////////////////////////
 
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/factories/NCMatCfg.hh"
 #include "NCrystal/interfaces/NCInfo.hh"
+#include "NCrystal/internal/vdos/NCVDOSEval.hh"
+#include "NCrystal/internal/vdos/NCVDOSExpand.hh"
 #include "NCrystal/internal/vdos/NCVDOSToScatKnl.hh"
 #include "NCrystal/internal/sab/NCSABUtils.hh"
 #include <iostream>
@@ -44,46 +34,102 @@
 namespace NC = NCrystal;
 
 namespace {
-  void dumpVectD( const char* label, const NC::VectD& v )
+
+  constexpr auto fmtprec = "%.10g";
+
+  void dumpVectD( const char* label, const NC::Span<const double> v )
   {
-    std::cout << label << " [" << v.size() << "]:";
-    for ( auto x : v )
-      std::cout << ' ' << NC::fmt(x,"%.17g");
-    std::cout << std::endl;
+    std::cout << label << " [" << v.size() << "]";
+    if ( v.empty() ) {
+      std::cout << std::endl;
+      return;
+    }
+    NC::StableSum sum;
+    double mn = v.front(), mx = v.front();
+    for ( auto x : v ) {
+      sum.add(x);
+      mn = NC::ncmin(mn,x);
+      mx = NC::ncmax(mx,x);
+    }
+    std::cout << ": front=" << NC::fmt(v.front(),fmtprec)
+              << " back=" << NC::fmt(v.back(),fmtprec)
+              << " min=" << NC::fmt(mn,fmtprec)
+              << " max=" << NC::fmt(mx,fmtprec)
+              << " sum=" << NC::fmt(sum.sum(),fmtprec)
+              << std::endl;
   }
 
   void dumpElement( const NC::DI_VDOS& di_vdos, const NC::DynamicInfo& di )
   {
     std::cout << "=== Element: " << di.atomData().elementName()
-              << " (mass=" << NC::fmt(di.atomData().averageMassAMU().dbl(),"%.17g")
-              << " amu, temperature=" << NC::fmt(di.temperature().dbl(),"%.17g")
+              << " (mass=" << NC::fmt(di.atomData().averageMassAMU().dbl(),fmtprec)
+              << " amu, temperature=" << NC::fmt(di.temperature().dbl(),fmtprec)
               << "K) ===" << std::endl;
 
-    const auto& vdosdata = di_vdos.vdosData();
-    std::cout << "vdos_egrid: " << NC::fmt(vdosdata.vdos_egrid().first,"%.17g")
-              << ' ' << NC::fmt(vdosdata.vdos_egrid().second,"%.17g") << std::endl;
+    //Build the VDOSData the same way ncc::createVDOSDataFromRaw does in
+    //ncrystal.cc (regularising the ORIGINAL, pre-regularisation VDOS curve
+    //fresh), rather than reusing DI_VDOS::vdosData() (regularised once
+    //already, at .ncmat load time): this is the exact pipeline
+    //NCrystal.vdos.extractKnl / ncrystal_raw_vdos2kernel / ncmat2endf use:
+    NC::VectD regEgrid, regDensity;
+    std::tie( regEgrid, regDensity )
+      = NC::regulariseVDOSGrid( di_vdos.vdosOrigEgrid(), di_vdos.vdosOrigDensity() );
+    nc_assert_always( regEgrid.size() == 2 );
+    NC::VDOSData vdosdata( NC::PairDD( regEgrid.front(), regEgrid.back() ),
+                           std::move(regDensity), di.temperature(),
+                           di.atomData().scatteringXS(),
+                           di.atomData().averageMassAMU() );
+    std::cout << "vdos_egrid: " << NC::fmt(vdosdata.vdos_egrid().first,fmtprec)
+              << ' ' << NC::fmt(vdosdata.vdos_egrid().second,fmtprec) << std::endl;
     dumpVectD( "vdos_density", vdosdata.vdos_density() );
 
     const NC::VDOS::VDOSLux vdoslux( 1 );
     NC::Optional<NC::NeutronEnergy> targetEmax;
     targetEmax = NC::NeutronEnergy{ 1.0 };
+
+    auto gnexpn = NC::VDOS::expandVDOSToGnFcts( vdosdata, vdoslux, targetEmax );
+    std::cout << "gnexpn maxOrder: " << gnexpn.Gn.maxOrder().value() << std::endl;
+    std::cout << "gnexpn alpha2x: " << NC::fmt(gnexpn.alpha2x,fmtprec) << std::endl;
+    std::cout << "gnexpn suggestedEmax: "
+              << NC::fmt(gnexpn.suggestedEmax.dbl(),fmtprec) << std::endl;
+    std::cout << "gnexpn sabRange: "
+              << NC::fmt(gnexpn.sabRange.x0(),fmtprec) << ' '
+              << NC::fmt(gnexpn.sabRange.x1(),fmtprec) << ' '
+              << NC::fmt(gnexpn.sabRange.y0(),fmtprec) << ' '
+              << NC::fmt(gnexpn.sabRange.y1(),fmtprec) << std::endl;
+    //Final order's (alpha,beta) range (before intersection with the
+    //kinematically accessible region) -- the per-order table this used to
+    //print in full was only needed while actively bisecting which specific
+    //order first diverged between platforms; the final order is what
+    //determines the downstream result:
+    const auto& lastAB = gnexpn.abRanges.back();
+    std::cout << "gnexpn last abRange: n=" << gnexpn.abRanges.size()
+              << ' ' << NC::fmt(lastAB.x0(),fmtprec)
+              << ' ' << NC::fmt(lastAB.x1(),fmtprec)
+              << ' ' << NC::fmt(lastAB.y0(),fmtprec)
+              << ' ' << NC::fmt(lastAB.y1(),fmtprec) << std::endl;
+
+    //Raw (unfiltered, pre-relcontriblvl-threshold) G1 spectrum (the base
+    //single-phonon spectrum, before any convolution):
+    dumpVectD( "gnexpn G1 rawspec", gnexpn.Gn.getRawSpectrum( NC::VDOS::VDOSGn::Order(1u) ) );
+
     auto knldata = NC::VDOS::createScatteringKernel( vdosdata, vdoslux, targetEmax );
     dumpVectD( "knl alphaGrid", knldata.alphaGrid );
     dumpVectD( "knl betaGrid", knldata.betaGrid );
     dumpVectD( "knl sab", knldata.sab );
     std::cout << "knl suggestedEmax: "
-              << NC::fmt(knldata.suggestedEmax,"%.17g") << std::endl;
+              << NC::fmt(knldata.suggestedEmax,fmtprec) << std::endl;
 
     auto sabdata = NC::SABUtils::transformKernelToStdFormat( std::move(knldata) );
     dumpVectD( "std alphaGrid", sabdata.alphaGrid() );
     dumpVectD( "std betaGrid", sabdata.betaGrid() );
     dumpVectD( "std sab", sabdata.sab() );
     std::cout << "std suggestedEmax: "
-              << NC::fmt(sabdata.suggestedEmax(),"%.17g") << std::endl;
-    std::cout << "alpha range: " << NC::fmt(sabdata.alphaGrid().front(),"%.17g")
-              << ' ' << NC::fmt(sabdata.alphaGrid().back(),"%.17g") << std::endl;
-    std::cout << "beta range: " << NC::fmt(sabdata.betaGrid().front(),"%.17g")
-              << ' ' << NC::fmt(sabdata.betaGrid().back(),"%.17g") << std::endl;
+              << NC::fmt(sabdata.suggestedEmax(),fmtprec) << std::endl;
+    std::cout << "alpha range: " << NC::fmt(sabdata.alphaGrid().front(),fmtprec)
+              << ' ' << NC::fmt(sabdata.alphaGrid().back(),fmtprec) << std::endl;
+    std::cout << "beta range: " << NC::fmt(sabdata.betaGrid().front(),fmtprec)
+              << ' ' << NC::fmt(sabdata.betaGrid().back(),fmtprec) << std::endl;
   }
 }
 
