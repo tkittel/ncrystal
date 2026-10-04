@@ -452,8 +452,6 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-//FIXME: STILL WORKING ON expm1 and sinh...
-
 double NC::stable_expm1( double x )
 {
   // Evaluating expm1(x) by first finding integer n so that
@@ -468,15 +466,22 @@ double NC::stable_expm1( double x )
   //
   // And use special branches for large |x|.
 
-  if ( x >= 709 ) {
-    //really tricky => for simplicity we let std::expm1 handle this annoying case.
-    if ( x >= 709.7827128933841 )
+  if ( x >= 709.0 ) {
+    //Here n below would reach 1024 (for x >~ 709.44), overflowing the
+    //pow2n of the main-path formula even though the result itself can
+    //still be finite. Use the exact 2^n*e^r form directly instead; the
+    //"-1" of expm1 is relatively ~1e-308 here, far below 1 ulp, so it is
+    //simply dropped. The first double whose correctly rounded expm1
+    //overflows is (empirically, via mpmath) 709.78271289338397, and
+    //returning infinity explicitly there keeps FE_OVERFLOW from being
+    //raised under FPE-trapping tests:
+    if ( x >= 709.78271289338397 )
       return kInfinity;
-    //There are probably better ways to handle this, but this one at least kind
-    //of works: exp(x)-1 = exp(a)*(expm1(x-a)-expm1(-a)), so if we pick a=10:
-    constexpr double exp10 = 2.2026465794806718e4;
-    constexpr double expm1_minus10 = -0.9999546000702375151484644;
-    return exp10 * ( stable_expm1(x-10.0) - expm1_minus10 );
+    const double n = std::round( x * invln2 );
+    double r = std::fma( -n, ln2_hi, x );
+    r = std::fma( -n, ln2_lo, r );
+    const double exp_r = expm1_taylor14( r ) + 1.0;
+    return std::ldexp( exp_r, static_cast<int>(n) );
   }
   if ( x <= -40.0 )
     return -1.0;
@@ -512,7 +517,6 @@ double NC::stable_log( double x )
   return y0 + correction;
 }
 
-// #include "NCrystal/internal/utils/NCMsg.hh"//fixme
 
 double NC::stable_sinh( double x )
 {
@@ -530,42 +534,32 @@ double NC::stable_sinh( double x )
 
 
   if (x >= 20.0) {
-    //for x > 20, we have in double precision that sinh(x) and expm1(x-ln2)+1
-    //evaluates to the same. So let expm1 deal with all the high x edge cases:
-    constexpr double ln2 = 0.6931471805599453;
-    return stable_expm1(x - ln2) + 1.0;
+    //Here sinh(x) = exp(x)/2 to double precision (the exp(-x)/2 term is
+    //relatively ~exp(-2x) <= 4e-18 < 1 ulp). Do NOT evaluate it as
+    //exp(x-ln2): the rounding of the single-double argument x-ln2 puts an
+    //absolute error of up to ulp(x)/2 into the exponent, i.e. a relative
+    //error in the result growing from ~8 ulp at x=20 to ~250 ulp at x=709.
+    //Instead halve exactly inside the power-of-two part: with the same
+    //error-free two-part Cody-Waite reduction as in stable_expm1
+    //(x = n*ln2 + r, |r| < ln2/2), sinh(x) = 2^(n-1) * e^r, where the
+    //2^(n-1) scaling by std::ldexp is exact. This also extends cleanly to
+    //the very top of the range: for x just below the overflow threshold
+    //ln(2*DBL_MAX) ~= 710.4758600739440, n-1 = 1024 but e^r < 1 there, so
+    //ldexp still lands below DBL_MAX without intermediate overflow. The
+    //first double whose correctly rounded sinh overflows is (empirically,
+    //via mpmath) 710.47586007394398, and returning infinity explicitly
+    //there keeps FE_OVERFLOW from being raised under FPE-trapping tests:
+    if ( x >= 710.47586007394398 )
+      return kInfinity;//sinh(x) > DBL_MAX
+    const double n = std::round( x * invln2 );
+    double r = std::fma( -n, ln2_hi, x );
+    r = std::fma( -n, ln2_lo, r );
+    const double exp_r = expm1_taylor14( r ) + 1.0;
+    return std::ldexp( exp_r, static_cast<int>(n) - 1 );
   } else {
     const double t = stable_expm1(x);
     return (0.5*t*(t+2.0))/(1.0+t);
   }
-}
-
-  // // The first overflowing x value is around:
-  // constexpr double x_sinh_overflow = 710.4758600739439;
-  // constexpr double ln2 = 0.6931471805599453;
-
-  // // Here exp(x) itself may overflow, but exp(x)/2 is still finite.
-  // if (x >= 709.0) {
-  //   if (x >= x_sinh_overflow)
-  //     return kInfinity;
-  //   return stable_expm1(x - ln2) + 1.0;
-  // }
-
-  // //Avoid both overflow and inf/inf FPE:
-  // constexpr double thr = 1.8961503816e154;
-  // //x creating thr: 355.23793003696045
-
-  // if ( t >= thr ) {
-  //   //0.5*t*(t+2.0) would overflow, use different expression here.
-  //   //real expression, but second parantheses is just 1.0 at double precision at
-  //   //these high t values, and it also allows us to avoid inf/inf:
-  //   //    NCRYSTAL_MSG("TKTEST "<<fmt((0.5*t))<<" "<<fmt(( (t + 2.0) / (t + 1.0) )));
-  //   nc_assert( ncisinf(t) || (0.5*t)  == (0.5*t)*( (t + 2.0) / (t + 1.0) ) );
-  //   return 0.5 * t;
-  // }
-  // const double v = 0.5*t*(t+2.0);
-  // nc_assert(std::isfinite(v));//finite due to the thr above
-  // return (0.5*t*(t+2.0))/(1.0+t);
 }
 
 namespace NCRYSTAL_NAMESPACE {
