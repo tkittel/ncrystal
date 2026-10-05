@@ -20,10 +20,113 @@ v4.4.7 (work in progress)
        convolution, no FFT round-off floor) and VDOSGn::Cfg::MaxLux routing
        every phonon order through it -- tested reference infrastructure,
        not yet wired to any vdoslux level.
-     * Bug fix: Python API functions accepting numpy arrays now work correctly
-       for non-float64 or non-contiguous arrays.
-     * Cmdline script errors in case of invalid choices now always gives output
-       like latest (Py3.14.7) argparse, thus ensuring consistent output.
+     * Extensive cross-platform floating-point reproducibility work in
+       the VDOS -> S(alpha,beta) pipeline, removing sources of genuinely
+       differing results (not merely last-ULP noise) between platforms,
+       compilers and FMA-contraction choices:
+       - VDOSGn's per-order spectra are cleaned to FastConvolve's own
+         calibrated, size-dependent FFT round-off floor, so values that
+         are pure FFT noise (which legitimately differs across
+         platforms) can no longer enter downstream grid selection.
+       - VDOSGn::eRange and the per-order truncation edge locate their
+         threshold crossings via a windowed quadratic fit of
+         ln(spectrum), matching the Gaussian-like shape of high-order
+         spectra, instead of snapping to whichever single grid point
+         first clears the threshold; the truncation edge is additionally
+         smoothly tapered, so near-ties between neighbouring bins no
+         longer produce whole-bin differences.
+       - The next-gen (vdoslux>=2000) alpha/beta grid selection gained a
+         noise-tolerant tie-break, and a new
+         reducePtsByEquidistributionRobust (wider curvature stencil,
+         several-fold less noise-sensitive on real datasets, exercised
+         against the full existing test battery plus committed real
+         data) is now used when constructing such grids.
+       - The next-gen cross-section table's Emin search is anchored to
+         the explicit EMax input instead of a threshold crossing of a
+         per-cell cumulative sum (whose crossing index could shift by
+         tens of positions under contraction noise, moving Emin by ~2%),
+         and sIntegralAtE's "irrelevant cell" shortcut is smoothly
+         tapered instead of hard-cut at its threshold.
+       - NCrystal.vdos.extractKnl/extractGn no longer redundantly
+         renormalise and grid-expand the VDOS curve in numpy before
+         handing it to the (internally renormalising) C++ machinery.
+       These changes shift some VDOS/kernel-derived results, typically
+       in the last few significant digits (sabxs reference shifts up to
+       ~1%, concentrated in low-vdoslux Li2O test cases), without any
+     * New command-line tool "ncrystal browse" (also ncrystal_browse) for
+       browsing and searching available data files and plugins. Compared to
+       the --browse, --extract and --plugins flags of nctool (which are kept
+       for now) it shows a short description of each NCMAT file, can filter
+       by data source and name patterns (substrings, globs, or with -E regular
+       expressions), and can search in and show the header comments of NCMAT
+       files (e.g. "ncrystal browse -E -s 'boron|b4c'"), with grep-like
+       colored highlighting of hits (controlled by --color=WHEN).
+     * Python Gn functions (extractGn, DynamicInfo.extract_Gn/plot_Gn and
+       the sjolanderGn plot option) now reject non-integral orders with an
+       NCBadInput error, instead of silently truncating them (2.5 gave G2).
+     * Fix UnboundLocalError instead of NCBadInput when AnyTextData (and thus
+       e.g. directLoad) is given a path to a non-existing file.
+     * Exceptions in jobs run by the factory thread pool are now transferred
+       to and rethrown in the calling thread (github issue #339).
+     * NCRYSTAL_FACTORY_THREADS is now handled by the thread-pool itself (read
+       on first use); explicit enableFactoryThreads calls take precedence.
+     * New NCrystal.browse Python module, in which the DataBrowser class
+       provides the features of "ncrystal browse" (browsing, searching and
+       selecting data, also on physics properties, and producing listings or
+       text/csv/json/html tables), and query_data() the underlying data.
+     * New JSON queries ["util","browsedb",...] and ["util","browsefactories"]
+       providing listings of available data with NCMAT header comments and
+       physics properties (loaded in parallel if factory threads are
+       enabled), ["util","factorythreads"] providing the factory thread-pool
+       state, and ["util","atomdb"] providing the database of isotopes and
+       natural elements (also browsable with "ncrystal browse --atomdb" and
+       NCrystal.browse.AtomDBBrowser).
+     * C API: error state (ncrystal_error, ncrystal_lasterror, ...) is now
+       kept per thread, so errors are no longer reported in the wrong thread
+       when the C API (or the Python API) is used from several threads.
+     * Fix thread-safety bug (present since v2.5.0) in reading of on-disk
+       files, which used a shared static buffer, so concurrent reads (e.g.
+       creating materials in different threads) could corrupt file contents.
+     * New command-line tool "ncrystal browse" for browsing and searching
+       available data and plugins, more powerful than the --browse,
+       --extract and --plugins flags of nctool (kept for now): it shows short
+       NCMAT descriptions, filters by source and name (substrings, globs or
+       -E regexes), searches NCMAT header comments with grep-like colored
+       hits (e.g. -E -s 'boron|b4c'), and can select on physics properties
+       of the loaded materials (e.g. -w "'B' in elements and absxs > 100"),
+       with --columns/--sort tables (also as --csv or --json), --json,
+       --info, --count and --path.
+     * Python: fix infinite loop when extracting NCMAT header comments
+       consisting only of empty comment lines.
+     * Python: Info.dyninfos no longer fails (with an AttributeError) for
+       materials with custom DynamicInfo types (e.g. from plugins). Such
+       entries are now provided as generic Info.DynamicInfo objects.
+     * Python: str(AtomInfo) no longer raises TypeError for atoms without
+       Debye temperature or MSD (possible e.g. with plugins), but omits the
+       missing values like the C++ dump does.
+     * Python: fix internal ncsetenv to use the same env var names as the
+       C++ code and ncgetenv. It wrongly included the namespace in builds
+       with NCRYSTAL_NAMESPACE but without namespaced env vars, so for
+       instance "nctool --bench --threads N" had no effect there.
+     * Python: remove the NCrystal.obsolete module and its functions
+       (clearInfoCaches, decodecfg_packfact, disableCaching, enableCaching,
+       getFileContents) along with the NCRYSTAL_NOPYOBSOLETE env var. Due to
+       an inverted check, they were already hidden by default since 4.0.0.
+     * Python: after a failed attempt to load the NCrystal shared library,
+       later attempts fail with the same error again, rather than returning a
+       broken internal state.
+     * Python: generateCfgStrDoc('print') and browseFiles(dump=True) now
+       print via the NCrystal print function, so their output can be
+       redirected like other NCrystal output.
+     * Python: when only NCRYSTAL_LIB is set, infer the namespace from the
+       library file name alone (previously failed if any parent directory
+       name contained a dot, e.g. ".venv").
+     * Python: a MiniMC callback function returning "error" now results in a
+       proper NCCalcError rather than a TypeError from "raise None".
+     * Python: fix internal _msg._setMsgHandler(None), which installed a
+       broken callback rather than restoring the C++ default handler.
+     * Python: fix internal ncpprint(..,do_sort=True) (called non-existent
+       pprint.print) and route its output through the NCrystal print function.
      * Introduce and use new NCRYSTAL_FMADISPATCH_ATTR solution for portable and
        fast std::fma (fused-multiply-add) usage. This solution is enables
        vectorisable hot loops with hardware FMA, even in portably built binaries
