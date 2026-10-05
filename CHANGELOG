@@ -1,6 +1,15 @@
 v4.4.7 (work in progress)
      * Updated point reduction algorithms to be both more robust, accurate, and
        tolerant of noise from FFT convolutions.
+     * Taper sIntegralAtE's negligible-cell shortcut smoothly around its
+       threshold instead of hard-cutting exactly at it, so last-ULP noise
+       in a cell's integral cannot flip it between zero and its full
+       contribution.
+     * Make the next-gen SAB Emin determination cross-platform stable by
+       anchoring its upper reference point at the material's own EMax
+       instead of a discrete-search crossing index. Changes Li2O
+       vdoslux>=2000 sabxs reference data by up to ~0.7% at the lowest
+       tested energies.
      * Added FastConvolve::convolveDirect (StableSum-accumulated direct
        convolution, no FFT round-off floor) and VDOSGn::Cfg::MaxLux routing
        every phonon order through it -- tested reference infrastructure,
