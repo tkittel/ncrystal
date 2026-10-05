@@ -71,6 +71,41 @@ namespace NCRYSTAL_NAMESPACE {
         return res;
       }
 
+      unsigned long maxSmoothThinFactor( const VectD& spec, long startIdx,
+                                         unsigned long maxfactor,
+                                         double tol, double relfloor )
+      {
+        //Find the largest thinning factor (a power of 2, at most maxfactor)
+        //for which the spectrum is smooth enough to be thinned. Thinning by
+        //a factor f keeps the points at lattice positions (startIdx+i) which
+        //are multiples of f. Going from f/2 to f is accepted if all points
+        //removed in that step are within a relative distance tol from the
+        //average of their two neighbours at the new spacing (ignoring points
+        //where both are below relfloor times the spectrum maximum).
+        nc_assert( !spec.empty() && tol > 0.0 && relfloor >= 0.0 );
+        const double vfloor
+          = relfloor * ( *std::max_element( spec.begin(), spec.end() ) );
+        const long n = static_cast<long>( spec.size() );
+        unsigned long res = 1;
+        for ( unsigned long ff = 2; ff <= maxfactor; ff *= 2 ) {
+          const long f = static_cast<long>( ff );
+          const long h = f / 2;
+          long i = ( h - startIdx ) % f;//first point removed in this step
+          if ( i < 0 )
+            i += f;
+          for ( ; i < n; i += f ) {
+            const double v = spec[i];
+            const double avg = 0.5 * ( ( i >= h ? spec[i-h] : 0.0 )
+                                       + ( i + h < n ? spec[i+h] : 0.0 ) );
+            const double vmax = ncmax( v, avg );
+            if ( vmax > vfloor && ncabs( v - avg ) > tol * vmax )
+              return res;
+          }
+          res = ff;
+        }
+        return res;
+      }
+
       class VDOSGnData : private MoveOnly {
       public:
         //The egrid_lower value is the energy of the first point in the
