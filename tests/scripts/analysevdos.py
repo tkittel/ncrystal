@@ -28,6 +28,7 @@ import NCrystalDev as NC
 # More robust testing:
 NC.removeAllDataSources()
 NC.enableStandardDataLibrary()
+import NCTestUtils.enable_testdatapath # noqa F401,E402
 
 itest = 0
 for vdoslux in (0,3):
@@ -44,4 +45,18 @@ for vdoslux in (0,3):
         if hasattr(di,'analyseVDOS'):
           print(f'==> {cfgstr}//{di.atomData.displayLabel()} => ',end='')
           print('; '.join('%s=%.12g'%(k,v)
+                          for k,v in sorted(di.analyseVDOS().items())))
+
+#Also exercise the VDOS curves with unusual features found in the test data
+#(see comments in the files):
+from NCTestUtils.dirs import test_data_dir # noqa E402
+for f in sorted( test_data_dir.glob('vdos_*.ncmat') ):
+  for vdoslux in (0,3):
+    for temp in (0.001,300,1e6):
+      cfgstr = f'{f.name};temp={temp};vdoslux={vdoslux}'
+      info = NC.createInfo(cfgstr)
+      for di in info.dyninfos:
+        if hasattr(di,'analyseVDOS'):
+          print(f'==> {cfgstr}//{di.atomData.displayLabel()} => ',end='')
+          print('; '.join(f'{k}={v:.12g}'
                           for k,v in sorted(di.analyseVDOS().items())))

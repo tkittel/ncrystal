@@ -23,6 +23,7 @@
 # NEEDS: numpy
 
 import NCTestUtils.enable_fpe # noqa F401
+import NCTestUtils.enable_testdatapath # noqa F401
 import NCrystalDev as NC
 
 def validate_cfgstr(cfgstr):
@@ -50,5 +51,10 @@ def main():
     cfgstrs = [f.fullKey for f in NC.browseFiles(factory='stdlib')]
     for i,f in enumerate(sorted(cfgstrs)):
         validate_cfgstr(f)
+    #Also exercise the VDOS curves with unusual features found in the test
+    #data (see comments in the files):
+    from NCTestUtils.dirs import test_data_dir
+    for f in sorted( test_data_dir.glob('vdos_*.ncmat') ):
+        validate_cfgstr(f.name)
 
 main()
