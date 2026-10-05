@@ -1,4 +1,10 @@
 v4.4.7 (work in progress)
+     * Rewrite NC::stable_exp/stable_expm1 to be fully libm-free
+       (Cody-Waite reduction, 14th-order std::fma Horner Taylor expansion,
+       exact std::ldexp reconstruction; stable_exp via 1+expm1(x), with a
+       reciprocal for negative x), making results identical on every
+       platform by construction. Verified against mpmath-derived
+       references in app_stablemathfct.
      * Updated point reduction algorithms to be both more robust, accurate, and
        tolerant of noise from FFT convolutions.
      * Taper sIntegralAtE's negligible-cell shortcut smoothly around its
