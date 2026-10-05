@@ -1,0 +1,437 @@
+Input for the v4.4.7 section of CHANGELOG, collected from the (since
+filtered out) CHANGELOG edits of all commits after "Update version numbers
+to 4.4.7" (c4bfa91e9). Grouped by topic; to be curated into the real
+CHANGELOG at release time.
+
+### NCMAT format, dynamics and new physics
+
+     * New NCMAT v8 format (cf. docs/ncmat_doc.md): @DYNINFO sections
+       gain the msd (with optional at_temperature part), debye_temp
+       (now also for scatknl) and effective_temperature keywords; the
+       @DEBYETEMPERATURE section is removed, @STATEOFMATTER becomes
+       mandatory for non-crystalline materials, freegas/sterile
+       sections are banned from crystals, and crystalline materials
+       may now use scatknl dynamics, with Debye-Waller msd from the
+       explicit keywords or confident automatic kernel analysis
+       (load-time error otherwise). Automatic kernel-msd extraction
+       (and hence the elastic physics of solid scatknl materials) is
+       deliberately gated to v8+ files so older files keep their
+       exact physics; explicit values take precedence over automatic
+       estimation everywhere, and partially-covered solids emit a
+       warning naming the components without msd. The in-memory
+       solid::/gasmix:: writers remain at v7 for now.
+     * Added SABAnalyser (NCSABAnalyser.hh): estimates the effective
+       temperature and mean-squared displacement directly from a
+       tabulated S(alpha,beta) kernel via exact moment sum rules of the
+       Gaussian approximation, with per-row admissibility guards and
+       robustness metrics. Validated to <1% (Teff) and <5% (msd) against
+       VDOSEval truth across A=1..56 and T=20..800K, at ~ms cost.
+       Inspectable via the new JSON query
+       ["sab","analyse",MATCFGSTR,ATOMDISPLAYLABEL,"diag"].
+     * Added short-collision-time (SCT) model infrastructure: NCSCTUtils.hh's
+       SCTXSProvider/SCTSampler implement the ENDF/GA SCT law (free gas at
+       Teff on the downscatter side, detailed balance at the actual T),
+       with sampling via an exact mapping onto FreeGasSampler and cross
+       sections via a closed erf-form correction plus a luxury-dependent
+       spline table. A thin SABSCTExtender exposes it through the
+       SABExtender interface, validated in tests/src/app_sctext.
+     * Direct-kernel (scatknl) materials now get the SCT extension model
+       by default in next-gen (knllux>=0) configs, with Teff estimated by
+       SABAnalyser (e.g. stdlib liquid water/heavy water H kernels are
+       extended with SCT at Teff~1100K rather than free gas at T). In
+       practice only the sampling above Emax is affected; the total xs
+       there is continuity-anchored at Emax.
+     * Solid (declared via @STATEOFMATTER) non-crystalline direct-kernel
+       (scatknl) materials now get incoherent-approximation elastic
+       scattering, with the mean-squared displacement estimated directly
+       from the kernel via SABAnalyser (the extension to scatknl
+       explicitly reserved by the NCMAT v5 @STATEOFMATTER spec). Kernels
+       whose msd is not confidently extractable (e.g. liquid-like), and
+       files without a declared solid state, are unaffected.
+
+### VDOS expansion (next-gen, vdoslux 2000..2006)
+
+     * Non-legacy VDOS expansion now samples the G1 function with bins of
+       at most 0.25*kT, further reduced if needed for linear interpolation
+       between the points to reproduce G1 (which can have structure narrow
+       compared to both kT and the VDOS grid). Coarse sampling previously
+       broke detailed balance at low temperatures (e.g. ~10% xs errors for
+       H in acrylic glass at 5K) or missed narrow structure (cross sections
+       for a VDOS not falling off like E^2 at low energies were 4% too
+       high). Temperatures below 0.1K are now rejected, and a CalcError is
+       raised if G1 would need >1e6 bins.
+     * Non-legacy VDOS expansion now only thins Gn spectra (i.e. increases
+       their binwidth) as long as they are smooth on the scale of the new
+       binwidth, rather than just based on their number of points. This
+       fixes cross sections being wrong by up to 50% for VDOS curves with
+       narrow features but wide range, at low temperatures.
+     * Non-legacy VDOS expansion no longer has fixed limits of 1000 or
+       10000 phonon orders. Instead orders are added until the Gn spectra
+       hold 1e6, 2e6, 3e6, 5e6, 1e7, 3e7 or 1e8 points (for levels 0..6), a
+       single convolution would need more than 5e6 points, or 60000 orders
+       are reached. As before, the kernel then covers a reduced Emax, but a
+       CalcError is now raised if that would be below 0.1eV (where the
+       free-gas extrapolation above Emax gave errors of 15-20%).
+     * VDOSGn::eRange now locates the threshold crossing via a quadratic fit of
+       ln(spectrum) vs energy. This is more stable and less noise sensitive than
+       the old approach of snapping to a particular grid point
+     * More robust and less noise sensitive Gn truncation during VDOS expansions.
+     * Updated point reduction algorithms to be both more robust, accurate, and
+       tolerant of noise from FFT convolutions.
+     * Added FastConvolve::convolveDirect (StableSum-accumulated direct
+       convolution, no FFT round-off floor) and VDOSGn::Cfg::MaxLux routing
+       every phonon order through it -- tested reference infrastructure,
+       not yet wired to any vdoslux level.
+     * FastConvolve: add static currentCacheMemUsage(), clearCaches() and
+       trimCaches() methods for the cached FFT tables. VDOS expansions now
+       trim these to 10MB when finishing, if they take up more than 100MB.
+     * Fix process termination (rather than an exception) when several Gn
+       functions failed at once during multi-threaded VDOS expansion.
+
+### Cross-platform floating-point reproducibility
+
+     * Introduce and use new NCRYSTAL_FMADISPATCH_ATTR solution for portable and
+       fast std::fma (fused-multiply-add) usage. This solution is enables
+       vectorisable hot loops with hardware FMA, even in portably built binaries
+       such as the published wheels and conda packages.
+     * Introduce new FMA-based nclerp (linear interpolation) function.
+     * Introduce StableDbl utility class for double-double arithmetic for better
+       reproducibility and precision in select parts of the code.
+     * Extensive cross-platform floating-point reproducibility work in the
+       VDOS -> S(alpha,beta) pipeline, removing sources of genuinely
+       differing results (not merely last-ULP noise) between platforms,
+       compilers and FMA-contraction choices:
+       - VDOSGn's per-order spectra are cleaned to FastConvolve's own
+         calibrated, size-dependent FFT round-off floor, so values that are
+         pure FFT noise can no longer enter downstream grid selection.
+       - VDOSGn's per-order truncation edge is located via a windowed
+         quadratic fit of ln(spectrum) and smoothly tapered, so near-ties
+         between neighbouring bins no longer produce whole-bin differences.
+       - The next-gen alpha/beta grid selection gained a noise-tolerant
+         tie-break, and the new reducePtsByEquidistributionRobust (wider
+         curvature stencil, several-fold less noise-sensitive on real
+         datasets) is now used when constructing such grids.
+       - The next-gen cross-section table's Emin search is anchored to the
+         explicit EMax input instead of a threshold crossing of a per-cell
+         cumulative sum, and sIntegralAtE's "irrelevant cell" shortcut is
+         smoothly tapered instead of hard-cut at its threshold.
+       - Explicit std::fma throughout the hot and/or contraction-sensitive
+         arithmetic: Romberg integration (whose "a*b+c*d" updates had two
+         valid single-fusion readings), estimateSpectrumCrossing's
+         least-squares fit, the alpha/beta kinematic-limit functions, the
+         sampling utilities (randKPowX, isotropic mu sampling, cell
+         interpolation), and point-reduction density accumulation.
+       These changes shift some VDOS/kernel-derived results, typically in
+       the last few significant digits (sabxs reference shifts up to ~1%,
+       concentrated in Li2O test cases), without any expected impact on
+       physical accuracy. Under an -mfma-forced rebuild, testsabxs now
+       passes cleanly.
+     * Rewrite NC::stable_exp/stable_expm1 to be fully libm-free
+       (Cody-Waite reduction, 14th-order std::fma Horner Taylor expansion,
+       exact std::ldexp reconstruction), making results identical on every
+       platform by construction. Arguments around and beyond ln(DBL_MAX)
+       saturate cleanly to inf/0/-1 without raising floating-point flags.
+     * Added ncerf/ncerfc (NCMath.hh): portable error functions with no
+       math-library calls at all, written from scratch for NCrystal (all
+       constants derived by the NCDev script gen_ncerf_approx), giving
+       bit-identical results on all platforms with errors of at most 1 ULP
+       (erf) and 2 ULP (erfc, also deep in its tail) while also being
+       significantly faster than typical libm implementations (3-10x
+       measured against glibc). All erf/erfc evaluations in the
+       library (free-gas cross sections and sampling, and single-crystal
+       mosaic Gauss-on-sphere setup) now use them, which shifts affected
+       results at the few-ULP level but makes them identical across
+       platforms and toolchains.
+     * Bit-identical |F|^2 on every platform: the fast-trig Taylor kernels
+       and NCFillHKL's per-hkl pipeline (Debye-Waller factors now via
+       stable_exp) are rewritten with every multiply-add shape as explicit
+       std::fma. The plain forms were contracted differently per
+       compiler/target, flipping knife-edge HKL family counts on aarch64.
+     * Fix several catastrophic-cancellation-prone inline re-derivations
+       of the alpha/beta kinematic boundary formulas in the sab component
+       (cell sampling, surveying, and cross-section integration), which
+       could give platform/compiler dependent results; all now go through
+       the Taylor-hardened utilities in NCKinUtils.hh. Added
+       tests/scripts/kinutils.py validating those utilities against an
+       mpmath reference.
+     * Fix NCrystal.vdos.extractKnl/extractGn (used internally by
+       ncmat2endf) feeding the C API a VDOS curve that had already been
+       redundantly renormalised and grid-expanded in numpy: the C++ VDOS
+       machinery does both internally anyway, so this only added
+       numpy-version-dependent noise. May shift some VDOS-derived results
+       in the last few significant digits.
+     * The sabxs reproducibility test tolerance now depends on vdoslux
+       (1e-4/1e-5/1e-6 for 2000/2001/>=2002).
+
+### Performance
+
+     * Added a Windows/MSVC-specific runtime FMA dispatch mechanism
+       (NCFMADispatch.hh): MSVC has no equivalent of the target_clones
+       attribute, so every std::fma() there fell back to slow software
+       emulation (65% of a VDOS expansion benchmark's runtime in a real
+       Windows trace). Every dispatch-decorated function now gets a second,
+       /arch:AVX2-compiled clone in a dedicated translation unit, used at
+       runtime only when CPUID/XGETBV confirm FMA3 support (x86-64 only).
+       Also added ncrestrict + assertion-verified non-overlap declarations
+       to these functions' pointer arguments, to help auto-vectorisation.
+     * Add NC::fastLowerBoundIdx/fastUpperBoundIdx (NCFastSearch.hh):
+       drop-in replacements for std::lower_bound/upper_bound on sorted
+       double arrays, with the inner comparison compiling to a branchless
+       conditional move. Measured 3-5x faster on representative grids.
+       Wired into all qualifying hot call sites, giving up to ~24% faster
+       Bragg sampling and ~15% faster SAB sampling.
+     * Performance pass over the SAB cell-integration hot path (fmaRampFill,
+       fillContribAtAlpha and IntegrandOfA::contrib now dispatch-decorated;
+       loop-invariant work hoisted), and stable_exp/stable_expm1 and
+       Romberg::integrate() now dispatch-decorated too.
+     * HKL plane generation with space group symmetry is 10-25% faster, by
+       preselecting on d-spacing before symmetry lookups (identical results).
+
+### Crystallography and Bragg diffraction
+
+     * New internal sgsym component with SpaceGroup/SpaceGroupHallNumber
+       classes for the 530 space group settings of ITVB Table A1.4.2.7 (table
+       verified against several independent sources), and a SymOp class for
+       symmetry operations (exact, verified against gemmi). SGSymmetry::get(sg)
+       gives the operations of each setting, derived from its Hall symbol and
+       verified against spglib and gemmi for all 530 settings. Also crystal
+       systems, setting info (axes, unique axis, cell/origin choice, axis
+       permutation), and cell constraints derived from the operations.
+       expandSiteToOrbit(..) expands sites into symmetry-equivalent positions
+       (symmetrising sites within 5e-4 of special positions, and rejecting
+       sites within 1e-2 but not on them).
+     * Fix wrong real-space lattice (thus volume, density, d-spacings and
+       plane normals) for unit cells with cos(alpha)!=cos(beta)cos(gamma),
+       e.g. triclinic and rhombohedral cells (github issue #383). Affected
+       stdlib files: BO3H3_sg2_BoricAcid.ncmat (density now 1.562 g/cm3,
+       was 2.288) and CaSiO3_sg2_Wollastonite.ncmat (2.909, was 3.096).
+     * Fix Bragg diffraction for crystals in space groups 149, 151, 153, 157,
+       159, 162 and 163 (Laue class -31m), for which planes that are not
+       symmetry-equivalent were grouped as if they were (as for Laue class
+       -3m1), leading to wrong structure factors. No stdlib files affected.
+     * When a space group is given, NCrystal now checks that the structure
+       actually has the assumed symmetry (by comparing |F|^2 of low-index
+       planes which should be symmetry-equivalent), and otherwise raises
+       an error instead of silently producing wrong Bragg physics.
+     * Rhombohedral space groups (146, 148, 155, 160, 161, 166, 167) can now
+       also be given in rhombohedral axes (a=b=c, alpha=beta=gamma<120) in
+       NCMAT data and NCMATComposer (not in .laz/.lau files).
+     * Monoclinic space groups now require alpha=gamma=90 in @CELL (only the
+       unique axis b setting is supported, other settings previously gave
+       wrong symmetry-equivalent reflections).
+     * Hexagonal/trigonal space groups with gamma<120 in @CELL now give an
+       error, rather than gamma being silently changed to 120.
+     * Detection of coinciding atom positions now also works across unit
+       cell boundaries and for positions not adjacent in sorted lists.
+     * HKL |F|^2 values no longer skip contributions from heavily damped atoms,
+       which biased weak planes (up to ~2*fsquarecut, e.g. 5% errors) for no
+       measurable speedup. Planes near fsquarecut may thus change slightly.
+     * HKL families for crystals without space group are now grouped by a
+       sort-and-sweep over d-spacing, rather than via binned map keys which
+       could split families at rounding boundaries. Buffered hkl points are
+       merged in chunks of max 16MB, roughly halving peak memory usage. The
+       d-spacing and F2 values of such families are now the averages of those
+       of their members (thus preserving the summed F2 of merged planes).
+     * HKL plane generation with space group symmetry now uses a bookkeeping
+       table sized to the actual hkl range (typically kB instead of 1MB or
+       67MB). A CalcError is raised if it would need more than 20MB (raise
+       with the NCRYSTAL_FILLHKL_MEMLIM env var, in MB).
+     * Simplify estimateHKLRange to the exact bound |h|<=a/dcutoff (etc.), with
+       a 0.1% safety margin, instead of sampling with a 5% margin.
+     * NCRYSTAL_FILLHKL_SELECTHKL=h,k,l now selects exactly the plane
+       (h,k,l) (and (-h,-k,-l)) both with and without space group, using the
+       normal code paths with a reduced hkl range. A CalcError is raised if
+       the plane is absent, and malformed values give BadInput.
+     * Info::hklListPartialCalc now rejects NaN d-spacing limits, and returns
+       an empty list rather than throwing for ranges outside the configured
+       [dcutoff,dcutoffup] range. Degenerate [d,d] ranges now return the
+       planes with d-spacing exactly d.
+     * Fix internal assertion failure when requesting the Bragg threshold
+       (e.g. via Info.braggthreshold) of a material with dcutoffup exactly
+       5, 1.5 or 0.75 Aa before the HKL lists were fully initialised.
+     * Fix Debug-build assertion failure when FILLHKL_IGNOREFSQCUT is set.
+     * NCMATComposer.verify_crystal_structure now accepts any setting in
+       which NCrystal's symmetry handling is valid (e.g. permuted
+       orthorhombic axes, other monoclinic cell choices), and rejects
+       settings where it is not (e.g. monoclinic unique axis c) with a
+       clear message. New JSON query ["util","eqrefl",SG,"H,K,L",...].
+     * NCMATComposer.verify_crystal_structure no longer rejects valid
+       triclinic structures in a non-reduced basis (e.g. all P1 cells with
+       mixed acute/obtuse angles) or structures where spglib merely picks a
+       different origin. The latter is also no longer reported as "major
+       corrections" by refine_crystal_structure (and thus cif2ncmat).
+     * NCMATComposer.refine_crystal_structure (and thus cif2ncmat) now
+       compares structures in the same basis when spglib transforms the
+       unit cell (e.g. triclinic reduction, primitive to centred cells),
+       so it no longer reports bogus "major corrections" in such cases.
+     * NCMATComposer (and thus cif2ncmat) now writes unit cell lengths and
+       angles with full precision, rather than 6 significant digits.
+     * cif2ncmat: clear error for CIF data without atom sites. New tests
+       with synthetic CIF data in all space groups and many styles.
+     * SiO2-beta_sg180_BetaQuartz.ncmat: symmetrise O z-coordinates to exact
+       1/2, 1/6, 5/6 (were based on a rounded .8333). Negligible physics
+       impact (coherent elastic cross sections change by <3e-5).
+     * New test (latticecells.py) validating many synthetic unit cells and
+       all stdlib crystals against metric-tensor calculations and spglib.
+
+### Data browsing
+
+     * New command-line tool "ncrystal browse" (also ncrystal_browse) for
+       browsing and searching available data and plugins, more powerful than
+       the --browse, --extract and --plugins flags of nctool (kept for now):
+       it shows short NCMAT descriptions, filters by source and name
+       (substrings, globs or -E regexes), searches NCMAT header comments with
+       grep-like colored hits (e.g. -E -s 'boron|b4c', with --color=WHEN),
+       and can select on physics properties of the loaded materials (e.g.
+       -w "'B' in elements and absxs > 100"), with --columns/--sort tables
+       (also as --csv or --json), --json, --info, --count and --path.
+     * New NCrystal.browse Python module, in which the DataBrowser class
+       provides the features of "ncrystal browse" (browsing, searching and
+       selecting data, also on physics properties, and producing listings or
+       text/csv/json/html tables), and query_data() the underlying data.
+     * New JSON queries ["util","browsedb",...] and ["util","browsefactories"]
+       providing listings of available data with NCMAT header comments and
+       physics properties (loaded in parallel if factory threads are
+       enabled), ["util","factorythreads"] providing the factory thread-pool
+       state, and ["util","atomdb"] providing the database of isotopes and
+       natural elements (also browsable with "ncrystal browse --atomdb" and
+       NCrystal.browse.AtomDBBrowser).
+
+### Thread safety, robustness and C API
+
+     * C API: error state (ncrystal_error, ncrystal_lasterror, ...) is now
+       kept per thread, so errors are no longer reported in the wrong thread
+       when the C API (or the Python API) is used from several threads.
+     * C-API: at most 1024 threads can now have error states at the same
+       time (the oldest are discarded), to avoid unbounded memory usage when
+       threads end without clearing their error state.
+     * C-API: exceptions not deriving from std::exception no longer escape,
+       but result in the usual error state. Also fix ineffective consistency
+       check (assignment instead of comparison) in ncrystal_raw_vdos2knl, and
+       avoid memory leaks if allocations fail while preparing return values.
+     * C-API: output parameters of ncrystal_atomdata_getfields,
+       ncrystal_create_atomdata_subcomp, ncrystal_raw_vdos2kernel,
+       ncrystal_get_file_list and ncrystal_get_plugin_list are now always
+       well defined after errors.
+     * Pointers returned by ncrystal_dyninfo_extract_scatknl are now only
+       valid until the next call (kernels were previously kept alive
+       indefinitely). The Python API copies the data while holding a lock.
+     * Fix thread-safety bug (present since v2.5.0) in reading of on-disk
+       files, which used a shared static buffer, so concurrent reads (e.g.
+       creating materials in different threads) could corrupt file contents.
+     * Exceptions in jobs run by the factory thread pool are now transferred
+       to and rethrown in the calling thread (github issue #339).
+     * NCRYSTAL_FACTORY_THREADS is now handled by the thread-pool itself (read
+       on first use); explicit enableFactoryThreads calls take precedence.
+     * Factory thread-pool workers now get an explicit 8MB stack on POSIX
+       (via pthread_create; std::thread has no stack-size control and
+       macOS defaults secondary threads to 512kB, seen as SIGBUS when
+       loading complex materials through the pool).
+     * Fix data races on several static flags (warn-once flags in sampling
+       code for Gaussian mosaicity and layered crystals, and the C-API error
+       settings).
+     * Fix potential deadlock if clearCaches() is called concurrently with
+       code using a cache for the first time (or if cleanup functions
+       themselves register cleanup functions).
+     * Huge arrays of JSON queries which are never collected, are now
+       discarded by clearCaches() and when the mode is enabled again. The
+       Python API now serialises such queries with a lock.
+     * Invalid values of the environment variables NCRYSTAL_DEBUG_PHONON,
+       NCRYSTAL_DEBUG_FACTORY and NCRYSTAL_NCMAT_NOWARNFORCUSTOM now give
+       BadInput exceptions when used, rather than terminating the process
+       when the library is loaded.
+     * Fix latent undefined behaviour in factory removal (invalidated
+       iterators in FactImpl's removeFactoryIfExists): harmless-looking on
+       gcc/clang, but MSVC Debug's checked iterators raised a CRT assertion
+       dialog, hanging headless processes.
+     * Fix out-of-bounds read when iterating over lines of text data starting
+       with a newline (in the worst case giving memory corruption).
+     * DI_ScatKnlDirect: kernels with wrong temperature now give errors in all
+       calls to ensureBuildThenReturnSAB, not just the first.
+     * COWPimpl: fix mutex being left locked if copy-on-write fails, and
+       missing return statement in move assignment of Modifier objects.
+     * COWPimpl: copy construction from non-const objects now gives a shallow
+       copy, rather than passing the object to the constructor of the
+       wrapped type.
+     * RawStrData: move construction now moves rather than copies.
+
+### Windows
+
+     * Fix a Windows-only crash (STATUS_ACCESS_VIOLATION) affecting any
+       scatter process created for a crystalline material: VDOSGn's
+       destructor dereferenced a moved-from Pimpl, unnoticed on GCC/Clang
+       (whose NRVO elides the move in the affected return) but not on MSVC.
+     * Windows correctness fixes: environment variables are now read via
+       the wide Win32 API with explicit UTF-8 conversion (std::getenv's
+       CRT-cached table misses changes made from a different CRT module in
+       the same process, e.g. Python's os.environ vs the NCrystal DLL);
+       removed a dangling pointer in FlexVDOS's Debye-model query path and
+       some undefined iterator arithmetic. C++ standard library assertion
+       modes are now also enabled in CMake Debug builds on all platforms.
+     * Windows: loading an invalid/corrupt shared library (e.g. a bad
+       NCRYSTAL_LIB) no longer risks hanging on a modal loader error
+       dialog, but fails with a clean OSError instead.
+
+### Python
+
+     * The minimum supported Python version is now 3.9 (was 3.8),
+       reflected in all pyproject files, the runtime guard in
+       NCrystal/__init__.py, ncrystal-verify's CMake config and CI.
+     * Bug fix: Python API functions accepting numpy arrays now work
+       correctly for non-float64 or non-contiguous arrays.
+     * Cmdline script errors in case of invalid choices now always gives
+       output like latest (Py3.14.7) argparse, thus ensuring consistent
+       output.
+     * Python Gn functions (extractGn, DynamicInfo.extract_Gn/plot_Gn and
+       the sjolanderGn plot option) now reject non-integral orders with an
+       NCBadInput error, instead of silently truncating them (2.5 gave G2).
+     * Py API: Add DynamicInfo.displayLabel and add .lbl shortcuts for
+       .displayLabel to both AtomInfo and DynamicInfo
+     * NCMATComposer.set_dyninfo_scatknl now correctly trims 1D sab tables for
+       vanishing edges.
+     * Python: Info.dyninfos no longer fails (with an AttributeError) for
+       materials with custom DynamicInfo types (e.g. from plugins). Such
+       entries are now provided as generic Info.DynamicInfo objects.
+     * Python: str(AtomInfo) no longer raises TypeError for atoms without
+       Debye temperature or MSD (possible e.g. with plugins), but omits the
+       missing values like the C++ dump does.
+     * Fix UnboundLocalError instead of NCBadInput when AnyTextData (and thus
+       e.g. directLoad) is given a path to a non-existing file.
+     * Python: fix infinite loop when extracting NCMAT header comments
+       consisting only of empty comment lines.
+     * Python: fix internal ncsetenv to use the same env var names as the
+       C++ code and ncgetenv. It wrongly included the namespace in builds
+       with NCRYSTAL_NAMESPACE but without namespaced env vars, so for
+       instance "nctool --bench --threads N" had no effect there.
+     * Python: remove the NCrystal.obsolete module and its functions
+       (clearInfoCaches, decodecfg_packfact, disableCaching, enableCaching,
+       getFileContents) along with the NCRYSTAL_NOPYOBSOLETE env var. Due to
+       an inverted check, they were already hidden by default since 4.0.0.
+     * Python: after a failed attempt to load the NCrystal shared library,
+       later attempts fail with the same error again, rather than returning a
+       broken internal state.
+     * Python: when only NCRYSTAL_LIB is set, infer the namespace from the
+       library file name alone (previously failed if any parent directory
+       name contained a dot, e.g. ".venv").
+     * Python: generateCfgStrDoc('print') and browseFiles(dump=True) now
+       print via the NCrystal print function, so their output can be
+       redirected like other NCrystal output.
+     * Python: a MiniMC callback function returning "error" now results in a
+       proper NCCalcError rather than a TypeError from "raise None".
+     * Python: fix internal _msg._setMsgHandler(None), which installed a
+       broken callback rather than restoring the C++ default handler.
+     * Python: fix internal ncpprint(..,do_sort=True) (called non-existent
+       pprint.print) and route its output through the NCrystal print function.
+     * Py lint fixes for ruff 0.16.x.
+
+### Utilities, tests and tooling
+
+     * Add ncmake_unique_array_noinit helper function.
+     * Introduce (axis-aligned) Rectangle utility class.
+     * Tests: add VDOS curves with unusual features (mostly from plugins) as
+       tests/data/vdos_*.ncmat, and exercise them in VDOS tests.
+     * Added tests/src/app_perfsab, a self-timed benchmark of the
+       simulation-time SAB cross-section/scattering-sampling cost (as
+       opposed to app_perfvdos's one-time kernel construction cost), wired
+       into benchmark.yml. Also fixed that workflow's benchmark step
+       silently swallowing failures (missing "set -o pipefail").
