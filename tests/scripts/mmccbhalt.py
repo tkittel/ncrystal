@@ -62,8 +62,8 @@ def main(do_plot):
 
     #Summarise and plot:
     def stats(key):
-        return ( res.output_metadata[key]['count'],
-                 res.output_metadata[key]['weight'] )
+        d = res.output_metadata[key]
+        return f"{d['count']} (flux={d['weight']:.8g})"
     print('Neutron counts:')
     print("   Produced by source:  %i (flux=%.8g)"%stats('provided'))
     print("   Missing geometry:    %i (flux=%.8g)"%stats('miss'))
