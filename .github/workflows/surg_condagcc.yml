@@ -1,0 +1,38 @@
+name: surg_condagcc
+on:
+  push:
+#Surgical (throwaway): build only ncrystal_core with conda-forge gcc at -O3
+#-Werror, keep going, and list every compiler error at once.
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          path: ./src
+      - uses: conda-incubator/setup-miniconda@v4
+        with:
+          activate-environment: theenv
+          auto-activate-base: false
+          channels: conda-forge
+          conda-remove-defaults: "true"
+      - run: conda install -y -c conda-forge cxx-compiler c-compiler cmake make
+      - run: |
+          g++ --version
+          echo "CXXFLAGS=$CXXFLAGS"
+          echo "CFLAGS=$CFLAGS"
+      - name: build core, keep going
+        run: |
+          cmake -S ./src/ncrystal_core -B ./bld -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_FLAGS="$CXXFLAGS -O3 -Wall -Wextra -Werror" \
+            -DNCRYSTAL_ENABLE_EXAMPLES=OFF > cfg.log 2>&1 || { tail -30 cfg.log; exit 1; }
+          set +e
+          make -C ./bld -k -j4 > bld.log 2>&1
+          rc=$?
+          echo "=== make rc=$rc"
+          grep -E "error:|warning:" bld.log | sed 's#.*/src/ncrystal_core/##' | sort -u
+          exit $rc
