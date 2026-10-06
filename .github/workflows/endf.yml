@@ -11,6 +11,7 @@ on:
 jobs:
   ncdevtool_check:
     runs-on: ubuntu-latest
+    timeout-minutes: 50
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
@@ -32,6 +33,7 @@ jobs:
           - { os: macos-15-intel } #intel
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 50
     defaults:
       run:
         shell: bash -el {0}
