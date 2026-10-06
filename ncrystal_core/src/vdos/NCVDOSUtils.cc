@@ -492,11 +492,9 @@ NC::VDOS::coverEquidistantGrids( const EquidistantGrid& g1,
   //Given a double with...:
   static_assert(std::numeric_limits<double>::radix == 2, "");
   static_assert(std::numeric_limits<double>::digits == 53, "");
-  static_assert(std::numeric_limits<std::size_t>::digits >= 54, "");
-  //...we can represent all integers up to 2^53 exactly:
-  constexpr std::size_t szdblmax = 9007199254740992ULL;
-  (void)szdblmax;
-  nc_assert( last+1 <= szdblmax );
+  //...we can represent all integers up to 2^53 exactly (comparison in uint64_t
+  //works for both 32 and 64 bit std::size_t):
+  nc_assert( static_cast<std::uint64_t>(last) + 1 <= ( std::uint64_t(1) << 53 ) );
   return EquidistantGrid{x0, g1.binWidth, last + 1};
 }
 
