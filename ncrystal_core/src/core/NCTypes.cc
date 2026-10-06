@@ -22,6 +22,10 @@
 
 namespace NC = NCrystal;
 
+//Used in Length::as_wavelength (checked here rather than in the header, since
+//it could fail for user code built with x87 floating point on 32bit x86):
+static_assert( NC::Length::angstrom == 1e-10, "" );
+
 namespace NCRYSTAL_NAMESPACE {
   //As good a place as any for all of these SmallVector asserts (since we do not
   //have NCSmallVector.cc):
