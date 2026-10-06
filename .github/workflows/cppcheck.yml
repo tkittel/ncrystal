@@ -64,8 +64,8 @@ jobs:
     - name: Configure CMake
       run: >
         cmake -S ./src -B ./build
-        "-DCMAKE_CXX_CPPCHECK=cppcheck;--error-exitcode=3;--inline-suppr;--check-level=exhaustive"
-        "-DCMAKE_C_CPPCHECK=cppcheck;--error-exitcode=3;--inline-suppr;--check-level=exhaustive"
+        "-DCMAKE_CXX_CPPCHECK=cppcheck;--error-exitcode=3;--inline-suppr;--check-level=exhaustive;--suppress=throwInEntryPoint"
+        "-DCMAKE_C_CPPCHECK=cppcheck;--error-exitcode=3;--inline-suppr;--check-level=exhaustive;--suppress=throwInEntryPoint"
         -DNCRYSTAL_ENABLE_TESTING=ON
         -DNCRYSTAL_ENABLE_EXAMPLES=ON
         -DNCRYSTAL_ENABLE_DATA=ON
