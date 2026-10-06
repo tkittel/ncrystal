@@ -69,27 +69,30 @@ namespace NCRYSTAL_NAMESPACE {
       struct AType {
         ScatLenDensity sld;
         NumberDensity nd;
-        double volfrac;
+        double volfrac = 0.0;
         const Info::CustomSectionData* customData = nullptr;
       };
-      Optional<AType> currentAType;
+      //NB: Plain struct+flag here rather than Optional<AType>: gcc 15.3 -O3
+      //gives a false -Wmaybe-uninitialized here (cf. GCC bug 80635):
+      AType currentAType;
+      bool hasCurrentAType = false;
       decltype(it) itATypeData = itE;
       for ( ; it!=itE; ++it ) {
         double info_volfrac = it->first;
         const Info& info_ph = *it->second;
 
         auto aTypeCData = info_ph.isMultiPhase() ? nullptr : getATypePhaseData(it->second,customsectionname);
-        if ( currentAType.has_value() ) {
+        if ( hasCurrentAType ) {
           if ( aTypeCData )
             NCRYSTAL_THROW2(BadInput,"Two consecutive entries in the phase list both contain @CUSTOM_"<<customsectionname<<" sections");
-          nc_assert(currentAType.value().customData!=nullptr);
-          const double fracA = currentAType.value().volfrac;
+          nc_assert(currentAType.customData!=nullptr);
+          const double fracA = currentAType.volfrac;
           const double fracB = info_volfrac;
           nc_assert_always( fracA > 0.0 && fracB > 0.0 );
-          const auto sldA = currentAType.value().sld;
+          const auto sldA = currentAType.sld;
           const auto sldB = info_ph.getSLD();
           const auto drho = sldA.contrast( sldB );
-          const auto numberDensity = NumberDensity{ fracA * currentAType.value().nd.dbl() + fracB * info_ph.getNumberDensity().dbl() };
+          const auto numberDensity = NumberDensity{ fracA * currentAType.nd.dbl() + fracB * info_ph.getNumberDensity().dbl() };
 
           //For phi, we simply assume that the scattering objects are the
           //smaller (in terms of volume) of the two involved phases. After all,
@@ -110,17 +113,18 @@ namespace NCRYSTAL_NAMESPACE {
           if ( sansScaleFactor.dbl() > 0 ) {
             res.push_back( { sansScaleFactor, {} } );
             if ( searchMode != SearchMode::JustCheckIfPresent )
-              res.back().customData = *(currentAType.value().customData);//copy the whole thing, no life-time hassle for plugin developers
+              res.back().customData = *(currentAType.customData);//copy the whole thing, no life-time hassle for plugin developers
           }
-          currentAType = NullOpt;
+          hasCurrentAType = false;
         } else {
           if ( aTypeCData ) {
             itATypeData = it;
             currentAType = AType{};
-            currentAType.value().sld = info_ph.getSLD();
-            currentAType.value().nd = info_ph.getNumberDensity();
-            currentAType.value().volfrac = info_volfrac;
-            currentAType.value().customData = aTypeCData;
+            hasCurrentAType = true;
+            currentAType.sld = info_ph.getSLD();
+            currentAType.nd = info_ph.getNumberDensity();
+            currentAType.volfrac = info_volfrac;
+            currentAType.customData = aTypeCData;
           }
         }
         if ( info_ph.isMultiPhase() ) {
@@ -135,7 +139,7 @@ namespace NCRYSTAL_NAMESPACE {
         }
 
       }
-      if ( currentAType.has_value())
+      if ( hasCurrentAType )
         NCRYSTAL_THROW2(BadInput,"The phase with a @CUSTOM_"<<customsectionname
                         <<" section must always be followed by another phase (which provides the contrast).");
 
