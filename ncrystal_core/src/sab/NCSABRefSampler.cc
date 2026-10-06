@@ -130,7 +130,6 @@ namespace NCRYSTAL_NAMESPACE {
     }
     static constexpr std::int64_t packfactor = 1048576;
     static_assert( NC::ncconstexpr_ispow2( packfactor ), "" );
-    static_assert(sizeof(std::size_t)>=8,"");
   }
 }
 
@@ -230,9 +229,9 @@ namespace NCRYSTAL_NAMESPACE {
             const bool inside21 = ptInsideKB( a2, b1 );
             //const bool inside22 = ptInsideKB( a2, b2 );
 
-            const std::int64_t cellidx = packfactor*ib+ia + 1;//+1 so the sign
-                                                              //of cellidx can
-                                                              //encode info
+            //+1 so the sign of cellidx can encode info:
+            const std::int64_t cellidx = ( packfactor*static_cast<std::int64_t>(ib)
+                                           + static_cast<std::int64_t>(ia) + 1 );
             nc_assert( cellidx >= 1 );
             if ( inside11 & inside12 & inside21/* & inside22*/ ) {
               //cell is fully inside boundary
