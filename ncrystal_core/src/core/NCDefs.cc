@@ -23,8 +23,8 @@
 namespace NCRYSTAL_NAMESPACE {
 
   static_assert( std::numeric_limits<std::size_t>::max()
-                 >= std::numeric_limits<std::uint64_t>::max(),
-                 "NCrystal is no longer supported on 32bit systems"
+                 >= std::numeric_limits<std::uint32_t>::max(),
+                 "NCrystal requires std::size_t to be at least 32bits wide."
                  );
   static_assert( std::numeric_limits<int>::max()
                  >= std::numeric_limits<std::int32_t>::max(),
