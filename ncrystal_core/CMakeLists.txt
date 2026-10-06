@@ -409,12 +409,13 @@ ncrystal_process_core_srcfiles()
 # "NC*_WINFMA.cc" source file (by convention, under ncrystal_core/src/*/ only)
 # an extra, per-file /arch:AVX2 clone-and-dispatch treatment -- see
 # ncrystal_core/include/NCrystal/internal/utils/NCFMADispatch.hh for the full
-# mechanism and rationale. x86-64 only, mirroring the same
-# CMAKE_SYSTEM_PROCESSOR check ncrystal_fmadispatch.cmake already uses to skip
-# the (unrelated, GCC/Clang) FMA dispatch probe on non-x86 targets
+# mechanism and rationale. x86 only, like the (unrelated, GCC/Clang) FMA
+# dispatch probe in ncrystal_fmadispatch.cmake, so skipped on non-x86 targets
 # (e.g. Windows-on-ARM64, where MSVC is also the compiler but the whole
-# technique does not apply, since hardware FMA is baseline there already):
-if ( MSVC AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64|AMD64|i[3-6]86|x86)$" )
+# technique does not apply, since hardware FMA is baseline there already).
+# Checking the compiler's *target* architecture, since CMAKE_SYSTEM_PROCESSOR is
+# the host one when e.g. cross-building ARM64 wheels on x64 via "-A ARM64":
+if ( MSVC AND CMAKE_CXX_COMPILER_ARCHITECTURE_ID MATCHES "^(x64|X86)$" )
   add_compile_definitions( NCRYSTAL_DISPATCH_TO_WIN_FMA )
   set( ncrystal_winfma_srcfiles "" )
   foreach( f ${ncpkg_all_ncrystal_lib_srcfiles} )
