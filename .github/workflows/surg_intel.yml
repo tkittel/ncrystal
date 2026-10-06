@@ -1,0 +1,29 @@
+name: surg_intel
+on:
+  push:
+#Surgical (throwaway): icpx Debug, build+run only the FMA/math tests.
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        path: src
+    - name: install oneAPI compiler
+      run: |
+        cd /tmp
+        wget -q https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+        sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+        sudo add-apt-repository -y "deb https://apt.repos.intel.com/oneapi all main"
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq intel-oneapi-compiler-dpcpp-cpp intel-oneapi-runtime-libs > /dev/null
+    - name: configure, build subset, ctest subset
+      run: |
+        source /opt/intel/oneapi/setvars.sh
+        export CC=$(which icx) CXX=$(which icpx)
+        cmake -S src -B build -DCMAKE_BUILD_TYPE=Debug -DNCRYSTAL_ENABLE_TESTING=ON \
+          -DNCRYSTAL_BUILD_STRICT=ON -DNCRYSTAL_ENABLE_EXAMPLES=OFF > cfg.log 2>&1 || { tail -40 cfg.log; exit 1; }
+        grep -o "fp-model=precise" build/tests/CMakeFiles/fmamath.dir/flags.make | head -1
+        cmake --build build -j4 --target fmamath fmaprobe fmavdos gnerange math
+        ctest --test-dir build --output-on-failure -R "fmamath|fmaprobe|fmavdos|gnerange|_math$"
