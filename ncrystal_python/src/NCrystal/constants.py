@@ -34,7 +34,7 @@ from ._numpy import _ensure_numpy, _np
 constant_c  = 299792458e10#  speed of light in Aa/s
 constant_dalton2kg =  1.660539040e-27#  amu to kg
 constant_dalton2eVc2 =  931494095.17#  amu to eV/c^2
-constant_avogadro = 6.022140857e23#  mol^-1
+constant_avogadro = 6.02214076e23#  mol^-1 (exact, as in the C++ layer)
 constant_boltzmann = 8.6173303e-5#  eV/K
 const_neutron_mass_amu = 1.00866491588#  [amu]
 constant_planck = 4.135667662e-15 # [eV*s]

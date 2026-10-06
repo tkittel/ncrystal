@@ -1,5 +1,5 @@
 NCrystal.constants.const_neutron_mass_amu = 1.00866491588
-NCrystal.constants.constant_avogadro = 6.022140857e+23
+NCrystal.constants.constant_avogadro = 6.02214076e+23
 NCrystal.constants.constant_boltzmann = 8.6173303e-05
 NCrystal.constants.constant_c = 2.99792458e+18
 NCrystal.constants.constant_dalton2eVc2 = 931494095.17
