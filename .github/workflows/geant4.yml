@@ -92,7 +92,8 @@ jobs:
         run: pip install ncrystal-geant4
 
       - name: Cfg example
-        run: cmake -S ./src_ncg4/example -B ./bldexample -DCMAKE_INSTALL_PREFIX=./instexample
+        #Find conda env deps (e.g. expat for Geant4) before older system ones:
+        run: cmake -S ./src_ncg4/example -B ./bldexample -DCMAKE_INSTALL_PREFIX=./instexample "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX"
 
       - name: Build example
         run: cmake --build ./bldexample
