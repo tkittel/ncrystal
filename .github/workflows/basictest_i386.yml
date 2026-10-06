@@ -1,0 +1,46 @@
+name: basictest_i386
+
+# Build and test NCrystal (CMake + CTest, incl. the Python tests) on a genuine
+# 32bit (i386) Linux, inside an i386/debian container. Since GitHub's JS
+# actions can not run inside a 32bit container, we check out on the host and
+# invoke docker manually.
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '43 4 * * 2'  # 4:43 every Tuesday
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        buildtype: [ Release, Debug ]
+    name: i386-${{ matrix.buildtype }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        path: src
+
+    - name: Build and test in i386 container
+      run: |
+        docker run --rm --platform linux/386 -v "${{ github.workspace }}:/ws" -w /ws \
+          i386/debian:trixie bash -euxc '
+            apt-get update -qq
+            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+              g++ cmake make python3 python3-numpy python3-mpmath python3-yaml > /dev/null
+            uname -m
+            python3 -c "import struct,sys; print(\"python pointer bits:\",8*struct.calcsize(\"P\")); assert struct.calcsize(\"P\")==4"
+            cmake -S ./src -B ./build -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} \
+              -DNCRYSTAL_ENABLE_EXAMPLES=ON -DNCRYSTAL_BUILD_STRICT=ON \
+              -DNCRYSTAL_ENABLE_TESTING=ON -DMCTOOLS_REQUIRE_ALL_TEST_DEPS=OFF
+            cmake --build ./build --parallel 4
+            ctest --test-dir ./build --no-tests=error --output-on-failure \
+              --test-output-size-failed 100000 --test-output-truncation middle \
+              --parallel 4 --timeout 1200
+          '
