@@ -47,7 +47,7 @@ namespace NCRYSTAL_NAMESPACE {
 
     struct ParticleCountSum {
       //Number and total weight of particles.
-      std::size_t count = 0;
+      std::uint64_t count = 0;
       double weight = 0.0;
     };
 
