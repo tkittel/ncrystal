@@ -85,6 +85,35 @@ if( NOT NCRYSTAL_NOTOUCH_CMAKE_BUILD_TYPE )
   endif()
 endif()
 
+#Harden Debug builds with standard-library assertion macros on GCC/Clang
+#(_GLIBCXX_ASSERTIONS; _LIBCPP_ENABLE_ASSERTIONS or, on newer libc++
+#releases that replaced it, _LIBCPP_HARDENING_MODE). None of these change
+#container ABI layout, so mixing hardened and non-hardened translation
+#units stays safe. Skipped on MSVC, whose _ITERATOR_DEBUG_LEVEL already
+#defaults stricter in Debug. Each candidate macro is compile-checked
+#before use (recent libc++ hard-errors on the old, removed one):
+if ( NOT MSVC )
+  include(CheckCXXSourceCompiles)
+  function( _ncrystal_add_debug_hardening_define_if_compiles definestr )
+    string( MAKE_C_IDENTIFIER "NCRYSTAL_DBGHARDENING_${definestr}" resvar )
+    set( CMAKE_REQUIRED_DEFINITIONS "-D${definestr}" )
+    check_cxx_source_compiles( "#include <vector>\nint main(){return 0;}" "${resvar}" )
+    unset( CMAKE_REQUIRED_DEFINITIONS )
+    if ( "${${resvar}}" )
+      add_compile_definitions( "$<$<CONFIG:Debug>:${definestr}>" )
+    endif()
+  endfunction()
+  _ncrystal_add_debug_hardening_define_if_compiles( "_GLIBCXX_ASSERTIONS" )
+  _ncrystal_add_debug_hardening_define_if_compiles( "_LIBCPP_ENABLE_ASSERTIONS" )
+  if ( NOT NCRYSTAL_DBGHARDENING__LIBCPP_ENABLE_ASSERTIONS )
+    #Fall through to the newer libc++ mechanism only if the older one did
+    #not apply (either because this isn't libc++ at all, or because it is
+    #a version that has removed it in favour of this); EXTENSIVE is the
+    #closest match to what the old macro used to enable:
+    _ncrystal_add_debug_hardening_define_if_compiles( "_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE" )
+  endif()
+endif()
+
 # Set module path
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")
 
