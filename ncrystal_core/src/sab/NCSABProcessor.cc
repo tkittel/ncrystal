@@ -721,10 +721,14 @@ namespace NCRYSTAL_NAMESPACE {
             if ( re.at(1) != 0.0 )
               suggestedEMax_by_egrid = NeutronEnergy{ re.at(1) };
             if ( re.at(2) != 0.0 ) {
-              npts = static_cast<std::size_t>(re.at(2));
-              if ( (double)npts != re.at(2) || npts < 10  )
+              //Range check before the cast:
+              const double v = re.at(2);
+              if ( !( v >= 10.0 && std::floor(v) == v
+                      && v < std::ldexp( 1.0, std::numeric_limits<std::size_t>
+                                         ::digits ) ) )
                 NCRYSTAL_THROW2(BadInput,"Invalid egrid npts (must be"
                                 " integral value, at least 10): "<<re.at(2));
+              npts = static_cast<std::size_t>(v);
             }
           } else {
             //complete egrid given directly by request, so in this case we
