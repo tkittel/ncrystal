@@ -16,6 +16,7 @@ jobs:
 
     name: ${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
