@@ -95,7 +95,7 @@ void NC::NCMATData::DynInfo::validate( int theversion ) const
   //Validate the NCMAT v8 keywords (common rules):
   {
     auto val1 = [this]( const char* name, double lo, double hi,
-                        const char * username = nullptr ) -> Optional<double>
+                        const char * username ) -> Optional<double>
     {
       //username: how to refer to the value in error messages, when the
       //internal field name is not what the user actually wrote:
@@ -125,13 +125,13 @@ void NC::NCMATData::DynInfo::validate( int theversion ) const
     nc_assert( !has_msdt || has_msd );//parser guarantees
     if ( has_msd && has_dt )
       NCRYSTAL_THROW(BadInput,"@DYNINFO sections can not specify both the msd and the debye_temp keywords");
-    val1( "msd", 0.0, 100.0 );//[Aa^2]
+    val1( "msd", 0.0, 100.0, nullptr );//[Aa^2]
     val1( "msd_temperature", 0.0, 1e6,
           "temperature in the at_temperature part of the msd" );
     if ( has_msd && !has_msdt && dyninfo_type!=ScatKnl )
       NCRYSTAL_THROW(BadInput,"the msd keyword must be accompanied by an at_temperature part"
                      " in @DYNINFO sections without a temperature field (i.e. all but type scatknl)");
-    auto efft = val1( "effective_temperature", 0.0, 1e6 );
+    auto efft = val1( "effective_temperature", 0.0, 1e6, nullptr );
     if ( efft.has_value() ) {
       nc_assert( dyninfo_type==ScatKnl );//only in optionalfields there
       auto itt = fields.find("temperature");
