@@ -7,6 +7,7 @@ on:
 jobs:
   ncdevtool_check:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
@@ -25,6 +26,7 @@ jobs:
         winexportall: [ "ON", "OFF" ]
     name: ${{ matrix.os }}.winexportall=${{ matrix.winexportall }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
 
     #windows-latest is windows-2022 (Nov 2024)
 
