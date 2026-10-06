@@ -37,14 +37,18 @@ namespace NCRYSTAL_NAMESPACE {
       using VDOSLux = VDOS::VDOSLux;
 
       struct FlexVDOS final : private MoveOnly {
-        const VDOSData* vdosData = nullptr;
+        //Info:
         VDOSLux vdoslux;
         bool is_vdosdebye = false;
-        //Info:
         std::string cfgstr;
         std::string atomlbl;
-        //Lifetime guards:
+        const VDOSData* vdosData() const
+        {
+          return is_vdosdebye ? &guard_vdosData.value() : vdosData_infoOwned;
+        }
+        //Internals:
         std::shared_ptr<const Info> guard_info;
+        const VDOSData* vdosData_infoOwned = nullptr;
         Optional<VDOSData> guard_vdosData;
       };
 
@@ -59,17 +63,20 @@ namespace NCRYSTAL_NAMESPACE {
           NCRYSTAL_THROW(BadInput,"Single phase material required");
         res.cfgstr = matcfg.toStrCfg();
         res.vdoslux = VDOSLux(matcfg.get_vdoslux());
+        bool found = false;
         for ( auto& di : info.getDynamicInfoList() ) {
           const std::string& lbl = info.displayLabel(di->atom().index);
           if ( !requested_lbl.empty() && requested_lbl != lbl )
             continue;
-          const VDOSData* vdosData = nullptr;
+          bool this_is_vdosdebye = false;
+          bool have_vdos = false;
+          const VDOSData* vdosData_infoOwned = nullptr;
           auto divdos = dynamic_cast<const DI_VDOS*>(di.get());
           if ( divdos ) {
-            res.is_vdosdebye = false;
-            vdosData = &divdos->vdosData();
+            vdosData_infoOwned = &divdos->vdosData();
+            have_vdos = true;
          } else {
-            res.is_vdosdebye = true;
+            this_is_vdosdebye = true;
             auto divdosdebye = dynamic_cast<const DI_VDOSDebye*>(di.get());
             if ( divdosdebye ) {
               res.guard_vdosData
@@ -77,22 +84,24 @@ namespace NCRYSTAL_NAMESPACE {
                                    divdosdebye->temperature(),
                                    divdosdebye->atomData().scatteringXS(),
                                    divdosdebye->atomData().averageMassAMU() );
-              vdosData = &res.guard_vdosData.value();
+              have_vdos = true;
             }
           }
-          if (!vdosData) {
+          if (!have_vdos) {
             if ( lbl == requested_lbl )
               NCRYSTAL_THROW(BadInput,"Requested label is present but does"
                              " not have VDOS data");
             continue;
           }
-          if ( res.vdosData )
+          if ( found )
             NCRYSTAL_THROW(BadInput,"Multiple dyninfos with VDOS data present"
                            " and label not provided");
+          found = true;
+          res.is_vdosdebye = this_is_vdosdebye;
+          res.vdosData_infoOwned = vdosData_infoOwned;
           res.atomlbl = lbl;
-          res.vdosData = vdosData;
         }
-        if ( res.vdosData == nullptr ) {
+        if ( !found ) {
           if ( !requested_lbl.empty() ) {
             NCRYSTAL_THROW2(BadInput,"Could not find VDOS data with label \""
                             <<requested_lbl
@@ -102,7 +111,7 @@ namespace NCRYSTAL_NAMESPACE {
           }
 
         }
-        nc_assert_always( res.vdosData != nullptr );
+        nc_assert_always( res.vdosData() != nullptr );
         return res;
       }
 
@@ -113,7 +122,7 @@ namespace NCRYSTAL_NAMESPACE {
         auto vdos = loadVDOS( cfgstr, requested_lbl );
         const Optional<NeutronEnergy> targetEmax;//fixme: allow as param?
 
-        auto gnexpn = VDOS::expandVDOSToGnFcts( *vdos.vdosData,
+        auto gnexpn = VDOS::expandVDOSToGnFcts( *vdos.vdosData(),
                                                 vdos.vdoslux,
                                                 targetEmax );
 
