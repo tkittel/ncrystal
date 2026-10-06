@@ -88,8 +88,17 @@ jobs:
       - name: Install ncrystal-core
         run: pip install ./src/ncrystal_core
 
+      #Without these, ncrystal-geant4's dependency on the ncrystal metapackage
+      #silently replaces our ncrystal-core with the latest release from PyPI:
+      - name: Install ncrystal-python and ncrystal metapackage
+        run: |
+          pip install ./src/ncrystal_python
+          pip install ./src/ncrystal_metapkg
+
       - name: Install ncrystal-geant4
-        run: pip install ncrystal-geant4
+        run: |
+          pip install ncrystal-geant4
+          python3 -c "import NCrystal; assert NCrystal.__version__=='$(cat ./src/VERSION)', NCrystal.__version__"
 
       - name: Cfg example
         #Find conda env deps (e.g. expat for Geant4) before older system ones:
