@@ -30,11 +30,15 @@ def main():
         raise SystemExit('ERROR: ruff command not available')
     #Default in ruff 0.15.20 (used on FreeBSD) but not in 0.16:
     extsel = 'E402,E721,E741,F403,E743'
+    #Other 0.15.20 defaults absent in 0.16 (harmless no-op with 0.16), so older
+    #ruff versions do not flag more than the newer ones:
+    extign = 'E401,E701,E702,E703,E711,E712,E713,E714,E731,E742,F405,F406,F722'
 
     #Empty example file, can not carry a noqa comment (path relative to cwd):
     pfi = ( 'lint.per-file-ignores = {"examples/plugin_dataonly/src/'
             'ncrystal_plugin_DummyDataPlugin/__init__.py" = ["N999"]}' )
     rv = subprocess.run(['ruff','check','--extend-select',extsel,
+                         '--extend-ignore',extign,
                          '--config',pfi]
                         + list(all_files_iter('py')),
                         check = False, cwd = reporoot )
