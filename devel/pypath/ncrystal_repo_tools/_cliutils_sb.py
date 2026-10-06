@@ -64,6 +64,8 @@ def mainsb( mode, is_debug, parser ):
                               _cfgfilename( is_debug ))
     env = os.environ.copy()
     env['SIMPLEBUILD_CFG'] = str(sbcfg)
+    #Python 3.13+'s argparse/traceback output colours can break tests:
+    env['PYTHON_COLORS'] = '0'
     if allow_long_tests:
         env['NCDEVSBL_ALLOW_LONG_TESTS'] = '1'
 
