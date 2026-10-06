@@ -81,6 +81,15 @@ jobs:
       #- name: Run NCrystal simplebuild tests
       #  run: ./src_co/devel/bin/ncdevtool sb -t --testexcerpts=1000 --testfilter='*loadsimple'
 
+      #Installed before building NCrystal, since it can change the conda
+      #sysroot (e.g. glibc 2.39->2.17 on linux-aarch64), which would otherwise
+      #leave mcrun unable to link the pip-built libNCrystal.so:
+      - name: conda install mcstas-core
+        run: |
+          #mcrun compiles with mpicc by default, which mcstas-core does not pull in
+          #on all platforms (e.g. linux-aarch64):
+          conda install -c conda-forge mcstas-core openmpi-mpicc
+
       - name: Install NCrystal
         run: |
           python3 -m pip install ./src_co/ncrystal_core -vv --no-deps
@@ -110,12 +119,6 @@ jobs:
           ./ncex_filter
           c++ -std=c++17 ${LDFLAGS:-} ${CXXFLAGS:-} ./src_co/examples/ncrystal_example_cpp.cc -o ncex_cpp -Wl,-rpath,$(ncrystal-config --show libdir) $(ncrystal-config --show libpath) -I$(ncrystal-config --show includedir)
           ./ncex_cpp
-
-      - name: conda install mcstas-core
-        run: |
-          #mcrun compiles with mpicc by default, which mcstas-core does not pull in
-          #on all platforms (e.g. linux-aarch64):
-          conda install -c conda-forge mcstas-core openmpi-mpicc
 
       - name: Run McStas NCrystal_example.instr
         run: |
