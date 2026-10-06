@@ -32,13 +32,13 @@ namespace NCRYSTAL_NAMESPACE {
 
   //Primary constants [NB: Some replicated in Python interface!]:
   constexpr double constant_c  = 299792458e10;// speed of light in Aa/s
-  constexpr double constant_dalton2eVc2 =  931494095.17; // amu to eV/c^2 (source: NIST/CODATA 2018)
-  constexpr double constant_avogadro = 6.02214076e23; // mol^-1 (source: NIST/CODATA 2018)
+  constexpr double constant_dalton2eVc2 =  931494103.72; // amu to eV/c^2 (source: NIST/CODATA 2022)
+  constexpr double constant_avogadro = 6.02214076e23; // mol^-1 (exact, SI definition)
   constexpr double constant_dalton2gpermol = constant_dalton2kg*constant_avogadro*1000.0; // dalton to gram/mol
   //NB: constant_dalton2gmol is almost but not quite unity (cf. https://doi.org/10.1007/s00769-013-1004-9)
 
   constexpr double const_neutron_atomic_mass = const_neutron_mass_amu; // [amu]//obsolete name
-  constexpr double constant_planck = 4.135667662e-15 ;//[eV*s]
+  constexpr double constant_planck = 4.135667696923859e-15 ;//[eV*s] (exact: h[J*s]/e[C])
   constexpr double constant_gas_R = 8.31446261815324;// [J/(K*mol) = m^3*Pa/(K*mol) = kg*m^2/(K*mol*s^2)]. Value is exact definition.
 
   //Derived values:

@@ -24,9 +24,9 @@ Write ENDF file tsl_Pb_in_PbO-alpha.endf ...
 Files created:
   tsl_O_in_PbO-alpha.endf : O with fraction 1/2
   tsl_Pb_in_PbO-alpha.endf : Pb with fraction 1/2
-Suggested material density: 9.435756452 g/cm^3
+Suggested material density: 9.435756616 g/cm^3
 ncmat2endf fct returned:
-{'density': 9.435756451654,
+{'density': 9.435756615988,
  'files': [{'component': 'O',
             'file': 'tsl_O_in_PbO-alpha.endf',
             'fraction': 0.5},

@@ -76,10 +76,10 @@ namespace NCRYSTAL_NAMESPACE {
   NCRYSTAL_API constexpr double k2wl( double wl ) noexcept; //cost: 1 branch + 1 division
 
   //Physics constants (more are in internal NCMath.hh header):
-  constexpr double constant_boltzmann = 8.6173303e-5;  // eV/K
-  constexpr double const_neutron_mass_amu = 1.00866491588; // [amu]
+  constexpr double constant_boltzmann = 8.617333262145177e-5;  // eV/K (exact: k[J/K]/e[C])
+  constexpr double const_neutron_mass_amu = 1.00866491606; // [amu] (source: NIST/CODATA 2022)
   constexpr double const_inv_neutron_mass_amu = 1.0/const_neutron_mass_amu; // [amu]
-  constexpr double constant_dalton2kg =  1.660539040e-27; // amu to kg (source: NIST/CODATA 2018)
+  constexpr double constant_dalton2kg =  1.66053906892e-27; // amu to kg (source: NIST/CODATA 2022)
 
   //Various constexpr functions (not efficient for runtime usage!!):
   NCRYSTAL_API constexpr double constexpr_sqrt(double);
@@ -821,15 +821,16 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   //The constant 8.1804... in the functions wl2ekin and ekin2wl is based on the
-  //equation "h^2 * c^2 / (2.0*m)", using CODATA Internationally recommended
-  //2014 values of the fundamental physical constants
-  //(http://physics.nist.gov/cuu/Constants/Table/allascii.txt):
+  //equation "h^2 * c^2 / (2.0*m)", using CODATA 2022 Internationally
+  //recommended values of the fundamental physical constants
+  //(https://physics.nist.gov/cuu/Constants/Table/allascii.txt):
   //
-  //  h = 4.135667662e-15 [Ev*s] <- Planck constant
-  //  c = 299792458.0e10 [Aa/s]  <- speed of light in vacuum
-  //  m = 939.5654133e6 [eV]     <- neutron mass energy equivalent
+  //  h = 4.135667696923859e-15 [eV*s] <- Planck constant (exact: h[J*s]/e[C])
+  //  c = 299792458.0e10 [Aa/s]        <- speed of light in vacuum
+  //  m = 1.00866491606 * 931494103.72 [eV] <- neutron mass energy equivalent
+  //      (const_neutron_mass_amu * constant_dalton2eVc2, as used elsewhere)
   //
-  //  h^2 * c^2 / (2.0*m) = 0.081804209605330899
+  //  h^2 * c^2 / (2.0*m) = 0.081804210234757059
 
   inline constexpr double wl2ekin( double wl) noexcept
   {
@@ -841,31 +842,31 @@ namespace NCRYSTAL_NAMESPACE {
   {
     //NB: std::sqrt is NOT constexpr!
     //eV to angstrom
-    return ekin ? std::sqrt( 0.081804209605330899 / ekin ) : kInfinity;
+    return ekin ? std::sqrt( 0.081804210234757059 / ekin ) : kInfinity;
   }
 
   inline constexpr double constexpr_ekin2wl( double ekin) noexcept
   {
     //eV to angstrom
-    return ekin ? constexpr_sqrt( 0.081804209605330899 / ekin ) : kInfinity;
+    return ekin ? constexpr_sqrt( 0.081804210234757059 / ekin ) : kInfinity;
   }
 
   inline constexpr double wlsq2ekin( double wlsq ) noexcept
   {
     //angstrom^2 to eV
-    return (wlsq ? ( 0.081804209605330899 / wlsq )  : kInfinity);
+    return (wlsq ? ( 0.081804210234757059 / wlsq )  : kInfinity);
   }
 
   inline constexpr double ekin2wlsq( double ekin) noexcept
   {
     //eV to angstrom^2
-    return ekin ? 0.081804209605330899 / ekin : kInfinity;
+    return ekin ? 0.081804210234757059 / ekin : kInfinity;
   }
 
   inline constexpr double ekin2wlsqinv( double ekin) noexcept
   {
     //eV to 1/angstrom^2
-    return ekin * 12.22430978582345950656;//constant is 1/0.081804209605330899
+    return ekin * 12.22430969176594947722;//constant is 1/0.081804210234757059
   }
 
   namespace detail {

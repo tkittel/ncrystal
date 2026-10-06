@@ -32,12 +32,12 @@ functions can be used with numpy arrays in addition to scalar numbers.
 from ._numpy import _ensure_numpy, _np
 
 constant_c  = 299792458e10#  speed of light in Aa/s
-constant_dalton2kg =  1.660539040e-27#  amu to kg
-constant_dalton2eVc2 =  931494095.17#  amu to eV/c^2
-constant_avogadro = 6.02214076e23#  mol^-1 (exact, as in the C++ layer)
-constant_boltzmann = 8.6173303e-5#  eV/K
-const_neutron_mass_amu = 1.00866491588#  [amu]
-constant_planck = 4.135667662e-15 # [eV*s]
+constant_dalton2kg =  1.66053906892e-27#  amu to kg
+constant_dalton2eVc2 =  931494103.72#  amu to eV/c^2
+constant_avogadro = 6.02214076e23#  mol^-1 (exact)
+constant_boltzmann = 8.617333262145177e-5#  eV/K (exact)
+const_neutron_mass_amu = 1.00866491606#  [amu]
+constant_planck = 4.135667696923859e-15 # [eV*s] (exact)
 
 kPi        = 3.1415926535897932384626433832795028841971694
 k2Pi       = 6.2831853071795864769252867665590057683943388
@@ -89,8 +89,8 @@ def ekin2wlsqinv( ekin ):
     """Neutron energy (eV) to inverse wavelength squared (1/angstrom^2)"""
     return ekin * _const_inv_wlsqekin#constant is 1/_const_wlsqekin
 
-_const_wlsqekin     = 0.081804209605330899    # ekin = _const_wlsqekin /wl^2
-_const_inv_wlsqekin = 12.22430978582345950656 # 1 / _const_wlsqekin
+_const_wlsqekin     = 0.081804210234757059    # ekin = _const_wlsqekin /wl^2
+_const_inv_wlsqekin = 12.22430969176594947722 # 1 / _const_wlsqekin
 _const_ekin2ksq_factor = k4PiSq * _const_inv_wlsqekin
 _const_ksq2ekin_factor = 1.0 / _const_ekin2ksq_factor
 

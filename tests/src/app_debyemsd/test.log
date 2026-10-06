@@ -21,7 +21,7 @@ sqrt(MSD[m=26.9815u, Tdebye=100K, T=1000K]) = 0.73451Aa
 sqrt(MSD[m=26.9815u, Tdebye=410.354K, T=0K]) = 0.0573229Aa
 sqrt(MSD[m=26.9815u, Tdebye=410.354K, T=10K]) = 0.0574347Aa
 sqrt(MSD[m=26.9815u, Tdebye=410.354K, T=150K]) = 0.0757421Aa
-sqrt(MSD[m=26.9815u, Tdebye=410.354K, T=293.15K]) = 0.0994534Aa
+sqrt(MSD[m=26.9815u, Tdebye=410.354K, T=293.15K]) = 0.0994533Aa
 sqrt(MSD[m=26.9815u, Tdebye=410.354K, T=1000K]) = 0.179387Aa
 sqrt(MSD[m=26.9815u, Tdebye=2000K, T=0K]) = 0.0259652Aa
 sqrt(MSD[m=26.9815u, Tdebye=2000K, T=10K]) = 0.0259674Aa
@@ -36,8 +36,8 @@ sqrt(MSD[m=238.029u, Tdebye=100K, T=1000K]) = 0.247295Aa
 sqrt(MSD[m=238.029u, Tdebye=410.354K, T=0K]) = 0.0192995Aa
 sqrt(MSD[m=238.029u, Tdebye=410.354K, T=10K]) = 0.0193372Aa
 sqrt(MSD[m=238.029u, Tdebye=410.354K, T=150K]) = 0.0255009Aa
-sqrt(MSD[m=238.029u, Tdebye=410.354K, T=293.15K]) = 0.0334841Aa
-sqrt(MSD[m=238.029u, Tdebye=410.354K, T=1000K]) = 0.0603961Aa
+sqrt(MSD[m=238.029u, Tdebye=410.354K, T=293.15K]) = 0.033484Aa
+sqrt(MSD[m=238.029u, Tdebye=410.354K, T=1000K]) = 0.060396Aa
 sqrt(MSD[m=238.029u, Tdebye=2000K, T=0K]) = 0.008742Aa
 sqrt(MSD[m=238.029u, Tdebye=2000K, T=10K]) = 0.00874272Aa
 sqrt(MSD[m=238.029u, Tdebye=2000K, T=150K]) = 0.0089023Aa

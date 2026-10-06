@@ -10,7 +10,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" woul
 Write ENDF file tsl_Al_in_Al.endf ...
 Files created:
   tsl_Al_in_Al.endf : Al with fraction 1
-Suggested material density: 2.698645518 g/cm^3
+Suggested material density: 2.698645565 g/cm^3
 ============================================================================================================================================
 ============= CLI >>-h<< ====================
 usage: ncrystal_ncmat2endf CFGSTR [--elas MODE] [--name NAME] [--mdata DATA]
@@ -157,7 +157,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" woul
 Write ENDF file tsl_Al.endf ...
 Files created:
   tsl_Al.endf : Al with fraction 1
-Suggested material density: 2.698645518 g/cm^3
+Suggested material density: 2.698645565 g/cm^3
 ==================================================================================================================
 ============= CLI >>'stdlib::Al_sg225.ncmat;vdoslux=1' -f --now --dir=some/out/dir --index mymat.json<< ====================
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#5]
@@ -166,12 +166,12 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" woul
 Write ENDF file tsl_Al.endf ...
 Files created:
   tsl_Al.endf : Al with fraction 1
-Suggested material density: 2.698645518 g/cm^3
+Suggested material density: 2.698645565 g/cm^3
 Writing index file: mymat.json
 ============================================================================================================================
 Content of mymat.json:
 {
-    "density": 2.6986455176922477,
+    "density": 2.6986455646919425,
     "temperature": 293.15,
     "files": [
         {
