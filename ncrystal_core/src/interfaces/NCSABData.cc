@@ -41,7 +41,8 @@ NC::SABData::SABData( VectD&& alphaGrid,
   nc_assert_always( m_b.size() < std::numeric_limits<std::uint16_t>::max() );
   nc_assert(std::is_sorted(m_a.begin(),m_a.end()));//nc_is_grid not available here
   nc_assert(std::is_sorted(m_b.begin(),m_b.end()));//nc_is_grid not available here
-  nc_assert(m_a.size()*m_b.size()==m_sab.size());
+  nc_assert( static_cast<std::uint64_t>(m_a.size()) * m_b.size()
+             == static_cast<std::uint64_t>(m_sab.size()) );
   nc_assert(m_sab.size()>=4);
   nc_assert(m_sem>=0.0);
   nc_assert(*std::min_element(m_sab.begin(),m_sab.end())>=0.0);

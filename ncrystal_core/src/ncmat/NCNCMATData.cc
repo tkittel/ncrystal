@@ -225,7 +225,9 @@ void NC::NCMATData::DynInfo::validate( int theversion ) const
       NCRYSTAL_THROW2(BadInput,"too few "<<sa<<" parameters");
     if ( v_b.size() < 5 )
       NCRYSTAL_THROW2(BadInput,"too few "<<sb<<" parameters");
-    if ( v_sab.size()!=v_a.size()*v_b.size() )
+    //Product in uint64_t, so it can not wrap around on 32bit platforms:
+    if ( static_cast<std::uint64_t>(v_sab.size())
+         != static_cast<std::uint64_t>(v_a.size()) * v_b.size() )
       NCRYSTAL_THROW2(BadInput,"number of "<<ssab<<" entries is not (size of "<<sa<<")*(size of "<<sb<<")");
     valvector(sa,v_a, true);
     valvector(sb,v_b, false);
