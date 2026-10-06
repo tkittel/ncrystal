@@ -38,20 +38,16 @@ namespace NCRYSTAL_NAMESPACE {
 
       class StatCount {
       public:
-        StatCount( std::size_t n )
+        StatCount( std::uint64_t n )
           : m_nused( 0 ),
             m_norig( n )
         {
         }
-        std::size_t nOrig() const { return m_norig; }
-        std::size_t nUsed() const
+        std::uint64_t nOrig() const { return m_norig; }
+        std::uint64_t nUsed() const
         {
           const std::uint64_t raw = m_nused.load();
-          if ( m_norig != 0 && raw > m_norig )
-            return m_norig;
-          //Clamp (only relevant on 32bit platforms):
-          constexpr auto szmax = std::numeric_limits<std::size_t>::max();
-          return ( raw > szmax ? szmax : static_cast<std::size_t>( raw ) );
+          return ( ( m_norig != 0 && raw > m_norig ) ? m_norig : raw );
         }
         struct FillCounts {
           std::size_t i0, N;
@@ -72,7 +68,7 @@ namespace NCRYSTAL_NAMESPACE {
         }
       private:
         std::atomic<std::uint64_t> m_nused;
-        std::size_t m_norig;
+        std::uint64_t m_norig;
       };
 
       void setEnergy_Maxwell( double halfkT,
@@ -448,7 +444,7 @@ namespace NCRYSTAL_NAMESPACE {
         //radiating inwards.  If set to a negative value, move particles forward
         //that amount (i.e. a sphere radiating outwards).
 
-        SourceIsotropic( std::size_t n,
+        SourceIsotropic( std::uint64_t n,
                          EParsed ekin_parsed,
                          double weight,
                          Length x = Length{0},
@@ -556,7 +552,7 @@ namespace NCRYSTAL_NAMESPACE {
         SourceMetaData m_md;
       public:
 
-        SourceConstant( std::size_t n,
+        SourceConstant( std::uint64_t n,
                         EParsed ekin_parsed,
                         double weight,
                         Length x,
@@ -656,7 +652,7 @@ namespace NCRYSTAL_NAMESPACE {
         SourceMetaData m_md;
       public:
 
-        SourceUniformCircularBeam( std::size_t n,
+        SourceUniformCircularBeam( std::uint64_t n,
                                    EParsed ekin_parsed,
                                    double weight,
                                    Length radius,
@@ -822,7 +818,7 @@ namespace NCRYSTAL_NAMESPACE {
           PMC::applyDefaults( tokens, "x=0;y=0;z=0;ux=0;uy=0;uz=1;n=1e6" );
           PMC::checkNoUnknown(tokens,"ekin;wl;n;w;;x;y;z;ux;uy;uz","source");
           return makeSO<SourceConstant>
-            ( PMC::getValue_sizet(tokens,"n"),
+            ( PMC::getValue_uint64(tokens,"n"),
               std::move(energy),
               1.0,//PMC::getValue_weight( tokens, "w" ),
               Length{ PMC::getValue_dbl(tokens,"x") },
@@ -837,7 +833,7 @@ namespace NCRYSTAL_NAMESPACE {
           PMC::applyDefaults( tokens, "x=0;y=0;z=0;ux=0;uy=0;uz=1;n=1e6" );
           PMC::checkNoUnknown(tokens,"ekin;wl;n;w;;x;y;z;ux;uy;uz;r","source");
           return makeSO<SourceUniformCircularBeam>
-            ( PMC::getValue_sizet(tokens,"n"),
+            ( PMC::getValue_uint64(tokens,"n"),
               std::move(energy),
               1.0,//PMC::getValue_weight( tokens, "w" ),
               Length{ PMC::getValue_dbl(tokens,"r") },
@@ -853,7 +849,7 @@ namespace NCRYSTAL_NAMESPACE {
           PMC::applyDefaults( tokens, "x=0;y=0;z=0;r=0;n=1e6" );
           PMC::checkNoUnknown(tokens,"ekin;wl;n;w;;x;y;z;r","source");
           return makeSO<SourceIsotropic>
-            ( PMC::getValue_sizet(tokens,"n"),
+            ( PMC::getValue_uint64(tokens,"n"),
               std::move(energy),
               1.0,//PMC::getValue_weight( tokens, "w" ),
               Length{ PMC::getValue_dbl(tokens,"x") },
