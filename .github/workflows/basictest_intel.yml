@@ -7,6 +7,7 @@ on:
 jobs:
   ncdevtool_check:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
@@ -28,6 +29,8 @@ jobs:
     name: ${{ matrix.mode }}-${{ matrix.buildtype }}
 
     runs-on: ubuntu-22.04
+
+    timeout-minutes: 30
     #Note March 2025: ubuntu-20.04 was retired, so updated to next oldest
     #                 (ubuntu-22.04). This time it seemed to work!
     #Old note: August 2024 the intel oneapi compilers did not work on ubuntu-22.04
