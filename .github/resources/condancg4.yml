@@ -6,8 +6,10 @@ dependencies:
   - python==3.12
   - compilers
   - cmake
-  #Headers+dev lib, so Geant4Config.cmake does not fall back to an older system zlib:
+  #Dev pkgs needed by Geant4Config.cmake, which would otherwise fall back to
+  #older system versions or fail:
   - zlib
+  - freetype
   - make
   - expat #TODO: Still needed? Maybe not after geant4 11.3.0
   - pip
