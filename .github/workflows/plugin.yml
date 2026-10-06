@@ -15,6 +15,7 @@ jobs:
           - { os: macos-latest,  CC: clang,    CXX: clang++ }
     name: ${{ matrix.os }}.${{ matrix.CC }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
