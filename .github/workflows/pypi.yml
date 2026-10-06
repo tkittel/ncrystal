@@ -7,6 +7,7 @@ on:
 jobs:
   preparations:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
@@ -75,6 +76,7 @@ jobs:
         #NOTICE: Keep synchronised with matrix platform list elsewhere in this file!!!!
     name: ${{ matrix.os }} / test
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
@@ -121,6 +123,7 @@ jobs:
   build_sdists:
     name: Build source distribution
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: preparations
     env:
       SDIST_SUFFIX: "-${{ needs.preparations.outputs.ncrystalversion }}.tar.gz"
@@ -177,6 +180,7 @@ jobs:
   build_pure_wheels:
     name: Build pure wheels
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [ preparations, build_sdists ]
 
     steps:
@@ -257,6 +261,7 @@ jobs:
         #NOTICE: Keep synchronised with matrix platform list elsewhere in this file!!!!
     name: ${{ matrix.os }} / ncrystal-core wheels
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
 
     env:
       SDIST_PATH: "./sdist/${{ needs.build_sdists.outputs.sdistname_core }}"
@@ -318,6 +323,7 @@ jobs:
     name: Collect all output
     needs: [preparations, build_sdists, build_core_wheels, build_pure_wheels]
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
@@ -463,6 +469,7 @@ jobs:
     name: Publish to pypi
     needs: [ preparations, collect_output, basic_functionality_test]
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
