@@ -1,0 +1,52 @@
+name: surg_g4deps
+on:
+  push:
+#Surgical (throwaway): which deps does conda-forge Geant4Config.cmake need?
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          path: ./src
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          repository: mctools/ncrystal-geant4
+          path: ./src_ncg4
+      - uses: conda-incubator/setup-miniconda@v4
+        with:
+          miniforge-version: latest
+          activate-environment: anaconda-client-env
+      - run: |
+          mamba env update -q -n anaconda-client-env -f ./src/.github/resources/condancg4.yml > /dev/null
+          mamba install -q -y -n anaconda-client-env geant4 > /dev/null
+          conda list | grep -iE "geant4|freetype|zlib|expat|xerces|clhep"
+      - name: find_dependency calls
+        run: grep -n "find_dependency\|find_package" "$CONDA_PREFIX"/lib/cmake/Geant4/Geant4Config.cmake | head -40
+      - name: iterate configure, installing missing dev pkgs
+        run: |
+          pip install ./src/ncrystal_core 2>&1 | tail -1
+          pip install ./src/ncrystal_python 2>&1 | tail -1
+          pip install ./src/ncrystal_metapkg 2>&1 | tail -1
+          pip install ncrystal-geant4 2>&1 | tail -1
+          pip list 2>/dev/null | grep -i ncrystal
+          declare -A M=( [Freetype]=freetype [XercesC]=xerces-c [HDF5]=hdf5 [X11]=xorg-libx11 [OpenGL]=libgl-devel [Motif]=motif [CLHEP]=clhep [VecGeom]=vecgeom [ZLIB]=zlib [EXPAT]=expat [TBB]=tbb-devel [PTL]=tbb-devel )
+          for i in $(seq 1 10); do
+            rm -rf bldexample
+            out=$(cmake -S ./src_ncg4/example -B ./bldexample "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX" 2>&1) || true
+            if echo "$out" | grep -q "Generating done"; then echo "CONFIGURE OK after $((i-1)) extra pkgs"; exit 0; fi
+            miss=$(echo "$out" | grep -oE "Could NOT find [A-Za-z0-9_]+|Qt6[A-Za-z]*|Could not find a package configuration file provided by \"[A-Za-z0-9_]+" | head -1)
+            echo "iteration $i: $miss"
+            echo "$out" | grep -E "Could NOT|Could not find|unsuitable" | head -3
+            name=$(echo "$miss" | grep -oE "[A-Za-z0-9_]+$")
+            pkg=${M[$name]:-}
+            case "$name" in Qt6*) pkg=qt6-main;; esac
+            [ -z "$pkg" ] && { echo "no mapping for $name"; exit 1; }
+            echo "-> installing $pkg"
+            mamba install -q -y -n anaconda-client-env $pkg > /dev/null
+          done
+          exit 1
