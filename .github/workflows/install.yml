@@ -20,6 +20,7 @@ jobs:
 
     name: ${{ matrix.os }}.python-${{ matrix.python }}.${{ matrix.buildtype }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
 
     steps:
     - name: Checkout
