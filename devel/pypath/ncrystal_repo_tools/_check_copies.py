@@ -35,6 +35,33 @@ def check_same( reffile, *otherfiles ):
             print()
             raise SystemExit(f'ERROR: Content of {o} and {reffile} differs')
 
+def check_same_declarations( reffile, otherfile, typenames ):
+    #Check that the C typedef'ed structs with the given names are the same in
+    #both files, except for comments and whitespace (which may differ):
+    import re
+    print('  Checking for same C declarations:')
+    def extract( relpath ):
+        content = get_content( relpath )
+        content = re.sub( r'/\*.*?\*/', ' ', content, flags = re.DOTALL )
+        content = re.sub( r'//[^\n]*', ' ', content )
+        res = {}
+        for tn in typenames:
+            m = re.findall( r'typedef\s+struct\s*\{[^}]*\}\s*%s\s*;'%tn,
+                            content )
+            if len(m) != 1:
+                raise SystemExit(f'ERROR: Did not find exactly one'
+                                 f' declaration of {tn} in {relpath}')
+            res[tn] = ' '.join( re.sub( r'([(){};,*])', r' \1 ',
+                                        m[0] ).split() )
+        return res
+    ref = extract( reffile )
+    other = extract( otherfile )
+    for tn in typenames:
+        if ref[tn] != other[tn]:
+            print()
+            raise SystemExit(f'ERROR: Declaration of {tn} differs in'
+                             f' {otherfile} and {reffile}')
+
 def main():
     check_same( 'README.md',
                 'ncrystal_metapkg/README.md' )
@@ -64,6 +91,18 @@ def main():
                )
     check_same( 'examples/downstream_cmake/CMakeLists.txt',
                 'ncrystal_verify/extra/data/downstream_cmake_CMakeLists.txt' )
+
+    #The NCrystalVAPIType2V1 class is tested in tests/src/app_virtcapicxx:
+    for fn in ( 'NCrystalVAPIType2V1.hh', 'NCrystalVAPIType2V1.cc' ):
+        check_same( f'examples/virtualcapi_project/src/{fn}',
+                    f'tests/src/app_virtcapicxx/{fn}' )
+
+    #The NCrystalVAPIType2V1 class, which applications copy into their
+    #projects, contains a copy of the declarations from ncvirtapi.h:
+    check_same_declarations(
+        'ncrystal_core/include/NCrystal/virtualapi/ncvirtapi.h',
+        'examples/virtualcapi_project/src/NCrystalVAPIType2V1.cc',
+        [ 'ncrystal_vapi_error_t', 'ncrystal_vapi_type2_v1_t' ] )
 
 if __name__=='__main__':
     main()

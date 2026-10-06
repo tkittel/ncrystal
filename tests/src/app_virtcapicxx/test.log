@@ -1,0 +1,17 @@
+load: OK
+stdlib::Al_sg225.ncmat: density 2.69865 g/cm3, T=293.15K, composition: (13,0,1)
+stdlib::Polyethylene_CH2.ncmat;temp=250K: density 0.92 g/cm3, T=250K, composition: (1,0,0.666667) (6,0,0.333333)
+stdlib::Ge_sg227.ncmat;mos=40arcmin;dir1=@crys_hkl:5,1,1@lab:0,0,1;dir2=@crys_hkl:0,-1,1@lab:0,1,0: density 5.3288 g/cm3, T=293.15K, composition: (32,0,1)
+info: OK
+isotopes: (1,1,0.666567) (1,2,0.0001) (6,12,0.33) (6,13,0.00333333)
+expected error: [CalcError] NCrystal error (CalcError): Could not determine natural abundances for Z=1 (no natural abundance source was provided!)
+composition: OK
+stdlib::Al_sg225.ncmat: oriented=0, xs(1.8Aa): scatter 1.44866 barn, absorption 0.231232 barn
+stdlib::Polyethylene_CH2.ncmat;temp=250K: oriented=0, xs(1.8Aa): scatter 39.3976 barn, absorption 0.223123 barn
+stdlib::Ge_sg227.ncmat;mos=40arcmin;dir1=@crys_hkl:5,1,1@lab:0,0,1;dir2=@crys_hkl:0,-1,1@lab:0,1,0: oriented=1, xs(1.8Aa): scatter 3.87356 barn, absorption 2.20221 barn
+scatter and absorption: OK
+expected error: [FileNotFound] NCrystal error (FileNotFound): Requested factory "stdlib" can not provide data: "doesnotexist.ncmat".
+expected error: [MissingInfo] NCrystal error (MissingInfo): The material does not have a temperature
+expected error: [BadInput] NCrystal error (BadInput): Invalid neutron direction: (0, 0, 0)
+errors: OK
+threads: OK

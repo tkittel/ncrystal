@@ -325,6 +325,15 @@ jobs:
     - name: Install virtapi-app
       run: cmake --install ./build_virtapiapp --config Release
 
+    - name: Cfg virtcapi-app
+      run: cmake "-DCMAKE_INSTALL_PREFIX=virtapiapp" "-DCMAKE_BIN_DIR=bin" -S ./src/examples/virtualcapi_project -B ./build_virtcapiapp
+
+    - name: Build virtcapi-app
+      run: cmake --build ./build_virtcapiapp --config Release
+
+    - name: Install virtcapi-app
+      run: cmake --install ./build_virtcapiapp --config Release
+
     - name: Look around
       if: runner.os == 'Windows'
       run: tree /F ./virtapiapp
@@ -332,7 +341,9 @@ jobs:
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
         name: virtapi-app-${{ matrix.os }}
-        path: ./virtapiapp/bin/ncrystal-virtapi-example*
+        path: |
+          ./virtapiapp/bin/ncrystal-virtapi-example*
+          ./virtapiapp/bin/ncrystal-virtcapi-example*
         if-no-files-found: error
 
   launch_virtapi_app:
@@ -375,7 +386,20 @@ jobs:
 
     - name: Fix permissions
       if: runner.os != 'Windows'
-      run: chmod +x ./app/ncrystal-virtapi-example
+      run: chmod +x ./app/ncrystal-virtapi-example ./app/ncrystal-virtcapi-example
+
+    - name: Launch virtcapi app and check output
+      shell: python
+      run: |
+        import subprocess
+        out = subprocess.run( [ './app/ncrystal-virtcapi-example' ],
+                              capture_output = True, text = True,
+                              check = True ).stdout
+        print(out)
+        for expected in ( 'density: 0.92 g/cm3',
+                          'temperature: 250 K',
+                          'Expected error of type FileNotFound' ):
+            assert expected in out, f'Missing in output: {expected}'
 
     - name: Launch app
       run: ./app/ncrystal-virtapi-example
