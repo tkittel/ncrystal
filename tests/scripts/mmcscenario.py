@@ -27,6 +27,7 @@ import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev.minimc as ncmmc
 from NCrystalDev.core import NCBadInput
 from NCTestUtils.common import ensure_error
+from NCTestUtils.threads import hide_nothreads_warnings
 
 def testbad(cfgstr,scenario, expecterr):
     test(cfgstr,scenario, expecterr)
@@ -53,6 +54,7 @@ def test(cfgstr,scenario, expecterr = None):
     print('    -> srccfg    = "%s"'%s['srccfg'])
 
 def main():
+    hide_nothreads_warnings()
     c = 'stdlib:: Al_sg225.ncmat   ;temp=20 C'
     c_mp = ( 'phases<0.001*stdlib::C_sg194_pyrolytic_graphite.ncmat'
              '&0.999*solid::Al/1gcm3>' )

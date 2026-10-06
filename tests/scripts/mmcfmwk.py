@@ -30,10 +30,12 @@ from NCrystalDev.exceptions import NCBadInput, NCCalcError
 from NCTestUtils.env import ncsetenv
 import NCTestUtils.dirs as dirs
 from NCTestUtils.common import ensure_error
+from NCTestUtils.threads import hide_nothreads_warnings
 import NCTestUtils.reprint_escaped_warnings # noqa F401
 import pprint
 import math
 def main(do_plot, do_update):
+    hide_nothreads_warnings()
     mmc_run = ncmmc.run
 
     if not do_plot:
