@@ -1,1 +1,2 @@
 8 threads x 3 materials x 400 points: identical to the single-threaded reference: OK
+Type 2: 8 threads x 3 materials x 400 points (scattering and absorption, and shared info handles): identical to the single-threaded reference: OK

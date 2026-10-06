@@ -1,4 +1,5 @@
 atomdb
+core
 dump
 dyninfoutils
 extd_utils

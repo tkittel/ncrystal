@@ -20,7 +20,8 @@
 
 //Multi-threaded usage of the virtual C API (NCrystal/virtualapi/ncvirtapi.h):
 //each thread works with its own clones (one per material), and must get
-//exactly the same results as a single-threaded reference.
+//exactly the same results as a single-threaded reference. For type 2, the
+//threads also use the same info handles concurrently.
 
 #include "NCrystal/ncrystal.h"
 #include "NCrystal/virtualapi/ncvirtapi.h"
@@ -35,6 +36,7 @@
 namespace {
 
   const ncrystal_vapi_type1_v2_t * api = nullptr;
+  const ncrystal_vapi_type2_v1_t * api2 = nullptr;
 
   void require( bool cond, const char * what )
   {
@@ -103,6 +105,126 @@ namespace {
     return r;
   }
 
+  //Type 2: scatter and absorption cross sections and sampling (the absorption
+  //cross section is stored in out[3], after the sampled energy and the
+  //first two components of the direction):
+  Result evaluate2( ncrystal_vapi_t2v1_scatter_t * sc,
+                    ncrystal_vapi_t2v1_absorption_t * ab, unsigned i )
+  {
+    ncrystal_vapi_error_t err;
+    Result r;
+    double n[4];
+    neutron( i, n );
+    require( api2->scatter_cross_section( sc, n, &r.xs, &err ) == 0,
+             "scatter_cross_section" );
+    require( api2->absorption_cross_section( ab, n, &r.out[3], &err ) == 0,
+             "absorption_cross_section" );
+    RNG rng{ i + 1 };
+    require( api2->sample_scatter( sc, RNG::generate, &rng, n, &err ) == 0,
+             "sample_scatter" );
+    std::copy( n, n + 3, r.out );
+    return r;
+  }
+
+  //Information from an info handle (which threads may share):
+  std::vector<double> infoValues( const ncrystal_vapi_t2v1_info_t * h )
+  {
+    ncrystal_vapi_error_t err;
+    std::vector<double> v = { api2->info_unique_id( h ),
+                              api2->info_density( h ),
+                              api2->info_number_density( h ) };
+    double t;
+    require( api2->info_temperature( h, &t, &err ) == 0, "temperature" );
+    v.push_back( t );
+    ncrystal_vapi_t2v1_component_t cmps[8];
+    const std::size_t nc = api2->info_composition( h, 1, nullptr, nullptr,
+                                                   cmps, 8, &err );
+    require( nc > 0 && nc <= 8, "composition" );
+    for ( std::size_t i = 0; i < nc; ++i ) {
+      v.push_back( double( cmps[i].Z ) );
+      v.push_back( double( cmps[i].A ) );
+      v.push_back( cmps[i].fraction );
+    }
+    return v;
+  }
+
+  void testType2()
+  {
+    api2 = static_cast<const ncrystal_vapi_type2_v1_t*>
+      ( ncrystal_access_virtual_c_api( 2001 ) );
+    require( api2 != nullptr, "api2" );
+    ncrystal_vapi_error_t err;
+
+    //Base handles, and single-threaded reference results:
+    std::vector<ncrystal_vapi_t2v1_info_t*> infos;
+    std::vector<ncrystal_vapi_t2v1_scatter_t*> basesc;
+    std::vector<ncrystal_vapi_t2v1_absorption_t*> baseab;
+    std::vector<std::vector<Result>> ref( cfgs.size() );
+    std::vector<std::vector<double>> refinfo;
+    for ( std::size_t imat = 0; imat < cfgs.size(); ++imat ) {
+      infos.push_back( api2->create_info( cfgs[imat], &err ) );
+      basesc.push_back( api2->create_scatter( cfgs[imat], &err ) );
+      baseab.push_back( api2->create_absorption( cfgs[imat], &err ) );
+      require( infos.back() && basesc.back() && baseab.back(), "create" );
+      refinfo.push_back( infoValues( infos.back() ) );
+      for ( unsigned i = 0; i < npoints; ++i )
+        ref[imat].push_back( evaluate2( basesc.back(), baseab.back(), i ) );
+    }
+
+    std::vector<std::vector<std::vector<Result>>> results( nthreads );
+    std::vector<int> infook( nthreads, 0 );
+    std::vector<std::thread> threads;
+    for ( unsigned ithread = 0; ithread < nthreads; ++ithread ) {
+      threads.emplace_back( [&,ithread]()
+      {
+        ncrystal_vapi_error_t terr;
+        std::vector<ncrystal_vapi_t2v1_scatter_t*> sc;
+        std::vector<ncrystal_vapi_t2v1_absorption_t*> ab;
+        for ( std::size_t imat = 0; imat < cfgs.size(); ++imat ) {
+          sc.push_back( api2->clone_scatter( basesc[imat], &terr ) );
+          ab.push_back( api2->clone_absorption( baseab[imat], &terr ) );
+          require( sc.back() && ab.back(), "clones in thread" );
+        }
+        auto& res = results[ithread];
+        res.resize( cfgs.size(), std::vector<Result>( npoints ) );
+        constexpr unsigned steps[nthreads] = { 1, 3, 7, 9, 11, 13, 17, 19 };
+        bool ok = true;
+        for ( unsigned k = 0; k < npoints; ++k ) {
+          const unsigned i = ( k * steps[ithread] + ithread ) % npoints;
+          for ( std::size_t imat = 0; imat < cfgs.size(); ++imat ) {
+            res[imat][i] = evaluate2( sc[imat], ab[imat], i );
+            if ( k % 50 == 0 && infoValues( infos[imat] ) != refinfo[imat] )
+              ok = false;
+          }
+        }
+        infook[ithread] = ok ? 1 : 0;
+        for ( std::size_t imat = 0; imat < cfgs.size(); ++imat ) {
+          api2->deallocate_scatter( sc[imat] );
+          api2->deallocate_absorption( ab[imat] );
+        }
+      } );
+    }
+    for ( auto& t : threads )
+      t.join();
+
+    for ( unsigned ithread = 0; ithread < nthreads; ++ithread ) {
+      require( infook[ithread] == 1, "same info values in all threads" );
+      for ( std::size_t imat = 0; imat < cfgs.size(); ++imat )
+        for ( unsigned i = 0; i < npoints; ++i )
+          require( results[ithread][imat][i] == ref[imat][i],
+                   "type 2: same results in threads as in the reference" );
+    }
+    for ( std::size_t imat = 0; imat < cfgs.size(); ++imat ) {
+      api2->deallocate_info( infos[imat] );
+      api2->deallocate_scatter( basesc[imat] );
+      api2->deallocate_absorption( baseab[imat] );
+    }
+    std::cout << "Type 2: " << nthreads << " threads x " << cfgs.size()
+              << " materials x " << npoints << " points (scattering and"
+              << " absorption, and shared info handles): identical to the"
+              << " single-threaded reference: OK" << std::endl;
+  }
+
 }
 
 int main()
@@ -165,5 +287,6 @@ int main()
   std::cout << nthreads << " threads x " << cfgs.size() << " materials x "
             << npoints << " points: identical to the single-threaded"
             << " reference: OK" << std::endl;
+  testType2();
   return 0;
 }

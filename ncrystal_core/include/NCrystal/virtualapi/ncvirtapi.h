@@ -156,6 +156,134 @@ extern "C" {
                            ncrystal_vapi_error_t * );
   } ncrystal_vapi_type1_v2_t;
 
+  /****************************************************************************/
+  /* Type 2, version 1 (interface id 2001, available from NCrystal 4.5.0).    */
+  /*                                                                          */
+  /* Material information, scattering and absorption, as needed by e.g.       */
+  /* FLUKA and Geant4. As in NCrystal itself, there are three kinds of        */
+  /* handles, created independently from cfg-strings:                         */
+  /*                                                                          */
+  /* * Info handles: material information (composition, density,              */
+  /*   temperature, ...). They have no caches, and can therefore be used by   */
+  /*   any number of threads at the same time.                                */
+  /* * Scatter and absorption handles: cross sections (and for scattering,    */
+  /*   sampling). They own caches, exactly as the scatter handles of type 1   */
+  /*   version 2 (see above), so each material in each thread needs its own   */
+  /*   handle, which multi-threaded applications obtain by cloning.           */
+  /*                                                                          */
+  /* The conventions are as in type 1 version 2: barn per atom for cross      */
+  /* sections, eV for neutron energies, a "neutron" parameter is an array     */
+  /* (ekin,ux,uy,uz), and functions returning int return 0 on success and     */
+  /* non-zero on failure (in which case output parameters are not modified),  */
+  /* while functions returning handles return NULL on failure. Functions      */
+  /* without an error parameter can not fail, but must be given valid         */
+  /* (non-NULL) handles.                                                      */
+  /****************************************************************************/
+
+  typedef struct ncrystal_vapi_t2v1_info_s ncrystal_vapi_t2v1_info_t;
+  typedef struct ncrystal_vapi_t2v1_scatter_s ncrystal_vapi_t2v1_scatter_t;
+  typedef struct ncrystal_vapi_t2v1_absorption_s
+    ncrystal_vapi_t2v1_absorption_t;
+
+  /* An entry of the composition of a material: */
+  typedef struct {
+    unsigned long Z;  /* Atomic number.                                     */
+    unsigned long A;  /* Mass number, or 0 for the natural element.         */
+    double fraction;  /* Fraction by number of atoms (the sum is 1).        */
+  } ncrystal_vapi_t2v1_component_t;
+
+  /* Natural isotope abundances, provided by the application: fill in at      */
+  /* most "capacity" (at least 128) isotopes of element Z, as mass numbers    */
+  /* and fractions by number of atoms, and return their number (or 0 if the   */
+  /* abundances of the element are not known). The state pointer is passed    */
+  /* on unchanged:                                                            */
+  typedef size_t (*ncrystal_vapi_natabund_t)( void * state, unsigned long Z,
+                                              unsigned long * A,
+                                              double * fraction,
+                                              size_t capacity );
+
+  typedef struct {
+    unsigned long interface_id;/* Always 2001.                              */
+    size_t struct_size;/* sizeof(ncrystal_vapi_type2_v1_t) in NCrystal.     */
+
+    /* Info handles (deallocating a NULL handle does nothing):                */
+    ncrystal_vapi_t2v1_info_t * (*create_info)( const char * cfgstr,
+                                                ncrystal_vapi_error_t * );
+    void (*deallocate_info)( ncrystal_vapi_t2v1_info_t * );
+
+    /* A unique id of the material (an integral value in [0,2^53]). Handles   */
+    /* with the same id have the same material, and handles created from the  */
+    /* same cfg-string get the same id (as long as NCrystal's caches are not  */
+    /* cleared), so it can be used to avoid creating duplicate materials in   */
+    /* the application:                                                       */
+    double (*info_unique_id)( const ncrystal_vapi_t2v1_info_t * );
+
+    double (*info_density)( const ncrystal_vapi_t2v1_info_t * );/* g/cm^3   */
+    double (*info_number_density)( const ncrystal_vapi_t2v1_info_t * );
+                                                         /* atoms/Aa^3        */
+
+    /* The temperature in kelvin (fails if the material does not have one):   */
+    int (*info_temperature)( const ncrystal_vapi_t2v1_info_t *,
+                             double * temperature,
+                             ncrystal_vapi_error_t * );
+
+    /* The composition as (Z,A,fraction) entries. It writes at most           */
+    /* "capacity" entries to "components" (which may be NULL if capacity is   */
+    /* 0), and returns the total number of entries (so a first call with      */
+    /* capacity 0 gives the needed capacity), or 0 on failure. With           */
+    /* prefer_natural_elements=1, elements which are only present as the      */
+    /* natural element are returned with A=0, and all other elements (and     */
+    /* with prefer_natural_elements=0 all elements) are broken down into      */
+    /* isotopes, which needs the natural abundances from natabund (so         */
+    /* natabund may only be NULL if no such break down is needed).            */
+    size_t (*info_composition)( const ncrystal_vapi_t2v1_info_t *,
+                                int prefer_natural_elements,
+                                ncrystal_vapi_natabund_t natabund,
+                                void * natabund_state,
+                                ncrystal_vapi_t2v1_component_t * components,
+                                size_t capacity,
+                                ncrystal_vapi_error_t * );
+
+    /* Scatter handles (as in type 1 version 2):                              */
+    ncrystal_vapi_t2v1_scatter_t * (*create_scatter)( const char * cfgstr,
+                                                      ncrystal_vapi_error_t * );
+    ncrystal_vapi_t2v1_scatter_t * (*clone_scatter)
+      ( const ncrystal_vapi_t2v1_scatter_t *, ncrystal_vapi_error_t * );
+    void (*deallocate_scatter)( ncrystal_vapi_t2v1_scatter_t * );
+
+    /* Whether the scattering depends on the neutron direction (e.g. for      */
+    /* single crystals), in which case directions are in the frame of the     */
+    /* material. Returns 1 if so, and 0 for isotropic materials:              */
+    int (*scatter_is_oriented)( const ncrystal_vapi_t2v1_scatter_t * );
+
+    int (*scatter_cross_section)( ncrystal_vapi_t2v1_scatter_t *,
+                                  const double * neutron,
+                                  double * xsect,
+                                  ncrystal_vapi_error_t * );
+
+    int (*sample_scatter)( ncrystal_vapi_t2v1_scatter_t *,
+                           double (*rng)( void * rng_state ),
+                           void * rng_state,
+                           double * neutron,
+                           ncrystal_vapi_error_t * );
+
+    /* Absorption handles (with caches, like scatter handles):                */
+    ncrystal_vapi_t2v1_absorption_t * (*create_absorption)
+      ( const char * cfgstr, ncrystal_vapi_error_t * );
+    ncrystal_vapi_t2v1_absorption_t * (*clone_absorption)
+      ( const ncrystal_vapi_t2v1_absorption_t *, ncrystal_vapi_error_t * );
+    void (*deallocate_absorption)( ncrystal_vapi_t2v1_absorption_t * );
+
+    int (*absorption_cross_section)( ncrystal_vapi_t2v1_absorption_t *,
+                                     const double * neutron,
+                                     double * xsect,
+                                     ncrystal_vapi_error_t * );
+
+    /* Clear NCrystal's internal caches (e.g. of loaded materials), to        */
+    /* release memory. Existing handles stay valid:                           */
+    void (*clear_caches)( void );
+  } ncrystal_vapi_type2_v1_t;
+
 #ifdef __cplusplus
 }
 #endif

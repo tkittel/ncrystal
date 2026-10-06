@@ -5,4 +5,10 @@ stdlib::Polyethylene_CH2.ncmat;temp=250K: xs(1.8Aa)=39.3976 barn, same as the Py
 stdlib::Polyethylene_CH2.ncmat;temp=250K: 100 samples with a Python RNG: OK
 Expected error: [FileNotFound] Requested factory "stdlib" can not provide data: "doesnotexist.ncmat".
 Expected error: [BadInput] Invalid neutron direction: (0, 0, 0)
+Interface 2001 found, with struct_size matching ctypes: OK
+stdlib::Polyethylene_CH2.ncmat;temp=250K: T=250.0K, density=0.92g/cm3, composition (all isotopes): [(1, 1, 0.66656667), (1, 2, 0.0001), (6, 12, 0.33), (6, 13, 0.00333333)]
+  is_oriented=0, scatter and absorption cross sections same as the Python API: OK
+stdlib::Ge_sg227.ncmat;mos=40arcmin;dir1=@crys_hkl:5,1,1@lab:0,0,1;dir2=@crys_hkl:0,-1,1@lab:0,1,0: T=293.15K, density=5.3288g/cm3, composition (all isotopes): [(32, 70, 0.2052), (32, 72, 0.2745), (32, 73, 0.0776), (32, 74, 0.3652), (32, 76, 0.0775)]
+  is_oriented=1, scatter and absorption cross sections same as the Python API: OK
+Expected error: [MissingInfo] The material does not have a temperature
 All OK

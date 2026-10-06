@@ -1,0 +1,33 @@
+interface: OK
+info stdlib::Al_sg225.ncmat: density 2.69865 g/cm3, number density 0.0602324 /Aa^3, T=293.15 K
+info stdlib::Polyethylene_CH2.ncmat;temp=250K: density 0.92 g/cm3, number density 0.118494 /Aa^3, T=250 K
+info stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat: density 1.10526 g/cm3, number density 0.0997033 /Aa^3, T=293.6 K
+info stdlib::Ge_sg227.ncmat;mos=40arcmin;dir1=@crys_hkl:5,1,1@lab:0,0,1;dir2=@crys_hkl:0,-1,1@lab:0,1,0: density 5.3288 g/cm3, number density 0.0441826 /Aa^3, T=293.15 K
+info: OK
+unique ids: OK
+composition of stdlib::Al_sg225.ncmat (prefer_natural_elements=1): (13,0,1)
+composition of stdlib::Polyethylene_CH2.ncmat (prefer_natural_elements=1): (1,0,0.666667) (6,0,0.333333)
+composition of stdlib::Polyethylene_CH2.ncmat (prefer_natural_elements=1, with natabund): (1,0,0.666667) (6,0,0.333333)
+composition of stdlib::Polyethylene_CH2.ncmat (prefer_natural_elements=0, with natabund): (1,1,0.666567) (1,2,0.0001) (6,12,0.33) (6,13,0.00333333)
+composition of stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat (prefer_natural_elements=1): (1,2,0.666667) (8,0,0.333333)
+composition of stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat (prefer_natural_elements=0, with natabund): (1,2,0.666667) (8,16,0.333333)
+composition of solid::B4C/2.52gcm3/B_is_0.95_B10_0.05_B11 (prefer_natural_elements=1): (5,10,0.76) (5,11,0.04) (6,0,0.2)
+composition of phases<0.5*stdlib::B4C_sg166_BoronCarbide.ncmat&0.5*solid::B4C/2.52gcm3/B_is_0.95_B10_0.05_B11> (prefer_natural_elements=1, with natabund): (5,10,0.470283) (5,11,0.329717) (6,0,0.2)
+composition: OK
+stdlib::Al_sg225.ncmat: oriented=0, at 1.8Aa: scatter 1.44866 barn, absorption 0.231232 barn
+stdlib::Polyethylene_CH2.ncmat;temp=250K: oriented=0, at 1.8Aa: scatter 39.3976 barn, absorption 0.223123 barn
+NCrystal WARNING: Discarding 204 edges of provided kernel data due to missing S values.
+NCrystal WARNING: Discarding 120 edges of provided kernel data due to missing S values.
+stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat: oriented=0, at 1.8Aa: scatter 4.69007 barn, absorption 0.000409744 barn
+stdlib::Ge_sg227.ncmat;mos=40arcmin;dir1=@crys_hkl:5,1,1@lab:0,0,1;dir2=@crys_hkl:0,-1,1@lab:0,1,0: oriented=1, at 1.8Aa: scatter 3.87356 barn, absorption 2.20221 barn
+scatter and absorption: OK
+sampling: OK
+errors:
+  expected error (missing file): [FileNotFound] Requested factory "stdlib" can not provide data: "doesnotexist.ncmat".
+  expected error (null cfgstr): [BadInput] Invalid (null) cfgstr
+  expected error (clone of null handle): [BadInput] Invalid (null) absorption handle
+  expected error (no temperature): [MissingInfo] The material does not have a temperature
+  expected error (composition without natabund): [CalcError] Could not determine natural abundances for Z=1 (no natural abundance source was provided!)
+  expected error (composition with null array): [BadInput] Invalid (null) components array
+  expected error (absorption with invalid neutron): [BadInput] Invalid neutron energy: -1
+errors: OK
