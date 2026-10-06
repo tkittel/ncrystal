@@ -155,6 +155,15 @@ namespace NCRYSTAL_NAMESPACE {
         return static_cast<std::size_t>(x);
       }
 
+      inline std::uint64_t getValue_uint64( const Tokens& tokens, StrView key )
+      {
+        double x = getValue_dbl(tokens,key);
+        //Range check before the cast (2^64 is exactly representable):
+        if ( ! ( x >= 0.0 && x < 18446744073709551616.0 && std::floor(x) == x ) )
+          NCRYSTAL_THROW2(BadInput,"Invalid value for parameter \""<<key<<"\"");
+        return static_cast<std::uint64_t>(x);
+      }
+
       inline double getValue_weight( const Tokens& tokens, StrView key )
       {
         double w = getValue_dbl(tokens,key);
