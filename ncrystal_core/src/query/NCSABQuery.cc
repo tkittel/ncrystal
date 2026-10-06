@@ -36,6 +36,7 @@
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/factories/NCMatCfg.hh"
 #include "NCrystal/core/NCSmallVector.hh"
+#include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCSABQuery.hh"
@@ -106,8 +107,8 @@ namespace NCRYSTAL_NAMESPACE {
         const double foure = 4*E_div_kT;
         SampleResult res;
         res.prob1 = fcsampler.probabilityEdge1();
-        res.a.reserve(nsample);
-        res.b.reserve(nsample);
+        res.a.reserve( countToSizeT( nsample ) );
+        res.b.reserve( countToSizeT( nsample ) );
         while( res.a.size() < nsample ) {
           if ( res.ntries > ntries_max ) {
             NCRYSTAL_WARN("Early abort of FullCellOverlaySample due to bad AR.");
@@ -172,8 +173,8 @@ namespace NCRYSTAL_NAMESPACE {
         BoundedCellSampler sampler( c, bcsdata, E_div_kT );
         SampleResult res;
         res.prob1 = prob1;
-        res.a.reserve(nsample);
-        res.b.reserve(nsample);
+        res.a.reserve( countToSizeT( nsample ) );
+        res.b.reserve( countToSizeT( nsample ) );
         while( res.a.size() < nsample ) {
           auto ab = sampler.sampleAlphaBeta(rng);
           res.a.push_back(ab.alpha);
@@ -197,8 +198,8 @@ namespace NCRYSTAL_NAMESPACE {
         const double foure = 4*E_div_kT;
         SampleResult res;
         res.prob1 = -1.0;//not available
-        res.a.reserve(nsample);
-        res.b.reserve(nsample);
+        res.a.reserve( countToSizeT( nsample ) );
+        res.b.reserve( countToSizeT( nsample ) );
         while( res.a.size() < nsample ) {
           if ( res.ntries > ntries_max )
             NCRYSTAL_THROW(CalcError,"RefCellSampler too inefficient.");
@@ -347,8 +348,8 @@ namespace NCRYSTAL_NAMESPACE {
         }
         auto rng = createBuiltinRNG( seed );
         VectD a, b;//, ekin, mu;
-        a.reserve(nsample);
-        b.reserve(nsample);
+        a.reserve( countToSizeT( nsample ) );
+        b.reserve( countToSizeT( nsample ) );
         ++nsample;
         while (nsample-- > 1) {
           auto evt =spe->sampleScatterAlphaBeta(rng,sample_ekin);
@@ -424,8 +425,8 @@ namespace NCRYSTAL_NAMESPACE {
         auto& sampler = scathelper->sampler;
         const double E_div_kT = sample_ekin.dbl() / sab->temperature().kT();
         VectD alpha, beta;
-        alpha.reserve(nsample);
-        beta.reserve(nsample);
+        alpha.reserve( countToSizeT( nsample ) );
+        beta.reserve( countToSizeT( nsample ) );
         for ( std::uint64_t i = 0; i < nsample; ++i ) {
           auto ab = sampler.sampleAlphaBeta( sample_ekin, rng );
           alpha.push_back( ab.first );

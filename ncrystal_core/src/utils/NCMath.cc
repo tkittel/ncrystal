@@ -144,6 +144,13 @@ NC::VectD NC::powspace(double a, double b, unsigned num, double p )
   return res;
 }
 
+std::size_t NC::countToSizeT( std::uint64_t n )
+{
+  if ( n > static_cast<std::uint64_t>( std::numeric_limits<std::size_t>::max() ) )
+    NCRYSTAL_THROW2(BadInput,"Count "<<n<<" is too large for this platform.");
+  return static_cast<std::size_t>( n );
+}
+
 bool NC::isPrime(unsigned n) {
   if (n>3) {
     if ( !(n%2) || !(n%3) )
