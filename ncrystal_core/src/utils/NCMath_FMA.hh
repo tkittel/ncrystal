@@ -128,8 +128,6 @@ namespace NCRYSTAL_NAMESPACE {
     }
     if ( x <= -40.0 )
       return -1.0;
-    if ( ncisnan(x) )
-      NCRYSTAL_THROW(BadInput,"stable_expm1 called with NaN");
     const double n = std::round( x * invln2 );
     double r = std::fma( -n, ln2_hi, x );
     r = std::fma( -n, ln2_lo, r );
