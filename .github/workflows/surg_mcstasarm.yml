@@ -1,0 +1,39 @@
+name: surg_mcstasarm
+on:
+  push:
+#Surgical (throwaway): why does mcrun use mpicc on linux-aarch64 conda?
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 12
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: conda-incubator/setup-miniconda@v4
+        with:
+          activate-environment: theenv
+          auto-activate-base: false
+          channels: conda-forge
+          conda-remove-defaults: "true"
+      - run: conda install -y -c conda-forge mcstas-core ncrystal
+      - name: diagnostics
+        run: |
+          set -x
+          mcrun --version || true
+          mcrun --help 2>&1 | grep -iE "mpi|cc|openacc|funnel" || true
+          ls "$CONDA_PREFIX"/share/mcstas/tools/Python/mccodelib/ 2>/dev/null | head || true
+          find "$CONDA_PREFIX" -name "mccode_config*.json" -o -name "mccode_config.py" 2>/dev/null | head
+          for f in $(find "$CONDA_PREFIX" -name "mccode_config*.json" 2>/dev/null); do echo "== $f"; grep -iE '"CC"|MPICC|cflags|"CFLAGS"|ACC' "$f"; done
+      - name: try plain mcrun
+        run: |
+          mkdir r1 && cd r1
+          cp "${CONDA_PREFIX}/share/mcstas/resources/examples/NCrystal/NCrystal_example/NCrystal_example.instr" .
+          mcrun NCrystal_example.instr sample_cfg=Al_sg225.ncmat -s1000 -n1e4 2>&1 | tail -5
+      - name: try with openmpi-mpicc installed
+        if: always()
+        run: |
+          conda install -y -c conda-forge openmpi-mpicc > /dev/null
+          mkdir r2 && cd r2
+          cp "${CONDA_PREFIX}/share/mcstas/resources/examples/NCrystal/NCrystal_example/NCrystal_example.instr" .
+          mcrun NCrystal_example.instr sample_cfg=Al_sg225.ncmat -s1000 -n1e4 2>&1 | tail -5
