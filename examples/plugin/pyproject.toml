@@ -22,11 +22,11 @@
 [project]
 name = "ncrystal-plugin-DummyPlugin"
 version = "0.0.1"
-license = {file = "LICENSE"}
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 dependencies = [ "ncrystal-core>=4.3.0", "ncrystal-pypluginmgr>=0.0.5" ]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: Apache Software License",
 ]
 
 [build-system]
