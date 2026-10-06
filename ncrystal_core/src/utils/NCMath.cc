@@ -407,6 +407,10 @@ NC::Fct1D::~Fct1D(){}
 
 double NC::stable_expm1( double x )
 {
+  //NaN check here rather than in the extern "C" detail function, which MSVC
+  //assumes never throws (C4297):
+  if ( ncisnan(x) )
+    NCRYSTAL_THROW(BadInput,"stable_expm1 called with NaN");
   return NCRYSTAL_APPLY_C_NAMESPACE(detail_stable_expm1)( x );
 }
 
