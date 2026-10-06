@@ -46,10 +46,12 @@ namespace NCRYSTAL_NAMESPACE {
         std::size_t nOrig() const { return m_norig; }
         std::size_t nUsed() const
         {
-          std::size_t raw = m_nused.load();
-          return ( ( m_norig != 0 && raw > m_norig )
-                   ? m_norig
-                   : raw );
+          const std::uint64_t raw = m_nused.load();
+          if ( m_norig != 0 && raw > m_norig )
+            return m_norig;
+          //Clamp (only relevant on 32bit platforms):
+          constexpr auto szmax = std::numeric_limits<std::size_t>::max();
+          return ( raw > szmax ? szmax : static_cast<std::size_t>( raw ) );
         }
         struct FillCounts {
           std::size_t i0, N;
