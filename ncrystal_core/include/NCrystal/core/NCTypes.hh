@@ -732,7 +732,8 @@ namespace NCRYSTAL_NAMESPACE {
 
   inline constexpr NeutronWavelength Length::as_wavelength() const noexcept
   {
-    static_assert( angstrom == 1e-10, "" );
+    //NB: angstrom == 1e-10 is checked in NCDefs.cc (not here, since it could
+    //fail for user code built with x87 floating point on 32bit x86):
     return NeutronWavelength{ m_value * 1e10 };
   }
 
