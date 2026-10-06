@@ -213,6 +213,22 @@ function( mctools_detect_extra_cflags resvar )
     if ( tmp )
       list( APPEND flags "-fno-math-errno" )
     endif()
+    #On 32bit x86, use SSE2 rather than x87 floating point (whose 80bit excess
+    #precision breaks cross-platform reproducibility). Testing __i386__ rather
+    #than CMAKE_SYSTEM_PROCESSOR, which is the host's (e.g. x86_64 when
+    #building in a 32bit container):
+    include(CheckCSourceCompiles)
+    check_c_source_compiles( "#ifndef __i386__\n#error not i386\n#endif\nint main(void){return 0;}"
+      mctools_target_is_i386 )
+    if ( mctools_target_is_i386 )
+      check_c_compiler_flag( "-msse2 -mfpmath=sse" mctools_has_sse2_fpmath )
+      if ( mctools_has_sse2_fpmath )
+        list( APPEND flags "-msse2" "-mfpmath=sse" )
+      else()
+        message( WARNING "Could not enable SSE2 floating point math on 32bit"
+                 " x86 (results might differ slightly from other platforms)" )
+      endif()
+    endif()
   endif()
   set(
     "${cachevar}" "${flags}"
