@@ -88,7 +88,7 @@ static double ref_xs( ncrystal_scatter_t sc, double ekin, const double * dir )
   return xs;
 }
 
-static double api_xs( ncrystal_vapi_t1v2_scatter_t * h, double ekin,
+static double api_xs( struct ncrystal_vapi_t1v2_scatter * h, double ekin,
                       const double * dir )
 {
   ncrystal_vapi_error_t err;
@@ -99,10 +99,10 @@ static double api_xs( ncrystal_vapi_t1v2_scatter_t * h, double ekin,
   return xs;
 }
 
-static ncrystal_vapi_t1v2_scatter_t * create( const char * cfgstr )
+static struct ncrystal_vapi_t1v2_scatter * create( const char * cfgstr )
 {
   ncrystal_vapi_error_t err;
-  ncrystal_vapi_t1v2_scatter_t * h = api->create_scatter( cfgstr, &err );
+  struct ncrystal_vapi_t1v2_scatter * h = api->create_scatter( cfgstr, &err );
   require( h != NULL, "create_scatter ok" );
   return h;
 }
@@ -132,7 +132,7 @@ static void test_interface( void )
 static void test_xs( void )
 {
   ncrystal_scatter_t refs[NCFGS];
-  ncrystal_vapi_t1v2_scatter_t * hs[NCFGS];
+  struct ncrystal_vapi_t1v2_scatter * hs[NCFGS];
   unsigned i, iwl, idir, irep;
   unsigned long ncalls = 0;
   for ( i = 0; i < NCFGS; ++i ) {
@@ -161,7 +161,7 @@ static void test_xs( void )
   }
   /* The oriented material depends on the direction: */
   {
-    ncrystal_vapi_t1v2_scatter_t * h = create( cfgs[NCFGS-1] );
+    struct ncrystal_vapi_t1v2_scatter * h = create( cfgs[NCFGS-1] );
     double e = ncrystal_wl2ekin( 1.8 );
     require( api_xs( h, e, dirs[0] ) != api_xs( h, e, dirs[2] ),
              "oriented material depends on direction" );
@@ -177,9 +177,9 @@ static void test_clone( void )
   unsigned i, iwl;
   ncrystal_vapi_error_t err;
   for ( i = 0; i < NCFGS; ++i ) {
-    ncrystal_vapi_t1v2_scatter_t * h = create( cfgs[i] );
-    ncrystal_vapi_t1v2_scatter_t * c1 = api->clone_scatter( h, &err );
-    ncrystal_vapi_t1v2_scatter_t * c2;
+    struct ncrystal_vapi_t1v2_scatter * h = create( cfgs[i] );
+    struct ncrystal_vapi_t1v2_scatter * c1 = api->clone_scatter( h, &err );
+    struct ncrystal_vapi_t1v2_scatter * c2;
     require( c1 != NULL && c1 != h, "clone ok" );
     for ( iwl = 0; iwl < NWL; ++iwl ) {
       double e = ncrystal_wl2ekin( wls[iwl] );
@@ -209,8 +209,8 @@ static void test_sampling( void )
   ncrystal_vapi_error_t err;
   for ( i = 0; i < NCFGS; ++i ) {
     ncrystal_scatter_t ref = ncrystal_create_scatter( cfgs[i] );
-    ncrystal_vapi_t1v2_scatter_t * h = create( cfgs[i] );
-    ncrystal_vapi_t1v2_scatter_t * c = api->clone_scatter( h, &err );
+    struct ncrystal_vapi_t1v2_scatter * h = create( cfgs[i] );
+    struct ncrystal_vapi_t1v2_scatter * c = api->clone_scatter( h, &err );
     double sum_ekin = 0.0;
     require( c != NULL, "clone ok" );
     for ( iwl = 0; iwl < NWL; ++iwl ) {
@@ -250,7 +250,7 @@ static void test_sampling( void )
   }
   /* A random number of exactly 0 is accepted: */
   {
-    ncrystal_vapi_t1v2_scatter_t * h = create( cfgs[1] );
+    struct ncrystal_vapi_t1v2_scatter * h = create( cfgs[1] );
     rng_t r;
     double n[4];
     r.s = 1; r.nzero = 3;
@@ -277,7 +277,7 @@ static void expect_error( int ret, const ncrystal_vapi_error_t * err,
 static void test_errors( void )
 {
   ncrystal_vapi_error_t err;
-  ncrystal_vapi_t1v2_scatter_t * h = create( cfgs[0] );
+  struct ncrystal_vapi_t1v2_scatter * h = create( cfgs[0] );
   double n[4], n_orig[4], xs;
   rng_t r;
   char longcfg[3001];

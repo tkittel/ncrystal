@@ -28,6 +28,6 @@ errors:
   expected error (clone of null handle): [BadInput] Invalid (null) absorption handle
   expected error (no temperature): [MissingInfo] The material does not have a temperature
   expected error (composition without natabund): [CalcError] Could not determine natural abundances for Z=1 (no natural abundance source was provided!)
-  expected error (composition with null array): [BadInput] Invalid (null) components array
+  expected error (composition with null array): [BadInput] Invalid (null) output array
   expected error (absorption with invalid neutron): [BadInput] Invalid neutron energy: -1
 errors: OK

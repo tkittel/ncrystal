@@ -94,7 +94,7 @@ static void test_info( void )
   ncrystal_vapi_error_t err;
   unsigned i;
   for ( i = 0; i < NCFGS; ++i ) {
-    ncrystal_vapi_t2v1_info_t * h;
+    struct ncrystal_vapi_t2v1_info * h;
     ncrystal_info_t ref;
     double t = -1.0;
     memset( &err, 0, sizeof(err) );
@@ -121,7 +121,7 @@ static void test_info( void )
 static void test_unique_id( void )
 {
   ncrystal_vapi_error_t err;
-  ncrystal_vapi_t2v1_info_t * a, * b, * c, * d;
+  struct ncrystal_vapi_t2v1_info * a, * b, * c, * d;
   double ida, idb, idc, idd;
   a = api->create_info( "stdlib::Al_sg225.ncmat", &err );
   b = api->create_info( "stdlib::Al_sg225.ncmat", &err );
@@ -182,8 +182,9 @@ static size_t natabund( void * state, unsigned long Z, unsigned long * A,
 static void print_composition( const char * cfgstr, int prefer, int with_natab )
 {
   ncrystal_vapi_error_t err;
-  ncrystal_vapi_t2v1_component_t cmps[16];
-  ncrystal_vapi_t2v1_info_t * h;
+  unsigned long Z[16], A[16];
+  double fraction[16];
+  struct ncrystal_vapi_t2v1_info * h;
   size_t n, n2, i;
   double sum = 0.0;
   int ncalls = 0;
@@ -192,16 +193,16 @@ static void print_composition( const char * cfgstr, int prefer, int with_natab )
   /* First the number of entries, then the entries: */
   memset( &err, 0, sizeof(err) );
   n = api->info_composition( h, prefer, with_natab ? natabund : NULL,
-                             &ncalls, NULL, 0, &err );
+                             &ncalls, NULL, NULL, NULL, 0, &err );
   require( n > 0 && n <= 16 && err.code == 0, "composition count" );
   n2 = api->info_composition( h, prefer, with_natab ? natabund : NULL,
-                              &ncalls, cmps, 16, &err );
+                              &ncalls, Z, A, fraction, 16, &err );
   require( n2 == n, "composition entries" );
   printf( "composition of %s (prefer_natural_elements=%d%s):", cfgstr,
           prefer, with_natab ? ", with natabund" : "" );
   for ( i = 0; i < n; ++i ) {
-    printf( " (%lu,%lu,%.6g)", cmps[i].Z, cmps[i].A, cmps[i].fraction );
-    sum += cmps[i].fraction;
+    printf( " (%lu,%lu,%.6g)", Z[i], A[i], fraction[i] );
+    sum += fraction[i];
   }
   printf( "\n" );
   require( sum > 1.0 - 1e-12 && sum < 1.0 + 1e-12, "fractions sum to 1" );
@@ -210,12 +211,13 @@ static void print_composition( const char * cfgstr, int prefer, int with_natab )
            "natabund called when needed" );
   /* A too small capacity gives the total count, and only fills the first: */
   if ( n > 1 ) {
-    ncrystal_vapi_t2v1_component_t one[1];
+    unsigned long Z1[1], A1[1];
+    double fraction1[1];
     require( api->info_composition( h, prefer, with_natab ? natabund : NULL,
-                                    &ncalls, one, 1, &err ) == n,
-             "small capacity" );
-    require( one[0].Z == cmps[0].Z && one[0].A == cmps[0].A
-             && one[0].fraction == cmps[0].fraction, "first entry" );
+                                    &ncalls, Z1, A1, fraction1, 1, &err )
+             == n, "small capacity" );
+    require( Z1[0] == Z[0] && A1[0] == A[0] && fraction1[0] == fraction[0],
+             "first entry" );
   }
   api->deallocate_info( h );
 }
@@ -243,8 +245,8 @@ static void test_processes( void )
   ncrystal_vapi_error_t err;
   unsigned i, j;
   for ( i = 0; i < NCFGS; ++i ) {
-    ncrystal_vapi_t2v1_scatter_t * sc, * sc2;
-    ncrystal_vapi_t2v1_absorption_t * ab, * ab2;
+    struct ncrystal_vapi_t2v1_scatter * sc, * sc2;
+    struct ncrystal_vapi_t2v1_absorption * ab, * ab2;
     ncrystal_scatter_t refsc = ncrystal_create_scatter( cfgs[i] );
     ncrystal_absorption_t refab = ncrystal_create_absorption( cfgs[i] );
     int oriented = !ncrystal_isnonoriented( ncrystal_cast_scat2proc( refsc ) );
@@ -297,8 +299,10 @@ static void test_sampling( void )
   unsigned i, k;
   require( api1 != NULL, "interface 1002 available" );
   for ( i = 0; i < NCFGS; ++i ) {
-    ncrystal_vapi_t2v1_scatter_t * sc = api->create_scatter( cfgs[i], &err );
-    ncrystal_vapi_t1v2_scatter_t * sc1 = api1->create_scatter( cfgs[i], &err );
+    struct ncrystal_vapi_t2v1_scatter * sc =
+      api->create_scatter( cfgs[i], &err );
+    struct ncrystal_vapi_t1v2_scatter * sc1 =
+      api1->create_scatter( cfgs[i], &err );
     rng_t r, r1;
     require( sc && sc1, "create ok" );
     r.s = r1.s = 12345 + i;
@@ -328,9 +332,10 @@ static void expect_error( int failed, const ncrystal_vapi_error_t * err,
 static void test_errors( void )
 {
   ncrystal_vapi_error_t err;
-  ncrystal_vapi_t2v1_info_t * h;
-  ncrystal_vapi_t2v1_absorption_t * ab;
-  ncrystal_vapi_t2v1_component_t cmps[4];
+  struct ncrystal_vapi_t2v1_info * h;
+  struct ncrystal_vapi_t2v1_absorption * ab;
+  unsigned long Z[4], A[4];
+  double fraction[4];
   double t = -123.0, xs = -123.0;
   double n[4];
   printf( "errors:\n" );
@@ -359,10 +364,12 @@ static void test_errors( void )
   h = api->create_info( "stdlib::Polyethylene_CH2.ncmat", &err );
   require( h != NULL, "create_info ok" );
   memset( &err, 0, sizeof(err) );
-  expect_error( api->info_composition( h, 0, NULL, NULL, cmps, 4, &err ) == 0,
+  expect_error( api->info_composition( h, 0, NULL, NULL, Z, A, fraction, 4,
+                                      &err ) == 0,
                 &err, "CalcError", "composition without natabund" );
   memset( &err, 0, sizeof(err) );
-  expect_error( api->info_composition( h, 1, NULL, NULL, NULL, 4, &err ) == 0,
+  expect_error( api->info_composition( h, 1, NULL, NULL, Z, NULL, fraction,
+                                      4, &err ) == 0,
                 &err, "BadInput", "composition with null array" );
   api->deallocate_info( h );
 

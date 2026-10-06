@@ -56,11 +56,6 @@ class APIType1V2(ctypes.Structure):
                                              ctypes.c_void_p, dbl_p, err_p )),
     ]
 
-class Component(ctypes.Structure):
-    _fields_ = [ ('Z', ctypes.c_ulong),
-                 ('A', ctypes.c_ulong),
-                 ('fraction', ctypes.c_double) ]
-
 natabund_t = ctypes.CFUNCTYPE( ctypes.c_size_t, ctypes.c_void_p, ctypes.c_ulong,
                                ctypes.POINTER(ctypes.c_ulong), dbl_p,
                                ctypes.c_size_t )
@@ -80,7 +75,9 @@ class APIType2V1(ctypes.Structure):
         ('info_composition', ctypes.CFUNCTYPE( ctypes.c_size_t, info_t,
                                                ctypes.c_int, natabund_t,
                                                ctypes.c_void_p,
-                                               ctypes.POINTER(Component),
+                                               ctypes.POINTER(ctypes.c_ulong),
+                                               ctypes.POINTER(ctypes.c_ulong),
+                                               dbl_p,
                                                ctypes.c_size_t, err_p )),
         ('create_scatter', ctypes.CFUNCTYPE( handle_t, ctypes.c_char_p, err_p )),
         ('clone_scatter', ctypes.CFUNCTYPE( handle_t, handle_t, err_p )),
@@ -211,13 +208,14 @@ def test_type2():
         t = ctypes.c_double( -1.0 )
         assert api.info_temperature( h, ctypes.byref(t), ctypes.byref(err) ) == 0
         assert t.value == info.getTemperature()
-        n = api.info_composition( h, 0, c_natabund, None, None, 0,
+        n = api.info_composition( h, 0, c_natabund, None, None, None, None, 0,
                                   ctypes.byref(err) )
         assert n > 0, err.message
-        cmps = ( Component * n )()
-        assert api.info_composition( h, 0, c_natabund, None, cmps, n,
-                                     ctypes.byref(err) ) == n
-        compos = [ ( c.Z, c.A, round( c.fraction, 8 ) ) for c in cmps ]
+        Z, A = ( ctypes.c_ulong * n )(), ( ctypes.c_ulong * n )()
+        fraction = ( ctypes.c_double * n )()
+        assert api.info_composition( h, 0, c_natabund, None, Z, A, fraction,
+                                     n, ctypes.byref(err) ) == n
+        compos = [ ( Z[i], A[i], round( fraction[i], 8 ) ) for i in range(n) ]
         print(f'{cfg}: T={t.value}K, density={api.info_density(h):.6g}g/cm3,'
               f' composition (all isotopes): {compos}')
         api.deallocate_info( h )

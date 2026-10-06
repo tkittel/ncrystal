@@ -91,7 +91,7 @@ namespace {
     }
   };
 
-  Result evaluate( ncrystal_vapi_t1v2_scatter_t * h, unsigned i )
+  Result evaluate( struct ncrystal_vapi_t1v2_scatter * h, unsigned i )
   {
     ncrystal_vapi_error_t err;
     Result r;
@@ -108,8 +108,8 @@ namespace {
   //Type 2: scatter and absorption cross sections and sampling (the absorption
   //cross section is stored in out[3], after the sampled energy and the
   //first two components of the direction):
-  Result evaluate2( ncrystal_vapi_t2v1_scatter_t * sc,
-                    ncrystal_vapi_t2v1_absorption_t * ab, unsigned i )
+  Result evaluate2( struct ncrystal_vapi_t2v1_scatter * sc,
+                    struct ncrystal_vapi_t2v1_absorption * ab, unsigned i )
   {
     ncrystal_vapi_error_t err;
     Result r;
@@ -127,7 +127,7 @@ namespace {
   }
 
   //Information from an info handle (which threads may share):
-  std::vector<double> infoValues( const ncrystal_vapi_t2v1_info_t * h )
+  std::vector<double> infoValues( const struct ncrystal_vapi_t2v1_info * h )
   {
     ncrystal_vapi_error_t err;
     std::vector<double> v = { api2->info_unique_id( h ),
@@ -136,14 +136,15 @@ namespace {
     double t;
     require( api2->info_temperature( h, &t, &err ) == 0, "temperature" );
     v.push_back( t );
-    ncrystal_vapi_t2v1_component_t cmps[8];
+    unsigned long Z[8], A[8];
+    double fraction[8];
     const std::size_t nc = api2->info_composition( h, 1, nullptr, nullptr,
-                                                   cmps, 8, &err );
+                                                   Z, A, fraction, 8, &err );
     require( nc > 0 && nc <= 8, "composition" );
     for ( std::size_t i = 0; i < nc; ++i ) {
-      v.push_back( double( cmps[i].Z ) );
-      v.push_back( double( cmps[i].A ) );
-      v.push_back( cmps[i].fraction );
+      v.push_back( double( Z[i] ) );
+      v.push_back( double( A[i] ) );
+      v.push_back( fraction[i] );
     }
     return v;
   }
@@ -156,9 +157,9 @@ namespace {
     ncrystal_vapi_error_t err;
 
     //Base handles, and single-threaded reference results:
-    std::vector<ncrystal_vapi_t2v1_info_t*> infos;
-    std::vector<ncrystal_vapi_t2v1_scatter_t*> basesc;
-    std::vector<ncrystal_vapi_t2v1_absorption_t*> baseab;
+    std::vector<struct ncrystal_vapi_t2v1_info*> infos;
+    std::vector<struct ncrystal_vapi_t2v1_scatter*> basesc;
+    std::vector<struct ncrystal_vapi_t2v1_absorption*> baseab;
     std::vector<std::vector<Result>> ref( cfgs.size() );
     std::vector<std::vector<double>> refinfo;
     for ( std::size_t imat = 0; imat < cfgs.size(); ++imat ) {
@@ -178,8 +179,8 @@ namespace {
       threads.emplace_back( [&,ithread]()
       {
         ncrystal_vapi_error_t terr;
-        std::vector<ncrystal_vapi_t2v1_scatter_t*> sc;
-        std::vector<ncrystal_vapi_t2v1_absorption_t*> ab;
+        std::vector<struct ncrystal_vapi_t2v1_scatter*> sc;
+        std::vector<struct ncrystal_vapi_t2v1_absorption*> ab;
         for ( std::size_t imat = 0; imat < cfgs.size(); ++imat ) {
           sc.push_back( api2->clone_scatter( basesc[imat], &terr ) );
           ab.push_back( api2->clone_absorption( baseab[imat], &terr ) );
@@ -235,7 +236,7 @@ int main()
   ncrystal_vapi_error_t err;
 
   //Base handles, and single-threaded reference results:
-  std::vector<ncrystal_vapi_t1v2_scatter_t*> base;
+  std::vector<struct ncrystal_vapi_t1v2_scatter*> base;
   std::vector<std::vector<Result>> ref( cfgs.size() );
   for ( std::size_t imat = 0; imat < cfgs.size(); ++imat ) {
     base.push_back( api->create_scatter( cfgs[imat], &err ) );
@@ -253,7 +254,7 @@ int main()
     threads.emplace_back( [&base,&results,ithread]()
     {
       ncrystal_vapi_error_t terr;
-      std::vector<ncrystal_vapi_t1v2_scatter_t*> handles;
+      std::vector<struct ncrystal_vapi_t1v2_scatter*> handles;
       for ( std::size_t imat = 0; imat < cfgs.size(); ++imat ) {
         handles.push_back( ithread == 0
                            ? api->create_scatter( cfgs[imat], &terr )

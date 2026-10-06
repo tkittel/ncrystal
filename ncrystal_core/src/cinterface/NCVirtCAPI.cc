@@ -59,7 +59,7 @@ namespace NCRYSTAL_NAMESPACE {
         return *reinterpret_cast<const ProcHandle*>( h );
       }
 
-      const InfoHandle& extractInfo( const ncrystal_vapi_t2v1_info_t * h )
+      const InfoHandle& extractInfo( const struct ncrystal_vapi_t2v1_info * h )
       {
         nc_assert_always( h != nullptr );
         return *reinterpret_cast<const InfoHandle*>( h );
@@ -224,11 +224,16 @@ namespace NCRYSTAL_NAMESPACE {
         } );
       }
 
-      std::size_t composition( const ncrystal_vapi_t2v1_info_t * h,
+      //The type of natabund is a template parameter, since the function
+      //pointer type of the C API has C language linkage:
+      template<class TNatAbund>
+      std::size_t composition( const struct ncrystal_vapi_t2v1_info * h,
                                int prefer_natural_elements,
-                               ncrystal_vapi_natabund_t natabund,
+                               TNatAbund natabund,
                                void * natabund_state,
-                               ncrystal_vapi_t2v1_component_t * components,
+                               unsigned long * resZ,
+                               unsigned long * resA,
+                               double * resFrac,
                                std::size_t capacity,
                                ncrystal_vapi_error_t * err )
       {
@@ -237,8 +242,8 @@ namespace NCRYSTAL_NAMESPACE {
         {
           if ( !h )
             NCRYSTAL_THROW( BadInput, "Invalid (null) info handle" );
-          if ( capacity > 0 && !components )
-            NCRYSTAL_THROW( BadInput, "Invalid (null) components array" );
+          if ( capacity > 0 && !( resZ && resA && resFrac ) )
+            NCRYSTAL_THROW( BadInput, "Invalid (null) output array" );
           CompositionUtils::NaturalAbundanceProvider natprov{ nullptr };
           if ( natabund ) {
             natprov = [natabund,natabund_state]( unsigned Z )
@@ -284,9 +289,9 @@ namespace NCRYSTAL_NAMESPACE {
           for ( auto& e : bd ) {
             for ( auto& af : e.second ) {
               if ( i < capacity ) {
-                components[i].Z = e.first;
-                components[i].A = af.first;
-                components[i].fraction = af.second;
+                resZ[i] = e.first;
+                resA[i] = af.first;
+                resFrac[i] = af.second;
               }
               ++i;
             }
@@ -304,28 +309,29 @@ namespace NCVC = NCrystal::VirtCAPI;
 
 extern "C" {
 
-  static ncrystal_vapi_t1v2_scatter_t *
+  static struct ncrystal_vapi_t1v2_scatter *
   ncrystal_vapi_t1v2_create_scatter( const char * cfgstr,
                                      ncrystal_vapi_error_t * err )
   {
-    return NCVC::createProc<ncrystal_vapi_t1v2_scatter_t>( cfgstr, true, err );
+    return NCVC::createProc<struct ncrystal_vapi_t1v2_scatter>( cfgstr, true,
+                                                                err );
   }
 
-  static ncrystal_vapi_t1v2_scatter_t *
-  ncrystal_vapi_t1v2_clone_scatter( const ncrystal_vapi_t1v2_scatter_t * h,
+  static struct ncrystal_vapi_t1v2_scatter *
+  ncrystal_vapi_t1v2_clone_scatter( const struct ncrystal_vapi_t1v2_scatter * h,
                                     ncrystal_vapi_error_t * err )
   {
     return NCVC::cloneProc( h, true, err );
   }
 
   static void
-  ncrystal_vapi_t1v2_deallocate_scatter( ncrystal_vapi_t1v2_scatter_t * h )
+  ncrystal_vapi_t1v2_deallocate_scatter( struct ncrystal_vapi_t1v2_scatter * h )
   {
     NCVC::deallocateProc( h );
   }
 
   static int
-  ncrystal_vapi_t1v2_cross_section( ncrystal_vapi_t1v2_scatter_t * h,
+  ncrystal_vapi_t1v2_cross_section( struct ncrystal_vapi_t1v2_scatter * h,
                                     const double * n,
                                     double * xsect,
                                     ncrystal_vapi_error_t * err )
@@ -334,7 +340,7 @@ extern "C" {
   }
 
   static int
-  ncrystal_vapi_t1v2_sample_scatter( ncrystal_vapi_t1v2_scatter_t * h,
+  ncrystal_vapi_t1v2_sample_scatter( struct ncrystal_vapi_t1v2_scatter * h,
                                      double (*rng)( void * ),
                                      void * rng_state,
                                      double * n,
@@ -343,7 +349,7 @@ extern "C" {
     return NCVC::sampleScatter( h, rng, rng_state, n, err );
   }
 
-  static ncrystal_vapi_t2v1_info_t *
+  static struct ncrystal_vapi_t2v1_info *
   ncrystal_vapi_t2v1_create_info( const char * cfgstr,
                                   ncrystal_vapi_error_t * err )
   {
@@ -354,17 +360,17 @@ extern "C" {
         NCRYSTAL_THROW( BadInput, "Invalid (null) cfgstr" );
       res = new NCVC::InfoHandle{ NC::FactImpl::createInfo( cfgstr ) };
     } );
-    return reinterpret_cast<ncrystal_vapi_t2v1_info_t*>( res );
+    return reinterpret_cast<struct ncrystal_vapi_t2v1_info*>( res );
   }
 
   static void
-  ncrystal_vapi_t2v1_deallocate_info( ncrystal_vapi_t2v1_info_t * h )
+  ncrystal_vapi_t2v1_deallocate_info( struct ncrystal_vapi_t2v1_info * h )
   {
     delete reinterpret_cast<NCVC::InfoHandle*>( h );
   }
 
   static double
-  ncrystal_vapi_t2v1_info_unique_id( const ncrystal_vapi_t2v1_info_t * h )
+  ncrystal_vapi_t2v1_info_unique_id( const struct ncrystal_vapi_t2v1_info * h )
   {
     const auto uid = NCVC::extractInfo( h ).info->getUniqueID().value;
     //The ids are counters, and can not realistically exceed 2^53:
@@ -373,19 +379,20 @@ extern "C" {
   }
 
   static double
-  ncrystal_vapi_t2v1_info_density( const ncrystal_vapi_t2v1_info_t * h )
+  ncrystal_vapi_t2v1_info_density( const struct ncrystal_vapi_t2v1_info * h )
   {
     return NCVC::extractInfo( h ).info->getDensity().dbl();
   }
 
   static double
-  ncrystal_vapi_t2v1_info_number_density( const ncrystal_vapi_t2v1_info_t * h )
+  ncrystal_vapi_t2v1_info_number_density
+  ( const struct ncrystal_vapi_t2v1_info * h )
   {
     return NCVC::extractInfo( h ).info->getNumberDensity().dbl();
   }
 
   static int
-  ncrystal_vapi_t2v1_info_temperature( const ncrystal_vapi_t2v1_info_t * h,
+  ncrystal_vapi_t2v1_info_temperature( const struct ncrystal_vapi_t2v1_info * h,
                                        double * temperature,
                                        ncrystal_vapi_error_t * err )
   {
@@ -402,57 +409,63 @@ extern "C" {
   }
 
   static size_t
-  ncrystal_vapi_t2v1_info_composition( const ncrystal_vapi_t2v1_info_t * h,
-                                       int prefer_natural_elements,
-                                       ncrystal_vapi_natabund_t natabund,
-                                       void * natabund_state,
-                                       ncrystal_vapi_t2v1_component_t * cmps,
-                                       size_t capacity,
-                                       ncrystal_vapi_error_t * err )
+  ncrystal_vapi_t2v1_info_composition
+  ( const struct ncrystal_vapi_t2v1_info * h,
+    int prefer_natural_elements,
+    size_t (*natabund)( void *, unsigned long, unsigned long *, double *,
+                        size_t ),
+    void * natabund_state,
+    unsigned long * Z,
+    unsigned long * A,
+    double * fraction,
+    size_t capacity,
+    ncrystal_vapi_error_t * err )
   {
     return NCVC::composition( h, prefer_natural_elements, natabund,
-                              natabund_state, cmps, capacity, err );
+                              natabund_state, Z, A, fraction, capacity, err );
   }
 
   static int
   ncrystal_vapi_t2v1_scatter_is_oriented
-  ( const ncrystal_vapi_t2v1_scatter_t * h )
+  ( const struct ncrystal_vapi_t2v1_scatter * h )
   {
     nc_assert_always( h != nullptr );
     return NCVC::extract( h ).proc->isOriented() ? 1 : 0;
   }
 
-  static ncrystal_vapi_t2v1_scatter_t *
+  static struct ncrystal_vapi_t2v1_scatter *
   ncrystal_vapi_t2v1_create_scatter( const char * cfgstr,
                                      ncrystal_vapi_error_t * err )
   {
-    return NCVC::createProc<ncrystal_vapi_t2v1_scatter_t>( cfgstr, true, err );
+    return NCVC::createProc<struct ncrystal_vapi_t2v1_scatter>( cfgstr, true,
+                                                                err );
   }
 
-  static ncrystal_vapi_t2v1_scatter_t *
-  ncrystal_vapi_t2v1_clone_scatter( const ncrystal_vapi_t2v1_scatter_t * h,
+  static struct ncrystal_vapi_t2v1_scatter *
+  ncrystal_vapi_t2v1_clone_scatter( const struct ncrystal_vapi_t2v1_scatter * h,
                                     ncrystal_vapi_error_t * err )
   {
     return NCVC::cloneProc( h, true, err );
   }
 
   static void
-  ncrystal_vapi_t2v1_deallocate_scatter( ncrystal_vapi_t2v1_scatter_t * h )
+  ncrystal_vapi_t2v1_deallocate_scatter( struct ncrystal_vapi_t2v1_scatter * h )
   {
     NCVC::deallocateProc( h );
   }
 
   static int
-  ncrystal_vapi_t2v1_scatter_cross_section( ncrystal_vapi_t2v1_scatter_t * h,
-                                            const double * n,
-                                            double * xsect,
-                                            ncrystal_vapi_error_t * err )
+  ncrystal_vapi_t2v1_scatter_cross_section
+  ( struct ncrystal_vapi_t2v1_scatter * h,
+    const double * n,
+    double * xsect,
+    ncrystal_vapi_error_t * err )
   {
     return NCVC::crossSection( h, n, xsect, err );
   }
 
   static int
-  ncrystal_vapi_t2v1_sample_scatter( ncrystal_vapi_t2v1_scatter_t * h,
+  ncrystal_vapi_t2v1_sample_scatter( struct ncrystal_vapi_t2v1_scatter * h,
                                      double (*rng)( void * ),
                                      void * rng_state,
                                      double * n,
@@ -461,31 +474,33 @@ extern "C" {
     return NCVC::sampleScatter( h, rng, rng_state, n, err );
   }
 
-  static ncrystal_vapi_t2v1_absorption_t *
+  static struct ncrystal_vapi_t2v1_absorption *
   ncrystal_vapi_t2v1_create_absorption( const char * cfgstr,
                                         ncrystal_vapi_error_t * err )
   {
-    return NCVC::createProc<ncrystal_vapi_t2v1_absorption_t>( cfgstr, false,
-                                                              err );
+    return NCVC::createProc<struct ncrystal_vapi_t2v1_absorption>( cfgstr,
+                                                                   false,
+                                                                   err );
   }
 
-  static ncrystal_vapi_t2v1_absorption_t *
+  static struct ncrystal_vapi_t2v1_absorption *
   ncrystal_vapi_t2v1_clone_absorption
-  ( const ncrystal_vapi_t2v1_absorption_t * h, ncrystal_vapi_error_t * err )
+  ( const struct ncrystal_vapi_t2v1_absorption * h,
+    ncrystal_vapi_error_t * err )
   {
     return NCVC::cloneProc( h, false, err );
   }
 
   static void
   ncrystal_vapi_t2v1_deallocate_absorption
-  ( ncrystal_vapi_t2v1_absorption_t * h )
+  ( struct ncrystal_vapi_t2v1_absorption * h )
   {
     NCVC::deallocateProc( h );
   }
 
   static int
   ncrystal_vapi_t2v1_absorption_cross_section
-  ( ncrystal_vapi_t2v1_absorption_t * h, const double * n, double * xsect,
+  ( struct ncrystal_vapi_t2v1_absorption * h, const double * n, double * xsect,
     ncrystal_vapi_error_t * err )
   {
     return NCVC::crossSection( h, n, xsect, err );
