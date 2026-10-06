@@ -147,10 +147,12 @@ namespace NCRYSTAL_NAMESPACE {
       inline std::size_t getValue_sizet( const Tokens& tokens, StrView key )
       {
         double x = getValue_dbl(tokens,key);
-        std::size_t res;
-        if ( ! (x >= 0.0 && (res=static_cast<std::size_t>(x))==x ) )
+        //Range check before the cast (exact limit on both 32 and 64bit):
+        static const double xlim
+          = std::ldexp( 1.0, std::numeric_limits<std::size_t>::digits );
+        if ( ! ( x >= 0.0 && x < xlim && std::floor(x) == x ) )
           NCRYSTAL_THROW2(BadInput,"Invalid value for parameter \""<<key<<"\"");
-        return res;
+        return static_cast<std::size_t>(x);
       }
 
       inline double getValue_weight( const Tokens& tokens, StrView key )

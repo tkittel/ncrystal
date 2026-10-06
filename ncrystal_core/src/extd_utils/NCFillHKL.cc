@@ -587,6 +587,13 @@ namespace NCRYSTAL_NAMESPACE {
                         <<ncgetenv_varname("FILLHKL_MEMLIM")<<" (must be a"
                         " positive number of MB).");
       const double mb = bytes / ( 1024.0 * 1024.0 );
+      //Number of bits must also be indexable (only relevant on 32bit):
+      if ( !( 8.0 * bytes
+              < static_cast<double>(std::numeric_limits<std::size_t>::max()) ) )
+        NCRYSTAL_THROW2(CalcError,"Calculation of HKL planes for dcutoff = "
+                        <<dcutoff<<" Aa would need "<<fmt(mb,"%.4g")<<" MB of"
+                        " memory for bookkeeping, which is too much for this"
+                        " platform. Increase dcutoff.");
       if ( mb > limit_mb )
         NCRYSTAL_THROW2(CalcError,"Calculation of HKL planes for dcutoff = "
                         <<dcutoff<<" Aa would need "<<fmt(mb,"%.4g")<<" MB of"
