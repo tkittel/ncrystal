@@ -135,6 +135,10 @@ namespace NCRYSTAL_NAMESPACE {
         //contrib_at_a (a local stack array) and two distinct SOfAlphaGrid
         //instances' member arrays (never overlapping, since they are separate
         //objects/members):
+        //
+        //buffersDisjoint only compares the addresses, yet cppcheck raise it as
+        //an issue anyway (content of contrib_out is still unset here):
+        // cppcheck-suppress uninitvar symbolName=contrib_out
         nc_assert( buffersDisjoint( contrib_out, npts, Sb1_arr, npts ) );
         nc_assert( buffersDisjoint( contrib_out, npts, Sb2_arr, npts ) );
         nc_assert( buffersDisjoint( contrib_out, npts, alpha_arr, npts ) );
