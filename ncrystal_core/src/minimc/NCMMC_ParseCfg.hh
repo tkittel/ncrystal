@@ -155,6 +155,30 @@ namespace NCRYSTAL_NAMESPACE {
         return static_cast<std::size_t>(x);
       }
 
+      inline std::uint64_t getValue_uint64_max1e18( const Tokens& tokens, StrView key )
+      {
+        auto val_str = getValue_str(tokens,key);
+        auto val_uint64 = val_str.toUInt64();
+        constexpr std::uint64_t maxval = 1000000000000000000ULL;//1e18
+        std::uint64_t val = maxval + 1;//invalid
+        if ( val_uint64.has_value() ) {
+          val = val_uint64.value();
+        } else {
+          auto val_dbl = val_str.toDbl();
+          if ( val_dbl.has_value() ) {
+            double x = val_dbl.value();
+            if ( std::isfinite(x)
+                 && x >= 0.0
+                 && x <= 2.0e18
+                 && std::floor(x) == x )
+              val = static_cast<std::uint64_t>(x);
+          }
+        }
+        if ( !(val <= maxval) )
+          NCRYSTAL_THROW2(BadInput,"Invalid value for parameter \""<<key<<"\"");
+        return val;
+      }
+
       inline double getValue_weight( const Tokens& tokens, StrView key )
       {
         double w = getValue_dbl(tokens,key);
