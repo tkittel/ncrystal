@@ -26,6 +26,22 @@ import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
 import numpy
 
+def _arr_repr( a ):
+    #numpy omits ", dtype=int32" when int32 is the platform default (i.e. on
+    #32bit platforms), so in that case mimic numpy's repr with the dtype (incl.
+    #its line wrapping) for platform independent output:
+    r = repr(a)
+    if 'dtype=' in r:
+        return r
+    import numpy as np
+    s = 'array(' + np.array2string( a, separator=', ', prefix='array(',
+                                     suffix=',' ) + ','
+    dt = f'dtype={a.dtype})'
+    lastlinelen = len(s) - ( s.rfind('\n') + 1 )
+    lw = np.get_printoptions()['linewidth']
+    return s + ( '\n' + ' '*len('array(') if lastlinelen + len(dt) + 1 > lw
+                 else ' ' ) + dt
+
 print("test 1)")
 mat = NC.load('Al_sg225.ncmat')
 
@@ -62,9 +78,9 @@ for idx,e in enumerate(mat.info.hklObjects()):
     print(f'e.fsquared={e.fsquared:.12g}')
     print(f'e.d={e.d:.14g}')
     print(f'e.dspacing={e.dspacing:.14g}')
-    print(f'{e.h=}')
-    print(f'{e.k=}')
-    print(f'{e.l=}')
+    print(f'e.h={_arr_repr(e.h)}')
+    print(f'e.k={_arr_repr(e.k)}')
+    print(f'e.l={_arr_repr(e.l)}')
     print(f'{e.mult=}')
     print(f'{e.multiplicity=}')
 
