@@ -33,7 +33,10 @@ jobs:
           - { os: ubuntu-latest,     CC: gcc,      CXX: g++,        python: '3.14', buildtype: 'Release' }
           - { os: macos-latest,      CC: clang,    CXX: clang++,    python: "3.13", buildtype: 'Release' }
           - { os: macos-15-intel,    CC: clang,    CXX: clang++,    python: "3.11", buildtype: 'Release' }
-    name: ${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}-${{ matrix.buildtype }}
+          #Non-threaded builds (threads defaults to ON when not specified):
+          - { os: ubuntu-latest,     CC: gcc-14,   CXX: g++-14,     python: '3.13', buildtype: 'Debug',   threads: 'OFF' }
+          - { os: macos-latest,      CC: clang,    CXX: clang++,    python: "3.12", buildtype: 'Release', threads: 'OFF' }
+    name: ${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}-${{ matrix.buildtype }}${{ matrix.threads == 'OFF' && '-nothreads' || '' }}
     runs-on: ${{ matrix.os }}
     env:
       CC: ${{ matrix.CC }}
@@ -73,6 +76,7 @@ jobs:
         -DNCRYSTAL_ENABLE_TESTING=ON
         -DMCTOOLS_REQUIRE_ALL_TEST_DEPS=ON
         -DNCRYSTAL_TEST_ENABLE_LONG=ON
+        -DNCRYSTAL_ENABLE_THREADS=${{ matrix.threads || 'ON' }}
 
     - name: Build
       run: >
