@@ -322,6 +322,14 @@ void NCV::VDOSGnData::interpolateDensityMany( Span<const double> energy,
     buf_ix[i] = static_cast<double>(ix);
   }
 
+#ifndef NDEBUG
+  //Sanity check what we pass to vdosGnInterpolateDensityRun
+  for (std::size_t i = beg; i < end; ++i) {
+    nc_assert( buf_ix[i] >= 0.0 );
+    nc_assert( buf_ix[i] <= static_cast<double>(m_spec_size_minus_2) );
+  }
+#endif
+
   vdosGnInterpolateDensityRun( op + beg, buf_f + beg, buf_ix + beg,
                                m_spec.data(), end - beg );
 
