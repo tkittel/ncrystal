@@ -361,8 +361,8 @@ NC::SABRef::refSampleAlphaBeta( RNG& rng,
   std::pair<NC::VectD,NC::VectD> res;
   auto& a = res.first;
   auto& b = res.second;
-  a.reserve( nsample );
-  b.reserve( nsample );
+  a.reserve( countToSizeT( nsample ) );
+  b.reserve( countToSizeT( nsample ) );
   for ( auto i : ncrange( ncells ) ) {
     auto n = vectAt(cellcount,i);
     if (!n)
