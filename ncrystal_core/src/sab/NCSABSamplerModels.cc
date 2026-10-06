@@ -60,7 +60,8 @@ NC::PairDD NC::SAB::SABSamplerAtE_Alg1::sampleAlphaBeta(double ekin_div_kT,
   if ( s_loopmax_env )
     loopmax = s_loopmax_env;
 
-  unsigned iloopmax(loopmax+1);
+  std::uint64_t iloopmax( loopmax > 0
+                          ? static_cast<std::uint64_t>(loopmax) + 1 : 1 );
   while (--iloopmax) {
     double beta;
     unsigned ibetaSampled;
