@@ -36,6 +36,9 @@ def _enable_fpe():
         import numpy # noqa F401
     except ImportError:
         pass
+    #Likewise stdlib math modules:
+    import math # noqa F401
+    import cmath # noqa F401
     import sys
     if '--plot' in sys.argv[1:]:
         print('Not enabling FPE due to "--plot" seen in sys.argv')
