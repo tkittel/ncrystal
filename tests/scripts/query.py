@@ -138,6 +138,13 @@ def main():
     test_cli('util','list')
     test_cli('util','wl2ekin','1.8')
     test_cli('util','ekin2wl','0.025')
+    #Result depends on the build, so only check the format:
+    assert ncquery(['util','has_threads'],unpack=False) in ('[true]','[false]')
+    with ensure_error(NCBadInput,
+                      'Invalid util query: ["util","has_threads","1"]'
+                      ' (no arguments should come after:'
+                      ' ["util","has_threads"])'):
+        test('util','has_threads','1')
 
     with ensure_error(ArgumentError,
                       'the following arguments are required: STR'):

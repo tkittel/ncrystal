@@ -92,7 +92,7 @@ Caught expected NCBadInput('Invalid JSON query key: "foo"')
 ['run', 'scenario', 'inspectcfg', 'cfgdoc']
 ===========================================
 ============= CLI >>util list<< ====================
-['wl2ekin', 'ekin2wl']
+['wl2ekin', 'ekin2wl', 'has_threads']
 ===========================================
 ============= CLI >>util wl2ekin 1.8<< ====================
 0.0252482128412
@@ -100,6 +100,9 @@ Caught expected NCBadInput('Invalid JSON query key: "foo"')
 ============= CLI >>util ekin2wl 0.025<< ====================
 1.80891359225
 ===========================================
+
+>>> Sending query: ['util', 'has_threads', '1']
+Caught expected NCBadInput('Invalid util query: ["util","has_threads","1"] (no arguments should come after: ["util","has_threads"])')
 ============= CLI >><< ====================
 Caught expected ArgumentError('the following arguments are required: STR')
 ============= CLI >>foo<< ====================

@@ -75,10 +75,23 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr auto sv_list = StrView::make("list");
       constexpr auto sv_wl2ekin = StrView::make("wl2ekin");
       constexpr auto sv_ekin2wl = StrView::make("ekin2wl");
+      constexpr auto sv_has_threads = StrView::make("has_threads");
       if ( key == sv_list ) {
         if ( nargs != 0 )
           invalid("no arguments should come after: [\"util\",\"list\"]");
-        os<<"[\"wl2ekin\", \"ekin2wl\"]";
+        os<<"[\"wl2ekin\", \"ekin2wl\", \"has_threads\"]";
+      } else if ( key == sv_has_threads ) {
+        //Whether NCrystal was built with thread support. The result is always
+        //exactly "[true]" or "[false]", so it can be checked without a JSON
+        //parser.
+        if ( nargs != 0 )
+          invalid("no arguments should come after:"
+                  " [\"util\",\"has_threads\"]");
+#ifdef NCRYSTAL_DISABLE_THREADS
+        os<<"[false]";
+#else
+        os<<"[true]";
+#endif
       } else if ( isOneOf(key,sv_wl2ekin,sv_ekin2wl) ) {
         double val = ( nargs == 1
                        ? arg(0).toDbl().value_or(-1.0)
