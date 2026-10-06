@@ -16,6 +16,7 @@ jobs:
 
     name: ${{ matrix.os }}.openmc-${{ matrix.openmcbranch }}.python-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     defaults:
       run:
         shell: bash -el {0}
