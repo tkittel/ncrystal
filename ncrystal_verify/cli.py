@@ -61,6 +61,8 @@ def run_test( script, verbose ):
     #Needed for windows, leaving them on all the time for now:
     env['PYTHONIOENCODING']='UTF-8'
     env['PYTHONLEGACYWINDOWSSTDIO']='UTF-8'
+    #Python 3.13+'s argparse/traceback output colours can break tests:
+    env['PYTHON_COLORS']='0'
     #Make sure we ignore any plugins in the environment, or we might get
     #spurious test failures:
     env['NCRYSTAL_DISABLE_DYNLOAD']='1'

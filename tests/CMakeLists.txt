@@ -73,10 +73,13 @@ if ( NOT NCRYSTAL_ENABLE_DATA STREQUAL "EMBED" )
         "NCRYSTAL_DATADIR=set:${NCrystalRoot_SOURCE_DIR}/data" )
 endif()
 
+#Avoid anything that might break our tests, including Python 3.13+'s
+#argparse/traceback output colours:
 list(
   APPEND nctest_pyenvmod
   "PYTHONIOENCODING=set:UTF-8"
   "PYTHONLEGACYWINDOWSSTDIO=set:UTF-8"
+  "PYTHON_COLORS=set:0"
 )
 
 option(
