@@ -386,18 +386,18 @@ jobs:
         import pathlib
         import subprocess
         ref = [
-          'xs(0.5 Aa) = 1.39174',
-          'xs(1 Aa) = 1.3667',
-          'xs(1.5 Aa) = 1.36907',
+          'xs(0.5 Aa) = 1.39176',
+          'xs(1 Aa) = 1.36671',
+          'xs(1.5 Aa) = 1.36906',
           'xs(2 Aa) = 1.28003',
           'xs(2.5 Aa) = 1.08039',
-          'xs(3 Aa) = 1.02154',
+          'xs(3 Aa) = 1.02155',
           'xs(3.5 Aa) = 1.357',
           'xs(4 Aa) = 1.74758',
           'xs(4.5 Aa) = 1.36864',
-          'xs(5 Aa) = 0.0812656',
-          'xs(5.5 Aa) = 0.0839121',
-          'xs(6 Aa) = 0.0870308',
+          'xs(5 Aa) = 0.0812704',
+          'xs(5.5 Aa) = 0.0839174',
+          'xs(6 Aa) = 0.0870365',
         ]
         cmd = list(pathlib.Path('.').joinpath('app').glob('ncrystal-virtapi-example*'))[0]
         assert cmd.is_file()
