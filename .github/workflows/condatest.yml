@@ -122,7 +122,7 @@ jobs:
           cd mcstasrun
 
           cp "${CONDA_PREFIX}/share/mcstas/resources/examples/NCrystal/NCrystal_example/NCrystal_example.instr" .
-          mcrun NCrystal_example.instr sample_cfg=Al_sg225.ncmat -s1000 -n1e5
+          mcrun --no-mpi NCrystal_example.instr sample_cfg=Al_sg225.ncmat -s1000 -n1e5
 
       - name: Uninstall NCrystal and install conda-forge NCrystal
         run: |
@@ -135,7 +135,7 @@ jobs:
           mkdir mcstasrun2
           cd mcstasrun2
           cp "${CONDA_PREFIX}/share/mcstas/resources/examples/NCrystal/NCrystal_example/NCrystal_example.instr" .
-          mcrun NCrystal_example.instr sample_cfg=Al_sg225.ncmat -s1000 -n1e5
+          mcrun --no-mpi NCrystal_example.instr sample_cfg=Al_sg225.ncmat -s1000 -n1e5
 
       #Final step, so tmate step can check if we got this far.
       - name: Final
