@@ -245,11 +245,9 @@ NC::VDOS::expandVDOSToGnFcts( const VDOSData& vdosdata,
   //look at the contribution of each order insided the kinematic reach of
   //targetEmax, and use it to determine alpha/beta limits:
 
-  Optional<std::vector<ABRangeInfo>> abRangesForWrite;
-  if( dump_vdosabranges ) {
-    abRangesForWrite.emplace();
-    abRangesForWrite.value().reserve(max_phonon_order);
-  }
+  std::vector<ABRangeInfo> abRangesForWrite;
+  if( dump_vdosabranges )
+    abRangesForWrite.reserve(max_phonon_order);
 
   for ( unsigned n = 1; n<=max_phonon_order; ++n ) {
     auto abRange = findAlphaBetaRangeOfOrder(n);
@@ -258,11 +256,11 @@ NC::VDOS::expandVDOSToGnFcts( const VDOSData& vdosdata,
     //knows which parts of each Gn (and alpha) function to consider. Also
     //fillSABFromVDOS could perhaps take advantage.
     res.sabRange = res.sabRange.getUnion( abOverlap );
-    if ( abRangesForWrite.has_value() )
-      abRangesForWrite.value().push_back( { abRange, abOverlap } );
+    if ( dump_vdosabranges )
+      abRangesForWrite.push_back( { abRange, abOverlap } );
   }
-  if ( abRangesForWrite.has_value() )
-    writeFileWithABRanges(abRangesForWrite.value(),targetEmax_div_kT);
+  if ( dump_vdosabranges )
+    writeFileWithABRanges(abRangesForWrite,targetEmax_div_kT);
 
   return res;
 }
