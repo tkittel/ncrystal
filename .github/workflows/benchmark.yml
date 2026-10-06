@@ -50,6 +50,7 @@ jobs:
           - { os: macos-15-intel, label: macos-15-intel }
     name: ${{ matrix.platform.label }} (run ${{ matrix.repeat }})
     runs-on: ${{ matrix.platform.os }}
+    timeout-minutes: 45
     defaults:
       run:
         shell: bash
@@ -174,6 +175,7 @@ jobs:
     needs: [ benchmark ]
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Download all per-leg logs
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
