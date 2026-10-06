@@ -16,6 +16,7 @@ jobs:
 
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
 
     steps:
     - name: Checkout
