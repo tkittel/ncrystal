@@ -37,6 +37,8 @@ def filter_py_line( origline ):
         line = line.replace('import NCrystalDev.','import NCrystal.')
     elif 'from NCrystalDev.' in line:
         line = line.replace('from NCrystalDev.','from NCrystal.')
+    elif 'from NCrystalDev import ' in line:
+        line = line.replace('from NCrystalDev import ','from NCrystal import ')
     elif 'import NCrystalDev' in line:
         line =  line.replace('import NCrystalDev','import NCrystal')
     assert 'NCrystalDev' not in line, f'Bad import in: {line}'
