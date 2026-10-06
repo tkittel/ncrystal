@@ -167,6 +167,10 @@ namespace NCRYSTAL_NAMESPACE {
   bool intervalsOverlap( const PairDD&, const PairDD& );
   bool intervalsDisjoint(double a0, double b0, double a1, double b1);
 
+  //Convert a count (e.g. a requested number of samples) to std::size_t,
+  //throwing BadInput if it does not fit (only possible on 32bit platforms):
+  std::size_t countToSizeT( std::uint64_t n );
+
 #ifndef NDEBUG
   //For checking ncrestrict marked arrays in nc_assert(..).
   template <class TValue>
