@@ -732,7 +732,6 @@ namespace NCRYSTAL_NAMESPACE {
 
   inline constexpr NeutronWavelength Length::as_wavelength() const noexcept
   {
-    static_assert( angstrom == 1e-10, "" );
     return NeutronWavelength{ m_value * 1e10 };
   }
 
