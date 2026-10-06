@@ -230,7 +230,7 @@ void NC::FastConvolve::convolveDirect( const VectD& a1, const VectD& a2,
 {
   const std::size_t n1 = a1.size();
   const std::size_t n2 = a2.size();
-  nc_assert( n1 >= 2 && n2 >= 2 );
+  nc_assert( n1 >= 1 && n2 >= 1 );
   y.resize( n1 + n2 - 1 );
   for ( auto k : ncrange(y.size()) ) {
     const std::size_t ilo = ( k + 1 >= n2 ) ? k + 1 - n2 : std::size_t(0);
