@@ -786,6 +786,7 @@ double NC::VDOS::estimateSpectrumCrossing( double x0, double binwidth,
                                            double yval, std::size_t nExtra )
 {
   const std::size_t idxHi = idxLo + 1;
+  nc_assert_always( idxHi < spec.size() );
   nc_assert( ncmin(spec[idxLo],spec[idxHi]) < yval
             && yval <= ncmax(spec[idxLo],spec[idxHi]) );
   auto xAt = [x0,binwidth](std::size_t i) { return VDOS::equidistantGridPoint(x0,binwidth,i); };
@@ -902,10 +903,11 @@ NC::PairDD NC::VDOS::estimateGnErange( double egrid_lower, double egrid_binwidth
                                        Span<const double> spec,
                                        double relcontriblvl )
 {
-  nc_assert( spec.size() >= 2 );
-  nc_assert( relcontriblvl > 0.0 && relcontriblvl < 1.0 );
-  nc_assert( std::isfinite(egrid_lower) && egrid_binwidth > 0.0 );
-  nc_assert( *std::min_element(spec.begin(),spec.end()) >= 0.0 );
+  //fixme: revisit all _always:
+  nc_assert_always( spec.size() >= 2 );
+  nc_assert_always( relcontriblvl > 0.0 && relcontriblvl < 1.0 );
+  nc_assert_always( std::isfinite(egrid_lower) && egrid_binwidth > 0.0 );
+  nc_assert_always( *std::min_element(spec.begin(),spec.end()) >= 0.0 );
   auto xAt = [egrid_lower,egrid_binwidth](std::size_t i)
   {
     return equidistantGridPoint(egrid_lower,egrid_binwidth,i);
