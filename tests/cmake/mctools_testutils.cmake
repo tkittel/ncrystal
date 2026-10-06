@@ -312,6 +312,10 @@ function(
     target_link_libraries( ${name} PRIVATE ${extra_link_libs} )
     target_include_directories( ${name} ${extra_inc_dirs} )
     mctools_apply_strict_comp_properties( ${name} )
+    #Same extra flags as the library (e.g. -fp-model=precise for Intel, whose
+    #fast-math default otherwise breaks bit-exact reference calculations):
+    mctools_detect_extra_cflags( tmp_extra_cflags )
+    target_compile_options( ${name} PRIVATE ${tmp_extra_cflags} )
 
     if ( EXISTS "${libdir}/include" )
       if ( is_module )
@@ -359,6 +363,10 @@ function(
       target_compile_features( ${bn} PRIVATE cxx_std_11 )
     endif()
     mctools_apply_strict_comp_properties( ${bn} )
+    #Same extra flags as the library (e.g. -fp-model=precise for Intel, whose
+    #fast-math default otherwise breaks bit-exact reference calculations):
+    mctools_detect_extra_cflags( tmp_extra_cflags )
+    target_compile_options( ${bn} PRIVATE ${tmp_extra_cflags} )
     mctools_testutils_internal_detectlibdeps( "deplist" "${srcfiles}" "" )
     foreach( dep ${deplist} )
       target_link_libraries( ${bn} PRIVATE "TestLib_${dep}" )
