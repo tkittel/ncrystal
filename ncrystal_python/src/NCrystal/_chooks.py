@@ -104,6 +104,7 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
                                                        ctypes.c_uint,ctypes.POINTER(ctypes.c_uint), ctypes.c_double,
                                                        ctypes.POINTER(ctypes.c_double), ctypes.c_char_p, ctypes.c_void_p)
     _ulong = ctypes.c_ulong
+    _size_t = ctypes.c_size_t
     _charptr = ctypes.POINTER(ctypes.c_char)
     _charptrptr = ctypes.POINTER(_charptr)
 
@@ -593,8 +594,8 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
         return ndarray_to_dblp(ekin),len(ekin),repeat,ekin
 
     _raw_xs_no = _wrap('ncrystal_crosssection_nonoriented',None,(ncrystal_process_t,_dbl,_dblp),hide=True)
-    _raw_xs_no_many = _wrap('ncrystal_crosssection_nonoriented_many',None,(ncrystal_process_t,_dblp,_ulong,
-                                                                           _ulong,_dblp),hide=True)
+    _raw_xs_no_many = _wrap('ncrystal_crosssection_nonoriented_many_sz',None,(ncrystal_process_t,_dblp,_size_t,
+                                                                              _size_t,_dblp),hide=True)
     _empty_arrayf = _np.empty(shape=(0,),dtype=float) if _np else ()
     _empty_arrayf_2tuple = ( ( _np.empty(shape=(0,),dtype=float),
                                _np.empty(shape=(0,),dtype=float) )
@@ -623,10 +624,10 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
     functions['ncrystal_domain'] = ncrystal_domain
 
     _raw_samplesct_iso =_wrap('ncrystal_samplescatterisotropic',None,(ncrystal_scatter_t,_dbl,_dblp,_dblp),hide=True)
-    _raw_samplesct_iso_many =_wrap('ncrystal_samplescatterisotropic_many',None,
-                                   (ncrystal_scatter_t,_dblp,_ulong,_ulong,_dblp,_dblp),hide=True)
+    _raw_samplesct_iso_many =_wrap('ncrystal_samplescatterisotropic_many_sz',None,
+                                   (ncrystal_scatter_t,_dblp,_size_t,_size_t,_dblp,_dblp),hide=True)
     _raw_samplescat = _wrap('ncrystal_samplescatter',None,( ncrystal_scatter_t, _dbl,_dbl*3,_dblp,_dbl*3),hide=True)
-    _raw_samplescat_many = _wrap('ncrystal_samplescatter_many',None,( ncrystal_scatter_t,_dbl,_dbl*3,_ulong,
+    _raw_samplescat_many = _wrap('ncrystal_samplescatter_many_sz',None,( ncrystal_scatter_t,_dbl,_dbl*3,_size_t,
                                                                       _dblp,_dblp,_dblp,_dblp),hide=True)
     def ncrystal_samplesct_iso(scat,ekin,repeat=None):
         many = _prepare_many(ekin,repeat)
@@ -717,7 +718,7 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
 
     _wrap('ncrystal_create_info',ncrystal_info_t,(_cstr,))
     _wrap('ncrystal_create_scatter',ncrystal_scatter_t,(_cstr,))
-    _wrap('ncrystal_create_scatter_builtinrng',ncrystal_scatter_t,(_cstr,_ulong))
+    _wrap('ncrystal_create_scatter_builtinrng64',ncrystal_scatter_t,(_cstr,_ulong,_ulong))
     _wrap('ncrystal_create_absorption',ncrystal_absorption_t,(_cstr,))
 
     _raw_multicreate_direct = _wrap('ncrystal_multicreate_direct',None,
@@ -757,7 +758,7 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
 
     _wrap('ncrystal_clone_absorption',ncrystal_absorption_t,(ncrystal_absorption_t,))
     _wrap('ncrystal_clone_scatter',ncrystal_scatter_t,(ncrystal_scatter_t,))
-    _wrap('ncrystal_clone_scatter_rngbyidx',ncrystal_scatter_t,(ncrystal_scatter_t,_ulong))
+    _wrap('ncrystal_clone_scatter_rngbyidx64',ncrystal_scatter_t,(ncrystal_scatter_t,_ulong,_ulong))
     _wrap('ncrystal_clone_scatter_rngforcurrentthread',ncrystal_scatter_t,(ncrystal_scatter_t,))
     _wrap('ncrystal_decodecfg_vdoslux',_uint,(_cstr,))
     _wrap('ncrystal_has_factory',_int,(_cstr,))

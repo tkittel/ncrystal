@@ -26,6 +26,7 @@
 /****************************/
 
 #include "NCrystal/ncapi.h"
+#include <stddef.h>/* size_t */
 
 #ifdef __cplusplus
 extern "C" {
@@ -113,6 +114,10 @@ extern "C" {
 #  undef ncrystal_clone_scatter_rngbyidx
 #endif
 #define ncrystal_clone_scatter_rngbyidx NCRYSTAL_APPLY_C_NAMESPACE(clone_scatter_rngbyidx)
+#ifdef ncrystal_clone_scatter_rngbyidx64
+#  undef ncrystal_clone_scatter_rngbyidx64
+#endif
+#define ncrystal_clone_scatter_rngbyidx64 NCRYSTAL_APPLY_C_NAMESPACE(clone_scatter_rngbyidx64)
 #ifdef ncrystal_clone_scatter_rngforcurrentthread
 #  undef ncrystal_clone_scatter_rngforcurrentthread
 #endif
@@ -153,6 +158,10 @@ extern "C" {
 #  undef ncrystal_create_scatter_builtinrng
 #endif
 #define ncrystal_create_scatter_builtinrng NCRYSTAL_APPLY_C_NAMESPACE(create_scatter_builtinrng)
+#ifdef ncrystal_create_scatter_builtinrng64
+#  undef ncrystal_create_scatter_builtinrng64
+#endif
+#define ncrystal_create_scatter_builtinrng64 NCRYSTAL_APPLY_C_NAMESPACE(create_scatter_builtinrng64)
 #ifdef ncrystal_crosssection
 #  undef ncrystal_crosssection
 #endif
@@ -165,6 +174,10 @@ extern "C" {
 #  undef ncrystal_crosssection_nonoriented_many
 #endif
 #define ncrystal_crosssection_nonoriented_many NCRYSTAL_APPLY_C_NAMESPACE(crosssection_nonoriented_many)
+#ifdef ncrystal_crosssection_nonoriented_many_sz
+#  undef ncrystal_crosssection_nonoriented_many_sz
+#endif
+#define ncrystal_crosssection_nonoriented_many_sz NCRYSTAL_APPLY_C_NAMESPACE(crosssection_nonoriented_many_sz)
 #ifdef ncrystal_dbg_process
 #  undef ncrystal_dbg_process
 #endif
@@ -561,6 +574,10 @@ extern "C" {
 #  undef ncrystal_samplescatter_many
 #endif
 #define ncrystal_samplescatter_many NCRYSTAL_APPLY_C_NAMESPACE(samplescatter_many)
+#ifdef ncrystal_samplescatter_many_sz
+#  undef ncrystal_samplescatter_many_sz
+#endif
+#define ncrystal_samplescatter_many_sz NCRYSTAL_APPLY_C_NAMESPACE(samplescatter_many_sz)
 #ifdef ncrystal_samplescatterisotropic
 #  undef ncrystal_samplescatterisotropic
 #endif
@@ -569,6 +586,10 @@ extern "C" {
 #  undef ncrystal_samplescatterisotropic_many
 #endif
 #define ncrystal_samplescatterisotropic_many NCRYSTAL_APPLY_C_NAMESPACE(samplescatterisotropic_many)
+#ifdef ncrystal_samplescatterisotropic_many_sz
+#  undef ncrystal_samplescatterisotropic_many_sz
+#endif
+#define ncrystal_samplescatterisotropic_many_sz NCRYSTAL_APPLY_C_NAMESPACE(samplescatterisotropic_many_sz)
 #ifdef ncrystal_scatter_t
 #  undef ncrystal_scatter_t
 #endif
@@ -581,6 +602,10 @@ extern "C" {
 #  undef ncrystal_setbuiltinrandgen_withseed
 #endif
 #define ncrystal_setbuiltinrandgen_withseed NCRYSTAL_APPLY_C_NAMESPACE(setbuiltinrandgen_withseed)
+#ifdef ncrystal_setbuiltinrandgen_withseed64
+#  undef ncrystal_setbuiltinrandgen_withseed64
+#endif
+#define ncrystal_setbuiltinrandgen_withseed64 NCRYSTAL_APPLY_C_NAMESPACE(setbuiltinrandgen_withseed64)
 #ifdef ncrystal_setbuiltinrandgen_withstate
 #  undef ncrystal_setbuiltinrandgen_withstate
 #endif
@@ -713,8 +738,11 @@ extern "C" {
   /* Alternative creation method with new RNG stream (WARNING: Using this is       */
   /* intended for unit-tests only, as it is hard to guarantee two RNG streams are  */
   /* truly independent solely based on the seed value).                            */
-  NCRYSTAL_API ncrystal_scatter_t ncrystal_create_scatter_builtinrng( const char * cfgstr,
-                                                                      unsigned long seed );
+  /* The 64bit seed is provided as two 32bit halves (seed=seed_hi*2^32+seed_lo,    */
+  /* both halves must be less than 2^32):                                          */
+  NCRYSTAL_API ncrystal_scatter_t ncrystal_create_scatter_builtinrng64( const char * cfgstr,
+                                                                        unsigned long seed_hi,
+                                                                        unsigned long seed_lo );
 
   /* Cheaply clone scatter and absorption instances. The cloned objects will be    */
   /* using the same physics models and sharing any read-only data, but will be     */
@@ -730,8 +758,11 @@ extern "C" {
   /* All objects with the same indeed will share the same RNG state, so a sensible */
   /* strategy is to use the same index for all scatter objects which are to be     */
   /* used in the same thread:                                                      */
-  NCRYSTAL_API ncrystal_scatter_t ncrystal_clone_scatter_rngbyidx( ncrystal_scatter_t,
-                                                                   unsigned long rngstreamidx );
+  /* The 64bit index is provided as two 32bit halves (idx=idx_hi*2^32+idx_lo, both */
+  /* halves must be less than 2^32):                                               */
+  NCRYSTAL_API ncrystal_scatter_t ncrystal_clone_scatter_rngbyidx64( ncrystal_scatter_t,
+                                                                     unsigned long idx_hi,
+                                                                     unsigned long idx_lo );
 
   /* Clone function where resulting object will use specific rngstream which has   */
   /* been set aside for the current thread. Thus, this function can be called      */
@@ -1085,9 +1116,11 @@ extern "C" {
   NCRYSTAL_API void ncrystal_setrandgen( double (*rg)(void) );
 
   /* It is also possible to (re) set the RNG to the builtin generator (optionally  */
-  /* by state or integer seed) */
+  /* by state or integer seed). The 64bit seed is provided as two 32bit halves     */
+  /* (seed=seed_hi*2^32+seed_lo, both halves must be less than 2^32): */
   NCRYSTAL_API void ncrystal_setbuiltinrandgen(void);
-  NCRYSTAL_API void ncrystal_setbuiltinrandgen_withseed(unsigned long seed);
+  NCRYSTAL_API void ncrystal_setbuiltinrandgen_withseed64( unsigned long seed_hi,
+                                                           unsigned long seed_lo );
   NCRYSTAL_API void ncrystal_setbuiltinrandgen_withstate(const char*);
 
   /* If supported (which it will NOT be if the RNG was set using the C API and the */
@@ -1330,6 +1363,51 @@ extern "C" {
   /*============================================================================== */
   /*============================================================================== */
 
+  NCRYSTAL_API void ncrystal_samplescatterisotropic_many_sz( ncrystal_scatter_t,
+                                                             const double * ekin,
+                                                             size_t n_ekin,
+                                                             size_t repeat,
+                                                             double* results_ekin,
+                                                             double* results_cos_scat_angle );
+
+  NCRYSTAL_API void ncrystal_samplescatter_many_sz( ncrystal_scatter_t,
+                                                    double ekin,
+                                                    const double (*direction)[3],
+                                                    size_t repeat,
+                                                    double* results_ekin,
+                                                    double * results_dirx,
+                                                    double * results_diry,
+                                                    double * results_dirz );
+
+  NCRYSTAL_API void ncrystal_crosssection_nonoriented_many_sz( ncrystal_process_t,
+                                                               const double * ekin,
+                                                               size_t n_ekin,
+                                                               size_t repeat,
+                                                               double* results );
+
+
+
+  /*============================================================================== */
+  /*============================================================================== */
+  /*==                                                                          == */
+  /*== Various obsolete functions which are bound to be removed in future       == */
+  /*== releases of NCrystal.                                                    == */
+  /*==                                                                          == */
+  /*============================================================================== */
+  /*============================================================================== */
+
+  /* Obsolete variants of ncrystal_create_scatter_builtinrng64,                    */
+  /* ncrystal_clone_scatter_rngbyidx64 and ncrystal_setbuiltinrandgen_withseed64,  */
+  /* whose unsigned long arguments are only 32 bits on some platforms (e.g.        */
+  /* Windows and all 32bit platforms):                                             */
+  NCRYSTAL_API ncrystal_scatter_t ncrystal_create_scatter_builtinrng( const char * cfgstr,
+                                                                      unsigned long seed );
+  NCRYSTAL_API ncrystal_scatter_t ncrystal_clone_scatter_rngbyidx( ncrystal_scatter_t,
+                                                                   unsigned long rngstreamidx );
+  NCRYSTAL_API void ncrystal_setbuiltinrandgen_withseed(unsigned long seed);
+
+  /* Obsolete variants of the _many_sz functions above, with unsigned long rather  */
+  /* than size_t counts (only 32 bits on e.g. 64bit Windows):                      */
   NCRYSTAL_API void ncrystal_samplescatterisotropic_many( ncrystal_scatter_t,
                                                           const double * ekin,
                                                           unsigned long n_ekin,
@@ -1351,17 +1429,6 @@ extern "C" {
                                                             unsigned long n_ekin,
                                                             unsigned long repeat,
                                                             double* results );
-
-
-
-  /*============================================================================== */
-  /*============================================================================== */
-  /*==                                                                          == */
-  /*== Various obsolete functions which are bound to be removed in future       == */
-  /*== releases of NCrystal.                                                    == */
-  /*==                                                                          == */
-  /*============================================================================== */
-  /*============================================================================== */
 
   /*Obsolete function which now always returns 1.0. Packing factors are now        */
   /*instead absorbed into the material densities:                                  */
