@@ -1,5 +1,10 @@
 name: notebooks
 
+# Test the notebooks of the ncrystal-notebooks repository with the NCrystal
+# code of this repository, using the ncnotebookdevtool of that repository (which
+# builds NCrystal from this checkout, installs it in environments providing the
+# requirements of each notebook, and verifies that it is the one used).
+
 on:
   push:
   pull_request:
@@ -19,19 +24,23 @@ jobs:
       - name: ncdevtool checks
         run: ./src/devel/bin/ncdevtool check -n "fix""me"
 
-  build:
+  pip:
     needs: [ ncdevtool_check ]
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest, CC: gcc,      CXX: g++,        python: '3.9' }
+          - { os: ubuntu-latest, CC: gcc,      CXX: g++,        python: '3.10' }
           - { os: ubuntu-latest, CC: gcc,      CXX: g++,        python: '3.14' }
-          - { os: macos-latest,  CC: clang,    CXX: clang++,    python: "3.13" }
-    name: ${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}
+          - { os: macos-latest,  CC: clang,    CXX: clang++,    python: '3.13' }
+    name: pip.${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
+    defaults:
+      run:
+        shell: bash
 
     steps:
     - name: Checkout
@@ -39,42 +48,87 @@ jobs:
       with:
         path: src_ncrystal
 
+      #TEMPORARY: the notebook tool is not yet in mctools/ncrystal-notebooks.
+    - name: Checkout ncrystal-notebooks
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        repository: tkittel/ncrystal-notebooks
+        ref: main
+        path: src_notebooks
+
     - name: Setup python
       uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
       with:
         python-version: ${{ matrix.python }}
-        #allow-prereleases: true #Needed (Aug 2024) for Python 3.13, might need
-        #again for Python 3.14.
 
     - name: Enable parallel cmake
       run: python ./src_ncrystal/devel/bin/ncdevtool nprocs --enable-github-parallel
 
-    - name: Pip install ncrystal-core
-      run: python3 -m pip install ./src_ncrystal/ncrystal_core
+    - name: Pip install tomli (for the notebook tool with Python 3.10)
+      if: matrix.python == '3.10'
+      run: python -m pip install tomli
 
-    - name: Pip install ncrystal-python
-      run: python3 -m pip install ./src_ncrystal/ncrystal_python
+      #Notebooks marked as slow are always skipped here (to keep this CI fast).
+    - name: Test notebooks installable with pip
+      run: >-
+        python ./src_notebooks/devel/bin/ncnotebookdevtool test
+        --select pip --env venv --skip-slow -j 3
+        --ncrystal-src ./src_ncrystal
+        --workdir "${{ runner.temp }}/work"
 
-    - name: Pip install ncrystal metapkg
-      run: python3 -m pip install ./src_ncrystal/ncrystal_metapkg
+    - name: Upload logs of failed notebooks
+      if: failure()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: failed-notebooks-pip-${{ matrix.os }}-${{ matrix.python }}
+        path: |
+          ${{ runner.temp }}/work/*.log
+          ${{ runner.temp }}/work/*/*.executed.ipynb
 
-    - name: nctool --test
-      run: nctool --test
+  conda:
+    needs: [ ncdevtool_check ]
+    name: conda.ubuntu-latest
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
 
+    steps:
+    - name: Checkout
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        path: src_ncrystal
+
+      #TEMPORARY: the notebook tool is not yet in mctools/ncrystal-notebooks.
     - name: Checkout ncrystal-notebooks
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
       with:
-        repository: mctools/ncrystal-notebooks
+        repository: tkittel/ncrystal-notebooks
+        ref: main
         path: src_notebooks
 
-    - name: Pip install jupyterlab ipympl
-      run: python3 -m pip install jupyterlab ipympl
+    - uses: conda-incubator/setup-miniconda@v4
+      with:
+        miniforge-version: latest
+        channels: conda-forge
+        conda-remove-defaults: "true"
 
-    - name: Pip install optional ncrystal dependencies
-      run: python3 -m pip install -r ./src_ncrystal/devel/reqs/requirements_all.txt
+    - name: Enable parallel cmake
+      run: python ./src_ncrystal/devel/bin/ncdevtool nprocs --enable-github-parallel
 
-    - name: Test notebooks
-      env:
-        NCNOTEBOOKS_USE_NCRYSTAL_REPO:  ${{ github.workspace }}/src_ncrystal
-      run: ./src_notebooks/.github/resources/run_notebooks.x
+      #Notebooks marked as slow are always skipped here (to keep this CI fast).
+    - name: Test notebooks needing conda
+      run: >-
+        python ./src_notebooks/devel/bin/ncnotebookdevtool test
+        --select conda --env conda --skip-slow -j 2
+        --ncrystal-src ./src_ncrystal
+        --workdir "${{ runner.temp }}/work"
 
+    - name: Upload logs of failed notebooks
+      if: failure()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: failed-notebooks-conda
+        path: |
+          ${{ runner.temp }}/work/*.log
+          ${{ runner.temp }}/work/*/*.executed.ipynb
