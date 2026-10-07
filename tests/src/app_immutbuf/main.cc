@@ -23,6 +23,10 @@
 #include <iostream>
 namespace NC = NCrystal;
 
+//Verify the layout of an ImmutableBuffer type. The actual sizes depend on the
+//platform (e.g. via sizeof(std::shared_ptr)), so rather than printing them, we
+//check that the layout fulfills its design goals and print only platform
+//independent information:
 template<class TImmutableBuffer>
 void inspectBufferType() {
   using B = TImmutableBuffer;
@@ -30,34 +34,34 @@ void inspectBufferType() {
                  B,
                  NC::ImmutableBuffer<B::buffer_local_requested_size,B::buffer_alignment,typename B::metadata_type>
                  >::value, "" );
+  using TMD = typename B::metadata_type;
   std::cout<<"  ImmutableBuffer<"<<B::buffer_local_requested_size<<","<<B::buffer_alignment;
   if ( B::has_metadata )
-    std::cout<< ",TMetaData(size="<<sizeof(typename B::metadata_type)<<",align="<<alignof(typename B::metadata_type)<<")";
+    std::cout<< ",TMetaData(size="<<sizeof(TMD)<<")";
   std::cout<<">\n";
+  constexpr std::size_t sp_size = sizeof(std::shared_ptr<const void>);
   static_assert(sizeof(B)==B::object_size,"");
   static_assert(alignof(B)==B::object_alignment,"");
-  std::cout<<"     |-object size: "<<sizeof(B)<<"\n";
-  std::cout<<"     |-object_alignment: "<<B::object_alignment<<"\n";
-  std::cout<<"     |-unused_trailing_bytes: "<<B::unused_trailing_bytes<<"\n";
-  std::cout<<"     |\n";
-  //  std::cout<<"     |-_detail_min_total: "<<B::_detail_min_total<<"\n";
-  std::cout<<"     |-metadata_size: "<<B::metadata_size<<"\n";
-
-  std::cout<<"     |\n";
-  std::cout<<"     |-buffer_local_size: "<<B::buffer_local_size<<"\n";
-  std::cout<<"     |-buffer_alignment: "<<B::buffer_alignment<<"\n";
-#if 0
-  std::cout<<"     |-: "<<B::<<"\n";
-  std::cout<<"     |-: "<<B::<<"\n";
-  std::cout<<"     |-: "<<B::<<"\n";
-  std::cout<<"     |-: "<<B::<<"\n";
-  std::cout<<"     |-: "<<B::<<"\n";
-  std::cout<<"     |-: "<<B::<<"\n";
-  std::cout<<"     |-: "<<B::<<"\n";
-  std::cout<<"     |-: "<<B::<<"\n";
-  std::cout<<"     |-: "<<B::<<"\n";
-  std::cout<<"     |-: "<<B::<<"\n";
-#endif
+  //Alignment is sufficient for buffer, remote pointer and metadata:
+  static_assert(B::object_alignment%B::buffer_alignment==0,"");
+  static_assert(B::object_alignment%alignof(std::shared_ptr<const void>)==0,"");
+  static_assert(!B::has_metadata||B::object_alignment%alignof(TMD)==0,"");
+  //Local buffer fits both the requested size and a remote pointer:
+  static_assert(B::buffer_local_size>=B::buffer_local_requested_size,"");
+  static_assert(B::buffer_local_size>=sp_size,"");
+  //Metadata (if any) fits at the end, after the local buffer and mode byte:
+  static_assert(B::metadata_size>=(B::has_metadata?sizeof(TMD):0),"");
+  static_assert(B::metadata_size-B::unused_trailing_bytes
+                ==(B::has_metadata?sizeof(TMD):0),"");
+  static_assert(B::buffer_local_size+1+B::metadata_size==B::object_size,"");
+  //Compactness: no smaller multiple of the alignment would do:
+  constexpr std::size_t min_needed = 1 + B::metadata_size
+    + ( B::buffer_local_requested_size > sp_size
+        ? B::buffer_local_requested_size : sp_size );
+  static_assert(B::object_size>=min_needed,"");
+  static_assert(B::object_size-min_needed<B::object_alignment,"");
+  static_assert(B::object_size%B::object_alignment==0,"");
+  std::cout<<"     |-layout checks ok\n";
   std::cout<<"     \\----------------------------------------------\n";
 }
 
@@ -74,8 +78,8 @@ void test_specific_immutbuf()
 
   B obj_empty{ NC::NullOpt };
   nc_assert_always(obj_empty.empty());
-  auto testdata = [](const char* thedata, std::size_t len) {
-    std::cout<<"  ==> Testing with data of length "<<len<<std::endl;
+  auto testdata = [](const char* thedata, std::size_t len, const char * lenlbl) {
+    std::cout<<"  ==> Testing with data of length "<<lenlbl<<std::endl;
     B b(thedata,len,TMetaData());
     static_assert(B::buffer_local_size >= LOCALBUF_MINSIZE,"");
     static_assert(alignof(B)%BUF_ALIGN == 0,"");
@@ -122,19 +126,21 @@ void test_specific_immutbuf()
     nc_assert_always( ( len > B::buffer_local_size ) == ( b.data() == b5alt.data() ) );//same address if and only if remote
   };
 
-  testdata( data1, 1 );
-  testdata( data1, ( LOCALBUF_MINSIZE > 2 ? LOCALBUF_MINSIZE-2 : 1 ) );
-  testdata( data1, ( LOCALBUF_MINSIZE > 1 ? LOCALBUF_MINSIZE-1 : 1 ) );
-  testdata( data1, LOCALBUF_MINSIZE );
-  testdata( data1, LOCALBUF_MINSIZE+1 );
-  testdata( data1, sizeof(data1) );
-  testdata( data1, strlen(data1) );
-  testdata( data1, B::buffer_local_size-1 );
-  testdata( data1, B::buffer_local_size );
-  testdata( data1, B::buffer_local_size+1 );
+  testdata( data1, 1, "1" );
+  testdata( data1, ( LOCALBUF_MINSIZE > 2 ? LOCALBUF_MINSIZE-2 : 1 ),
+            "max(1,requested-2)" );
+  testdata( data1, ( LOCALBUF_MINSIZE > 1 ? LOCALBUF_MINSIZE-1 : 1 ),
+            "max(1,requested-1)" );
+  testdata( data1, LOCALBUF_MINSIZE, "requested" );
+  testdata( data1, LOCALBUF_MINSIZE+1, "requested+1" );
+  testdata( data1, sizeof(data1), "sizeof(data1)" );
+  testdata( data1, strlen(data1), "strlen(data1)" );
+  testdata( data1, B::buffer_local_size-1, "buffer_local_size-1" );
+  testdata( data1, B::buffer_local_size, "buffer_local_size" );
+  testdata( data1, B::buffer_local_size+1, "buffer_local_size+1" );
   std::vector<char> v;
   v.resize(2000000,char(17));
-  testdata( &v[0], v.size() );
+  testdata( &v[0], v.size(), "2000000" );
 }
 
 void test_immutbuf()
@@ -203,8 +209,19 @@ void test_immutbuf()
 int main() {
   using B = NC::ImmutableBuffer< 23, 16, uint32_t>;
   inspectBufferType<B>();
-  std::cout<<sizeof(B)<<std::endl;
-  std::cout<<sizeof(NC::SmallVector<B,8,NC::SVMode::FASTACCESS>)<<std::endl;
+  //ImmutableBuffers in a SmallVector (8 kept locally):
+  using SV = NC::SmallVector<B,8,NC::SVMode::FASTACCESS>;
+  static_assert(sizeof(SV)>=8*sizeof(B),"");
+  {
+    SV sv;
+    const char * str = "hello world";
+    for ( unsigned i = 0; i < 10; ++i )
+      sv.emplace_back( str, i+1, uint32_t(i) );
+    for ( unsigned i = 0; i < 10; ++i )
+      nc_assert_always( 0==std::memcmp( str, sv.at(i).data(), i+1 )
+                        && sv.at(i).metaData() == i );
+    std::cout<<"SmallVector of ImmutableBuffers ok"<<std::endl;
+  }
   test_immutbuf();
   return 0;
 }
