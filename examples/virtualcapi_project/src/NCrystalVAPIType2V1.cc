@@ -215,6 +215,11 @@ extern "C" {
 namespace {
 
   using API = ncrystal_vapi_type2_v1_t;
+
+  const API& apiOf( const void * raw_api )
+  {
+    return *static_cast<const API*>( raw_api );
+  }
   using Error = NCrystalVAPIType2V1::Error;
 
   //Collects errors from the C API, and throws them as exceptions:
@@ -389,14 +394,6 @@ extern "C" {
   }
 }
 
-//Access to the C API struct of an NCrystalVAPIType2V1 object:
-struct NCrystalVAPIType2V1::Access {
-  static const API& api( const NCrystalVAPIType2V1& o )
-  {
-    return *static_cast<const API*>( o.m_raw );
-  }
-};
-
 NCrystalVAPIType2V1::Error::Error( const std::string& type,
                                    const std::string& message )
   : std::runtime_error( "NCrystal error (" + type + "): " + message ),
@@ -419,33 +416,33 @@ NCrystalVAPIType2V1::Info
 NCrystalVAPIType2V1::createInfo( const std::string& cfgstr ) const
 {
   ErrorCollector err;
-  auto h = Access::api( *this ).create_info( cfgstr.c_str(), err.ptr() );
+  auto h = apiOf( m_raw ).create_info( cfgstr.c_str(), err.ptr() );
   err.throwIf( h == nullptr );
-  return Info( shared_from_this(), h );
+  return Info( m_raw, h );
 }
 
 NCrystalVAPIType2V1::Scatter
 NCrystalVAPIType2V1::createScatter( const std::string& cfgstr ) const
 {
   ErrorCollector err;
-  auto h = Access::api( *this ).create_scatter( cfgstr.c_str(), err.ptr() );
+  auto h = apiOf( m_raw ).create_scatter( cfgstr.c_str(), err.ptr() );
   err.throwIf( h == nullptr );
-  return Scatter( shared_from_this(), h );
+  return Scatter( m_raw, h );
 }
 
 NCrystalVAPIType2V1::Absorption
 NCrystalVAPIType2V1::createAbsorption( const std::string& cfgstr ) const
 {
   ErrorCollector err;
-  auto h = Access::api( *this ).create_absorption( cfgstr.c_str(),
+  auto h = apiOf( m_raw ).create_absorption( cfgstr.c_str(),
                                                    err.ptr() );
   err.throwIf( h == nullptr );
-  return Absorption( shared_from_this(), h );
+  return Absorption( m_raw, h );
 }
 
 void NCrystalVAPIType2V1::clearCaches() const
 {
-  Access::api( *this ).clear_caches();
+  apiOf( m_raw ).clear_caches();
 }
 
 namespace {
@@ -467,14 +464,13 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // Info
 
-NCrystalVAPIType2V1::Info::Info( std::shared_ptr<const NCrystalVAPIType2V1> api,
-                                 void * h )
-  : m_api( std::move( api ) ), m_h( h )
+NCrystalVAPIType2V1::Info::Info( const void * raw_api, void * h )
+  : m_api( raw_api ), m_h( h )
 {
 }
 
 NCrystalVAPIType2V1::Info::Info( Info&& o ) noexcept
-  : m_api( std::move( o.m_api ) ), m_h( o.m_h )
+  : m_api( o.m_api ), m_h( o.m_h )
 {
   o.m_h = nullptr;
 }
@@ -484,8 +480,8 @@ NCrystalVAPIType2V1::Info::operator=( Info&& o ) noexcept
 {
   if ( this != &o ) {
     if ( m_h )
-      Access::api( *m_api ).deallocate_info( infoH( m_h ) );
-    m_api = std::move( o.m_api );
+      apiOf( m_api ).deallocate_info( infoH( m_h ) );
+    m_api = o.m_api;
     m_h = o.m_h;
     o.m_h = nullptr;
   }
@@ -495,30 +491,30 @@ NCrystalVAPIType2V1::Info::operator=( Info&& o ) noexcept
 NCrystalVAPIType2V1::Info::~Info()
 {
   if ( m_h )
-    Access::api( *m_api ).deallocate_info( infoH( m_h ) );
+    apiOf( m_api ).deallocate_info( infoH( m_h ) );
 }
 
 std::uint64_t NCrystalVAPIType2V1::Info::uniqueID() const
 {
   return static_cast<std::uint64_t>
-    ( Access::api( *m_api ).info_unique_id( infoH( m_h ) ) );
+    ( apiOf( m_api ).info_unique_id( infoH( m_h ) ) );
 }
 
 double NCrystalVAPIType2V1::Info::density() const
 {
-  return Access::api( *m_api ).info_density( infoH( m_h ) );
+  return apiOf( m_api ).info_density( infoH( m_h ) );
 }
 
 double NCrystalVAPIType2V1::Info::numberDensity() const
 {
-  return Access::api( *m_api ).info_number_density( infoH( m_h ) );
+  return apiOf( m_api ).info_number_density( infoH( m_h ) );
 }
 
 double NCrystalVAPIType2V1::Info::temperature() const
 {
   ErrorCollector err;
   double t = 0.0;
-  err.throwIf( Access::api( *m_api ).info_temperature( infoH( m_h ), &t,
+  err.throwIf( apiOf( m_api ).info_temperature( infoH( m_h ), &t,
                                                        err.ptr() ) != 0 );
   return t;
 }
@@ -527,7 +523,7 @@ std::vector<NCrystalVAPIType2V1::Component>
 NCrystalVAPIType2V1::Info::composition( bool preferNaturalElements,
                                         const NaturalAbundances& natab ) const
 {
-  const API& api = Access::api( *m_api );
+  const API& api = apiOf( m_api );
   NatAbundContext ctx{ &natab, nullptr };
   auto call = [&]( unsigned long * Z, unsigned long * A, double * fraction,
                    std::size_t capacity )
@@ -565,13 +561,13 @@ NCrystalVAPIType2V1::Info::composition( bool preferNaturalElements,
 // Scatter
 
 NCrystalVAPIType2V1::Scatter::Scatter
-( std::shared_ptr<const NCrystalVAPIType2V1> api, void * h )
-  : m_api( std::move( api ) ), m_h( h )
+( const void * raw_api, void * h )
+  : m_api( raw_api ), m_h( h )
 {
 }
 
 NCrystalVAPIType2V1::Scatter::Scatter( Scatter&& o ) noexcept
-  : m_api( std::move( o.m_api ) ), m_h( o.m_h )
+  : m_api( o.m_api ), m_h( o.m_h )
 {
   o.m_h = nullptr;
 }
@@ -581,8 +577,8 @@ NCrystalVAPIType2V1::Scatter::operator=( Scatter&& o ) noexcept
 {
   if ( this != &o ) {
     if ( m_h )
-      Access::api( *m_api ).deallocate_scatter( scatterH( m_h ) );
-    m_api = std::move( o.m_api );
+      apiOf( m_api ).deallocate_scatter( scatterH( m_h ) );
+    m_api = o.m_api;
     m_h = o.m_h;
     o.m_h = nullptr;
   }
@@ -592,20 +588,20 @@ NCrystalVAPIType2V1::Scatter::operator=( Scatter&& o ) noexcept
 NCrystalVAPIType2V1::Scatter::~Scatter()
 {
   if ( m_h )
-    Access::api( *m_api ).deallocate_scatter( scatterH( m_h ) );
+    apiOf( m_api ).deallocate_scatter( scatterH( m_h ) );
 }
 
 NCrystalVAPIType2V1::Scatter NCrystalVAPIType2V1::Scatter::clone() const
 {
   ErrorCollector err;
-  auto h = Access::api( *m_api ).clone_scatter( scatterH( m_h ), err.ptr() );
+  auto h = apiOf( m_api ).clone_scatter( scatterH( m_h ), err.ptr() );
   err.throwIf( h == nullptr );
   return Scatter( m_api, h );
 }
 
 bool NCrystalVAPIType2V1::Scatter::isOriented() const
 {
-  return Access::api( *m_api ).scatter_is_oriented( scatterH( m_h ) ) != 0;
+  return apiOf( m_api ).scatter_is_oriented( scatterH( m_h ) ) != 0;
 }
 
 double NCrystalVAPIType2V1::Scatter::crossSection( const Neutron& n ) const
@@ -614,7 +610,7 @@ double NCrystalVAPIType2V1::Scatter::crossSection( const Neutron& n ) const
   double a[4];
   toArray( n, a );
   double xs = 0.0;
-  err.throwIf( Access::api( *m_api ).scatter_cross_section
+  err.throwIf( apiOf( m_api ).scatter_cross_section
                ( scatterH( m_h ), a, &xs, err.ptr() ) != 0 );
   return xs;
 }
@@ -626,7 +622,7 @@ void NCrystalVAPIType2V1::Scatter::sampleScatter( double (*rng)( void * ),
   ErrorCollector err;
   double a[4];
   toArray( n, a );
-  err.throwIf( Access::api( *m_api ).sample_scatter
+  err.throwIf( apiOf( m_api ).sample_scatter
                ( scatterH( m_h ), rng, rng_state, a, err.ptr() ) != 0 );
   n.ekin = a[0]; n.ux = a[1]; n.uy = a[2]; n.uz = a[3];
 }
@@ -639,7 +635,7 @@ NCrystalVAPIType2V1::Scatter::sampleScatter( const std::function<double()>& rng,
   ErrorCollector err;
   double a[4];
   toArray( n, a );
-  const int ret = Access::api( *m_api ).sample_scatter
+  const int ret = apiOf( m_api ).sample_scatter
     ( scatterH( m_h ), ncvapi_rng_trampoline, &ctx, a, err.ptr() );
   if ( ctx.exception )
     std::rethrow_exception( ctx.exception );
@@ -651,13 +647,13 @@ NCrystalVAPIType2V1::Scatter::sampleScatter( const std::function<double()>& rng,
 // Absorption
 
 NCrystalVAPIType2V1::Absorption::Absorption
-( std::shared_ptr<const NCrystalVAPIType2V1> api, void * h )
-  : m_api( std::move( api ) ), m_h( h )
+( const void * raw_api, void * h )
+  : m_api( raw_api ), m_h( h )
 {
 }
 
 NCrystalVAPIType2V1::Absorption::Absorption( Absorption&& o ) noexcept
-  : m_api( std::move( o.m_api ) ), m_h( o.m_h )
+  : m_api( o.m_api ), m_h( o.m_h )
 {
   o.m_h = nullptr;
 }
@@ -667,8 +663,8 @@ NCrystalVAPIType2V1::Absorption::operator=( Absorption&& o ) noexcept
 {
   if ( this != &o ) {
     if ( m_h )
-      Access::api( *m_api ).deallocate_absorption( absorptionH( m_h ) );
-    m_api = std::move( o.m_api );
+      apiOf( m_api ).deallocate_absorption( absorptionH( m_h ) );
+    m_api = o.m_api;
     m_h = o.m_h;
     o.m_h = nullptr;
   }
@@ -678,13 +674,13 @@ NCrystalVAPIType2V1::Absorption::operator=( Absorption&& o ) noexcept
 NCrystalVAPIType2V1::Absorption::~Absorption()
 {
   if ( m_h )
-    Access::api( *m_api ).deallocate_absorption( absorptionH( m_h ) );
+    apiOf( m_api ).deallocate_absorption( absorptionH( m_h ) );
 }
 
 NCrystalVAPIType2V1::Absorption NCrystalVAPIType2V1::Absorption::clone() const
 {
   ErrorCollector err;
-  auto h = Access::api( *m_api ).clone_absorption( absorptionH( m_h ),
+  auto h = apiOf( m_api ).clone_absorption( absorptionH( m_h ),
                                                    err.ptr() );
   err.throwIf( h == nullptr );
   return Absorption( m_api, h );
@@ -696,7 +692,7 @@ double NCrystalVAPIType2V1::Absorption::crossSection( const Neutron& n ) const
   double a[4];
   toArray( n, a );
   double xs = 0.0;
-  err.throwIf( Access::api( *m_api ).absorption_cross_section
+  err.throwIf( apiOf( m_api ).absorption_cross_section
                ( absorptionH( m_h ), a, &xs, err.ptr() ) != 0 );
   return xs;
 }

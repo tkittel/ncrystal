@@ -90,9 +90,7 @@
 #include <utility>
 #include <vector>
 
-class NCrystalVAPIType2V1 final
-  : public std::enable_shared_from_this<NCrystalVAPIType2V1>
-{
+class NCrystalVAPIType2V1 final {
 public:
 
   //Load NCrystal and access the interface (the first call loads it, and later
@@ -139,9 +137,15 @@ public:
     double numberDensity() const;//atoms/Aa^3
     double temperature() const;//kelvin (throws if the material has none)
 
-    //The composition. With preferNaturalElements, elements which are only
-    //present as the natural element are returned with A=0, and others are
-    //broken down into isotopes, which needs natural abundances:
+    //The composition. By default (preferNaturalElements=true), natural
+    //elements are returned as such (with A=0), and natural abundances are
+    //not needed, so most applications can simply call composition() without
+    //arguments. Natural abundances are only needed (and an error is thrown
+    //if they are not provided) for breaking down natural elements into
+    //isotopes. This happens for all elements if preferNaturalElements=false,
+    //or otherwise only for the (unusual) materials which contain the same
+    //element both as the natural element and as specific isotopes (e.g. a
+    //mixture of natural and enriched boron):
     std::vector<Component> composition( bool preferNaturalElements = true,
                                         const NaturalAbundances& = nullptr )
                                         const;
@@ -151,8 +155,8 @@ public:
     ~Info();
   private:
     friend class NCrystalVAPIType2V1;
-    Info( std::shared_ptr<const NCrystalVAPIType2V1>, void * );
-    std::shared_ptr<const NCrystalVAPIType2V1> m_api;
+    Info( const void * raw_api, void * );
+    const void * m_api;//The struct of the C API (which is never deallocated).
     void * m_h;
   };
 
@@ -179,8 +183,8 @@ public:
     ~Scatter();
   private:
     friend class NCrystalVAPIType2V1;
-    Scatter( std::shared_ptr<const NCrystalVAPIType2V1>, void * );
-    std::shared_ptr<const NCrystalVAPIType2V1> m_api;
+    Scatter( const void * raw_api, void * );
+    const void * m_api;//The struct of the C API (which is never deallocated).
     void * m_h;
   };
 
@@ -195,8 +199,8 @@ public:
     ~Absorption();
   private:
     friend class NCrystalVAPIType2V1;
-    Absorption( std::shared_ptr<const NCrystalVAPIType2V1>, void * );
-    std::shared_ptr<const NCrystalVAPIType2V1> m_api;
+    Absorption( const void * raw_api, void * );
+    const void * m_api;//The struct of the C API (which is never deallocated).
     void * m_h;
   };
 
@@ -216,7 +220,6 @@ public:
   ~NCrystalVAPIType2V1() = default;
 
 private:
-  struct Access;
   explicit NCrystalVAPIType2V1( const void * raw_api ) : m_raw( raw_api ) {}
   const void * m_raw;//The struct of the C API.
 };
