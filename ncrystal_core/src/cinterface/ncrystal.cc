@@ -61,6 +61,20 @@ namespace NCRYSTAL_NAMESPACE {
 
     namespace {
 
+    //Combine two 32bit halves (passed as unsigned long, since C90 has no
+    //64bit integer type) into a 64bit value. Comparisons are done in uint64_t,
+    //to avoid "always false" warnings where unsigned long is 32bit:
+    std::uint64_t combineHiLo32( unsigned long hi, unsigned long lo )
+    {
+      const std::uint64_t h = hi;
+      const std::uint64_t l = lo;
+      constexpr std::uint64_t max32 = 0xFFFFFFFFULL;
+      if ( h > max32 || l > max32 )
+        NCRYSTAL_THROW(BadInput,"64bit value provided via two halves where"
+                       " at least one half is not less than 2^32.");
+      return ( h << 32 ) | l;
+    }
+
     using ObjectTypeID = uint32_t;
 
     class AtomDataObj : private MoveOnly {
@@ -1179,11 +1193,17 @@ void ncrystal_crosssection_nonoriented_many( ncrystal_process_t o,
                                              unsigned long repeat,
                                              double* results )
 {
+  //Obsolete variant (unsigned long always fits in size_t):
+  ncrystal_crosssection_nonoriented_many_sz( o, ekin, n_ekin, repeat, results );
+}
 
-
-
-
-  unsigned long repeat_orig = repeat;
+void ncrystal_crosssection_nonoriented_many_sz( ncrystal_process_t o,
+                                                const double * ekin,
+                                                size_t n_ekin,
+                                                size_t repeat,
+                                                double* results )
+{
+  size_t repeat_orig = repeat;
   double* results_orig = results;
   try {
     auto& process = ncc::extractProcess(o);
@@ -1197,14 +1217,14 @@ void ncrystal_crosssection_nonoriented_many( ncrystal_process_t o,
                                                  ekin, n_ekin, results );
       results += n_ekin;
 #else
-      for (unsigned long i = 0; i < n_ekin; ++i)
+      for (size_t i = 0; i < n_ekin; ++i)
         *results++ = process.crossSectionIsotropic(NC::NeutronEnergy{ekin[i]}).get();
 #endif
     }
     return;
   } NCCATCH;
   while (repeat_orig--) {
-    for (unsigned long i = 0; i < n_ekin; ++i)
+    for (size_t i = 0; i < n_ekin; ++i)
       *results_orig++ = -1.0;
   }
 }
@@ -1274,14 +1294,26 @@ void ncrystal_samplescatterisotropic_many( ncrystal_scatter_t o,
                                            double* results_ekin,
                                            double* results_cos_scat_angle )
 {
-  unsigned long repeat_orig = repeat;
+  //Obsolete variant (unsigned long always fits in size_t):
+  ncrystal_samplescatterisotropic_many_sz( o, ekin, n_ekin, repeat,
+                                           results_ekin, results_cos_scat_angle );
+}
+
+void ncrystal_samplescatterisotropic_many_sz( ncrystal_scatter_t o,
+                                              const double * ekin,
+                                              size_t n_ekin,
+                                              size_t repeat,
+                                              double* results_ekin,
+                                              double* results_cos_scat_angle )
+{
+  size_t repeat_orig = repeat;
   double* results_ekin_orig = results_ekin;
   double* results_cos_scat_angle_orig = results_cos_scat_angle;
   try {
     auto& sc = ncc::extract(o);
 #if 0
     while (repeat--) {
-      for (unsigned long i = 0; i < n_ekin; ++i) {
+      for (size_t i = 0; i < n_ekin; ++i) {
         auto outcome = sc.sampleScatterIsotropic(NC::NeutronEnergy{ekin[i]});
         *results_ekin++ = outcome.ekin.dbl();
         *results_cos_scat_angle++ = outcome.mu.dbl();
@@ -1293,9 +1325,9 @@ void ncrystal_samplescatterisotropic_many( ncrystal_scatter_t o,
     //at a given energy at once (although the output array will be accessed in
     //strides rather than contiguously which is also not great if repeat would
     //be a very large number):
-    for (unsigned long i = 0; i < n_ekin; ++i ) {
+    for (size_t i = 0; i < n_ekin; ++i ) {
       NC::NeutronEnergy ekinobj{ ekin[i] };
-      for (unsigned long irepeat = 0; irepeat < repeat; ++irepeat ) {
+      for (size_t irepeat = 0; irepeat < repeat; ++irepeat ) {
         auto outcome = sc.sampleScatterIsotropic( ekinobj );
         auto idx = irepeat * n_ekin + i;
         nc_assert_always( idx < repeat * n_ekin );
@@ -1307,7 +1339,7 @@ void ncrystal_samplescatterisotropic_many( ncrystal_scatter_t o,
   } NCCATCH;
   //non-halting-error, invalidate all output:
   while (repeat_orig--) {
-    for (unsigned long i = 0; i < n_ekin; ++i) {
+    for (size_t i = 0; i < n_ekin; ++i) {
       *results_ekin_orig++ = -1.0;
       *results_cos_scat_angle_orig++ = -999.0;
     }
@@ -1323,7 +1355,21 @@ void ncrystal_samplescatter_many( ncrystal_scatter_t o,
                                   double * results_diry,
                                   double * results_dirz )
 {
-  unsigned long repeat_orig = repeat;
+  //Obsolete variant (unsigned long always fits in size_t):
+  ncrystal_samplescatter_many_sz( o, ekin, direction, repeat, results_ekin,
+                                  results_dirx, results_diry, results_dirz );
+}
+
+void ncrystal_samplescatter_many_sz( ncrystal_scatter_t o,
+                                     double ekin,
+                                     const double (*direction)[3],
+                                     size_t repeat,
+                                     double* results_ekin,
+                                     double * results_dirx,
+                                     double * results_diry,
+                                     double * results_dirz )
+{
+  size_t repeat_orig = repeat;
   double* results_ekin_orig = results_ekin;
   double* results_dirx_orig = results_dirx;
   double* results_diry_orig = results_diry;
@@ -1602,6 +1648,18 @@ ncrystal_scatter_t ncrystal_clone_scatter( ncrystal_scatter_t sh )
   return {nullptr};
 }
 
+ncrystal_scatter_t ncrystal_clone_scatter_rngbyidx64( ncrystal_scatter_t sh,
+                                                     unsigned long idx_hi,
+                                                     unsigned long idx_lo )
+{
+  try {
+    auto& sc = ncc::extract(sh);
+    const auto idx = ncc::combineHiLo32( idx_hi, idx_lo );
+    return ncc::createNewCHandle<ncc::Wrapped_Scatter>(sc.cloneByIdx(NC::RNGStreamIndex{idx}));
+  } NCCATCH;
+  return {nullptr};
+}
+
 ncrystal_scatter_t ncrystal_clone_scatter_rngbyidx( ncrystal_scatter_t sh, unsigned long rngstreamidx )
 {
   try {
@@ -1616,6 +1674,19 @@ ncrystal_scatter_t ncrystal_clone_scatter_rngforcurrentthread( ncrystal_scatter_
   try {
     auto& sc = ncc::extract(sh);
     return ncc::createNewCHandle<ncc::Wrapped_Scatter>(sc.cloneForCurrentThread());
+  } NCCATCH;
+  return {nullptr};
+}
+
+ncrystal_scatter_t ncrystal_create_scatter_builtinrng64( const char * cfgstr,
+                                                        unsigned long seed_hi,
+                                                        unsigned long seed_lo )
+{
+  try {
+    auto rng = NC::createBuiltinRNG( ncc::combineHiLo32( seed_hi, seed_lo ) );
+    auto rngproducer = NC::makeSO<NC::RNGProducer>( rng );
+    auto pp = NC::FactImpl::createScatter(cfgstr);
+    return ncc::createNewCHandle<ncc::Wrapped_Scatter>( NC::Scatter(std::move(rngproducer), std::move(rng),std::move(pp)));
   } NCCATCH;
   return {nullptr};
 }
@@ -2082,6 +2153,15 @@ void ncrystal_setbuiltinrandgen(void)
 {
   try {
     NC::setDefaultRNG( NC::createBuiltinRNG() );
+  } NCCATCH;
+}
+
+void ncrystal_setbuiltinrandgen_withseed64( unsigned long seed_hi,
+                                            unsigned long seed_lo )
+{
+  try {
+    NC::setDefaultRNG( NC::createBuiltinRNG( ncc::combineHiLo32( seed_hi,
+                                                                 seed_lo ) ) );
   } NCCATCH;
 }
 
