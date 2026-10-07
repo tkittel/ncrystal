@@ -459,3 +459,13 @@ CHANGELOG at release time.
        platforms) are now considered obsolete. Python seeds and RNG stream
        indices (createScatterIndependentRNG, Scatter.clone) now accept the
        full 64bit range on all platforms.
+
+### Windows plugins
+
+     * Windows: the ncrystal-core Python module now finds NCrystal.dll also
+       when installed outside the sysconfig schemes of the running Python, by
+       first looking in the Scripts directory belonging to its own
+       installation. This fixes building plugins from source with pip's
+       default build isolation (e.g. plugins installed from git), which
+       failed with "Unable to locate shared library". The plugindb CI now
+       also tests installing plugins with build isolation.
