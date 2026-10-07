@@ -26,6 +26,7 @@
 /****************************/
 
 #include "NCrystal/ncapi.h"
+#include <stddef.h>/* size_t */
 
 #ifdef __cplusplus
 extern "C" {
@@ -165,6 +166,10 @@ extern "C" {
 #  undef ncrystal_crosssection_nonoriented_many
 #endif
 #define ncrystal_crosssection_nonoriented_many NCRYSTAL_APPLY_C_NAMESPACE(crosssection_nonoriented_many)
+#ifdef ncrystal_crosssection_nonoriented_many_sz
+#  undef ncrystal_crosssection_nonoriented_many_sz
+#endif
+#define ncrystal_crosssection_nonoriented_many_sz NCRYSTAL_APPLY_C_NAMESPACE(crosssection_nonoriented_many_sz)
 #ifdef ncrystal_dbg_process
 #  undef ncrystal_dbg_process
 #endif
@@ -561,6 +566,10 @@ extern "C" {
 #  undef ncrystal_samplescatter_many
 #endif
 #define ncrystal_samplescatter_many NCRYSTAL_APPLY_C_NAMESPACE(samplescatter_many)
+#ifdef ncrystal_samplescatter_many_sz
+#  undef ncrystal_samplescatter_many_sz
+#endif
+#define ncrystal_samplescatter_many_sz NCRYSTAL_APPLY_C_NAMESPACE(samplescatter_many_sz)
 #ifdef ncrystal_samplescatterisotropic
 #  undef ncrystal_samplescatterisotropic
 #endif
@@ -569,6 +578,10 @@ extern "C" {
 #  undef ncrystal_samplescatterisotropic_many
 #endif
 #define ncrystal_samplescatterisotropic_many NCRYSTAL_APPLY_C_NAMESPACE(samplescatterisotropic_many)
+#ifdef ncrystal_samplescatterisotropic_many_sz
+#  undef ncrystal_samplescatterisotropic_many_sz
+#endif
+#define ncrystal_samplescatterisotropic_many_sz NCRYSTAL_APPLY_C_NAMESPACE(samplescatterisotropic_many_sz)
 #ifdef ncrystal_scatter_t
 #  undef ncrystal_scatter_t
 #endif
@@ -1326,6 +1339,41 @@ extern "C" {
   /*============================================================================== */
   /*============================================================================== */
 
+  NCRYSTAL_API void ncrystal_samplescatterisotropic_many_sz( ncrystal_scatter_t,
+                                                             const double * ekin,
+                                                             size_t n_ekin,
+                                                             size_t repeat,
+                                                             double* results_ekin,
+                                                             double* results_cos_scat_angle );
+
+  NCRYSTAL_API void ncrystal_samplescatter_many_sz( ncrystal_scatter_t,
+                                                    double ekin,
+                                                    const double (*direction)[3],
+                                                    size_t repeat,
+                                                    double* results_ekin,
+                                                    double * results_dirx,
+                                                    double * results_diry,
+                                                    double * results_dirz );
+
+  NCRYSTAL_API void ncrystal_crosssection_nonoriented_many_sz( ncrystal_process_t,
+                                                               const double * ekin,
+                                                               size_t n_ekin,
+                                                               size_t repeat,
+                                                               double* results );
+
+
+
+  /*============================================================================== */
+  /*============================================================================== */
+  /*==                                                                          == */
+  /*== Various obsolete functions which are bound to be removed in future       == */
+  /*== releases of NCrystal.                                                    == */
+  /*==                                                                          == */
+  /*============================================================================== */
+  /*============================================================================== */
+
+  /* Obsolete variants of the _many_sz functions above, with unsigned long rather  */
+  /* than size_t counts (only 32 bits on e.g. 64bit Windows):                      */
   NCRYSTAL_API void ncrystal_samplescatterisotropic_many( ncrystal_scatter_t,
                                                           const double * ekin,
                                                           unsigned long n_ekin,
@@ -1347,17 +1395,6 @@ extern "C" {
                                                             unsigned long n_ekin,
                                                             unsigned long repeat,
                                                             double* results );
-
-
-
-  /*============================================================================== */
-  /*============================================================================== */
-  /*==                                                                          == */
-  /*== Various obsolete functions which are bound to be removed in future       == */
-  /*== releases of NCrystal.                                                    == */
-  /*==                                                                          == */
-  /*============================================================================== */
-  /*============================================================================== */
 
   /*Obsolete function which now always returns 1.0. Packing factors are now        */
   /*instead absorbed into the material densities:                                  */
