@@ -259,8 +259,19 @@ namespace {
 
   std::string getEnv( const char * name )
   {
+#ifdef _MSC_VER
+    //Avoid MSVC warnings about std::getenv being unsafe:
+    char * buf = nullptr;
+    std::size_t len = 0;
+    if ( _dupenv_s( &buf, &len, name ) != 0 || !buf )
+      return std::string();
+    std::string res( buf );
+    std::free( buf );
+    return res;
+#else
     const char * v = std::getenv( name );
     return v ? std::string( v ) : std::string();
+#endif
   }
 
   void runNCrystalConfig( std::string& shlibpath, std::string& ns )
