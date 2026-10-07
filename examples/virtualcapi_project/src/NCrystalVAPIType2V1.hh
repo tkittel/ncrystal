@@ -155,8 +155,8 @@ public:
     ~Info();
   private:
     friend class NCrystalVAPIType2V1;
-    Info( const void * raw_api, void * );
-    const void * m_api;//The struct of the C API (which is never deallocated).
+    Info( std::shared_ptr<const NCrystalVAPIType2V1>, void * );
+    std::shared_ptr<const NCrystalVAPIType2V1> m_api;
     void * m_h;
   };
 
@@ -183,8 +183,8 @@ public:
     ~Scatter();
   private:
     friend class NCrystalVAPIType2V1;
-    Scatter( const void * raw_api, void * );
-    const void * m_api;//The struct of the C API (which is never deallocated).
+    Scatter( std::shared_ptr<const NCrystalVAPIType2V1>, void * );
+    std::shared_ptr<const NCrystalVAPIType2V1> m_api;
     void * m_h;
   };
 
@@ -199,8 +199,8 @@ public:
     ~Absorption();
   private:
     friend class NCrystalVAPIType2V1;
-    Absorption( const void * raw_api, void * );
-    const void * m_api;//The struct of the C API (which is never deallocated).
+    Absorption( std::shared_ptr<const NCrystalVAPIType2V1>, void * );
+    std::shared_ptr<const NCrystalVAPIType2V1> m_api;
     void * m_h;
   };
 
