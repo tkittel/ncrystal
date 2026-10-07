@@ -281,6 +281,25 @@ jobs:
     - name: Uninstall plugin
       run: pip uninstall -y "ncrystal-plugin-${{ matrix.plugin }}"
 
+      #Users typically install plugins with build isolation, in which case the
+      #build requirements (e.g. ncrystal-core) are installed in a temporary
+      #environment. Make sure that this works as well (PIP_CONSTRAINT also
+      #applies to that environment, unlike the -c option):
+    - name: Install plugin with build isolation
+      env:
+        PIP_CONSTRAINT: ${{ github.workspace }}/constraints.txt
+      run: pip install --find-links dist ./src_plugin
+
+    - name: Pip check
+      run: pip check
+
+    - name: Test plugin installed with build isolation
+      if: steps.pluginfo.outputs.disable_tests == ''
+      run: ncrystal-pluginmanager --test "${{ matrix.plugin }}"
+
+    - name: Uninstall plugin installed with build isolation
+      run: pip uninstall -y "ncrystal-plugin-${{ matrix.plugin }}"
+
     - name: Pip list
       run: pip list
 
