@@ -281,6 +281,25 @@ jobs:
     - name: Uninstall plugin
       run: pip uninstall -y "ncrystal-plugin-${{ matrix.plugin }}"
 
+      #Users typically install plugins with build isolation, in which case the
+      #build requirements (e.g. ncrystal-core) are installed in a temporary
+      #environment. Make sure that this works as well (PIP_CONSTRAINT also
+      #applies to that environment, unlike the -c option):
+    - name: Install plugin with build isolation
+      env:
+        PIP_CONSTRAINT: ${{ github.workspace }}/constraints.txt
+      run: pip install --find-links dist ./src_plugin
+
+    - name: Pip check
+      run: pip check
+
+    - name: Test plugin installed with build isolation
+      if: steps.pluginfo.outputs.disable_tests == ''
+      run: ncrystal-pluginmanager --test "${{ matrix.plugin }}"
+
+    - name: Uninstall plugin installed with build isolation
+      run: pip uninstall -y "ncrystal-plugin-${{ matrix.plugin }}"
+
     - name: Pip list
       run: pip list
 
@@ -419,3 +438,46 @@ jobs:
         if not ok:
           print("ERROR: Output does not match reference!")
           raise SystemExit(1)
+
+  collect_logs:
+    #Single job (run even if others fail) downloading the complete logs of
+    #all other jobs of this run via the GitHub API and bundling them into one
+    #tarball artifact, so everything can be grabbed with a single download:
+    name: Collect all CI logs
+    needs: [ preparations, build_ncrystal, checkplugin, build_virtapi_app, launch_virtapi_app ]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - name: Download the logs of all jobs of this run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p all-ci-logs
+          gh api --paginate \
+            "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs" \
+            --jq '.jobs[] | select(.name != "Collect all CI logs") | "\(.id)\t\(.conclusion)\t\(.name)"' > jobs.txt
+          cp jobs.txt all-ci-logs/jobs.txt
+          #NB: The logs endpoint redirects to a signed download URL, which
+          #"gh api" does not follow, so use curl -L (which drops the token on
+          #the cross-host redirect). Retry since logs can take a moment to
+          #become available after a job finishes:
+          while IFS=$'\t' read -r id concl name; do
+            fn=$(printf '%s' "${concl}__${name}" | tr -c 'A-Za-z0-9._=-' '_')
+            for attempt in 1 2 3 4 5 6; do
+              curl -sSL -H "Authorization: Bearer ${GH_TOKEN}" \
+                "https://api.github.com/repos/${{ github.repository }}/actions/jobs/${id}/logs" \
+                -o "all-ci-logs/${fn}.log" && [ -s "all-ci-logs/${fn}.log" ] && break
+              sleep 10
+            done
+            [ -s "all-ci-logs/${fn}.log" ] || echo "Could not get log of job ${id} (${name})"
+          done < jobs.txt
+          tar -czf alllogs_plugindb.tar.gz all-ci-logs
+
+      - name: Upload combined log tarball
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: alllogs_plugindb
+          path: alllogs_plugindb.tar.gz
+          if-no-files-found: warn
