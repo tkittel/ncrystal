@@ -1489,10 +1489,9 @@ class Scatter(Process):
         if rng_stream_index is not None:
             if for_current_thread:
                 raise NCBadInput('Scatter.clone(..): do not set both rng_stream_index and for_current_thread parameters')
-            import numbers
-            if not isinstance(rng_stream_index, numbers.Integral) or not 0 <= rng_stream_index <= 4294967295:
-                raise NCBadInput('Scatter.clone(..): rng_stream_index must be integral and in range [0,4294967295]')
-            newrawobj = _rawfct['ncrystal_clone_scatter_rngbyidx'](self._rawobj_scat,int(rng_stream_index))
+            hi,lo = _split_uint64( rng_stream_index,
+                                   'Scatter.clone(..): rng_stream_index' )
+            newrawobj = _rawfct['ncrystal_clone_scatter_rngbyidx64'](self._rawobj_scat,hi,lo)
         elif for_current_thread:
             newrawobj = _rawfct['ncrystal_clone_scatter_rngforcurrentthread'](self._rawobj_scat)
         else:
@@ -1623,6 +1622,18 @@ def createInfo(cfgstr):
     """Construct Info object based on provided configuration (using available factories)"""
     return Info(cfgstr)
 
+def _split_uint64( value, what ):
+    #64bit values are passed to the C API as two 32bit halves. Fast path for
+    #the common case of a plain int below 2^32:
+    if value.__class__ is int and 0 <= value <= 0xFFFFFFFF:
+        return 0, value
+    import numbers
+    if ( not isinstance(value, numbers.Integral)
+         or not 0 <= value <= 0xFFFFFFFFFFFFFFFF ):
+        raise NCBadInput(f'{what} must be integral and in range [0,2^64-1]')
+    value = int(value)
+    return value >> 32, value & 0xFFFFFFFF
+
 def createScatter(cfgstr):
     """Construct Scatter object based on provided configuration (using available factories)"""
     return Scatter(cfgstr)
@@ -1631,7 +1642,8 @@ def createScatterIndependentRNG(cfgstr,seed = 0):
     """Construct Scatter object based on provided configuration (using available
     factories) and with its own independent RNG stream (using the builtin RNG
     generator and the provided seed)"""
-    rawobj = _rawfct['ncrystal_create_scatter_builtinrng'](_str2cstr(cfgstr),seed)
+    hi,lo = _split_uint64( seed, 'createScatterIndependentRNG: seed' )
+    rawobj = _rawfct['ncrystal_create_scatter_builtinrng64'](_str2cstr(cfgstr),hi,lo)
     return Scatter(('_rawobj_',rawobj))
 
 def createAbsorption(cfgstr):

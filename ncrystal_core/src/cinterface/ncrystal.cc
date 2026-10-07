@@ -61,6 +61,20 @@ namespace NCRYSTAL_NAMESPACE {
 
     namespace {
 
+    //Combine two 32bit halves (passed as unsigned long, since C90 has no
+    //64bit integer type) into a 64bit value. Comparisons are done in uint64_t,
+    //to avoid "always false" warnings where unsigned long is 32bit:
+    std::uint64_t combineHiLo32( unsigned long hi, unsigned long lo )
+    {
+      const std::uint64_t h = hi;
+      const std::uint64_t l = lo;
+      constexpr std::uint64_t max32 = 0xFFFFFFFFULL;
+      if ( h > max32 || l > max32 )
+        NCRYSTAL_THROW(BadInput,"64bit value provided via two halves where"
+                       " at least one half is not less than 2^32.");
+      return ( h << 32 ) | l;
+    }
+
     using ObjectTypeID = uint32_t;
 
     class AtomDataObj : private MoveOnly {
@@ -1656,9 +1670,26 @@ ncrystal_scatter_t ncrystal_clone_scatter( ncrystal_scatter_t sh )
   return {nullptr};
 }
 
+ncrystal_scatter_t ncrystal_clone_scatter_rngbyidx64( ncrystal_scatter_t sh,
+                                                     unsigned long idx_hi,
+                                                     unsigned long idx_lo )
+{
+  try {
+    auto& sc = ncc::extract(sh);
+    const auto idx = ncc::combineHiLo32( idx_hi, idx_lo );
+    return ncc::createNewCHandle<ncc::Wrapped_Scatter>(sc.cloneByIdx(NC::RNGStreamIndex{idx}));
+  } NCCATCH;
+  return {nullptr};
+}
+
 ncrystal_scatter_t ncrystal_clone_scatter_rngbyidx( ncrystal_scatter_t sh, unsigned long rngstreamidx )
 {
   try {
+    static NC::Msg::WarnFirstTime wf;
+    wf("The ncrystal_clone_scatter_rngbyidx function is obsolete"
+       " and for now simply redirects to"
+       " ncrystal_clone_scatter_rngbyidx64(). Please stop using it"
+       " and instead call ncrystal_clone_scatter_rngbyidx64() directly.");
     auto& sc = ncc::extract(sh);
     return ncc::createNewCHandle<ncc::Wrapped_Scatter>(sc.cloneByIdx(NC::RNGStreamIndex{(uint64_t)rngstreamidx}));
   } NCCATCH;
@@ -1674,9 +1705,27 @@ ncrystal_scatter_t ncrystal_clone_scatter_rngforcurrentthread( ncrystal_scatter_
   return {nullptr};
 }
 
+ncrystal_scatter_t ncrystal_create_scatter_builtinrng64( const char * cfgstr,
+                                                        unsigned long seed_hi,
+                                                        unsigned long seed_lo )
+{
+  try {
+    auto rng = NC::createBuiltinRNG( ncc::combineHiLo32( seed_hi, seed_lo ) );
+    auto rngproducer = NC::makeSO<NC::RNGProducer>( rng );
+    auto pp = NC::FactImpl::createScatter(cfgstr);
+    return ncc::createNewCHandle<ncc::Wrapped_Scatter>( NC::Scatter(std::move(rngproducer), std::move(rng),std::move(pp)));
+  } NCCATCH;
+  return {nullptr};
+}
+
 ncrystal_scatter_t ncrystal_create_scatter_builtinrng( const char * cfgstr, unsigned long seed )
 {
   try {
+    static NC::Msg::WarnFirstTime wf;
+    wf("The ncrystal_create_scatter_builtinrng function is obsolete"
+       " and for now simply redirects to"
+       " ncrystal_create_scatter_builtinrng64(). Please stop using it"
+       " and instead call ncrystal_create_scatter_builtinrng64() directly.");
     auto rng = NC::createBuiltinRNG( static_cast<uint64_t>(seed) );
     auto rngproducer = NC::makeSO<NC::RNGProducer>( rng );
     auto pp = NC::FactImpl::createScatter(cfgstr);
@@ -2139,9 +2188,24 @@ void ncrystal_setbuiltinrandgen(void)
   } NCCATCH;
 }
 
+void ncrystal_setbuiltinrandgen_withseed64( unsigned long seed_hi,
+                                            unsigned long seed_lo )
+{
+  try {
+    NC::setDefaultRNG( NC::createBuiltinRNG( ncc::combineHiLo32( seed_hi,
+                                                                 seed_lo ) ) );
+  } NCCATCH;
+}
+
 void ncrystal_setbuiltinrandgen_withseed(unsigned long seed)
 {
   try {
+    static NC::Msg::WarnFirstTime wf;
+    wf("The ncrystal_setbuiltinrandgen_withseed function is obsolete"
+       " and for now simply redirects to"
+       " ncrystal_setbuiltinrandgen_withseed64(). Please stop using it"
+       " and instead call ncrystal_setbuiltinrandgen_withseed64() directly.");
+
     NC::setDefaultRNG( NC::createBuiltinRNG( static_cast<uint64_t>(seed) ) );
   } NCCATCH;
 }
