@@ -449,3 +449,12 @@ CHANGELOG at release time.
      * New basictest_i386 CI workflow runs the full CMake/CTest suite
        (incl. Python tests) on i386 Linux. Builds for wasm32 (emscripten)
        were also verified locally.
+     * C API: new ncrystal_create_scatter_builtinrng64,
+       ncrystal_clone_scatter_rngbyidx64 and
+       ncrystal_setbuiltinrandgen_withseed64 functions taking 64bit seeds and
+       RNG stream indices as two 32bit unsigned long halves, and new _sz
+       variants of the _many functions with size_t counts. The old variants
+       (whose unsigned long arguments are only 32bit on Windows and 32bit
+       platforms) are now considered obsolete. Python seeds and RNG stream
+       indices (createScatterIndependentRNG, Scatter.clone) now accept the
+       full 64bit range on all platforms.
