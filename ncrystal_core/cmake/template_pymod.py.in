@@ -73,9 +73,21 @@ def _libpath_impl():
             'data', shlib_dirname, shlib_name
         ).absolute().resolve()
 
-    #Windows. The DLL is in the scripts directory (to be in %PATH%). To be safe
-    #we look not only in the default scheme, but also in a few other preferred
-    #schemes:
+    #Windows. The DLL is in the scripts directory (to be in %PATH%). First look
+    #in the scripts directory belonging to the installation of this module,
+    #i.e. PREFIX\Scripts for PREFIX\Lib\site-packages\<module> (or
+    #...\Scripts for ...\site-packages\<module> in user installations). This
+    #also works when the installation is not in any of the sysconfig schemes of
+    #the running Python, e.g. in the temporary environments in which pip
+    #installs build requirements (needed for building NCrystal plugins):
+    sitepkgs = pathlib.Path(__file__).absolute().parent.parent
+    for p in ( sitepkgs.parent.parent.joinpath('Scripts',shlib_name),
+               sitepkgs.parent.joinpath('Scripts',shlib_name) ):
+        if p.is_file():
+            return p.absolute().resolve()
+
+    #To be safe we also look not only in the default scheme, but also in a few
+    #other preferred schemes:
     import sysconfig
     schemes = []
 
