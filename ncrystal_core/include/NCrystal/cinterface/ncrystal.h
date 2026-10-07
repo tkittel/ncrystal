@@ -114,6 +114,10 @@ extern "C" {
 #  undef ncrystal_clone_scatter_rngbyidx
 #endif
 #define ncrystal_clone_scatter_rngbyidx NCRYSTAL_APPLY_C_NAMESPACE(clone_scatter_rngbyidx)
+#ifdef ncrystal_clone_scatter_rngbyidx64
+#  undef ncrystal_clone_scatter_rngbyidx64
+#endif
+#define ncrystal_clone_scatter_rngbyidx64 NCRYSTAL_APPLY_C_NAMESPACE(clone_scatter_rngbyidx64)
 #ifdef ncrystal_clone_scatter_rngforcurrentthread
 #  undef ncrystal_clone_scatter_rngforcurrentthread
 #endif
@@ -154,6 +158,10 @@ extern "C" {
 #  undef ncrystal_create_scatter_builtinrng
 #endif
 #define ncrystal_create_scatter_builtinrng NCRYSTAL_APPLY_C_NAMESPACE(create_scatter_builtinrng)
+#ifdef ncrystal_create_scatter_builtinrng64
+#  undef ncrystal_create_scatter_builtinrng64
+#endif
+#define ncrystal_create_scatter_builtinrng64 NCRYSTAL_APPLY_C_NAMESPACE(create_scatter_builtinrng64)
 #ifdef ncrystal_crosssection
 #  undef ncrystal_crosssection
 #endif
@@ -594,6 +602,10 @@ extern "C" {
 #  undef ncrystal_setbuiltinrandgen_withseed
 #endif
 #define ncrystal_setbuiltinrandgen_withseed NCRYSTAL_APPLY_C_NAMESPACE(setbuiltinrandgen_withseed)
+#ifdef ncrystal_setbuiltinrandgen_withseed64
+#  undef ncrystal_setbuiltinrandgen_withseed64
+#endif
+#define ncrystal_setbuiltinrandgen_withseed64 NCRYSTAL_APPLY_C_NAMESPACE(setbuiltinrandgen_withseed64)
 #ifdef ncrystal_setbuiltinrandgen_withstate
 #  undef ncrystal_setbuiltinrandgen_withstate
 #endif
@@ -726,8 +738,11 @@ extern "C" {
   /* Alternative creation method with new RNG stream (WARNING: Using this is       */
   /* intended for unit-tests only, as it is hard to guarantee two RNG streams are  */
   /* truly independent solely based on the seed value).                            */
-  NCRYSTAL_API ncrystal_scatter_t ncrystal_create_scatter_builtinrng( const char * cfgstr,
-                                                                      unsigned long seed );
+  /* The 64bit seed is provided as two 32bit halves (seed=seed_hi*2^32+seed_lo,    */
+  /* both halves must be less than 2^32):                                          */
+  NCRYSTAL_API ncrystal_scatter_t ncrystal_create_scatter_builtinrng64( const char * cfgstr,
+                                                                        unsigned long seed_hi,
+                                                                        unsigned long seed_lo );
 
   /* Cheaply clone scatter and absorption instances. The cloned objects will be    */
   /* using the same physics models and sharing any read-only data, but will be     */
@@ -743,8 +758,11 @@ extern "C" {
   /* All objects with the same indeed will share the same RNG state, so a sensible */
   /* strategy is to use the same index for all scatter objects which are to be     */
   /* used in the same thread:                                                      */
-  NCRYSTAL_API ncrystal_scatter_t ncrystal_clone_scatter_rngbyidx( ncrystal_scatter_t,
-                                                                   unsigned long rngstreamidx );
+  /* The 64bit index is provided as two 32bit halves (idx=idx_hi*2^32+idx_lo, both */
+  /* halves must be less than 2^32):                                               */
+  NCRYSTAL_API ncrystal_scatter_t ncrystal_clone_scatter_rngbyidx64( ncrystal_scatter_t,
+                                                                     unsigned long idx_hi,
+                                                                     unsigned long idx_lo );
 
   /* Clone function where resulting object will use specific rngstream which has   */
   /* been set aside for the current thread. Thus, this function can be called      */
@@ -1098,9 +1116,11 @@ extern "C" {
   NCRYSTAL_API void ncrystal_setrandgen( double (*rg)(void) );
 
   /* It is also possible to (re) set the RNG to the builtin generator (optionally  */
-  /* by state or integer seed) */
+  /* by state or integer seed). The 64bit seed is provided as two 32bit halves     */
+  /* (seed=seed_hi*2^32+seed_lo, both halves must be less than 2^32): */
   NCRYSTAL_API void ncrystal_setbuiltinrandgen(void);
-  NCRYSTAL_API void ncrystal_setbuiltinrandgen_withseed(unsigned long seed);
+  NCRYSTAL_API void ncrystal_setbuiltinrandgen_withseed64( unsigned long seed_hi,
+                                                           unsigned long seed_lo );
   NCRYSTAL_API void ncrystal_setbuiltinrandgen_withstate(const char*);
 
   /* If supported (which it will NOT be if the RNG was set using the C API and the */
@@ -1371,6 +1391,15 @@ extern "C" {
   /*==                                                                          == */
   /*============================================================================== */
   /*============================================================================== */
+
+  /* Obsolete fcts whose uint arguments did not hold the necessary 64 bits:        */
+  NCRYSTAL_API ncrystal_scatter_t
+  ncrystal_create_scatter_builtinrng( const char * cfgstr,
+                                      unsigned long seed );
+  NCRYSTAL_API ncrystal_scatter_t
+  ncrystal_clone_scatter_rngbyidx( ncrystal_scatter_t,
+                                   unsigned long rngstreamidx );
+  NCRYSTAL_API void ncrystal_setbuiltinrandgen_withseed(unsigned long seed);
 
   /* Obsolete variants of the _many_sz functions above, with unsigned long rather  */
   /* than size_t counts (only 32 bits on e.g. 64bit Windows):                      */

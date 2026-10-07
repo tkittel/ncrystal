@@ -717,7 +717,7 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
 
     _wrap('ncrystal_create_info',ncrystal_info_t,(_cstr,))
     _wrap('ncrystal_create_scatter',ncrystal_scatter_t,(_cstr,))
-    _wrap('ncrystal_create_scatter_builtinrng',ncrystal_scatter_t,(_cstr,_ulong))
+    _wrap('ncrystal_create_scatter_builtinrng64',ncrystal_scatter_t,(_cstr,_ulong,_ulong))
     _wrap('ncrystal_create_absorption',ncrystal_absorption_t,(_cstr,))
 
     _raw_multicreate_direct = _wrap('ncrystal_multicreate_direct',None,
@@ -757,7 +757,7 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
 
     _wrap('ncrystal_clone_absorption',ncrystal_absorption_t,(ncrystal_absorption_t,))
     _wrap('ncrystal_clone_scatter',ncrystal_scatter_t,(ncrystal_scatter_t,))
-    _wrap('ncrystal_clone_scatter_rngbyidx',ncrystal_scatter_t,(ncrystal_scatter_t,_ulong))
+    _wrap('ncrystal_clone_scatter_rngbyidx64',ncrystal_scatter_t,(ncrystal_scatter_t,_ulong,_ulong))
     _wrap('ncrystal_clone_scatter_rngforcurrentthread',ncrystal_scatter_t,(ncrystal_scatter_t,))
     _wrap('ncrystal_decodecfg_vdoslux',_uint,(_cstr,))
     _wrap('ncrystal_has_factory',_int,(_cstr,))
