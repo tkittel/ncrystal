@@ -434,3 +434,18 @@ CHANGELOG at release time.
        opposed to app_perfvdos's one-time kernel construction cost), wired
        into benchmark.yml. Also fixed that workflow's benchmark step
        silently swallowing failures (missing "set -o pipefail").
+
+### 32bit platforms
+
+     * 32bit platforms are supported again (motivated by WASM/pyodide), after
+       an audit of integer size assumptions in ncrystal_core: all implicit
+       64->32bit narrowing removed (-Wshorten-64-to-32 clean on 32bit
+       targets), user supplied doubles are range checked before conversion to
+       std::size_t, NCMAT S(alpha,beta) table sizes are checked without
+       possible wrap-around, and MiniMC neutron counts are now uint64_t on all
+       platforms (so e.g. n=1e18 works everywhere).
+     * On 32bit x86, SSE2 rather than x87 floating point math is now used
+       (-msse2 -mfpmath=sse), giving results identical to other platforms.
+     * New basictest_i386 CI workflow runs the full CMake/CTest suite
+       (incl. Python tests) on i386 Linux. Builds for wasm32 (emscripten)
+       were also verified locally.
