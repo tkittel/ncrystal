@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/mctools/ncrystal-logo/main/svg/ncrystal-logo-dark.svg">
+    <img alt="NCrystal logo" src="https://raw.githubusercontent.com/mctools/ncrystal-logo/main/svg/ncrystal-logo.svg" width="420">
+  </picture>
+</p>
+
 NCrystal : A library for thermal neutron transport in crystals and other materials
 ----------------------------------------------------------------------------------
 
