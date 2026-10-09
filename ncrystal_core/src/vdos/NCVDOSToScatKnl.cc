@@ -24,12 +24,12 @@
 #include "NCrystal/internal/vdos/NCVDOSKnlGrid.hh"
 #include "NCrystal/internal/vdos/NCVDOSExpand.hh"
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
-#include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCString.hh"//fixme?
 #include "NCrystal/internal/utils/NCIter.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"//fixme?
 #include "NCrystal/internal/fact_utils/NCFactoryJobs.hh"
 #include "NCrystal/internal/sab/NCSABUtils.hh"
+#include "NCVDOSToScatKnl_FMA.hh"
 
 namespace NC=NCrystal;
 namespace NCV=NCrystal::VDOS;
@@ -85,22 +85,6 @@ inline double NCV::detail::stirlingsSeriesSum9thOrder(double inv_n)
   p = std::fma( inv_n, p, c2 );
   p = std::fma( inv_n, p, c1 );
   return std::fma( inv_n, p, 1.0 );
-}
-
-namespace NCRYSTAL_NAMESPACE {
-  namespace {
-    //sab[i] += aFact[i]*c, for i in [0,n) with explicit std::fma. Used in the
-    //hottest loop below:
-    NCRYSTAL_FMADISPATCH_ATTR
-    void vdosScatKnlAccumulate( double* ncrestrict sab,
-                                const double* ncrestrict aFact,
-                                double c, std::size_t n )
-    {
-      nc_assert( buffersDisjoint( sab, n, aFact, n ) );
-      for ( std::size_t i = 0; i < n; ++i )
-        sab[i] = std::fma( aFact[i], c, sab[i] );
-    }
-  }
 }
 
 NC::VectD

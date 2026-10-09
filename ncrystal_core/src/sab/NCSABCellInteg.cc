@@ -20,6 +20,7 @@
 
 #include "NCrystal/internal/sab/NCSABCellInteg.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCSABCellInteg_FMA.hh"
 
 namespace NC = NCrystal;
 namespace NCS = NCrystal::SABUtils;
@@ -117,13 +118,7 @@ namespace NCRYSTAL_NAMESPACE {
         double getLogS() const { return m_logS; }
       };
 
-      NCRYSTAL_FMADISPATCH_ATTR
-      void fmaRampFill( double* ncrestrict out, unsigned i0, unsigned i1,
-                        double slope, double offset )
-      {
-        for ( unsigned i = i0; i < i1; ++i )
-          out[i] = std::fma( slope, static_cast<double>(i), offset );
-      }
+      //fmaRampFill: see NCSABCellInteg_FMA.hh (included above).
 
       struct SOfAlphaGrid final : private NoCopyMove {
         //Class which sets up an alpha grid like linspace(a1,a2,n) with
@@ -195,27 +190,8 @@ namespace NCRYSTAL_NAMESPACE {
         double final_k;//needed for adaptive alg
       };
 
-      inline double calc_bu_minus_bl_times_smiddle( bool is_bounded_by_both,
-                                                    double dbpm,
-                                                    double bu,
-                                                    double bl,
-                                                    double smiddle )
-      {
-        //Using inlined function here for calculation which is needed in two
-        //places, and which although simple is a bit tricky.
-
-        nc_assert(bu-bl > -0.01);//could be slightly negative due to
-                                 //numerical instabilities
-        const double bumbl( is_bounded_by_both
-                            ? 2.0*dbpm
-                            : ncmax(0.0,bu-bl) );
-        nc_assert(bumbl >= 0.0 );
-        nc_assert(smiddle >= -1e-9 );
-        const double res = ncmax(0.0,bumbl*smiddle);
-        nc_assert(res >= 0.0);
-        nc_assert(std::isfinite(res));
-        return res;
-      }
+      //calc_bu_minus_bl_times_smiddle: see NCSABCellInteg_FMA.hh (included
+      //above).
 
       class IntegrandOfA final : private NoCopyMove {
       public:
@@ -290,26 +266,10 @@ namespace NCRYSTAL_NAMESPACE {
           double s_at_b2;
         };
 
-        NCRYSTAL_FMADISPATCH_ATTR
         double contrib(const AlphaSlice& slice) const
         {
-          nc_assert(m_b2>m_b1);
-          const double a = slice.alpha;
-          //bl/bu via the robust getBetaMinus/getBetaPlus
-          //(the naive a-+dbpm formula cancels catastrophically for a~=4E):
-          const double bl = ncclamp( getBetaMinus(m_4e*0.25,a), m_b1, m_b2 );
-          const double bu = ncclamp( getBetaPlus(m_4e*0.25,a), m_b1, m_b2 );
-          const double dbpm = std::sqrt( m_4e * a );
-          //FIXME: ^^^ This calculates sqrt(4E*a) thrice instead of just once!
-
-          //To find the contribution we integrate S(a,b) over [bl,bu]. This is
-          //easy, since we always interpolate linearly in b:
-          const double bmiddle( m_is_bounded_by_both ? a : (bu+bl)*0.5 );
-          nc_assert(valueInInterval(-0.01,1.01,(bmiddle-m_b1)*m_invdb));
-          const double rb = ncclamp((bmiddle-m_b1)*m_invdb,0.0,1.0);
-          const double smiddle = nclerp( slice.s_at_b1, slice.s_at_b2, rb );
-          return calc_bu_minus_bl_times_smiddle( m_is_bounded_by_both,
-                                                 dbpm, bu, bl, smiddle );
+          return contribImpl( m_4e, m_b1, m_b2, m_invdb, m_is_bounded_by_both,
+                              slice.alpha, slice.s_at_b1, slice.s_at_b2 );
         }
 
         double growK( AlphaInterpMethod aim,
@@ -443,46 +403,7 @@ namespace NCRYSTAL_NAMESPACE {
         }
       };
 
-      NCRYSTAL_FMADISPATCH_ATTR
-      void fillContribAtAlpha( double* ncrestrict contrib_out, std::size_t npts,
-                               const double* ncrestrict Sb1_arr,
-                               const double* ncrestrict Sb2_arr,
-                               const double* ncrestrict alpha_arr,
-                               double foure, double E_div_kT,
-                               double cs_b1, double cs_b2, double invdb,
-                               bool is_bounded_by_betaminus,
-                               bool is_bounded_by_betaplus,
-                               bool is_bounded_on_both_sides )
-      {
-        //contrib_out/Sb1_arr/Sb2_arr/alpha_arr are ncrestrict: at the call
-        //site (impl_numIntRegion below) they are always contrib_at_a (a
-        //local stack array) and two distinct SOfAlphaGrid instances' member
-        //arrays (never overlapping, since they are separate objects/members):
-        nc_assert( buffersDisjoint( contrib_out, npts, Sb1_arr, npts ) );
-        nc_assert( buffersDisjoint( contrib_out, npts, Sb2_arr, npts ) );
-        nc_assert( buffersDisjoint( contrib_out, npts, alpha_arr, npts ) );
-        double bl(cs_b1), bu(cs_b2);
-        for ( std::size_t i = 0; i < npts; ++i ) {
-          double Sb1 = Sb1_arr[i];
-          double Sb2 = Sb2_arr[i];
-          double a = alpha_arr[i];
-          //bl/bu via the robust getBetaMinus/getBetaPlus
-          //(fixme: calculating expensive sqrt(4E*a) thrice instead of once!)
-          double dbpm = std::sqrt( foure * a );//nb: expensive
-          if ( is_bounded_by_betaminus )
-            bl = getBetaMinus(E_div_kT,a);
-          if ( is_bounded_by_betaplus )
-            bu = ncmax(bl,getBetaPlus(E_div_kT,a));//ncmax as a safeguard
-                                                   //against FP issues
-          //To find the contribution we integrate S(a,b) over [bl,bu]. This is
-          //easy, since we always interpolate linearly in b:
-          const double bmiddle( is_bounded_on_both_sides ? a : (bu+bl)*0.5 );
-          double rb = (bmiddle-cs_b1)*invdb;
-          double smiddle = nclerp(Sb1,Sb2,rb);
-          contrib_out[i] = calc_bu_minus_bl_times_smiddle( is_bounded_on_both_sides,
-                                                           dbpm, bu, bl, smiddle );
-        }
-      }
+      //fillContribAtAlpha: see NCSABCellInteg_FMA.hh (included above).
 
       static void impl_numIntRegion( const CellData& entire_cell,
                                      const CellData& subcell,
