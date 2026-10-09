@@ -453,9 +453,21 @@ inline NCrystal::sincosval_t NCrystal::sincos_2pix( double x )
 {
   //NB: We used to simply return PairDD but that triggers annoying gcc warning
   //on arm, like discussed on https://stackoverflow.com/questions/77729813
-  //. Moving to a custom struct solves the issue.
+  //Moving to a custom struct solves the issue.
   sincosval_t res;
+#if 0
+  //old version:
   sincos_02pi((x-std::floor(x))*k2Pi,res.cos,res.sin);
+#else
+  //version which pulls out the sincos_02pi internals to fma-proof the
+  //subtraction by kPi:
+  const double u = x - std::floor(x);//in [0,1)
+  const double Am = std::fma( u, k2Pi, -kPi );//u*2pi-pi, in [-pi,pi]
+  const double Amabs = ncabs( Am );
+  sincos_mpi2pi2( ncmin( Amabs, kPi - Amabs ), res.cos, res.sin );
+  res.cos = std::copysign( res.cos, Amabs - kPiHalf );
+  res.sin = std::copysign( res.sin, -Am );
+#endif
   return res;
 }
 
