@@ -9,6 +9,7 @@ on:
 jobs:
   ncdevtool_check:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
@@ -37,6 +38,7 @@ jobs:
           - { os: macos-15-intel,    CC: clang,    CXX: clang++,    python: "3.11", buildtype: 'Release' }
     name: ${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}-${{ matrix.buildtype }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     env:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
@@ -170,6 +172,7 @@ jobs:
         buildtype: [Debug, Release]
     name: ${{ matrix.os }}-${{ matrix.buildtype }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     defaults:
       run:
         #Explicit "bash" (git-bash, preinstalled on GitHub's Windows
@@ -288,6 +291,7 @@ jobs:
     needs: [ ncdevtool_check, build, build_windows ]
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Download all per-leg logs
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
