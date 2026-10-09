@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/dyninfoutils/NCDynInfoUtils.hh"
+#include "NCrystal/internal/dyninfoutils/NCDynInfoWithTeffMSD.hh"
+#include "NCrystal/internal/phys_utils/NCDebyeMSD.hh"
 #include "NCrystal/internal/vdos/NCVDOSCache.hh"
 #include "NCrystal/internal/fact_utils/NCFactoryUtils.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
@@ -392,11 +394,37 @@ NC::extractTeffFromDynInfo( const DI_ScatKnl* di )
                         VDOSEval( di_vdos->vdosData() )
                         .calcEffectiveTemperature() };
   }
+  if ( auto di_tm = dynamic_cast<const DI_ScatKnlDirectWithTeffMSD*>( di ) ) {
+    if ( di_tm->teffMSDData().explicit_teff.has_value() )
+      return Temperature{ DoValidate,
+                          di_tm->teffMSDData().explicit_teff.value().dbl() };
+  }
   if ( auto di_direct = dynamic_cast<const DI_ScatKnlDirect*>( di ) ) {
     return ( SABAnalyser::
              estimateTeffMSD( *di_direct->ensureBuildThenReturnSAB() )
              .effectiveTemperature );
   }
+  return NullOpt;
+}
+
+NC::Optional<double>
+NC::extractMSDFromDynInfo( const DI_ScatKnl* di )
+{
+  if ( auto di_vdos = dynamic_cast<const DI_VDOS*>( di ) )
+    return VDOSEval( di_vdos->vdosData() ).getMSD();
+  if ( auto di_vdebye = dynamic_cast<const DI_VDOSDebye*>( di ) )
+    return debyeIsotropicMSD( di_vdebye->debyeTemperature(),
+                              di->temperature(),
+                              di->atomData().averageMassAMU() );
+  if ( auto di_tm = dynamic_cast<const DI_ScatKnlDirectWithTeffMSD*>( di ) ) {
+    if ( di_tm->teffMSDData().explicit_msd.has_value() )
+      return di_tm->teffMSDData().explicit_msd;
+    if ( !di_tm->teffMSDData().allow_msd_estimation )
+      return NullOpt;//pre-v8 NCMAT provenance: physics must not change
+  }
+  if ( auto di_direct = dynamic_cast<const DI_ScatKnlDirect*>( di ) )
+    return SABAnalyser
+      ::estimateTeffMSD( *di_direct->ensureBuildThenReturnSAB() ).msd;
   return NullOpt;
 }
 
