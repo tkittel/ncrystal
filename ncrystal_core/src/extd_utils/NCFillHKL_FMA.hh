@@ -38,13 +38,7 @@
 namespace NCRYSTAL_NAMESPACE {
 
   namespace {
-#if defined(_MSC_VER) && !defined(__clang__)
-#  define NCFILLHKLFMA_ALWAYS_INLINE __forceinline
-#else
-#  define NCFILLHKLFMA_ALWAYS_INLINE inline __attribute__((always_inline))
-#endif
-
-    NCFILLHKLFMA_ALWAYS_INLINE
+    NCRYSTAL_FMADISPATCH_INLINE
     double fillhkl_dot_fma( const Vector& a, const Vector& b )
     {
       return std::fma( a.x(), b.x(),
