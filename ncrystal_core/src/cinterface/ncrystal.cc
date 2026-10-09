@@ -311,6 +311,8 @@ namespace NCRYSTAL_NAMESPACE {
       std::map<ThreadID,ErrorState> states;
       std::uint64_t nextseqno = 1;
       static constexpr std::size_t max_nstates = 1024;
+      //states.size(), but readable without the lock (only written with it):
+      std::atomic<std::size_t> nstates{0};
     };
     ErrorStates& errorStates()
     {
@@ -320,6 +322,11 @@ namespace NCRYSTAL_NAMESPACE {
     const ErrorState* currentErrorState()
     {
       auto& es = errorStates();
+      //Lock-free fast path for the normal case where no thread has an error
+      //state. Safe since a thread only looks up its own entry, which it
+      //inserted itself (so it can not see nstates==0 while that exists):
+      if ( es.nstates.load( std::memory_order_relaxed ) == 0 )
+        return nullptr;
       NCRYSTAL_LOCK_GUARD(es.mtx);
       auto it = es.states.find( currentThreadID() );
       return it == es.states.end() ? nullptr : &it->second;
@@ -342,6 +349,7 @@ namespace NCRYSTAL_NAMESPACE {
               itOldest = it;
           es.states.erase( itOldest );
         }
+        es.nstates.store( es.states.size(), std::memory_order_relaxed );
       }
       char * errmsg = state->errmsg;
       char * errtype = state->errtype;
@@ -420,6 +428,7 @@ void ncrystal_clearerror(void)
   auto& es = ncc::errorStates();
   NCRYSTAL_LOCK_GUARD(es.mtx);
   es.states.erase( ncc::currentThreadID() );
+  es.nstates.store( es.states.size(), std::memory_order_relaxed );
 }
 
 int ncrystal_setquietonerror(int q)
