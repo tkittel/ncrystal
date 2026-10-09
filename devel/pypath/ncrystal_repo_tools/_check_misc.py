@@ -52,6 +52,7 @@ def main():
         'tests/data/QE_pw_Al.out' : 2000,
         'tests/src/app_mmcgeom/main.cc' : 80,
         'tests/src/app_fft/refvals.hh' : 200,
+        'tests/data/Li2O_sg225_LithiumOxide_sabsmall_temp10K.ncmat' : 300,
         'tests/data/ptreduce/li_from_li2o_e0grid.txt' : 100,
         'tests/data/ptreduce/al_e0grid.txt' : 100,
     }
