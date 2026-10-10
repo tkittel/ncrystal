@@ -287,3 +287,6 @@ ProcComposition(4 components, isotropic)
 >>> Absorption process (object tree):
 
 AbsOOV(sigma_2200=0.231barn)
+=> correctly refused stateless v8: The effective_temperature/msd/debye_temp parameters produce NCMAT v8 data, where non-crystalline materials must declare a state of matter: call .set_state_of_matter(..) first
+=> v8 keywords roundtrip (teff_extender=450): OK
+=> plain scatknl composer output remains NCMAT v7: OK
