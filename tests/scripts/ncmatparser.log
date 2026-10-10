@@ -799,7 +799,7 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 
 
 ==> Test 193
-==> Correct! NCBadInput: @DYNINFO sections of type vdosdebye requires Debye temperature to be specified. Either in the same section via the debye_temp or msd (NCMAT v8+) keywords (debye_temp requires NCMAT v5+), or in the @DEBYETEMPERATURE section.
+==> Correct! NCBadInput: @DYNINFO sections of type vdosdebye requires Debye temperature to be specified. Either in the same section via the debye_temp (NCMAT v5+) or msd (NCMAT v8+) keywords, or in the @DEBYETEMPERATURE section (until NCMAT v7).
 
 
 ==> Test 194
