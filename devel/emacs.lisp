@@ -23,8 +23,10 @@
 ; Major mode for .ncmat files:
 (setq ncmat-sections '("CELL" "ATOMPOSITIONS" "SPACEGROUP" "DEBYETEMPERATURE" "DYNINFO" "TEMPERATURE"
                        "DENSITY" "ATOMDB" "STATEOFMATTER" "OTHERPHASES" "CUSTOM_[A-Z]+"))
-(setq ncmat-fields '("lengths" "angles" "cubic" "element" "fraction" "type" "debye_temp" "temperature"
-                     "sab_scaled" "sab" "alphagrid" "betagrid" "egrid" "vdos_egrid" "vdos_density"))
+(setq ncmat-fields '("lengths" "angles" "cubic" "element" "fraction" "type"
+                     "debye_temp" "temperature" "msd" "at_temperature"
+                     "effective_temperature" "sab_scaled" "sab"
+                     "alphagrid" "betagrid" "egrid" "vdos_egrid" "vdos_density"))
 (setq ncmat-highlights
       `(("^NCMAT\s*v[0-9]+[a-z0-9]*" . font-lock-function-name-face)
         (,(concat "^@\\(" (mapconcat 'identity ncmat-sections "\\|") "\\)") . font-lock-keyword-face)
