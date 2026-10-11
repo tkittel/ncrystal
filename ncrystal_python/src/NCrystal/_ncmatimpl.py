@@ -1936,7 +1936,7 @@ def _check_eqrefl_compatibility( spglib_cell, sgnumber, symprec,
         rots = ds['rotations']
     ops, testhkls = _eqrefl_test_hkls( rots )
     from .misc import evaluate_query
-    sgstr = f'{sgnumber}:R' if rhombohedral_axes else str(sgnumber)
+    sgstr = f'{sgnumber}:r' if rhombohedral_axes else str(sgnumber)
     eqrefl = evaluate_query( [ 'util', 'eqrefl', sgstr ]
                              + [ ','.join(str(x) for x in hkl)
                                  for hkl in testhkls ] )
