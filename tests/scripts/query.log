@@ -100,6 +100,7 @@ Caught expected NCBadInput('Invalid JSON query key: "foo"')
  'browsedb',
  'browsefactories',
  'factorythreads',
+ 'atomdb',
  'eqrefl',
  'sgsym']
 ===========================================

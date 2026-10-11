@@ -234,6 +234,7 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr auto sv_browsedb = StrView::make("browsedb");
       constexpr auto sv_browsefacts = StrView::make("browsefactories");
       constexpr auto sv_factthreads = StrView::make("factorythreads");
+      constexpr auto sv_atomdb = StrView::make("atomdb");
       constexpr auto sv_eqrefl = StrView::make("eqrefl");
       constexpr auto sv_atomsites = StrView::make("atomsites");
       constexpr auto sv_atompositions = StrView::make("atompositions");
@@ -243,7 +244,7 @@ namespace NCRYSTAL_NAMESPACE {
           invalid("no arguments should come after: [\"util\",\"list\"]");
         os<<"[\"wl2ekin\", \"ekin2wl\", \"mathval\", \"fmadiagnose\","
           " \"kinutils\", \"browsedb\", \"browsefactories\","
-          " \"factorythreads\", \"eqrefl\", \"sgsym\"]";
+          " \"factorythreads\", \"atomdb\", \"eqrefl\", \"sgsym\"]";
       } else if ( key == sv_eqrefl ) {
         //["util","eqrefl",MODE,SG,"h1,k1,l1","h2,k2,l2",...]: For each
         //requested hkl, return the list of reflections considered
@@ -447,6 +448,10 @@ namespace NCRYSTAL_NAMESPACE {
           first = false;
         }
         os << "]}";
+      } else if ( key == sv_atomdb ) {
+        if ( nargs != 0 )
+          invalid("no arguments should come after: [\"util\",\"atomdb\"]");
+        BrowseQuery::atomDB( os );
       } else if ( key == sv_factthreads ) {
         if ( nargs != 0 )
           invalid("no arguments should come after:"
