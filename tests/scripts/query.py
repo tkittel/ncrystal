@@ -122,6 +122,17 @@ def main():
     test_cli('util','ekin2wl','0.025')
     test_cli('util','eqrefl','149','1,2,3','1,1,0')
     test_cli('util','eqrefl','150','1,2,3','1,1,0')
+    test_cli('util','sgsym','strict','166:r')
+    test_cli('util','sgsym','strict','62:cab')
+    test_cli('util','sgsym','relaxed','1')
+    test_cli('util','sgsym','relaxed','227')#(default setting)
+    with ensure_error(NCBadInput,'Invalid util query: ["util","sgsym"]'
+                      ' (correct usage: ["util","sgsym","strict|relaxed",SG])'):
+        test_cli('util','sgsym')
+    with ensure_error(NCBadInput,'Invalid space group specification: "227" (space'
+                      ' group 227 has several settings, so one of them must be'
+                      ' specified: 227:1 (default), 227:2)'):
+        test_cli('util','sgsym','strict','227')
 
     with ensure_error(ArgumentError,
                       'the following arguments are required: STR'):
