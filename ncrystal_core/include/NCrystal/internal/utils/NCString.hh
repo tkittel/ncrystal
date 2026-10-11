@@ -128,17 +128,21 @@ namespace NCRYSTAL_NAMESPACE {
   std::string bytes2hexstr(const std::vector<uint8_t>& v);
   std::vector<uint8_t> hexstr2bytes(const std::string& v);
 
-  //Common access to environment variables - will always be prefixed with
-  //NCRYSTAL_. Unset variables means that the default values will be
-  //returned. The _dbl/_int versions throws BadInput exceptions in case of
-  //problems:
-  //NB: Assuming no-one calls setenv/putenv/unsetenv, concurrent calls to these
-  //functions are safe (since C++11).
+  //Common access to environment variables - will usually be prefixed with
+  //NCRYSTAL_ (expand with ncgetenv_varname below). Unset variables means that
+  //the default values will be returned. The _dbl/_int versions throws BadInput
+  //exceptions in case of problems:
+  //
+  //NB: In the absence of calls to setenv/putenv/unsetenv, concurrent calls to
+  //these functions are safe (since C++11).
   std::string ncgetenv(std::string, std::string defval = std::string() );
   double ncgetenv_dbl(std::string, double defval = 0.0);
   int ncgetenv_int(std::string, int defval = 0 );
   std::int64_t ncgetenv_int64(std::string, std::int64_t defval = 0 );
   bool ncgetenv_bool(std::string);//if set to 1 -> true, 0/unset -> false (otherwise exception).
+  //Exanded name of the environment variable accessed by the above functions
+  //(use for instance to print variable names in error messages):
+  std::string ncgetenv_varname(std::string);
 
   //Find forbidden characters. Either from a given list and/or by looking for non-ASCII characters.
   //If any are found, return a string representation suitable for printing in error messages.
