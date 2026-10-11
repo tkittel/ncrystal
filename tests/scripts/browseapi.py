@@ -95,12 +95,12 @@ def main():
     for e in nb.browse('virtual',load=True):
         print(f'  {e.display_name}: {e.props}' if e.props
               else f'  {e.display_name}: ERROR {e.error!r}')
-    p = [ e for e in nb.browse('virtual',load=True)
-          if e.name=='crystal.ncmat' ][0].props
+    p = next( e for e in nb.browse('virtual',load=True)
+              if e.name=='crystal.ncmat' ).props
     assert p.sg == 225 and p.as_dict()['natoms'] == 4
     assert p.composition == ((13,((0,1.0),)),)
     with ensure_error(AttributeError,'PhysicsProps has no attribute "foo"'):
-        p.foo
+        _ = p.foo
 
     all_entries = nb.browse(load=True)
     al = [ e for e in all_entries if e.name == 'Al_sg225.ncmat' ]
@@ -111,8 +111,8 @@ def main():
 
     def find( *a, **kw ):
         res = names( nb.find( *a, **kw ) )
-        kwstr = dict( (k,( '<function>' if callable(v) else v ))
-                      for k,v in kw.items() )
+        kwstr = { k: ( '<function>' if callable(v) else v )
+                  for k,v in kw.items() }
         print(f'find{a if a else ""}{kwstr if kwstr else ""}:',res)
         return res
     find('crystal')
