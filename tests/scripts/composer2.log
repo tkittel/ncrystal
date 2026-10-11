@@ -299,6 +299,40 @@ Non-standard SG-4 setting rejected
 Non-standard SG-76 setting rejected
 
 
+  ================> eqrefl check
+
+
+SG-1 checked as SG-2: accepted
+SG-2 checked as SG-1: accepted
+SG-3 checked as SG-10: accepted
+SG-3 checked as SG-16: rejected
+SG-10 checked as SG-3: accepted
+SG-16 checked as SG-47: accepted
+SG-16 checked as SG-10: accepted
+SG-75 checked as SG-83: accepted
+SG-75 checked as SG-89: rejected
+SG-89 checked as SG-75: accepted
+SG-143 checked as SG-147: accepted
+SG-143 checked as SG-149: rejected
+SG-143 checked as SG-150: rejected
+SG-149 checked as SG-150: rejected
+SG-150 checked as SG-149: rejected
+SG-149 checked as SG-162: accepted
+SG-168 checked as SG-177: rejected
+SG-177 checked as SG-191: accepted
+SG-195 checked as SG-200: accepted
+SG-195 checked as SG-207: rejected
+SG-207 checked as SG-195: accepted
+SG-221 checked as SG-225: accepted
+Rhombohedral axes: accepted only when declared
+SG-1: 2 distinct +-R, 15 test hkls
+SG-2: 2 distinct +-R, 15 test hkls
+SG-47: 8 distinct +-R, 27 test hkls
+SG-191: 24 distinct +-R, 59 test hkls
+SG-225: 48 distinct +-R, 107 test hkls
+eqrefl check OK
+
+
   ================> refine corrections
 
 
