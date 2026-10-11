@@ -152,8 +152,8 @@ def test_physics():
 
 def main():
     #Colors in output must not depend on the environment of the test:
-    orig_env = dict( (k,os.environ.get(k)) for k in _color_envvars )
-    setenv( **dict( (k,None) for k in _color_envvars ) )
+    orig_env = { k: os.environ.get(k) for k in _color_envvars }
+    setenv( **{ k: None for k in _color_envvars } )
     try:
         main_impl()
         test_colors()
