@@ -72,23 +72,23 @@ class PhysicsProps:
                         { (1,2):'D', (1,3):'T' }.get( (Z,A), f'{en}{A}' ) )
                 atomfracs[lbl] = atomfracs.get(lbl,0.0) + fr
         elements = frozenset( elementZToName(Z) for Z,_ in compos )
-        self.__d = dict(
-            elements = elements,
-            atoms = frozenset( atomfracs ),
-            nelements = len( elements ),
-            formula = format_chemform( sorted( atomfracs.items() ) ),
-            absxs = info['xsect_absorption'],
-            scatxs = info['xsect_free'],
-            density = info['density'],
-            numdens = info['numberdensity'],
-            temp = info['temperature'],
-            state = info['stateofmatter'].lower(),
-            crystal = info['crystalline'],
-            sg = info['spacegroup'],
-            natoms = info['natoms_unitcell'],
-            dyninfo = frozenset( info['dyninfo_types'] ),
-            nphases = info['nphases'],
-        )
+        self.__d = {
+            'elements': elements,
+            'atoms': frozenset( atomfracs ),
+            'nelements': len( elements ),
+            'formula': format_chemform( sorted( atomfracs.items() ) ),
+            'absxs': info['xsect_absorption'],
+            'scatxs': info['xsect_free'],
+            'density': info['density'],
+            'numdens': info['numberdensity'],
+            'temp': info['temperature'],
+            'state': info['stateofmatter'].lower(),
+            'crystal': info['crystalline'],
+            'sg': info['spacegroup'],
+            'natoms': info['natoms_unitcell'],
+            'dyninfo': frozenset( info['dyninfo_types'] ),
+            'nphases': info['nphases'],
+        }
         self.__compos = compos
 
     def as_dict( self ):
@@ -108,8 +108,8 @@ class PhysicsProps:
         raise AttributeError(f'PhysicsProps has no attribute "{name}"')
 
     def __str__( self ):
-        return 'PhysicsProps(%s)'%( ', '.join( f'{k}={_fmt_prop(v)}'
-                                               for k,v in self.__d.items() ) )
+        s = ', '.join( f'{k}={_fmt_prop(v)}' for k,v in self.__d.items() )
+        return f'PhysicsProps({s})'
 
     def __repr__( self ):
         return str(self)
@@ -345,8 +345,8 @@ _propdocs = [
     ('nphases', 'number of phases (1 for single-phase materials)'),
 ]
 
-_where_funcs = dict( len = len, min = min, max = max, any = any, all = all,
-                     abs = abs, round = round, set = set, sorted = sorted )
+_where_funcs = { 'len': len, 'min': min, 'max': max, 'any': any, 'all': all,
+                 'abs': abs, 'round': round, 'set': set, 'sorted': sorted }
 
 def _q( *args ):
     from .misc import evaluate_query
@@ -413,7 +413,7 @@ def _fmt_prop( v ):
     if isinstance( v, frozenset ):
         return '{' + ','.join( repr(e) for e in sorted(v) ) + '}'
     if isinstance( v, float ):
-        return '%g'%v
+        return f'{v:g}'
     return repr(v)
 
 class _WhereExpr:
@@ -434,7 +434,7 @@ class _WhereExpr:
                 msg = 'invalid syntax'
             raise NCBadInput(f'Invalid where expression "{expr}":'
                              f' {msg}') from e
-        allowed = set( n for n,d in _propdocs ) | set( _where_funcs )
+        allowed = { n for n,d in _propdocs } | set( _where_funcs )
         for node in ast.walk( tree ):
             if isinstance( node, ast.Name ) and node.id not in allowed:
                 raise NCBadInput(f'Unknown name "{node.id}" in where'

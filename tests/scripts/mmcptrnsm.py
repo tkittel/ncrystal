@@ -49,7 +49,7 @@ def main(do_plot, do_update):
     transm_uz_threshold = math.cos( transm_def_degree*math.pi/180)
 
     def cb( data ):
-        print('Callback processing %i neutrons'%len(data['w']))
+        print(f"Callback processing {len(data['w'])} neutrons")
         print('   got keys:',data.keys())
         w,uz,e0 = data['w'], data['uz'], data['ekin0']
         mask_transm = uz > transm_uz_threshold

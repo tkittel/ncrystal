@@ -25,12 +25,12 @@ from ._cliimpl import cli_entry_point, create_ArgumentParser, print
 
 
 def climod_metadata():
-    return dict(
-        displaygroup = 'main',
-        displayorder = 15,
-        descr = ( "Browse and search available data files (e.g. the"
-                  " standard library of NCMAT files) and plugins." )
-    )
+    return {
+        'displaygroup': 'main',
+        'displayorder': 15,
+        'descr': ( "Browse and search available data files (e.g. the"
+                   " standard library of NCMAT files) and plugins." )
+    }
 
 def parseArgs( progname, arglist, return_parser = False ):
     import textwrap
@@ -69,12 +69,12 @@ def parseArgs( progname, arglist, return_parser = False ):
     """).strip()
     epilog += ( '\n\nphysics properties available in --where expressions'
                 ' (and --props):\n' + _propdocs_str() + '\n\n' )
+    fctnames = ', '.join(sorted(_where_fct_names()))
     epilog += textwrap.fill(
         '--where expressions are Python expressions using the properties'
         ' above, comparison and boolean operators, set/string/number'
-        ' literals, and the functions: %s. Comparisons with unavailable'
-        ' (None) values are considered false.'%(
-            ', '.join(sorted(_where_fct_names()))), width = 79 )
+        f' literals, and the functions: {fctnames}. Comparisons with'
+        ' unavailable (None) values are considered false.', width = 79 )
     import argparse
     parser = create_ArgumentParser( prog = progname,
                                     description = descr,
