@@ -19,6 +19,8 @@
 ##                                                                            ##
 ################################################################################
 
+# ruff: noqa: N999 (the package name is not up for change)
+
 """
 
 Python module for using the NCrystal library for thermal neutron transport in
@@ -71,7 +73,9 @@ _minpyversion=(3,8,0)
 
 pyversion = _sys.version_info[0:3]
 if pyversion < _minpyversion:
-    raise RuntimeError('Unsupported python version %i.%i.%i detected (needs %i.%i.%i or later).'%(pyversion+_minpyversion))
+    raise RuntimeError( 'Unsupported python version {}.{}.{} detected (needs'
+                        ' {}.{}.{} or later).'.format(*pyversion,
+                                                      *_minpyversion) )
 
 #NB: The following env var can NOT be namespaced. E.g. it will always be
 #NCRYSTAL_SLIMPYINIT and never e.g. NCRYSTAL<namespacehere>_SLIMPYINIT:

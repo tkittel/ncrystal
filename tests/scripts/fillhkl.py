@@ -391,7 +391,7 @@ def test_weakf2():
         hkl, d, f2 = [], [], []
         for e in info.hklObjects():
             #All planes of the family, with the family values:
-            for h, k, l in zip( e.h, e.k, e.l ):
+            for h, k, l in zip( e.h, e.k, e.l ):  # noqa: E741
                 hkl.append( ( h, k, l ) )
                 d.append( float( e.d ) )
                 f2.append( float( e.f2 ) )
