@@ -130,6 +130,71 @@ def test_verify_origin_and_triclinic():
         else:
             raise RuntimeError('Incompatible setting was accepted')
 
+def test_eqrefl_check():
+    #Direct test of the check that NCrystal never merges reflections which are
+    #not equivalent for the structure as given: random structures of a known
+    #space group are checked against a claimed one, which must be rejected
+    #exactly when its Laue class is larger (under-merging is harmless).
+    print('\n\n  ================> eqrefl check\n\n')
+    import itertools
+    import random
+
+    import NCrystalDev._ncmatimpl as nci
+    import NCTestUtils.cifgen as cg
+    def spglib_cell( s ):
+        labels = sorted( { e for e,_ in s.atoms } )
+        return ( cg.lattice_from_cellpars( *s.cellpars ),
+                 [ p for _,p in s.atoms ],
+                 [ labels.index(e) for e,_ in s.atoms ] )
+    def ok( s, sg, rhombo = False ):
+        try:
+            nci._check_eqrefl_compatibility( spglib_cell(s), sg, 1e-5,
+                                             rhombohedral_axes = rhombo )
+        except NC.NCBadInput as e:
+            assert 'not in a setting where' in str(e)
+            return False
+        return True
+    rng = random.Random( 2 )
+    #(true SG, claimed SG, expected acceptance):
+    cases = [ (1,2,True), (2,1,True), (3,10,True), (3,16,False),
+              (10,3,True), (16,47,True), (16,10,True), (75,83,True),
+              (75,89,False), (89,75,True), (143,147,True), (143,149,False),
+              (143,150,False), (149,150,False), (150,149,False),
+              (149,162,True), (168,177,False), (177,191,True),
+              (195,200,True), (195,207,False), (207,195,True),
+              (221,225,True) ]
+    for sgtrue, sgclaim, expect in cases:
+        s = cg.random_structure( rng, sgtrue, nsites = 3 )
+        res = ok( s, sgclaim )
+        print(f'SG-{sgtrue} checked as SG-{sgclaim}:',
+              'accepted' if res else 'rejected')
+        assert res == expect
+    #Rhombohedral axes must be declared as such:
+    s = cg.primitive_cell( cg.random_structure( rng, 166, nsites = 2 ) )
+    assert ok( s, 166, rhombo = True ) and not ok( s, 166 )
+    print('Rhombohedral axes: accepted only when declared')
+    #Test hkls: 2n+1 general ones for the n distinct +-R, no three coplanar:
+    def det( u, v, w ):
+        return ( u[0]*(v[1]*w[2]-v[2]*w[1]) - u[1]*(v[0]*w[2]-v[2]*w[0])
+                 + u[2]*(v[0]*w[1]-v[1]*w[0]) )
+    for sg, nops in ( (1,2), (2,2), (47,8), (191,24), (225,48) ):
+        ds = nci._import_spglib().get_symmetry_dataset(
+            spglib_cell( cg.random_structure( rng, sg, nsites = 2 ) ),
+            symprec = 1e-5 )
+        rots = getattr( ds, 'rotations', None )
+        ops, hkls = nci._eqrefl_test_hkls( ds['rotations'] if rots is None
+                                           else rots )
+        assert len(ops) == nops
+        general = hkls[:2*nops+1]
+        assert all( h[0] == 1 for h in general )
+        if nops <= 8:
+            assert all( det(*t) != 0
+                        for t in itertools.combinations( general, 3 ) )
+        print(f'SG-{sg}: {nops} distinct +-R, {len(hkls)} test hkls')
+    ops, hkls = nci._eqrefl_test_hkls( None )
+    assert len(ops) == 0 and len(hkls) == 11
+    print('eqrefl check OK')
+
 def test_refine_corrections():
     #refine_crystal_structure must only report corrections when spglib
     #actually moves atoms, not for mere basis changes (e.g. triclinic
@@ -207,5 +272,6 @@ def test_v8_scatknl_keywords():
 if __name__ == '__main__':
     main()
     test_verify_origin_and_triclinic()
+    test_eqrefl_check()
     test_refine_corrections()
     test_v8_scatknl_keywords()
