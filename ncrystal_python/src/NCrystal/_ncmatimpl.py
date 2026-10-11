@@ -1899,6 +1899,24 @@ def _reldiff_atompos( spglib_cell1, spglib_cell2 ):
                 best = worst
     return math.sqrt(best) if best is not None else None
 
+def _eqrefl_test_hkls( rots ):
+    #Returns (ops,testhkls) for _check_eqrefl_compatibility, with ops the
+    #distinct +-R of the rotations (as an int array of shape (n,3,3)). The
+    #first 2n+1 test hkls are (1,t,t^2), no three of which are coplanar with
+    #the origin. A wrong NCrystal equivalence g can only pass for an hkl fixed
+    #by one of the n matrices +-R^-1.g (none being the identity), each fixing
+    #at most a plane and hence at most two of these hkls, so the check is
+    #complete. A few special hkls are added for good measure.
+    from ._numpy import _ensure_numpy
+    np = _ensure_numpy()
+    uniq = { tuple( s*int(x) for x in np.asarray(R).ravel() )
+             for R in ( rots if rots is not None else [] ) for s in (1,-1) }
+    ops = np.asarray( sorted(uniq), dtype = np.int64 ).reshape(-1,3,3)
+    testhkls = [ (1,t,t*t) for t in range( 1, 2*len(ops)+2 ) ]
+    testhkls += [ (1,0,0), (0,1,0), (0,0,1), (1,1,0),
+                  (1,-1,0), (1,0,1), (0,1,1), (1,1,1), (1,2,0), (2,1,0) ]
+    return ops, testhkls
+
 def _check_eqrefl_compatibility( spglib_cell, sgnumber, symprec,
                                  rhombohedral_axes = False ):
     #Check that all reflections which NCrystal considers equivalent for the
@@ -1916,18 +1934,15 @@ def _check_eqrefl_compatibility( spglib_cell, sgnumber, symprec,
     rots = getattr( ds, 'rotations', None ) if ds else None
     if rots is None and ds:
         rots = ds['rotations']
-    testhkls = [ (1,3,7), (2,-5,11), (1,0,0), (0,1,0), (0,0,1), (1,1,0),
-                 (1,-1,0), (1,0,1), (0,1,1), (1,1,1), (1,2,0), (2,1,0) ]
+    ops, testhkls = _eqrefl_test_hkls( rots )
     from .misc import evaluate_query
     sgstr = f'{sgnumber}:R' if rhombohedral_axes else str(sgnumber)
     eqrefl = evaluate_query( [ 'util', 'eqrefl', sgstr ]
                              + [ ','.join(str(x) for x in hkl)
                                  for hkl in testhkls ] )
     for hkl, eqlist in zip( testhkls, eqrefl ):
-        orbit = set()
-        for R in ( rots if rots is not None else [] ):
-            e = tuple( int(x) for x in np.asarray(hkl) @ np.asarray(R) )
-            orbit.update( ( e, tuple( -x for x in e ) ) )
+        orbit = set( map( tuple, ( np.asarray( hkl, dtype = np.int64 )
+                                   @ ops ).tolist() ) )
         for e in eqlist:
             if tuple(e) not in orbit:
                 raise _nc_core.NCBadInput(
