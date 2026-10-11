@@ -8,6 +8,7 @@ minimc
 misc
 phys_utils
 sab
+sgsym
 threads
 utils
 vdos

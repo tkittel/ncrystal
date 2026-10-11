@@ -28,6 +28,7 @@
 #include "NCrystal/internal/utils/NCRandUtils.hh"
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
 #include "NCrystal/internal/phys_utils/NCEqRefl.hh"
+#include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCUtilQuery_FMA.hh"
 #include <chrono>
 
@@ -233,17 +234,18 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr auto sv_browsefacts = StrView::make("browsefactories");
       constexpr auto sv_factthreads = StrView::make("factorythreads");
       constexpr auto sv_eqrefl = StrView::make("eqrefl");
+      constexpr auto sv_sgsym = StrView::make("sgsym");
       if ( key == sv_list ) {
         if ( nargs != 0 )
           invalid("no arguments should come after: [\"util\",\"list\"]");
         os<<"[\"wl2ekin\", \"ekin2wl\", \"mathval\", \"fmadiagnose\","
           " \"kinutils\", \"browsedb\", \"browsefactories\","
-          " \"factorythreads\", \"eqrefl\"]";
+          " \"factorythreads\", \"eqrefl\", \"sgsym\"]";
       } else if ( key == sv_eqrefl ) {
-        //["util","eqrefl",SG,"h1,k1,l1","h2,k2,l2",...]: For each requested hkl, return the
-        //list of reflections considered symmetry-equivalent by NCrystal for
-        //the space group (one of each Friedel pair, -h,-k,-l is implied).
-        //Rhombohedral axes can be selected with SG as e.g. "166:R".
+        //["util","eqrefl",SG,"h1,k1,l1","h2,k2,l2",...]: For each requested
+        //hkl, return the list of reflections considered symmetry-equivalent by
+        //NCrystal for the space group (one of each Friedel pair, -h,-k,-l is
+        //implied).  Rhombohedral axes can be selected with SG as e.g. "166:r".
         const auto usage = ( "correct usage: [\"util\",\"eqrefl\",SG,"
                              "\"h0,k0,l0\",\"h1,k1,l1\",...]" );
 
@@ -253,7 +255,7 @@ namespace NCRYSTAL_NAMESPACE {
         auto sg = ( ( sgparts.size() == 1 || sgparts.size() == 2 )
                     ? sgparts.front().toInt32() : NullOpt );
         const bool rhombo = ( sgparts.size() == 2 );
-        if ( !sg.has_value() || ( rhombo && sgparts.back() != "R" ) )
+        if ( !sg.has_value() || ( rhombo && sgparts.back() != "r" ) )
           invalid( usage );
         EqRefl eqrefl( sg.value(), rhombo );
         os << '[';
@@ -277,6 +279,48 @@ namespace NCRYSTAL_NAMESPACE {
           os << ']';
         }
         os << ']';
+      } else if ( key == sv_sgsym ) {
+        //["util","sgsym",MODE,SG]: Symmetry operations of a space group
+        //setting (SG as e.g. "225", "166:r", "227:2", "14:c1" or "62:cab",
+        //parsed in MODE "strict" or "relaxed", cf. SpaceGroupParseMode), both
+        //as CIF-like strings ("ops", incl. centring) and as the distinct
+        //rotation parts (row-major integer matrices acting on fractional
+        //coordinates):
+        const auto usage
+          = "correct usage: [\"util\",\"sgsym\",\"strict|relaxed\",SG]";
+        if ( nargs != 2 || ( arg(0) != "strict" && arg(0) != "relaxed" ) )
+          invalid( usage );
+        const SpaceGroup sg( arg(1), ( arg(0) == "strict"
+                                       ? SpaceGroupParseMode::Strict
+                                       : SpaceGroupParseMode::Relaxed ) );
+        const SGSymmetry& sym = SGSymmetry::get( sg );
+        streamJSONDictEntry( os, "spacegroup", sg.toString(),
+                             JSONDictPos::FIRST );
+        streamJSONDictEntry( os, "settingidx",
+                             static_cast<unsigned>( sg.settingIdx().get() ) );
+        streamJSONDictEntry( os, "order", sym.order() );
+        streamJSONDictEntry( os, "latticesymbol",
+                             std::string( 1, sym.latticeSymbol() ) );
+        streamJSONDictEntry( os, "centrosymmetric", sym.isCentrosymmetric() );
+        os << ",\"ops\":[";
+        bool first = true;
+        for ( auto& op : sym.operations() ) {
+          if ( !first )
+            os << ',';
+          streamJSON( os, op.toString() );
+          first = false;
+        }
+        //Representatives have one operation per distinct rotation part:
+        os << "],\"rotations\":[";
+        first = true;
+        for ( auto& op : sym.representatives() ) {
+          os << ( first ? "[" : ",[" );
+          for ( auto i : ncrange( 9u ) )
+            os << ( i ? "," : "" ) << op.rot( i / 3, i % 3 );
+          os << ']';
+          first = false;
+        }
+        os << "]}";
       } else if ( key == sv_factthreads ) {
         if ( nargs != 0 )
           invalid("no arguments should come after:"
