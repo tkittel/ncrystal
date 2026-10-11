@@ -236,10 +236,10 @@ namespace NCRYSTAL_NAMESPACE {
         os<<"[\"wl2ekin\", \"ekin2wl\", \"mathval\", \"fmadiagnose\","
           " \"kinutils\", \"factorythreads\", \"eqrefl\"]";
       } else if ( key == sv_eqrefl ) {
-        //["util","eqrefl",SG,"h1,k1,l1","h2,k2,l2",...]: For each requested hkl, return the
-        //list of reflections considered symmetry-equivalent by NCrystal for
-        //the space group (one of each Friedel pair, -h,-k,-l is implied).
-        //Rhombohedral axes can be selected with SG as e.g. "166:R".
+        //["util","eqrefl",SG,"h1,k1,l1","h2,k2,l2",...]: For each requested
+        //hkl, return the list of reflections considered symmetry-equivalent by
+        //NCrystal for the space group (one of each Friedel pair, -h,-k,-l is
+        //implied).  Rhombohedral axes can be selected with SG as e.g. "166:r".
         const auto usage = ( "correct usage: [\"util\",\"eqrefl\",SG,"
                              "\"h0,k0,l0\",\"h1,k1,l1\",...]" );
 
@@ -249,7 +249,7 @@ namespace NCRYSTAL_NAMESPACE {
         auto sg = ( ( sgparts.size() == 1 || sgparts.size() == 2 )
                     ? sgparts.front().toInt32() : NullOpt );
         const bool rhombo = ( sgparts.size() == 2 );
-        if ( !sg.has_value() || ( rhombo && sgparts.back() != "R" ) )
+        if ( !sg.has_value() || ( rhombo && sgparts.back() != "r" ) )
           invalid( usage );
         EqRefl eqrefl( sg.value(), rhombo );
         os << '[';
