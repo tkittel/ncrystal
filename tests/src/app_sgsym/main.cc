@@ -459,8 +459,9 @@ void run()
 
 //Tests SGSymmetry (symmetry operations derived from the Hall symbols of the
 //530 space group settings): group properties, canonical ordering, total
-//counts, consistency of the Laue classes with the independently implemented
-//EqRefl class, and errors from the Hall symbol parser.
+//counts, consistency of the Laue orbits with the EqRefl class (which derives
+//its tables from SGSymmetry, so this checks its encoding and sign handling
+//against a direct orbit calculation), and errors from the Hall symbol parser.
 
 namespace test_symmetry {
 

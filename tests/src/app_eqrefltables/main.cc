@@ -18,46 +18,77 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "NCEqReflTables.hh"
 #include "NCrystal/internal/phys_utils/NCEqRefl.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 #include <iostream>
-#include <map>
 
-//Basic checks of EqRefl for all space group numbers and both axes choices of
-//the rhombohedral groups (the legacy tables of NCrystal 4.4 will be moved here
-//next, as a reference to compare against).
+//The symmetry-equivalent reflections of EqRefl (derived from the sgsym
+//symmetry operations) must be identical to those of the hand-written tables
+//of NCrystal 4.4 and earlier (EqReflTables, moved here from the library), for
+//all space group numbers and both axes choices of the rhombohedral groups.
 
 namespace NC = NCrystal;
 #define REQUIRE(x) nc_assert_always(x)
 
+namespace {
+  template<class T1, class T2>
+  void expectBad( int sg, bool rhombo )
+  {
+    for ( int which = 0; which < 2; ++which ) {
+      try {
+        if ( which == 0 ) {
+          T1 e( sg, rhombo );
+        } else {
+          T2 e( sg, rhombo );
+        }
+      } catch ( NC::Error::BadInput& ) {
+        continue;
+      }
+      REQUIRE( false );
+    }
+  }
+}
+
 int main()
 {
-  std::map<unsigned,unsigned> nrot_count;//nRotations -> number of settings
+  constexpr int N = 6;
+  unsigned long npoints = 0, nsettings = 0;
   for ( int sg = 1; sg <= 230; ++sg ) {
     for ( int irh = 0; irh < 2; ++irh ) {
       const bool rhombo = ( irh == 1 );
       if ( rhombo && !NC::isRhombohedralSpaceGroup( sg ) )
         continue;
       const NC::EqRefl er( sg, rhombo );
-      REQUIRE( er.nRotations() >= 1 && er.nRotations() <= 24 );
-      nrot_count[ er.nRotations() ] += 1;
-      //(h,k,l) is always in its own family, as is (-h,-k,-l):
-      REQUIRE( er.getEquivalentReflections( 1, 2, 3 ).contains( NC::HKL( -1, -2, -3 ) ) );
+      const NC::EqReflTables et( sg, rhombo );
+      ++nsettings;
+      for ( int h = -N; h <= N; ++h ) {
+        for ( int k = -N; k <= N; ++k ) {
+          for ( int l = -N; l <= N; ++l ) {
+            if ( !h && !k && !l )
+              continue;
+            const auto a = er.getEquivalentReflections( h, k, l );
+            const auto b = et.getEquivalentReflections( h, k, l );
+            REQUIRE( a.size() == b.size() );
+            auto itb = b.begin();
+            for ( auto& e : a )
+              REQUIRE( e == *itb++ );
+            REQUIRE( er.getEquivalentReflectionsRepresentativeValue( h, k, l )
+                     == et.getEquivalentReflectionsRepresentativeValue( h, k, l ) );
+            REQUIRE( a.contains( NC::HKL( h, k, l ) )
+                     && b.contains( NC::HKL( -h, -k, -l ) ) );
+            ++npoints;
+          }
+        }
+      }
     }
   }
-  for ( auto& e : nrot_count )
-    std::cout << "  " << e.second << " settings with " << e.first
-              << " rotation(s) modulo sign" << std::endl;
-  for ( auto bad : { std::make_pair( 0, false ), std::make_pair( 231, false ),
-                     std::make_pair( 225, true ) } ) {
-    bool caught = false;
-    try {
-      NC::EqRefl e( bad.first, bad.second );
-    } catch ( NC::Error::BadInput& ) {
-      caught = true;
-    }
-    REQUIRE( caught );
-  }
-  std::cout << "Invalid arguments rejected" << std::endl;
+  std::cout << "EqRefl and EqReflTables agree for " << nsettings
+            << " space group settings and " << npoints << " hkl points"
+            << " (|h|,|k|,|l| <= " << N << ")" << std::endl;
+  expectBad<NC::EqRefl,NC::EqReflTables>( 0, false );
+  expectBad<NC::EqRefl,NC::EqReflTables>( 231, false );
+  expectBad<NC::EqRefl,NC::EqReflTables>( 225, true );//not rhombohedral
+  std::cout << "Invalid arguments rejected by both" << std::endl;
   return 0;
 }
