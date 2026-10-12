@@ -1776,3 +1776,12 @@ Wrapping and invalid input:
   1 -> BadInput: Invalid site coordinates: (nan, 0, 0)
   1 -> BadInput: Invalid site coordinates: (0, inf, 0)
 All OK
+==== Structure symmetry check ====
+  68:1ba-c has the same operations as 68:1
+  68:1-cba has the same operations as 68:1cab
+  68:1a-cb has the same operations as 68:1bca
+Structures in all other 527 settings matched to their setting (deviation < 1e-12)
+SG-19 structure with one atom moved by 0.01: setting 19, deviation 0.01
+SG-149 structure checked as SG-150: deviation 0.234
+SG-150 structure checked as SG-149: deviation 0.234
+Same symmetry-equivalent reflections: 62 vs 62:cab 1, 227 vs 227:2 1, 14 vs 14:b2 1, 14 vs 14:c1 0, 166 vs 166:r 0
