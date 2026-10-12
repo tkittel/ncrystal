@@ -1,0 +1,9 @@
+  fcc as SG-225: position check deviation 0, |F|^2 self-check passed
+  fcc_slightly_moved as SG-225: position check deviation 0.0006, |F|^2 self-check passed
+  fcc_moved as SG-225: position check deviation 0.06, |F|^2 self-check failed
+  p312 as SG-149: position check deviation 1.11e-16, |F|^2 self-check passed
+  p312 as SG-150: position check deviation 0.3, |F|^2 self-check failed
+  body_centre as SG-225: position check deviation 0.5, |F|^2 self-check passed
+  p2_axis_c as SG-3: position check deviation 5.55e-17, |F|^2 self-check failed
+  p2_axis_c: position check finds setting 3:c
+All checks agree as expected
