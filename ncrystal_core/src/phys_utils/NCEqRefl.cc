@@ -20,174 +20,64 @@
 
 #include "NCrystal/internal/phys_utils/NCEqRefl.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
+#include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
+
 namespace NC = NCrystal;
-
-struct NC::EqRefl::Helper {
-
-  using ERL = EquivReflList;
-
-  static ERL calc_Triclinic_1_2(int h, int k, int l)
-  {
-    ERL e; e.add(h,k,l);
-    return e;
-  }
-
-  static ERL calc_Monoclinic_3_15(int h, int k, int l)
-  {
-    ERL e; e.add(h,k,l);
-    e.add(h,-k,l);
-    return e;
-  }
-
-  static ERL calc_Orthorhombic_16_74(int h, int k, int l)
-  {
-    ERL e; e.add(h,k,l);
-    e.add(h,-k,-l); e.add(h,-k,l); e.add(h,k,-l);
-    return e;
-  }
-
-  static ERL calc_Tetragonal_75_88(int h, int k, int l)
-  {
-    ERL e; e.add(h,k,l);
-    e.add(k,-h,-l); e.add(h,k,-l); e.add(k,-h,l);
-    return e;
-  }
-
-  static ERL calc_Tetragonal_89_142(int h, int k, int l)
-  {
-    ERL e; e.add(h,k,l);
-    e.add(k,h,l); e.add(k,-h,-l); e.add(h,k,-l);
-    e.add(k,-h,l); e.add(h,-k,-l); e.add(k,h,-l); e.add(h,-k,l);
-    return e;
-  }
-
-  static ERL calc_Trigonal_143_148(int h, int k, int l)
-  {
-    ERL e; e.add(h,k,l);
-    e.add(h+k,-h,-l); e.add(k,-h-k,l);
-    return e;
-  }
-
-  static ERL calc_Trigonal_3m1(int h, int k, int l)
-  {
-    //Laue class -3m1 (and -3m for rhombohedral groups in hexagonal axes):
-    ERL e; e.add(h,k,l);
-    e.add(h+k,-h,-l); e.add(k,-h-k,l); e.add(k,h,-l); e.add(h+k,-k,l); e.add(h,-h-k,-l);
-    return e;
-  }
-
-  static ERL calc_Trigonal_31m(int h, int k, int l)
-  {
-    //Laue class -31m (SG 149, 151, 153, 157, 159, 162, 163):
-    ERL e; e.add(h,k,l);
-    e.add(h+k,-h,-l); e.add(k,-h-k,l); e.add(k,h,l); e.add(h+k,-k,-l); e.add(h,-h-k,l);
-    return e;
-  }
-
-  static ERL calc_Rhombohedral_3(int h, int k, int l)
-  {
-    //Laue class -3 in rhombohedral axes (SG 146, 148):
-    ERL e; e.add(h,k,l);
-    e.add(k,l,h); e.add(l,h,k);
-    return e;
-  }
-
-  static ERL calc_Rhombohedral_3m(int h, int k, int l)
-  {
-    //Laue class -3m in rhombohedral axes (SG 155, 160, 161, 166, 167):
-    ERL e; e.add(h,k,l);
-    e.add(k,l,h); e.add(l,h,k); e.add(k,h,l); e.add(h,l,k); e.add(l,k,h);
-    return e;
-  }
-
-  static bool isTrigonal_31m( int sg )
-  {
-    return ( sg==149 || sg==151 || sg==153 || sg==157 || sg==159
-             || sg==162 || sg==163 );
-  }
-
-  static ERL calc_Hexagonal_168_176(int h, int k, int l)
-  {
-    ERL e; e.add(h,k,l);
-    e.add(h,k,-l); e.add(k,-h-k,-l); e.add(k,-h-k,l); e.add(h+k,-h,l); e.add(h+k,-h,-l);
-    return e;
-  }
-
-  static ERL calc_Hexagonal_177_194(int h, int k, int l)
-  {
-    ERL e; e.add(h,k,l);
-    e.add(k,-h-k,-l); e.add(h+k,-h,-l); e.add(h,k,-l); e.add(k,-h-k,l);
-    e.add(h+k,-h,l); e.add(k,h,l); e.add(h+k,-k,l); e.add(h,-h-k,l);
-    e.add(k,h,-l); e.add(h+k,-k,-l); e.add(h,-h-k,-l);
-    return e;
-  }
-
-  static ERL calc_Cubic_195_206(int h, int k, int l)
-  {
-    ERL e; e.add(h,k,l);
-    e.add(h,-k,-l); e.add(h,-k,l); e.add(h,k,-l);
-    e.add(k,l,h); e.add(k,-l,-h); e.add(k,-l,h); e.add(k,l,-h);
-    e.add(l,h,k); e.add(l,-h,-k); e.add(l,-h,k); e.add(l,h,-k);
-    return e;
-  }
-
-  static ERL calc_Cubic_207_230(int h, int k, int l)
-  {
-    ERL e; e.add(h,k,l);
-    e.add(h,-k,-l); e.add(h,-k,l); e.add(h,k,-l);
-    e.add(k,l,h); e.add(k,-l,-h); e.add(k,-l,h); e.add(k,l,-h);
-    e.add(l,h,k); e.add(l,-h,-k); e.add(l,-h,k); e.add(l,h,-k);
-    e.add(k,h,l); e.add(k,-h,-l); e.add(k,-h,l); e.add(k,h,-l);
-    e.add(l,k,h); e.add(l,-k,-h); e.add(l,-k,h); e.add(l,k,-h);
-    e.add(h,l,k); e.add(h,-l,-k); e.add(h,-l,k); e.add(h,l,-k);
-    return e;
-  }
-};
 
 NC::EqRefl::EqRefl( int sg, bool rhombohedral_axes )
 {
   if (sg<1||sg>230)
     NCRYSTAL_THROW(BadInput,"Space group number is not in the range 1 to 230");
-  if ( rhombohedral_axes ) {
-    if ( !isRhombohedralSpaceGroup( sg ) )
-      NCRYSTAL_THROW2(BadInput,"Rhombohedral axes requested for space group "
-                      <<sg<<" which is not rhombohedral.");
-    m_calc = ( ( sg == 146 || sg == 148 )
-               ? &Helper::calc_Rhombohedral_3
-               : &Helper::calc_Rhombohedral_3m );
-    return;
+  if ( rhombohedral_axes && !isRhombohedralSpaceGroup( sg ) )
+    NCRYSTAL_THROW2(BadInput,"Rhombohedral axes requested for space group "
+                    <<sg<<" which is not rhombohedral.");
+  //The symmetry-equivalent reflections are those of the Laue class, i.e. the
+  //rotation parts of the operations combined with inversion. As (h,k,l) and
+  //(-h,-k,-l) are trivially equivalent here, we keep the distinct rotation
+  //parts modulo sign (the coset representatives have one operation per
+  //distinct rotation part). Among the settings of a number, only the
+  //monoclinic unique axis and the R/hexagonal axes change the Laue class in
+  //the hkl basis, so the default setting (or the R setting) is used:
+  std::string spec = std::to_string( sg );
+  if ( rhombohedral_axes )
+    spec += ":r";
+  const SGSymmetry& sym = SGSymmetry::get( SpaceGroup( spec, SpaceGroupParseMode::Relaxed ) );
+  //Encoding of a column (coefficients of h,k,l) as an index into the value
+  //table of calcRaw, i.e. {h,k,l,-h,-k,-l,h+k,-h-k,h-k,k-h}:
+  auto encodeColumn = []( int ch, int ck, int cl ) -> unsigned
+  {
+    static const int tbl[10][3] = { {1,0,0}, {0,1,0}, {0,0,1}, {-1,0,0},
+                                    {0,-1,0}, {0,0,-1}, {1,1,0}, {-1,-1,0},
+                                    {1,-1,0}, {-1,1,0} };
+    for ( unsigned i = 0; i < 10; ++i )
+      if ( tbl[i][0] == ch && tbl[i][1] == ck && tbl[i][2] == cl )
+        return i;
+    NCRYSTAL_THROW(LogicError,"Unexpected rotation part in space group"
+                   " symmetry operation");
+  };
+  //Sign flips of the value table (index i -> index of the negated value):
+  static const std::uint8_t negate[10] = { 3, 4, 5, 0, 1, 2, 7, 6, 9, 8 };
+  for ( auto& op : sym.representatives() ) {
+    RowIdx r;
+    for ( unsigned j = 0; j < 3; ++j )
+      r[j] = static_cast<std::uint8_t>( encodeColumn( op.rot(0,j),
+                                                      op.rot(1,j),
+                                                      op.rot(2,j) ) );
+    //Modulo sign: of R and -R keep the one with the smallest encoding:
+    RowIdx rneg = { { negate[r[0]], negate[r[1]], negate[r[2]] } };
+    if ( rneg < r )
+      r = rneg;
+    bool seen = false;
+    for ( unsigned i = 0; i < m_nrot; ++i )
+      if ( m_rows[i] == r )
+        seen = true;
+    if ( seen )
+      continue;
+    nc_assert_always( m_nrot < 24 );
+    m_rows[m_nrot++] = r;
   }
-  if (sg<149) {
-    if (sg<75) {
-      if (sg<3)
-        m_calc = &Helper::calc_Triclinic_1_2;
-      else if (sg<16)
-        m_calc = &Helper::calc_Monoclinic_3_15;
-      else
-        m_calc = &Helper::calc_Orthorhombic_16_74;
-    } else {
-      if (sg<89)
-        m_calc = &Helper::calc_Tetragonal_75_88;
-      else if (sg<143)
-        m_calc = &Helper::calc_Tetragonal_89_142;
-      else
-        m_calc = &Helper::calc_Trigonal_143_148;
-    }
-  } else {
-    if (sg<195) {
-      if (sg<168)
-        m_calc = ( Helper::isTrigonal_31m(sg)
-                   ? &Helper::calc_Trigonal_31m
-                   : &Helper::calc_Trigonal_3m1 );
-      else if (sg<177)
-        m_calc = &Helper::calc_Hexagonal_168_176;
-      else
-        m_calc = &Helper::calc_Hexagonal_177_194;
-    } else {
-      if (sg<207)
-        m_calc = &Helper::calc_Cubic_195_206;
-      else
-        m_calc = &Helper::calc_Cubic_207_230;
-    }
-  }
+#ifndef NDEBUG
+  const RowIdx identity = { { 0, 1, 2 } };
+  nc_assert( m_nrot >= 1 && m_rows[0] == identity );
+#endif
 }
