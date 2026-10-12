@@ -27,8 +27,8 @@ import NCrystalDev as NC
 NC.registerInMemoryFileData( "Al_sg225_multi.ncmat",
 """NCMAT v3
 #Fake file, which should have coherent-elastic physics like the standard
-#Al_sg225.ncmat. We add a fake and extreeeemely loosely bound Al element in the
-#center of the cell.
+#Al_sg225.ncmat. We add a fake and extreeeemely loosely bound Al element on the
+#4b sites (cell center and edge centers, to keep the Fm-3m symmetry).
 #
 # This tests how the same atom can play different roles in a file.
 #
@@ -43,7 +43,10 @@ NC.registerInMemoryFileData( "Al_sg225_multi.ncmat",
   X1 0     0   0
   X1 1/2 1/2   0
   X1 1/2   0 1/2
-  X2 1/2 1/2 1/2 #<--- adding fake loose atom in center... should not contribute to coherent-elastic cross section.
+  X2 1/2 1/2 1/2 #<--- adding fake loose atoms... should not contribute to coherent-elastic cross section.
+  X2   0   0 1/2
+  X2   0 1/2   0
+  X2 1/2   0   0
 @DEBYETEMPERATURE
   X1 410.4
   X2 10
