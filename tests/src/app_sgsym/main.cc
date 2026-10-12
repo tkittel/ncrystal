@@ -998,6 +998,103 @@ void run()
 
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Structure symmetry check
+////////////////////////////////////////////////////////////////////////////////
+
+//Tests checkStructureSymmetry: structures expanded from a generic and a
+//special site in each of the 530 settings must be matched to that setting
+//with zero deviation, while perturbed or wrongly declared structures give the
+//deviation. Also haveSameRotationParts, which tells settings apart only by
+//their symmetry-equivalent reflections.
+
+namespace test_structcheck {
+
+namespace {
+  //Positions by species: one generic orbit (species 0) and the orbit of the
+  //origin (species 1):
+  std::vector<std::vector<NC::Vector>> structure( const NC::SGSymmetry& sym )
+  {
+    std::vector<std::vector<NC::Vector>> res;
+    res.push_back( NC::expandSiteToOrbit( sym, NC::Vector( 0.1234, 0.2345,
+                                                           0.3456 ) ).positions );
+    res.push_back( NC::expandSiteToOrbit( sym, NC::Vector( 0.0, 0.0,
+                                                           0.0 ) ).positions );
+    return res;
+  }
+  bool sameRots( const char * a, const char * b )
+  {
+    return NC::haveSameRotationParts( NC::SGSymmetry::get( NC::SpaceGroup( a, NC::SpaceGroupParseMode::Relaxed ) ),
+                                      NC::SGSymmetry::get( NC::SpaceGroup( b, NC::SpaceGroupParseMode::Relaxed ) ) );
+  }
+}
+
+void run()
+{
+  unsigned nok = 0;
+  for ( std::uint16_t hn = 1; hn <= 530; ++hn ) {
+    const NC::SpaceGroup sg{ NC::SpaceGroupSettingIdx{ hn } };
+    const bool rhombo = ( std::string( sg.choice() ) == "r" );
+    const auto& sym = NC::SGSymmetry::get( sg );
+    const auto res = NC::checkStructureSymmetry( sg.number(), rhombo,
+                                                 structure( sym ) );
+    REQUIRE( res.maxDeviation < 1e-12 );//(rounding only)
+    if ( res.settingIdx != hn ) {
+      //A few settings have identical operations (e.g. 68:1 and 68:1ba-c),
+      //in which case the first one is returned:
+      const NC::SpaceGroup other{ NC::SpaceGroupSettingIdx{ res.settingIdx } };
+      REQUIRE( res.settingIdx < hn );
+      auto ops1 = sym.operations();
+      auto ops2 = NC::SGSymmetry::get( other ).operations();
+      std::sort( ops1.begin(), ops1.end() );
+      std::sort( ops2.begin(), ops2.end() );
+      REQUIRE( ops1 == ops2 );
+      std::cout << "  " << sg << " has the same operations as " << other
+                << std::endl;
+      continue;
+    }
+    ++nok;
+  }
+  std::cout << "Structures in all other " << nok << " settings matched to"
+            << " their setting (deviation < 1e-12)" << std::endl;
+  {
+    auto pos = structure( NC::SGSymmetry::get( NC::SpaceGroup( "19", NC::SpaceGroupParseMode::Relaxed ) ) );
+    pos.at(0).at(0) += NC::Vector( 0.01, 0.0, 0.0 );
+    const auto res = NC::checkStructureSymmetry( 19, false, pos );
+    const NC::SpaceGroup setting{ NC::SpaceGroupSettingIdx{ res.settingIdx } };
+    std::cout << "SG-19 structure with one atom moved by 0.01: setting "
+              << setting << ", deviation " << NC::fmt( res.maxDeviation, "%.3g" )
+              << std::endl;
+    REQUIRE( NC::floateq( res.maxDeviation, 0.01 ) );
+  }
+  for ( unsigned sgtrue : { 149u, 150u } ) {
+    const unsigned sgclaim = ( sgtrue == 149 ? 150 : 149 );
+    auto pos = structure( NC::SGSymmetry::get( NC::SpaceGroup( std::to_string( sgtrue ), NC::SpaceGroupParseMode::Relaxed ) ) );
+    const auto res = NC::checkStructureSymmetry( sgclaim, false, pos );
+    std::cout << "SG-" << sgtrue << " structure checked as SG-" << sgclaim
+              << ": deviation " << NC::fmt( res.maxDeviation, "%.3g" ) << std::endl;
+    REQUIRE( res.maxDeviation > 0.05 );
+  }
+  //Rhombohedral axes only match R settings:
+  {
+    auto pos = structure( NC::SGSymmetry::get( NC::SpaceGroup( "166:r", NC::SpaceGroupParseMode::Strict ) ) );
+    REQUIRE( NC::checkStructureSymmetry( 166, true, pos ).settingIdx
+             == NC::SpaceGroup( "166:r", NC::SpaceGroupParseMode::Strict ).settingIdx().get() );
+    REQUIRE( NC::checkStructureSymmetry( 3, true, pos ).settingIdx == 0 );
+  }
+  std::cout << "Same symmetry-equivalent reflections: 62 vs 62:cab "
+            << sameRots( "62", "62:cab" ) << ", 227 vs 227:2 "
+            << sameRots( "227", "227:2" ) << ", 14 vs 14:b2 "
+            << sameRots( "14", "14:b2" ) << ", 14 vs 14:c1 "
+            << sameRots( "14", "14:c1" ) << ", 166 vs 166:r "
+            << sameRots( "166", "166:r" ) << std::endl;
+  REQUIRE( sameRots( "62", "62:cab" ) && sameRots( "227", "227:2" )
+           && sameRots( "14", "14:b2" ) && !sameRots( "14", "14:c1" )
+           && !sameRots( "166", "166:r" ) );
+}
+
+}
+
 int main()
 {
   std::cout << "==== Space group table ====" << std::endl;
@@ -1010,5 +1107,7 @@ int main()
   test_cell::run();
   std::cout << "==== Expansion of sites into orbits ====" << std::endl;
   test_orbit::run();
+  std::cout << "==== Structure symmetry check ====" << std::endl;
+  test_structcheck::run();
   return 0;
 }

@@ -1,4 +1,5 @@
 atomdb
 cfgutils
 interfaces
+sgsym
 utils
