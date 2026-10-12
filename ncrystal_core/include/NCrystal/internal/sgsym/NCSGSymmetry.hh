@@ -122,6 +122,30 @@ namespace NCRYSTAL_NAMESPACE {
 
   SGSiteOrbit expandSiteToOrbit( const SGSymmetry&, const Vector& site );
 
+  //Check of a crystal structure against the settings of a space group number:
+  //positions (fractional coordinates, grouped by species) are mapped by the
+  //coset representatives and centring translations of each setting of the
+  //number (only R settings for rhombohedral_axes, and never otherwise), and the
+  //deviation of a setting is the largest per-coordinate periodic distance from
+  //an image to the nearest position of the same species (0 for an exactly
+  //symmetric structure, in which case the structure is invariant under all
+  //operations). Returns the setting with the smallest deviation (the default
+  //setting on ties), or no setting if the number has none compatible
+  //with the axes:
+  struct SGStructureCheck {
+    Optional<SpaceGroupSettingIdx> settingIdx;
+    double maxDeviation = kInfinity;
+  };
+  SGStructureCheck checkStructureSymmetry( unsigned sgnumber,
+                                           bool rhombohedral_axes,
+                                           const std::vector<std::vector<Vector>>& positions );
+
+  //Whether two settings have the same rotation parts modulo sign, i.e. the
+  //same symmetry-equivalent reflections (e.g. true for the orthorhombic
+  //axis permutations and the two origin choices, false for monoclinic
+  //unique axis b versus c):
+  bool haveSameRotationParts( const SGSymmetry&, const SGSymmetry& );
+
 }
 
 
