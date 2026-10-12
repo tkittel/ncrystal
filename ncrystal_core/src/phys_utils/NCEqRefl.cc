@@ -18,11 +18,11 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/internal/phys_utils/NCEqRefl.hh"
+#include "NCEqReflTables.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 namespace NC = NCrystal;
 
-struct NC::EqRefl::Helper {
+struct NC::EqReflTables::Helper {
 
   using ERL = EquivReflList;
 
@@ -144,7 +144,7 @@ struct NC::EqRefl::Helper {
   }
 };
 
-NC::EqRefl::EqRefl( int sg, bool rhombohedral_axes )
+NC::EqReflTables::EqReflTables( int sg, bool rhombohedral_axes )
 {
   if (sg<1||sg>230)
     NCRYSTAL_THROW(BadInput,"Space group number is not in the range 1 to 230");

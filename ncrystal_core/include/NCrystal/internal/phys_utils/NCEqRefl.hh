@@ -29,6 +29,10 @@
 //(h,k,l)->(-h,-k,-l) is trivial and would be a waste of memory to expand
 //explicitly.
 //
+//The equivalences are those of the Laue class of the space group, derived at
+//construction from the symmetry operations of the sgsym component (the
+//rotation parts of the operations, modulo sign).
+//
 //Note that while two equivalent (h,k,l) indices will always have identical
 //values of d-spacing and structure factors (F^2), the opposite is not in
 //general true. So (h,k,l) groupings based on (d,F^2) values might contain more
@@ -50,7 +54,9 @@ namespace NCRYSTAL_NAMESPACE {
     //Initialise with space group number in 1..230. For the rhombohedral
     //(R) space groups, rhombohedral_axes indicates that the unit cell is
     //described in rhombohedral rather than hexagonal axes (see also
-    //usesRhombohedralAxes in NCLatticeUtils.hh):
+    //usesRhombohedralAxes in NCLatticeUtils.hh). Apart from that, the
+    //default setting of the space group number is assumed (which only
+    //matters for monoclinic groups, where unique axis b is assumed):
     EqRefl( int spacegroup, bool rhombohedral_axes = false );
 
     class EquivReflList {
@@ -91,10 +97,20 @@ namespace NCRYSTAL_NAMESPACE {
     HKL getEquivalentReflectionsRepresentativeValue( const HKL& hkl ) const;
     HKL getEquivalentReflectionsRepresentativeValue( int h, int k, int l ) const;
 
+    //Number of distinct rotation parts modulo sign (i.e. half the order of
+    //the Laue class, at most 24):
+    unsigned nRotations() const noexcept { return m_nrot; }
+
   private:
-    struct Helper;
-    friend struct Helper;
-    EquivReflList (*m_calc) (int,int,int) = nullptr;
+    //Distinct rotation parts of the operations modulo sign, the first being
+    //the identity. Reflections transform with the transposed matrix, h'_j =
+    //sum_i h_i R_ij, and every column of the allowed rotation parts is one of
+    //just ten combinations of (h,k,l) (see calcRaw), so each is stored as
+    //three indices into a table of those combinations:
+    using RowIdx = std::array<std::uint8_t,3>;
+    unsigned m_nrot = 0;
+    RowIdx m_rows[24];
+    EquivReflList calcRaw(int h, int k, int l) const;
   };
 }
 
@@ -134,9 +150,22 @@ namespace NCRYSTAL_NAMESPACE {
     *m_end++ =  am < a ? am : a;
   }
 
+  inline EqRefl::EquivReflList EqRefl::calcRaw(int h, int k, int l) const
+  {
+    //The possible values of a transformed index (keep in sync with the
+    //encoding in the constructor):
+    const int v[10] = { h, k, l, -h, -k, -l, h+k, -h-k, h-k, k-h };
+    EquivReflList e;
+    for ( unsigned i = 0; i < m_nrot; ++i ) {
+      const RowIdx& r = m_rows[i];
+      e.add( v[r[0]], v[r[1]], v[r[2]] );
+    }
+    return e;
+  }
+
   inline EqRefl::EquivReflList EqRefl::getEquivalentReflections(int h, int k, int l) const
   {
-    auto raw = m_calc(h,k,l);
+    auto raw = calcRaw(h,k,l);
     //Sort and discard duplicates:
     std::sort((HKL*)&raw.m_data[0],raw.m_end);
     raw.m_end = std::unique((HKL*)&raw.m_data[0],raw.m_end);
@@ -145,7 +174,7 @@ namespace NCRYSTAL_NAMESPACE {
 
   inline HKL EqRefl::getEquivalentReflectionsRepresentativeValue( int h, int k, int l ) const
   {
-    auto raw = m_calc(h,k,l);
+    auto raw = calcRaw(h,k,l);
     auto itLow = raw.begin();
     auto itE = raw.end();
     for ( auto it = std::next(itLow); it!=itE; ++it ) {
