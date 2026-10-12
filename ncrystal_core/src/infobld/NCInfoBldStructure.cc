@@ -20,9 +20,79 @@
 
 #include "NCInfoBldStructure.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
+#include "NCrystal/internal/utils/NCMsg.hh"
 
 namespace NC = NCrystal;
+
+namespace NCRYSTAL_NAMESPACE {
+  namespace InfoBuilderDetail {
+
+    //Verify that the atom positions actually have the symmetry of the
+    //declared space group (in some of its settings), rather than just
+    //assuming it. Slight deviations (rounded coordinates in data files)
+    //give a warning and the symmetric structure is assumed, while larger
+    //ones are an error, as are settings whose symmetry-equivalent
+    //reflections differ from those NCrystal assumes (cf. EqRefl):
+    void checkStructureSymmetry( const StructureInfo& si,
+                                 const AtomInfoList& atomlist )
+    {
+      nc_assert( si.spacegroup >= 1 && si.spacegroup <= 230 );
+      std::vector<std::vector<Vector>> positions;
+      positions.reserve( atomlist.size() );
+      for ( auto& ai : atomlist ) {
+        positions.emplace_back();
+        for ( auto& p : ai.unitCellPositions() )
+          positions.back().push_back( p.as<Vector>() );
+      }
+      const int sg = static_cast<int>( si.spacegroup );
+      const bool rhombo = usesRhombohedralAxes( sg, si.alpha );
+      const auto res = NC::checkStructureSymmetry( si.spacegroup, rhombo,
+                                                   positions );
+      //Tolerances: rounding noise in data files gives deviations well
+      //below tol_warn (all stdlib files are below 3e-16, and positions
+      //given with 4 decimals stay below 1e-4), sites rounded to 3 decimals
+      //exceed it slightly, while structures beyond tol_error (comparable to
+      //the distinct-site threshold of expandSiteToOrbit) simply do not have
+      //the declared symmetry:
+      constexpr double tol_warn = 5e-4;
+      constexpr double tol_error = 1e-2;
+      if ( !( res.maxDeviation <= tol_error ) )
+        NCRYSTAL_THROW2(BadInput,"Atom positions are not consistent with"
+                        " space group "<<si.spacegroup<<" in any of its"
+                        " settings (largest deviation of a symmetry image"
+                        " from an atom of the same type: "
+                        <<fmt(res.maxDeviation,"%.2g")<<" in fractional"
+                        " coordinates). Either the space group or the"
+                        " positions are wrong.");
+      if ( !( res.maxDeviation <= tol_warn ) )
+        NCRYSTAL_WARN("Atom positions deviate slightly from the symmetry"
+                      " of space group "<<si.spacegroup<<" (largest"
+                      " deviation of a symmetry image from an atom of the"
+                      " same type: "<<fmt(res.maxDeviation,"%.2g")
+                      <<" in fractional coordinates). Assuming the"
+                      " symmetric structure (specify positions with more"
+                      " precision to avoid this warning).");
+      const SpaceGroup setting( res.settingIdx.value() );
+      std::string spec = std::to_string( si.spacegroup );
+      if ( rhombo )
+        spec += ":r";
+      const SpaceGroup assumed( spec, SpaceGroupParseMode::Relaxed );
+      if ( setting != assumed
+           && !haveSameRotationParts( SGSymmetry::get( setting ),
+                                      SGSymmetry::get( assumed ) ) )
+        NCRYSTAL_THROW2(BadInput,"Atom positions are only consistent with"
+                        " space group "<<si.spacegroup<<" in the setting "
+                        <<setting<<", whose symmetry-equivalent reflections"
+                        " differ from those of the setting "<<assumed
+                        <<" assumed by NCrystal. Transform the structure to"
+                        " that setting (e.g. with"
+                        " NCMATComposer.refine_crystal_structure()).");
+    }
+
+  }
+}
 
 namespace NCRYSTAL_NAMESPACE {
   namespace InfoBuilderDetail {
@@ -189,6 +259,9 @@ namespace NCRYSTAL_NAMESPACE {
                           <<expected_volume<<"Aa3) unit cell volume are incompatible!");
         si.volume = expected_volume;
         nc_assert( si.volume > 0.0 );
+
+        if ( si.spacegroup > 0 && uc.atomlist.has_value() )
+          InfoBuilderDetail::checkStructureSymmetry( si, uc.atomlist.value() );
       }
 
   }
