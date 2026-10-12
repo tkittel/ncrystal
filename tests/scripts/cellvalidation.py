@@ -95,7 +95,8 @@ def test_duplicate_positions():
 
 def test_symmetry_selfcheck():
     #The structure must have the symmetry assumed by NCrystal for the space
-    #group (checked by comparing F2 of symmetry-equivalent planes):
+    #group (checked at load from the atom positions, and again by comparing
+    #F2 of symmetry-equivalent planes; app_symchecks exercises the latter):
     def loadplanes( *args ):
         return list( load( *args ).hklObjects() )
     p1 = [('Al','0.1 0.2 0.3'),('O','0.6 0.1 0.8')]
@@ -104,7 +105,7 @@ def test_symmetry_selfcheck():
     try:
         loadplanes( '4 4 4', '90 90 90', 221, p1 )
     except NC.NCBadInput as e:
-        assert 'Crystal structure is not consistent with space group 221' in str(e)
+        assert 'not consistent with space group 221' in str(e)
         print('P1 structure declared as SG-221 rejected')
     else:
         raise RuntimeError('Wrong space group accepted')
@@ -119,7 +120,7 @@ def test_symmetry_selfcheck():
     try:
         loadplanes( '4 4 6', '90 90 120', 150, atoms )
     except NC.NCBadInput as e:
-        assert 'Crystal structure is not consistent with space group 150' in str(e)
+        assert 'not consistent with space group 150' in str(e)
         print('P312 structure declared as SG-150 rejected')
     else:
         raise RuntimeError('Wrong space group accepted')
@@ -145,12 +146,65 @@ def test_rhombohedral_axes():
         else:
             raise RuntimeError('Invalid rhombohedral cell accepted')
 
+def test_structure_symmetry():
+    #The atom positions must have the symmetry of the declared space group in
+    #one of its settings: slight deviations (rounded coordinates) give a
+    #warning, larger ones an error. The setting is deduced, so e.g. both
+    #origin choices of diamond are fine, but the symmetry-equivalent
+    #reflections of the deduced setting must be those NCrystal assumes:
+    from NCrystalDev._common import capture_print_ctxmgr
+    def load_warnings( *args ):
+        with capture_print_ctxmgr() as cap:
+            load( *args )
+        return [ line.strip() for line in cap.data
+                 if 'WARNING' in line and 'space group' in line ]
+    def load_error( *args ):
+        try:
+            load( *args )
+        except NC.NCBadInput as e:
+            return str(e)
+        raise RuntimeError('Inconsistent structure accepted')
+    diamond1 = [ '0 0 0', '0 1/2 1/2', '1/2 0 1/2', '1/2 1/2 0',
+                 '1/4 1/4 1/4', '1/4 3/4 3/4', '3/4 1/4 3/4', '3/4 3/4 1/4' ]
+    diamond2 = [ '1/8 1/8 1/8', '1/8 5/8 5/8', '5/8 1/8 5/8', '5/8 5/8 1/8',
+                 '7/8 7/8 7/8', '7/8 3/8 3/8', '3/8 7/8 3/8', '3/8 3/8 7/8' ]
+    for name, pos in ( ('origin choice 1',diamond1), ('origin choice 2',diamond2) ):
+        w = load_warnings( '5.43 5.43 5.43', '90 90 90', 227,
+                           [ ('Si',p) for p in pos ] )
+        print( f'Diamond in {name}: {len(w)} warnings' )
+        assert not w
+    moved = [ ('Si',p) for p in diamond1 ]
+    moved[4] = ('Si','0.251 1/4 1/4')
+    w = load_warnings( '5.43 5.43 5.43', '90 90 90', 227, moved )
+    print( 'Diamond with one atom moved by 0.001:', w )
+    assert len(w) == 1 and 'deviate slightly' in w[0]
+    moved[4] = ('Si','0.27 1/4 1/4')
+    e = load_error( '5.43 5.43 5.43', '90 90 90', 227, moved )
+    print( 'Diamond with one atom moved by 0.02:', e )
+    assert 'not consistent with space group 227' in e
+    x, y, z = 0.1, 0.3, 0.2
+    p312 = [ (x,y,z), (-y,x-y,z), (-x+y,-x,z), (-y,-x,-z), (-x+y,y,-z), (x,x-y,-z) ]
+    atoms = [ ('Al',' '.join( f'{v%1.0:.12g}' for v in p )) for p in p312 ]
+    print( 'P312 structure as SG-149:',
+           load_warnings( '4 4 6', '90 90 120', 149, atoms ) )
+    e = load_error( '4 4 6', '90 90 120', 150, atoms )
+    print( 'P312 structure declared as SG-150:', e )
+    assert 'not consistent with space group 150' in e
+    #A P2 structure with its 2-fold axis along c in a cell with all angles 90
+    #passes the lattice checks (unique axis b assumed), but the deduced
+    #setting 3:c has other symmetry-equivalent reflections:
+    atoms = [ ('Al','0.1 0.2 0.3'), ('Al','0.9 0.8 0.3') ]
+    e = load_error( '5 6 7', '90 90 90', 3, atoms )
+    print( 'P2 with 2-fold along c:', e )
+    assert 'in the setting 3:c' in e
+
 def main():
     test_hexagonal_angles()
     test_monoclinic_angles()
     test_duplicate_positions()
     test_symmetry_selfcheck()
     test_rhombohedral_axes()
+    test_structure_symmetry()
 
 if __name__ == '__main__':
     main()
