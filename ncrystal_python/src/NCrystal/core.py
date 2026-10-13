@@ -359,7 +359,6 @@ class Info(RCBase):
         self.__queries[query] = res
         return res
 
-
     def getUniqueID(self):
         """Unique identifier of object (UID)."""
         return _rawfct['infouid'](self._rawobj)
@@ -623,10 +622,13 @@ class Info(RCBase):
 
     def hasStructureInfo(self):
         """Whether or not material has crystal structure information available."""
-        return bool(_rawfct['ncrystal_info_getstructure'](self._rawobj))
+        return self._query('structure') is not None
     def getStructureInfo(self):
-        """Information about crystal structure."""
-        d=_rawfct['ncrystal_info_getstructure'](self._rawobj)
+        """Information about crystal structure, as a dictionary with the keys
+        spacegroup (number, 0 if unknown), spacegroup_setting (string like
+        "227:2" or "166:r", None if unknown), a, b, c (Aa), alpha, beta, gamma
+        (degrees), volume (Aa^3) and n_atoms."""
+        d = self._query('structure')
         nc_assert(d)
         return d
     structure_info = property(getStructureInfo)
