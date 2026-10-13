@@ -1,0 +1,165 @@
+Input for the CHANGELOG, part 2: collected from the work packages after the
+tail of tk_volatile (wp23 and later), in the same spirit as
+changes_for_changelog.txt (grouped by topic, to be curated into the real
+CHANGELOG at release time, after which both files are dropped).
+
+### Space group symmetry (sgsym) in the library proper
+
+     * EqRefl (symmetry-equivalent reflections) is now derived at
+       construction from the symmetry operations of the sgsym
+       component (distinct rotation parts modulo sign, encoded as
+       index rows), instead of hand-written per-Laue-class tables. It
+       is slightly faster than the tables, which live on as
+       EqReflTables in tests/src/app_eqrefltables where they are
+       compared against EqRefl for all 237 settings.
+     * Info creation verifies that the atom positions have the
+       symmetry of the declared space group: the structure is checked
+       against the settings of the number (sgsym
+       checkStructureSymmetry; coset representatives and centring
+       translations, x-sorted nearest search). Deviations above 5e-4
+       (fractional coordinates) give a warning and the symmetric
+       structure is assumed, above 1e-2 a BadInput error, for all
+       NCMAT versions; so does a structure which only fits a setting
+       whose symmetry-equivalent reflections differ from the assumed
+       default (e.g. a monoclinic structure with its 2-fold axis
+       along c). app_symchecks verifies agreement with the FillHKL
+       |F|^2 self-check (which only sees point symmetry). NB: the
+       MagScat O2-hydrate plugin files (SG 223, deviation 0.49) now
+       fail to load.
+     * New public value type SpaceGroupSettingIdx (NCTypes.hh): the
+       1..530 index of a setting in ITVB Table A1.4.2.7 (see the
+       reference in the header).
+     * ABI change: StructureInfo gains spacegroup_setting
+       (SpaceGroupSettingIdx, 0 if unknown), appended to the struct.
+       Set from the position check, from a declaration by the data
+       source, or from number+cell when unambiguous (single setting,
+       or an R number whose cell angles select R vs. H axes). dump()
+       shows it when it is not the default setting of the number
+       (e.g. "129:2", "166:r"). The hkl code (FillHKL, ExpandHKLHelper,
+       Lazy loader) derives EqRefl from it.
+     * A data source may declare the setting (spacegroup_setting set
+       before building): it is validated (a setting of the number,
+       matching the hexagonal/rhombohedral axes) and the positions are
+       checked against exactly that setting.
+     * New ["util","sgsym",SG] JSON query: operations and rotation
+       parts of a setting.
+     * Unit cells are completed and checked with the cell constraints
+       which sgsym derives from the symmetry operations of the
+       structure's setting (SGCellConstraints), replacing the
+       hand-written per-crystal-system checks of NCLatticeUtils
+       (checkAndCompleteLattice[Angles], crystalSystem; removed).
+       Same verdicts as before (exact equality for constrained
+       parameters; monoclinic structures assume unique axis b unless
+       the setting is declared), with reworded error messages. The
+       old code is kept as a reference in tests/src/app_cellconstraints
+       (namespace LegacyLattice) and compared with the constraints
+       there. usesRhombohedralAxes(sg, alpha=0) now means hexagonal
+       axes.
+     * The hkl code (FillHKL, ExpandHKLHelper, Lazy loader) derives
+       EqRefl from the structure's setting (extd_utils
+       getSpaceGroupFromStructureInfo), so declared non-default settings flow
+       through automatically.
+
+### C API and Python
+
+     * New C function ncrystal_info_jsonquery(ncrystal_info_t, query):
+       JSON queries about an existing Info object (keys "list" and
+       "structure"), so new per-object data reaches Python without new
+       C functions per field (a process-handle counterpart might be
+       added later). Python Info._query(*keys) decodes and caches the
+       result per object; structure_info/hasStructureInfo() use it,
+       and structure_info gains the key spacegroup_setting ("227:2",
+       "166:r", ..., or None).
+
+### .laz/.lau files
+
+     * ncmat2hkl writes the optional header field
+       "# spacegroup_setting <setting>" when the setting is known, and
+       the Lazy loader reads it (must be a setting of the declared
+       spacegroup); without it the default setting is assumed as
+       before, so all previously readable files still load with
+       identical results. The ncmat2hklversion header field is bumped
+       to 3, since older NCrystal versions reject the new key.
+
+### NCMAT v8 msd keyword
+
+     * The NCMAT loader now implements "msd <value> at_temperature <T>"
+       in vdosdebye @DYNINFO sections (the v8 format allowed it and the
+       parser accepted it, but loading asserted); the Debye temperature
+       is derived via the isotropic Debye model at the given
+       temperature. New test ncmatv8msd.py.
+     * NCMATComposer.set_dyninfo_msd (and set_dyninfo_uiso, and hence
+       cif2ncmat with uiso values) now writes that keyword as-is, which
+       makes the output NCMAT v8 (so NCrystal 5.0.0+ is needed to read
+       it), instead of converting to a mass-dependent debye_temp printed
+       with 6 digits. Since it implies a solid, non-crystalline materials
+       using it are written with @STATEOFMATTER solid unless the state is
+       set, and a liquid or gas state is an error.
+
+### d-spacings and hkl list ordering
+
+     * d-spacings are now calculated with KSqCalc (NCLatticeUtils): the
+       textbook 1/d^2 expression evaluated with the integer parts formed
+       first and terms with identical factors sharing one integer sum, so
+       planes whose d are equal by the symmetry of the cell (cubic 333 and
+       511, hexagonal 700 and 530, ...) get bit-identical values on all
+       platforms. Values change by at most ~1e-15 relative (cross sections
+       by ~1e-16); the FillHKL box preselection keeps the cheap matrix
+       kernel so there is no cost.
+     * hkl lists are sorted strictly by d-spacing, then multiplicity, then
+       hkl, without the previous 1e-6 Aa tolerance (which was not a strict
+       weak ordering and placed physically different planes within 1e-6 Aa
+       in F2*mult order). Listing order changes only within such
+       near-degenerate neighbourhoods; planes with exactly equal d are now
+       ordered by multiplicity and hkl rather than by F2*mult.
+
+### Crystallographic sites (ABI change, NCMAT v8 additions)
+
+     * AtomInfo::sites(): one site per orbit of the space group setting
+       (orbit representative and multiplicity, plus placeholders for
+       occupancy and anisotropic displacement which are not yet
+       supported), derived by InfoBuilder from the positions, or the
+       positions generated from sites given by the data source (either
+       form can be provided by any factory). Python AtomInfo.sites, Info
+       object query ["sites"].
+     * NCMAT v8: @SPACEGROUP accepts a setting choice ("227:2", "14:c1",
+       "166:r"; validated and checked against the positions), and the
+       new @ATOMSITES section gives one position per orbit, expanded at
+       load time in that setting. Non-default settings (e.g. monoclinic
+       with unique axis c) thereby become loadable. ncmat2json reports
+       spacegroup_setting and atomsites. The ncmat component now
+       depends on sgsym (setting parsing/validation and the atom count
+       for the default dcutoff).
+     * New ["util","atomsites",SG,"lbl,x,y,z",...] and
+       ["util","atompositions",...] JSON queries: group unit cell
+       positions into sites (deducing the setting when SG is a bare
+       number) and expand sites into positions.
+     * NCMATComposer (and thus cif2ncmat) now writes crystals with a
+       space group as NCMAT v8 with @ATOMSITES (and the setting declared
+       in @SPACEGROUP when not the default), using the atomsites query;
+       positions which do not have the symmetry of the space group in
+       its standard origin are an error at create_ncmat (use
+       refine_crystal_structure() to standardise). The spglib-based
+       equivalent-reflection check of verify_crystal_structure is
+       retired (the load-time check in C++ is authoritative), and the
+       Composer no longer insists on unique axis b for monoclinic cells.
+
+     * NCMAT v8 settings policy: a bare space group number is only allowed
+       for the 140 numbers with a single setting; the 90 numbers with
+       several settings must declare the setting explicitly (e.g. 227:1,
+       14:b1, 166:h, 62:abc, 62:cab), using the ITVB choice codes with the
+       trigonal axes in lower case as printed and the explicit "abc" of the
+       table's footnote for the orthorhombic standard axis order.
+       Earlier versions keep deducing the setting from the positions, now
+       accepting any setting of the number (the rejection of deduced
+       settings with other symmetry-equivalent reflections than the
+       default, e.g. monoclinic unique axis c, is gone, as hkl families
+       follow the stored setting). The supported settings are exactly the
+       530 of ITVB Table A1.4.2.7.
+       Errors concerning settings list the settings of the number, marking
+       those consistent with the positions. NCMATComposer writes the
+       canonical form, and Info dumps show the setting of numbers with
+       several settings (e.g. "227:1").
+     * NCMAT v8 setting choice codes are case-sensitive and lower case, as
+       in the ITVB table; a code which is only wrong in case (e.g. the
+       spglib-style 166:H) gets an error naming the correct code.
