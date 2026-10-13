@@ -320,7 +320,7 @@ namespace NCRYSTAL_NAMESPACE {
             si.n_atoms = static_cast<unsigned>(natoms);
 
             //Prepare stuff needed for processing the data lines:
-            this->rec_lattice = getReciprocalLatticeRot( si.lattice_a, si.lattice_b, si.lattice_c,
+            this->rec_lattice = getKSqCalc( si.lattice_a, si.lattice_b, si.lattice_c,
                                                          si.alpha*kDeg, si.beta*kDeg, si.gamma*kDeg );
             this->eqreflcalc.emplace(spacegroup);
 
@@ -364,7 +364,7 @@ namespace NCRYSTAL_NAMESPACE {
           std::map<std::string,unsigned> m_posints;
           std::map<std::string,double> m_dbls;
           std::map<std::string,std::string> m_strs;
-          Optional<RotMatrix> rec_lattice;
+          Optional<KSqCalc> rec_lattice;
           Optional<EqRefl> eqreflcalc;
         };
 
@@ -508,7 +508,7 @@ NC::InfoPtr NC::Lazy::buildInfo( const LazyCfgVars& cfg, const ParsedLazyData& d
   }
 
   auto& si = data.structInfo;
-  auto rec_lat = getReciprocalLatticeRot( si.lattice_a, si.lattice_b, si.lattice_c,
+  auto rec_lat = getKSqCalc( si.lattice_a, si.lattice_b, si.lattice_c,
                                           si.alpha*kDeg, si.beta*kDeg, si.gamma*kDeg );
   InfoBuilder::SinglePhaseBuilder builder;
   builder.dataSourceName = cfg.dataSourceName;

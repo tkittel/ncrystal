@@ -64,8 +64,33 @@ namespace NCRYSTAL_NAMESPACE {
   MaxHKL estimateHKLRange( double dcutoff, double lattice_a,
                            double lattice_b, double lattice_c );
 
-  //Calculate d-spacing from Miller index and reciprocal lattice rotation:
-  double dspacingFromHKL( int h, int k, int l, const RotMatrix& rec_lat );
+  //Calculator of |k|^2 = (2pi/d)^2 for Miller indices, from the textbook
+  //expression
+  //
+  //   |k|^2 = F1*h^2 + F2*k^2 + F3*l^2 + F4*hk + F5*hl + F6*kl
+  //
+  //(the six factors F are the reciprocal metric of the cell). Two planes whose
+  //|k|^2 are equal by the symmetry of the cell, e.g. 333 and 511 in a cubic
+  //cell (both 27*F1), or 700 and 530 in hexagonal axes (both 49*F1), should
+  //also give the same double, so that they compare and sort identically on
+  //all platforms. This is achieved by forming the integer parts first (exact),
+  //and by letting all terms whose factors are the same double share a single
+  //integer sum, so that such planes are evaluated by identical operations:
+  //the cubic 333 is fma(F1,27,0), and so is 511.
+  struct KSqCalc {
+    //Merged terms: group g has factor[g] multiplying the sum of the integer
+    //parts (h^2,k^2,l^2,hk,hl,kl) of the terms t with group_of_term[t]==g:
+    unsigned ngroups = 0;
+    double factor[6] = {};
+    unsigned group_of_term[6] = {};//(6 = dropped, zero factor)
+    double ksq( int h, int k, int l ) const;//(NCFillHKL_FMA.hh has an
+                                            //identical kernel)
+  };
+  KSqCalc getKSqCalc( double lattice_a, double lattice_b, double lattice_c,
+                      double alpha, double beta, double gamma );//(radians)
+
+  //Calculate d-spacing from Miller index and the reciprocal metric:
+  double dspacingFromHKL( int h, int k, int l, const KSqCalc& );
 
   //Whether the space group is one of the rhombohedral (R) ones, and whether
   //a unit cell of such a space group with lattice angle alpha (degrees) is

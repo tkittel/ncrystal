@@ -82,25 +82,18 @@ namespace NCRYSTAL_NAMESPACE {
       }
 
       namespace details {
-        bool dhkl_compare( const NC::HKLInfo& rh, const NC::HKLInfo& lh )
+        bool dhkl_compare( const NC::HKLInfo& a, const NC::HKLInfo& b )
         {
-          nc_assert( !std::isnan(lh.dspacing) );
-          nc_assert( !std::isnan(rh.dspacing) );
-          nc_assert( !std::isinf(lh.dspacing) );
-          nc_assert( !std::isinf(rh.dspacing) );
-          if ( ncabs( lh.dspacing - rh.dspacing ) > 1e-6 )
-            return lh.dspacing < rh.dspacing;
-          double lh_fm = lh.fsquared*lh.multiplicity;
-          double rh_fm = rh.fsquared*rh.multiplicity;
-          nc_assert( !std::isnan(lh_fm) );
-          nc_assert( !std::isnan(rh_fm) );
-          nc_assert( !std::isinf(lh_fm) );
-          nc_assert( !std::isinf(rh_fm) );
-          if( ncabs( lh_fm - rh_fm ) > 1e-6 )
-            return lh_fm < rh_fm;
-          if (lh.multiplicity != rh.multiplicity)
-            return lh.multiplicity < rh.multiplicity;
-          return lh.hkl < rh.hkl;
+          //Descending d-spacing (exact: planes with symmetry-equal d get
+          //bit-identical values from the reciprocal metric form), then
+          //descending multiplicity, then hkl (a strict weak ordering):
+          nc_assert( !std::isnan(a.dspacing) && !std::isnan(b.dspacing) );
+          nc_assert( !std::isinf(a.dspacing) && !std::isinf(b.dspacing) );
+          if ( a.dspacing != b.dspacing )
+            return a.dspacing > b.dspacing;
+          if ( a.multiplicity != b.multiplicity )
+            return a.multiplicity > b.multiplicity;
+          return a.hkl < b.hkl;
         }
       }//details
 

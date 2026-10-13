@@ -352,8 +352,8 @@ double NC::Info::dspacingFromHKL( int h, int k, int l ) const
   if (!hasStructureInfo())
     NCRYSTAL_THROW(MissingInfo,"Info object lacks Structure information.");
   const StructureInfo & si = getStructureInfo();
-  RotMatrix rec_lat = getReciprocalLatticeRot( si.lattice_a, si.lattice_b, si.lattice_c,
-                                               si.alpha*kDeg, si.beta*kDeg, si.gamma*kDeg );
+  const auto rec_lat = getKSqCalc( si.lattice_a, si.lattice_b, si.lattice_c,
+                                                si.alpha*kDeg, si.beta*kDeg, si.gamma*kDeg );
   return ::NC::dspacingFromHKL( h,k,l, rec_lat );
 }
 

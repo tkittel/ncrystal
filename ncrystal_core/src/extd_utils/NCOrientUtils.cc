@@ -40,3 +40,9 @@ NC::RotMatrix NC::getReciprocalLatticeRot( const NC::StructureInfo& si )
   return getReciprocalLatticeRot( si.lattice_a, si.lattice_b, si.lattice_c,
                                   si.alpha*kDeg, si.beta*kDeg, si.gamma*kDeg );
 }
+
+NC::KSqCalc NC::getKSqCalc( const NC::StructureInfo& si )
+{
+  return getKSqCalc( si.lattice_a, si.lattice_b, si.lattice_c,
+                                  si.alpha*kDeg, si.beta*kDeg, si.gamma*kDeg );
+}

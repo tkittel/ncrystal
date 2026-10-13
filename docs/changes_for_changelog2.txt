@@ -95,3 +95,20 @@ CHANGELOG at release time, after which both files are dropped).
        with 6 digits. Since it implies a solid, non-crystalline materials
        using it are written with @STATEOFMATTER solid unless the state is
        set, and a liquid or gas state is an error.
+
+### d-spacings and hkl list ordering
+
+     * d-spacings are now calculated with KSqCalc (NCLatticeUtils): the
+       textbook 1/d^2 expression evaluated with the integer parts formed
+       first and terms with identical factors sharing one integer sum, so
+       planes whose d are equal by the symmetry of the cell (cubic 333 and
+       511, hexagonal 700 and 530, ...) get bit-identical values on all
+       platforms. Values change by at most ~1e-15 relative (cross sections
+       by ~1e-16); the FillHKL box preselection keeps the cheap matrix
+       kernel so there is no cost.
+     * hkl lists are sorted strictly by d-spacing, then multiplicity, then
+       hkl, without the previous 1e-6 Aa tolerance (which was not a strict
+       weak ordering and placed physically different planes within 1e-6 Aa
+       in F2*mult order). Listing order changes only within such
+       near-degenerate neighbourhoods; planes with exactly equal d are now
+       ordered by multiplicity and hkl rather than by F2*mult.
