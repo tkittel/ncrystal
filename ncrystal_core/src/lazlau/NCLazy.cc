@@ -23,6 +23,7 @@
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 #include "NCrystal/internal/utils/NCAtomUtils.hh"
 #include "NCrystal/internal/phys_utils/NCEqRefl.hh"
+#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/atomdb/NCAtomDBExtender.hh"
 #include "NCrystal/internal/infobld/NCInfoBuilder.hh"
@@ -59,6 +60,7 @@ namespace NCRYSTAL_NAMESPACE {
             {"formula",ColType::Str},
             {"nformula_per_unitcell",ColType::PosInt},
             {"unit_F2",ColType::Str},
+            {"spacegroup_setting",ColType::Str},
           };
           return ss;
         }
@@ -282,6 +284,24 @@ namespace NCRYSTAL_NAMESPACE {
             si.beta = lattice_bb;
             si.gamma = lattice_cc;
             si.spacegroup = spacegroup;
+            if ( this->hasKey("spacegroup_setting") ) {
+              //Optional, e.g. "227:2" (cf. StructureInfo::spacegroup_setting),
+              //parsed strictly (written by ncmat2hkl in that form):
+              const std::string str = this->getStr("spacegroup_setting");
+              Optional<SpaceGroup> setting;
+              try {
+                setting.emplace( str, SpaceGroupParseMode::Strict );
+              } catch ( Error::BadInput& e ) {
+                NCRYSTAL_THROW2(BadInput,"Error in Lazy/Lau data: Invalid"
+                                " spacegroup_setting \""<<str<<"\": "<<e.what());
+              }
+              if ( setting.value().number() != spacegroup )
+                NCRYSTAL_THROW2(BadInput,"Error in Lazy/Lau data:"
+                                " spacegroup_setting "<<setting.value()
+                                <<" is not a setting of spacegroup "
+                                <<spacegroup);
+              si.spacegroup_setting = setting.value().settingIdx();
+            }
 
             nc_assert_always( formulaPerUnitCell.has_value() );
             auto natoms = chemform_ntot * formulaPerUnitCell.value();
@@ -466,7 +486,8 @@ NC::Lazy::ParsedLazyData NC::Lazy::parseLazyTextData( const TextData& td, const 
 
 NC::InfoPtr NC::Lazy::buildInfo( const LazyCfgVars& cfg, const ParsedLazyData& data )
 {
-  auto hkllist = validateAndNormaliseHKLFsqList( data.structInfo.spacegroup, data.hkllist );
+  auto hkllist = validateAndNormaliseHKLFsqList( settingOf( data.structInfo ),
+                                                 data.hkllist );
   if ( hkllist.size() != data.hkllist.size() ) {
     NCRYSTAL_MSG("Trimming and normalising provided HKL list from "
                  <<data.hkllist.size()<<" to "<<hkllist.size()<<" entries");
@@ -482,7 +503,7 @@ NC::InfoPtr NC::Lazy::buildInfo( const LazyCfgVars& cfg, const ParsedLazyData& d
   builder.dataSourceName = cfg.dataSourceName;
 
   HKLList out_hkllist;
-  EqRefl sym(data.structInfo.spacegroup);
+  EqRefl sym( settingOf( data.structInfo ) );
   //  out_hkllist.reserve(512);
   double dsp_min(kInfinity);
   for ( auto& e : hkllist ) {
@@ -573,11 +594,19 @@ NC::InfoPtr NC::Lazy::buildInfoFromLazyData( const FactImpl::InfoRequest& req )
   return buildInfo( cfg, parsedData );
 }
 
+NC::SpaceGroup NC::Lazy::settingOf( const StructureInfo& si )
+{
+  nc_assert( si.spacegroup >= 1 && si.spacegroup <= 230 );
+  if ( si.spacegroup_setting.has_value() )
+    return SpaceGroup( si.spacegroup_setting.value() );
+  return SpaceGroup( std::to_string( si.spacegroup ),
+                     SpaceGroupParseMode::Relaxed );
+}
+
 std::vector<NC::Lazy::HKLFsq>
-NC::Lazy::validateAndNormaliseHKLFsqList( int spacegroup,
+NC::Lazy::validateAndNormaliseHKLFsqList( const SpaceGroup& spacegroup,
                                           const std::vector<HKLFsq>& orig )
 {
-  nc_assert_always(spacegroup>=1&&spacegroup<=230);
   std::vector<HKLFsq> l = orig;//NB: in principle this copying is a bit
                                //wasteful, but lazy files are not that important
                                //anyway for us.
