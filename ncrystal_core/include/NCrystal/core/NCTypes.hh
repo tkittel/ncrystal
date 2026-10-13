@@ -204,6 +204,29 @@ namespace NCRYSTAL_NAMESPACE {
     void validate() const;
   };
 
+  //Identifies one of the 530 space group settings tabulated in:
+  //
+  //    Shmueli, U., Hall, S. R. & Grosse-Kunstleve, R. W. (2010).
+  //    "Space-group symbols for numeric and symbolic computations."
+  //    International Tables for Crystallography, Volume B: Reciprocal
+  //    Space, 3rd ed., Appendix A1.4.2, pp. 122-134 (Table A1.4.2.7).
+  //
+  //That table has 530 rows, and the setting is thus efficiently encoded as the
+  //row number, i.e. an integral value from 1 to 530 (both included). We shall
+  //refer to this value as the "setting index" (notice that this is instead
+  //called the "Hall number" in spglib). The sgsym component provides the
+  //corresponding space group information.
+
+  class NCRYSTAL_API SpaceGroupSettingIdx final
+    : public EncapsulatedValue<SpaceGroupSettingIdx,std::uint16_t> {
+  public:
+    using EncapsulatedValue::EncapsulatedValue;
+    static constexpr const char * unit() noexcept { return ""; }
+    static constexpr std::uint16_t min_value = 1;
+    static constexpr std::uint16_t max_value = 530;
+    void validate() const;//throws BadInput if not in 1..530
+  };
+
   class NCRYSTAL_API AtomMass final : public EncapsulatedValue<AtomMass> {
   public:
     //Mass of nuclei or atoms (in atomic mass units, a.k.a. Daltons).
@@ -861,6 +884,13 @@ namespace NCRYSTAL_NAMESPACE {
       NCRYSTAL_THROW2(CalcError,"Temperature::validate() failed for T="<<*this<<" (temperature values below "<<Temperature{allowed_range.first}<< " are not supported).");
     if ( ! ( m_value <= allowed_range.second ) )
       NCRYSTAL_THROW2(CalcError,"Temperature::validate() failed for T="<<*this<<" (temperature values above "<<Temperature{allowed_range.second}<< " are not supported).");
+  }
+
+  inline void SpaceGroupSettingIdx::validate() const
+  {
+    if ( ! ( m_value >= min_value && m_value <= max_value ) )
+      NCRYSTAL_THROW2(BadInput,"Invalid space group setting index: "<<m_value
+                      <<" (must be in range "<<min_value<<".."<<max_value<<")");
   }
 
   inline void DebyeTemperature::validate() const
