@@ -33,4 +33,10 @@ NCrystal WARNING: VDOS expansion could only reach Emax=0.740725eV and not the ta
 =====> sabxs_debye_U_200K.ncmat;temp=2;vdoslux=2001;knllux=0
 =====> sabxs_debye_U_200K.ncmat;temp=60;vdoslux=2002;knllux=1
 =====> sabxs_debye_U_200K.ncmat;temp=600;vdoslux=2003;knllux=2
+=====> sabxs_debye_H_100K_msd.ncmat;temp=293.15;vdoslux=2004;knllux=3
+=====> sabxs_debye_H_1000K_msd.ncmat;temp=293.15;vdoslux=2005;knllux=4
+=====> sabxs_debye_C_400K_msd.ncmat;temp=293.15;vdoslux=2000;knllux=0
+=====> sabxs_debye_Al_400K_msd.ncmat;temp=293.15;vdoslux=2001;knllux=1
+=====> sabxs_debye_Pb_90K_msd.ncmat;temp=293.15;vdoslux=2002;knllux=2
+=====> sabxs_debye_U_200K_msd.ncmat;temp=293.15;vdoslux=2003;knllux=3
 ALL OK

@@ -23,7 +23,7 @@
 # NEEDS: numpy
 
 # The NCMAT v8 msd keyword of vdosdebye @DYNINFO sections ("msd <value>
-# at_temperature <T>").
+# at_temperature <T>"), in files and as written by NCMATComposer.set_dyninfo_msd.
 
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
@@ -75,6 +75,32 @@ def main():
     with ensure_error( NC.NCBadInput ):
         load( ncmat( f'  type vdosdebye\n  msd {msd} at_temperature {T}\n'
                      f'  debye_temp 400\n' ) )
+    #NCMATComposer.set_dyninfo_msd writes the keyword (and hence v8):
+    c = NC.NCMATComposer( 'Al_sg225.ncmat' )
+    c.set_dyninfo_msd( 'Al', msd = msd, temperature = T )
+    out = c.create_ncmat()
+    print( 'Composer output:' )
+    print( '\n'.join( line for line in out.splitlines()
+                      if not line.startswith('#') ) )
+    assert out.startswith( 'NCMAT v8\n' )
+    assert f'msd {msd!r} at_temperature {T!r}'.replace('0.0085','.0085') in out
+    info3 = load( out, cfg = f';dcutoff=0.5;temp={T}' )
+    assert abs( info3.atominfos[0].msd - msd ) < 1e-6 * msd
+    print( '  round trip preserves the msd' )
+    #Non-crystalline: msd implies a solid (written unless set), and a
+    #contradicting state of matter is an error:
+    c = NC.NCMATComposer()
+    c.set_dyninfo_msd( 'Al', msd = msd, temperature = T, fraction = 1.0 )
+    c.set_density( 2.7, 'g/cm3' )
+    import re
+    assert re.search( r'@STATEOFMATTER\s+solid\s', c.create_ncmat() )
+    print( 'non-crystalline Composer material with msd is written as a solid' )
+    c.set_state_of_matter( 'liquid' )
+    with ensure_error( NC.NCBadInput,
+                       'The msd/debye_temp dyninfo parameters describe atomic'
+                       ' displacements in a solid, which is inconsistent with'
+                       ' the declared state of matter "liquid"' ):
+        c.create_ncmat()
 
 if __name__ == '__main__':
     main()
