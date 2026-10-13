@@ -25,29 +25,13 @@
 #include "NCVDOSQuery.hh"
 #include "NCFilterQuery.hh"
 #include "NCUtilQuery.hh"
+#include "NCQueryImpl.hh"
 
 namespace NC = NCrystal;
 
 void NC::JSONQuery( std::ostream& os, const Query& query )
 {
-  if ( query.empty() )
-    NCRYSTAL_THROW2(BadInput,
-                    "Invalid JSON query (query is empty)");
-
-  for ( auto& e : query ) {
-    //Enforce lack of leading '-' in query strings to make it easier to accept
-    //query strings from the command line, and in general not allowing more
-    //chars than absolutely necessary to accept NCrystal cfg-strings.
-    auto badchar
-      = findForbiddenChar( e, Cfg::forbidden_chars_multiphase );
-    if ( badchar.has_value() )
-      NCRYSTAL_THROW2(BadInput,"Forbidden character "<<badchar.value()
-                      <<" in query! Problem found in: \""<<e<<'"');
-    if ( e.ltrimmed().startswith('-') )
-      NCRYSTAL_THROW2(BadInput,"Query items can not start with a \"-\""
-                      " character. Problem found in: \"" << e << '"' );
-  }
-
+  QueryImpl::validateQuery( query );
   const auto& key = query.front();
   constexpr auto sv_version = StrView::make("version");
   constexpr auto sv_list = StrView::make("list");
