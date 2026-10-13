@@ -64,7 +64,7 @@ STDOUT># ncrystal_cfgstr "stdlib::Al_sg225.ncmat;dcutoff=0.6"
 STDOUT>#
 STDOUT># Format: "laz" (suitable for McStas PowderN component)
 STDOUT>#
-STDOUT># ncmat2hklversion 2
+STDOUT># ncmat2hklversion 3
 STDOUT>#
 STDOUT># orighdr : Original file had the following comments at the top:
 STDOUT># orighdr :
@@ -101,6 +101,7 @@ STDOUT>#
 STDOUT># temperature 293.15 [kelvin]
 STDOUT>#
 STDOUT># spacegroup 225
+STDOUT># spacegroup_setting 225
 STDOUT># lattice_a 4.04958 [Aa]
 STDOUT># lattice_b 4.04958 [Aa]
 STDOUT># lattice_c 4.04958 [Aa]
@@ -250,7 +251,7 @@ STDOUT># ncrystal_cfgstr "stdlib::Al_sg225.ncmat;dcutoff=0.6"
 STDOUT>#
 STDOUT># Format: "lau" (suitable for McStas Single_crystal component)
 STDOUT>#
-STDOUT># ncmat2hklversion 2
+STDOUT># ncmat2hklversion 3
 STDOUT>#
 STDOUT># orighdr : Original file had the following comments at the top:
 STDOUT># orighdr :
@@ -287,6 +288,7 @@ STDOUT>#
 STDOUT># temperature 293.15 [kelvin]
 STDOUT>#
 STDOUT># spacegroup 225
+STDOUT># spacegroup_setting 225
 STDOUT># lattice_a 4.04958 [Aa]
 STDOUT># lattice_b 4.04958 [Aa]
 STDOUT># lattice_c 4.04958 [Aa]
@@ -343,8 +345,7 @@ STDOUT>   -2   2   0  1      1.431742739      1.575735142
 STDOUT>    0   2   2  1      1.431742739      1.575735142
 STDOUT>    0  -2  -2  1      1.431742739      1.575735142
 STDOUT>    0   2  -2  1      1.431742739      1.575735142
-STDOUT>    0  -2   2  1      1.431742739      1.575735142
-STDOUT>    <<<SNIPPED 300 LINES, MD5=c0dc5b84eed731ac44aa218656dde8b5>>>
+STDOUT>    <<<SNIPPED 301 LINES, MD5=b54ed7a601212637684c2e03c35509dc>>>
 STDOUT>    2  -6   2  1     0.6104971554     0.6735642717
 STDOUT>   -2   6  -2  1     0.6104971554     0.6735642717
 STDOUT>    2  -6  -2  1     0.6104971554     0.6735642717
@@ -449,7 +450,7 @@ res># ncrystal_cfgstr "stdlib::CaSiO3_sg2_Wollastonite.ncmat;dcutoff=3.2"
 res>#
 res># Format: "laz" (suitable for McStas PowderN component)
 res>#
-res># ncmat2hklversion 2
+res># ncmat2hklversion 3
 res>#
 res># orighdr : Original file had the following comments at the top:
 res># orighdr :
@@ -491,6 +492,7 @@ res>#
 res># temperature 293.15 [kelvin]
 res>#
 res># spacegroup 2
+res># spacegroup_setting 2
 res># lattice_a 7.07 [Aa]
 res># lattice_b 7.32 [Aa]
 res># lattice_c 7.94 [Aa]
@@ -662,7 +664,7 @@ res># ncrystal_cfgstr "stdlib::CaSiO3_sg2_Wollastonite.ncmat;dcutoff=3.2"
 res>#
 res># Format: "lau" (suitable for McStas Single_crystal component)
 res>#
-res># ncmat2hklversion 2
+res># ncmat2hklversion 3
 res>#
 res># orighdr : Original file had the following comments at the top:
 res># orighdr :
@@ -704,6 +706,7 @@ res>#
 res># temperature 293.15 [kelvin]
 res>#
 res># spacegroup 2
+res># spacegroup_setting 2
 res># lattice_a 7.07 [Aa]
 res># lattice_b 7.32 [Aa]
 res># lattice_c 7.94 [Aa]
@@ -901,7 +904,7 @@ OUTFILE># ncrystal_cfgstr "stdlib::Y2SiO5_sg15_YSO.ncmat;dcutoff=2"
 OUTFILE>#
 OUTFILE># Format: "laz" (suitable for McStas PowderN component)
 OUTFILE>#
-OUTFILE># ncmat2hklversion 2
+OUTFILE># ncmat2hklversion 3
 OUTFILE>#
 OUTFILE># orighdr : Original file had the following comments at the top:
 OUTFILE># orighdr :
@@ -946,6 +949,7 @@ OUTFILE>#
 OUTFILE># temperature 293.15 [kelvin]
 OUTFILE>#
 OUTFILE># spacegroup 15
+OUTFILE># spacegroup_setting 15:b1
 OUTFILE># lattice_a 14.564338 [Aa]
 OUTFILE># lattice_b 6.835386 [Aa]
 OUTFILE># lattice_c 10.556968467868 [Aa]
@@ -1073,7 +1077,7 @@ Temperature : 293.15 kelvin
 ----------------------------------------------------------------------------------------------------
 State of matter: Solid (crystalline)
 ----------------------------------------------------------------------------------------------------
-Space group             : 15 (setting unknown)
+Space group             : 15 (setting 15:b1)
 Lattice spacings   [Aa] : 14.5643 6.83539 10.557
 Lattice angles    [deg] : 90 122.132 90
 Unit cell volume [Aa^3] : 889.993
@@ -1144,7 +1148,7 @@ OUTFILE># ncrystal_cfgstr "stdlib::Y2SiO5_sg15_YSO.ncmat;dcutoff=2"
 OUTFILE>#
 OUTFILE># Format: "lau" (suitable for McStas Single_crystal component)
 OUTFILE>#
-OUTFILE># ncmat2hklversion 2
+OUTFILE># ncmat2hklversion 3
 OUTFILE>#
 OUTFILE># orighdr : Original file had the following comments at the top:
 OUTFILE># orighdr :
@@ -1189,6 +1193,7 @@ OUTFILE>#
 OUTFILE># temperature 293.15 [kelvin]
 OUTFILE>#
 OUTFILE># spacegroup 15
+OUTFILE># spacegroup_setting 15:b1
 OUTFILE># lattice_a 14.564338 [Aa]
 OUTFILE># lattice_b 6.835386 [Aa]
 OUTFILE># lattice_c 10.556968467868 [Aa]
@@ -1237,8 +1242,7 @@ OUTFILE>    0   0  -2  1        4.4699505      2.842139735
 OUTFILE>    1   1   1  1       4.46602879      1.266559772
 OUTFILE>   -1  -1  -1  1       4.46602879      1.266559772
 OUTFILE>    1  -1   1  1       4.46602879      1.266559772
-OUTFILE>   -1   1  -1  1       4.46602879      1.266559772
-OUTFILE>   <<<SNIPPED 182 LINES, MD5=2d1ee111efe32417fefb92f30266d2c2>>>
+OUTFILE>    <<<SNIPPED 183 LINES, MD5=aa9a716e62bba7a7e552cdbc9e132896>>>
 OUTFILE>    3   1  -5  1      2.005379573      19.06393288
 OUTFILE>   -3  -1   5  1      2.005379573      19.06393288
 OUTFILE>    3  -1  -5  1      2.005379573      19.06393288
@@ -1281,7 +1285,7 @@ Temperature : 293.15 kelvin
 ----------------------------------------------------------------------------------------------------
 State of matter: Solid (crystalline)
 ----------------------------------------------------------------------------------------------------
-Space group             : 15 (setting unknown)
+Space group             : 15 (setting 15:b1)
 Lattice spacings   [Aa] : 14.5643 6.83539 10.557
 Lattice angles    [deg] : 90 122.132 90
 Unit cell volume [Aa^3] : 889.993
@@ -1351,7 +1355,7 @@ res># ncrystal_cfgstr "stdlib::Mg2SiO4_sg62_MagnesiumSilicate.ncmat;dcutoff=1.2"
 res>#
 res># Format: "laz" (suitable for McStas PowderN component)
 res>#
-res># ncmat2hklversion 2
+res># ncmat2hklversion 3
 res>#
 res># orighdr : Original file had the following comments at the top:
 res># orighdr :
@@ -1398,6 +1402,7 @@ res>#
 res># temperature 293.15 [kelvin]
 res>#
 res># spacegroup 62
+res># spacegroup_setting 62:abc
 res># lattice_a 10.20141 [Aa]
 res># lattice_b 5.98348 [Aa]
 res># lattice_c 4.75534 [Aa]
@@ -1444,8 +1449,7 @@ res>    3   1   1  8      2.510736754      7.665021093
 res>    1   2   1  8      2.457689682      12.62792325
 res>    0   0   2  2          2.37767      11.94116721
 res>    4   1   0  4      2.346126227      1.466305609
-res>    1   0   2  4      2.315606518      4.967851856
-res>    <<<SNIPPED 81 LINES, MD5=fe9770b337abf22c00f62ac113741b67>>>
+res>    <<<SNIPPED 82 LINES, MD5=84ffc2f7c2e9bb0c5d66f3f80d047c35>>>
 res>    5   3   2  8      1.223068405      4.324137094
 res>    7   1   2  8      1.216565473     0.9439156107
 res>    8   1   1  8      1.206368988      2.943223982
@@ -1488,7 +1492,7 @@ Temperature : 293.15 kelvin
 ----------------------------------------------------------------------------------------------------
 State of matter: Solid (crystalline)
 ----------------------------------------------------------------------------------------------------
-Space group             : 62 (setting unknown)
+Space group             : 62 (setting 62:abc)
 Lattice spacings   [Aa] : 10.2014 5.98348 4.75534
 Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 290.266
@@ -1558,7 +1562,7 @@ res># ncrystal_cfgstr "stdlib::Mg2SiO4_sg62_MagnesiumSilicate.ncmat;dcutoff=1.2"
 res>#
 res># Format: "lau" (suitable for McStas Single_crystal component)
 res>#
-res># ncmat2hklversion 2
+res># ncmat2hklversion 3
 res>#
 res># orighdr : Original file had the following comments at the top:
 res># orighdr :
@@ -1605,6 +1609,7 @@ res>#
 res># temperature 293.15 [kelvin]
 res>#
 res># spacegroup 62
+res># spacegroup_setting 62:abc
 res># lattice_a 10.20141 [Aa]
 res># lattice_b 5.98348 [Aa]
 res># lattice_c 4.75534 [Aa]
@@ -1651,8 +1656,7 @@ res>    0  -1  -1  1      3.722820903      2.642900744
 res>    0   1  -1  1      3.722820903      2.642900744
 res>    0  -1   1  1      3.722820903      2.642900744
 res>    1   1   1  1      3.497225064      1.829695889
-res>   -1  -1  -1  1      3.497225064      1.829695889
-res>   <<<SNIPPED 594 LINES, MD5=9bbe630387d7e8cc2f5dbcce60206b5d>>>
+res>    <<<SNIPPED 595 LINES, MD5=5b4ecc0ccbc2a5966b1dc43c4a265825>>>
 res>    2  -3   3  1      1.205769094     0.5604269713
 res>   -2   3  -3  1      1.205769094     0.5604269713
 res>    2  -3  -3  1      1.205769094     0.5604269713
@@ -1695,7 +1699,7 @@ Temperature : 293.15 kelvin
 ----------------------------------------------------------------------------------------------------
 State of matter: Solid (crystalline)
 ----------------------------------------------------------------------------------------------------
-Space group             : 62 (setting unknown)
+Space group             : 62 (setting 62:abc)
 Lattice spacings   [Aa] : 10.2014 5.98348 4.75534
 Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 290.266
@@ -1765,7 +1769,7 @@ STDOUT># ncrystal_cfgstr "stdlib::PbO-alpha_sg129_Litharge.ncmat;dcutoff=0.9"
 STDOUT>#
 STDOUT># Format: "laz" (suitable for McStas PowderN component)
 STDOUT>#
-STDOUT># ncmat2hklversion 2
+STDOUT># ncmat2hklversion 3
 STDOUT>#
 STDOUT># orighdr : Original file had the following comments at the top:
 STDOUT># orighdr :
@@ -1809,6 +1813,7 @@ STDOUT>#
 STDOUT># temperature 293.15 [kelvin]
 STDOUT>#
 STDOUT># spacegroup 129
+STDOUT># spacegroup_setting 129:2
 STDOUT># lattice_a 3.96 [Aa]
 STDOUT># lattice_b 3.96 [Aa]
 STDOUT># lattice_c 5.01 [Aa]
@@ -1924,7 +1929,7 @@ Temperature : 293.15 kelvin
 ----------------------------------------------------------------------------------------------------
 State of matter: Solid (crystalline)
 ----------------------------------------------------------------------------------------------------
-Space group             : 129 (setting unknown)
+Space group             : 129 (setting 129:2)
 Lattice spacings   [Aa] : 3.96 3.96 5.01
 Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 78.5648
@@ -2020,7 +2025,7 @@ STDOUT># ncrystal_cfgstr "stdlib::PbO-alpha_sg129_Litharge.ncmat;dcutoff=0.9"
 STDOUT>#
 STDOUT># Format: "lau" (suitable for McStas Single_crystal component)
 STDOUT>#
-STDOUT># ncmat2hklversion 2
+STDOUT># ncmat2hklversion 3
 STDOUT>#
 STDOUT># orighdr : Original file had the following comments at the top:
 STDOUT># orighdr :
@@ -2064,6 +2069,7 @@ STDOUT>#
 STDOUT># temperature 293.15 [kelvin]
 STDOUT>#
 STDOUT># spacegroup 129
+STDOUT># spacegroup_setting 129:2
 STDOUT># lattice_a 3.96 [Aa]
 STDOUT># lattice_b 3.96 [Aa]
 STDOUT># lattice_c 5.01 [Aa]
@@ -2113,8 +2119,7 @@ STDOUT>    0   0   2  1            2.505      0.434620644
 STDOUT>    0   0  -2  1            2.505      0.434620644
 STDOUT>    1   1   1  1      2.444275663     0.8417859488
 STDOUT>   -1  -1  -1  1      2.444275663     0.8417859488
-STDOUT>    1   1  -1  1      2.444275663     0.8417859488
-STDOUT>    <<<SNIPPED 391 LINES, MD5=b86004089b64e3264f4301fb16cfc225>>>
+STDOUT>   <<<SNIPPED 392 LINES, MD5=c0c81b6bd5cc96a2a8086209a1e6e9fb>>>
 STDOUT>    0   3   4  1     0.9085771871     0.1180953212
 STDOUT>    0  -3  -4  1     0.9085771871     0.1180953212
 STDOUT>    0   3  -4  1     0.9085771871     0.1180953212
@@ -2156,7 +2161,7 @@ Temperature : 293.15 kelvin
 ----------------------------------------------------------------------------------------------------
 State of matter: Solid (crystalline)
 ----------------------------------------------------------------------------------------------------
-Space group             : 129 (setting unknown)
+Space group             : 129 (setting 129:2)
 Lattice spacings   [Aa] : 3.96 3.96 5.01
 Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 78.5648
@@ -2252,7 +2257,7 @@ res># ncrystal_cfgstr "stdlib::MgCO3_sg167_MagnesiumCarbonate.ncmat;dcutoff=1"
 res>#
 res># Format: "laz" (suitable for McStas PowderN component)
 res>#
-res># ncmat2hklversion 2
+res># ncmat2hklversion 3
 res>#
 res># orighdr : Original file had the following comments at the top:
 res># orighdr :
@@ -2293,6 +2298,7 @@ res>#
 res># temperature 293.15 [kelvin]
 res>#
 res># spacegroup 167
+res># spacegroup_setting 167:h
 res># lattice_a 4.632 [Aa]
 res># lattice_b 4.632 [Aa]
 res># lattice_c 15.002 [Aa]
@@ -2482,7 +2488,7 @@ res># ncrystal_cfgstr "stdlib::MgCO3_sg167_MagnesiumCarbonate.ncmat;dcutoff=1"
 res>#
 res># Format: "lau" (suitable for McStas Single_crystal component)
 res>#
-res># ncmat2hklversion 2
+res># ncmat2hklversion 3
 res>#
 res># orighdr : Original file had the following comments at the top:
 res># orighdr :
@@ -2523,6 +2529,7 @@ res>#
 res># temperature 293.15 [kelvin]
 res>#
 res># spacegroup 167
+res># spacegroup_setting 167:h
 res># lattice_a 4.632 [Aa]
 res># lattice_b 4.632 [Aa]
 res># lattice_c 15.002 [Aa]
@@ -2575,8 +2582,7 @@ res>   -1  -1   0  1            2.316      7.327750476
 res>    1  -2   0  1            2.316      7.327750476
 res>   -1   2   0  1            2.316      7.327750476
 res>    2  -1   3  1      2.101552894      60.43677614
-res>   -2   1  -3  1      2.101552894      60.43677614
-res>   <<<SNIPPED 278 LINES, MD5=a138cacef2eebf3045991568e47abe42>>>
+res>    <<<SNIPPED 279 LINES, MD5=408e7ed1595a2baa885e516224d3359f>>>
 res>    1   2  11  1      1.013964751      20.88497846
 res>   -1  -2 -11  1      1.013964751      20.88497846
 res>    1  -3 -11  1      1.013964751      20.88497846
@@ -2705,7 +2711,7 @@ STDOUT># ncrystal_cfgstr "stdlib::Al2O3_sg167_Corundum.ncmat;dcutoff=1.5"
 STDOUT>#
 STDOUT># Format: "laz" (suitable for McStas PowderN component)
 STDOUT>#
-STDOUT># ncmat2hklversion 2
+STDOUT># ncmat2hklversion 3
 STDOUT>#
 STDOUT># orighdr : Original file had the following comments at the top:
 STDOUT># orighdr :
@@ -2744,6 +2750,7 @@ STDOUT>#
 STDOUT># temperature 293.15 [kelvin]
 STDOUT>#
 STDOUT># spacegroup 167
+STDOUT># spacegroup_setting 167:h
 STDOUT># lattice_a 4.757 [Aa]
 STDOUT># lattice_b 4.757 [Aa]
 STDOUT># lattice_c 12.9877 [Aa]
@@ -2883,7 +2890,7 @@ STDOUT># ncrystal_cfgstr "stdlib::Al2O3_sg167_Corundum.ncmat;dcutoff=1.5"
 STDOUT>#
 STDOUT># Format: "lau" (suitable for McStas Single_crystal component)
 STDOUT>#
-STDOUT># ncmat2hklversion 2
+STDOUT># ncmat2hklversion 3
 STDOUT>#
 STDOUT># orighdr : Original file had the following comments at the top:
 STDOUT># orighdr :
@@ -2922,6 +2929,7 @@ STDOUT>#
 STDOUT># temperature 293.15 [kelvin]
 STDOUT>#
 STDOUT># spacegroup 167
+STDOUT># spacegroup_setting 167:h
 STDOUT># lattice_a 4.757 [Aa]
 STDOUT># lattice_b 4.757 [Aa]
 STDOUT># lattice_c 12.9877 [Aa]
@@ -2976,8 +2984,7 @@ STDOUT>    0   0  -6  1      2.164616667      51.84154237
 STDOUT>    2  -1   3  1      2.084603568      74.93728065
 STDOUT>   -2   1  -3  1      2.084603568      74.93728065
 STDOUT>    2  -1  -3  1      2.084603568      74.93728065
-STDOUT>   -2   1   3  1      2.084603568      74.93728065
-STDOUT>   <<<SNIPPED 58 LINES, MD5=56fac9814134b38b01005f2ebcd5560c>>>
+STDOUT>    <<<SNIPPED 59 LINES, MD5=8be14532d4c7e56bb5c8a59eb18889f9>>>
 STDOUT>    1  -1   8  1      1.510413467      7.252143724
 STDOUT>   -1   1  -8  1      1.510413467      7.252143724
 STDOUT>    0   1   8  1      1.510413467      7.252143724
@@ -3079,7 +3086,7 @@ res># ncrystal_cfgstr "stdlib::ZnO_sg186_ZincOxide.ncmat;dcutoff=0.5"
 res>#
 res># Format: "laz" (suitable for McStas PowderN component)
 res>#
-res># ncmat2hklversion 2
+res># ncmat2hklversion 3
 res>#
 res># orighdr : Original file had the following comments at the top:
 res># orighdr :
@@ -3118,6 +3125,7 @@ res>#
 res># temperature 293.15 [kelvin]
 res>#
 res># spacegroup 186
+res># spacegroup_setting 186
 res># lattice_a 3.2533 [Aa]
 res># lattice_b 3.2533 [Aa]
 res># lattice_c 5.2073 [Aa]
@@ -3172,8 +3180,7 @@ res>    3   0   0  6     0.9391468154      3.697696174
 res>    3  -1   3 24     0.9076872689      2.174671808
 res>    3   0   2 12     0.8834330523      1.921087546
 res>    0   0   6  2     0.8678833333      1.286971722
-res>    2   0   5 12     0.8374513526      2.333944484
-res>    <<<SNIPPED 65 LINES, MD5=f6ab198f9114e22497276f8df6a2f13e>>>
+res>    <<<SNIPPED 66 LINES, MD5=fe1169f320774890e5d91b8328b3813c>>>
 res>    6  -1   1 24     0.5036547552     0.1525494695
 res>    5  -1   6 24     0.5016870519     0.5632489927
 res>    6  -3   4 12     0.5005364104    0.01388335562
@@ -3282,7 +3289,7 @@ res># ncrystal_cfgstr "stdlib::ZnO_sg186_ZincOxide.ncmat;dcutoff=0.5"
 res>#
 res># Format: "lau" (suitable for McStas Single_crystal component)
 res>#
-res># ncmat2hklversion 2
+res># ncmat2hklversion 3
 res>#
 res># orighdr : Original file had the following comments at the top:
 res># orighdr :
@@ -3321,6 +3328,7 @@ res>#
 res># temperature 293.15 [kelvin]
 res>#
 res># spacegroup 186
+res># spacegroup_setting 186
 res># lattice_a 3.2533 [Aa]
 res># lattice_b 3.2533 [Aa]
 res># lattice_c 5.2073 [Aa]
@@ -3375,8 +3383,7 @@ res>    0  -1   1  1      2.477986292     0.4938041211
 res>    1   0   2  1      1.912177635     0.6584121022
 res>   -1   0  -2  1      1.912177635     0.6584121022
 res>    1   0  -2  1      1.912177635     0.6584121022
-res>   -1   0   2  1      1.912177635     0.6584121022
-res>   <<<SNIPPED 1350 LINES, MD5=5aefb1d4080add3febb44eed7028c3d6>>>
+res>    <<<SNIPPED 1351 LINES, MD5=d5eec0166f36b9fb06e10a3181ecf12e>>>
 res>    1  -4   8  1     0.5001293869     0.3655831947
 res>   -1   4  -8  1     0.5001293869     0.3655831947
 res>    1  -4  -8  1     0.5001293869     0.3655831947
@@ -3486,7 +3493,7 @@ OUTFILE># ncrystal_cfgstr "stdlib::C_sg194_pyrolytic_graphite.ncmat;lcaxis=0,0,1
 OUTFILE>#
 OUTFILE># Format: "laz" (suitable for McStas PowderN component)
 OUTFILE>#
-OUTFILE># ncmat2hklversion 2
+OUTFILE># ncmat2hklversion 3
 OUTFILE>#
 OUTFILE># orighdr : Original file had the following comments at the top:
 OUTFILE># orighdr :
@@ -3529,6 +3536,7 @@ OUTFILE>#
 OUTFILE># temperature 293.15 [kelvin]
 OUTFILE>#
 OUTFILE># spacegroup 194
+OUTFILE># spacegroup_setting 194
 OUTFILE># lattice_a 2.464 [Aa]
 OUTFILE># lattice_b 2.464 [Aa]
 OUTFILE># lattice_c 6.711 [Aa]
@@ -3579,8 +3587,7 @@ OUTFILE>    1   0   6 12     0.9906594411     0.3488624695
 OUTFILE>    2   0   3 12     0.9630158454      1.032305946
 OUTFILE>    2   0   4 12     0.9003129067     0.3319382932
 OUTFILE>    1   0   7 12     0.8745073809     0.9789233814
-OUTFILE>    0   0   8  2         0.838875      5.085568037
-OUTFILE>   <<<SNIPPED 2207 LINES, MD5=9973a0c2ac34dc5fba1faab596020219>>>
+OUTFILE>   <<<SNIPPED 2208 LINES, MD5=05a6e4087a08ad90142653dc4ae4d0d9>>>
 OUTFILE>   12  -3  38 24     0.1315825535  1.099374128e-05
 OUTFILE>   13  -2  34 24     0.1313624492  1.051152442e-05
 OUTFILE>   14  -7  34 12     0.1313624492  1.051152442e-05
@@ -3690,7 +3697,7 @@ OUTFILE># ncrystal_cfgstr "stdlib::C_sg194_pyrolytic_graphite.ncmat;lcaxis=0,0,1
 OUTFILE>#
 OUTFILE># Format: "lau" (suitable for McStas Single_crystal component)
 OUTFILE>#
-OUTFILE># ncmat2hklversion 2
+OUTFILE># ncmat2hklversion 3
 OUTFILE>#
 OUTFILE># orighdr : Original file had the following comments at the top:
 OUTFILE># orighdr :
@@ -3733,6 +3740,7 @@ OUTFILE>#
 OUTFILE># temperature 293.15 [kelvin]
 OUTFILE>#
 OUTFILE># spacegroup 194
+OUTFILE># spacegroup_setting 194
 OUTFILE># lattice_a 2.464 [Aa]
 OUTFILE># lattice_b 2.464 [Aa]
 OUTFILE># lattice_c 6.711 [Aa]
@@ -3783,8 +3791,7 @@ OUTFILE>   -1   1   1  1      2.033560847      1.252923608
 OUTFILE>    0   1   1  1      2.033560847      1.252923608
 OUTFILE>    0  -1  -1  1      2.033560847      1.252923608
 OUTFILE>    0   1  -1  1      2.033560847      1.252923608
-OUTFILE>    0  -1   1  1      2.033560847      1.252923608
-OUTFILE>    <<<SNIPPED 44318 LINES, MD5=b57f5afc39f0577659784ac110fe930d>>>
+OUTFILE>    <<<SNIPPED 44319 LINES, MD5=caa7b5146460e00b13c216286d597d12>>>
 OUTFILE>    2  -4  50  1     0.1311430314  1.004960407e-05
 OUTFILE>   -2   4 -50  1     0.1311430314  1.004960407e-05
 OUTFILE>    2  -4 -50  1     0.1311430314  1.004960407e-05
@@ -3897,7 +3904,7 @@ res># ncrystal_cfgstr "virtual::Al.ncmat;dcutoff=0.8"
 res>#
 res># Format: "laz" (suitable for McStas PowderN component)
 res>#
-res># ncmat2hklversion 2
+res># ncmat2hklversion 3
 res>#
 res>#
 res># ncrystal_embedded_cfg : NCRYSTALMATCFG[dcutoff=0.8]
@@ -3905,6 +3912,7 @@ res>#
 res># temperature 293.15 [kelvin]
 res>#
 res># spacegroup 225
+res># spacegroup_setting 225
 res># lattice_a 4.04958 [Aa]
 res># lattice_b 4.04958 [Aa]
 res># lattice_c 4.04958 [Aa]
@@ -4036,7 +4044,7 @@ res># ncrystal_cfgstr "virtual::Al.ncmat;dcutoff=0.8"
 res>#
 res># Format: "lau" (suitable for McStas Single_crystal component)
 res>#
-res># ncmat2hklversion 2
+res># ncmat2hklversion 3
 res>#
 res>#
 res># ncrystal_embedded_cfg : NCRYSTALMATCFG[dcutoff=0.8]
@@ -4044,6 +4052,7 @@ res>#
 res># temperature 293.15 [kelvin]
 res>#
 res># spacegroup 225
+res># spacegroup_setting 225
 res># lattice_a 4.04958 [Aa]
 res># lattice_b 4.04958 [Aa]
 res># lattice_c 4.04958 [Aa]
@@ -4129,8 +4138,7 @@ res>    2   2   2  1      1.169013052      1.430257452
 res>   -2  -2  -2  1      1.169013052      1.430257452
 res>    2   2  -2  1      1.169013052      1.430257452
 res>   -2  -2   2  1      1.169013052      1.430257452
-res>    2  -2   2  1      1.169013052      1.430257452
-res>    <<<SNIPPED 77 LINES, MD5=c0d31e418bdfcd291a0810c10635eb7f>>>
+res>   <<<SNIPPED 78 LINES, MD5=871f22ef5fc0cd60c5449b38448661c8>>>
 res>    2  -4   2  1      0.826617056      1.074786165
 res>   -2   4  -2  1      0.826617056      1.074786165
 res>    2  -4  -2  1      0.826617056      1.074786165
@@ -4225,7 +4233,7 @@ OUTFILE># ncrystal_cfgstr "stdlib::Al_sg225.ncmat;dcutoff=0.6"
 OUTFILE>#
 OUTFILE># Format: "lau" (suitable for McStas Single_crystal component)
 OUTFILE>#
-OUTFILE># ncmat2hklversion 2
+OUTFILE># ncmat2hklversion 3
 OUTFILE>#
 OUTFILE># orighdr : Original file had the following comments at the top:
 OUTFILE># orighdr :
@@ -4249,7 +4257,7 @@ OUTFILE># orighdr : #   https://www.crystallography.net/cod/9011602.html
 OUTFILE># orighdr : #   https://www.crystallography.net/cod/9012002.html
 OUTFILE># orighdr : #
 OUTFILE># orighdr : # The VDOS curve was extracted by T. Kittelmann using the engauge digitizer
-OUTFILE><<<SNIPPED 354 LINES, MD5=09994e1931aada20bf1982519c90a7ec>>>
+OUTFILE><<<SNIPPED 355 LINES, MD5=1cbe060f9ab221e3d90f2d9b858e5e39>>>
 OUTFILE>    6  -2   2  1     0.6104971554     0.6735642717
 OUTFILE>   -6   2  -2  1     0.6104971554     0.6735642717
 OUTFILE>    6  -2  -2  1     0.6104971554     0.6735642717
