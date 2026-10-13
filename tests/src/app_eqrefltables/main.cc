@@ -21,6 +21,7 @@
 #include "NCEqReflTables.hh"
 #include "NCrystal/internal/phys_utils/NCEqRefl.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
+#include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include <iostream>
 
 //The symmetry-equivalent reflections of EqRefl (derived from the sgsym
@@ -47,6 +48,47 @@ namespace {
       }
       REQUIRE( false );
     }
+  }
+}
+
+namespace {
+  //EqRefl constructed from a SpaceGroup (any of the 530 settings) must give
+  //the same reflection families as EqRefl(number,rhombohedral_axes) exactly
+  //when the setting has the same rotation parts as the one assumed there:
+  void testFromSetting()
+  {
+    constexpr int N = 3;
+    unsigned nsame = 0, ndiff = 0;
+    auto sortedList = []( const NC::EqRefl& e, int h, int k, int l )
+    {
+      std::vector<NC::HKL> v;
+      for ( auto& x : e.getEquivalentReflections( h, k, l ) )
+        v.push_back( x );
+      std::sort( v.begin(), v.end() );
+      return v;
+    };
+    for ( std::uint16_t hn = 1; hn <= 530; ++hn ) {
+      const NC::SpaceGroup sg{ NC::SpaceGroupSettingIdx{ hn } };
+      const bool rhombo = ( std::string( sg.choice() ) == "r" );
+      const int nr = static_cast<int>( sg.number() );
+      const NC::SpaceGroup assumed( std::to_string( nr ) + ( rhombo ? ":r" : "" ),
+                                    NC::SpaceGroupParseMode::Relaxed );
+      const NC::EqRefl a( sg );
+      const NC::EqRefl b( nr, rhombo );
+      bool same = true;
+      for ( int h = -N; h <= N && same; ++h )
+        for ( int k = -N; k <= N && same; ++k )
+          for ( int l = -N; l <= N && same; ++l )
+            if ( h || k || l )
+              same = ( sortedList( a, h, k, l ) == sortedList( b, h, k, l ) );
+      REQUIRE( same == NC::haveSameRotationParts( NC::SGSymmetry::get( sg ),
+                                                  NC::SGSymmetry::get( assumed ) ) );
+      ++( same ? nsame : ndiff );
+    }
+    std::cout << "EqRefl(SpaceGroup): " << nsame << " settings with the same"
+              << " reflection families as EqRefl(number,rhombohedral_axes), "
+              << ndiff << " with others (as expected from their rotation"
+              << " parts)" << std::endl;
   }
 }
 
@@ -90,5 +132,6 @@ int main()
   expectBad<NC::EqRefl,NC::EqReflTables>( 231, false );
   expectBad<NC::EqRefl,NC::EqReflTables>( 225, true );//not rhombohedral
   std::cout << "Invalid arguments rejected by both" << std::endl;
+  testFromSetting();
   return 0;
 }

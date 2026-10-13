@@ -1,2 +1,3 @@
 EqRefl and EqReflTables agree for 237 space group settings and 520452 hkl points (|h|,|k|,|l| <= 6)
 Invalid arguments rejected by both
+EqRefl(SpaceGroup): 460 settings with the same reflection families as EqRefl(number,rhombohedral_axes), 70 with others (as expected from their rotation parts)

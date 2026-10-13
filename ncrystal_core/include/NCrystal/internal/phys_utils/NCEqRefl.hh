@@ -40,6 +40,9 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
+  class SpaceGroup;
+  class SGSymmetry;
+
   class EqRefl final {
   public:
 
@@ -50,6 +53,9 @@ namespace NCRYSTAL_NAMESPACE {
     //default setting of the space group number is assumed (which only
     //matters for monoclinic groups, where unique axis b is assumed):
     EqRefl( int spacegroup, bool rhombohedral_axes = false );
+
+    //Initialise from a specific space group setting (sgsym):
+    explicit EqRefl( const SpaceGroup& );
 
     class EquivReflList {
       //List with half the HKL points in a given family of symmetric equivalent
@@ -103,6 +109,7 @@ namespace NCRYSTAL_NAMESPACE {
     unsigned m_nrot = 0;
     RowIdx m_rows[24];
     EquivReflList calcRaw(int h, int k, int l) const;
+    void init( const SGSymmetry& );
   };
 }
 
