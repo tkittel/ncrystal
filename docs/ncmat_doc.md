@@ -993,6 +993,61 @@ keywords, and whose atoms previously got the Debye-Waller information needed
 for Bragg diffraction from the @DEBYETEMPERATURE section) can no longer be
 used in crystalline materials.
 
+## The @SPACEGROUP section accepts a setting ##
+
+Space group numbers only identify the symmetry up to a choice of setting
+(origin choice, unique axis and cell choice of monoclinic groups, axis
+permutation of orthorhombic groups, hexagonal or rhombohedral axes of the
+rhombohedral groups). Earlier versions of NCrystal always assumed the default
+setting, i.e. the first one listed for the number in Table A1.4.2.7 of
+International Tables for Crystallography Volume B (unique axis b, origin
+choice 1, ...), except that rhombohedral axes were recognised from the cell
+angles. Starting with *NCMAT v8*, the setting can be declared explicitly by
+appending the setting choice code of that table to the number, as in:
+
+```
+@SPACEGROUP
+  227:2
+```
+
+Other examples are `14:c1` (unique axis c, cell choice 1), `62:cab` (axis
+permutation), and `166:r` (rhombohedral axes). A bare number keeps the old
+meaning. The declared setting must be a setting of the number and match the
+cell (hexagonal versus rhombohedral axes), and the atom positions must have
+its symmetry: all of this is verified when loading (NCrystal also verifies the
+symmetry of the positions for files without a declared setting, deducing the
+setting from them, which is why e.g. structures in origin choice 2 loaded
+correctly before; declaring the setting is however required for settings
+with other symmetry-equivalent reflections than the default one, such as
+monoclinic structures with a unique axis other than b).
+
+## The @ATOMSITES section ##
+
+As an alternative to listing all atom positions of the unit cell in the
+@ATOMPOSITIONS section, *NCMAT v8* files can list just one position per
+crystallographic site (i.e. per orbit of the space group) in an @ATOMSITES
+section, from which NCrystal generates the full list by applying the symmetry
+operations of the setting given in the @SPACEGROUP section (which is thus
+required). The syntax is otherwise identical to that of @ATOMPOSITIONS:
+
+```
+@CELL
+  cubic 5.43
+@SPACEGROUP
+  227:2
+@ATOMSITES
+  Si 1/8 1/8 1/8
+```
+
+Here the single site generates the 8 atoms of the diamond structure. A file
+must not have both @ATOMSITES and @ATOMPOSITIONS sections, and the fractions in
+the @DYNINFO sections must still be consistent with the generated numbers of
+atoms. Note that the generated positions depend on the setting: in the
+example, `227` (origin choice 1) would instead place 16 atoms on the `16c`
+site. Sites close to, but not exactly on, special positions are rejected, so
+sites should be given with sufficient precision, preferably as exact
+fractions.
+
 # EMACS Syntax highlighting #
 
 If using EMACS, add the following to your ~/.emacs configuration file to enable
@@ -1001,7 +1056,7 @@ a basic syntax highlighting of .ncmat files:
 ```
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Major mode for .ncmat files:
-(setq ncmat-sections '("CELL" "ATOMPOSITIONS" "SPACEGROUP" "DEBYETEMPERATURE" "DYNINFO" "TEMPERATURE"
+(setq ncmat-sections '("CELL" "ATOMPOSITIONS" "ATOMSITES" "SPACEGROUP" "DEBYETEMPERATURE" "DYNINFO" "TEMPERATURE"
                        "DENSITY" "ATOMDB" "STATEOFMATTER" "OTHERPHASES" "CUSTOM_[A-Z]+"))
 (setq ncmat-fields '("lengths" "angles" "cubic" "element" "fraction" "type"
                      "debye_temp" "temperature" "msd" "at_temperature"

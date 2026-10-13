@@ -225,10 +225,17 @@ namespace NCRYSTAL_NAMESPACE {
           nc_assert( !sites.empty() );
           for ( auto& site : sites ) {
             const auto orbit = expandSiteToOrbit( sym, site.position.as<Vector>() );
-            site.position = orbit.positions.front().as<AtomInfo::Pos>();//(symmetrised)
-            site.multiplicity = static_cast<unsigned>( orbit.positions.size() );
+            //(representative: the first in the sorted order of the positions,
+            //as for sites derived from positions)
+            AtomInfo::AtomPositions orbitpos;
             for ( auto& p : orbit.positions )
-              positions.push_back( p.as<AtomInfo::Pos>() );
+              orbitpos.push_back( p.as<AtomInfo::Pos>() );
+            std::stable_sort( orbitpos.begin(), orbitpos.end(),
+                              details::atominfo_pos_compare );
+            site.position = orbitpos.front();
+            site.multiplicity = static_cast<unsigned>( orbitpos.size() );
+            for ( auto& p : orbitpos )
+              positions.push_back( p );
           }
         }
       }

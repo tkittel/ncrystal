@@ -75,14 +75,25 @@ namespace NCRYSTAL_NAMESPACE {
     bool hasAtomPos() const { return !atompos.empty(); }
     void validateAtomPos() const;
 
+    //@ATOMSITES (v8+): one position per orbit of the space group setting,
+    //instead of @ATOMPOSITIONS (the loader expands them):
+    std::vector<std::pair<std::string,Pos> > atomsites;
+    bool hasAtomSites() const { return !atomsites.empty(); }
+    void validateAtomSites() const;
+
     //@TEMPERATURE (v7+)
     enum class TemperatureType { Default, Fixed };
     Optional<std::pair<Temperature,TemperatureType>> temperature;
     void validateTemperature() const;
 
-    //@SPACEGROUP
+    //@SPACEGROUP: the number, and the specification as written in the file
+    //("227", or in v8+ a setting like "227:2"; parsed by SpaceGroup, strictly
+    //for v8+). The spec is empty when the data was not read from a file:
     int spacegroup = 0;
+    std::string spacegroup_spec;
     bool hasSpaceGroup() const { return spacegroup>0; }
+    bool hasSpaceGroupSetting() const;//spec has a ":<choice>" part (v8+)
+    std::string spacegroupSpec() const;//spacegroup_spec, or "<number>" if empty
     void validateSpaceGroup() const;
 
     //@DEBYETEMPERATURE (note that if absent, VDOSDebye DynInfo sections can have their own debye_temp field)

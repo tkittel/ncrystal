@@ -407,11 +407,11 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 
 
 ==> Test 95
-==> Correct! NCBadInput: "(anonymous TextData, 23bytes, type=ncmat)": no spacegroup number specified in @SPACEGROUP section (expected in line 3)
+==> Correct! NCBadInput: "(anonymous TextData, 23bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 3 : Invalid space group specification: "0" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
 
 
 ==> Test 96
-==> Correct! NCBadInput: (anonymous TextData, 24bytes, type=ncmat) invalid section configuration for data claiming to be in legacy NCMAT version 1 (missing section with cell info)
+==> Correct! NCBadInput: "(anonymous TextData, 24bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 3 : Invalid space group specification: "-1" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
 
 
 ==> Test 97
@@ -419,7 +419,7 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 
 
 ==> Test 98
-==> Correct! NCBadInput: "(anonymous TextData, 30bytes, type=ncmat)": problem while decoding spacegroup parameter in line 3 : Invalid number in string is not an integer: "pb+3mbla"
+==> Correct! NCBadInput: "(anonymous TextData, 30bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 3 : Invalid space group specification: "pb+3mbla" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
 
 
 ==> Test 99
@@ -531,7 +531,7 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 
 
 ==> Test 126
-==> Correct! NCBadInput: (anonymous TextData, 156bytes, type=ncmat) element (Si) specified in dynamic info sections does not appear in the list of atom positions
+==> Correct! NCBadInput: (anonymous TextData, 156bytes, type=ncmat) element (Si) specified in dynamic info sections does not appear in the list of atom positions (or sites)
 
 
 ==> Test 127

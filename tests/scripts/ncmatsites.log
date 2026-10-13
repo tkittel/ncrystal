@@ -1,0 +1,13 @@
+Al_sg225.ncmat: 1 sites -> 4 atoms (setting 225), same positions and xs
+Si_sg227.ncmat: 1 sites -> 8 atoms (setting 227:1), same positions and xs
+Al2O3_sg167_Corundum.ncmat: 2 sites -> 30 atoms (setting 167:h), same positions and xs
+PbO-alpha_sg129_Litharge.ncmat: 2 sites -> 4 atoms (setting 129:2), same positions and xs
+Mg_sg194.ncmat: 1 sites -> 2 atoms (setting 194), same positions and xs
+P2 with 2-fold along c (3:c): 2 atoms, [{'position': [0.1, 0.2, 0.3], 'multiplicity': 2}] setting 3:c
+  245 hkl families, all with the 2/m (unique axis c) equivalences
+Caught expected NCBadInput('bad.ncmat space group setting choices (like "3:c") are only allowed in NCMAT v8 or later (problem in the @SPACEGROUP section ending in line 6)')
+Caught expected NCBadInput('"bad.ncmat": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "3:x" (not a setting of space group 3, the settings are: 3:b (default), 3:c, 3:a)')
+Caught expected NCBadInput('bad.ncmat can not have both @ATOMSITES and @ATOMPOSITIONS sections')
+Caught expected NCBadInput('bad.ncmat @ATOMSITES sections require a @SPACEGROUP section (problem in the @ATOMSITES section ending in line 6)')
+Caught expected NCBadInput('Atom positions are only consistent with space group 3 in the setting 3:c, whose symmetry-equivalent reflections differ from those of the setting 3:b assumed by NCrystal. Transform the structure to that setting (e.g. with NCMATComposer.refine_crystal_structure()).')
+Invalid inputs rejected

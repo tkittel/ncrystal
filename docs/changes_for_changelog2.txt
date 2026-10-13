@@ -112,3 +112,21 @@ CHANGELOG at release time, after which both files are dropped).
        in F2*mult order). Listing order changes only within such
        near-degenerate neighbourhoods; planes with exactly equal d are now
        ordered by multiplicity and hkl rather than by F2*mult.
+
+### Crystallographic sites (ABI change, NCMAT v8 additions)
+
+     * AtomInfo::sites(): one site per orbit of the space group setting
+       (orbit representative and multiplicity, plus placeholders for
+       occupancy and anisotropic displacement which are not yet
+       supported), derived by InfoBuilder from the positions, or the
+       positions generated from sites given by the data source (either
+       form can be provided by any factory). Python AtomInfo.sites, Info
+       object query ["sites"].
+     * NCMAT v8: @SPACEGROUP accepts a setting choice ("227:2", "14:c1",
+       "166:r"; validated and checked against the positions), and the
+       new @ATOMSITES section gives one position per orbit, expanded at
+       load time in that setting. Non-default settings (e.g. monoclinic
+       with unique axis c) thereby become loadable. ncmat2json reports
+       spacegroup_setting and atomsites. The ncmat component now
+       depends on sgsym (setting parsing/validation and the atom count
+       for the default dcutoff).

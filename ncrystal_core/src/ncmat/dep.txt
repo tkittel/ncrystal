@@ -9,6 +9,7 @@ infobld
 interfaces
 phys_utils
 sab
+sgsym
 text
 utils
 vdos
