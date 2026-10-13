@@ -36,6 +36,7 @@ namespace NCRYSTAL_NAMESPACE {
 
   struct NCRYSTAL_API StructureInfo final {
     unsigned spacegroup = 0;//From 1-230 if provided, 0 if not available
+    Optional<SpaceGroupSettingIdx> spacegroup_setting;
     double lattice_a = 0.0;//angstrom
     double lattice_b = 0.0;//angstrom
     double lattice_c = 0.0;//angstrom
