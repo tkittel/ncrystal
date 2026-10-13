@@ -445,6 +445,20 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
             debye_temp = DebyeTemperature{ itDT->second.at(0) };
             perelemdebye_map[iad.index] = debye_temp.value();
           }
+          auto itMSD = e.fields.find("msd");//NCMAT v8+: "msd <value>
+                                            //at_temperature <T>" instead of
+                                            //debye_temp (parser guarantees the
+                                            //at_temperature part here)
+          if ( itMSD != e.fields.end() ) {
+            nc_assert( data.version >= 8 && !debye_temp.has_value() );
+            nc_assert( itMSD->second.size() == 1 );
+            nc_assert( e.fields.count("msd_temperature") );
+            const Temperature msd_temp{ e.fields.at("msd_temperature").at(0) };
+            debye_temp = debyeTempFromIsotropicMSD( itMSD->second.at(0),
+                                                    msd_temp,
+                                                    iad.data().averageMassAMU() );
+            perelemdebye_map[iad.index] = debye_temp.value();
+          }
           if ( !debye_temp.has_value() )
             debye_temp = element2DebyeTemp(iad.index);
           di = ncmake_unique<DI_VDOSDebye>(e.fraction, iad, cfgvars.temp, debye_temp.value());
