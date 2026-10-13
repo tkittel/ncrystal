@@ -38,15 +38,17 @@ namespace NCRYSTAL_NAMESPACE {
     void validateAndCompleteUnitCell( InfoBuilder::UnitCell& );
 
     //Verify that the atom positions have the symmetry of the declared space
-    //group (in some of its settings): slight deviations give a warning,
-    //larger ones (or settings with other symmetry-equivalent reflections
-    //than NCrystal assumes) a BadInput exception. Returns the setting found
-    //(see the .cc file):
+    //group, in the setting declared by the data source if any
+    //(spacegroup_setting set), else in some of its settings: slight
+    //deviations give a warning, larger ones (or found settings with other
+    //symmetry-equivalent reflections than NCrystal assumes) a BadInput
+    //exception. Returns the setting (see the .cc file):
     SpaceGroupSettingIdx checkStructureSymmetry( const StructureInfo&,
                                                  const AtomInfoList& );
 
-    //The setting implied by the space group number and cell alone (R axes
-    //from the cell angles), when the number has a single setting, else NullOpt:
+    //The setting declared by the data source if any, else the one implied by
+    //the space group number and cell alone (R axes from the cell angles),
+    //when the number has a single setting, else NullOpt:
     Optional<SpaceGroupSettingIdx>
     settingWithoutPositions( const StructureInfo& );
 
