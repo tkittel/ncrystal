@@ -854,7 +854,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): Anisotropic displacement for Na ig
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Anisotropic displacement for Ni ignored (u11=0.0068, u12=0, u13=0.0011, u22=0.0066, u23=0, u33=0.0082) [warn#57]
 Verifying that resulting ncmat data can be loaded
 Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># F7FeNa2Ni (orthorombic, SG-74)
 OUT>#
@@ -945,47 +945,40 @@ OUT>  X3 is F
 OUT>  X4 is Na
 OUT>  X5 is Na
 OUT>@DYNINFO
-OUT>  # Debye temperature value derived from msd=0.0179Aa^2 @ T=50K (mass=18.9984u)
 OUT>  element X1
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  debye_temp 165.177
+OUT>  msd .0179 at_temperature 50
 OUT>@DYNINFO
-OUT>  # Debye temperature value derived from msd=0.0181667Aa^2 @ T=50K (mass=18.9984u)
 OUT>  element X2
 OUT>  fraction 2/11
 OUT>  type vdosdebye
-OUT>  debye_temp 163.665
+OUT>  msd .018166666666667 at_temperature 50
 OUT>@DYNINFO
-OUT>  # Debye temperature value derived from msd=0.0213333Aa^2 @ T=50K (mass=18.9984u)
 OUT>  element X3
 OUT>  fraction 4/11
 OUT>  type vdosdebye
-OUT>  debye_temp 148.343
+OUT>  msd .021333333333333 at_temperature 50
 OUT>@DYNINFO
-OUT>  # Debye temperature value derived from msd=0.00856667Aa^2 @ T=50K (mass=55.8472u)
 OUT>  element Fe
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  debye_temp 134.406
+OUT>  msd .0085666666666667 at_temperature 50
 OUT>@DYNINFO
-OUT>  # Debye temperature value derived from msd=0.0331333Aa^2 @ T=50K (mass=22.9898u)
 OUT>  element X4
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  debye_temp 103.133
+OUT>  msd .033133333333333 at_temperature 50
 OUT>@DYNINFO
-OUT>  # Debye temperature value derived from msd=0.0373333Aa^2 @ T=50K (mass=22.9898u)
 OUT>  element X5
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  debye_temp 96.5677
+OUT>  msd .037333333333333 at_temperature 50
 OUT>@DYNINFO
-OUT>  # Debye temperature value derived from msd=0.0072Aa^2 @ T=50K (mass=58.6879u)
 OUT>  element Ni
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  debye_temp 144.673
+OUT>  msd .0072 at_temperature 50
 =======================================================================
 ============= CLI >>codid::1000257 --debyetemp=150<< ====================
 Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
@@ -1163,7 +1156,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): Anisotropic displacement for Na ig
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Anisotropic displacement for Ni ignored (u11=0.0068, u12=0, u13=0.0011, u22=0.0066, u23=0, u33=0.0082) [warn#78]
 Verifying that resulting ncmat data can be loaded
 Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># F7FeNa2Ni (orthorombic, SG-74)
 OUT>#
@@ -1254,47 +1247,40 @@ OUT>  X3 is F
 OUT>  X4 is Na
 OUT>  X5 is Na
 OUT>@DYNINFO
-OUT>  # Debye temperature value derived from msd=0.0179Aa^2 @ T=50K (mass=18.9984u)
 OUT>  element X1
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  debye_temp 165.177
+OUT>  msd .0179 at_temperature 50
 OUT>@DYNINFO
-OUT>  # Debye temperature value derived from msd=0.0181667Aa^2 @ T=50K (mass=18.9984u)
 OUT>  element X2
 OUT>  fraction 2/11
 OUT>  type vdosdebye
-OUT>  debye_temp 163.665
+OUT>  msd .018166666666667 at_temperature 50
 OUT>@DYNINFO
-OUT>  # Debye temperature value derived from msd=0.0213333Aa^2 @ T=50K (mass=18.9984u)
 OUT>  element X3
 OUT>  fraction 4/11
 OUT>  type vdosdebye
-OUT>  debye_temp 148.343
+OUT>  msd .021333333333333 at_temperature 50
 OUT>@DYNINFO
-OUT>  # Debye temperature value derived from msd=0.00856667Aa^2 @ T=50K (mass=55.8472u)
 OUT>  element Fe
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  debye_temp 134.406
+OUT>  msd .0085666666666667 at_temperature 50
 OUT>@DYNINFO
-OUT>  # Debye temperature value derived from msd=0.0331333Aa^2 @ T=50K (mass=22.9898u)
 OUT>  element X4
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  debye_temp 103.133
+OUT>  msd .033133333333333 at_temperature 50
 OUT>@DYNINFO
-OUT>  # Debye temperature value derived from msd=0.0373333Aa^2 @ T=50K (mass=22.9898u)
 OUT>  element X5
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  debye_temp 96.5677
+OUT>  msd .037333333333333 at_temperature 50
 OUT>@DYNINFO
-OUT>  # Debye temperature value derived from msd=0.0072Aa^2 @ T=50K (mass=58.6879u)
 OUT>  element Ni
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  debye_temp 144.673
+OUT>  msd .0072 at_temperature 50
 =======================================================================================
 ============= CLI >>mpid::55<< ====================
 Getting mp_55.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR

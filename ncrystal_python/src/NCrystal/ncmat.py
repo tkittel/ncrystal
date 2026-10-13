@@ -404,13 +404,16 @@ class NCMATComposer:
                                            fraction=fraction, comment=comment )
 
     def set_dyninfo_msd( self, label, msd, *, temperature, fraction = None, comment = None,  ):
-        """Calculate and set Debye temperature based on
-        mean-squared-displacement (msd) value (in Aa^2). This also needs the
-        temperature value for which the msd value is associated (in
+        """Set dynamics via a mean-squared-displacement (msd) value (in
+        Aa^2), which NCrystal converts to a Debye temperature (so the
+        resulting modelling is that of .set_dyninfo_vdosdebye(..)). This also
+        needs the temperature value for which the msd value is associated (in
         kelvin). Note that this temperature value is NOT necessarily the
-        temperature at which the material will later be used. See
-        .set_dyninfo_vdosdebye(..) for further information about the resulting
-        modelling.
+        temperature at which the material will later be used. The value is
+        written as-is with the msd keyword of NCMAT v8 (so the created data
+        requires NCrystal v5.0.0 or later), and it implies a solid: the state
+        of matter is written as solid for non-crystalline materials unless
+        set, and a liquid or gas state is an error.
         """
         return self.__impl.set_dyninfo_msd( label = label,
                                             msd = msd,

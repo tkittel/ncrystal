@@ -80,3 +80,18 @@ CHANGELOG at release time, after which both files are dropped).
        before, so all previously readable files still load with
        identical results. The ncmat2hklversion header field is bumped
        to 3, since older NCrystal versions reject the new key.
+
+### NCMAT v8 msd keyword
+
+     * The NCMAT loader now implements "msd <value> at_temperature <T>"
+       in vdosdebye @DYNINFO sections (the v8 format allowed it and the
+       parser accepted it, but loading asserted); the Debye temperature
+       is derived via the isotropic Debye model at the given
+       temperature. New test ncmatv8msd.py.
+     * NCMATComposer.set_dyninfo_msd (and set_dyninfo_uiso, and hence
+       cif2ncmat with uiso values) now writes that keyword as-is, which
+       makes the output NCMAT v8 (so NCrystal 5.0.0+ is needed to read
+       it), instead of converting to a mass-dependent debye_temp printed
+       with 6 digits. Since it implies a solid, non-crystalline materials
+       using it are written with @STATEOFMATTER solid unless the state is
+       set, and a liquid or gas state is an error.
