@@ -222,7 +222,7 @@ def cfgstr_2_hkl(*, cfgstr, tgtformat, verbose=True, fp_format = '%.14g' ):
         assert tgtformat=='lau'
         yield '# Format: "lau" (suitable for McStas Single_crystal component)'
     yield '#'
-    yield '# ncmat2hklversion 2'
+    yield '# ncmat2hklversion 3'
     yield '#'
     if orig_header:
         had_embedded_cfg = any( 'NCRYSTALMATCFG[' in e for e in orig_header)
@@ -247,6 +247,8 @@ def cfgstr_2_hkl(*, cfgstr, tgtformat, verbose=True, fp_format = '%.14g' ):
     yield f'# temperature {fmtfp_header(info.getTemperature())} [kelvin]'
     yield '#'
     yield f'# spacegroup {si["spacegroup"]}'
+    if si.get('spacegroup_setting'):
+        yield f'# spacegroup_setting {si["spacegroup_setting"]}'
     yield f'# lattice_a {fmtfp_header(si["a"])} [Aa]'
     yield f'# lattice_b {fmtfp_header(si["b"])} [Aa]'
     yield f'# lattice_c {fmtfp_header(si["c"])} [Aa]'

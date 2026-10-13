@@ -85,6 +85,9 @@ def test_cfgstr(cfgstr):
 
         prtitle(f'Conversion of {cfgstr} to {fmt}')
         NC.registerInMemoryFileData(fn,cfgstr2hkl(cfgstr,fmt))
+        setting = NC.createInfo(fn).structure_info['spacegroup_setting']
+        assert setting == info.structure_info['spacegroup_setting']
+        print(f"Space group setting preserved by {fmt}: {setting}")
         rd=NC.createTextData(fn).rawData
         assert rd.endswith('\n')
         print_text_file_with_snipping(rd,nstart=100,nend=40)
@@ -134,12 +137,10 @@ def test_cfgstr(cfgstr):
 
 def test_setting_field():
     #The optional spacegroup_setting header field must be a setting of the
-    #declared spacegroup, and without it only unique settings are known
-    #(the field is added by hand, as ncmat2hkl does not write it yet):
+    #declared spacegroup, and without it only unique settings are known:
     laz = cfgstr2hkl('stdlib::PbO-alpha_sg129_Litharge.ncmat;dcutoff=0.9','laz')
     line = '# spacegroup_setting 129:2\n'
-    assert line not in laz and laz.count('# spacegroup 129\n') == 1
-    laz = laz.replace('# spacegroup 129\n','# spacegroup 129\n'+line)
+    assert line in laz
     def load( content, fn ):
         NC.registerInMemoryFileData( fn, content )
         try:

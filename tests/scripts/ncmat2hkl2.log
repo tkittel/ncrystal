@@ -94,13 +94,15 @@ HKL planes (d_lower = 0.6 Aa, d_upper = inf Aa):
 
 
 Wrote tmp_redirected_output.txt
+NCrystal: Normalising provided HKL list with 18 entries
+Space group setting preserved by laz: 225
 # File created by NCrystal v<current>
 #
 # ncrystal_cfgstr "stdlib::Al_sg225.ncmat;dcutoff=0.6"
 #
 # Format: "laz" (suitable for McStas PowderN component)
 #
-# ncmat2hklversion 2
+# ncmat2hklversion 3
 #
 # orighdr : Original file had the following comments at the top:
 # orighdr :
@@ -137,6 +139,7 @@ Wrote tmp_redirected_output.txt
 # temperature 293.15 [kelvin]
 #
 # spacegroup 225
+# spacegroup_setting 225
 # lattice_a 4.04958 [Aa]
 # lattice_b 4.04958 [Aa]
 # lattice_c 4.04958 [Aa]
@@ -196,7 +199,6 @@ Wrote tmp_redirected_output.txt
 ====================================================================================================
 
 
-NCrystal: Normalising provided HKL list with 18 entries
 ----------------------------------------------------------------------------------------------------
 ------------------------------------   NCrystal Material Info   ------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -398,13 +400,15 @@ HKL planes (d_lower = 3.2 Aa, d_upper = inf Aa):
 
 
 Wrote tmp_redirected_output.txt
+NCrystal: Normalising provided HKL list with 25 entries
+Space group setting preserved by laz: 2
 # File created by NCrystal v<current>
 #
 # ncrystal_cfgstr "stdlib::CaSiO3_sg2_Wollastonite.ncmat;dcutoff=3.2"
 #
 # Format: "laz" (suitable for McStas PowderN component)
 #
-# ncmat2hklversion 2
+# ncmat2hklversion 3
 #
 # orighdr : Original file had the following comments at the top:
 # orighdr :
@@ -446,6 +450,7 @@ Wrote tmp_redirected_output.txt
 # temperature 293.15 [kelvin]
 #
 # spacegroup 2
+# spacegroup_setting 2
 # lattice_a 7.07 [Aa]
 # lattice_b 7.32 [Aa]
 # lattice_c 7.94 [Aa]
@@ -512,7 +517,6 @@ Wrote tmp_redirected_output.txt
 ====================================================================================================
 
 
-NCrystal: Normalising provided HKL list with 25 entries
 ----------------------------------------------------------------------------------------------------
 ------------------------------------   NCrystal Material Info   ------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -799,13 +803,15 @@ HKL planes (d_lower = 2 Aa, d_upper = inf Aa):
 
 
 Wrote tmp_redirected_output.txt
+NCrystal: Normalising provided HKL list with 58 entries
+Space group setting preserved by laz: 15:b1
 # File created by NCrystal v<current>
 #
 # ncrystal_cfgstr "stdlib::Y2SiO5_sg15_YSO.ncmat;dcutoff=2"
 #
 # Format: "laz" (suitable for McStas PowderN component)
 #
-# ncmat2hklversion 2
+# ncmat2hklversion 3
 #
 # orighdr : Original file had the following comments at the top:
 # orighdr :
@@ -850,6 +856,7 @@ Wrote tmp_redirected_output.txt
 # temperature 293.15 [kelvin]
 #
 # spacegroup 15
+# spacegroup_setting 15:b1
 # lattice_a 14.564338 [Aa]
 # lattice_b 6.835386 [Aa]
 # lattice_c 10.556968467868 [Aa]
@@ -949,7 +956,6 @@ Wrote tmp_redirected_output.txt
 ====================================================================================================
 
 
-NCrystal: Normalising provided HKL list with 58 entries
 ----------------------------------------------------------------------------------------------------
 ------------------------------------   NCrystal Material Info   ------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -976,7 +982,7 @@ Temperature : 293.15 kelvin
 ----------------------------------------------------------------------------------------------------
 State of matter: Solid (crystalline)
 ----------------------------------------------------------------------------------------------------
-Space group             : 15 (setting unknown)
+Space group             : 15 (setting 15:b1)
 Lattice spacings   [Aa] : 14.5643 6.83539 10.557
 Lattice angles    [deg] : 90 122.132 90
 Unit cell volume [Aa^3] : 889.993
@@ -1269,13 +1275,15 @@ HKL planes (d_lower = 2 Aa, d_upper = inf Aa):
 
 
 Wrote tmp_redirected_output.txt
+NCrystal: Trimming and normalising provided HKL list from 204 to 58 entries
+Space group setting preserved by lau: 15:b1
 # File created by NCrystal v<current>
 #
 # ncrystal_cfgstr "stdlib::Y2SiO5_sg15_YSO.ncmat;dcutoff=2"
 #
 # Format: "lau" (suitable for McStas Single_crystal component)
 #
-# ncmat2hklversion 2
+# ncmat2hklversion 3
 #
 # orighdr : Original file had the following comments at the top:
 # orighdr :
@@ -1320,6 +1328,7 @@ Wrote tmp_redirected_output.txt
 # temperature 293.15 [kelvin]
 #
 # spacegroup 15
+# spacegroup_setting 15:b1
 # lattice_a 14.564338 [Aa]
 # lattice_b 6.835386 [Aa]
 # lattice_c 10.556968467868 [Aa]
@@ -1368,8 +1377,7 @@ Wrote tmp_redirected_output.txt
     1   1   1  1       4.46602879      1.266559772
    -1  -1  -1  1       4.46602879      1.266559772
     1  -1   1  1       4.46602879      1.266559772
-   -1   1  -1  1       4.46602879      1.266559772
-   <<<SNIPPED 146 LINES, MD5=14d9a0a526ed1713665be6f62e6bf259>>>
+    <<<SNIPPED 147 LINES, MD5=91499628539ca1bd76a7ff8392f42f92>>>
     1   3   1  1      2.125445086     0.5266760173
    -1  -3  -1  1      2.125445086     0.5266760173
     1  -3   1  1      2.125445086     0.5266760173
@@ -1420,7 +1428,6 @@ Wrote tmp_redirected_output.txt
 ====================================================================================================
 
 
-NCrystal: Trimming and normalising provided HKL list from 204 to 58 entries
 ----------------------------------------------------------------------------------------------------
 ------------------------------------   NCrystal Material Info   ------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -1447,7 +1454,7 @@ Temperature : 293.15 kelvin
 ----------------------------------------------------------------------------------------------------
 State of matter: Solid (crystalline)
 ----------------------------------------------------------------------------------------------------
-Space group             : 15 (setting unknown)
+Space group             : 15 (setting 15:b1)
 Lattice spacings   [Aa] : 14.5643 6.83539 10.557
 Lattice angles    [deg] : 90 122.132 90
 Unit cell volume [Aa^3] : 889.993
@@ -1747,13 +1754,15 @@ HKL planes (d_lower = 1.2 Aa, d_upper = inf Aa):
 
 
 Wrote tmp_redirected_output.txt
+NCrystal: Normalising provided HKL list with 101 entries
+Space group setting preserved by laz: 62:abc
 # File created by NCrystal v<current>
 #
 # ncrystal_cfgstr "stdlib::Mg2SiO4_sg62_MagnesiumSilicate.ncmat;dcutoff=1.2"
 #
 # Format: "laz" (suitable for McStas PowderN component)
 #
-# ncmat2hklversion 2
+# ncmat2hklversion 3
 #
 # orighdr : Original file had the following comments at the top:
 # orighdr :
@@ -1800,6 +1809,7 @@ Wrote tmp_redirected_output.txt
 # temperature 293.15 [kelvin]
 #
 # spacegroup 62
+# spacegroup_setting 62:abc
 # lattice_a 10.20141 [Aa]
 # lattice_b 5.98348 [Aa]
 # lattice_c 4.75534 [Aa]
@@ -1942,7 +1952,6 @@ Wrote tmp_redirected_output.txt
 ====================================================================================================
 
 
-NCrystal: Normalising provided HKL list with 101 entries
 ----------------------------------------------------------------------------------------------------
 ------------------------------------   NCrystal Material Info   ------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -1969,7 +1978,7 @@ Temperature : 293.15 kelvin
 ----------------------------------------------------------------------------------------------------
 State of matter: Solid (crystalline)
 ----------------------------------------------------------------------------------------------------
-Space group             : 62 (setting unknown)
+Space group             : 62 (setting 62:abc)
 Lattice spacings   [Aa] : 10.2014 5.98348 4.75534
 Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 290.266
@@ -2171,13 +2180,15 @@ HKL planes (d_lower = 0.9 Aa, d_upper = inf Aa):
 
 
 Wrote tmp_redirected_output.txt
+NCrystal: Normalising provided HKL list with 47 entries
+Space group setting preserved by laz: 129:2
 # File created by NCrystal v<current>
 #
 # ncrystal_cfgstr "stdlib::PbO-alpha_sg129_Litharge.ncmat;dcutoff=0.9"
 #
 # Format: "laz" (suitable for McStas PowderN component)
 #
-# ncmat2hklversion 2
+# ncmat2hklversion 3
 #
 # orighdr : Original file had the following comments at the top:
 # orighdr :
@@ -2221,6 +2232,7 @@ Wrote tmp_redirected_output.txt
 # temperature 293.15 [kelvin]
 #
 # spacegroup 129
+# spacegroup_setting 129:2
 # lattice_a 3.96 [Aa]
 # lattice_b 3.96 [Aa]
 # lattice_c 5.01 [Aa]
@@ -2309,7 +2321,6 @@ Wrote tmp_redirected_output.txt
 ====================================================================================================
 
 
-NCrystal: Normalising provided HKL list with 47 entries
 ----------------------------------------------------------------------------------------------------
 ------------------------------------   NCrystal Material Info   ------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -2335,7 +2346,7 @@ Temperature : 293.15 kelvin
 ----------------------------------------------------------------------------------------------------
 State of matter: Solid (crystalline)
 ----------------------------------------------------------------------------------------------------
-Space group             : 129 (setting unknown)
+Space group             : 129 (setting 129:2)
 Lattice spacings   [Aa] : 3.96 3.96 5.01
 Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 78.5648
@@ -2556,13 +2567,15 @@ HKL planes (d_lower = 1 Aa, d_upper = inf Aa):
 
 
 Wrote tmp_redirected_output.txt
+NCrystal: Normalising provided HKL list with 34 entries
+Space group setting preserved by laz: 167:h
 # File created by NCrystal v<current>
 #
 # ncrystal_cfgstr "stdlib::MgCO3_sg167_MagnesiumCarbonate.ncmat;dcutoff=1"
 #
 # Format: "laz" (suitable for McStas PowderN component)
 #
-# ncmat2hklversion 2
+# ncmat2hklversion 3
 #
 # orighdr : Original file had the following comments at the top:
 # orighdr :
@@ -2603,6 +2616,7 @@ Wrote tmp_redirected_output.txt
 # temperature 293.15 [kelvin]
 #
 # spacegroup 167
+# spacegroup_setting 167:h
 # lattice_a 4.632 [Aa]
 # lattice_b 4.632 [Aa]
 # lattice_c 15.002 [Aa]
@@ -2678,7 +2692,6 @@ Wrote tmp_redirected_output.txt
 ====================================================================================================
 
 
-NCrystal: Normalising provided HKL list with 34 entries
 ----------------------------------------------------------------------------------------------------
 ------------------------------------   NCrystal Material Info   ------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -2916,13 +2929,15 @@ HKL planes (d_lower = 1 Aa, d_upper = inf Aa):
 
 
 Wrote tmp_redirected_output.txt
+NCrystal: Trimming and normalising provided HKL list from 304 to 34 entries
+Space group setting preserved by lau: 167:h
 # File created by NCrystal v<current>
 #
 # ncrystal_cfgstr "stdlib::MgCO3_sg167_MagnesiumCarbonate.ncmat;dcutoff=1"
 #
 # Format: "lau" (suitable for McStas Single_crystal component)
 #
-# ncmat2hklversion 2
+# ncmat2hklversion 3
 #
 # orighdr : Original file had the following comments at the top:
 # orighdr :
@@ -2963,6 +2978,7 @@ Wrote tmp_redirected_output.txt
 # temperature 293.15 [kelvin]
 #
 # spacegroup 167
+# spacegroup_setting 167:h
 # lattice_a 4.632 [Aa]
 # lattice_b 4.632 [Aa]
 # lattice_c 15.002 [Aa]
@@ -3015,8 +3031,7 @@ Wrote tmp_redirected_output.txt
     1  -2   0  1            2.316      7.327750476
    -1   2   0  1            2.316      7.327750476
     2  -1   3  1      2.101552894      60.43677614
-   -2   1  -3  1      2.101552894      60.43677614
-   <<<SNIPPED 242 LINES, MD5=bcbe9322b6c85ffb31b75175ca5364ea>>>
+    <<<SNIPPED 243 LINES, MD5=a26fd5e51320587fc31cca90ebd8c81a>>>
     4  -2  -6  1      1.050776447       7.07765402
    -4   2   6  1      1.050776447       7.07765402
     2   2   6  1      1.050776447       7.07765402
@@ -3067,7 +3082,6 @@ Wrote tmp_redirected_output.txt
 ====================================================================================================
 
 
-NCrystal: Trimming and normalising provided HKL list from 304 to 34 entries
 ----------------------------------------------------------------------------------------------------
 ------------------------------------   NCrystal Material Info   ------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -3276,13 +3290,15 @@ HKL planes (d_lower = 1.5 Aa, d_upper = inf Aa):
 
 
 Wrote tmp_redirected_output.txt
+NCrystal: Normalising provided HKL list with 11 entries
+Space group setting preserved by laz: 167:h
 # File created by NCrystal v<current>
 #
 # ncrystal_cfgstr "stdlib::Al2O3_sg167_Corundum.ncmat;dcutoff=1.5"
 #
 # Format: "laz" (suitable for McStas PowderN component)
 #
-# ncmat2hklversion 2
+# ncmat2hklversion 3
 #
 # orighdr : Original file had the following comments at the top:
 # orighdr :
@@ -3321,6 +3337,7 @@ Wrote tmp_redirected_output.txt
 # temperature 293.15 [kelvin]
 #
 # spacegroup 167
+# spacegroup_setting 167:h
 # lattice_a 4.757 [Aa]
 # lattice_b 4.757 [Aa]
 # lattice_c 12.9877 [Aa]
@@ -3373,7 +3390,6 @@ Wrote tmp_redirected_output.txt
 ====================================================================================================
 
 
-NCrystal: Normalising provided HKL list with 11 entries
 ----------------------------------------------------------------------------------------------------
 ------------------------------------   NCrystal Material Info   ------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -3611,13 +3627,15 @@ HKL planes (d_lower = 0.5 Aa, d_upper = inf Aa):
 
 
 Wrote tmp_redirected_output.txt
+NCrystal: Normalising provided HKL list with 93 entries
+Space group setting preserved by laz: 186
 # File created by NCrystal v<current>
 #
 # ncrystal_cfgstr "stdlib::ZnO_sg186_ZincOxide.ncmat;dcutoff=0.5"
 #
 # Format: "laz" (suitable for McStas PowderN component)
 #
-# ncmat2hklversion 2
+# ncmat2hklversion 3
 #
 # orighdr : Original file had the following comments at the top:
 # orighdr :
@@ -3656,6 +3674,7 @@ Wrote tmp_redirected_output.txt
 # temperature 293.15 [kelvin]
 #
 # spacegroup 186
+# spacegroup_setting 186
 # lattice_a 3.2533 [Aa]
 # lattice_b 3.2533 [Aa]
 # lattice_c 5.2073 [Aa]
@@ -3790,7 +3809,6 @@ Wrote tmp_redirected_output.txt
 ====================================================================================================
 
 
-NCrystal: Normalising provided HKL list with 93 entries
 ----------------------------------------------------------------------------------------------------
 ------------------------------------   NCrystal Material Info   ------------------------------------
 ----------------------------------------------------------------------------------------------------
