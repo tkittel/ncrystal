@@ -2,5 +2,6 @@ atomdb
 factories
 infobld
 phys_utils
+sgsym
 text
 utils
