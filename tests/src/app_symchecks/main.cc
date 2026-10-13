@@ -180,7 +180,8 @@ int main()
       return asSG( info->getStructureInfo().spacegroup_setting );
     };
     auto settingNoPos = [&asSG]( unsigned sg, double a, double c,
-                                 double alpha, double gamma )
+                                 double alpha, double gamma,
+                                 const char * declared )
     {
       //Built directly, since NCMAT files always have positions:
       NC::InfoBuilder::SinglePhaseBuilder bldr;
@@ -192,12 +193,18 @@ int main()
       uc.structinfo.alpha = uc.structinfo.beta = alpha;
       uc.structinfo.gamma = gamma;
       uc.structinfo.n_atoms = 2;
+      if ( declared )
+        uc.structinfo.spacegroup_setting
+          = SG( declared, NC::SpaceGroupParseMode::Strict ).settingIdx();
       bldr.unitcell = std::move( uc );
       bldr.composition = NC::createInfo( "Si_sg227.ncmat" )->getComposition();
       bldr.hklPlanes.emplace();
       bldr.hklPlanes.value().dspacingRange = NC::PairDD( 1.0, 2.0 );
       bldr.hklPlanes.value().source = NC::HKLList();
       auto info = NC::InfoBuilder::buildInfoPtr( std::move( bldr ) );
+      if ( declared )
+        REQUIRE( info->getStructureInfo().spacegroup
+                 == SG( declared, NC::SpaceGroupParseMode::Strict ).number() );
       return asSG( info->getStructureInfo().spacegroup_setting );
     };
     const std::string diamond1 = "  Si 0 0 0\n  Si 0 1/2 1/2\n  Si 1/2 0 1/2\n"
@@ -213,10 +220,25 @@ int main()
     REQUIRE( settingOf( "fcc", 225, fccSi ) == sgr( "225" ) );
     //Without positions: unique settings are known, others not (the two
     //settings of an R number are told apart by the cell):
-    REQUIRE( settingNoPos( 225, 4, 4, 90, 90 ) == sgr( "225" ) );
-    REQUIRE( settingNoPos( 227, 4, 4, 90, 90 ) == sgr( "1" ) );
-    REQUIRE( settingNoPos( 166, 4, 10, 90, 120 ) == sgr( "166" ) );
-    REQUIRE( settingNoPos( 166, 4, 4, 60, 60 ) == sgr( "166:r" ) );
+    REQUIRE( settingNoPos( 225, 4, 4, 90, 90, nullptr ) == sgr( "225" ) );
+    REQUIRE( settingNoPos( 227, 4, 4, 90, 90, nullptr ) == sgr( "1" ) );
+    REQUIRE( settingNoPos( 166, 4, 10, 90, 120, nullptr ) == sgr( "166" ) );
+    REQUIRE( settingNoPos( 166, 4, 4, 60, 60, nullptr ) == sgr( "166:r" ) );
+    //A setting declared by the data source is kept, but must be a setting
+    //of the number and match the axes:
+    REQUIRE( settingNoPos( 227, 4, 4, 90, 90, "227:2" ) == sgr( "227:2" ) );
+    REQUIRE( settingNoPos( 0, 4, 4, 90, 90, "227:2" ) == sgr( "227:2" ) );
+    for ( int i = 0; i < 2; ++i ) {
+      try {
+        if ( i == 0 )
+          settingNoPos( 227, 4, 4, 90, 90, "225" );
+        else
+          settingNoPos( 166, 4, 10, 90, 120, "166:r" );//hexagonal axes
+        REQUIRE( false );
+      } catch ( NC::Error::BadInput& err ) {
+        std::cout << "  " << err.what() << std::endl;
+      }
+    }
   }
   return 0;
 }
