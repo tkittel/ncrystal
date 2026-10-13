@@ -1,3 +1,11 @@
+Wrote tmp_redirected_output.txt
+NCrystal: Normalising provided HKL list with 47 entries
+PbO laz with field: setting 129:2
+NCrystal: Normalising provided HKL list with 47 entries
+PbO laz without field: setting None
+PbO laz with field 227:2: NCBadInput: Error in Lazy/Lau data: spacegroup_setting 227:2 is not a setting of spacegroup 129
+PbO laz with field 129:3: NCBadInput: Error in Lazy/Lau data: Invalid spacegroup_setting "129:3": Invalid space group specification: "129:3" (not a setting of space group 129, the settings are: 129:1 (default), 129:2)
+PbO laz with field foo: NCBadInput: Error in Lazy/Lau data: Invalid spacegroup_setting "foo": Invalid space group specification: "foo" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
 
 ====================================================================================================
 ====================================================================================================

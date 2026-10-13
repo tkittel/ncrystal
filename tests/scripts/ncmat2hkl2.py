@@ -132,6 +132,29 @@ def test_cfgstr(cfgstr):
         if not diff < max_diff_lvl:
             raise SystemExit(f'SC maxdiff test failed with diff: {diff}')
 
+def test_setting_field():
+    #The optional spacegroup_setting header field must be a setting of the
+    #declared spacegroup, and without it only unique settings are known
+    #(the field is added by hand, as ncmat2hkl does not write it yet):
+    laz = cfgstr2hkl('stdlib::PbO-alpha_sg129_Litharge.ncmat;dcutoff=0.9','laz')
+    line = '# spacegroup_setting 129:2\n'
+    assert line not in laz and laz.count('# spacegroup 129\n') == 1
+    laz = laz.replace('# spacegroup 129\n','# spacegroup 129\n'+line)
+    def load( content, fn ):
+        NC.registerInMemoryFileData( fn, content )
+        try:
+            si = NC.createInfo( fn ).structure_info
+        except NC.NCBadInput as e:
+            return f'NCBadInput: {e}'
+        return f"setting {si['spacegroup_setting']}"
+    print( 'PbO laz with field:', load( laz, 'pbo1.laz' ) )
+    print( 'PbO laz without field:', load( laz.replace(line,''), 'pbo2.laz' ) )
+    for bad in ( '227:2', '129:3', 'foo' ):
+        print( f'PbO laz with field {bad}:',
+               load( laz.replace(line,f'# spacegroup_setting {bad}\n'),
+                     f'pbo_{bad}.laz' ) )
+
+test_setting_field()
 test_cfgstr( 'stdlib::Al_sg225.ncmat;dcutoff=0.6' )
 test_cfgstr( 'stdlib::CaSiO3_sg2_Wollastonite.ncmat;dcutoff=3.2' )
 test_cfgstr( 'stdlib::Y2SiO5_sg15_YSO.ncmat;dcutoff=2.0' )
