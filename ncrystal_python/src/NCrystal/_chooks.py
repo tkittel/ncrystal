@@ -934,6 +934,13 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
         return decode_query_result(raw_str)
     functions['jsonquery'] = jsonquery
 
+    _raw_info_jsonquery = _wrap('ncrystal_info_jsonquery',_charptr,
+                                (ncrystal_info_t,_cstr), hide=True)
+    def info_jsonquery( rawinfo, query ):
+        cstr_query = prepare_query_cstr(query)
+        return decode_query_result( _raw_info_jsonquery( rawinfo, cstr_query ) )
+    functions['info_jsonquery'] = info_jsonquery
+
     _raw_filljsonarr = _wrap('ncrystal_fill_jsonarray',
                               None,(_cstr, _dblp),hide=True)
     def getjsonarr( key ):

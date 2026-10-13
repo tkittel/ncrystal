@@ -474,3 +474,20 @@ Collected huge array
 Caught expected NCBadInput('Invalid key for JSON Huge Vector: "2"')
 Caught expected NCBadInput('Invalid key for JSON Huge Vector: "7"')
 Normal query with huge arrays worked afterwards
+>>> Info query ['list']:
+['structure']
+>>> Info query ['structure']:
+{'a': 4.04958,
+ 'alpha': 90.0,
+ 'b': 4.04958,
+ 'beta': 90.0,
+ 'c': 4.04958,
+ 'gamma': 90.0,
+ 'n_atoms': 4,
+ 'spacegroup': 225,
+ 'spacegroup_setting': '225',
+ 'volume': 66.4094599931859}
+>>> origin2: spacegroup 227 setting 227:2
+>>> rhombo: spacegroup 166 setting 166:r
+Caught expected NCBadInput('Invalid Info JSON query key: "foo"')
+Caught expected NCBadInput('Invalid Info JSON query (no arguments should follow key "structure")')
