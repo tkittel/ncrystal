@@ -404,13 +404,17 @@ class NCMATComposer:
                                            fraction=fraction, comment=comment )
 
     def set_dyninfo_msd( self, label, msd, *, temperature, fraction = None, comment = None,  ):
-        """Calculate and set Debye temperature based on
-        mean-squared-displacement (msd) value (in Aa^2). This also needs the
-        temperature value for which the msd value is associated (in
-        kelvin). Note that this temperature value is NOT necessarily the
-        temperature at which the material will later be used. See
-        .set_dyninfo_vdosdebye(..) for further information about the resulting
-        modelling.
+        """Set dynamics via a mean-squared-displacement (msd) value (in
+        Aa^2). This value is exactly the same as the standard crystallographic
+        parameter "uiso", and is related to "biso" as msd=biso/(8pi^2). Note
+        that the temperature parameter is the temperature at which the msd value
+        in question is valid, not the temperature at which the material must be
+        used. This is because NCrystal simply use the single (msd,temperature)
+        point to derive an equivalent Debye temperature, from which msd values
+        at any temperature can be later estimated. The physics modelling
+        resulting from using .set_dyninfo_msd, .set_dyninfo_vdosdebye, and
+        .set_dyninfo_debyetemp are therefore essentially equivalent.
+
         """
         return self.__impl.set_dyninfo_msd( label = label,
                                             msd = msd,
