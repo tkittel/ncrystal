@@ -182,6 +182,8 @@ def test_info_queries():
     pprint.pprint( info._query('list') )
     print(">>> Info query ['structure']:")
     pprint.pprint( info._query('structure') )
+    assert info._query('structure') is info.structure_info
+    assert info._query('structure') is info.getStructureInfo()
     diamond2 = [ '1/8 1/8 1/8', '1/8 5/8 5/8', '5/8 1/8 5/8', '5/8 5/8 1/8',
                  '7/8 7/8 7/8', '7/8 3/8 3/8', '3/8 7/8 3/8', '3/8 3/8 7/8' ]
     for name, sg, pos, angles in [ ( 'origin2', 227, diamond2, '90 90 90' ),
@@ -201,7 +203,7 @@ def test_info_queries():
   type vdosdebye
   debye_temp 400
 """)
-        si = NC.createInfo(f'{name}.ncmat;inelas=0')._query('structure')
+        si = NC.createInfo(f'{name}.ncmat;inelas=0').structure_info
         print( f">>> {name}: spacegroup {si['spacegroup']}"
                f" setting {si['spacegroup_setting']}" )
     gas = NC.createInfo('freegas::Ar/1e-3perAa3')
