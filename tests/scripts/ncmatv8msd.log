@@ -1,0 +1,7 @@
+vdosdebye with msd 0.0085 at 293.15 K -> Debye temperature 444.56 K (expected 444.56 K)
+  msd at 293.15 K from the Info object: 0.0085 Aa^2
+  identical to an explicit debye_temp
+non-crystalline solid with msd: loaded
+Caught expected NCBadInput('v8msd.ncmat the msd and debye_temp keywords of @DYNINFO sections are only allowed in materials clearly describing solids (crystalline, or with an explicit @STATEOFMATTER solid declaration)')
+Caught expected NCBadInput('the msd keyword must be accompanied by an at_temperature part in @DYNINFO sections without a temperature field (i.e. all but type scatknl) (problem found in the @DYNINFO section ending in line 15)')
+Caught expected NCBadInput('@DYNINFO sections can not specify both the msd and the debye_temp keywords (problem found in the @DYNINFO section ending in line 16)')
