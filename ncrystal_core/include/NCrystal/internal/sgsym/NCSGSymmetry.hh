@@ -122,6 +122,14 @@ namespace NCRYSTAL_NAMESPACE {
 
   SGSiteOrbit expandSiteToOrbit( const SGSymmetry&, const Vector& site );
 
+  //The inverse: group positions (fractional coordinates, all of one species,
+  //having the symmetry within the tolerances of expandSiteToOrbit) into
+  //orbits. Returns the indices of the positions of each orbit, in increasing
+  //order, the orbits ordered by their first index. Throws BadInput if the
+  //positions do not form complete orbits:
+  std::vector<std::vector<unsigned>>
+  groupPositionsIntoOrbits( const SGSymmetry&, const std::vector<Vector>& positions );
+
   //Check of a crystal structure against the settings of a space group
   //number: positions (fractional coordinates, grouped by species) are mapped
   //by the coset representatives and centring translations of each setting of

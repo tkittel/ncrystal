@@ -690,6 +690,20 @@ class Info(RCBase):
         dyninfo = property(correspondingDynamicInfo)
 
         @property
+        def sites(self):
+            """The crystallographic sites of this atom: a list with one dict
+            per orbit of the space group setting, with the keys 'position'
+            (fractional coordinates of the orbit representative) and
+            'multiplicity' (number of unit cell positions in the orbit), or
+            None if unknown (no space group, or positions not forming
+            complete orbits). The multiplicities add up to the number of
+            unit cell positions."""
+            _info = self._info_wr()
+            nc_assert(_info is not None,"AtomInfo.sites can not be used after associated Info object is deleted")
+            s = _info._query('sites')
+            return s[self._listidx] if s else None
+
+        @property
         def atomData(self):
             """Return AtomData object with details about composition and relevant physics constants"""
             if self.__atomdata is None:
@@ -795,6 +809,7 @@ class Info(RCBase):
                                       ( dt if ( dt and  dt>0.0) else None),
                                       (msd if (msd and msd>0.0) else None),
                                      pos) )
+            ll[-1]._listidx = iatom
         self.__atominfo = ( natoms>0, hasmsd, ll, hasperelemdt )
 
     def hasHKLInfo(self):

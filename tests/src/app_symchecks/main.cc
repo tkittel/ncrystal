@@ -23,6 +23,7 @@
 #include "NCrystal/internal/infobld/NCInfoBuilder.hh"
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
+#include "NCrystal/internal/utils/NCStrView.hh"
 #include <iostream>
 #include <sstream>
 
@@ -217,6 +218,57 @@ int main()
     REQUIRE( settingNoPos( 227, 4, 4, 90, 90 ) == sgr( "1" ) );
     REQUIRE( settingNoPos( 166, 4, 10, 90, 120 ) == sgr( "166" ) );
     REQUIRE( settingNoPos( 166, 4, 4, 60, 60 ) == sgr( "166:r" ) );
+  }
+
+  //Sites: derived from positions, or positions derived from sites (the
+  //diamond structure as its single site in both origin choices):
+  {
+    auto info = NC::createInfo( "Al_sg225.ncmat;inelas=0" );
+    const auto& ai = info->getAtomInfos().front();
+    REQUIRE( ai.sites().size() == 1 && ai.sites().front().multiplicity == 4 );
+    REQUIRE( ai.sites().front().position == NC::AtomInfo::Pos( 0.0, 0.0, 0.0 ) );
+    std::cout << "Al: 1 site (0,0,0) of multiplicity 4" << std::endl;
+    for ( const char * site : { "0 0 0", "1/8 1/8 1/8" } ) {
+      NC::InfoBuilder::SinglePhaseBuilder bldr;
+      bldr.dataSourceName = NC::DataSourceName( "diamond_from_site" );
+      NC::InfoBuilder::UnitCell uc;
+      uc.structinfo.spacegroup = 227;
+      //(a site at 1/8,1/8,1/8 is the 8a position only in origin choice 2;
+      //in the default setting it would be the 16c position):
+      if ( NC::StrView( site ) != "0 0 0" )
+        uc.structinfo.spacegroup_setting = NC::SpaceGroup( "227:2", NC::SpaceGroupParseMode::Strict ).settingIdx();
+      uc.structinfo.lattice_a = uc.structinfo.lattice_b = uc.structinfo.lattice_c = 5.43;
+      uc.structinfo.alpha = uc.structinfo.beta = uc.structinfo.gamma = 90.0;
+      NC::AtomInfo::AtomSites sites( 1 );
+      const auto parts = NC::StrView( site ).split();
+      for ( unsigned i = 0; i < 3; ++i ) {
+        const auto frac = parts.at(i).split('/');
+        sites.front().position[i] = ( frac.size() == 2
+                                      ? frac.at(0).toDbl().value() / frac.at(1).toDbl().value()
+                                      : frac.at(0).toDbl().value() );
+      }
+      uc.atomlist.emplace();
+      uc.atomlist.value().emplace_back( NC::createInfo( "Si_sg227.ncmat" )
+                                        ->getAtomInfos().front().indexedAtomData(),
+                                        std::move( sites ), NC::NullOpt, NC::NullOpt );
+      bldr.unitcell = std::move( uc );
+      bldr.hklPlanes.emplace();
+      bldr.hklPlanes.value().dspacingRange = NC::PairDD( 1.0, 2.0 );
+      bldr.hklPlanes.value().source = NC::HKLList();
+      auto info2 = NC::InfoBuilder::buildInfoPtr( std::move( bldr ) );
+      const auto& ai2 = info2->getAtomInfos().front();
+      const NC::SpaceGroup setting2( info2->getStructureInfo().spacegroup_setting );
+      std::cout << "Diamond from site (" << site << "): " << ai2.numberPerUnitCell()
+                << " positions, " << ai2.sites().size() << " site of multiplicity "
+                << ai2.sites().front().multiplicity << ", setting " << setting2
+                << std::endl;
+      REQUIRE( ai2.numberPerUnitCell() == 8 && ai2.sites().size() == 1
+               && ai2.sites().front().multiplicity == 8
+               && info2->getStructureInfo().n_atoms == 8 );
+      REQUIRE( setting2 == NC::SpaceGroup( NC::StrView( site ) == "0 0 0"
+                                           ? "227:1" : "227:2",
+                                           NC::SpaceGroupParseMode::Strict ) );
+    }
   }
   return 0;
 }

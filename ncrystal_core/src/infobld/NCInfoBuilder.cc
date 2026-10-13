@@ -25,6 +25,7 @@
 #include "NCrystal/internal/utils/NCIter.hh"
 #include "NCrystal/internal/cfgutils/NCCfgManip.hh"
 #include "NCInfoBldStructure.hh"
+#include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCrystal/internal/extd_utils/NCStructureSetting.hh"
 
 namespace NC = NCrystal;

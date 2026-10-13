@@ -158,6 +158,21 @@ namespace NCRYSTAL_NAMESPACE {
     const AtomPositions& unitCellPositions() const noexcept { return m_pos; }
     unsigned numberPerUnitCell() const noexcept { return static_cast<unsigned>( m_pos.size() ); }
 
+    //The crystallographic sites: one per orbit of the space group setting, so
+    //the unit cell positions are the symmetry images of the site positions
+    //(the multiplicities add up to numberPerUnitCell()). Empty if unknown
+    //(no space group, or positions not forming complete orbits):
+    struct NCRYSTAL_API Site {
+      Pos position;              //orbit representative (fractional coordinates)
+      unsigned multiplicity = 0; //number of positions in the orbit
+      Optional<double> occupancy;           //placeholder, not yet supported
+      Optional<std::array<double,6>> uij;   //placeholder, not yet supported
+                                            //(anisotropic displacement; convention
+                                            //to be fixed when supported)
+    };
+    using AtomSites = std::vector<Site>;
+    const AtomSites& sites() const noexcept { return m_sites; }
+
     //Mean-square-displacements (a.k.a. "U_iso") in angstrom^2 is optional. Note
     //that this is the displacement projected onto a linear axis, for direct
     //usage in isotropic Debye-Waller factors:
@@ -169,19 +184,24 @@ namespace NCRYSTAL_NAMESPACE {
     //Corresponding DynamicInfo object on the same Info (returns nullptr if not available):
     const DynamicInfo* correspondingDynamicInfo() const { return m_dyninfo; }
 
-    //Constructor:
+    //Constructors, from the unit cell positions, or from the sites only (the
+    //positions are then filled in by InfoBuilder, which requires a space
+    //group; site multiplicities are ignored and set there as well):
     AtomInfo( IndexedAtomData, AtomPositions&&, Optional<DebyeTemperature>, Optional<double> msd );
+    AtomInfo( IndexedAtomData, AtomSites&&, Optional<DebyeTemperature>, Optional<double> msd );
   private:
     IndexedAtomData m_iad;
     Optional<DebyeTemperature> m_dt;
     Optional<double> m_msd;
     std::vector<Pos> m_pos;
+    std::vector<Site> m_sites;
     const DynamicInfo* m_dyninfo = nullptr;
   public:
     //Implementation details for builder infrastructure (todo: avoid with proper
     //builder-pattern for AtomInfo objects):
     void detail_setupLink(DynamicInfo*);
     std::vector<Pos>& detail_accessPos() { return m_pos; }
+    std::vector<Site>& detail_accessSites() { return m_sites; }
   };
 
   //NB: VSCode std::vectors does not support move-only objects apparently, so we

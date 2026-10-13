@@ -63,7 +63,9 @@ def main():
         lim = max_size_overrides.get(
             str(f.relative_to( reporoot )).replace('\\','/'), lim
         )
-        size_kb =  len(f.read_bytes()) / 1024.
+        #(LF line endings, as stored in the repository: a Windows checkout
+        #with CRLF would otherwise count each line one byte more)
+        size_kb =  len(f.read_bytes().replace(b'\r\n',b'\n')) / 1024.
         if size_kb > lim:
             raise SystemExit(f'File too large ({size_kb:.2g} kb): {f}')
 

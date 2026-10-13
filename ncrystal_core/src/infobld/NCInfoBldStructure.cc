@@ -209,12 +209,94 @@ namespace NCRYSTAL_NAMESPACE {
         return ntot;
       }
 
+      //Fill in the unit cell positions of AtomInfo objects given as sites
+      //(one position per orbit of the space group setting):
+      void expandSitesToPositions( const StructureInfo& si, AtomInfoList& atomlist )
+      {
+        if ( si.spacegroup == 0 )
+          NCRYSTAL_THROW(BadInput,"Atom positions given as sites require a"
+                         " space group");
+        const SGSymmetry& sym = SGSymmetry::get( structureSetting( si ) );
+        for ( auto& ai : atomlist ) {
+          if ( !ai.unitCellPositions().empty() )
+            continue;
+          auto& sites = ai.detail_accessSites();
+          auto& positions = ai.detail_accessPos();
+          nc_assert( !sites.empty() );
+          for ( auto& site : sites ) {
+            const auto orbit = expandSiteToOrbit( sym, site.position.as<Vector>() );
+            site.position = orbit.positions.front().as<AtomInfo::Pos>();//(symmetrised)
+            site.multiplicity = static_cast<unsigned>( orbit.positions.size() );
+            for ( auto& p : orbit.positions )
+              positions.push_back( p.as<AtomInfo::Pos>() );
+          }
+        }
+      }
+
+      //Fill in the sites of AtomInfo objects given as positions, by grouping
+      //the (sorted) positions into orbits; the representative of an orbit is
+      //its first position. Left empty if the grouping is not possible (e.g.
+      //positions accepted with a warning only by the structure check):
+      void groupPositionsIntoSites( const StructureInfo& si, AtomInfoList& atomlist )
+      {
+        if ( !si.spacegroup_setting.get() )
+          return;
+        const SGSymmetry& sym = SGSymmetry::get( SpaceGroup( si.spacegroup_setting ) );
+        for ( auto& ai : atomlist ) {
+          if ( !ai.sites().empty() )
+            continue;
+          std::vector<Vector> positions;
+          positions.reserve( ai.numberPerUnitCell() );
+          for ( auto& p : ai.unitCellPositions() )
+            positions.push_back( p.as<Vector>() );
+          std::vector<std::vector<unsigned>> orbits;
+          try {
+            orbits = groupPositionsIntoOrbits( sym, positions );
+          } catch ( Error::BadInput& ) {
+            continue;
+          }
+          auto& sites = ai.detail_accessSites();
+          sites.reserve( orbits.size() );
+          for ( auto& orbit : orbits ) {
+            AtomInfo::Site site;
+            site.position = vectAt( ai.unitCellPositions(), orbit.front() );
+            site.multiplicity = static_cast<unsigned>( orbit.size() );
+            sites.push_back( std::move( site ) );
+          }
+        }
+      }
+
       void validateAndCompleteUnitCell( InfoBuilder::UnitCell& uc )
       {
         auto& si = uc.structinfo;
 
+        if ( si.spacegroup > 230 )
+          NCRYSTAL_THROW2(BadInput,"invalid spacegroup number ("<<si.spacegroup<<")");
+        if ( si.spacegroup > 0 )
+          completeAndCheckCell( si );//(cell constraints of the setting)
+        if ( !( si.lattice_a > 0.0 && si.lattice_b > 0.0 && si.lattice_c > 0.0 ) )
+          NCRYSTAL_THROW(BadInput,"lattice parameters must be positive numbers");
+
+        if ( ! ( si.alpha > 0 && si.alpha < 180 &&
+                 si.beta  > 0 && si.beta  < 180 &&
+                 si.gamma > 0 && si.gamma < 180 ) ) {
+          NCRYSTAL_THROW(BadInput,"Lattice angles must all be >0 and <180 degrees.");
+        }
+
+        if ( ! ( si.alpha > kPi || si.beta > kPi || si.gamma > kPi ) )
+          NCRYSTAL_THROW(BadInput,"Lattice angles specified in radians where degrees were expected.");
+
         if ( uc.atomlist.has_value() ) {
           auto& uc_atomlist = uc.atomlist.value();
+          bool anysites = false;
+          for ( auto& ai : uc_atomlist )
+            if ( ai.unitCellPositions().empty() )
+              anysites = true;
+          if ( anysites ) {
+            expandSitesToPositions( si, uc_atomlist );
+            if ( si.n_atoms == 0 )
+              si.n_atoms = static_cast<unsigned>( totalNumberOfAtomsInUnitCell( uc_atomlist ) );
+          }
           //First validate total number of atoms is >0 and consistently specified:
           auto natompos = totalNumberOfAtomsInUnitCell( uc_atomlist );//throws if empty or have entries with 0 atoms
           nc_assert(natompos>0);
@@ -266,23 +348,6 @@ namespace NCRYSTAL_NAMESPACE {
         if ( ! ( si.n_atoms > 0 ) )
           NCRYSTAL_THROW2(BadInput,"StructureInfo n_atoms not a positive number: "<<si.n_atoms);
 
-        if ( si.spacegroup > 230 )
-          NCRYSTAL_THROW2(BadInput,"invalid spacegroup number ("<<si.spacegroup<<")");
-        if ( si.spacegroup > 0 )
-          completeAndCheckCell( si );//(cell constraints of the setting)
-        if ( !( si.lattice_a > 0.0 && si.lattice_b > 0.0 && si.lattice_c > 0.0 ) )
-          NCRYSTAL_THROW(BadInput,"lattice parameters must be positive numbers");
-
-
-        if ( ! ( si.alpha > 0 && si.alpha < 180 &&
-                 si.beta  > 0 && si.beta  < 180 &&
-                 si.gamma > 0 && si.gamma < 180 ) ) {
-          NCRYSTAL_THROW(BadInput,"Lattice angles must all be >0 and <180 degrees.");
-        }
-
-        if ( ! ( si.alpha > kPi || si.beta > kPi || si.gamma > kPi ) )
-          NCRYSTAL_THROW(BadInput,"Lattice angles specified in radians where degrees were expected.");
-
         //Calculate unit cell volume:
         auto latRot = getLatticeRot( si.lattice_a, si.lattice_b, si.lattice_c,
                                      si.alpha*kDeg, si.beta*kDeg, si.gamma*kDeg );
@@ -298,6 +363,8 @@ namespace NCRYSTAL_NAMESPACE {
             = ( uc.atomlist.has_value()
                 ? InfoBuilderDetail::checkStructureSymmetry( si, uc.atomlist.value() )
                 : InfoBuilderDetail::settingWithoutPositions( si ) );
+        if ( uc.atomlist.has_value() )
+          groupPositionsIntoSites( si, uc.atomlist.value() );
       }
 
   }
