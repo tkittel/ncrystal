@@ -5,3 +5,22 @@ non-crystalline solid with msd: loaded
 Caught expected NCBadInput('v8msd.ncmat the msd and debye_temp keywords of @DYNINFO sections are only allowed in materials clearly describing solids (crystalline, or with an explicit @STATEOFMATTER solid declaration)')
 Caught expected NCBadInput('the msd keyword must be accompanied by an at_temperature part in @DYNINFO sections without a temperature field (i.e. all but type scatknl) (problem found in the @DYNINFO section ending in line 15)')
 Caught expected NCBadInput('@DYNINFO sections can not specify both the msd and the debye_temp keywords (problem found in the @DYNINFO section ending in line 16)')
+Composer output:
+NCMAT v8
+@CELL
+  cubic 4.04958
+@SPACEGROUP
+  225
+@ATOMPOSITIONS
+  Al 0 0 0
+  Al 0 1/2 1/2
+  Al 1/2 0 1/2
+  Al 1/2 1/2 0
+@DYNINFO
+  element Al
+  fraction 1
+  type vdosdebye
+  msd .0085 at_temperature 293.15
+  round trip preserves the msd
+non-crystalline Composer material with msd is written as a solid
+Caught expected NCBadInput('The msd/debye_temp dyninfo parameters describe atomic displacements in a solid, which is inconsistent with the declared state of matter "liquid"')
