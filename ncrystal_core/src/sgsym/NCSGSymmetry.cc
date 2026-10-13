@@ -801,6 +801,18 @@ NC::checkStructureSymmetry( unsigned number, bool rhombohedral_axes,
   return best;
 }
 
+NC::SGStructureCheck
+NC::checkStructureSymmetry( const SpaceGroup& setting,
+                            const std::vector<std::vector<Vector>>& positions )
+{
+  SGStructureCheck res;
+  res.settingIdx = setting.settingIdx();
+  res.maxDeviation = settingDeviation( SGSymmetry::get( setting ),
+                                       preparePositions( positions ),
+                                       kInfinity );
+  return res;
+}
+
 bool NC::haveSameRotationParts( const SGSymmetry& a, const SGSymmetry& b )
 {
   auto rotsModSign = []( const SGSymmetry& sym )
