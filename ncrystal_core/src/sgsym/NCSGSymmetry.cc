@@ -681,60 +681,102 @@ const NC::SGSymmetry& NC::SGSymmetry::get( SpaceGroup sg )
   return *p;
 }
 
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    //Positions (fractional, grouped by species) wrapped into [0,1) and
+    //sorted by x, so the nearest position to an image can be found by
+    //scanning a window in x (periodic distances are max-norms, so a position
+    //within distance d has |dx| <= d):
+    using PreparedPositions = std::vector<std::vector<Vector>>;
+
+    PreparedPositions preparePositions( const PreparedPositions& positions )
+    {
+      PreparedPositions wrapped;
+      wrapped.reserve( positions.size() );
+      for ( auto& plist : positions ) {
+        wrapped.emplace_back();
+        wrapped.back().reserve( plist.size() );
+        for ( auto& p : plist ) {
+          if ( !std::isfinite( p.x() ) || !std::isfinite( p.y() )
+               || !std::isfinite( p.z() ) )
+            NCRYSTAL_THROW(BadInput,"Invalid (non-finite) atom position");
+          wrapped.back().push_back( wrapPos( p ) );
+        }
+      }
+      for ( auto& plist : wrapped )
+        std::sort( plist.begin(), plist.end(),
+                   []( const Vector& a, const Vector& b ) { return a.x() < b.x(); } );
+      return wrapped;
+    }
+
+    double nearestDist( const std::vector<Vector>& plist,
+                        const Vector& img, double window )
+    {
+      //Smallest distance to a position, exact if it is <= window (otherwise
+      //just some value > window):
+      double mind = kInfinity;
+      auto scan = [&]( double xlo, double xhi )
+      {
+        auto it = std::lower_bound( plist.begin(), plist.end(), xlo,
+                                    []( const Vector& v, double x )
+                                    { return v.x() < x; } );
+        for ( ; it != plist.end() && it->x() <= xhi; ++it ) {
+          mind = ncmin( mind, periodicDist( img, *it ) );
+          if ( mind == 0.0 )
+            break;
+        }
+      };
+      const double x0 = img.x();
+      scan( x0 - window, x0 + window );
+      if ( mind > 0.0 && x0 - window < 0.0 )
+        scan( x0 - window + 1.0, 1.0 );
+      if ( mind > 0.0 && x0 + window > 1.0 )
+        scan( 0.0, x0 + window - 1.0 );
+      if ( mind > window && window < 0.5 ) {
+        //Nothing nearby, fall back to a full scan for the exact value:
+        for ( auto& q : plist )
+          mind = ncmin( mind, periodicDist( img, q ) );
+      }
+      return mind;
+    }
+
+    //Deviation of the structure from the symmetry of a setting: the largest
+    //periodic distance of an image of a position (under the coset
+    //representatives and centring translations, invariance under which
+    //implies invariance under all operations) from the nearest position of
+    //the same species. Exact if below bound, else just some value >= bound:
+    double settingDeviation( const SGSymmetry& sym,
+                             const PreparedPositions& wrapped,
+                             double bound )
+    {
+      const double window = ncmin( 0.05, bound );
+      std::vector<SymOp> gens = sym.representatives();
+      for ( auto& c : sym.centringVectors() )
+        if ( !c.isIdentity() )
+          gens.push_back( c );
+      double dev = 0.0;
+      for ( auto& plist : wrapped ) {
+        for ( auto& op : gens ) {
+          for ( auto& p : plist ) {
+            const Vector img = wrapPos( op.apply( p ) );
+            dev = ncmax( dev, nearestDist( plist, img, window ) );
+            if ( dev >= bound )
+              return dev;
+          }
+        }
+      }
+      return dev;
+    }
+  }
+}
+
 NC::SGStructureCheck
 NC::checkStructureSymmetry( unsigned number, bool rhombohedral_axes,
                             const std::vector<std::vector<Vector>>& positions )
 {
   if ( !( number >= 1 && number <= 230 ) )
     NCRYSTAL_THROW2(BadInput,"Space group number not in 1..230: "<<number);
-  std::vector<std::vector<Vector>> wrapped;
-  wrapped.reserve( positions.size() );
-  for ( auto& plist : positions ) {
-    wrapped.emplace_back();
-    wrapped.back().reserve( plist.size() );
-    for ( auto& p : plist ) {
-      if ( !std::isfinite( p.x() ) || !std::isfinite( p.y() )
-           || !std::isfinite( p.z() ) )
-        NCRYSTAL_THROW(BadInput,"Invalid (non-finite) atom position");
-      wrapped.back().push_back( wrapPos( p ) );
-    }
-  }
-  //Sort the positions of each species by x, so the nearest position to an
-  //image can be found by scanning a window in x (periodic distances are
-  //max-norms, so a position within distance d has |dx| <= d):
-  for ( auto& plist : wrapped )
-    std::sort( plist.begin(), plist.end(),
-               []( const Vector& a, const Vector& b ) { return a.x() < b.x(); } );
-  auto nearestDist = [&]( const std::vector<Vector>& plist,
-                          const Vector& img, double window )
-  {
-    //Smallest distance to a position, exact if it is <= window (otherwise
-    //just some value > window):
-    double mind = kInfinity;
-    auto scan = [&]( double xlo, double xhi )
-    {
-      auto it = std::lower_bound( plist.begin(), plist.end(), xlo,
-                                  []( const Vector& v, double x )
-                                  { return v.x() < x; } );
-      for ( ; it != plist.end() && it->x() <= xhi; ++it ) {
-        mind = ncmin( mind, periodicDist( img, *it ) );
-        if ( mind == 0.0 )
-          break;
-      }
-    };
-    const double x0 = img.x();
-    scan( x0 - window, x0 + window );
-    if ( mind > 0.0 && x0 - window < 0.0 )
-      scan( x0 - window + 1.0, 1.0 );
-    if ( mind > 0.0 && x0 + window > 1.0 )
-      scan( 0.0, x0 + window - 1.0 );
-    if ( mind > window && window < 0.5 ) {
-      //Nothing nearby, fall back to a full scan for the exact value:
-      for ( auto& q : plist )
-        mind = ncmin( mind, periodicDist( img, q ) );
-    }
-    return mind;
-  };
+  const auto wrapped = preparePositions( positions );
   SGStructureCheck best;
   //The table is sorted by number, with the default setting first:
   for ( std::uint16_t hn = 1; hn <= SpaceGroupSettingIdx::max_value; ++hn ) {
@@ -745,36 +787,11 @@ NC::checkStructureSymmetry( unsigned number, bool rhombohedral_axes,
       break;
     if ( ( StrView( e.choice ) == "r" ) != rhombohedral_axes )
       continue;
-    const SGSymmetry& sym
-      = SGSymmetry::get( SpaceGroup( SpaceGroupSettingIdx{ hn } ) );
-    //Deviation of this setting, abandoned as soon as it exceeds the best
-    //(distances beyond the best deviation need not be exact):
-    const double window = ncmin( 0.05, best.maxDeviation );
-    double dev = 0.0;
-    bool pruned = false;
-    //Invariance under the coset representatives and the centring
-    //translations implies invariance under all operations:
-    std::vector<SymOp> gens = sym.representatives();
-    for ( auto& c : sym.centringVectors() )
-      if ( !c.isIdentity() )
-        gens.push_back( c );
-    for ( auto& plist : wrapped ) {
-      for ( auto& op : gens ) {
-        for ( auto& p : plist ) {
-          const Vector img = wrapPos( op.apply( p ) );
-          dev = ncmax( dev, nearestDist( plist, img, window ) );
-          if ( dev >= best.maxDeviation ) {
-            pruned = true;
-            break;
-          }
-        }
-        if ( pruned )
-          break;
-      }
-      if ( pruned )
-        break;
-    }
-    if ( !pruned && dev < best.maxDeviation ) {
+    const SpaceGroup sg( SpaceGroupSettingIdx{ hn } );
+    const SGSymmetry& sym = SGSymmetry::get( sg );
+    //(abandoned as soon as it exceeds the best so far):
+    const double dev = settingDeviation( sym, wrapped, best.maxDeviation );
+    if ( dev < best.maxDeviation ) {
       best.settingIdx = SpaceGroupSettingIdx{ hn };
       best.maxDeviation = dev;
       if ( dev == 0.0 )
