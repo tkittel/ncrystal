@@ -1784,4 +1784,8 @@ Structures in all other 527 settings matched to their setting (deviation < 1e-12
 SG-19 structure with one atom moved by 0.01: setting 19, deviation 0.01
 SG-149 structure checked as SG-150: deviation 0.234
 SG-150 structure checked as SG-149: deviation 0.234
+227:2 structure checked against 227:2: deviation < 1e-12
+227:2 structure checked against 227:1: deviation 0.25
+14:c1 structure checked against 14:c1: deviation < 1e-12
+14:c1 structure checked against 14:b1: deviation 0.5
 Same symmetry-equivalent reflections: 62 vs 62:cab 1, 227 vs 227:2 1, 14 vs 14:b2 1, 14 vs 14:c1 0, 166 vs 166:r 0
