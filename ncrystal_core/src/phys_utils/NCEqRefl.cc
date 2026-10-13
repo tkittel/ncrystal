@@ -41,7 +41,16 @@ NC::EqRefl::EqRefl( int sg, bool rhombohedral_axes )
   std::string spec = std::to_string( sg );
   if ( rhombohedral_axes )
     spec += ":r";
-  const SGSymmetry& sym = SGSymmetry::get( SpaceGroup( spec, SpaceGroupParseMode::Relaxed ) );
+  init( SGSymmetry::get( SpaceGroup( spec, SpaceGroupParseMode::Relaxed ) ) );
+}
+
+NC::EqRefl::EqRefl( const SpaceGroup& sg )
+{
+  init( SGSymmetry::get( sg ) );
+}
+
+void NC::EqRefl::init( const SGSymmetry& sym )
+{
   //Encoding of a column (coefficients of h,k,l) as an index into the value
   //table of calcRaw, i.e. {h,k,l,-h,-k,-l,h+k,-h-k,h-k,k-h}:
   auto encodeColumn = []( int ch, int ck, int cl ) -> unsigned
