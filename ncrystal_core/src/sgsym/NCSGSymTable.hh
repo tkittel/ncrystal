@@ -21,7 +21,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/internal/sgsym/NCSpaceGroupSettingIdx.hh"
+#include "NCrystal/core/NCTypes.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
