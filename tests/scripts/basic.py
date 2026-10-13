@@ -67,7 +67,7 @@ myprint("DebyeTemp : %s"%('yes' if info.hasDebyeTemperature() else 'no'))
 myprint(f"XSectAbsorp : {info.getXSectAbsorption():g}")
 myprint(f"XSectFree : {info.getXSectFree():g}")
 myprint(f"Density : {info.getDensity():g}")
-_ = ( ', '.join(f'{k}={v:.12g}'
+_ = ( ', '.join(f'{k}={v:.12g}' if isinstance(v,float) else f'{k}={v}'
                for k,v in sorted(info.getStructureInfo().items()))
       if info.hasStructureInfo() else '<n/a>' )
 myprint(f"Structure : {_}")

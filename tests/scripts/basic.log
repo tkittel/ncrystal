@@ -28,7 +28,7 @@ DebyeTemp : yes
 XSectAbsorp : 0.231
 XSectFree : 1.39667
 Density : 2.69865
-Structure : a=4.04958, alpha=90, b=4.04958, beta=90, c=4.04958, gamma=90, n_atoms=4, spacegroup=225, volume=66.4094599932
+Structure : a=4.04958, alpha=90, b=4.04958, beta=90, c=4.04958, gamma=90, n_atoms=4, spacegroup=225, spacegroup_setting=225, volume=66.4094599932
 Aluminium PowderBragg diffraction cross-section @ 4.0Aa: 1.63244 barn
 Aluminium PowderBragg diffraction cross-section @ [1, 2, 3, 4]Aa: [0.72722, 1.09644, 0.918245, 1.63244] barn
 Aluminium Bkgd cross-section @ 4.0Aa: 0.136214 barn
