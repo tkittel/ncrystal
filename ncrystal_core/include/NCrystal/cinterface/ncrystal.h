@@ -670,6 +670,10 @@ extern "C" {
 #  undef ncrystal_jsonquery
 #endif
 #define ncrystal_jsonquery NCRYSTAL_APPLY_C_NAMESPACE(jsonquery)
+#ifdef ncrystal_info_jsonquery
+#  undef ncrystal_info_jsonquery
+#endif
+#define ncrystal_info_jsonquery NCRYSTAL_APPLY_C_NAMESPACE(info_jsonquery)
 #ifdef ncrystal_fill_jsonarray
 #  undef ncrystal_fill_jsonarray
 #endif
@@ -1318,6 +1322,9 @@ extern "C" {
   /* is bound to change between NCrystal versions.                           */
   /* Must free returned string with call to ncrystal_dealloc_string.         */
   NCRYSTAL_API char* ncrystal_jsonquery( const char * );
+
+  /* Same, but for queries concerning an existing info object.               */
+  NCRYSTAL_API char* ncrystal_info_jsonquery( ncrystal_info_t, const char * );
 
   /* Some jsonquerys might for performance replace huge data arrays with     */
   /* special placeholder strings like "__ncrystal__dblarray::<key>::<size>". */

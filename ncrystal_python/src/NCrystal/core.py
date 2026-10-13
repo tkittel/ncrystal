@@ -345,6 +345,20 @@ class Info(RCBase):
         self._nphases = int(_rawfct['ncrystal_info_nphases'](rawobj))
         assert self._nphases == 0 or self._nphases >= 2
         self._phases = () if self._nphases == 0 else None
+        self.__queries = {}
+
+    def _query(self, *query):
+        #Query the C++ layer about this object (cached so do not modify returned
+        #value!).
+        try:
+            return self.__queries[query]
+        except KeyError:
+            pass
+        import json
+        res = json.loads(_rawfct['info_jsonquery'](self._rawobj, query))
+        self.__queries[query] = res
+        return res
+
 
     def getUniqueID(self):
         """Unique identifier of object (UID)."""
