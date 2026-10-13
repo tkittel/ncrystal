@@ -42,6 +42,10 @@ namespace NCRYSTAL_NAMESPACE {
   using Query = SmallVector<StrView,8>;
   void JSONQuery( std::ostream&, const Query& query );
 
+  //Same, but for queries concerning an existing info object:
+  class Info;
+  void JSONQueryInfo( std::ostream&, const Info&, const Query& query );
+
   // Some JSONQuery might for performance replace huge data arrays with special
   // placeholder strings like "__ncrystal__dblarray::<key>::<size>". These
   // arrays can then automatically be picked up with the following function (can
