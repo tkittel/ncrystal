@@ -242,24 +242,26 @@ namespace NCRYSTAL_NAMESPACE {
           " \"kinutils\", \"browsedb\", \"browsefactories\","
           " \"factorythreads\", \"eqrefl\", \"sgsym\"]";
       } else if ( key == sv_eqrefl ) {
-        //["util","eqrefl",SG,"h1,k1,l1","h2,k2,l2",...]: For each requested
-        //hkl, return the list of reflections considered symmetry-equivalent by
-        //NCrystal for the space group (one of each Friedel pair, -h,-k,-l is
-        //implied).  Rhombohedral axes can be selected with SG as e.g. "166:r".
-        const auto usage = ( "correct usage: [\"util\",\"eqrefl\",SG,"
+        //["util","eqrefl",MODE,SG,"h1,k1,l1","h2,k2,l2",...]: For each
+        //requested hkl, return the list of reflections considered
+        //symmetry-equivalent by NCrystal for the space group setting SG
+        //(parsed in MODE "strict" or "relaxed", cf. SpaceGroupParseMode; e.g.
+        //"166:r" for rhombohedral axes), one of each Friedel pair (-h,-k,-l
+        //is implied).
+        const auto usage = ( "correct usage: [\"util\",\"eqrefl\","
+                             "\"strict|relaxed\",SG,"
                              "\"h0,k0,l0\",\"h1,k1,l1\",...]" );
 
-        if ( nargs < 2 )
+        if ( nargs < 3 || ( arg(0) != "strict" && arg(0) != "relaxed" ) )
           invalid( usage );
-        auto sgparts = arg(0).split(':');
-        auto sg = ( ( sgparts.size() == 1 || sgparts.size() == 2 )
-                    ? sgparts.front().toInt32() : NullOpt );
-        const bool rhombo = ( sgparts.size() == 2 );
-        if ( !sg.has_value() || ( rhombo && sgparts.back() != "r" ) )
-          invalid( usage );
-        EqRefl eqrefl( sg.value(), rhombo );
+        const SpaceGroup sg( arg(1), ( arg(0) == "strict"
+                                       ? SpaceGroupParseMode::Strict
+                                       : SpaceGroupParseMode::Relaxed ) );
+        EqRefl eqrefl( static_cast<int>( sg.number() ),
+                       ( sg.settingInfo().hexFamilyAxes
+                         == SGHexFamilyAxes::Rhombohedral ) );
         os << '[';
-        for ( auto i : ncrange( std::size_t(1), nargs ) ) {
+        for ( auto i : ncrange( std::size_t(2), nargs ) ) {
           auto parts = arg(i).splitTrimmed(',');
           int hkl[3];
           for ( auto j : ncrange( 3 ) ) {
@@ -268,7 +270,7 @@ namespace NCRYSTAL_NAMESPACE {
               invalid( usage );
             hkl[j] = x.value();
           }
-          os << ( i>1 ? ",[" : "[" );
+          os << ( i>2 ? ",[" : "[" );
           bool first = true;
           for ( auto& e : eqrefl.getEquivalentReflections( hkl[0], hkl[1],
                                                            hkl[2] ) ) {

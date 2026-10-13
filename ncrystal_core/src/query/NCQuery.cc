@@ -25,10 +25,11 @@
 #include "NCVDOSQuery.hh"
 #include "NCFilterQuery.hh"
 #include "NCUtilQuery.hh"
+#include "NCQueryImpl.hh"
 
 namespace NC = NCrystal;
 
-void NC::JSONQuery( std::ostream& os, const Query& query )
+void NC::QueryImpl::validateQuery( const Query& query )
 {
   if ( query.empty() )
     NCRYSTAL_THROW2(BadInput,
@@ -47,7 +48,11 @@ void NC::JSONQuery( std::ostream& os, const Query& query )
       NCRYSTAL_THROW2(BadInput,"Query items can not start with a \"-\""
                       " character. Problem found in: \"" << e << '"' );
   }
+}
 
+void NC::JSONQuery( std::ostream& os, const Query& query )
+{
+  QueryImpl::validateQuery( query );
   const auto& key = query.front();
   constexpr auto sv_version = StrView::make("version");
   constexpr auto sv_list = StrView::make("list");

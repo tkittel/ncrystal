@@ -120,8 +120,9 @@ def main():
     test_cli('util','list')
     test_cli('util','wl2ekin','1.8')
     test_cli('util','ekin2wl','0.025')
-    test_cli('util','eqrefl','149','1,2,3','1,1,0')
-    test_cli('util','eqrefl','150','1,2,3','1,1,0')
+    test_cli('util','eqrefl','relaxed','149','1,2,3','1,1,0')
+    test_cli('util','eqrefl','relaxed','150','1,2,3','1,1,0')
+    test_cli('util','eqrefl','strict','166:r','1,2,3','1,1,0')
     test_cli('util','sgsym','strict','166:r')
     test_cli('util','sgsym','strict','62:cab')
     test_cli('util','sgsym','relaxed','1')
@@ -169,6 +170,51 @@ def main():
     test_cli('sab','refeval','0.025',
              'stdlib::Al2O3_sg167_Corundum.ncmat','3','Al')
     test_huge_arrays()
+    test_info_queries()
+
+def test_info_queries():
+    #Object queries on an Info object (cached, shared results):
+    import pprint
+
+    import NCrystalDev as NC
+    info = NC.createInfo('Al_sg225.ncmat;dcutoff=0.5')
+    print(">>> Info query ['list']:")
+    pprint.pprint( info._query('list') )
+    print(">>> Info query ['structure']:")
+    pprint.pprint( info._query('structure') )
+    assert info._query('structure') is info.structure_info
+    assert info._query('structure') is info.getStructureInfo()
+    diamond2 = [ '1/8 1/8 1/8', '1/8 5/8 5/8', '5/8 1/8 5/8', '5/8 5/8 1/8',
+                 '7/8 7/8 7/8', '7/8 3/8 3/8', '3/8 7/8 3/8', '3/8 3/8 7/8' ]
+    for name, sg, pos, angles in [ ( 'origin2', 227, diamond2, '90 90 90' ),
+                                   ( 'rhombo', 166, ['0 0 0'], '60 60 60' ) ]:
+        atoms = '\n'.join( f'  Si {p}' for p in pos )
+        NC.registerInMemoryFileData( f'{name}.ncmat', f"""NCMAT v7
+@CELL
+  lengths 5 5 5
+  angles {angles}
+@SPACEGROUP
+  {sg}
+@ATOMPOSITIONS
+{atoms}
+@DYNINFO
+  element Si
+  fraction 1
+  type vdosdebye
+  debye_temp 400
+""")
+        si = NC.createInfo(f'{name}.ncmat;inelas=0').structure_info
+        print( f">>> {name}: spacegroup {si['spacegroup']}"
+               f" setting {si['spacegroup_setting']}" )
+    gas = NC.createInfo('freegas::Ar/1e-3perAa3')
+    assert not gas.hasStructureInfo() and gas._query('structure') is None
+    with ensure_error(NCBadInput,
+                      'Invalid Info JSON query key: "foo"'):
+        info._query('foo')
+    with ensure_error(NCBadInput,
+                      'Invalid Info JSON query (no arguments should'
+                      ' follow key "structure")'):
+        info._query('structure','bar')
 
 def test_huge_arrays():
     #In the mode where huge arrays are transferred separately from the JSON

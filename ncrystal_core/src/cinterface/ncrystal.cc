@@ -2669,6 +2669,19 @@ char* ncrystal_jsonquery( const char * raw )
   return result;
 }
 
+char* ncrystal_info_jsonquery( ncrystal_info_t ci, const char * raw )
+{
+  char * result = nullptr;
+  try {
+    auto& info = ncc::extract(ci);
+    auto query = ncc::jsonQueryDecode(raw);
+    std::ostringstream os;
+    NC::JSONQueryInfo( os, info, query );
+    result = ncc::createString(std::move(os).str());
+  } NCCATCH;
+  return result;
+}
+
 void ncrystal_fill_jsonarray( const char* key_raw, double* dst )
 {
   try {
