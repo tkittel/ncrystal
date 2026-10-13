@@ -445,6 +445,20 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
             debye_temp = DebyeTemperature{ itDT->second.at(0) };
             perelemdebye_map[iad.index] = debye_temp.value();
           }
+          auto itMSD = e.fields.find("msd");
+          if ( itMSD != e.fields.end() ) {
+            //NCMAT v8+:
+            //  "msd <value> at_temperature <T>"
+            //  -> with T stored in the key msd_temperature
+            nc_assert_always( data.version >= 8 && !debye_temp.has_value() );
+            nc_assert_always( itMSD->second.size() == 1 );
+            nc_assert_always( e.fields.count("msd_temperature") == 1);
+            const Temperature msd_temp{ e.fields.at("msd_temperature").at(0) };
+            debye_temp = debyeTempFromIsotropicMSD( itMSD->second.at(0),
+                                                    msd_temp,
+                                                    iad.data().averageMassAMU() );
+            perelemdebye_map[iad.index] = debye_temp.value();
+          }
           if ( !debye_temp.has_value() )
             debye_temp = element2DebyeTemp(iad.index);
           di = ncmake_unique<DI_VDOSDebye>(e.fraction, iad, cfgvars.temp, debye_temp.value());
@@ -556,27 +570,32 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
           {
             auto it_efft = e.fields.find("effective_temperature");
             if ( it_efft != e.fields.end() )
-              teffmsd.explicit_teff
-                = Temperature{ DoValidate, it_efft->second.at(0) };
+              teffmsd.explicit_teff.emplace( DoValidate,
+                                             it_efft->second.at(0) );
             auto it_msd = e.fields.find("msd");
-            auto it_dt = e.fields.find("debye_temp");
+            auto it_dT = e.fields.find("debye_temp");
+            auto it_msdT = e.fields.find("msd_temperature");
+            const bool has_msd = it_msd != e.fields.end();
+            const bool has_dT = it_dT != e.fields.end();
+            const bool has_msdT = it_msdT != e.fields.end();
             const auto mass = iad.data().averageMassAMU();
-            if ( it_msd != e.fields.end() ) {
+            if ( has_msd ) {
+              //NCMAT v8+:
+              //  "msd <value> [at_temperature <T>]"
+              //  -> with T stored in the key msd_temperature
+              nc_assert_always( !has_dT );
               double msdval = it_msd->second.at(0);
-              auto it_msdt = e.fields.find("msd_temperature");
-              if ( it_msdt != e.fields.end()
-                   && !floateq( it_msdt->second.at(0),
-                                cfgvars.temp.dbl(), 1e-10, 1e-10 ) ) {
-                auto dt = debyeTempFromIsotropicMSD(
-                  msdval, Temperature{ DoValidate,
-                                       it_msdt->second.at(0) }, mass );
-                msdval = debyeIsotropicMSD( dt, cfgvars.temp, mass );
+              if ( has_msdT && it_msdT->second.at(0) != cfgvars.temp.dbl() ) {
+                auto msdT = Temperature{ DoValidate, it_msdT->second.at(0) };
+                auto dT = debyeTempFromIsotropicMSD( msdval, msdT, mass );
+                msdval = debyeIsotropicMSD( dT, cfgvars.temp, mass );
               }
               teffmsd.explicit_msd = msdval;
-            } else if ( it_dt != e.fields.end() ) {
-              teffmsd.explicit_msd = debyeIsotropicMSD(
-                DebyeTemperature{ it_dt->second.at(0) },
-                cfgvars.temp, mass );
+            } else if ( has_dT ) {
+              nc_assert_always( !has_msdT );
+              teffmsd.explicit_msd
+                = debyeIsotropicMSD( DebyeTemperature{ it_dT->second.at(0) },
+                                     cfgvars.temp, mass );
             }
           }
 
