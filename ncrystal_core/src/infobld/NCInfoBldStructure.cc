@@ -35,8 +35,8 @@ namespace NCRYSTAL_NAMESPACE {
     //give a warning and the symmetric structure is assumed, while larger
     //ones are an error, as are settings whose symmetry-equivalent
     //reflections differ from those NCrystal assumes (cf. EqRefl):
-    void checkStructureSymmetry( const StructureInfo& si,
-                                 const AtomInfoList& atomlist )
+    SpaceGroupSettingIdx checkStructureSymmetry( const StructureInfo& si,
+                                                 const AtomInfoList& atomlist )
     {
       nc_assert( si.spacegroup >= 1 && si.spacegroup <= 230 );
       std::vector<std::vector<Vector>> positions;
@@ -89,6 +89,21 @@ namespace NCRYSTAL_NAMESPACE {
                         <<" assumed by NCrystal. Transform the structure to"
                         " that setting (e.g. with"
                         " NCMATComposer.refine_crystal_structure()).");
+      return setting.settingIdx();
+    }
+
+    SpaceGroupSettingIdx settingWithoutPositions( const StructureInfo& si )
+    {
+      nc_assert( si.spacegroup >= 1 && si.spacegroup <= 230 );
+      const int sg = static_cast<int>( si.spacegroup );
+      std::string spec = std::to_string( sg );
+      if ( usesRhombohedralAxes( sg, si.alpha ) )
+        spec += ":r";
+      const SpaceGroup setting( spec, SpaceGroupParseMode::Relaxed );
+      //(the two settings of an R number are told apart by the cell angles):
+      if ( setting.hasMultipleSettings() && !isRhombohedralSpaceGroup( sg ) )
+        return SpaceGroupSettingIdx{ 0 };
+      return setting.settingIdx();
     }
 
   }
@@ -260,8 +275,11 @@ namespace NCRYSTAL_NAMESPACE {
         si.volume = expected_volume;
         nc_assert( si.volume > 0.0 );
 
-        if ( si.spacegroup > 0 && uc.atomlist.has_value() )
-          InfoBuilderDetail::checkStructureSymmetry( si, uc.atomlist.value() );
+        if ( si.spacegroup > 0 )
+          si.spacegroup_setting
+            = ( uc.atomlist.has_value()
+                ? InfoBuilderDetail::checkStructureSymmetry( si, uc.atomlist.value() )
+                : InfoBuilderDetail::settingWithoutPositions( si ) );
       }
 
   }

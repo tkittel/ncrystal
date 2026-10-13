@@ -7,3 +7,10 @@
   p2_axis_c as SG-3: position check deviation 5.55e-17, |F|^2 self-check failed
   p2_axis_c: position check finds setting 3:c
 All checks agree as expected
+  stored setting: 227:1
+  stored setting: 227:2
+  stored setting: 225
+  stored setting: 225
+  stored setting: unknown
+  stored setting: 166:h
+  stored setting: 166:r

@@ -44,6 +44,11 @@ namespace NCRYSTAL_NAMESPACE {
     double gamma = 0.0;//degree
     double volume = 0.0;//Aa^3
     unsigned n_atoms = 0;//Number of atoms per unit cell
+    //Setting of the space group (setting index, 1..530), determined from the
+    //atom positions when available, or from the number and cell when they
+    //single out a setting. 0 if unknown (e.g. no space group, or a number
+    //with several settings and no positions to tell them apart):
+    SpaceGroupSettingIdx spacegroup_setting;
   };
 
   enum class NCRYSTAL_API HKLInfoType : unsigned { SymEqvGroup = 0,

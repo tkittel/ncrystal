@@ -22,6 +22,7 @@
 #include "NCrystal/interfaces/NCInfo.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCString.hh"
+#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/cfgutils/NCCfgManip.hh"
 #include "NCrystal/internal/extd_utils/NCPlaneProvider.hh"
@@ -154,8 +155,15 @@ void NCrystal::dump( std::ostream& os, const Info&c, DumpVerbosity verbosityVal 
     if ( c.hasStructureInfo() ) {
       const StructureInfo& si = c.getStructureInfo();
       os<<hr;
-      if (si.spacegroup!=0)
+      if (si.spacegroup!=0) {
         os<<"Space group number      : "<<si.spacegroup<<'\n';
+        //Only shown when not the default setting of the number:
+        if ( si.spacegroup_setting.get() ) {
+          const SpaceGroup setting( si.spacegroup_setting );
+          if ( !setting.isDefaultSetting() )
+            os<<"Space group setting     : "<<setting<<'\n';
+        }
+      }
       os<<"Lattice spacings   [Aa] : "<<fmtg(si.lattice_a)<<' '<<fmtg(si.lattice_b)<<' '<<fmtg(si.lattice_c)<<'\n';
       os<<"Lattice angles    [deg] : "<<fmtg(si.alpha)<<' '<<fmtg(si.beta)<<' '<<fmtg(si.gamma)<<'\n';
       os<<"Unit cell volume [Aa^3] : "<<fmtg(si.volume)<<'\n';

@@ -20,6 +20,7 @@
 
 #include "NCrystal/NCrystal.hh"
 #include "NCrystal/internal/extd_utils/NCFillHKL.hh"
+#include "NCrystal/internal/infobld/NCInfoBuilder.hh"
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 #include <iostream>
@@ -152,5 +153,70 @@ int main()
             << std::endl;
   REQUIRE( setting == NC::SpaceGroup( "3:c", NC::SpaceGroupParseMode::Strict ) );
   std::cout << "All checks agree as expected" << std::endl;
+
+  //The setting found by the check is stored on the StructureInfo (and
+  //without positions, as for LAZ/LAU data, the one implied by the number and
+  //cell, if unique):
+  {
+    using SG = NC::SpaceGroup;
+    struct { SG operator()( const char * spec ) const { return SG( spec, NC::SpaceGroupParseMode::Relaxed ); } } sgr;
+    auto asSG = []( NC::SpaceGroupSettingIdx hn )
+    {
+      std::cout << "  stored setting: "
+                << ( hn.get() ? SG( hn ).toString() : "unknown" ) << std::endl;
+      return hn.get() ? SG( hn ) : SG( "1", NC::SpaceGroupParseMode::Relaxed );
+    };
+    auto settingOf = [&asSG]( const char * name, unsigned sg,
+                              const std::string& positions )
+    {
+      std::string ncmat = "NCMAT v7\n@CELL\n  lengths 5.43 5.43 5.43\n"
+        "  angles 90 90 90\n@SPACEGROUP\n  " + std::to_string( sg )
+        + "\n@ATOMPOSITIONS\n" + positions
+        + "@DYNINFO\n  element Si\n  fraction 1\n  type vdosdebye\n"
+        "  debye_temp 400\n";
+      const std::string fn = std::string( name ) + "_setting.ncmat";
+      NC::registerInMemoryFileData( fn, std::move( ncmat ) );
+      auto info = NC::createInfo( fn + ";inelas=0" );
+      return asSG( info->getStructureInfo().spacegroup_setting );
+    };
+    auto settingNoPos = [&asSG]( unsigned sg, double a, double c,
+                                 double alpha, double gamma )
+    {
+      //Built directly, since NCMAT files always have positions:
+      NC::InfoBuilder::SinglePhaseBuilder bldr;
+      bldr.dataSourceName = NC::DataSourceName( "nopos" );
+      NC::InfoBuilder::UnitCell uc;
+      uc.structinfo.spacegroup = sg;
+      uc.structinfo.lattice_a = uc.structinfo.lattice_b = a;
+      uc.structinfo.lattice_c = c;
+      uc.structinfo.alpha = uc.structinfo.beta = alpha;
+      uc.structinfo.gamma = gamma;
+      uc.structinfo.n_atoms = 2;
+      bldr.unitcell = std::move( uc );
+      bldr.composition = NC::createInfo( "Si_sg227.ncmat" )->getComposition();
+      bldr.hklPlanes.emplace();
+      bldr.hklPlanes.value().dspacingRange = NC::PairDD( 1.0, 2.0 );
+      bldr.hklPlanes.value().source = NC::HKLList();
+      auto info = NC::InfoBuilder::buildInfoPtr( std::move( bldr ) );
+      return asSG( info->getStructureInfo().spacegroup_setting );
+    };
+    const std::string diamond1 = "  Si 0 0 0\n  Si 0 1/2 1/2\n  Si 1/2 0 1/2\n"
+      "  Si 1/2 1/2 0\n  Si 1/4 1/4 1/4\n  Si 1/4 3/4 3/4\n  Si 3/4 1/4 3/4\n"
+      "  Si 3/4 3/4 1/4\n";
+    const std::string diamond2 = "  Si 1/8 1/8 1/8\n  Si 1/8 5/8 5/8\n"
+      "  Si 5/8 1/8 5/8\n  Si 5/8 5/8 1/8\n  Si 7/8 7/8 7/8\n  Si 7/8 3/8 3/8\n"
+      "  Si 3/8 7/8 3/8\n  Si 3/8 3/8 7/8\n";
+    REQUIRE( settingOf( "diamond1", 227, diamond1 ) == sgr( "227" ) );
+    REQUIRE( settingOf( "diamond2", 227, diamond2 ) == sgr( "227:2" ) );
+    const std::string fccSi = "  Si 0 0 0\n  Si 0 1/2 1/2\n  Si 1/2 0 1/2\n"
+      "  Si 1/2 1/2 0\n";
+    REQUIRE( settingOf( "fcc", 225, fccSi ) == sgr( "225" ) );
+    //Without positions: unique settings are known, others not (the two
+    //settings of an R number are told apart by the cell):
+    REQUIRE( settingNoPos( 225, 4, 4, 90, 90 ) == sgr( "225" ) );
+    REQUIRE( settingNoPos( 227, 4, 4, 90, 90 ) == sgr( "1" ) );
+    REQUIRE( settingNoPos( 166, 4, 10, 90, 120 ) == sgr( "166" ) );
+    REQUIRE( settingNoPos( 166, 4, 4, 60, 60 ) == sgr( "166:r" ) );
+  }
   return 0;
 }
