@@ -30,7 +30,7 @@ Temperature : 293.15 kelvin
 ----------------------------------------------------------------------------------------------------
 State of matter: Solid (crystalline)
 ----------------------------------------------------------------------------------------------------
-Space group number      : 225
+Space group             : 225
 Lattice spacings   [Aa] : 4.04958 4.04958 4.04958
 Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 66.4095
@@ -103,7 +103,7 @@ Temperature : 293.15 kelvin
 ----------------------------------------------------------------------------------------------------
 State of matter: Solid (crystalline)
 ----------------------------------------------------------------------------------------------------
-Space group number      : 225
+Space group             : 225
 Lattice spacings   [Aa] : 4.8595 4.8595 4.8595
 Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 114.756
@@ -177,7 +177,7 @@ Temperature : 293.15 kelvin
 ----------------------------------------------------------------------------------------------------
 State of matter: Solid (crystalline)
 ----------------------------------------------------------------------------------------------------
-Space group number      : 225
+Space group             : 225
 Lattice spacings   [Aa] : 3.23966 3.23966 3.23966
 Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 34.0016
