@@ -21,6 +21,7 @@
 #include "NCrystal/text/NCTextData.hh"
 #include "NCrystal/factories/NCFactRequests.hh"
 #include "NCrystal/internal/utils/NCAtomUtils.hh"
+#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -61,8 +62,12 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Utility fct which could be useful for other purposes (i.e. if we want to
     //support hard-wired HKL lists in NCMAT files):
-    std::vector<HKLFsq> validateAndNormaliseHKLFsqList( int spacegroup,
+    std::vector<HKLFsq> validateAndNormaliseHKLFsqList( const SpaceGroup&,
                                                         const std::vector<HKLFsq>& );
+
+    //The setting of the structure (the declared one, else the default
+    //setting of the number; rhombohedral axes are not supported):
+    SpaceGroup settingOf( const StructureInfo& );
   }
 
 }

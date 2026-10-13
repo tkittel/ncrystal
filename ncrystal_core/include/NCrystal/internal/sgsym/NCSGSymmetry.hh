@@ -140,6 +140,10 @@ namespace NCRYSTAL_NAMESPACE {
                                            bool rhombohedral_axes,
                                            const std::vector<std::vector<Vector>>& positions );
 
+  //Same deviation, but for one given setting only:
+  SGStructureCheck checkStructureSymmetry( const SpaceGroup& setting,
+                                           const std::vector<std::vector<Vector>>& positions );
+
   //Whether two settings have the same rotation parts modulo sign, i.e. the
   //same symmetry-equivalent reflections (e.g. true for the orthorhombic
   //axis permutations and the two origin choices, false for monoclinic
