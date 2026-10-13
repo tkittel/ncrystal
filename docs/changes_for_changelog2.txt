@@ -1,0 +1,82 @@
+Input for the CHANGELOG, part 2: collected from the work packages after the
+tail of tk_volatile (wp23 and later), in the same spirit as
+changes_for_changelog.txt (grouped by topic, to be curated into the real
+CHANGELOG at release time, after which both files are dropped).
+
+### Space group symmetry (sgsym) in the library proper
+
+     * EqRefl (symmetry-equivalent reflections) is now derived at
+       construction from the symmetry operations of the sgsym
+       component (distinct rotation parts modulo sign, encoded as
+       index rows), instead of hand-written per-Laue-class tables. It
+       is slightly faster than the tables, which live on as
+       EqReflTables in tests/src/app_eqrefltables where they are
+       compared against EqRefl for all 237 settings.
+     * Info creation verifies that the atom positions have the
+       symmetry of the declared space group: the structure is checked
+       against the settings of the number (sgsym
+       checkStructureSymmetry; coset representatives and centring
+       translations, x-sorted nearest search). Deviations above 5e-4
+       (fractional coordinates) give a warning and the symmetric
+       structure is assumed, above 1e-2 a BadInput error, for all
+       NCMAT versions; so does a structure which only fits a setting
+       whose symmetry-equivalent reflections differ from the assumed
+       default (e.g. a monoclinic structure with its 2-fold axis
+       along c). app_symchecks verifies agreement with the FillHKL
+       |F|^2 self-check (which only sees point symmetry). NB: the
+       MagScat O2-hydrate plugin files (SG 223, deviation 0.49) now
+       fail to load.
+     * New public value type SpaceGroupSettingIdx (NCTypes.hh): the
+       1..530 index of a setting in ITVB Table A1.4.2.7 (see the
+       reference in the header).
+     * ABI change: StructureInfo gains spacegroup_setting
+       (SpaceGroupSettingIdx, 0 if unknown), appended to the struct.
+       Set from the position check, from a declaration by the data
+       source, or from number+cell when unambiguous (single setting,
+       or an R number whose cell angles select R vs. H axes). dump()
+       shows it when it is not the default setting of the number
+       (e.g. "129:2", "166:r"). The hkl code (FillHKL, ExpandHKLHelper,
+       Lazy loader) derives EqRefl from it.
+     * A data source may declare the setting (spacegroup_setting set
+       before building): it is validated (a setting of the number,
+       matching the hexagonal/rhombohedral axes) and the positions are
+       checked against exactly that setting.
+     * New ["util","sgsym",SG] JSON query: operations and rotation
+       parts of a setting.
+     * Unit cells are completed and checked with the cell constraints
+       which sgsym derives from the symmetry operations of the
+       structure's setting (SGCellConstraints), replacing the
+       hand-written per-crystal-system checks of NCLatticeUtils
+       (checkAndCompleteLattice[Angles], crystalSystem; removed).
+       Same verdicts as before (exact equality for constrained
+       parameters; monoclinic structures assume unique axis b unless
+       the setting is declared), with reworded error messages. The
+       old code is kept as a reference in tests/src/app_cellconstraints
+       (namespace LegacyLattice) and compared with the constraints
+       there. usesRhombohedralAxes(sg, alpha=0) now means hexagonal
+       axes.
+     * The hkl code (FillHKL, ExpandHKLHelper, Lazy loader) derives
+       EqRefl from the structure's setting (extd_utils
+       structureSetting), so declared non-default settings flow
+       through automatically.
+
+### C API and Python
+
+     * New C function ncrystal_info_jsonquery(ncrystal_info_t, query):
+       JSON queries about an existing Info object (keys "list" and
+       "structure"), so new per-object data reaches Python without new
+       C functions per field (a process-handle counterpart might be
+       added later). Python Info._query(*keys) decodes and caches the
+       result per object; structure_info/hasStructureInfo() use it,
+       and structure_info gains the key spacegroup_setting ("227:2",
+       "166:r", ..., or None).
+
+### .laz/.lau files
+
+     * ncmat2hkl writes the optional header field
+       "# spacegroup_setting <setting>" when the setting is known, and
+       the Lazy loader reads it (must be a setting of the declared
+       spacegroup); without it the default setting is assumed as
+       before, so all previously readable files still load with
+       identical results. The ncmat2hklversion header field is bumped
+       to 3, since older NCrystal versions reject the new key.
