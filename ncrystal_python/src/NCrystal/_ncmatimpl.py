@@ -610,9 +610,9 @@ class NCMATComposerImpl:
 
     def set_dyninfo_msd( self, label, *, msd, temperature, comment, fraction ):
         self.__add_dyninfo( label, fraction, { 'ditype': 'msd',
-                                                   'msd_value': float(msd),
-                                                   'msd_temperature': float(temperature),
-                                                   'comment': None if not comment else self.__prunecomment(comment) } )
+                                               'msd_value': float(msd),
+                                               'msd_temperature': float(temperature),
+                                               'comment': None if not comment else self.__prunecomment(comment) } )
 
     def set_dyninfo_from_object( self, label, source_dyninfo, comment = None, fraction = None ):
         di = source_dyninfo
@@ -846,30 +846,6 @@ class NCMATComposerImpl:
         def formatVector(name,values):
             return formatVectorForNCMAT(name,values,_magic_two_space)
 
-        def transform_msd_to_vdosdebye( lbl, dyninfo ):
-            if not dyninfo or dyninfo.get('ditype','') != 'msd':
-                return dyninfo
-            d = {}
-            d['ditype'] = 'vdosdebye'
-            mass = calc_mass(lbl,self.__params.get('compositions',{}).get(lbl,None))
-            if not mass:
-                raise _nc_core.NCBadInput( f'Failed to calculate the atomic mass associated with the label {lbl}'
-                                           ' (needed for dyninfo of type "msd"). Please ensure that the label has a'
-                                           ' proper composition set (with .set_composition(..)) and that all component'
-                                           ' atoms have known masses (otherwise use .update_atomdb(..) to provide them)')
-                assert mass>0.0
-            from .vdos import debyeTempFromIsotropicMSD
-            msd = dyninfo['msd_value']
-            msd_temp = dyninfo['msd_temperature']
-            dt = debyeTempFromIsotropicMSD( msd = msd, mass = mass,
-                                            temperature = msd_temp )
-            assert dt > 0.0
-            d['debye_temp'] = dt
-            c = f'Debye temperature value derived from msd={msd:g}Aa^2 @ T={msd_temp:g}K (mass={mass:g}u)'
-            oldcomment = dyninfo.get('comment',None)
-            d['comment'] = c if not oldcomment else f'{oldcomment.strip()}\n{c}'
-            return d
-
         for lbl,fracinfo in sorted(fractions.items()):
             if not isinstance(fracinfo,float) and len(fracinfo)==3:
                 _fracval_flt,frac_prettyprint,_ = fracinfo
@@ -877,7 +853,6 @@ class NCMATComposerImpl:
                 _fracval_flt,frac_prettyprint = fracinfo, _nc_common.prettyFmtValue( fracinfo )
             lines += '@DYNINFO\n'
             dyninfo = dyninfos.get(lbl,None)
-            dyninfo = transform_msd_to_vdosdebye( lbl, dyninfo )
 
             if not dyninfo:
                 fbdt = self.__params.get('fallback_debye_temp',None)
@@ -896,7 +871,16 @@ class NCMATComposerImpl:
             lines += f'element {lbl_map.get(lbl,lbl)}\n'
             lines += f'fraction {frac_prettyprint}\n'
             ditype = dyninfo['ditype']
-            lines += f'type {ditype}\n'
+            if ditype == 'msd':
+                #NCMAT v8: the msd keyword of vdosdebye sections (NCrystal
+                #derives the Debye temperature itself, so the value survives
+                #unchanged):
+                lines += 'type vdosdebye\n'
+                lines += ( f'msd {_fmtprecisenum(dyninfo["msd_value"])}'
+                           f' at_temperature'
+                           f' {_fmtprecisenum(dyninfo["msd_temperature"])}\n' )
+            else:
+                lines += f'type {ditype}\n'
             if ditype == 'vdosdebye':
                 dt=dyninfo['debye_temp']
                 lines += f'debye_temp {dt:g}\n'
@@ -908,7 +892,7 @@ class NCMATComposerImpl:
                 else:
                     lines += formatVector('vdos_egrid',x)
                 lines += formatVector('vdos_density',dyninfo['vdos'])
-            elif ditype in ('sterile','freegas'):
+            elif ditype in ('sterile','freegas','msd'):
                 pass
             elif ditype == 'scatknl':
                 lines += f'temperature {_fmtprecisenum(dyninfo["temperature"])}\n'
@@ -1161,7 +1145,29 @@ class NCMATComposerImpl:
                             'atoms/Aa3': 'atoms_per_aa3' }[_dunit]
             ll+=f'@DENSITY\n{_dval} {_ncmat_dunit}\n'
 
+        #NCMAT v8 is needed (and produced) when v8-only dyninfo keywords are
+        #used. The msd keyword (and debye_temp on scatknl) implies a solid,
+        #which v8 requires non-crystalline materials to declare:
+        dyninfos_all = self.__params.get('dyninfos',{}).values()
+        _needs_v8 = any( di.get('ditype')=='msd'
+                         or ( di.get('ditype')=='scatknl'
+                              and any( di.get(k) is not None
+                                       for k in ('effective_temperature','v8msd',
+                                                 'v8debye_temp') ) )
+                         for di in dyninfos_all )
+        _implies_solid = any( di.get('ditype')=='msd'
+                              or ( di.get('ditype')=='scatknl'
+                                   and any( di.get(k) is not None
+                                            for k in ('v8msd','v8debye_temp') ) )
+                              for di in dyninfos_all )
         som = self.get_state_of_matter()
+        if _implies_solid and som not in (None,'solid'):
+            raise _nc_core.NCBadInput('The msd/debye_temp dyninfo parameters'
+                                      ' describe atomic displacements in a'
+                                      ' solid, which is inconsistent with the'
+                                      f' declared state of matter "{som}"')
+        if som is None and _needs_v8 and _implies_solid and not is_crystal:
+            som = 'solid'
         if som is not None:
             assert som in ('solid','liquid','gas')
             ll += f'@STATEOFMATTER\n{som}\n'
@@ -1214,14 +1220,9 @@ class NCMATComposerImpl:
         )
         ll += ld
 
-        _needs_v8 = any( di.get('ditype')=='scatknl'
-                         and any( di.get(k) is not None
-                                  for k in ('effective_temperature','v8msd',
-                                            'v8debye_temp') )
-                         for di in self.__params.get('dyninfos',{}).values() )
-        if _needs_v8 and not is_crystal and not self.get_state_of_matter():
-            raise _nc_core.NCBadInput('The effective_temperature/msd/debye_temp'
-                                      ' parameters produce NCMAT v8 data, where'
+        if _needs_v8 and not is_crystal and som is None:
+            raise _nc_core.NCBadInput('The effective_temperature parameter'
+                                      ' produces NCMAT v8 data, where'
                                       ' non-crystalline materials must declare'
                                       ' a state of matter: call'
                                       ' .set_state_of_matter(..) first')

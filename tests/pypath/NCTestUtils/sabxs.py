@@ -101,26 +101,36 @@ _Twide = ( 5, 20, 293.15, 1000, 3000 )
 
 ################################################################################
 # Synthetic Debye-model materials (in-memory, no data files): single-element
-# materials spanning Debye temperature and mass.
+# materials spanning Debye temperature and mass, with the dynamics given either
+# as a Debye temperature or (NCMAT v8) as an MSD at a given temperature.
 
 _synthetic_debye = [ ( 'H', 100.0 ), ( 'H', 1000.0 ), ( 'C', 400.0 ),
                      ( 'Al', 400.0 ), ( 'Pb', 90.0 ), ( 'U', 200.0 ) ]
 
-def _synth_name( elem, tdebye ):
-    return f'sabxs_debye_{elem}_{tdebye:g}K.ncmat'
+def _synth_name( elem, tdebye, msd = False ):
+    return f'sabxs_debye_{elem}_{tdebye:g}K{"_msd" if msd else ""}.ncmat'
 
 _synth_done = [ False ]
 def _register_synthetic_materials():
     if _synth_done[0]:
         return
     _synth_done[0] = True
+    from NCrystalDev.atomdata import atomDB
     from NCrystalDev.ncmat import NCMATComposer
+    from NCrystalDev.vdos import debyeIsotropicMSD
     for elem, td in _synthetic_debye:
-        c = NCMATComposer()
-        c.set_composition( 'X', elem )
-        c.set_density( 1.0, 'g/cm3' )
-        c.set_dyninfo_debyetemp( 'X', td )
-        c.register_as( _synth_name( elem, td ) )
+        for use_msd in ( False, True ):
+            c = NCMATComposer()
+            c.set_composition( 'X', elem )
+            c.set_density( 1.0, 'g/cm3' )
+            if use_msd:
+                msd = debyeIsotropicMSD( debye_temperature = td,
+                                         temperature = 293.15,
+                                         mass = atomDB(elem).averageMassAMU() )
+                c.set_dyninfo_msd( 'X', float(f'{msd:.6g}'), temperature = 293.15 )
+            else:
+                c.set_dyninfo_debyetemp( 'X', td )
+            c.register_as( _synth_name( elem, td, use_msd ) )
 
 ################################################################################
 # The tests
@@ -207,6 +217,9 @@ def _list_debye():
         #T/Tdebye from ~1e-3 to ~10:
         temps = sorted({ float(f'{td*f:.3g}') for f in (0.01,0.3,3.0) })
         entries.append( ( _synth_name(elem,td), temps ) )
+    #The same materials with the dynamics given as an MSD (NCMAT v8):
+    for elem, td in _synthetic_debye:
+        entries.append( ( _synth_name(elem,td,msd=True), ( 293.15, ) ) )
     yield from _rotate( entries )
 
 def _list_lowtemp():
