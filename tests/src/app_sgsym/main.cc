@@ -1082,6 +1082,24 @@ void run()
              == NC::SpaceGroup( "166:r", NC::SpaceGroupParseMode::Strict ).settingIdx() );
     REQUIRE( !NC::checkStructureSymmetry( 3, true, pos ).settingIdx.has_value() );
   }
+  //Check against one given setting: the deviation is zero for the setting
+  //the structure was expanded in, and not for another one:
+  for ( auto pr : { std::make_pair( "227:2", "227:2" ),
+                    std::make_pair( "227:2", "227:1" ),
+                    std::make_pair( "14:c1", "14:c1" ),
+                    std::make_pair( "14:c1", "14:b1" ) } ) {
+    const NC::SpaceGroup sgtrue( pr.first, NC::SpaceGroupParseMode::Strict );
+    const NC::SpaceGroup sgclaim( pr.second, NC::SpaceGroupParseMode::Strict );
+    const auto res = NC::checkStructureSymmetry( sgclaim, structure( NC::SGSymmetry::get( sgtrue ) ) );
+    std::cout << sgtrue << " structure checked against " << sgclaim
+              << ": deviation ";
+    if ( res.maxDeviation < 1e-12 )
+      std::cout << "< 1e-12" << std::endl;
+    else
+      std::cout << NC::fmt( res.maxDeviation, "%.3g" ) << std::endl;
+    REQUIRE( res.settingIdx.value() == sgclaim.settingIdx() );
+    REQUIRE( sgtrue == sgclaim ? res.maxDeviation < 1e-12 : res.maxDeviation > 0.05 );
+  }
   std::cout << "Same symmetry-equivalent reflections: 62 vs 62:cab "
             << sameRots( "62", "62:cab" ) << ", 227 vs 227:2 "
             << sameRots( "227", "227:2" ) << ", 14 vs 14:b2 "
