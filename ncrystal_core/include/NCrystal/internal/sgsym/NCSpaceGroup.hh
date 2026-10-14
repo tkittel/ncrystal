@@ -149,10 +149,9 @@ namespace NCRYSTAL_NAMESPACE {
   //streams as .toString():
   std::ostream& operator<<( std::ostream&, const SpaceGroup& );
 
-  //Fixme: Migrate crystalSystem(), checkAndCompleteLattice[Angles](),
-  //isRhombohedralSpaceGroup() and usesRhombohedralAxes() from NCLatticeUtils.hh
-  //to the sgsym component (where they naturally belong, cf. SGCrystalSystem and
-  //SGCellConstraints).
+  //Fixme: Migrate isRhombohedralSpaceGroup() and usesRhombohedralAxes() from
+  //NCLatticeUtils.hh to NCSpaceGroup.hh/.cc (where they naturally belong, cf.
+  //SGHexFamilyAxes).
 
 }
 
