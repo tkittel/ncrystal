@@ -39,6 +39,11 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Determine the SG setting based on StructureInfo (throws if unable):
     SpaceGroup getSpaceGroupFromStructureInfo( const StructureInfo& );
+
+    //Fill in missing lattice parameters (of value 0) which are implied by the
+    //symmetry of the setting (e.g. b=c=a for cubic, gamma=120 for hexagonal
+    //axes). Throws in case of any problems such as a missing SG number.
+    void completeAndCheckStructureInfoCell( StructureInfo& );
   }
 }
 
