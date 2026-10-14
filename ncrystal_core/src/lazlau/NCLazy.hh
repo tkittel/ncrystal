@@ -64,10 +64,6 @@ namespace NCRYSTAL_NAMESPACE {
     //support hard-wired HKL lists in NCMAT files):
     std::vector<HKLFsq> validateAndNormaliseHKLFsqList( const SpaceGroup&,
                                                         const std::vector<HKLFsq>& );
-
-    //The setting of the structure (the declared one, else the default
-    //setting of the number; rhombohedral axes are not supported):
-    SpaceGroup settingOf( const StructureInfo& );
   }
 
 }
