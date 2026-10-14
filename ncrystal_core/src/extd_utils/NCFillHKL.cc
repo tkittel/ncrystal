@@ -25,6 +25,7 @@
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/phys_utils/NCEqRefl.hh"
+#include "NCrystal/internal/extd_utils/NCStructureSetting.hh"
 
 namespace NC = NCrystal;
 
@@ -614,9 +615,7 @@ namespace NCRYSTAL_NAMESPACE {
                  || cfg.fsquarecut <= fsquarecut_lowest_possible_value );
 
       const RotMatrix rec_lat = getReciprocalLatticeRot( structureInfo );
-      EqRefl sym( structureInfo.spacegroup,
-                  usesRhombohedralAxes( structureInfo.spacegroup,
-                                        structureInfo.alpha ) );
+      EqRefl sym( structureSetting( structureInfo ) );
       auto sym_findrepval = [&sym]( int hh, int kk, int ll )
       {
         //NB: Tried to get eqv hkl with smallest min(|h|,|k|,|l|) instead to
