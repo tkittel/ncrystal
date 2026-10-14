@@ -9,5 +9,16 @@ Caught expected NCBadInput('bad.ncmat space group setting choices (like "3:c") a
 Caught expected NCBadInput('"bad.ncmat": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "3:x" (not a setting of space group 3, the settings are: 3:b (default), 3:c, 3:a)')
 Caught expected NCBadInput('bad.ncmat can not have both @ATOMSITES and @ATOMPOSITIONS sections')
 Caught expected NCBadInput('bad.ncmat @ATOMSITES sections require a @SPACEGROUP section (problem in the @ATOMSITES section ending in line 6)')
-Caught expected NCBadInput('Atom positions are only consistent with space group 3 in the setting 3:c, whose symmetry-equivalent reflections differ from those of the setting 3:b assumed by NCrystal. Transform the structure to that setting (e.g. with NCMATComposer.refine_crystal_structure()).')
+Caught expected NCBadInput('bad.ncmat invalid @SPACEGROUP entry: Invalid space group specification: "3" (space group 3 has several settings, so one of them must be specified: 3:b (default), 3:c, 3:a) (problem in the @SPACEGROUP section ending in line 6)')
 Invalid inputs rejected
+v7, bare 227, positions in origin choice 2: setting deduced as 227:2
+v8, bare 227: d.ncmat invalid @SPACEGROUP entry: Invalid space group specification: "227" (space group 227 has several settings, so one of them must be specified: 227:1 (default), 227:2) (problem in the @SPACEGROUP section ending in line 5)
+v8, 227:3: "d.ncmat": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "227:3" (not a setting of space group 227, the settings are: 227:1 (default), 227:2)
+v8, 227:1 with positions in origin choice 2: The declared space group setting is 227:1, but the atom positions do not have its symmetry (largest deviation of a symmetry image from an atom of the same type: 0.25 in fractional coordinates). The positions are consistent with the setting 227:2, which must then be declared instead (the settings of space group 227 are: 227:1 (default), 227:2 (consistent with the positions)).
+v8, 227:2: loads with setting 227:2
+v8, 17:abc with positions in the standard axis order: setting 17:abc
+v8, 17:abc declared with positions in 17:cab: The declared space group setting is 17:abc, but the atom positions do not have its symmetry (largest deviation of a symmetry image from an atom of the same type: 0.4 in fractional coordinates). The positions are consistent with the setting 17:cab, which must then be declared instead (the settings of space group 17 are: 17:abc (default), 17:cab (consistent with the positions), 17:bca).
+v8, bare 17: Invalid space group specification: "17" (space group 17 has several settings, so one of them must be specified: 17:abc (default), 17:cab, 17:bca)
+v8, bare 167: r.ncmat invalid @SPACEGROUP entry: Invalid space group specification: "167" (space group 167 has several settings, so one of them must be specified: 167:h (default), 167:r) (problem in the @SPACEGROUP section ending in line 6)
+v8, 167:r with hexagonal cell: Declared space group setting 167:r does not match the unit cell axes: the cell is given in hexagonal axes (gamma=120), for which the setting is 167:h
+v8, 167:h: 12 atoms, setting 167:h

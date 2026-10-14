@@ -103,7 +103,15 @@ monoclinic space groups (3-15) this is the setting with unique axis b (i.e.
 alpha=gamma=90). For the rhombohedral space groups (146, 148, 155, 160, 161,
 166, 167) the cell can be given either in hexagonal axes (alpha=beta=90,
 gamma=120), or (from NCrystal 5.0.0) in rhombohedral axes (a=b=c and
-alpha=beta=gamma<120).
+alpha=beta=gamma<120). Note that from NCrystal 5.0.0, the actual setting is
+deduced from the atom positions (among the standard settings of the space
+group number, cf. the *NCMAT v8* section further down), and files whose atom
+positions do not have the symmetry of the space group in any of its
+settings are rejected.
+
+Note also that the content and meaning of the value written in this section
+changes in *NCMAT v8* (see the section "Changes for the @SPACEGROUP section"
+further down).
 
 ## The @DEBYETEMPERATURE section ##
 
@@ -993,7 +1001,7 @@ keywords, and whose atoms previously got the Debye-Waller information needed
 for Bragg diffraction from the @DEBYETEMPERATURE section) can no longer be
 used in crystalline materials.
 
-## The @SPACEGROUP section accepts a setting ##
+## Changes for the @SPACEGROUP section ##
 
 Space group numbers only identify the symmetry up to a choice of setting
 (origin choice, unique axis and cell choice of monoclinic groups, axis
@@ -1011,15 +1019,36 @@ appending the setting choice code of that table to the number, as in:
 ```
 
 Other examples are `14:c1` (unique axis c, cell choice 1), `62:cab` (axis
-permutation), and `166:r` (rhombohedral axes). A bare number keeps the old
-meaning. The declared setting must be a setting of the number and match the
-cell (hexagonal versus rhombohedral axes), and the atom positions must have
-its symmetry: all of this is verified when loading (NCrystal also verifies the
-symmetry of the positions for files without a declared setting, deducing the
-setting from them, which is why e.g. structures in origin choice 2 loaded
-correctly before; declaring the setting is however required for settings
-with other symmetry-equivalent reflections than the default one, such as
-monoclinic structures with a unique axis other than b).
+permutation), and `166:r` (rhombohedral axes). The supported settings are
+exactly the 530 of that table, identified by these choice codes; structures
+in other settings (e.g. with a non-standard origin) are rejected, and must be
+transformed to a standard setting first. The declared setting must be a
+setting of the number and match the cell (hexagonal versus rhombohedral
+axes), and the atom positions must have its symmetry, with respect to the
+standard origin of the setting: all of this is verified when loading, and
+error messages list the settings of the number, indicating which of them the
+positions are consistent with.
+
+In *NCMAT v8* files the setting is always unambiguous: for the 90 space group
+numbers with several settings, the choice must be given explicitly (a bare
+number is an error), while a bare number is the only form for the 140 numbers
+with a single setting. The choice codes are those of the first column of the
+table, with two spelling conventions: the trigonal axes codes are written in
+lower case as printed (`166:h`, `166:r`), and the default setting of the 46
+orthorhombic numbers whose other settings are axis permutations (17, 18, 20,
+21, 25-34, 36-41, 43, 44, 46, 51-58 and 60-64) is written with the explicit
+code `abc` defined in the footnote of the table (e.g. `62:abc`, with the
+permuted settings as `62:ba-c`, `62:cab`, ...), although the table itself
+leaves it out of the first column. Note that an axis permutation of an
+orthorhombic number can only be verified through the atom positions (the cell
+parameters cannot tell the permutations apart), so with an @ATOMSITES section
+(see below) care must be taken that the sites really are given in the
+declared setting.
+
+In files before *NCMAT v8* a bare number is interpreted leniently, as
+described in the *NCMAT v1* section: the setting is deduced from the atom
+positions among all settings of the number (so e.g. structures in origin
+choice 2 keep loading), and the file is rejected if none fits.
 
 ## The @ATOMSITES section ##
 
@@ -1043,7 +1072,7 @@ Here the single site generates the 8 atoms of the diamond structure. A file
 must not have both @ATOMSITES and @ATOMPOSITIONS sections, and the fractions in
 the @DYNINFO sections must still be consistent with the generated numbers of
 atoms. Note that the generated positions depend on the setting: in the
-example, `227` (origin choice 1) would instead place 16 atoms on the `16c`
+example, `227:1` (origin choice 1) would instead place 16 atoms on the `16c`
 site. Sites close to, but not exactly on, special positions are rejected, so
 sites should be given with sufficient precision, preferably as exact
 fractions.

@@ -33,13 +33,19 @@ NC::declaredStructureSetting( const StructureInfo& si )
   if ( setting.number() != si.spacegroup )
     NCRYSTAL_THROW2(BadInput,"Declared space group setting "<<setting
                     <<" is not a setting of space group number "
-                    <<si.spacegroup);
+                    <<si.spacegroup<<" (the settings are: "
+                    <<SpaceGroup::listSettings( si.spacegroup )<<")");
   const bool rhombo = usesRhombohedralAxes( static_cast<int>( si.spacegroup ),
                                             si.alpha );
   if ( ( StrView( setting.choice() ) == "r" ) != rhombo )
     NCRYSTAL_THROW2(BadInput,"Declared space group setting "<<setting
-                    <<" does not match the unit cell axes (hexagonal"
-                    " versus rhombohedral)");
+                    <<" does not match the unit cell axes: the cell is given"
+                    " in "<<( rhombo ? "rhombohedral axes (a=b=c,"
+                                       " alpha=beta=gamma), for which the"
+                                       " setting is "
+                                     : "hexagonal axes (gamma=120), for"
+                                       " which the setting is " )
+                    <<si.spacegroup<<':'<<( rhombo ? 'r' : 'h' ));
   return setting;
 }
 

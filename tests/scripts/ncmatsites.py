@@ -132,5 +132,118 @@ def main():
         NC.createInfo( 'bad.ncmat;inelas=0' )
     print( 'Invalid inputs rejected' )
 
+    #NCMAT v8 settings policy: a bare number is only allowed for the 140
+    #numbers with a single setting; the 90 others must declare the setting
+    #explicitly (incl. the orthorhombic standard axis order, 17:abc).
+    #Pre-v8 files deduce the setting from the positions. Error messages list
+    #the settings:
+    def errmsg( f ):
+        try:
+            f()
+        except NC.NCBadInput as e:
+            return str(e)
+        raise RuntimeError('did not fail')
+    diamond_o2 = """NCMAT v{v}
+@CELL
+  cubic 5.43
+@SPACEGROUP
+  {sg}
+@ATOMPOSITIONS
+  Si 1/8 1/8 1/8
+  Si 1/8 5/8 5/8
+  Si 5/8 1/8 5/8
+  Si 5/8 5/8 1/8
+  Si 7/8 7/8 7/8
+  Si 7/8 3/8 3/8
+  Si 3/8 7/8 3/8
+  Si 3/8 3/8 7/8
+@DYNINFO
+  element Si
+  fraction 1
+  type vdosdebye
+  debye_temp 400
+"""
+    def load_diamond( v, sg ):
+        NC.registerInMemoryFileData( 'd.ncmat', diamond_o2.format( v = v, sg = sg ) )
+        return NC.createInfo( 'd.ncmat;inelas=0' )
+    info = load_diamond( 7, '227' )
+    print( 'v7, bare 227, positions in origin choice 2: setting deduced as',
+           info.structure_info['spacegroup_setting'] )
+    assert info.structure_info['spacegroup_setting'] == '227:2'
+    msg = errmsg( lambda : load_diamond( 8, '227' ) )
+    print( 'v8, bare 227:', msg )
+    assert '227:1' in msg and '227:2' in msg
+    msg = errmsg( lambda : load_diamond( 8, '227:3' ) )
+    print( 'v8, 227:3:', msg )
+    assert '227:1 (default), 227:2' in msg
+    msg = errmsg( lambda : load_diamond( 8, '227:1' ) )
+    print( 'v8, 227:1 with positions in origin choice 2:', msg )
+    assert 'consistent with the setting 227:2' in msg
+    info = load_diamond( 8, '227:2' )
+    print( 'v8, 227:2: loads with setting', info.structure_info['spacegroup_setting'] )
+    assert info.structure_info['spacegroup_setting'] == '227:2'
+
+    #Orthorhombic: the standard axis order is declared as 17:abc (17:cab etc.
+    #are the permutations); a declared 17:abc with positions actually in
+    #17:cab is detected from the positions (the cell cannot tell them apart):
+    from NCrystalDev.misc import evaluate_query
+    def sg17( sgspec, declared = '17:abc' ):
+        pos = evaluate_query( [ 'util', 'atompositions', 'strict', sgspec, 'Al,0.1,0.2,0.3' ] )
+        text = """NCMAT v8
+@CELL
+  lengths 5 6 7
+  angles 90 90 90
+@SPACEGROUP
+  """ + declared + """
+@ATOMPOSITIONS
+""" + ''.join( f'  Al {x!r} {y!r} {z!r}\n' for lbl,(x,y,z) in pos ) + """@DYNINFO
+  element Al
+  fraction 1
+  type vdosdebye
+  debye_temp 400
+"""
+        NC.registerInMemoryFileData( 'sg17.ncmat', text )
+        return NC.createInfo( 'sg17.ncmat;inelas=0' )
+    info = sg17( '17:abc' )
+    print( 'v8, 17:abc with positions in the standard axis order: setting',
+           info.structure_info['spacegroup_setting'] )
+    assert info.structure_info['spacegroup_setting'] == '17:abc'
+    msg = errmsg( lambda : sg17( '17:cab' ) )
+    print( 'v8, 17:abc declared with positions in 17:cab:', msg )
+    assert 'declared space group setting is 17:abc' in msg
+    assert 'consistent with the setting 17:cab' in msg
+    assert '17:cab (consistent with the positions)' in msg
+    msg = errmsg( lambda : sg17( '17', declared = '17' ) )
+    print( 'v8, bare 17:', msg )
+    assert '17:abc (default), 17:cab, 17:bca' in msg
+
+    #Rhombohedral numbers must declare the axes in v8:
+    hexcell = """NCMAT v8
+@CELL
+  lengths 4.76 4.76 12.99
+  angles 90 90 120
+@SPACEGROUP
+  {sg}
+@ATOMSITES
+  Al 0 0 0.35
+@DYNINFO
+  element Al
+  fraction 1
+  type vdosdebye
+  debye_temp 400
+"""
+    def load_r( sg ):
+        NC.registerInMemoryFileData( 'r.ncmat', hexcell.format( sg = sg ) )
+        return NC.createInfo( 'r.ncmat;inelas=0' )
+    msg = errmsg( lambda : load_r( '167' ) )
+    print( 'v8, bare 167:', msg )
+    assert '167:h (default), 167:r' in msg
+    msg = errmsg( lambda : load_r( '167:r' ) )
+    print( 'v8, 167:r with hexagonal cell:', msg )
+    info = load_r( '167:h' )
+    print( 'v8, 167:h:', info.structure_info['n_atoms'], 'atoms, setting',
+           info.structure_info['spacegroup_setting'] )
+    assert info.structure_info['n_atoms'] == 12
+
 if __name__ == '__main__':
     main()

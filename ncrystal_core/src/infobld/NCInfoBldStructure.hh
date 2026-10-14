@@ -41,9 +41,8 @@ namespace NCRYSTAL_NAMESPACE {
     //Verify that the atom positions have the symmetry of the declared space
     //group, in the setting declared by the data source if any
     //(spacegroup_setting set), else in some of its settings: slight
-    //deviations give a warning, larger ones (or found settings with other
-    //symmetry-equivalent reflections than NCrystal assumes) a BadInput
-    //exception. Returns the setting (see the .cc file):
+    //deviations give a warning, larger ones a BadInput exception. Returns
+    //the setting (see the .cc file):
     SpaceGroupSettingIdx checkStructureSymmetry( const StructureInfo&,
                                                  const AtomInfoList& );
 

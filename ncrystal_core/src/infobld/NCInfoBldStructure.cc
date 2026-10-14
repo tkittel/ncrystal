@@ -31,11 +31,10 @@ namespace NCRYSTAL_NAMESPACE {
   namespace InfoBuilderDetail {
 
     //Verify that the atom positions actually have the symmetry of the
-    //declared space group (in some of its settings), rather than just
-    //assuming it. Slight deviations (rounded coordinates in data files)
-    //give a warning and the symmetric structure is assumed, while larger
-    //ones are an error, as are settings whose symmetry-equivalent
-    //reflections differ from those NCrystal assumes (cf. EqRefl):
+    //declared space group (in the declared setting, else in some of its
+    //settings), rather than just assuming it. Slight deviations (rounded
+    //coordinates in data files) give a warning and the symmetric structure
+    //is assumed, while larger ones are an error:
     SpaceGroupSettingIdx checkStructureSymmetry( const StructureInfo& si,
                                                  const AtomInfoList& atomlist )
     {
@@ -66,21 +65,60 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr double tol_warn = 5e-4;
       constexpr double tol_error = 1e-2;
       if ( !( res.maxDeviation <= tol_error ) ) {
-        if ( declared.has_value() )
-          NCRYSTAL_THROW2(BadInput,"Atom positions are not consistent with"
-                          " the space group setting "<<declared.value()
-                          <<" (largest deviation of a symmetry image from an"
-                          " atom of the same type: "
-                          <<fmt(res.maxDeviation,"%.2g")<<" in fractional"
-                          " coordinates). Either the setting or the"
-                          " positions are wrong.");
-        NCRYSTAL_THROW2(BadInput,"Atom positions are not consistent with"
-                        " space group "<<si.spacegroup<<" in any of its"
-                        " settings (largest deviation of a symmetry image"
-                        " from an atom of the same type: "
-                        <<fmt(res.maxDeviation,"%.2g")<<" in fractional"
-                        " coordinates). Either the space group or the"
-                        " positions are wrong.");
+        std::ostringstream msg;
+        std::ostringstream devss;
+        devss << "largest deviation of a symmetry image from an atom of the"
+                 " same type: " << fmt(res.maxDeviation,"%.2g")
+              << " in fractional coordinates";
+        const std::string devstr = devss.str();
+        if ( !declared.has_value() ) {
+          msg << "Atom positions are not consistent with space group "
+              << si.spacegroup << " in any of its settings (" << devstr
+              << "). Either the space group or the positions are wrong.";
+        } else {
+          //Tell the user which settings of the number the positions do fit
+          //(e.g. 17:abc declared while the positions are in 17:cab):
+          const SpaceGroup& ds = declared.value();
+          std::vector<SpaceGroup> fits;
+          for ( auto& s : SpaceGroup::settingsOfNumber( si.spacegroup ) )
+            if ( NC::checkStructureSymmetry( s, positions ).maxDeviation
+                 <= tol_error )
+              fits.push_back( s );
+          msg << "The declared space group setting is " << ds
+              << ", but the atom positions do not have its symmetry ("
+              << devstr << ").";
+          if ( fits.empty() ) {
+            msg << " Either the space group or the positions are wrong, as"
+                   " the positions do not fit any setting of space group "
+                << si.spacegroup;
+          } else {
+            msg << " The positions are consistent with the setting"
+                << ( fits.size() > 1 ? "s " : " " );
+            for ( auto& s : fits )
+              msg << ( &s == &fits.front() ? "" : ", " ) << s;
+            msg << ", which must then be declared instead";
+          }
+          if ( ds.hasMultipleSettings() ) {
+            //fixme: Hermann-Mauguin symbols (SpaceGroup::hmSymbol()) would
+            //make this listing more helpful to users.
+            msg << " (the settings of space group " << si.spacegroup
+                << " are: ";
+            bool firstsg = true;
+            for ( auto& s : SpaceGroup::settingsOfNumber( si.spacegroup ) ) {
+              msg << ( firstsg ? "" : ", " ) << s;
+              firstsg = false;
+              const bool fit = ( std::find( fits.begin(), fits.end(), s )
+                                 != fits.end() );
+              if ( s.isDefaultSetting() || fit )
+                msg << " (" << ( s.isDefaultSetting() ? "default" : "" )
+                    << ( s.isDefaultSetting() && fit ? ", " : "" )
+                    << ( fit ? "consistent with the positions" : "" ) << ')';
+            }
+            msg << ")";
+          }
+          msg << '.';
+        }
+        NCRYSTAL_THROW(BadInput,msg.str());
       }
       if ( !( res.maxDeviation <= tol_warn ) )
         NCRYSTAL_WARN("Atom positions deviate slightly from the symmetry"
@@ -90,24 +128,9 @@ namespace NCRYSTAL_NAMESPACE {
                       <<" in fractional coordinates). Assuming the"
                       " symmetric structure (specify positions with more"
                       " precision to avoid this warning).");
-      const SpaceGroup setting( SpaceGroupSettingIdx{ res.settingIdx } );
-      if ( declared.has_value() )
-        return setting.settingIdx();
-      std::string spec = std::to_string( si.spacegroup );
-      if ( rhombo )
-        spec += ":r";
-      const SpaceGroup assumed( spec, SpaceGroupParseMode::Relaxed );
-      if ( setting != assumed
-           && !haveSameRotationParts( SGSymmetry::get( setting ),
-                                      SGSymmetry::get( assumed ) ) )
-        NCRYSTAL_THROW2(BadInput,"Atom positions are only consistent with"
-                        " space group "<<si.spacegroup<<" in the setting "
-                        <<setting<<", whose symmetry-equivalent reflections"
-                        " differ from those of the setting "<<assumed
-                        <<" assumed by NCrystal. Transform the structure to"
-                        " that setting (e.g. with"
-                        " NCMATComposer.refine_crystal_structure()).");
-      return setting.settingIdx();
+      //(without a declared setting, the deduced one is used as is: all
+      //hkl-related code follows the setting stored on the StructureInfo)
+      return SpaceGroupSettingIdx{ res.settingIdx };
     }
 
     SpaceGroupSettingIdx settingWithoutPositions( const StructureInfo& si )

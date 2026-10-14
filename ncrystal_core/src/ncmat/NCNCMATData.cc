@@ -20,6 +20,7 @@
 
 #include "NCrystal/internal/ncmat/NCNCMATData.hh"
 #include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
+#include "NCrystal/internal/extd_utils/NCStructureSetting.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/utils/NCAtomUtils.hh"
@@ -423,13 +424,18 @@ void NC::NCMATData::validateSpaceGroup() const
     return;
   if (spacegroup<1||spacegroup>230)
     NCRYSTAL_THROW2(BadInput,sourceDescription<<" invalid spacegroup number (expects a number from 1 to 230)");
-  //Before v8 the section holds just the number; from v8 a setting can be
-  //specified, which is then parsed strictly with SpaceGroup's own messages:
-  if ( spacegroup_spec.empty() || !hasSpaceGroupSetting() )
+  if ( spacegroup_spec.empty() )
     return;
-  if ( version < 8 )
-    NCRYSTAL_THROW2(BadInput,sourceDescription<<" space group setting choices (like \""<<spacegroup_spec
-                    <<"\") are only allowed in NCMAT v8 or later");
+  if ( version < 8 ) {
+    //Before v8 the section holds just the number:
+    if ( hasSpaceGroupSetting() )
+      NCRYSTAL_THROW2(BadInput,sourceDescription<<" space group setting choices (like \""<<spacegroup_spec
+                      <<"\") are only allowed in NCMAT v8 or later");
+    return;
+  }
+  //NCMAT v8: the entry is parsed strictly, i.e. the setting must be spelled
+  //out for the 90 numbers with several settings (SpaceGroup's messages list
+  //them and point out case-only mismatches):
   try {
     SpaceGroup sg( spacegroup_spec, SpaceGroupParseMode::Strict );
     nc_assert_always( static_cast<int>( sg.number() ) == spacegroup );

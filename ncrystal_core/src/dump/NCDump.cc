@@ -157,10 +157,10 @@ void NCrystal::dump( std::ostream& os, const Info&c, DumpVerbosity verbosityVal 
       os<<hr;
       if (si.spacegroup!=0) {
         os<<"Space group number      : "<<si.spacegroup<<'\n';
-        //Only shown when not the default setting of the number:
+        //Only shown for numbers with several settings:
         if ( si.spacegroup_setting.get() ) {
           const SpaceGroup setting( si.spacegroup_setting );
-          if ( !setting.isDefaultSetting() )
+          if ( setting.hasMultipleSettings() )
             os<<"Space group setting     : "<<setting<<'\n';
         }
       }
