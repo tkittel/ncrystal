@@ -160,3 +160,6 @@ CHANGELOG at release time, after which both files are dropped).
        those consistent with the positions. NCMATComposer writes the
        canonical form, and Info dumps show the setting of numbers with
        several settings (e.g. "227:1").
+     * NCMAT v8 setting choice codes are case-sensitive and lower case, as
+       in the ITVB table; a code which is only wrong in case (e.g. the
+       spglib-style 166:H) gets an error naming the correct code.

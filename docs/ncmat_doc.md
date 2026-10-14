@@ -1025,16 +1025,17 @@ in other settings (e.g. with a non-standard origin) are rejected, and must be
 transformed to a standard setting first. The declared setting must be a
 setting of the number and match the cell (hexagonal versus rhombohedral
 axes), and the atom positions must have its symmetry, with respect to the
-standard origin of the setting: all of this is verified when loading, and
-error messages list the settings of the number, indicating which of them the
-positions are consistent with.
+standard origin of the setting: all of this is verified when loading.
 
 In *NCMAT v8* files the setting is always unambiguous: for the 90 space group
 numbers with several settings, the choice must be given explicitly (a bare
 number is an error), while a bare number is the only form for the 140 numbers
-with a single setting. The choice codes are those of the first column of the
-table, with two spelling conventions: the trigonal axes codes are written in
-lower case as printed (`166:h`, `166:r`), and the default setting of the 46
+with a single setting. The choice codes are exactly those of the first
+column of the table: lower case (no other casing is accepted, so e.g.
+`166:H` is an error even though spglib spells the trigonal axes `H`/`R`),
+with no spaces around the colon, and with two conventions: the trigonal axes
+codes are written in lower case as printed (`166:h`, `166:r`), and the
+default setting of the 46
 orthorhombic numbers whose other settings are axis permutations (17, 18, 20,
 21, 25-34, 36-41, 43, 44, 46, 51-58 and 60-64) is written with the explicit
 code `abc` defined in the footnote of the table (e.g. `62:abc`, with the

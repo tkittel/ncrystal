@@ -240,6 +240,9 @@ def main():
     assert '167:h (default), 167:r' in msg
     msg = errmsg( lambda : load_r( '167:r' ) )
     print( 'v8, 167:r with hexagonal cell:', msg )
+    msg = errmsg( lambda : load_r( '167:H' ) )
+    print( 'v8, 167:H (wrong case):', msg )
+    assert 'change it to "167:h"' in msg
     info = load_r( '167:h' )
     print( 'v8, 167:h:', info.structure_info['n_atoms'], 'atoms, setting',
            info.structure_info['spacegroup_setting'] )
