@@ -177,7 +177,8 @@ bool NC::isRhombohedralSpaceGroup( int sg )
 
 bool NC::usesRhombohedralAxes( int sg, double alpha )
 {
-  return isRhombohedralSpaceGroup( sg ) && alpha != 90.0;
+  //(an unspecified angle, i.e. alpha=0, means the default hexagonal axes)
+  return isRhombohedralSpaceGroup( sg ) && alpha > 0.0 && alpha != 90.0;
 }
 
 void NC::checkAndCompleteLatticeAngles( unsigned sg, double& alpha, double& beta, double& gamma )
