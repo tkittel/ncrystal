@@ -257,9 +257,7 @@ namespace NCRYSTAL_NAMESPACE {
         const SpaceGroup sg( arg(1), ( arg(0) == "strict"
                                        ? SpaceGroupParseMode::Strict
                                        : SpaceGroupParseMode::Relaxed ) );
-        EqRefl eqrefl( static_cast<int>( sg.number() ),
-                       ( sg.settingInfo().hexFamilyAxes
-                         == SGHexFamilyAxes::Rhombohedral ) );
+        EqRefl eqrefl( sg );
         os << '[';
         for ( auto i : ncrange( std::size_t(2), nargs ) ) {
           auto parts = arg(i).splitTrimmed(',');

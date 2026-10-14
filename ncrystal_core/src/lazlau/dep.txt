@@ -1,4 +1,5 @@
 atomdb
+extd_utils
 factories
 infobld
 phys_utils
