@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
+#include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 
 namespace NC = NCrystal;
@@ -57,4 +58,31 @@ NC::InfoUtils::getSpaceGroupFromStructureInfo( const StructureInfo& si )
   if ( usesRhombohedralAxes( static_cast<int>( si.spacegroup ), si.alpha ) )
     spec += ":r";
   return SpaceGroup( spec, SpaceGroupParseMode::Relaxed );
+}
+
+void NC::InfoUtils::completeAndCheckStructureInfoCell( StructureInfo& si )
+{
+  nc_assert( si.spacegroup >= 1 && si.spacegroup <= 230 );
+  const bool declared = si.spacegroup_setting.has_value();
+  const SpaceGroup setting = getSpaceGroupFromStructureInfo( si );
+  const auto& cc = SGSymmetry::get( setting ).cellConstraints();
+  CellParameters cp{ si.lattice_a, si.lattice_b, si.lattice_c,
+                     si.alpha, si.beta, si.gamma };
+  try {
+    cc.complete( cp );
+  } catch ( Error::BadInput& e ) {
+    std::ostringstream msg;
+    msg << "Unit cell not consistent with space group " << setting
+        << " (" << cc << "): " << e.what();
+    if ( !declared && setting.hasMultipleSettings() )
+      msg << ". No setting was declared, so the default setting "
+          << setting << " was assumed";
+    NCRYSTAL_THROW(BadInput,msg.str());
+  }
+  si.lattice_a = cp.a;
+  si.lattice_b = cp.b;
+  si.lattice_c = cp.c;
+  si.alpha = cp.alpha;
+  si.beta = cp.beta;
+  si.gamma = cp.gamma;
 }
