@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/extd_utils/NCPlaneProvider.hh"
+#include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 #include "NCrystal/internal/extd_utils/NCOrientUtils.hh"
 #include "NCrystal/interfaces/NCInfo.hh"
@@ -225,10 +226,8 @@ std::unique_ptr<NC::PlaneProvider> NC::createStdPlaneProvider(const Info* info)
 }
 
 NC::ExpandHKLHelper::ExpandHKLHelper( const Info& info )
-  : ExpandHKLHelper( info.hasStructureInfo()
-                     ? info.getStructureInfo().spacegroup : 0,
-                     info.hasStructureInfo()
-                     && usesRhombohedralAxes( info.getStructureInfo().spacegroup,
-                                              info.getStructureInfo().alpha ) )
 {
+  if ( info.hasStructureInfo() && info.getStructureInfo().spacegroup )
+    m_sym.emplace(
+      InfoUtils::getSpaceGroupFromStructureInfo( info.getStructureInfo() ) );
 }
