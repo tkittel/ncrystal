@@ -51,8 +51,10 @@ def test_hexagonal_angles():
     print(f'SG-191 with gamma=120: loaded with gamma={si["gamma"]:g}')
     for gamma in ( 60, 100, 130 ):
         with ensure_error( NC.NCBadInput,
-                           'Spacegroup (191) requires alpha=beta=90'
-                           ' and gamma=120' ):
+                           'Unit cell not consistent with space group 191'
+                           ' (a, b=a, c, alpha=90, beta=90, gamma=120):'
+                           ' Lattice angle gamma must be 120 degrees for'
+                           f' this space group (got {gamma})' ):
             load( '3 3 5', f'90 90 {gamma}', 191, [('Al','0 0 0')] )
 
 def test_monoclinic_angles():
@@ -61,11 +63,13 @@ def test_monoclinic_angles():
     atoms = [('Al','0.1 0.2 0.3'),('Al','0.9 0.7 0.7')]
     si = load( '5 6 7', '90 100 90', 4, atoms ).structure_info
     print(f'SG-4 with unique axis b: loaded with beta={si["beta"]:g}')
-    for angles in ( '90 90 100', '100 90 90' ):
+    for angles, bad in ( ('90 90 100','gamma'), ('100 90 90','alpha') ):
         with ensure_error( NC.NCBadInput,
-                           'Spacegroup (4) requires alpha=gamma=90 (only'
-                           ' monoclinic settings with unique axis b are'
-                           ' supported)' ):
+                           'Unit cell not consistent with space group 4:b'
+                           ' (a, b, c, alpha=90, beta, gamma=90; the setting'
+                           ' is assumed, as none was declared): Lattice'
+                           f' angle {bad} must be 90 degrees for this space'
+                           ' group (got 100)' ):
             load( '5 6 7', angles, 4, atoms )
 
 def test_duplicate_positions():
@@ -135,9 +139,12 @@ def test_rhombohedral_axes():
           f' angles={si["alpha"]:g},{si["beta"]:g},{si["gamma"]:g}'
           f' (planes available: {len(list(info.hklObjects()))>0})')
     for lengths, angles, errmsg in (
-            ( '4.7 4.7 4.8', '57.3 57.3 57.3', 'requires a=b=c' ),
-            ( '4.7 4.7 4.7', '57.3 57.3 58', 'requires alpha=beta=gamma<120' ),
-            ( '4.7 4.7 4.7', '125 125 125', 'requires alpha=beta=gamma<120' ) ):
+            ( '4.7 4.7 4.8', '57.3 57.3 57.3',
+              'Lattice parameters a and c must be equal' ),
+            ( '4.7 4.7 4.7', '57.3 57.3 58',
+              'Lattice angle gamma must be equal to alpha' ),
+            ( '4.7 4.7 4.7', '125 125 125',
+              'alpha=beta=gamma must be less than 120 degrees' ) ):
         try:
             load( lengths, angles, 166, atoms )
         except NC.NCBadInput as e:

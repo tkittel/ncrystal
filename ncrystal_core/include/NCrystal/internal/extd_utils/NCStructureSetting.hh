@@ -43,6 +43,18 @@ namespace NCRYSTAL_NAMESPACE {
     return SpaceGroup( spec, SpaceGroupParseMode::Relaxed );
   }
 
+  //The setting declared by the data source (spacegroup_setting set before
+  //building the Info), validated: must be a setting of the number and match
+  //the hexagonal/rhombohedral axes of the cell. NullOpt if none:
+  Optional<SpaceGroup> declaredStructureSetting( const StructureInfo& );
+
+  //Fill in lattice parameters given as 0 which are implied by the symmetry
+  //of the setting (e.g. b=c=a for cubic, gamma=120 for hexagonal axes) and
+  //check all of them against the cell constraints of the setting (declared
+  //if any, else the default of the number). Exact equality is required for
+  //constrained values. Throws BadInput. Requires spacegroup != 0:
+  void completeAndCheckCell( StructureInfo& );
+
 }
 
 #endif

@@ -23,36 +23,12 @@
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
-#include "NCrystal/internal/utils/NCStrView.hh"
+#include "NCrystal/internal/extd_utils/NCStructureSetting.hh"
 
 namespace NC = NCrystal;
 
 namespace NCRYSTAL_NAMESPACE {
   namespace InfoBuilderDetail {
-
-    namespace {
-      //The setting declared by the data source (spacegroup_setting already
-      //set), validated against the number and the axes. NullOpt if none:
-      Optional<SpaceGroup> declaredSetting( const StructureInfo& si )
-      {
-        if ( !si.spacegroup_setting.get() )
-          return NullOpt;
-        si.spacegroup_setting.validate();
-        const SpaceGroup setting( si.spacegroup_setting );
-        if ( setting.number() != si.spacegroup )
-          NCRYSTAL_THROW2(BadInput,"Declared space group setting "<<setting
-                          <<" is not a setting of space group number "
-                          <<si.spacegroup);
-        const bool rhombo
-          = usesRhombohedralAxes( static_cast<int>( si.spacegroup ),
-                                  si.alpha );
-        if ( ( StrView( setting.choice() ) == "r" ) != rhombo )
-          NCRYSTAL_THROW2(BadInput,"Declared space group setting "<<setting
-                          <<" does not match the unit cell axes (hexagonal"
-                          " versus rhombohedral)");
-        return setting;
-      }
-    }
 
     //Verify that the atom positions actually have the symmetry of the
     //declared space group (in some of its settings), rather than just
@@ -75,7 +51,7 @@ namespace NCRYSTAL_NAMESPACE {
       const bool rhombo = usesRhombohedralAxes( sg, si.alpha );
       //A setting declared by the data source is checked as such, otherwise
       //the settings of the number are searched:
-      const Optional<SpaceGroup> declared = declaredSetting( si );
+      const Optional<SpaceGroup> declared = declaredStructureSetting( si );
       const auto res = ( declared.has_value()
                          ? NC::checkStructureSymmetry( declared.value(),
                                                        positions )
@@ -138,7 +114,7 @@ namespace NCRYSTAL_NAMESPACE {
     {
       nc_assert( si.spacegroup >= 1 && si.spacegroup <= 230 );
       const int sg = static_cast<int>( si.spacegroup );
-      const Optional<SpaceGroup> declared = declaredSetting( si );
+      const Optional<SpaceGroup> declared = declaredStructureSetting( si );
       if ( declared.has_value() )
         return declared.value().settingIdx();
       std::string spec = std::to_string( sg );
@@ -290,15 +266,12 @@ namespace NCRYSTAL_NAMESPACE {
         if ( ! ( si.n_atoms > 0 ) )
           NCRYSTAL_THROW2(BadInput,"StructureInfo n_atoms not a positive number: "<<si.n_atoms);
 
-        checkAndCompleteLattice( si.spacegroup, si.lattice_a,
-                                 si.lattice_b,  si.lattice_c );
-
-        checkAndCompleteLatticeAngles( si.spacegroup, si.alpha, si.beta, si.gamma );
-        if ( usesRhombohedralAxes( static_cast<int>(si.spacegroup), si.alpha )
-             && !( si.lattice_a == si.lattice_b
-                   && si.lattice_a == si.lattice_c ) )
-          NCRYSTAL_THROW2(BadInput,"Spacegroup ("<<si.spacegroup<<") in"
-                          " rhombohedral axes requires a=b=c");
+        if ( si.spacegroup > 230 )
+          NCRYSTAL_THROW2(BadInput,"invalid spacegroup number ("<<si.spacegroup<<")");
+        if ( si.spacegroup > 0 )
+          completeAndCheckCell( si );//(cell constraints of the setting)
+        if ( !( si.lattice_a > 0.0 && si.lattice_b > 0.0 && si.lattice_c > 0.0 ) )
+          NCRYSTAL_THROW(BadInput,"lattice parameters must be positive numbers");
 
 
         if ( ! ( si.alpha > 0 && si.alpha < 180 &&

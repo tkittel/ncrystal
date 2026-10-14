@@ -34,8 +34,8 @@ namespace NCRYSTAL_NAMESPACE {
   //parts of the operations), which are derived from the operations. The
   //length a and the angle alpha are never constrained to other parameters.
   //
-  //TODO: Replace checkAndCompleteLattice[Angles]() in NCLatticeUtils.hh with
-  //this.
+  //This is what Info creation checks unit cells against (cf.
+  //completeAndCheckCell in extd_utils/NCStructureSetting.hh).
   struct SGCellConstraints {
     enum class LengthConstraint { Free, EqualToA };
     enum class AngleConstraint { Free, Is90, Is120, EqualToAlpha };

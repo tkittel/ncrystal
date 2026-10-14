@@ -1,1 +1,1 @@
-app_cellconstraints placeholder
+Legacy lattice checks and sgsym cell constraints agree on 342900 cases for all 230 space group numbers (7958 accepted, 2100 rhombohedral-axes cases with c=0 skipped)

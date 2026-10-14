@@ -67,35 +67,12 @@ namespace NCRYSTAL_NAMESPACE {
   //Calculate d-spacing from Miller index and reciprocal lattice rotation:
   double dspacingFromHKL( int h, int k, int l, const RotMatrix& rec_lat );
 
-  //Validate that lattice lengths are compatible with given spacegroup. For
-  //space groups where a==b or a==c, it is allowed to provide b=0 or c=0, and
-  //the function will then update the values of b and/or c accordingly. Any
-  //inconsistencies or errors will result in BadInput exceptions thrown. It is
-  //allowed to provide spacegroup==0, in which case the function won't do much:
-  void checkAndCompleteLattice( unsigned spacegroup, double a, double& b, double& c );
-
   //Whether the space group is one of the rhombohedral (R) ones, and whether
   //a unit cell of such a space group with lattice angle alpha (degrees) is
   //described in rhombohedral axes (a=b=c, alpha=beta=gamma) rather than in
   //hexagonal axes (alpha=beta=90, gamma=120):
   bool isRhombohedralSpaceGroup( int spacegroup );
   bool usesRhombohedralAxes( int spacegroup, double alpha );
-
-  //Same for angles, except that all three angles might be left zero in case the
-  //space group defines them:
-  void checkAndCompleteLatticeAngles( unsigned spacegroup, double& alpha, double& beta, double& gamma );
-
-  //Spacegroup utils:
-  enum CrystalSystem {
-    Triclinic,
-    Monoclinic,
-    Orthorhombic,
-    Tetragonal,
-    Trigonal,
-    Hexagonal,
-    Cubic
-  };
-  CrystalSystem crystalSystem( int spacegroup );
 
   //Try to estimate the HKL point based on normal + dspacing, essentially by hkl
   //= lattice_rot * normal / dspacing, but then returning the smallest of
