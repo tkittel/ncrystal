@@ -32,7 +32,7 @@ namespace NCRYSTAL_NAMESPACE {
     {
       //["structure"]: null, or the StructureInfo as a dict (the setting as
       //its string form, e.g. "227:2", or null if unknown):
-      if ( !info.hasStructureInfo() ) {
+      if ( info.isMultiPhase() || !info.hasStructureInfo() ) {
         os << "null";
         return;
       }
@@ -58,7 +58,7 @@ namespace NCRYSTAL_NAMESPACE {
     {
       //["sites"]: per AtomInfo (in order), the crystallographic sites as a
       //list of {position,multiplicity} dicts, or null if unknown:
-      if ( !info.hasAtomInfo() ) {
+      if ( info.isMultiPhase() || !info.hasAtomInfo() ) {
         os << "null";
         return;
       }

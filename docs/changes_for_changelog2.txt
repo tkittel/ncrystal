@@ -130,3 +130,16 @@ CHANGELOG at release time, after which both files are dropped).
        spacegroup_setting and atomsites. The ncmat component now
        depends on sgsym (setting parsing/validation and the atom count
        for the default dcutoff).
+     * New ["util","atomsites",SG,"lbl,x,y,z",...] and
+       ["util","atompositions",...] JSON queries: group unit cell
+       positions into sites (deducing the setting when SG is a bare
+       number) and expand sites into positions.
+     * NCMATComposer (and thus cif2ncmat) now writes crystals with a
+       space group as NCMAT v8 with @ATOMSITES (and the setting declared
+       in @SPACEGROUP when not the default), using the atomsites query;
+       positions which do not have the symmetry of the space group in
+       its standard origin are an error at create_ncmat (use
+       refine_crystal_structure() to standardise). The spglib-based
+       equivalent-reflection check of verify_crystal_structure is
+       retired (the load-time check in C++ is authoritative), and the
+       Composer no longer insists on unique axis b for monoclinic cells.

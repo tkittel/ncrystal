@@ -174,7 +174,7 @@ Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_CaO3Si_sg2_cod9005777.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
 OUT>#
@@ -216,37 +216,22 @@ OUT>  lengths 7.0653 7.3202 7.9258
 OUT>  angles 103.426 95.217 90.055
 OUT>@SPACEGROUP
 OUT>  2
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  X1 .2394 .57734 .80169
-OUT>  X1 .7606 .42266 .19831
 OUT>  X10 .4641 .9385 .3014
-OUT>  X10 .5359 .0615 .6986
 OUT>  X11 .1988 .7688 .5705
-OUT>  X11 .8012 .2312 .4295
 OUT>  X12 .2655 .3739 .9832
-OUT>  X12 .7345 .6261 .0168
 OUT>  X13 .2648 .8677 .9819
-OUT>  X13 .7352 .1323 .0181
 OUT>  X14 .1704 .2734 .5982
-OUT>  X14 .8296 .7266 .4018
 OUT>  X15 .2254 .1785 .2183
-OUT>  X15 .7746 .8215 .7817
 OUT>  X2 .23599 .07081 .79759
-OUT>  X2 .76401 .92919 .20241
 OUT>  X3 .0938 .8704 .2713
-OUT>  X3 .9062 .1296 .7287
 OUT>  X4 .0931 .5126 .2735
-OUT>  X4 .9069 .4874 .7265
 OUT>  X5 .2684 .3875 .1851
-OUT>  X5 .7316 .6125 .8149
 OUT>  X6 .2691 .9542 .1849
-OUT>  X6 .7309 .0458 .8151
 OUT>  X7 .0561 .7236 .3973
-OUT>  X7 .9439 .2764 .6027
 OUT>  X8 .47309 .2496 .49667
-OUT>  X8 .52691 .7504 .50333
 OUT>  X9 .4628 .4616 .3034
-OUT>  X9 .5372 .5384 .6966
 OUT>@ATOMDB
 OUT>  X1 is Ca
 OUT>  X2 is Ca
@@ -370,7 +355,7 @@ Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_CaO3Si_sg2_cod9005777.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
 OUT>#
@@ -412,13 +397,10 @@ OUT>  lengths 7.0653 7.3202 7.9258
 OUT>  angles 103.426 95.217 90.055
 OUT>@SPACEGROUP
 OUT>  2
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Ca .23599 .07081 .79759
 OUT>  Ca .2394 .57734 .80169
 OUT>  Ca .47309 .2496 .49667
-OUT>  Ca .52691 .7504 .50333
-OUT>  Ca .7606 .42266 .19831
-OUT>  Ca .76401 .92919 .20241
 OUT>  O .0931 .5126 .2735
 OUT>  O .0938 .8704 .2713
 OUT>  O .1704 .2734 .5982
@@ -428,21 +410,9 @@ OUT>  O .2648 .8677 .9819
 OUT>  O .2655 .3739 .9832
 OUT>  O .4628 .4616 .3034
 OUT>  O .4641 .9385 .3014
-OUT>  O .5359 .0615 .6986
-OUT>  O .5372 .5384 .6966
-OUT>  O .7345 .6261 .0168
-OUT>  O .7352 .1323 .0181
-OUT>  O .7746 .8215 .7817
-OUT>  O .8012 .2312 .4295
-OUT>  O .8296 .7266 .4018
-OUT>  O .9062 .1296 .7287
-OUT>  O .9069 .4874 .7265
 OUT>  Si .0561 .7236 .3973
 OUT>  Si .2684 .3875 .1851
 OUT>  Si .2691 .9542 .1849
-OUT>  Si .7309 .0458 .8151
-OUT>  Si .7316 .6125 .8149
-OUT>  Si .9439 .2764 .6027
 OUT>@DYNINFO
 OUT>  # WARNING: Using fallback Debye temperature value!
 OUT>  element Ca
@@ -478,7 +448,7 @@ Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_CaO3Si_sg2_cod9005777.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
 OUT>#
@@ -520,13 +490,10 @@ OUT>  lengths 7.0653 7.3202 7.9258
 OUT>  angles 103.426 95.217 90.055
 OUT>@SPACEGROUP
 OUT>  2
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Ca .23599 .07081 .79759
 OUT>  Ca .2394 .57734 .80169
 OUT>  Ca .47309 .2496 .49667
-OUT>  Ca .52691 .7504 .50333
-OUT>  Ca .7606 .42266 .19831
-OUT>  Ca .76401 .92919 .20241
 OUT>  O .0931 .5126 .2735
 OUT>  O .0938 .8704 .2713
 OUT>  O .1704 .2734 .5982
@@ -536,21 +503,9 @@ OUT>  O .2648 .8677 .9819
 OUT>  O .2655 .3739 .9832
 OUT>  O .4628 .4616 .3034
 OUT>  O .4641 .9385 .3014
-OUT>  O .5359 .0615 .6986
-OUT>  O .5372 .5384 .6966
-OUT>  O .7345 .6261 .0168
-OUT>  O .7352 .1323 .0181
-OUT>  O .7746 .8215 .7817
-OUT>  O .8012 .2312 .4295
-OUT>  O .8296 .7266 .4018
-OUT>  O .9062 .1296 .7287
-OUT>  O .9069 .4874 .7265
 OUT>  Si .0561 .7236 .3973
 OUT>  Si .2684 .3875 .1851
 OUT>  Si .2691 .9542 .1849
-OUT>  Si .7309 .0458 .8151
-OUT>  Si .7316 .6125 .8149
-OUT>  Si .9439 .2764 .6027
 OUT>@DYNINFO
 OUT>  # WARNING: Using fallback Debye temperature value!
 OUT>  element Ca
@@ -586,7 +541,7 @@ Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_CaO3Si_sg2_cod9005777.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
 OUT>#
@@ -628,13 +583,10 @@ OUT>  lengths 7.0653 7.3202 7.9258
 OUT>  angles 103.426 95.217 90.055
 OUT>@SPACEGROUP
 OUT>  2
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Ca .23599 .07081 .79759
 OUT>  Ca .2394 .57734 .80169
 OUT>  Ca .47309 .2496 .49667
-OUT>  Ca .52691 .7504 .50333
-OUT>  Ca .7606 .42266 .19831
-OUT>  Ca .76401 .92919 .20241
 OUT>  O .0931 .5126 .2735
 OUT>  O .0938 .8704 .2713
 OUT>  O .1704 .2734 .5982
@@ -644,21 +596,9 @@ OUT>  O .2648 .8677 .9819
 OUT>  O .2655 .3739 .9832
 OUT>  O .4628 .4616 .3034
 OUT>  O .4641 .9385 .3014
-OUT>  O .5359 .0615 .6986
-OUT>  O .5372 .5384 .6966
-OUT>  O .7345 .6261 .0168
-OUT>  O .7352 .1323 .0181
-OUT>  O .7746 .8215 .7817
-OUT>  O .8012 .2312 .4295
-OUT>  O .8296 .7266 .4018
-OUT>  O .9062 .1296 .7287
-OUT>  O .9069 .4874 .7265
 OUT>  Si .0561 .7236 .3973
 OUT>  Si .2684 .3875 .1851
 OUT>  Si .2691 .9542 .1849
-OUT>  Si .7309 .0458 .8151
-OUT>  Si .7316 .6125 .8149
-OUT>  Si .9439 .2764 .6027
 OUT>@DYNINFO
 OUT>  # WARNING: Using fallback Debye temperature value!
 OUT>  element Ca
@@ -698,7 +638,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): ignoring uiso info present in CIF 
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Anisotropic displacement for Ni ignored (u11=0.0068, u12=0, u13=0.0011, u22=0.0066, u23=0, u33=0.0082) [warn#50]
 Verifying that resulting ncmat data can be loaded
 Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># F7FeNa2Ni (orthorombic, SG-74)
 OUT>#
@@ -747,51 +687,14 @@ OUT>  lengths 7.2338 10.305 7.4529
 OUT>  angles 90 90 90
 OUT>@SPACEGROUP
 OUT>  74
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Fe 0 0 1/2
-OUT>  Fe 0 1/2 1/2
-OUT>  Fe 1/2 0 0
-OUT>  Fe 1/2 1/2 0
 OUT>  Ni 1/4 1/4 1/4
-OUT>  Ni 1/4 3/4 3/4
-OUT>  Ni 3/4 1/4 1/4
-OUT>  Ni 3/4 3/4 3/4
 OUT>  X1 0 1/4 .1473
-OUT>  X1 0 3/4 .8527
-OUT>  X1 1/2 1/4 .3527
-OUT>  X1 1/2 3/4 .6473
 OUT>  X2 0 .0891 .7299
-OUT>  X2 0 .4109 .7299
-OUT>  X2 0 .5891 .2701
-OUT>  X2 0 .9109 .2701
-OUT>  X2 1/2 .0891 .7701
-OUT>  X2 1/2 .4109 .7701
-OUT>  X2 1/2 .5891 .2299
-OUT>  X2 1/2 .9109 .2299
 OUT>  X3 .196 .116 .4348
-OUT>  X3 .196 .384 .4348
-OUT>  X3 .196 .616 .5652
-OUT>  X3 .196 .884 .5652
-OUT>  X3 .304 .116 .0652
-OUT>  X3 .304 .384 .0652
-OUT>  X3 .304 .616 .9348
-OUT>  X3 .304 .884 .9348
-OUT>  X3 .696 .116 .0652
-OUT>  X3 .696 .384 .0652
-OUT>  X3 .696 .616 .9348
-OUT>  X3 .696 .884 .9348
-OUT>  X3 .804 .116 .4348
-OUT>  X3 .804 .384 .4348
-OUT>  X3 .804 .616 .5652
-OUT>  X3 .804 .884 .5652
 OUT>  X4 0 0 0
-OUT>  X4 0 1/2 0
-OUT>  X4 1/2 0 1/2
-OUT>  X4 1/2 1/2 1/2
 OUT>  X5 1/4 1/4 3/4
-OUT>  X5 1/4 3/4 1/4
-OUT>  X5 3/4 1/4 3/4
-OUT>  X5 3/4 3/4 1/4
 OUT>@ATOMDB
 OUT>  X1 is F
 OUT>  X2 is F
@@ -893,51 +796,14 @@ OUT>  lengths 7.2338 10.305 7.4529
 OUT>  angles 90 90 90
 OUT>@SPACEGROUP
 OUT>  74
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Fe 0 0 1/2
-OUT>  Fe 0 1/2 1/2
-OUT>  Fe 1/2 0 0
-OUT>  Fe 1/2 1/2 0
 OUT>  Ni 1/4 1/4 1/4
-OUT>  Ni 1/4 3/4 3/4
-OUT>  Ni 3/4 1/4 1/4
-OUT>  Ni 3/4 3/4 3/4
 OUT>  X1 0 1/4 .1473
-OUT>  X1 0 3/4 .8527
-OUT>  X1 1/2 1/4 .3527
-OUT>  X1 1/2 3/4 .6473
 OUT>  X2 0 .0891 .7299
-OUT>  X2 0 .4109 .7299
-OUT>  X2 0 .5891 .2701
-OUT>  X2 0 .9109 .2701
-OUT>  X2 1/2 .0891 .7701
-OUT>  X2 1/2 .4109 .7701
-OUT>  X2 1/2 .5891 .2299
-OUT>  X2 1/2 .9109 .2299
 OUT>  X3 .196 .116 .4348
-OUT>  X3 .196 .384 .4348
-OUT>  X3 .196 .616 .5652
-OUT>  X3 .196 .884 .5652
-OUT>  X3 .304 .116 .0652
-OUT>  X3 .304 .384 .0652
-OUT>  X3 .304 .616 .9348
-OUT>  X3 .304 .884 .9348
-OUT>  X3 .696 .116 .0652
-OUT>  X3 .696 .384 .0652
-OUT>  X3 .696 .616 .9348
-OUT>  X3 .696 .884 .9348
-OUT>  X3 .804 .116 .4348
-OUT>  X3 .804 .384 .4348
-OUT>  X3 .804 .616 .5652
-OUT>  X3 .804 .884 .5652
 OUT>  X4 0 0 0
-OUT>  X4 0 1/2 0
-OUT>  X4 1/2 0 1/2
-OUT>  X4 1/2 1/2 1/2
 OUT>  X5 1/4 1/4 3/4
-OUT>  X5 1/4 3/4 1/4
-OUT>  X5 3/4 1/4 3/4
-OUT>  X5 3/4 3/4 1/4
 OUT>@ATOMDB
 OUT>  X1 is F
 OUT>  X2 is F
@@ -1000,7 +866,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): ignoring uiso info present in CIF 
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Anisotropic displacement for Ni ignored (u11=0.0068, u12=0, u13=0.0011, u22=0.0066, u23=0, u33=0.0082) [warn#71]
 Verifying that resulting ncmat data can be loaded
 Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># F7FeNa2Ni (orthorombic, SG-74)
 OUT>#
@@ -1049,51 +915,14 @@ OUT>  lengths 7.2338 10.305 7.4529
 OUT>  angles 90 90 90
 OUT>@SPACEGROUP
 OUT>  74
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Fe 0 0 1/2
-OUT>  Fe 0 1/2 1/2
-OUT>  Fe 1/2 0 0
-OUT>  Fe 1/2 1/2 0
 OUT>  Ni 1/4 1/4 1/4
-OUT>  Ni 1/4 3/4 3/4
-OUT>  Ni 3/4 1/4 1/4
-OUT>  Ni 3/4 3/4 3/4
 OUT>  X1 0 1/4 .1473
-OUT>  X1 0 3/4 .8527
-OUT>  X1 1/2 1/4 .3527
-OUT>  X1 1/2 3/4 .6473
 OUT>  X2 0 .0891 .7299
-OUT>  X2 0 .4109 .7299
-OUT>  X2 0 .5891 .2701
-OUT>  X2 0 .9109 .2701
-OUT>  X2 1/2 .0891 .7701
-OUT>  X2 1/2 .4109 .7701
-OUT>  X2 1/2 .5891 .2299
-OUT>  X2 1/2 .9109 .2299
 OUT>  X3 .196 .116 .4348
-OUT>  X3 .196 .384 .4348
-OUT>  X3 .196 .616 .5652
-OUT>  X3 .196 .884 .5652
-OUT>  X3 .304 .116 .0652
-OUT>  X3 .304 .384 .0652
-OUT>  X3 .304 .616 .9348
-OUT>  X3 .304 .884 .9348
-OUT>  X3 .696 .116 .0652
-OUT>  X3 .696 .384 .0652
-OUT>  X3 .696 .616 .9348
-OUT>  X3 .696 .884 .9348
-OUT>  X3 .804 .116 .4348
-OUT>  X3 .804 .384 .4348
-OUT>  X3 .804 .616 .5652
-OUT>  X3 .804 .884 .5652
 OUT>  X4 0 0 0
-OUT>  X4 0 1/2 0
-OUT>  X4 1/2 0 1/2
-OUT>  X4 1/2 1/2 1/2
 OUT>  X5 1/4 1/4 3/4
-OUT>  X5 1/4 3/4 1/4
-OUT>  X5 3/4 1/4 3/4
-OUT>  X5 3/4 3/4 1/4
 OUT>@ATOMDB
 OUT>  X1 is F
 OUT>  X2 is F
@@ -1195,51 +1024,14 @@ OUT>  lengths 7.2338 10.305 7.4529
 OUT>  angles 90 90 90
 OUT>@SPACEGROUP
 OUT>  74
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Fe 0 0 1/2
-OUT>  Fe 0 1/2 1/2
-OUT>  Fe 1/2 0 0
-OUT>  Fe 1/2 1/2 0
 OUT>  Ni 1/4 1/4 1/4
-OUT>  Ni 1/4 3/4 3/4
-OUT>  Ni 3/4 1/4 1/4
-OUT>  Ni 3/4 3/4 3/4
 OUT>  X1 0 1/4 .1473
-OUT>  X1 0 3/4 .8527
-OUT>  X1 1/2 1/4 .3527
-OUT>  X1 1/2 3/4 .6473
 OUT>  X2 0 .0891 .7299
-OUT>  X2 0 .4109 .7299
-OUT>  X2 0 .5891 .2701
-OUT>  X2 0 .9109 .2701
-OUT>  X2 1/2 .0891 .7701
-OUT>  X2 1/2 .4109 .7701
-OUT>  X2 1/2 .5891 .2299
-OUT>  X2 1/2 .9109 .2299
 OUT>  X3 .196 .116 .4348
-OUT>  X3 .196 .384 .4348
-OUT>  X3 .196 .616 .5652
-OUT>  X3 .196 .884 .5652
-OUT>  X3 .304 .116 .0652
-OUT>  X3 .304 .384 .0652
-OUT>  X3 .304 .616 .9348
-OUT>  X3 .304 .884 .9348
-OUT>  X3 .696 .116 .0652
-OUT>  X3 .696 .384 .0652
-OUT>  X3 .696 .616 .9348
-OUT>  X3 .696 .884 .9348
-OUT>  X3 .804 .116 .4348
-OUT>  X3 .804 .384 .4348
-OUT>  X3 .804 .616 .5652
-OUT>  X3 .804 .884 .5652
 OUT>  X4 0 0 0
-OUT>  X4 0 1/2 0
-OUT>  X4 1/2 0 1/2
-OUT>  X4 1/2 1/2 1/2
 OUT>  X5 1/4 1/4 3/4
-OUT>  X5 1/4 3/4 1/4
-OUT>  X5 3/4 1/4 3/4
-OUT>  X5 3/4 3/4 1/4
 OUT>@ATOMDB
 OUT>  X1 is F
 OUT>  X2 is F
@@ -1288,7 +1080,7 @@ Attempting to load CIF data with gemmi
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_Sn_sg139_mp55.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># Sn (tetragonal, SG-139)
 OUT>#
@@ -1314,9 +1106,8 @@ OUT>  lengths 4.0583788219706 !! 3.32151997921
 OUT>  angles 90 90 90
 OUT>@SPACEGROUP
 OUT>  139
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Sn 0 0 0
-OUT>  Sn 1/2 1/2 1/2
 OUT>@DYNINFO
 OUT>  # WARNING: Using fallback Debye temperature value!
 OUT>  element Sn
@@ -1329,7 +1120,7 @@ Getting mp_55.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 Attempting to load CIF data with gemmi
 Self-consistency of structure was verified by spglib
 Writing autogen_Sn_sg139_mp55.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># Sn (tetragonal, SG-139)
 OUT>#
@@ -1355,9 +1146,8 @@ OUT>  lengths 4.0583788219706 !! 3.32151997921
 OUT>  angles 90 90 90
 OUT>@SPACEGROUP
 OUT>  139
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Sn 0 0 0
-OUT>  Sn 1/2 1/2 1/2
 OUT>@DYNINFO
 OUT>  # WARNING: Using fallback Debye temperature value!
 OUT>  element Sn
@@ -1371,7 +1161,7 @@ Attempting to load CIF data with gemmi
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_Sn_sg139_mp55.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># Sn (tetragonal, SG-139)
 OUT>#
@@ -1395,9 +1185,8 @@ OUT>  lengths 4.0583788219706 !! 3.32151997921
 OUT>  angles 90 90 90
 OUT>@SPACEGROUP
 OUT>  139
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Sn 0 0 0
-OUT>  Sn 1/2 1/2 1/2
 OUT>@DYNINFO
 OUT>  # Transferred from "Sn" in "stdlib::Sn_sg141.ncmat"
 OUT>  element Sn
@@ -1428,7 +1217,7 @@ Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_CaO3Si_sg2_cod9005777.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
 OUT>#
@@ -1467,13 +1256,10 @@ OUT>  lengths 7.0653 7.3202 7.9258
 OUT>  angles 103.426 95.217 90.055
 OUT>@SPACEGROUP
 OUT>  2
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Ca .23599 .07081 .79759
 OUT>  Ca .2394 .57734 .80169
 OUT>  Ca .47309 .2496 .49667
-OUT>  Ca .52691 .7504 .50333
-OUT>  Ca .7606 .42266 .19831
-OUT>  Ca .76401 .92919 .20241
 OUT>  O .0931 .5126 .2735
 OUT>  O .0938 .8704 .2713
 OUT>  O .1704 .2734 .5982
@@ -1483,21 +1269,9 @@ OUT>  O .2648 .8677 .9819
 OUT>  O .2655 .3739 .9832
 OUT>  O .4628 .4616 .3034
 OUT>  O .4641 .9385 .3014
-OUT>  O .5359 .0615 .6986
-OUT>  O .5372 .5384 .6966
-OUT>  O .7345 .6261 .0168
-OUT>  O .7352 .1323 .0181
-OUT>  O .7746 .8215 .7817
-OUT>  O .8012 .2312 .4295
-OUT>  O .8296 .7266 .4018
-OUT>  O .9062 .1296 .7287
-OUT>  O .9069 .4874 .7265
 OUT>  Si .0561 .7236 .3973
 OUT>  Si .2684 .3875 .1851
 OUT>  Si .2691 .9542 .1849
-OUT>  Si .7309 .0458 .8151
-OUT>  Si .7316 .6125 .8149
-OUT>  Si .9439 .2764 .6027
 OUT>@DYNINFO
 OUT>  # Transferred from "Ca" in "stdlib::CaSiO3_sg2_Wollastonite.ncmat;dcutoff=0.3"
 OUT>  element Ca
@@ -1595,7 +1369,7 @@ Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_Al_sg225.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># Al (cubic, SG-225)
 OUT>#
@@ -1619,11 +1393,8 @@ OUT>@CELL
 OUT>  cubic 4.036354272
 OUT>@SPACEGROUP
 OUT>  225
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Al 0 0 0
-OUT>  Al 0 1/2 1/2
-OUT>  Al 1/2 0 1/2
-OUT>  Al 1/2 1/2 0
 OUT>@DYNINFO
 OUT>  # WARNING: Using fallback Debye temperature value!
 OUT>  element Al
@@ -1638,7 +1409,7 @@ Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_Al99Cr_sg225.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># Al99Cr (cubic, SG-225)
 OUT>#
@@ -1664,11 +1435,8 @@ OUT>@CELL
 OUT>  cubic 4.036354272
 OUT>@SPACEGROUP
 OUT>  225
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  X1 0 0 0
-OUT>  X1 0 1/2 1/2
-OUT>  X1 1/2 0 1/2
-OUT>  X1 1/2 1/2 0
 OUT>@ATOMDB
 OUT>  X1 is 0.99 Al 0.01 Cr
 OUT>@DYNINFO
@@ -1685,7 +1453,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): ignoring uiso info present in CIF 
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): ignoring uiso info present in CIF input for "H2" since uiso_temperature parameter value is not provided [warn#89]
 Verifying that resulting ncmat data can be loaded
 Writing autogen_C3D2_sg221.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># C3D2 (cubic, SG-221)
 OUT>#
@@ -1714,10 +1482,8 @@ OUT>@CELL
 OUT>  cubic 4
 OUT>@SPACEGROUP
 OUT>  221
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  C 0 1/2 1/2
-OUT>  C 1/2 0 1/2
-OUT>  C 1/2 1/2 0
 OUT>  D 0 0 0
 OUT>  D 1/2 1/2 1/2
 OUT>@DYNINFO
@@ -1740,7 +1506,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): ignoring uiso info present in CIF 
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): ignoring uiso info present in CIF input for "H" since uiso_temperature parameter value is not provided [warn#91]
 Verifying that resulting ncmat data can be loaded
 Writing autogen_C3H2_sg221.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># C3H2 (cubic, SG-221)
 OUT>#
@@ -1771,10 +1537,8 @@ OUT>@CELL
 OUT>  cubic 4
 OUT>@SPACEGROUP
 OUT>  221
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  C 0 1/2 1/2
-OUT>  C 1/2 0 1/2
-OUT>  C 1/2 1/2 0
 OUT>  H 0 0 0
 OUT>  H 1/2 1/2 1/2
 OUT>@DYNINFO
@@ -1803,7 +1567,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): ignoring uiso info present in CIF 
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): ignoring uiso info present in CIF input for "0.6 H 0.4 D" since uiso_temperature parameter value is not provided [warn#93]
 Verifying that resulting ncmat data can be loaded
 Writing autogen_C15D4H6_sg221.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># C15D4H6 (cubic, SG-221)
 OUT>#
@@ -1834,10 +1598,8 @@ OUT>@CELL
 OUT>  cubic 4
 OUT>@SPACEGROUP
 OUT>  221
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  C 0 1/2 1/2
-OUT>  C 1/2 0 1/2
-OUT>  C 1/2 1/2 0
 OUT>  X1 0 0 0
 OUT>  X1 1/2 1/2 1/2
 OUT>@ATOMDB
@@ -1856,7 +1618,7 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 =================================================================================
 ============= CLI >>codid::9005777 -ostdout --via-ase<< ====================
-NCMAT v7
+NCMAT v8
 #
 # CaO3Si (triclinic, SG-2)
 #
@@ -1881,13 +1643,10 @@ NCMAT v7
   angles 103.426 95.217 90.055
 @SPACEGROUP
   2
-@ATOMPOSITIONS
+@ATOMSITES
   Ca .23599 .07081 .79759
   Ca .2394 .57734 .80169
   Ca .47309 .2496 .49667
-  Ca .52691 .7504 .50333
-  Ca .7606 .42266 .19831
-  Ca .76401 .92919 .20241
   O .0931 .5126 .2735
   O .0938 .8704 .2713
   O .1704 .2734 .5982
@@ -1897,21 +1656,9 @@ NCMAT v7
   O .2655 .3739 .9832
   O .4628 .4616 .3034
   O .4641 .9385 .3014
-  O .5359 .0615 .6986
-  O .5372 .5384 .6966
-  O .7345 .6261 .0168
-  O .7352 .1323 .0181
-  O .7746 .8215 .7817
-  O .8012 .2312 .4295
-  O .8296 .7266 .4018
-  O .9062 .1296 .7287
-  O .9069 .4874 .7265
   Si .0561 .7236 .3973
   Si .2684 .3875 .1851
   Si .2691 .9542 .1849
-  Si .7309 .0458 .8151
-  Si .7316 .6125 .8149
-  Si .9439 .2764 .6027
 @DYNINFO
   # WARNING: Using fallback Debye temperature value!
   element Ca
@@ -1937,7 +1684,7 @@ Attempting to load CIF data with gemmi
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing bla.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># Sn (tetragonal, SG-139)
 OUT>#
@@ -1961,9 +1708,8 @@ OUT>  lengths 4.0583788219706 !! 3.32151997921
 OUT>  angles 90 90 90
 OUT>@SPACEGROUP
 OUT>  139
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Sn 0 0 0
-OUT>  Sn 1/2 1/2 1/2
 OUT>@DYNINFO
 OUT>  # Transferred from "Sn" in "stdlib::Sn_sg141.ncmat"
 OUT>  element Sn
@@ -1994,7 +1740,7 @@ Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_CaO3Si_sg2_cod9005777.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
 OUT>#
@@ -2036,13 +1782,10 @@ OUT>  lengths 7.0653 7.3202 7.9258
 OUT>  angles 103.426 95.217 90.055
 OUT>@SPACEGROUP
 OUT>  2
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Ca .23599 .07081 .79759
 OUT>  Ca .2394 .57734 .80169
 OUT>  Ca .47309 .2496 .49667
-OUT>  Ca .52691 .7504 .50333
-OUT>  Ca .7606 .42266 .19831
-OUT>  Ca .76401 .92919 .20241
 OUT>  O .0931 .5126 .2735
 OUT>  O .0938 .8704 .2713
 OUT>  O .1704 .2734 .5982
@@ -2052,21 +1795,9 @@ OUT>  O .2648 .8677 .9819
 OUT>  O .2655 .3739 .9832
 OUT>  O .4628 .4616 .3034
 OUT>  O .4641 .9385 .3014
-OUT>  O .5359 .0615 .6986
-OUT>  O .5372 .5384 .6966
-OUT>  O .7345 .6261 .0168
-OUT>  O .7352 .1323 .0181
-OUT>  O .7746 .8215 .7817
-OUT>  O .8012 .2312 .4295
-OUT>  O .8296 .7266 .4018
-OUT>  O .9062 .1296 .7287
-OUT>  O .9069 .4874 .7265
 OUT>  Si .0561 .7236 .3973
 OUT>  Si .2684 .3875 .1851
 OUT>  Si .2691 .9542 .1849
-OUT>  Si .7309 .0458 .8151
-OUT>  Si .7316 .6125 .8149
-OUT>  Si .9439 .2764 .6027
 OUT>@ATOMDB
 OUT>  Si 28.09u 4.1491fm 0.004b 0.171b
 OUT>@DYNINFO
@@ -2104,7 +1835,7 @@ Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_CaO3Si_sg2_cod9005777.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
 OUT>#
@@ -2146,13 +1877,10 @@ OUT>  lengths 7.0653 7.3202 7.9258
 OUT>  angles 103.426 95.217 90.055
 OUT>@SPACEGROUP
 OUT>  2
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Ca .23599 .07081 .79759
 OUT>  Ca .2394 .57734 .80169
 OUT>  Ca .47309 .2496 .49667
-OUT>  Ca .52691 .7504 .50333
-OUT>  Ca .7606 .42266 .19831
-OUT>  Ca .76401 .92919 .20241
 OUT>  O .0931 .5126 .2735
 OUT>  O .0938 .8704 .2713
 OUT>  O .1704 .2734 .5982
@@ -2162,21 +1890,9 @@ OUT>  O .2648 .8677 .9819
 OUT>  O .2655 .3739 .9832
 OUT>  O .4628 .4616 .3034
 OUT>  O .4641 .9385 .3014
-OUT>  O .5359 .0615 .6986
-OUT>  O .5372 .5384 .6966
-OUT>  O .7345 .6261 .0168
-OUT>  O .7352 .1323 .0181
-OUT>  O .7746 .8215 .7817
-OUT>  O .8012 .2312 .4295
-OUT>  O .8296 .7266 .4018
-OUT>  O .9062 .1296 .7287
-OUT>  O .9069 .4874 .7265
 OUT>  Si .0561 .7236 .3973
 OUT>  Si .2684 .3875 .1851
 OUT>  Si .2691 .9542 .1849
-OUT>  Si .7309 .0458 .8151
-OUT>  Si .7316 .6125 .8149
-OUT>  Si .9439 .2764 .6027
 OUT>@ATOMDB
 OUT>  Si 28.09u 0fm 0b 0b
 OUT>@DYNINFO
@@ -2216,7 +1932,7 @@ Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_CaO3Si_sg2_cod9005777.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
 OUT>#
@@ -2258,13 +1974,10 @@ OUT>  lengths 7.0653 7.3202 7.9258
 OUT>  angles 103.426 95.217 90.055
 OUT>@SPACEGROUP
 OUT>  2
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Ca .23599 .07081 .79759
 OUT>  Ca .2394 .57734 .80169
 OUT>  Ca .47309 .2496 .49667
-OUT>  Ca .52691 .7504 .50333
-OUT>  Ca .7606 .42266 .19831
-OUT>  Ca .76401 .92919 .20241
 OUT>  O .0931 .5126 .2735
 OUT>  O .0938 .8704 .2713
 OUT>  O .1704 .2734 .5982
@@ -2274,21 +1987,9 @@ OUT>  O .2648 .8677 .9819
 OUT>  O .2655 .3739 .9832
 OUT>  O .4628 .4616 .3034
 OUT>  O .4641 .9385 .3014
-OUT>  O .5359 .0615 .6986
-OUT>  O .5372 .5384 .6966
-OUT>  O .7345 .6261 .0168
-OUT>  O .7352 .1323 .0181
-OUT>  O .7746 .8215 .7817
-OUT>  O .8012 .2312 .4295
-OUT>  O .8296 .7266 .4018
-OUT>  O .9062 .1296 .7287
-OUT>  O .9069 .4874 .7265
 OUT>  Si .0561 .7236 .3973
 OUT>  Si .2684 .3875 .1851
 OUT>  Si .2691 .9542 .1849
-OUT>  Si .7309 .0458 .8151
-OUT>  Si .7316 .6125 .8149
-OUT>  Si .9439 .2764 .6027
 OUT>@ATOMDB
 OUT>  Ca 128.09u 0fm 0b 0b
 OUT>  Si 28.09u 0fm 0b 0b
@@ -2335,7 +2036,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): SG-70 available in multiple choice
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_S_sg70.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># S (orthorombic, SG-70)
 OUT>#
@@ -2365,135 +2066,11 @@ OUT>  lengths 10.467 12.87 24.493
 OUT>  angles 90 90 90
 OUT>@SPACEGROUP
 OUT>  70
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  S .0196 .0776 .4234
-OUT>  S .0196 .4224 .0766
-OUT>  S .0196 .5776 .9234
-OUT>  S .0196 .9224 .5766
 OUT>  S .0819 .1455 .879
-OUT>  S .0819 .3545 .621
-OUT>  S .0819 .6455 .379
-OUT>  S .0819 .8545 .121
 OUT>  S .0888 .0323 .246
-OUT>  S .0888 .4677 .254
-OUT>  S .0888 .5323 .746
-OUT>  S .0888 .9677 .754
 OUT>  S .0906 .1551 .2987
-OUT>  S .0906 .3449 .2013
-OUT>  S .0906 .6551 .7987
-OUT>  S .0906 .8449 .7013
-OUT>  S .1594 .0949 .9513
-OUT>  S .1594 .4051 .5487
-OUT>  S .1594 .5949 .4513
-OUT>  S .1594 .9051 .0487
-OUT>  S .1612 .2177 .004
-OUT>  S .1612 .2823 .496
-OUT>  S .1612 .7177 .504
-OUT>  S .1612 .7823 .996
-OUT>  S .1681 .1045 .371
-OUT>  S .1681 .3955 .129
-OUT>  S .1681 .6045 .871
-OUT>  S .1681 .8955 .629
-OUT>  S .2304 .1724 .8266
-OUT>  S .2304 .3276 .6734
-OUT>  S .2304 .6724 .3266
-OUT>  S .2304 .8276 .1734
-OUT>  S .2696 .1724 .6734
-OUT>  S .2696 .3276 .8266
-OUT>  S .2696 .6724 .1734
-OUT>  S .2696 .8276 .3266
-OUT>  S .3319 .1045 .129
-OUT>  S .3319 .3955 .371
-OUT>  S .3319 .6045 .629
-OUT>  S .3319 .8955 .871
-OUT>  S .3388 .2177 .496
-OUT>  S .3388 .2823 .004
-OUT>  S .3388 .7177 .996
-OUT>  S .3388 .7823 .504
-OUT>  S .3406 .0949 .5487
-OUT>  S .3406 .4051 .9513
-OUT>  S .3406 .5949 .0487
-OUT>  S .3406 .9051 .4513
-OUT>  S .4094 .1551 .2013
-OUT>  S .4094 .3449 .2987
-OUT>  S .4094 .6551 .7013
-OUT>  S .4094 .8449 .7987
-OUT>  S .4112 .0323 .254
-OUT>  S .4112 .4677 .246
-OUT>  S .4112 .5323 .754
-OUT>  S .4112 .9677 .746
-OUT>  S .4181 .1455 .621
-OUT>  S .4181 .3545 .879
-OUT>  S .4181 .6455 .121
-OUT>  S .4181 .8545 .379
-OUT>  S .4804 .0776 .0766
-OUT>  S .4804 .4224 .4234
-OUT>  S .4804 .5776 .5766
-OUT>  S .4804 .9224 .9234
-OUT>  S .5196 .0776 .9234
-OUT>  S .5196 .4224 .5766
-OUT>  S .5196 .5776 .4234
-OUT>  S .5196 .9224 .0766
-OUT>  S .5819 .1455 .379
-OUT>  S .5819 .3545 .121
-OUT>  S .5819 .6455 .879
-OUT>  S .5819 .8545 .621
-OUT>  S .5888 .0323 .746
-OUT>  S .5888 .4677 .754
-OUT>  S .5888 .5323 .246
-OUT>  S .5888 .9677 .254
-OUT>  S .5906 .1551 .7987
-OUT>  S .5906 .3449 .7013
-OUT>  S .5906 .6551 .2987
-OUT>  S .5906 .8449 .2013
-OUT>  S .6594 .0949 .4513
-OUT>  S .6594 .4051 .0487
-OUT>  S .6594 .5949 .9513
-OUT>  S .6594 .9051 .5487
-OUT>  S .6612 .2177 .504
-OUT>  S .6612 .2823 .996
-OUT>  S .6612 .7177 .004
-OUT>  S .6612 .7823 .496
-OUT>  S .6681 .1045 .871
-OUT>  S .6681 .3955 .629
-OUT>  S .6681 .6045 .371
-OUT>  S .6681 .8955 .129
-OUT>  S .7304 .1724 .3266
-OUT>  S .7304 .3276 .1734
-OUT>  S .7304 .6724 .8266
-OUT>  S .7304 .8276 .6734
-OUT>  S .7696 .1724 .1734
-OUT>  S .7696 .3276 .3266
-OUT>  S .7696 .6724 .6734
-OUT>  S .7696 .8276 .8266
-OUT>  S .8319 .1045 .629
-OUT>  S .8319 .3955 .871
-OUT>  S .8319 .6045 .129
-OUT>  S .8319 .8955 .371
-OUT>  S .8388 .2177 .996
-OUT>  S .8388 .2823 .504
-OUT>  S .8388 .7177 .496
-OUT>  S .8388 .7823 .004
-OUT>  S .8406 .0949 .0487
-OUT>  S .8406 .4051 .4513
-OUT>  S .8406 .5949 .5487
-OUT>  S .8406 .9051 .9513
-OUT>  S .9094 .1551 .7013
-OUT>  S .9094 .3449 .7987
-OUT>  S .9094 .6551 .2013
-OUT>  S .9094 .8449 .2987
-OUT>  S .9112 .0323 .754
-OUT>  S .9112 .4677 .746
-OUT>  S .9112 .5323 .254
-OUT>  S .9112 .9677 .246
-OUT>  S .9181 .1455 .121
-OUT>  S .9181 .3545 .379
-OUT>  S .9181 .6455 .621
-OUT>  S .9181 .8545 .879
-OUT>  S .9804 .0776 .5766
-OUT>  S .9804 .4224 .9234
-OUT>  S .9804 .5776 .0766
-OUT>  S .9804 .9224 .4234
 OUT>@DYNINFO
 OUT>  # WARNING: Using fallback Debye temperature value!
 OUT>  element S
@@ -2507,7 +2084,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): Overriding spacegroup to "F d d d:
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_S_sg70.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># S (orthorombic, SG-70)
 OUT>#
@@ -2537,135 +2114,11 @@ OUT>  lengths 10.467 12.87 24.493
 OUT>  angles 90 90 90
 OUT>@SPACEGROUP
 OUT>  70
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  S .0196 .0776 .4234
-OUT>  S .0196 .4224 .0766
-OUT>  S .0196 .5776 .9234
-OUT>  S .0196 .9224 .5766
 OUT>  S .0819 .1455 .879
-OUT>  S .0819 .3545 .621
-OUT>  S .0819 .6455 .379
-OUT>  S .0819 .8545 .121
 OUT>  S .0888 .0323 .246
-OUT>  S .0888 .4677 .254
-OUT>  S .0888 .5323 .746
-OUT>  S .0888 .9677 .754
 OUT>  S .0906 .1551 .2987
-OUT>  S .0906 .3449 .2013
-OUT>  S .0906 .6551 .7987
-OUT>  S .0906 .8449 .7013
-OUT>  S .1594 .0949 .9513
-OUT>  S .1594 .4051 .5487
-OUT>  S .1594 .5949 .4513
-OUT>  S .1594 .9051 .0487
-OUT>  S .1612 .2177 .004
-OUT>  S .1612 .2823 .496
-OUT>  S .1612 .7177 .504
-OUT>  S .1612 .7823 .996
-OUT>  S .1681 .1045 .371
-OUT>  S .1681 .3955 .129
-OUT>  S .1681 .6045 .871
-OUT>  S .1681 .8955 .629
-OUT>  S .2304 .1724 .8266
-OUT>  S .2304 .3276 .6734
-OUT>  S .2304 .6724 .3266
-OUT>  S .2304 .8276 .1734
-OUT>  S .2696 .1724 .6734
-OUT>  S .2696 .3276 .8266
-OUT>  S .2696 .6724 .1734
-OUT>  S .2696 .8276 .3266
-OUT>  S .3319 .1045 .129
-OUT>  S .3319 .3955 .371
-OUT>  S .3319 .6045 .629
-OUT>  S .3319 .8955 .871
-OUT>  S .3388 .2177 .496
-OUT>  S .3388 .2823 .004
-OUT>  S .3388 .7177 .996
-OUT>  S .3388 .7823 .504
-OUT>  S .3406 .0949 .5487
-OUT>  S .3406 .4051 .9513
-OUT>  S .3406 .5949 .0487
-OUT>  S .3406 .9051 .4513
-OUT>  S .4094 .1551 .2013
-OUT>  S .4094 .3449 .2987
-OUT>  S .4094 .6551 .7013
-OUT>  S .4094 .8449 .7987
-OUT>  S .4112 .0323 .254
-OUT>  S .4112 .4677 .246
-OUT>  S .4112 .5323 .754
-OUT>  S .4112 .9677 .746
-OUT>  S .4181 .1455 .621
-OUT>  S .4181 .3545 .879
-OUT>  S .4181 .6455 .121
-OUT>  S .4181 .8545 .379
-OUT>  S .4804 .0776 .0766
-OUT>  S .4804 .4224 .4234
-OUT>  S .4804 .5776 .5766
-OUT>  S .4804 .9224 .9234
-OUT>  S .5196 .0776 .9234
-OUT>  S .5196 .4224 .5766
-OUT>  S .5196 .5776 .4234
-OUT>  S .5196 .9224 .0766
-OUT>  S .5819 .1455 .379
-OUT>  S .5819 .3545 .121
-OUT>  S .5819 .6455 .879
-OUT>  S .5819 .8545 .621
-OUT>  S .5888 .0323 .746
-OUT>  S .5888 .4677 .754
-OUT>  S .5888 .5323 .246
-OUT>  S .5888 .9677 .254
-OUT>  S .5906 .1551 .7987
-OUT>  S .5906 .3449 .7013
-OUT>  S .5906 .6551 .2987
-OUT>  S .5906 .8449 .2013
-OUT>  S .6594 .0949 .4513
-OUT>  S .6594 .4051 .0487
-OUT>  S .6594 .5949 .9513
-OUT>  S .6594 .9051 .5487
-OUT>  S .6612 .2177 .504
-OUT>  S .6612 .2823 .996
-OUT>  S .6612 .7177 .004
-OUT>  S .6612 .7823 .496
-OUT>  S .6681 .1045 .871
-OUT>  S .6681 .3955 .629
-OUT>  S .6681 .6045 .371
-OUT>  S .6681 .8955 .129
-OUT>  S .7304 .1724 .3266
-OUT>  S .7304 .3276 .1734
-OUT>  S .7304 .6724 .8266
-OUT>  S .7304 .8276 .6734
-OUT>  S .7696 .1724 .1734
-OUT>  S .7696 .3276 .3266
-OUT>  S .7696 .6724 .6734
-OUT>  S .7696 .8276 .8266
-OUT>  S .8319 .1045 .629
-OUT>  S .8319 .3955 .871
-OUT>  S .8319 .6045 .129
-OUT>  S .8319 .8955 .371
-OUT>  S .8388 .2177 .996
-OUT>  S .8388 .2823 .504
-OUT>  S .8388 .7177 .496
-OUT>  S .8388 .7823 .004
-OUT>  S .8406 .0949 .0487
-OUT>  S .8406 .4051 .4513
-OUT>  S .8406 .5949 .5487
-OUT>  S .8406 .9051 .9513
-OUT>  S .9094 .1551 .7013
-OUT>  S .9094 .3449 .7987
-OUT>  S .9094 .6551 .2013
-OUT>  S .9094 .8449 .2987
-OUT>  S .9112 .0323 .754
-OUT>  S .9112 .4677 .746
-OUT>  S .9112 .5323 .254
-OUT>  S .9112 .9677 .246
-OUT>  S .9181 .1455 .121
-OUT>  S .9181 .3545 .379
-OUT>  S .9181 .6455 .621
-OUT>  S .9181 .8545 .879
-OUT>  S .9804 .0776 .5766
-OUT>  S .9804 .4224 .9234
-OUT>  S .9804 .5776 .0766
-OUT>  S .9804 .9224 .4234
 OUT>@DYNINFO
 OUT>  # WARNING: Using fallback Debye temperature value!
 OUT>  element S
@@ -2679,7 +2132,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): Overriding spacegroup to "F d d d:
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_S_sg70.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># S (orthorombic, SG-70)
 OUT>#
@@ -2709,135 +2162,11 @@ OUT>  lengths 10.467 12.87 24.493
 OUT>  angles 90 90 90
 OUT>@SPACEGROUP
 OUT>  70
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  S .0196 .0776 .4234
-OUT>  S .0196 .4224 .0766
-OUT>  S .0196 .5776 .9234
-OUT>  S .0196 .9224 .5766
 OUT>  S .0819 .1455 .879
-OUT>  S .0819 .3545 .621
-OUT>  S .0819 .6455 .379
-OUT>  S .0819 .8545 .121
 OUT>  S .0888 .0323 .246
-OUT>  S .0888 .4677 .254
-OUT>  S .0888 .5323 .746
-OUT>  S .0888 .9677 .754
 OUT>  S .0906 .1551 .2987
-OUT>  S .0906 .3449 .2013
-OUT>  S .0906 .6551 .7987
-OUT>  S .0906 .8449 .7013
-OUT>  S .1594 .0949 .9513
-OUT>  S .1594 .4051 .5487
-OUT>  S .1594 .5949 .4513
-OUT>  S .1594 .9051 .0487
-OUT>  S .1612 .2177 .004
-OUT>  S .1612 .2823 .496
-OUT>  S .1612 .7177 .504
-OUT>  S .1612 .7823 .996
-OUT>  S .1681 .1045 .371
-OUT>  S .1681 .3955 .129
-OUT>  S .1681 .6045 .871
-OUT>  S .1681 .8955 .629
-OUT>  S .2304 .1724 .8266
-OUT>  S .2304 .3276 .6734
-OUT>  S .2304 .6724 .3266
-OUT>  S .2304 .8276 .1734
-OUT>  S .2696 .1724 .6734
-OUT>  S .2696 .3276 .8266
-OUT>  S .2696 .6724 .1734
-OUT>  S .2696 .8276 .3266
-OUT>  S .3319 .1045 .129
-OUT>  S .3319 .3955 .371
-OUT>  S .3319 .6045 .629
-OUT>  S .3319 .8955 .871
-OUT>  S .3388 .2177 .496
-OUT>  S .3388 .2823 .004
-OUT>  S .3388 .7177 .996
-OUT>  S .3388 .7823 .504
-OUT>  S .3406 .0949 .5487
-OUT>  S .3406 .4051 .9513
-OUT>  S .3406 .5949 .0487
-OUT>  S .3406 .9051 .4513
-OUT>  S .4094 .1551 .2013
-OUT>  S .4094 .3449 .2987
-OUT>  S .4094 .6551 .7013
-OUT>  S .4094 .8449 .7987
-OUT>  S .4112 .0323 .254
-OUT>  S .4112 .4677 .246
-OUT>  S .4112 .5323 .754
-OUT>  S .4112 .9677 .746
-OUT>  S .4181 .1455 .621
-OUT>  S .4181 .3545 .879
-OUT>  S .4181 .6455 .121
-OUT>  S .4181 .8545 .379
-OUT>  S .4804 .0776 .0766
-OUT>  S .4804 .4224 .4234
-OUT>  S .4804 .5776 .5766
-OUT>  S .4804 .9224 .9234
-OUT>  S .5196 .0776 .9234
-OUT>  S .5196 .4224 .5766
-OUT>  S .5196 .5776 .4234
-OUT>  S .5196 .9224 .0766
-OUT>  S .5819 .1455 .379
-OUT>  S .5819 .3545 .121
-OUT>  S .5819 .6455 .879
-OUT>  S .5819 .8545 .621
-OUT>  S .5888 .0323 .746
-OUT>  S .5888 .4677 .754
-OUT>  S .5888 .5323 .246
-OUT>  S .5888 .9677 .254
-OUT>  S .5906 .1551 .7987
-OUT>  S .5906 .3449 .7013
-OUT>  S .5906 .6551 .2987
-OUT>  S .5906 .8449 .2013
-OUT>  S .6594 .0949 .4513
-OUT>  S .6594 .4051 .0487
-OUT>  S .6594 .5949 .9513
-OUT>  S .6594 .9051 .5487
-OUT>  S .6612 .2177 .504
-OUT>  S .6612 .2823 .996
-OUT>  S .6612 .7177 .004
-OUT>  S .6612 .7823 .496
-OUT>  S .6681 .1045 .871
-OUT>  S .6681 .3955 .629
-OUT>  S .6681 .6045 .371
-OUT>  S .6681 .8955 .129
-OUT>  S .7304 .1724 .3266
-OUT>  S .7304 .3276 .1734
-OUT>  S .7304 .6724 .8266
-OUT>  S .7304 .8276 .6734
-OUT>  S .7696 .1724 .1734
-OUT>  S .7696 .3276 .3266
-OUT>  S .7696 .6724 .6734
-OUT>  S .7696 .8276 .8266
-OUT>  S .8319 .1045 .629
-OUT>  S .8319 .3955 .871
-OUT>  S .8319 .6045 .129
-OUT>  S .8319 .8955 .371
-OUT>  S .8388 .2177 .996
-OUT>  S .8388 .2823 .504
-OUT>  S .8388 .7177 .496
-OUT>  S .8388 .7823 .004
-OUT>  S .8406 .0949 .0487
-OUT>  S .8406 .4051 .4513
-OUT>  S .8406 .5949 .5487
-OUT>  S .8406 .9051 .9513
-OUT>  S .9094 .1551 .7013
-OUT>  S .9094 .3449 .7987
-OUT>  S .9094 .6551 .2013
-OUT>  S .9094 .8449 .2987
-OUT>  S .9112 .0323 .754
-OUT>  S .9112 .4677 .746
-OUT>  S .9112 .5323 .254
-OUT>  S .9112 .9677 .246
-OUT>  S .9181 .1455 .121
-OUT>  S .9181 .3545 .379
-OUT>  S .9181 .6455 .621
-OUT>  S .9181 .8545 .879
-OUT>  S .9804 .0776 .5766
-OUT>  S .9804 .4224 .9234
-OUT>  S .9804 .5776 .0766
-OUT>  S .9804 .9224 .4234
 OUT>@DYNINFO
 OUT>  # WARNING: Using fallback Debye temperature value!
 OUT>  element S
@@ -2850,7 +2179,7 @@ Attempting to load CIF data with gemmi
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_Sn_sg139.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># Sn (tetragonal, SG-139)
 OUT>#
@@ -2875,9 +2204,8 @@ OUT>  lengths 4.05837882 !! 3.32151998
 OUT>  angles 90 90 90
 OUT>@SPACEGROUP
 OUT>  139
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Sn 0 0 0
-OUT>  Sn 1/2 1/2 1/2
 OUT>@DYNINFO
 OUT>  # WARNING: Using fallback Debye temperature value!
 OUT>  element Sn
@@ -2891,7 +2219,7 @@ Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_Sn_sg139.ncmat
-OUT>NCMAT v7
+OUT>NCMAT v8
 OUT>#
 OUT># Sn (tetragonal, SG-139)
 OUT>#
@@ -2916,9 +2244,8 @@ OUT>  lengths 4.0583788225477 !! 3.3215199810531
 OUT>  angles 90 90 90
 OUT>@SPACEGROUP
 OUT>  139
-OUT>@ATOMPOSITIONS
+OUT>@ATOMSITES
 OUT>  Sn 0 0 0
-OUT>  Sn 1/2 1/2 1/2
 OUT>@DYNINFO
 OUT>  # WARNING: Using fallback Debye temperature value!
 OUT>  element Sn
