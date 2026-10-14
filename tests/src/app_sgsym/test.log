@@ -1739,7 +1739,6 @@ Distinct cell constraint patterns: 9
   a, b=a, c, alpha=90, beta=90, gamma=90
   a, b=a, c=a, alpha, beta=alpha, gamma=alpha
   a, b=a, c=a, alpha=90, beta=90, gamma=90
-Compared with existing functions for 132480 cells: 7776 accepted by both (identical results), 124648 rejected by both, 56 only accepted by the new code (c=0 in rhombohedral axes)
 Examples of errors:
   225 check: Lattice parameter b is 0 (implied values must be filled in first)
   14:b1 complete: Lattice angle beta is 0 (it must be specified)
