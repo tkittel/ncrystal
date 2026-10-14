@@ -24,6 +24,7 @@
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/utils/NCStrView.hh"
+#include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
 
 namespace NC = NCrystal;
 
@@ -296,15 +297,15 @@ namespace NCRYSTAL_NAMESPACE {
         if ( ! ( si.n_atoms > 0 ) )
           NCRYSTAL_THROW2(BadInput,"StructureInfo n_atoms not a positive number: "<<si.n_atoms);
 
-        checkAndCompleteLattice( si.spacegroup, si.lattice_a,
-                                 si.lattice_b,  si.lattice_c );
-
-        checkAndCompleteLatticeAngles( si.spacegroup, si.alpha, si.beta, si.gamma );
-        if ( usesRhombohedralAxes( static_cast<int>(si.spacegroup), si.alpha )
-             && !( si.lattice_a == si.lattice_b
-                   && si.lattice_a == si.lattice_c ) )
-          NCRYSTAL_THROW2(BadInput,"Spacegroup ("<<si.spacegroup<<") in"
-                          " rhombohedral axes requires a=b=c");
+        if ( si.spacegroup > 230 )
+          NCRYSTAL_THROW2(BadInput,"invalid spacegroup number ("<<si.spacegroup<<")");
+        if ( si.spacegroup > 0 ) {
+          //(a declared setting is validated before checking the cell with it)
+          declaredSetting( si );
+          InfoUtils::completeAndCheckStructureInfoCell( si );
+        }
+        if ( !( si.lattice_a > 0.0 && si.lattice_b > 0.0 && si.lattice_c > 0.0 ) )
+          NCRYSTAL_THROW(BadInput,"lattice parameters must be positive numbers");
 
 
         if ( ! ( si.alpha > 0 && si.alpha < 180 &&

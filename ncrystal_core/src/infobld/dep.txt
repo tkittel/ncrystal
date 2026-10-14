@@ -1,5 +1,6 @@
 atomdb
 cfgutils
+extd_utils
 interfaces
 sgsym
 utils
