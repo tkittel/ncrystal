@@ -33,9 +33,6 @@ namespace NCRYSTAL_NAMESPACE {
   //group setting (i.e. the cell metric must be invariant under all rotation
   //parts of the operations), which are derived from the operations. The
   //length a and the angle alpha are never constrained to other parameters.
-  //
-  //TODO: Replace checkAndCompleteLattice[Angles]() in NCLatticeUtils.hh with
-  //this.
   struct SGCellConstraints {
     enum class LengthConstraint { Free, EqualToA };
     enum class AngleConstraint { Free, Is90, Is120, EqualToAlpha };
