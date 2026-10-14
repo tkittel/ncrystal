@@ -18,6 +18,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "NCLegacyLatticeChecks.hh"
 #include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 #include <iostream>
@@ -42,10 +43,11 @@ namespace {
   bool legacy( unsigned sg, Cell& cl )
   {
     try {
-      NC::checkAndCompleteLattice( sg, cl.a, cl.b, cl.c );
-      NC::checkAndCompleteLatticeAngles( sg, cl.alpha, cl.beta, cl.gamma );
+      NC::LegacyLattice::checkAndCompleteLattice( sg, cl.a, cl.b, cl.c );
+      NC::LegacyLattice::checkAndCompleteLatticeAngles( sg, cl.alpha,
+                                                        cl.beta, cl.gamma );
       //(the a=b=c check for rhombohedral axes was done by the callers):
-      if ( NC::usesRhombohedralAxes( sg, cl.alpha )
+      if ( NC::LegacyLattice::usesRhombohedralAxes( sg, cl.alpha )
            && !( cl.a == cl.b && cl.a == cl.c ) )
         return false;
     } catch ( NC::Error::BadInput& ) {

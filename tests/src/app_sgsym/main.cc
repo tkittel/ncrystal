@@ -691,52 +691,13 @@ namespace {
              && x.beta == y.beta && x.gamma == y.gamma );
   }
 
-  //The existing functionality (as used by NCInfoBuilder.cc), for comparison:
-  bool existingComplete( unsigned sgno, NC::CellParameters& cp )
-  {
-    try {
-      NC::checkAndCompleteLattice( sgno, cp.a, cp.b, cp.c );
-      NC::checkAndCompleteLatticeAngles( sgno, cp.alpha, cp.beta, cp.gamma );
-      if ( NC::usesRhombohedralAxes( static_cast<int>( sgno ), cp.alpha )
-           && !( cp.a == cp.b && cp.a == cp.c ) )
-        return false;
-      if ( !( cp.alpha > 0 && cp.alpha < 180 && cp.beta > 0 && cp.beta < 180
-              && cp.gamma > 0 && cp.gamma < 180 ) )
-        return false;
-    } catch ( NC::Error::BadInput& ) {
-      return false;
-    }
-    return true;
-  }
-
-  bool newComplete( const NC::SGCellConstraints& cc, NC::CellParameters& cp )
-  {
-    try {
-      cc.complete( cp );
-    } catch ( NC::Error::BadInput& ) {
-      return false;
-    }
-    return true;
-  }
-
-  //Settings supported by the existing functions (which only know the
-  //number): monoclinic with unique axis b, and for R space groups
-  //rhombohedral axes are detected from alpha!=90:
-  bool existingSupports( const NC::SpaceGroup& sg )
-  {
-    const auto ua = sg.settingInfo().uniqueAxis;
-    return ( sg.crystalSystem() != CS::Monoclinic
-             || ua == NC::SGUniqueAxis::b || ua == NC::SGUniqueAxis::minus_b );
-  }
 }
 
 void run()
 {
   std::cout << "setting index, setting, crystal system, setting info, cell"
             << " constraints:" << std::endl;
-  unsigned ncompared = 0, nsame_ok = 0, nsame_fail = 0, nnew_generalised = 0;
   std::set<std::string> patterns;
-  std::set<std::pair<unsigned,std::string>> compared_number_patterns;
   for ( std::uint16_t hn = 1; hn <= 530; ++hn ) {
     const NC::SpaceGroup sg{ NC::SpaceGroupSettingIdx{ hn } };
     const auto si = sg.settingInfo();
@@ -775,43 +736,6 @@ void run()
     ss << cc;
     patterns.insert( ss.str() );
 
-    //Compare with existing functions (only once per number and constraint
-    //pattern, since other settings would behave identically):
-    if ( existingSupports( sg )
-         && compared_number_patterns.emplace( sg.number(), ss.str() ).second ) {
-      const bool rhomb = si.hexFamilyAxes == NC::SGHexFamilyAxes::Rhombohedral;
-      for ( double b : { 0.0, 4.0, 5.0 } )
-      for ( double c : { 0.0, 4.0, 6.0 } )
-      for ( double alpha : { 0.0, 90.0, 60.0, 120.0 } )
-      for ( double beta : { 0.0, 90.0, 100.0, 60.0 } )
-      for ( double gamma : { 0.0, 90.0, 120.0, 60.0 } ) {
-        //Existing functions detect rhombohedral axes via alpha!=90 (and
-        //alpha>0):
-        if ( NC::isRhombohedralSpaceGroup( static_cast<int>( sg.number() ) )
-             && ( rhomb != ( alpha > 0.0 && alpha != 90.0 ) ) )
-          continue;
-        NC::CellParameters cp_old{ 4.0, b, c, alpha, beta, gamma };
-        NC::CellParameters cp_new = cp_old;
-        const bool ok_old = existingComplete( sg.number(), cp_old );
-        const bool ok_new = newComplete( cc, cp_new );
-        ++ncompared;
-        if ( ok_old ) {
-          REQUIRE( ok_new );
-          REQUIRE( cp_old.a == cp_new.a && cp_old.b == cp_new.b
-                   && cp_old.c == cp_new.c && cp_old.alpha == cp_new.alpha
-                   && cp_old.beta == cp_new.beta
-                   && cp_old.gamma == cp_new.gamma );
-          ++nsame_ok;
-        } else if ( !ok_new ) {
-          ++nsame_fail;
-        } else {
-          //Only allowed generalisation: c=0 in rhombohedral axes (existing
-          //code requires c to be specified, although c=a is implied):
-          REQUIRE( rhomb && c == 0.0 );
-          ++nnew_generalised;
-        }
-      }
-    }
     std::cout << "  " << hn << " " << sg << " " << cs << " " << si << " ["
               << cc << "]" << std::endl;
   }
@@ -820,12 +744,6 @@ void run()
   for ( auto& p : patterns )
     std::cout << "  " << p << std::endl;
   REQUIRE( patterns.size() == 9 );
-  std::cout << "Compared with existing functions for " << ncompared
-            << " cells: " << nsame_ok << " accepted by both (identical"
-            << " results), " << nsame_fail << " rejected by both, "
-            << nnew_generalised << " only accepted by the new code (c=0"
-            << " in rhombohedral axes)" << std::endl;
-
   std::cout << "Examples of errors:" << std::endl;
   auto showErr = []( const char * sgstr, NC::CellParameters cp, bool complete )
   {
