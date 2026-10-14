@@ -184,23 +184,53 @@ namespace NCRYSTAL_NAMESPACE {
               spacegroup = static_cast<unsigned>( SPCGRP_val );
             }
             nc_assert_always( spacegroup>=1 && spacegroup<=230 );
+            Optional<SpaceGroupSettingIdx> spacegroup_setting;
 
             double lattice_a = this->value_or("lattice_a",0.0);
-            double lattice_b, lattice_c;
             if ( ! (lattice_a>0.0&&lattice_a<1e6) )
               NCRYSTAL_THROW(BadInput,"Error in Lazy/Lau data: Missing or invalid lattice_a value");
-            lattice_b = this->value_or("lattice_b",0.0);
-            lattice_c = this->value_or("lattice_c",0.0);
-            checkAndCompleteLattice( spacegroup, lattice_a, lattice_b, lattice_c );
-
-            double lattice_aa = this->value_or("lattice_aa",0.0);
-            double lattice_bb = this->value_or("lattice_bb",0.0);
-            double lattice_cc = this->value_or("lattice_cc",0.0);
-            checkAndCompleteLatticeAngles( spacegroup, lattice_aa, lattice_bb, lattice_cc );
-            if ( usesRhombohedralAxes( static_cast<int>(spacegroup), lattice_aa ) )
+            //The cell (parameters implied by the symmetry may be left out)
+            //is completed and checked against the constraints of the setting
+            //(the declared one, else the default of the number):
+            StructureInfo cellsi;
+            cellsi.spacegroup = spacegroup;
+            cellsi.lattice_a = lattice_a;
+            cellsi.lattice_b = this->value_or("lattice_b",0.0);
+            cellsi.lattice_c = this->value_or("lattice_c",0.0);
+            cellsi.alpha = this->value_or("lattice_aa",0.0);
+            cellsi.beta = this->value_or("lattice_bb",0.0);
+            cellsi.gamma = this->value_or("lattice_cc",0.0);
+            if ( this->hasKey("spacegroup_setting") ) {
+              //Optional, e.g. "227:2" (cf. StructureInfo::spacegroup_setting),
+              //parsed strictly (written by ncmat2hkl in that form):
+              const std::string str = this->getStr("spacegroup_setting");
+              Optional<SpaceGroup> setting;
+              try {
+                setting.emplace( str, SpaceGroupParseMode::Strict );
+              } catch ( Error::BadInput& e ) {
+                NCRYSTAL_THROW2(BadInput,"Error in Lazy/Lau data: Invalid"
+                                " spacegroup_setting \""<<str<<"\": "<<e.what());
+              }
+              if ( setting.value().number() != spacegroup )
+                NCRYSTAL_THROW2(BadInput,"Error in Lazy/Lau data:"
+                                " spacegroup_setting "<<setting.value()
+                                <<" is not a setting of spacegroup "
+                                <<spacegroup);
+              cellsi.spacegroup_setting = setting.value().settingIdx();
+            }
+            InfoUtils::completeAndCheckStructureInfoCell( cellsi );
+            const SpaceGroup cellsg
+              = InfoUtils::getSpaceGroupFromStructureInfo( cellsi );
+            if ( StrView( cellsg.choice() ) == "r" )
               NCRYSTAL_THROW(BadInput,"Rhombohedral axes are not supported for"
                              " rhombohedral space groups in .laz/.lau files"
                              " (use hexagonal axes)");
+            const double lattice_b = cellsi.lattice_b;
+            const double lattice_c = cellsi.lattice_c;
+            const double lattice_aa = cellsi.alpha;
+            const double lattice_bb = cellsi.beta;
+            const double lattice_cc = cellsi.gamma;
+            spacegroup_setting = cellsi.spacegroup_setting;
 
             this->updateIfNonZero("lattice_a",lattice_a);
             this->updateIfNonZero("lattice_b",lattice_b);
@@ -284,24 +314,7 @@ namespace NCRYSTAL_NAMESPACE {
             si.beta = lattice_bb;
             si.gamma = lattice_cc;
             si.spacegroup = spacegroup;
-            if ( this->hasKey("spacegroup_setting") ) {
-              //Optional, e.g. "227:2" (cf. StructureInfo::spacegroup_setting),
-              //parsed strictly (written by ncmat2hkl in that form):
-              const std::string str = this->getStr("spacegroup_setting");
-              Optional<SpaceGroup> setting;
-              try {
-                setting.emplace( str, SpaceGroupParseMode::Strict );
-              } catch ( Error::BadInput& e ) {
-                NCRYSTAL_THROW2(BadInput,"Error in Lazy/Lau data: Invalid"
-                                " spacegroup_setting \""<<str<<"\": "<<e.what());
-              }
-              if ( setting.value().number() != spacegroup )
-                NCRYSTAL_THROW2(BadInput,"Error in Lazy/Lau data:"
-                                " spacegroup_setting "<<setting.value()
-                                <<" is not a setting of spacegroup "
-                                <<spacegroup);
-              si.spacegroup_setting = setting.value().settingIdx();
-            }
+            si.spacegroup_setting = spacegroup_setting;
 
             nc_assert_always( formulaPerUnitCell.has_value() );
             auto natoms = chemform_ntot * formulaPerUnitCell.value();
