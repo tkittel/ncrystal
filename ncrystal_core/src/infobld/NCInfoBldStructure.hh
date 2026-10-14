@@ -32,9 +32,9 @@ namespace NCRYSTAL_NAMESPACE {
     std::size_t totalNumberOfAtomsInUnitCell( const AtomInfoList& );
 
     //Validate and complete the unit cell: cell parameters (completed from
-    //the space group), atom positions (remapped to [0,1), sorted and checked
-    //for duplicates), the volume, and the space group setting (checked
-    //against the positions):
+    //the symmetry of the setting), atom positions (remapped to [0,1), sorted
+    //and checked for duplicates), the volume, and the space group setting
+    //(checked against the positions):
     void validateAndCompleteUnitCell( InfoBuilder::UnitCell& );
 
     //Verify that the atom positions have the symmetry of the declared space
