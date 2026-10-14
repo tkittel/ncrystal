@@ -23,7 +23,7 @@
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 #include "NCrystal/internal/utils/NCAtomUtils.hh"
 #include "NCrystal/internal/phys_utils/NCEqRefl.hh"
-#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
+#include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/atomdb/NCAtomDBExtender.hh"
 #include "NCrystal/internal/infobld/NCInfoBuilder.hh"
@@ -486,8 +486,8 @@ NC::Lazy::ParsedLazyData NC::Lazy::parseLazyTextData( const TextData& td, const 
 
 NC::InfoPtr NC::Lazy::buildInfo( const LazyCfgVars& cfg, const ParsedLazyData& data )
 {
-  auto hkllist = validateAndNormaliseHKLFsqList( settingOf( data.structInfo ),
-                                                 data.hkllist );
+  auto hkllist = validateAndNormaliseHKLFsqList(
+    InfoUtils::getSpaceGroupFromStructureInfo( data.structInfo ), data.hkllist );
   if ( hkllist.size() != data.hkllist.size() ) {
     NCRYSTAL_MSG("Trimming and normalising provided HKL list from "
                  <<data.hkllist.size()<<" to "<<hkllist.size()<<" entries");
@@ -503,7 +503,7 @@ NC::InfoPtr NC::Lazy::buildInfo( const LazyCfgVars& cfg, const ParsedLazyData& d
   builder.dataSourceName = cfg.dataSourceName;
 
   HKLList out_hkllist;
-  EqRefl sym( settingOf( data.structInfo ) );
+  EqRefl sym( InfoUtils::getSpaceGroupFromStructureInfo( data.structInfo ) );
   //  out_hkllist.reserve(512);
   double dsp_min(kInfinity);
   for ( auto& e : hkllist ) {
@@ -592,15 +592,6 @@ NC::InfoPtr NC::Lazy::buildInfoFromLazyData( const FactImpl::InfoRequest& req )
   cfg.atomdb = req.get_atomdb_parsed();
   auto parsedData = parseLazyTextData( req.textData() );
   return buildInfo( cfg, parsedData );
-}
-
-NC::SpaceGroup NC::Lazy::settingOf( const StructureInfo& si )
-{
-  nc_assert( si.spacegroup >= 1 && si.spacegroup <= 230 );
-  if ( si.spacegroup_setting.has_value() )
-    return SpaceGroup( si.spacegroup_setting.value() );
-  return SpaceGroup( std::to_string( si.spacegroup ),
-                     SpaceGroupParseMode::Relaxed );
 }
 
 std::vector<NC::Lazy::HKLFsq>
