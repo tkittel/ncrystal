@@ -77,7 +77,8 @@ namespace NCRYSTAL_NAMESPACE {
   //Whether the space group is one of the rhombohedral (R) ones, and whether
   //a unit cell of such a space group with lattice angle alpha (degrees) is
   //described in rhombohedral axes (a=b=c, alpha=beta=gamma) rather than in
-  //hexagonal axes (alpha=beta=90, gamma=120):
+  //hexagonal axes (alpha=beta=90, gamma=120). An unspecified alpha (0) means
+  //hexagonal axes:
   bool isRhombohedralSpaceGroup( int spacegroup );
   bool usesRhombohedralAxes( int spacegroup, double alpha );
 
