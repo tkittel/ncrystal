@@ -45,5 +45,5 @@ repeated reduction ok
 large input ok
 randomised inputs ok
 known bug case (li_from_li2o_e0grid) fixed ok
-  [real data] sum(maxdiff) old=56 robust=10
+  [real data] sum(maxdiff) old=44 robust=4
 real data across materials: no regression ok
