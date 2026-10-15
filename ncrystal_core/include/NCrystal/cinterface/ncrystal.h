@@ -649,6 +649,10 @@ extern "C" {
 #  undef ncrystal_fill_jsonarray
 #endif
 #define ncrystal_fill_jsonarray NCRYSTAL_APPLY_C_NAMESPACE(fill_jsonarray)
+#ifdef ncrystal_filtertable
+#  undef ncrystal_filtertable
+#endif
+#define ncrystal_filtertable NCRYSTAL_APPLY_C_NAMESPACE(filtertable)
 #ifdef ncrystal_flexmmcrun
 #  undef ncrystal_flexmmcrun
 #endif
@@ -1254,6 +1258,22 @@ extern "C" {
   /* Get time in seconds to load the cfg in question (if do_scatter=0 it will only */
   /* create Info objects). Caches are cleared as a side effect: */
   NCRYSTAL_API double ncrystal_benchloadcfg( const char * cfgstr, int do_scat, int repeat );
+
+  /* Get piecewise linear table of the macroscopic total cross section       */
+  /* (scattering+absorption, in 1/cm) of an isotropic material as a function */
+  /* function of neutron wavelength (in Aa). The first point is always at    */
+  /* wavelength=0, and beyond the last point, the last segment must be       */
+  /* extrapolated linearly. For a reference implementation showing how to    */
+  /* evaluate such a table, see the ncrystal_example_filter.c file in the    */
+  /* ncrystal repository. An error is raised if the cross section can not be */
+  /* tabulated reliably, and otherwise the table generally reproduces cross  */
+  /* sections with a precision of 0.1%. The wl and macroxs arrays must be    */
+  /* freed with ncrystal_dealloc_doubleptr. The options string is reserved   */
+  /* for future use, and must for now be NULL or empty.                      */
+  NCRYSTAL_API void ncrystal_filtertable( const char * cfgstr,
+                                          unsigned * n, double ** wl,
+                                          double ** macroxs,
+                                          const char * options );
 
   /* Generic query for information which will be returned as a JSON encoded  */
   /* string. The query is essentially a string list, encoded into a single   */
