@@ -793,14 +793,19 @@ NC::reducePtsByEquidistribution(Span<const double> x,
   //threshold are considered vanishing.
   constexpr double relative_noise_level = 1e-12;
   VectD kappa(n), dens(n - 1);
-  auto sqrtCurvatureDensity = [&](const VectD& f) -> VectD
+  //Curvature below the noise level is ignored. For f=y/ymax the absolute noise
+  //is ~relative_noise_level, which in log(f) becomes relative_noise_level/f
+  //(invf, unless null), so FFT rounding noise in the far tails can not drive
+  //the point selection:
+  auto sqrtCurvatureDensity = [&](const VectD& f, const VectD* invf) -> VectD
   {
     for (std::size_t i = 1; i + 1 < n; ++i) {
       const double s0 = (vectAt(f, i) - vectAt(f, i - 1)) / vectAt(width, i - 1);
       const double s1 = (vectAt(f, i + 1) - vectAt(f, i)) / vectAt(width, i);
       const double wmean = 0.5 * (vectAt(width, i - 1) + vectAt(width, i));
       const double k = ncabs(s1 - s0) / wmean;
-      const double noise = relative_noise_level / (wmean * wmean);
+      const double noise = ( relative_noise_level / (wmean * wmean)
+                             * ( invf ? vectAt(*invf, i) : 1.0 ) );
       vectAt(kappa, i) = ( k > noise ? k - noise : 0.0 );
     }
     kappa.front() = vectAt(kappa, 1);
@@ -826,10 +831,14 @@ NC::reducePtsByEquidistribution(Span<const double> x,
     const double invymax = 1.0 / ymax;
     for (std::size_t i = 0; i < n; ++i)
       vectAt(f, i) = y[i] * invymax;
-    dlin = sqrtCurvatureDensity(f);
-    for (std::size_t i = 0; i < n; ++i)
-      vectAt(f, i) = std::log(tailFloorSmooth(vectAt(f, i), cfg.tail_floor));
-    dlog = sqrtCurvatureDensity(f);
+    dlin = sqrtCurvatureDensity(f,nullptr);
+    VectD invf(n);
+    for (std::size_t i = 0; i < n; ++i) {
+      const double fs = tailFloorSmooth(vectAt(f, i), cfg.tail_floor);
+      vectAt(invf, i) = 1.0 / fs;
+      vectAt(f, i) = std::log(fs);
+    }
+    dlog = sqrtCurvatureDensity(f,&invf);
   }
 
   //Combine the densities. Weights are shares of the total integral. Terms which
@@ -948,7 +957,11 @@ NC::reducePtsByEquidistributionRobust(Span<const double> x,
   constexpr double relative_noise_level = 1e-12;
   const std::size_t hw = halfWidth;
   VectD kappa(n), dens(n - 1);
-  auto sqrtCurvatureDensity = [&](const VectD& f) -> VectD
+  //Curvature below the noise level is ignored. For f=y/ymax the absolute noise
+  //is ~relative_noise_level, which in log(f) becomes relative_noise_level/f
+  //(invf, unless null), so FFT rounding noise in the far tails can not drive
+  //the point selection:
+  auto sqrtCurvatureDensity = [&](const VectD& f, const VectD* invf) -> VectD
   {
     for (std::size_t i = 1; i + 1 < n; ++i) {
       //CHANGE vs. reducePtsByEquidistribution: slopes s0/s1 and their
@@ -962,7 +975,8 @@ NC::reducePtsByEquidistributionRobust(Span<const double> x,
       //noise-floor comparison below its original meaning:
       const double wmean = 0.5 * (vectAt(width, i - 1) + vectAt(width, i));
       const double k = ncabs(s1 - s0) / wmean;
-      const double noise = relative_noise_level / (wmean * wmean);
+      const double noise = ( relative_noise_level / (wmean * wmean)
+                             * ( invf ? vectAt(*invf, i) : 1.0 ) );
       vectAt(kappa, i) = ( k > noise ? k - noise : 0.0 );
     }
     kappa.front() = vectAt(kappa, 1);
@@ -989,10 +1003,14 @@ NC::reducePtsByEquidistributionRobust(Span<const double> x,
     const double invymax = 1.0 / ymax;
     for (std::size_t i = 0; i < n; ++i)
       vectAt(f, i) = y[i] * invymax;
-    dlin = sqrtCurvatureDensity(f);
-    for (std::size_t i = 0; i < n; ++i)
-      vectAt(f, i) = std::log(tailFloorSmooth(vectAt(f, i), cfg.tail_floor));
-    dlog = sqrtCurvatureDensity(f);
+    dlin = sqrtCurvatureDensity(f,nullptr);
+    VectD invf(n);
+    for (std::size_t i = 0; i < n; ++i) {
+      const double fs = tailFloorSmooth(vectAt(f, i), cfg.tail_floor);
+      vectAt(invf, i) = 1.0 / fs;
+      vectAt(f, i) = std::log(fs);
+    }
+    dlog = sqrtCurvatureDensity(f,&invf);
   }
 
   double w_uniform = cfg.equidistant_fraction;
