@@ -238,6 +238,11 @@ def _list_knllux6():
                                             293.15 ) ] ):
         yield f'{mat};temp={t:g};vdoslux={2000+i%3};knllux=6'
 
+def _list_maxlux():
+    #Both kernel luxury settings at their maximum (1-2 minutes for most
+    #materials, ~30s for diamond):
+    yield f'{_sl("C_sg227_Diamond")};temp=293.15;vdoslux=2006;knllux=6'
+
 _tests = {
     'sabxs_trouble' : lambda : list(_list_trouble()),
     'sabxs_testdata' : lambda : list(_list_testdata()),
@@ -249,4 +254,5 @@ _tests = {
     'long_sabxs_lowtemp' : lambda : list(_list_lowtemp()),
     'long_sabxs_vdoslux6' : lambda : list(_list_vdoslux6()),
     'long_sabxs_knllux6' : lambda : list(_list_knllux6()),
+    'long_sabxs_maxlux' : lambda : list(_list_maxlux()),
 }
