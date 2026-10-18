@@ -1,0 +1,5 @@
+=====> stdlib::Al_sg225.ncmat;temp=293.15;vdoslux=2000;knllux=6
+=====> stdlib::Polyethylene_CH2.ncmat;temp=20;vdoslux=2001;knllux=6
+=====> O_from_Li2O.ncmat;temp=1000;vdoslux=2002;knllux=6
+=====> stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=293.15;vdoslux=2000;knllux=6
+ALL OK

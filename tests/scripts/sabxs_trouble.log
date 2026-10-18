@@ -1,0 +1,22 @@
+=====> Li_from_Li2O.ncmat;temp=10;vdoslux=2000;knllux=0
+=====> Li_from_Li2O.ncmat;temp=293.15;vdoslux=2001;knllux=1
+=====> Li_from_Li2O.ncmat;temp=1000;vdoslux=2002;knllux=2
+=====> O_from_Li2O.ncmat;temp=10;vdoslux=2003;knllux=3
+=====> O_from_Li2O.ncmat;temp=293.15;vdoslux=2004;knllux=4
+=====> O_from_Li2O.ncmat;temp=1000;vdoslux=2005;knllux=5
+=====> stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=5;vdoslux=2000;knllux=1
+=====> stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=293.15;vdoslux=2001;knllux=2
+=====> stdlib::Al_sg225.ncmat;temp=293.15;vdoslux=2002;knllux=3
+=====> stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=10;vdoslux=2003;knllux=4
+=====> stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=1000;vdoslux=2004;knllux=5
+=====> stdlib::Li2O_sg225_LithiumOxide.ncmat;temp=10;vdoslux=2005;knllux=0
+=====> Li_from_Li2O.ncmat;temp=10;vdoslux=2004;knllux=4
+=====> O_from_Li2O.ncmat;temp=293.15;vdoslux=2001;knllux=203
+=====> stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=2000;knllux=0
+NCrystal WARNING: Discarding 52 edges of provided kernel data due to missing S values.
+=====> stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=2001;knllux=1
+=====> benzene_solid_100K_sabsmall.ncmat;vdoslux=2002;knllux=2
+=====> benzene_solid_100K_sabsmall.ncmat;vdoslux=2003;knllux=3
+=====> C_from_benzene_solid_20K_sabsmall.ncmat;vdoslux=2004;knllux=4
+=====> C_from_benzene_solid_20K_sabsmall.ncmat;vdoslux=2005;knllux=5
+ALL OK
