@@ -1,0 +1,21 @@
+=====> stdlib::Al_sg225.ncmat;temp=0.1;vdoslux=2000;knllux=0
+=====> stdlib::Al_sg225.ncmat;temp=1;vdoslux=2001;knllux=1
+=====> stdlib::MgH2_sg136_MagnesiumHydride.ncmat;temp=0.1;vdoslux=2002;knllux=2
+=====> stdlib::MgH2_sg136_MagnesiumHydride.ncmat;temp=1;vdoslux=2003;knllux=3
+=====> stdlib::Be_sg194.ncmat;temp=0.1;vdoslux=2004;knllux=4
+=====> stdlib::Be_sg194.ncmat;temp=1;vdoslux=2005;knllux=5
+=====> stdlib::Polyethylene_CH2.ncmat;temp=0.1;vdoslux=2000;knllux=1
+=====> stdlib::Polyethylene_CH2.ncmat;temp=1;vdoslux=2001;knllux=2
+=====> stdlib::C_sg227_Diamond.ncmat;temp=0.1;vdoslux=2002;knllux=3
+=====> stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=0.1;vdoslux=2003;knllux=4
+NCrystal WARNING: Discarding 4 edges of provided kernel data due to missing S values.
+=====> stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=1;vdoslux=2004;knllux=5
+=====> Li_from_Li2O.ncmat;temp=0.1;vdoslux=2005;knllux=0
+=====> Li_from_Li2O.ncmat;temp=1;vdoslux=2000;knllux=2
+=====> stdlib::Ca_sg229_Calcium-gamma.ncmat;temp=0.1;vdoslux=2001;knllux=3
+=====> stdlib::Ca_sg229_Calcium-gamma.ncmat;temp=1;vdoslux=2002;knllux=4
+=====> solid::CH2/0.95gcm3;temp=0.1;vdoslux=2003;knllux=5
+=====> vdos_paraH2.ncmat;temp=0.1;vdoslux=2004;knllux=0
+=====> vdos_paraH2.ncmat;temp=1;vdoslux=2005;knllux=1
+=====> sabxs_debye_H_100K.ncmat;temp=0.1;vdoslux=2000;knllux=3
+ALL OK

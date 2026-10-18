@@ -1,0 +1,32 @@
+=====> vdos_paraH2.ncmat;temp=5;vdoslux=2000;knllux=0
+NCrystal WARNING: VDOS expansion could only reach Emax=2.6017eV and not the target Emax=5eV
+=====> vdos_paraH2.ncmat;temp=20;vdoslux=2001;knllux=1
+=====> vdos_paraH2.ncmat;temp=50;vdoslux=2002;knllux=2
+=====> vdos_orthoD2.ncmat;temp=5;vdoslux=2003;knllux=3
+=====> vdos_orthoD2.ncmat;temp=20;vdoslux=2004;knllux=4
+=====> vdos_orthoD2.ncmat;temp=50;vdoslux=2005;knllux=5
+=====> vdos_liquidH2.ncmat;temp=14;vdoslux=2000;knllux=1
+=====> vdos_liquidH2.ncmat;temp=20;vdoslux=2001;knllux=2
+=====> vdos_liquidH2.ncmat;temp=40;vdoslux=2002;knllux=3
+=====> vdos_liquidH2.ncmat;temp=293.15;vdoslux=2003;knllux=4
+NCrystal WARNING: VDOS expansion could only reach Emax=2.3767eV and not the target Emax=5eV
+=====> vdos_hydrogen_osc.ncmat;temp=5;vdoslux=2004;knllux=5
+=====> vdos_hydrogen_osc.ncmat;temp=14;vdoslux=2005;knllux=0
+=====> vdos_hydrogen_osc.ncmat;temp=30;vdoslux=2000;knllux=2
+=====> vdos_clathrate_H.ncmat;temp=5;vdoslux=2001;knllux=3
+=====> vdos_clathrate_H.ncmat;temp=100;vdoslux=2002;knllux=4
+=====> vdos_clathrate_H.ncmat;temp=293.15;vdoslux=2003;knllux=5
+=====> vdos_clathrate_O2.ncmat;temp=5;vdoslux=2004;knllux=0
+=====> vdos_clathrate_O2.ncmat;temp=100;vdoslux=2005;knllux=1
+=====> vdos_clathrate_O2.ncmat;temp=293.15;vdoslux=2000;knllux=3
+NCrystal WARNING: VDOS expansion could only reach Emax=0.542435eV and not the target Emax=5eV
+=====> vdos_graphiteoxide_D.ncmat;temp=20;vdoslux=2001;knllux=4
+=====> vdos_graphiteoxide_D.ncmat;temp=293.15;vdoslux=2002;knllux=5
+=====> vdos_graphiteoxide_D.ncmat;temp=1000;vdoslux=2003;knllux=0
+=====> Al2O3_Alvdos_from_Al225.ncmat;temp=20;vdoslux=2004;knllux=1
+=====> Al2O3_Alvdos_from_Al225.ncmat;temp=293.15;vdoslux=2005;knllux=2
+=====> Al2O3_Alvdos_from_Al225.ncmat;temp=1000;vdoslux=2000;knllux=4
+=====> Li2O_sg225_LithiumOxide_sabsmall_temp10K.ncmat;vdoslux=2001;knllux=5
+=====> Li2O_sg225_LithiumOxide_sabsmall_temp10K.ncmat;vdoslux=2002;knllux=0
+=====> vdos_hydrogen_osc.ncmat;temp=293.15;vdoslux=2001;knllux=1
+ALL OK
