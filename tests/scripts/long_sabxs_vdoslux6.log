@@ -1,0 +1,14 @@
+=====> stdlib::Al_sg225.ncmat;temp=293.15;vdoslux=2006;knllux=0
+NCrystal WARNING: Discarding 1 edges of provided kernel data due to missing S values.
+=====> stdlib::Polyethylene_CH2.ncmat;temp=293.15;vdoslux=2006;knllux=1
+NCrystal WARNING: Discarding 2 edges of provided kernel data due to missing S values.
+NCrystal WARNING: Discarding 2 edges of provided kernel data due to missing S values.
+=====> stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=1000;vdoslux=2006;knllux=2
+NCrystal WARNING: Discarding 2 edges of provided kernel data due to missing S values.
+NCrystal WARNING: Discarding 1 edges of provided kernel data due to missing S values.
+=====> Li_from_Li2O.ncmat;temp=10;vdoslux=2006;knllux=3
+=====> stdlib::Be_sg194.ncmat;temp=20;vdoslux=2006;knllux=0
+=====> stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=293.15;vdoslux=2006;knllux=1
+NCrystal WARNING: Discarding 1 edges of provided kernel data due to missing S values.
+NCrystal WARNING: Discarding 2 edges of provided kernel data due to missing S values.
+ALL OK
