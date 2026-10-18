@@ -97,11 +97,14 @@ namespace NCRYSTAL_NAMESPACE {
       VDOSDebyePars debyekey2params( const VDOSDebyeKey& key ) {
         //always base calculations only on what can be extracted using the key
         //(this is important due to rounding):
+        //NB: Divide by 1e7 rather than multiply by 1e-7, so that e.g. T=0.1K
+        //round-trips exactly (0.1 is the lowest supported temperature, and
+        //1000000*1e-7 is 0.09999999999999999):
         return { std::get<0>(key),
-                 AtomMass{std::get<1>(key)*1e-7},
-                 Temperature{std::get<3>(key)*1e-7},
-                 DebyeTemperature{std::get<4>(key)*1e-7},
-                 SigmaBound{std::get<2>(key)*1e-7} };
+                 AtomMass{std::get<1>(key)/1e7},
+                 Temperature{std::get<3>(key)/1e7},
+                 DebyeTemperature{std::get<4>(key)/1e7},
+                 SigmaBound{std::get<2>(key)/1e7} };
       }
 
       //For regular VDOS expansion, we need a bit more care.
