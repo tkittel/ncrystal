@@ -80,7 +80,7 @@ def check( label, py, expected, env_extra = None ):
         failures.append(label)
 
 def check_cfg( label, cfgexe, expected, env_extra = None ):
-    r = run( [ cfgexe, '--show', 'libpath' ], env_extra = env_extra,
+    r = run( [ cfgexe, '--show', 'shlibpath' ], env_extra = env_extra,
              check = False )
     got = r.stdout.strip()
     ok = ( r.returncode == 0 and norm(got) == norm(expected) )
@@ -114,12 +114,18 @@ decoy.write_bytes(b'decoy')
 check( 'user install, decoy in USERBASE\\Scripts', sys.executable,
        ub_scripts / 'NCrystal.dll', env_extra = ubenv )
 
-#3) --target installation (scripts end up in DIR\bin, only RECORD finds it),
-#   imported from a venv which also has its own installation (whose DLL must
-#   not be picked up):
-tgt = tmp / 'target'
+#3) --target installation, imported from a venv which also has its own
+#   installation (whose DLL must not be picked up). pip installs into a
+#   temporary home scheme and moves the result into DIR, so the DLL ends up in
+#   DIR\Scripts while RECORD still says ../../Scripts/NCrystal.dll, which we
+#   make point to a decoy:
+tgt = tmp / 't1' / 't2' / 'target'
 pipinstall( vpy, '--target', tgt )
-check( '--target install', vpy, tgt / 'bin' / 'NCrystal.dll',
+stale = tgt / '..' / '..' / 'Scripts' / 'NCrystal.dll'
+stale.parent.mkdir( parents = True, exist_ok = True )
+stale.write_bytes(b'decoy')
+check( '--target install, decoy at stale RECORD path', vpy,
+       tgt / 'Scripts' / 'NCrystal.dll',
        env_extra = { 'PYTHONPATH' : str(tgt) } )
 
 #4) Without RECORD, the directory heuristic must find the DLL:
