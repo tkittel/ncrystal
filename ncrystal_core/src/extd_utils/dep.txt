@@ -3,4 +3,5 @@ core
 fact_utils
 interfaces
 phys_utils
+sgsym
 utils
