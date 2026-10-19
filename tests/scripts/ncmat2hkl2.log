@@ -6,6 +6,17 @@ PbO laz without field: setting None
 PbO laz with field 227:2: NCBadInput: Error in Lazy/Lau data: spacegroup_setting 227:2 is not a setting of spacegroup 129
 PbO laz with field 129:3: NCBadInput: Error in Lazy/Lau data: Invalid spacegroup_setting "129:3": Invalid space group specification: "129:3" (not a setting of space group 129, the settings are: 129:1 (default), 129:2)
 PbO laz with field foo: NCBadInput: Error in Lazy/Lau data: Invalid spacegroup_setting "foo": Invalid space group specification: "foo" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+Wrote tmp_redirected_output.txt
+NCrystal: Normalising provided HKL list with 47 entries
+PbO laz from NCrystal <= 4.4: setting 129:1
+Wrote tmp_redirected_output.txt
+NCrystal: Normalising provided HKL list with 58 entries
+YSO laz without field: setting None
+YSO laz without field, all angles 90: NCBadInput: The space group setting is unknown, and the unit cell can be given in settings of space group 15 with different symmetry-equivalent reflections (15:b1, 15:b2, 15:b3, 15:-b1, 15:-b2, 15:-b3, 15:c1, 15:c2, 15:c3, 15:-c1, 15:-c2, 15:-c3, 15:a1, 15:a2, 15:a3, 15:-a1, 15:-a2, 15:-a3)
+Wrote tmp_redirected_output.txt
+NCrystal: Normalising provided HKL list with 25 entries
+Wollastonite laz: setting 2
+Wollastonite laz from NCrystal <= 4.4: NCBadInput: Error in Lazy/Lau data: The file was written by NCrystal 4.4 or earlier for a unit cell for which those versions computed wrong d-spacings and structure factors (see https://github.com/mctools/ncrystal/issues/383). Please regenerate it with a newer NCrystal.
 
 ====================================================================================================
 ====================================================================================================
