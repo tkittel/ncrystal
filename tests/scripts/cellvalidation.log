@@ -23,4 +23,5 @@ Diamond with one atom moved by 0.001: ['NCrystal WARNING: Atom positions deviate
 Diamond with one atom moved by 0.02: Atom positions are not consistent with space group 227 in any of its settings (largest deviation of a symmetry image from an atom of the same type: 0.02 in fractional coordinates). Either the space group or the positions are wrong.
 P312 structure as SG-149: []
 P312 structure declared as SG-150: Atom positions are not consistent with space group 150 in any of its settings (largest deviation of a symmetry image from an atom of the same type: 0.3 in fractional coordinates). Either the space group or the positions are wrong.
-P2 with 2-fold along c: Atom positions are only consistent with space group 3 in the setting 3:c, whose symmetry-equivalent reflections differ from those of the setting 3:b assumed by NCrystal. Transform the structure to that setting (e.g. with NCMATComposer.refine_crystal_structure()).
+P2 with 2-fold along c: setting 3:c
+P2 with 2-fold along c and gamma=100: setting 3:c gamma 100.0

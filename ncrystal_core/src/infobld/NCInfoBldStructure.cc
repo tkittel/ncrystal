@@ -55,23 +55,71 @@ namespace NCRYSTAL_NAMESPACE {
       }
     }
 
+    namespace {
+      //Tolerances: rounding noise in data files gives deviations well below
+      //tol_warn (all stdlib files are O(1e-16), and positions given with 4
+      //decimals stay below 1e-4), sites rounded to 3 decimals exceed it
+      //slightly, while structures beyond tol_error (comparable to the
+      //distinct-site threshold of expandSiteToOrbit) simply do not have the
+      //symmetry:
+      constexpr double tol_warn = 5e-4;
+      constexpr double tol_error = 1e-2;
+
+      std::vector<std::vector<Vector>>
+      positionsBySpecies( const AtomInfoList& atomlist )
+      {
+        std::vector<std::vector<Vector>> positions;
+        positions.reserve( atomlist.size() );
+        for ( auto& ai : atomlist ) {
+          positions.emplace_back();
+          for ( auto& p : ai.unitCellPositions() )
+            positions.back().push_back( p.as<Vector>() );
+        }
+        return positions;
+      }
+    }
+
+    Optional<SpaceGroup>
+    deduceSettingFromPositions( const StructureInfo& si,
+                                const AtomInfoList& atomlist )
+    {
+      nc_assert( si.spacegroup >= 1 && si.spacegroup <= 230 );
+      nc_assert( !si.spacegroup_setting.has_value() );
+      const auto positions = positionsBySpecies( atomlist );
+      const bool rhombo
+        = usesRhombohedralAxes( static_cast<int>( si.spacegroup ), si.alpha );
+      Optional<SpaceGroup> best;
+      double bestdev = kInfinity;
+      for ( auto& sg : SpaceGroup::settingsOfNumber( si.spacegroup ) ) {
+        if ( ( StrView( sg.choice() ) == "r" ) != rhombo )
+          continue;
+        CellParameters cp{ si.lattice_a, si.lattice_b, si.lattice_c,
+                           si.alpha, si.beta, si.gamma };
+        try {
+          SGSymmetry::get( sg ).cellConstraints().complete( cp );
+        } catch ( Error::BadInput& ) {
+          continue;
+        }
+        const double dev
+          = NC::checkStructureSymmetry( sg, positions ).maxDeviation;
+        if ( dev <= tol_error && dev < bestdev ) {//(first one on ties)
+          best.emplace( sg );
+          bestdev = dev;
+        }
+      }
+      return best;
+    }
+
     //Verify that the atom positions actually have the symmetry of the
-    //declared space group (in some of its settings), rather than just
-    //assuming it. Slight deviations (rounded coordinates in data files)
-    //give a warning and the symmetric structure is assumed, while larger
-    //ones are an error, as are settings whose symmetry-equivalent
-    //reflections differ from those NCrystal assumes (cf. EqRefl):
+    //declared space group (in the stored setting, else in some of its
+    //settings), rather than just assuming it. Slight deviations
+    //(rounded coordinates in data files) give a warning and the symmetric
+    //structure is assumed, while larger ones are an error:
     SpaceGroupSettingIdx checkStructureSymmetry( const StructureInfo& si,
                                                  const AtomInfoList& atomlist )
     {
       nc_assert( si.spacegroup >= 1 && si.spacegroup <= 230 );
-      std::vector<std::vector<Vector>> positions;
-      positions.reserve( atomlist.size() );
-      for ( auto& ai : atomlist ) {
-        positions.emplace_back();
-        for ( auto& p : ai.unitCellPositions() )
-          positions.back().push_back( p.as<Vector>() );
-      }
+      const auto positions = positionsBySpecies( atomlist );
       const int sg = static_cast<int>( si.spacegroup );
       const bool rhombo = usesRhombohedralAxes( sg, si.alpha );
       //A setting declared by the data source is checked as such, otherwise
@@ -82,14 +130,6 @@ namespace NCRYSTAL_NAMESPACE {
                                                        positions )
                          : NC::checkStructureSymmetry( si.spacegroup, rhombo,
                                                        positions ) );
-      //Tolerances: rounding noise in data files gives deviations well
-      //below tol_warn (all stdlib files are below 3e-16, and positions
-      //given with 4 decimals stay below 1e-4), sites rounded to 3 decimals
-      //exceed it slightly, while structures beyond tol_error (comparable to
-      //the distinct-site threshold of expandSiteToOrbit) simply do not have
-      //the declared symmetry:
-      constexpr double tol_warn = 5e-4;
-      constexpr double tol_error = 1e-2;
       if ( !( res.maxDeviation <= tol_error ) ) {
         if ( declared.has_value() )
           NCRYSTAL_THROW2(BadInput,"Atom positions are not consistent with"
@@ -115,24 +155,9 @@ namespace NCRYSTAL_NAMESPACE {
                       <<" in fractional coordinates). Assuming the"
                       " symmetric structure (specify positions with more"
                       " precision to avoid this warning).");
-      const SpaceGroup setting( res.settingIdx.value() );
-      if ( declared.has_value() )
-        return setting.settingIdx();
-      std::string spec = std::to_string( si.spacegroup );
-      if ( rhombo )
-        spec += ":r";
-      const SpaceGroup assumed( spec, SpaceGroupParseMode::Relaxed );
-      if ( setting != assumed
-           && !haveSameRotationParts( SGSymmetry::get( setting ),
-                                      SGSymmetry::get( assumed ) ) )
-        NCRYSTAL_THROW2(BadInput,"Atom positions are only consistent with"
-                        " space group "<<si.spacegroup<<" in the setting "
-                        <<setting<<", whose symmetry-equivalent reflections"
-                        " differ from those of the setting "<<assumed
-                        <<" assumed by NCrystal. Transform the structure to"
-                        " that setting (e.g. with"
-                        " NCMATComposer.refine_crystal_structure()).");
-      return setting.settingIdx();
+      //(the setting found is used as is: all hkl-related code follows the
+      //setting stored on the StructureInfo)
+      return res.settingIdx.value();
     }
 
     Optional<SpaceGroupSettingIdx>
@@ -299,9 +324,17 @@ namespace NCRYSTAL_NAMESPACE {
 
         if ( si.spacegroup > 230 )
           NCRYSTAL_THROW2(BadInput,"invalid spacegroup number ("<<si.spacegroup<<")");
+        //Without a declared setting, the positions may single out a setting
+        //whose cell constraints differ from those of the default one:
         if ( si.spacegroup > 0 ) {
           //(a declared setting is validated before checking the cell with it)
           declaredSetting( si );
+          if ( !si.spacegroup_setting.has_value() && uc.atomlist.has_value() ) {
+            const auto deduced
+              = deduceSettingFromPositions( si, uc.atomlist.value() );
+            if ( deduced.has_value() )
+              si.spacegroup_setting = deduced.value().settingIdx();
+          }
           InfoUtils::completeAndCheckStructureInfoCell( si );
         }
         if ( !( si.lattice_a > 0.0 && si.lattice_b > 0.0 && si.lattice_c > 0.0 ) )
