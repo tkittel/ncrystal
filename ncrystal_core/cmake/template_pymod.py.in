@@ -62,6 +62,32 @@ def libpath():
         _cache_libpath[0] = _libpath_impl()
     return _cache_libpath[0]
 
+def _find_installed_file_via_record( sitepkgs, filename ):
+    #Find the distribution (in the sitepkgs directory) whose RECORD file lists
+    #this very module file, and return the location of the file named filename
+    #listed in the same RECORD (or None if not found). This works for any
+    #installation scheme, including the temporary environments of pip build
+    #isolation, and never picks up files of another installation.
+    import pathlib
+    try:
+        import importlib.metadata as ilm
+    except ImportError:
+        return None
+    this_file = pathlib.Path(__file__).absolute().resolve()
+    for distinfo in sorted( sitepkgs.glob('*.dist-info') ):
+        try:
+            files = ilm.Distribution.at( distinfo ).files or []
+            paths = [ ( f.name, pathlib.Path(f.locate()).absolute().resolve() )
+                      for f in files ]
+        except ( OSError, ValueError ):
+            continue
+        if not any( p == this_file for _, p in paths ):
+            continue
+        for name, p in paths:
+            if name == filename and p.is_file():
+                return p
+    return None
+
 def _libpath_impl():
     import pathlib
     shlib_name = libname()
@@ -73,24 +99,29 @@ def _libpath_impl():
             'data', shlib_dirname, shlib_name
         ).absolute().resolve()
 
-    #Windows. The DLL is in the scripts directory (to be in %PATH%). To be safe
-    #we look not only in the default scheme, but also in a few other preferred
-    #schemes:
+    #Windows. The DLL is in the scripts directory (to be in %PATH%) and we must
+    #make sure the search works both for normal installations, in the temporary
+    #environments in which pip installs build requirements (for instance needed
+    #when building NCrystal plugins), or when the user has provided special
+    #target flags to pip.
 
-    #Windows. The DLL is in the scripts directory (to be in %PATH%). First look
-    #in the scripts directory belonging to the installation of this module,
-    #i.e. PREFIX\Scripts for PREFIX\Lib\site-packages\<module> (or ..\Scripts
-    #for ..\site-packages\<module> in user installations). This also works when
-    #the installation is not in any of the sysconfig schemes (which we search
-    #below), e.g. in the temporary environments in which pip installs build
-    #requirements (for instance needed when building NCrystal plugins):
+    #The most reliable way to find it is via the RECORD file of the installed
+    #distribution, which lists the exact location of every installed file:
     sitepkgs = pathlib.Path(__file__).absolute().parent.parent
+    p = _find_installed_file_via_record( sitepkgs, shlib_name )
+    if p is not None:
+        return p
+
+    #Otherwise, try to look in the scripts directory belonging to the
+    #installation of this module, i.e. PREFIX\Scripts for
+    #PREFIX\Lib\site-packages\<module> (or ..\Scripts for
+    #..\site-packages\<module> in user installations).
     for p in ( sitepkgs.parent.parent.joinpath('Scripts',shlib_name),
                sitepkgs.parent.joinpath('Scripts',shlib_name) ):
         if p.is_file():
             return p.absolute().resolve()
 
-    #Now search the schemes. To be safe we also look not only in the default
+    #Finally search the schemes. To be safe we also look not only in the default
     #scheme, but also in a few other preferred schemes:
     import sysconfig
     schemes = []
