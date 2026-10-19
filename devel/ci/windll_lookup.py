@@ -165,5 +165,8 @@ if not ok:
     failures.append('build isolation')
 
 if failures:
+    for f in failures:
+        #GitHub annotation, visible without access to the full logs:
+        print(f'::error title=windll_lookup::Scenario failed: {f}')
     raise SystemExit('FAILURES: ' + ', '.join(failures))
 print('ALL OK')

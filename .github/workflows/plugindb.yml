@@ -438,3 +438,37 @@ jobs:
         if not ok:
           print("ERROR: Output does not match reference!")
           raise SystemExit(1)
+
+  collect_logs:
+    #Single job (run even if others fail) downloading the complete logs of
+    #all other jobs of this run via the GitHub API and bundling them into one
+    #tarball artifact, so everything can be grabbed with a single download:
+    name: Collect all CI logs
+    needs: [ preparations, build_ncrystal, checkplugin, build_virtapi_app, launch_virtapi_app ]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - name: Download the logs of all jobs of this run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p all-ci-logs
+          gh api --paginate \
+            "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs" \
+            --jq '.jobs[] | select(.name != "Collect all CI logs") | "\(.id)\t\(.conclusion)\t\(.name)"' > jobs.txt
+          cp jobs.txt all-ci-logs/jobs.txt
+          while IFS=$'\t' read -r id concl name; do
+            fn=$(printf '%s' "${concl}__${name}" | tr -c 'A-Za-z0-9._=-' '_')
+            gh api "repos/${{ github.repository }}/actions/jobs/${id}/logs" > "all-ci-logs/${fn}.log" \
+              || echo "Could not get log of job ${id} (${name})"
+          done < jobs.txt
+          tar -czf all-ci-logs-${{ github.sha }}.tar.gz all-ci-logs
+
+      - name: Upload combined log tarball
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: all-ci-logs-${{ github.sha }}
+          path: all-ci-logs-${{ github.sha }}.tar.gz
+          if-no-files-found: warn
