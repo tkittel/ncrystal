@@ -40,6 +40,12 @@ namespace NCRYSTAL_NAMESPACE {
     //Determine the SG setting based on StructureInfo (throws if unable):
     SpaceGroup getSpaceGroupFromStructureInfo( const StructureInfo& );
 
+    //A setting for hkl purposes (symmetry-equivalent reflections): the stored
+    //one, else the first setting compatible with the cell, provided all such
+    //settings have the same symmetry-equivalent reflections (throws if not):
+    SpaceGroup
+    getSpaceGroupCandidateForHKLFromStructureInfo( const StructureInfo& );
+
     //Fill in missing lattice parameters (of value 0) which are implied by the
     //symmetry of the setting (e.g. b=c=a for cubic, gamma=120 for hexagonal
     //axes). Throws in case of any problems such as a missing SG number.

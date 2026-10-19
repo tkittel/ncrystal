@@ -21,6 +21,7 @@
 #include "NCrystal/NCrystal.hh"
 #include "NCrystal/internal/extd_utils/NCFillHKL.hh"
 #include "NCrystal/internal/infobld/NCInfoBuilder.hh"
+#include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 #include <iostream>
@@ -237,6 +238,37 @@ int main()
         REQUIRE( false );
       } catch ( NC::Error::BadInput& err ) {
         std::cout << "  " << err.what() << std::endl;
+      }
+    }
+  }
+
+  //Setting candidates for hkl purposes when the setting is unknown:
+  {
+    struct Case { unsigned sg; NC::CellParameters cell; const char * stored; };
+    const Case cases[] = { { 14, { 5, 6, 7, 90, 100, 90 }, nullptr },
+                           { 14, { 5, 6, 7, 90, 90, 90 }, nullptr },
+                           { 62, { 5, 6, 7, 90, 90, 90 }, nullptr },
+                           { 166, { 4, 4, 10, 90, 90, 120 }, nullptr },
+                           { 227, { 5, 5, 5, 90, 90, 90 }, "227:2" } };
+    for ( auto& e : cases ) {
+      NC::StructureInfo si;
+      si.spacegroup = e.sg;
+      si.lattice_a = e.cell.a;
+      si.lattice_b = e.cell.b;
+      si.lattice_c = e.cell.c;
+      si.alpha = e.cell.alpha;
+      si.beta = e.cell.beta;
+      si.gamma = e.cell.gamma;
+      if ( e.stored )
+        si.spacegroup_setting = NC::SpaceGroup( e.stored, NC::SpaceGroupParseMode::Strict ).settingIdx();
+      std::cout << "  hkl candidate for SG-" << e.sg << " (" << e.cell.alpha
+                << ' ' << e.cell.beta << ' ' << e.cell.gamma
+                << ( e.stored ? ", stored " : "" ) << ( e.stored ? e.stored : "" )
+                << "): ";
+      try {
+        std::cout << NC::InfoUtils::getSpaceGroupCandidateForHKLFromStructureInfo( si ) << std::endl;
+      } catch ( NC::Error::BadInput& err ) {
+        std::cout << "BadInput: " << err.what() << std::endl;
       }
     }
   }
