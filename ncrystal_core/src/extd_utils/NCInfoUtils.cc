@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
+#include "NCrystal/internal/utils/NCLatticeUtils.hh"
 
 namespace NC = NCrystal;
 
@@ -46,3 +47,14 @@ NC::InfoUtils::findDynInfo( const Info& info,
   return res;
 }
 
+NC::SpaceGroup
+NC::InfoUtils::getSpaceGroupFromStructureInfo( const StructureInfo& si )
+{
+  nc_assert_always( si.spacegroup >= 1 && si.spacegroup <= 230 );
+  if ( si.spacegroup_setting.has_value() )
+    return SpaceGroup( si.spacegroup_setting.value() );
+  std::string spec = std::to_string( si.spacegroup );
+  if ( usesRhombohedralAxes( static_cast<int>( si.spacegroup ), si.alpha ) )
+    spec += ":r";
+  return SpaceGroup( spec, SpaceGroupParseMode::Relaxed );
+}
