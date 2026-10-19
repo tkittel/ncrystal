@@ -58,18 +58,17 @@ def test_hexagonal_angles():
             load( '3 3 5', f'90 90 {gamma}', 191, [('Al','0 0 0')] )
 
 def test_monoclinic_angles():
-    #Only monoclinic settings with unique axis b are supported (others were
-    #once accepted, but with wrong symmetry-equivalent reflections):
+    #Positions with unique axis b, in cells with another unique axis:
     atoms = [('Al','0.1 0.2 0.3'),('Al','0.9 0.7 0.7')]
     si = load( '5 6 7', '90 100 90', 4, atoms ).structure_info
     print(f'SG-4 with unique axis b: loaded with beta={si["beta"]:g}')
     for angles, bad in ( ('90 90 100','gamma'), ('100 90 90','alpha') ):
         with ensure_error( NC.NCBadInput,
-                           'Unit cell not consistent with space group 4:b'
-                           ' (a, b, c, alpha=90, beta, gamma=90): Lattice'
-                           f' angle {bad} must be 90 degrees for this space'
-                           ' group (got 100). No setting was declared, so'
-                           ' the default setting 4:b was assumed'):
+                           'Atom positions have the symmetry of space group'
+                           ' setting 4:b, but the unit cell is not consistent'
+                           ' with it (a, b, c, alpha=90, beta, gamma=90):'
+                           f' Lattice angle {bad} must be 90 degrees for this'
+                           ' space group (got 100)'):
             load( '5 6 7', angles, 4, atoms )
 
 def test_duplicate_positions():
