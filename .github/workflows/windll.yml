@@ -1,0 +1,40 @@
+name: windll
+
+# Exercises all branches of how the ncrystal-core Python module locates
+# NCrystal.dll on Windows (RECORD lookup, directory heuristic, sysconfig scheme
+# search), for venv, user and --target installations, pip build isolation, and
+# the error case. See devel/ci/windll_lookup.py.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  windll:
+    strategy:
+      fail-fast: false
+      matrix:
+        python: [ '3.9', '3.14' ]
+    name: windll.py${{ matrix.python }}
+    runs-on: windows-2025
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        path: src
+
+    - name: Setup python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: ${{ matrix.python }}
+
+    - name: Enable parallel cmake
+      run: python ./src/devel/bin/ncdevtool nprocs --enable-github-parallel
+
+    - name: Build ncrystal-core wheel
+      run: python -m pip wheel --no-deps --wheel-dir ./wheels ./src/ncrystal_core
+
+    - name: Test NCrystal.dll lookup scenarios
+      run: python ./src/devel/ci/windll_lookup.py ./wheels ./src
