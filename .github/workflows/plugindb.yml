@@ -459,16 +459,25 @@ jobs:
             "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs" \
             --jq '.jobs[] | select(.name != "Collect all CI logs") | "\(.id)\t\(.conclusion)\t\(.name)"' > jobs.txt
           cp jobs.txt all-ci-logs/jobs.txt
+          #NB: The logs endpoint redirects to a signed download URL, which
+          #"gh api" does not follow, so use curl -L (which drops the token on
+          #the cross-host redirect). Retry since logs can take a moment to
+          #become available after a job finishes:
           while IFS=$'\t' read -r id concl name; do
             fn=$(printf '%s' "${concl}__${name}" | tr -c 'A-Za-z0-9._=-' '_')
-            gh api "repos/${{ github.repository }}/actions/jobs/${id}/logs" > "all-ci-logs/${fn}.log" \
-              || echo "Could not get log of job ${id} (${name})"
+            for attempt in 1 2 3 4 5 6; do
+              curl -sSL -H "Authorization: Bearer ${GH_TOKEN}" \
+                "https://api.github.com/repos/${{ github.repository }}/actions/jobs/${id}/logs" \
+                -o "all-ci-logs/${fn}.log" && [ -s "all-ci-logs/${fn}.log" ] && break
+              sleep 10
+            done
+            [ -s "all-ci-logs/${fn}.log" ] || echo "Could not get log of job ${id} (${name})"
           done < jobs.txt
-          tar -czf all-ci-logs-${{ github.sha }}.tar.gz all-ci-logs
+          tar -czf alllogs_plugindb.tar.gz all-ci-logs
 
       - name: Upload combined log tarball
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: all-ci-logs-${{ github.sha }}
-          path: all-ci-logs-${{ github.sha }}.tar.gz
+          name: alllogs_plugindb
+          path: alllogs_plugindb.tar.gz
           if-no-files-found: warn

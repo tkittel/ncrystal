@@ -77,7 +77,7 @@ def check( label, py, expected, env_extra = None ):
     print(f'{"OK  " if ok else "FAIL"} {label}: got {got or r.stderr.strip()[-300:]}')
     if not ok:
         print(f'       expected {expected}')
-        failures.append(label)
+        failures.append(f'{label} (got {got or "error"}, expected {expected})')
 
 def check_cfg( label, cfgexe, expected, env_extra = None ):
     r = run( [ cfgexe, '--show', 'shlibpath' ], env_extra = env_extra,
@@ -116,17 +116,31 @@ check( 'user install, decoy in USERBASE\\Scripts', sys.executable,
 
 #3) --target installation, imported from a venv which also has its own
 #   installation (whose DLL must not be picked up). pip installs into a
-#   temporary home scheme and moves the result into DIR, so the DLL ends up in
-#   DIR\Scripts while RECORD still says ../../Scripts/NCrystal.dll, which we
-#   make point to a decoy:
+#   temporary home scheme (posix_home, also on Windows, i.e. scripts in bin)
+#   and moves the result into DIR, so RECORD lists a stale path (like
+#   ../../bin/NCrystal.dll) relative to the temporary site-packages. We put a
+#   decoy DLL at that stale location, and expect the single NCrystal.dll
+#   inside DIR to be found:
 tgt = tmp / 't1' / 't2' / 'target'
 pipinstall( vpy, '--target', tgt )
-stale = tgt / '..' / '..' / 'Scripts' / 'NCrystal.dll'
-stale.parent.mkdir( parents = True, exist_ok = True )
-stale.write_bytes(b'decoy')
-check( '--target install, decoy at stale RECORD path', vpy,
-       tgt / 'Scripts' / 'NCrystal.dll',
-       env_extra = { 'PYTHONPATH' : str(tgt) } )
+in_tgt = sorted( tgt.rglob('NCrystal.dll') )
+print('  NCrystal.dll files inside the --target dir:', in_tgt)
+stale = None
+for rec in tgt.glob('ncrystal_core-*.dist-info/RECORD'):
+    for line in rec.read_text().splitlines():
+        relpath = line.split(',')[0]
+        if relpath.split('/')[-1] == 'NCrystal.dll':
+            stale = tgt.joinpath( *relpath.split('/') )
+print('  stale RECORD location:', stale)
+if stale is not None and not stale.exists():
+    stale.parent.mkdir( parents = True, exist_ok = True )
+    stale.write_bytes(b'decoy')
+if len(in_tgt) == 1:
+    check( '--target install, decoy at stale RECORD path', vpy, in_tgt[0],
+           env_extra = { 'PYTHONPATH' : str(tgt) } )
+else:
+    print(f'FAIL --target install: expected one NCrystal.dll in {tgt}')
+    failures.append('--target install (DLL count)')
 
 #4) Without RECORD, the directory heuristic must find the DLL:
 venv2, vpy2 = mkvenv('venv_norecord')
