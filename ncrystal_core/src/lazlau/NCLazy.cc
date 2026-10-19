@@ -219,9 +219,8 @@ namespace NCRYSTAL_NAMESPACE {
               cellsi.spacegroup_setting = setting.value().settingIdx();
             }
             InfoUtils::completeAndCheckStructureInfoCell( cellsi );
-            const SpaceGroup cellsg
-              = InfoUtils::getSpaceGroupFromStructureInfo( cellsi );
-            if ( StrView( cellsg.choice() ) == "r" )
+            if ( usesRhombohedralAxes( static_cast<int>( spacegroup ),
+                                       cellsi.alpha ) )
               NCRYSTAL_THROW(BadInput,"Rhombohedral axes are not supported for"
                              " rhombohedral space groups in .laz/.lau files"
                              " (use hexagonal axes)");
@@ -499,8 +498,9 @@ NC::Lazy::ParsedLazyData NC::Lazy::parseLazyTextData( const TextData& td, const 
 
 NC::InfoPtr NC::Lazy::buildInfo( const LazyCfgVars& cfg, const ParsedLazyData& data )
 {
-  auto hkllist = validateAndNormaliseHKLFsqList(
-    InfoUtils::getSpaceGroupFromStructureInfo( data.structInfo ), data.hkllist );
+  const SpaceGroup sg
+    = InfoUtils::getSpaceGroupCandidateForHKLFromStructureInfo( data.structInfo );
+  auto hkllist = validateAndNormaliseHKLFsqList( sg, data.hkllist );
   if ( hkllist.size() != data.hkllist.size() ) {
     NCRYSTAL_MSG("Trimming and normalising provided HKL list from "
                  <<data.hkllist.size()<<" to "<<hkllist.size()<<" entries");
@@ -516,7 +516,7 @@ NC::InfoPtr NC::Lazy::buildInfo( const LazyCfgVars& cfg, const ParsedLazyData& d
   builder.dataSourceName = cfg.dataSourceName;
 
   HKLList out_hkllist;
-  EqRefl sym( InfoUtils::getSpaceGroupFromStructureInfo( data.structInfo ) );
+  EqRefl sym( sg );
   //  out_hkllist.reserve(512);
   double dsp_min(kInfinity);
   for ( auto& e : hkllist ) {

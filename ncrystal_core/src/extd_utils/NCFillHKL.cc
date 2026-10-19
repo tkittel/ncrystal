@@ -615,7 +615,7 @@ namespace NCRYSTAL_NAMESPACE {
                  || cfg.fsquarecut <= fsquarecut_lowest_possible_value );
 
       const RotMatrix rec_lat = getReciprocalLatticeRot( structureInfo );
-      EqRefl sym( InfoUtils::getSpaceGroupFromStructureInfo( structureInfo ) );
+      EqRefl sym( InfoUtils::getSpaceGroupCandidateForHKLFromStructureInfo( structureInfo ) );
       auto sym_findrepval = [&sym]( int hh, int kk, int ll )
       {
         //NB: Tried to get eqv hkl with smallest min(|h|,|k|,|l|) instead to
