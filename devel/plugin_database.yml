@@ -88,6 +88,9 @@ ClathrateHydrateData:
 
 MagScat:
   github_repo_key: "highness-eu/ncplugin-MagScat"
+  disable_tests: true # todo: remove once NCrystal supports site occupancies
+                      # and/or MagScat is fixed in another way
+                      # see https://github.com/highness-eu/ncmat-clathrates/issues/4
   description: |
     A plugin providing paramagnetic scattering in O2-clathrates, based on
     formulas by O. Zimmer (https://doi.org/10.1103/PhysRevC.93.035503).
