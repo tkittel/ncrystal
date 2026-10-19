@@ -23,6 +23,7 @@
 
 #include "NCrystal/interfaces/NCInfoTypes.hh"
 #include "NCrystal/internal/infobld/NCInfoBuilder.hh"
+#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 
 namespace NCRYSTAL_NAMESPACE {
   namespace InfoBuilderDetail {
@@ -37,12 +38,15 @@ namespace NCRYSTAL_NAMESPACE {
     //(checked against the positions):
     void validateAndCompleteUnitCell( InfoBuilder::UnitCell& );
 
-    //Verify that the atom positions have the symmetry of the declared space
-    //group, in the setting declared by the data source if any
-    //(spacegroup_setting set), else in some of its settings: slight
-    //deviations give a warning, larger ones (or found settings with other
-    //symmetry-equivalent reflections than NCrystal assumes) a BadInput
-    //exception. Returns the setting (see the .cc file):
+    //Get the setting of the SG number which accepts the cell and which the atom
+    //positions fit best (the first one on ties). NullOpt if none fits within
+    //the error tolerance:
+    Optional<SpaceGroup> deduceSettingFromPositions( const StructureInfo&,
+                                                     const AtomInfoList& );
+
+    //Check that the atom positions have the symmetry of the stored setting, or
+    //if none is stored, find the setting they fit best. Warns on slight
+    //deviations, throws BadInput on larger ones. Returns the setting:
     SpaceGroupSettingIdx checkStructureSymmetry( const StructureInfo&,
                                                  const AtomInfoList& );
 
