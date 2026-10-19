@@ -77,14 +77,31 @@ def _find_installed_file_via_record( sitepkgs, filename ):
     for distinfo in sorted( sitepkgs.glob('*.dist-info') ):
         try:
             files = ilm.Distribution.at( distinfo ).files or []
-            paths = [ ( f.name, pathlib.Path(f.locate()).absolute().resolve() )
+            paths = [ ( f, pathlib.Path(f.locate()).absolute().resolve() )
                       for f in files ]
         except ( OSError, ValueError ):
             continue
         if not any( p == this_file for _, p in paths ):
             continue
-        for name, p in paths:
-            if name == filename and p.is_file():
+        for f, p in paths:
+            if f.name != filename:
+                continue
+            #"pip install --target DIR" installs into a temporary home scheme
+            #and then moves the contents of its site-packages and its other
+            #top-level directories (e.g. Scripts) into DIR, leaving RECORD
+            #paths like ../../Scripts/NCrystal.dll relative to the temporary
+            #site-packages, which might now point to an unrelated file. So
+            #first try such paths without the leading "..", i.e. as
+            #DIR/Scripts/NCrystal.dll (a location which does not exist in
+            #normal installations, where Scripts is not inside site-packages):
+            parts = f.parts
+            while parts and parts[0] == '..':
+                parts = parts[1:]
+            if parts and len(parts) < len(f.parts):
+                p2 = sitepkgs.joinpath(*parts)
+                if p2.is_file():
+                    return p2.absolute().resolve()
+            if p.is_file():
                 return p
     return None
 
