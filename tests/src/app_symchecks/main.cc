@@ -71,6 +71,10 @@ namespace {
     }
     Verdicts v;
     const bool rhombo = NC::usesRhombohedralAxes( sg, si.alpha );
+    //(the |F|^2 self-check is done in the default setting of the number):
+    si.spacegroup_setting
+      = NC::SpaceGroup( std::to_string( sg ) + ( rhombo ? ":r" : "" ),
+                        NC::SpaceGroupParseMode::Relaxed ).settingIdx();
     v.posdev = NC::checkStructureSymmetry( sg, rhombo, pos ).maxDeviation;
     NC::FillHKLCfg cfg;
     cfg.dcutoff = 0.5;
