@@ -66,6 +66,12 @@ namespace {
     si.alpha = cl.alpha;
     si.beta = cl.beta;
     si.gamma = cl.gamma;
+    //(the legacy checks assumed the default setting of the number):
+    si.spacegroup_setting
+      = NC::SpaceGroup( std::to_string( sg )
+                        + ( NC::usesRhombohedralAxes( static_cast<int>( sg ),
+                                                      cl.alpha ) ? ":r" : "" ),
+                        NC::SpaceGroupParseMode::Relaxed ).settingIdx();
     try {
       NC::InfoUtils::completeAndCheckStructureInfoCell( si );
     } catch ( NC::Error::BadInput& ) {
