@@ -23,6 +23,7 @@
 # NEEDS: numpy
 
 import pathlib
+import re
 import sys
 
 import NCrystalDev as NC
@@ -156,6 +157,36 @@ def test_setting_field():
                      f'pbo_{bad}.laz' ) )
 
 test_setting_field()
+
+def test_unknown_setting():
+    #Without the spacegroup_setting field, files written by NCrystal <= 4.4
+    #are in the default setting, while for other files the setting stays
+    #unknown and the file is only accepted if the hkl families are the same
+    #in all settings the cell can be given in:
+    def load( content, fn ):
+        NC.registerInMemoryFileData( fn, content )
+        try:
+            si = NC.createInfo( fn ).structure_info
+        except NC.NCBadInput as e:
+            return f'NCBadInput: {e}'
+        return f"setting {si['spacegroup_setting']}"
+    def old( laz ):
+        laz = laz.replace('# ncmat2hklversion 3\n','# ncmat2hklversion 2\n')
+        return re.sub(r'# spacegroup_setting [^\n]*\n','',laz)
+    pbo = cfgstr2hkl('stdlib::PbO-alpha_sg129_Litharge.ncmat;dcutoff=0.9','laz')
+    print( 'PbO laz from NCrystal <= 4.4:', load( old( pbo ), 'pbo_old.laz' ) )
+    yso = cfgstr2hkl('stdlib::Y2SiO5_sg15_YSO.ncmat;dcutoff=2.0','laz')
+    yso = re.sub(r'# spacegroup_setting [^\n]*\n','',yso)
+    print( 'YSO laz without field:', load( yso, 'yso.laz' ) )
+    yso90 = re.sub(r'# lattice_bb [^ ]+','# lattice_bb 90',yso)
+    print( 'YSO laz without field, all angles 90:',
+           load( yso90, 'yso90.laz' ) )
+    wol = cfgstr2hkl('stdlib::CaSiO3_sg2_Wollastonite.ncmat;dcutoff=3.2','laz')
+    print( 'Wollastonite laz:', load( wol, 'wol.laz' ) )
+    print( 'Wollastonite laz from NCrystal <= 4.4:',
+           load( old( wol ), 'wol_old.laz' ) )
+
+test_unknown_setting()
 test_cfgstr( 'stdlib::Al_sg225.ncmat;dcutoff=0.6' )
 test_cfgstr( 'stdlib::CaSiO3_sg2_Wollastonite.ncmat;dcutoff=3.2' )
 test_cfgstr( 'stdlib::Y2SiO5_sg15_YSO.ncmat;dcutoff=2.0' )

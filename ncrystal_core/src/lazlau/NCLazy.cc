@@ -61,6 +61,7 @@ namespace NCRYSTAL_NAMESPACE {
             {"nformula_per_unitcell",ColType::PosInt},
             {"unit_F2",ColType::Str},
             {"spacegroup_setting",ColType::Str},
+            {"ncmat2hklversion",ColType::PosInt},
           };
           return ss;
         }
@@ -190,8 +191,8 @@ namespace NCRYSTAL_NAMESPACE {
             if ( ! (lattice_a>0.0&&lattice_a<1e6) )
               NCRYSTAL_THROW(BadInput,"Error in Lazy/Lau data: Missing or invalid lattice_a value");
             //The cell (parameters implied by the symmetry may be left out)
-            //is completed and checked against the constraints of the setting
-            //(the declared one, else the default of the number):
+            //is completed and checked against the symmetry of the setting
+            //(cf. InfoUtils::completeAndCheckStructureInfoCell):
             StructureInfo cellsi;
             cellsi.spacegroup = spacegroup;
             cellsi.lattice_a = lattice_a;
@@ -218,7 +219,29 @@ namespace NCRYSTAL_NAMESPACE {
                                 <<spacegroup);
               cellsi.spacegroup_setting = setting.value().settingIdx();
             }
+            //Files written by ncmat2hkl of NCrystal <= 4.4 (ncmat2hklversion
+            //below 3) are always in the default setting of the number:
+            const bool old_ncmat2hkl
+              = ( this->hasKey("ncmat2hklversion")
+                  && this->getPosInt("ncmat2hklversion") < 3 );
+            if ( old_ncmat2hkl && !cellsi.spacegroup_setting.has_value() )
+              cellsi.spacegroup_setting
+                = SpaceGroup( std::to_string( spacegroup ),
+                              SpaceGroupParseMode::Relaxed ).settingIdx();
             InfoUtils::completeAndCheckStructureInfoCell( cellsi );
+            //NCrystal <= 4.4 used a wrong lattice matrix (and hence wrong
+            //d-spacings and F^2 values) for cells where cos(alpha) differs
+            //from cos(beta)cos(gamma), cf. github issue #383:
+            if ( old_ncmat2hkl
+                 && ncabs( std::cos( cellsi.alpha * kDeg )
+                           - std::cos( cellsi.beta * kDeg )
+                           * std::cos( cellsi.gamma * kDeg ) ) > 1e-9 )
+              NCRYSTAL_THROW(BadInput,"Error in Lazy/Lau data: The file was"
+                             " written by NCrystal 4.4 or earlier for a unit"
+                             " cell for which those versions computed wrong"
+                             " d-spacings and structure factors (see"
+                             " https://github.com/mctools/ncrystal/issues/383)."
+                             " Please regenerate it with a newer NCrystal.");
             if ( usesRhombohedralAxes( static_cast<int>( spacegroup ),
                                        cellsi.alpha ) )
               NCRYSTAL_THROW(BadInput,"Rhombohedral axes are not supported for"
