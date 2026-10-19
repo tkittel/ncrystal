@@ -1031,6 +1031,37 @@ void run()
 
 }
 
+//Settings in which a given unit cell can be expressed:
+namespace test_cellsettings {
+
+void run()
+{
+  struct Case { unsigned sg; NC::CellParameters cell; };
+  const Case cases[] = { { 14, { 5, 6, 7, 90, 100, 90 } },
+                         { 14, { 5, 6, 7, 90, 90, 100 } },
+                         { 14, { 5, 6, 7, 90, 90, 90 } },
+                         { 62, { 5, 6, 7, 90, 90, 90 } },
+                         { 166, { 4, 4, 10, 90, 90, 120 } },
+                         { 166, { 5, 5, 5, 60, 60, 60 } },
+                         { 166, { 4, 0, 10, 0, 0, 0 } },
+                         { 225, { 4, 0, 0, 0, 0, 0 } },
+                         { 225, { 4, 5, 6, 90, 90, 90 } } };
+  for ( auto& e : cases ) {
+    const auto& c = e.cell;
+    std::cout << "SG-" << e.sg << " with cell " << c.a << ' ' << c.b << ' '
+              << c.c << " / " << c.alpha << ' ' << c.beta << ' ' << c.gamma
+              << ':';
+    const auto v = NC::settingsCompatibleWithCell( e.sg, c );
+    for ( auto& sg : v )
+      std::cout << ' ' << sg;
+    if ( v.empty() )
+      std::cout << " (none)";
+    std::cout << std::endl;
+  }
+}
+
+}
+
 int main()
 {
   std::cout << "==== Space group table ====" << std::endl;
@@ -1045,5 +1076,7 @@ int main()
   test_orbit::run();
   std::cout << "==== Structure symmetry check ====" << std::endl;
   test_structcheck::run();
+  std::cout << "==== Settings compatible with a cell ====" << std::endl;
+  test_cellsettings::run();
   return 0;
 }

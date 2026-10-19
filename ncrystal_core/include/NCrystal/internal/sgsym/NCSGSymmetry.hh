@@ -147,6 +147,11 @@ namespace NCRYSTAL_NAMESPACE {
   //unique axis b versus c):
   bool haveSameRotationParts( const SGSymmetry&, const SGSymmetry& );
 
+  //The settings of the space group number (default first) which are compatible
+  //with the provided cell (which may have implied parameters left as 0):
+  std::vector<SpaceGroup> settingsCompatibleWithCell( unsigned number,
+                                                      const CellParameters& );
+
 }
 
 

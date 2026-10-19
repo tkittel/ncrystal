@@ -22,6 +22,7 @@
 #include "NCSGSymTable.hh"
 #include "NCrystal/internal/utils/NCStrView.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCLatticeUtils.hh"
 #include <set>
 #include <mutex>
 
@@ -832,4 +833,24 @@ bool NC::haveSameRotationParts( const SGSymmetry& a, const SGSymmetry& b )
     return res;
   };
   return rotsModSign( a ) == rotsModSign( b );
+}
+
+std::vector<NC::SpaceGroup>
+NC::settingsCompatibleWithCell( unsigned number, const CellParameters& cell )
+{
+  const bool rhombo = usesRhombohedralAxes( static_cast<int>( number ),
+                                            cell.alpha );
+  std::vector<SpaceGroup> res;
+  for ( auto& sg : SpaceGroup::settingsOfNumber( number ) ) {
+    if ( ( StrView( sg.choice() ) == "r" ) != rhombo )
+      continue;
+    CellParameters cp = cell;
+    try {
+      SGSymmetry::get( sg ).cellConstraints().complete( cp );
+    } catch ( Error::BadInput& ) {
+      continue;
+    }
+    res.push_back( sg );
+  }
+  return res;
 }
