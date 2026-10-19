@@ -246,7 +246,8 @@ int main()
     }
   }
 
-  //Setting candidates for hkl purposes when the setting is unknown:
+  //Setting candidates for hkl purposes, and the setting itself (only known
+  //if stored or if the cell can be given in a single setting):
   {
     struct Case { unsigned sg; NC::CellParameters cell; const char * stored; };
     const Case cases[] = { { 14, { 5, 6, 7, 90, 100, 90 }, nullptr },
@@ -271,6 +272,12 @@ int main()
                 << "): ";
       try {
         std::cout << NC::InfoUtils::getSpaceGroupCandidateForHKLFromStructureInfo( si ) << std::endl;
+      } catch ( NC::Error::BadInput& err ) {
+        std::cout << "BadInput: " << err.what() << std::endl;
+      }
+      std::cout << "    setting: ";
+      try {
+        std::cout << NC::InfoUtils::getSpaceGroupFromStructureInfo( si ) << std::endl;
       } catch ( NC::Error::BadInput& err ) {
         std::cout << "BadInput: " << err.what() << std::endl;
       }
