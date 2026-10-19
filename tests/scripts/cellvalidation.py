@@ -198,12 +198,19 @@ def test_structure_symmetry():
     print( 'P312 structure declared as SG-150:', e )
     assert 'not consistent with space group 150' in e
     #A P2 structure with its 2-fold axis along c in a cell with all angles 90
-    #passes the lattice checks (unique axis b assumed), but the deduced
-    #setting 3:c has other symmetry-equivalent reflections:
+    #(pre-v8 file, bare number): the setting 3:c is deduced from the
+    #positions and used (its symmetry-equivalent reflections differ from
+    #those of unique axis b):
     atoms = [ ('Al','0.1 0.2 0.3'), ('Al','0.9 0.8 0.3') ]
-    e = load_error( '5 6 7', '90 90 90', 3, atoms )
-    print( 'P2 with 2-fold along c:', e )
-    assert 'in the setting 3:c' in e
+    si = load( '5 6 7', '90 90 90', 3, atoms ).structure_info
+    print( 'P2 with 2-fold along c: setting', si['spacegroup_setting'] )
+    assert si['spacegroup_setting'] == '3:c'
+    #The same with gamma != 90, which only the cell constraints of 3:c allow
+    #(those of the default setting 3:b require gamma=90):
+    si = load( '5 6 7', '90 90 100', 3, atoms ).structure_info
+    print( 'P2 with 2-fold along c and gamma=100: setting',
+           si['spacegroup_setting'], 'gamma', si['gamma'] )
+    assert si['spacegroup_setting'] == '3:c'
 
 def main():
     test_hexagonal_angles()
