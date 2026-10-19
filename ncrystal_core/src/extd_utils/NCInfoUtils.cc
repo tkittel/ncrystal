@@ -21,6 +21,7 @@
 #include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
+#include "NCrystal/internal/utils/NCStrView.hh"
 
 namespace NC = NCrystal;
 
@@ -69,9 +70,34 @@ NC::InfoUtils::getSpaceGroupCandidateForHKLFromStructureInfo( const StructureInf
   const CellParameters cell{ si.lattice_a, si.lattice_b, si.lattice_c,
                              si.alpha, si.beta, si.gamma };
   const auto cands = settingsCompatibleWithCell( si.spacegroup, cell );
-  if ( cands.empty() )
+  if ( cands.empty() ) {
+    //Report the problem with the first setting with the axes of the cell:
+    const bool rhombo
+      = usesRhombohedralAxes( static_cast<int>( si.spacegroup ), si.alpha );
+    unsigned nsettings = 0;
+    std::string reason;
+    for ( auto& sg : SpaceGroup::settingsOfNumber( si.spacegroup ) ) {
+      if ( ( StrView( sg.choice() ) == "r" ) != rhombo )
+        continue;
+      if ( nsettings++ )
+        continue;
+      const auto& cc = SGSymmetry::get( sg ).cellConstraints();
+      CellParameters cp = cell;
+      try {
+        cc.complete( cp );
+      } catch ( Error::BadInput& e ) {
+        std::ostringstream ss;
+        ss << sg << " (" << cc << "): " << e.what();
+        reason = ss.str();
+      }
+    }
+    if ( nsettings == 1 )
+      NCRYSTAL_THROW2(BadInput,"Unit cell not consistent with space group "
+                      << reason);
     NCRYSTAL_THROW2(BadInput,"Unit cell not consistent with any setting of"
-                    " space group "<<si.spacegroup);
+                    " space group " << si.spacegroup << " (e.g. " << reason
+                    << ")");
+  }
   const SGSymmetry& sym0 = SGSymmetry::get( cands.front() );
   for ( auto& s : cands ) {
     if ( haveSameRotationParts( SGSymmetry::get( s ), sym0 ) )
@@ -91,21 +117,16 @@ NC::InfoUtils::getSpaceGroupCandidateForHKLFromStructureInfo( const StructureInf
 void NC::InfoUtils::completeAndCheckStructureInfoCell( StructureInfo& si )
 {
   nc_assert( si.spacegroup >= 1 && si.spacegroup <= 230 );
-  const bool declared = si.spacegroup_setting.has_value();
-  const SpaceGroup setting = getSpaceGroupFromStructureInfo( si );
+  const SpaceGroup setting
+    = getSpaceGroupCandidateForHKLFromStructureInfo( si );
   const auto& cc = SGSymmetry::get( setting ).cellConstraints();
   CellParameters cp{ si.lattice_a, si.lattice_b, si.lattice_c,
                      si.alpha, si.beta, si.gamma };
   try {
     cc.complete( cp );
   } catch ( Error::BadInput& e ) {
-    std::ostringstream msg;
-    msg << "Unit cell not consistent with space group " << setting
-        << " (" << cc << "): " << e.what();
-    if ( !declared && setting.hasMultipleSettings() )
-      msg << ". No setting was declared, so the default setting "
-          << setting << " was assumed";
-    NCRYSTAL_THROW(BadInput,msg.str());
+    NCRYSTAL_THROW2(BadInput,"Unit cell not consistent with space group "
+                    << setting << " (" << cc << "): " << e.what());
   }
   si.lattice_a = cp.a;
   si.lattice_b = cp.b;

@@ -39,20 +39,17 @@ namespace NCRYSTAL_NAMESPACE {
     void validateAndCompleteUnitCell( InfoBuilder::UnitCell& );
 
     //Get the setting of the SG number which accepts the cell and which the atom
-    //positions fit best (the first one on ties). NullOpt if none fits within
-    //the error tolerance:
-    Optional<SpaceGroup> deduceSettingFromPositions( const StructureInfo&,
-                                                     const AtomInfoList& );
+    //positions fit best (the first one on ties). Throws BadInput if none fits
+    //within the error tolerance:
+    SpaceGroup deduceSettingFromPositions( const StructureInfo&,
+                                           const AtomInfoList& );
 
-    //Check that the atom positions have the symmetry of the stored setting, or
-    //if none is stored, find the setting they fit best. Warns on slight
-    //deviations, throws BadInput on larger ones. Returns the setting:
-    SpaceGroupSettingIdx checkStructureSymmetry( const StructureInfo&,
-                                                 const AtomInfoList& );
+    //Check that the atom positions have the symmetry of the stored setting:
+    //warns on slight deviations, throws BadInput on larger ones.
+    void checkStructureSymmetry( const StructureInfo&, const AtomInfoList& );
 
-    //The setting declared by the data source if any, else the one implied by
-    //the space group number and cell alone (R axes from the cell angles),
-    //when the number has a single setting, else NullOpt:
+    //The declared setting if any, else the only setting of the number which
+    //the cell can be given in, else NullOpt:
     Optional<SpaceGroupSettingIdx>
     settingWithoutPositions( const StructureInfo& );
 

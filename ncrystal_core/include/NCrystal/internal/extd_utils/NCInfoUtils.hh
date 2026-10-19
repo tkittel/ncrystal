@@ -46,9 +46,9 @@ namespace NCRYSTAL_NAMESPACE {
     SpaceGroup
     getSpaceGroupCandidateForHKLFromStructureInfo( const StructureInfo& );
 
-    //Fill in missing lattice parameters (of value 0) which are implied by the
-    //symmetry of the setting (e.g. b=c=a for cubic, gamma=120 for hexagonal
-    //axes). Throws in case of any problems such as a missing SG number.
+    //Fill in lattice parameters left as 0 which are implied by the symmetry
+    //of the setting from getSpaceGroupCandidateForHKLFromStructureInfo (e.g.
+    //b=c=a for cubic), and throw BadInput if the cell contradicts it:
     void completeAndCheckStructureInfoCell( StructureInfo& );
   }
 }

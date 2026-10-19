@@ -3,8 +3,8 @@ Caught expected NCBadInput('Unit cell not consistent with space group 191 (a, b=
 Caught expected NCBadInput('Unit cell not consistent with space group 191 (a, b=a, c, alpha=90, beta=90, gamma=120): Lattice angle gamma must be 120 degrees for this space group (got 100)')
 Caught expected NCBadInput('Unit cell not consistent with space group 191 (a, b=a, c, alpha=90, beta=90, gamma=120): Lattice angle gamma must be 120 degrees for this space group (got 130)')
 SG-4 with unique axis b: loaded with beta=100
-Caught expected NCBadInput('Unit cell not consistent with space group 4:b (a, b, c, alpha=90, beta, gamma=90): Lattice angle gamma must be 90 degrees for this space group (got 100). No setting was declared, so the default setting 4:b was assumed')
-Caught expected NCBadInput('Unit cell not consistent with space group 4:b (a, b, c, alpha=90, beta, gamma=90): Lattice angle alpha must be 90 degrees for this space group (got 100). No setting was declared, so the default setting 4:b was assumed')
+Caught expected NCBadInput('Atom positions have the symmetry of space group setting 4:b, but the unit cell is not consistent with it (a, b, c, alpha=90, beta, gamma=90): Lattice angle gamma must be 90 degrees for this space group (got 100)')
+Caught expected NCBadInput('Atom positions have the symmetry of space group setting 4:b, but the unit cell is not consistent with it (a, b, c, alpha=90, beta, gamma=90): Lattice angle alpha must be 90 degrees for this space group (got 100)')
 Coinciding atoms (across x boundary) rejected
 Coinciding atoms (across y and z boundaries) rejected
 Coinciding atoms (not adjacent in x-, y- or z-sorted lists) rejected
