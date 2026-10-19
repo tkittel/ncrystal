@@ -24,6 +24,7 @@
 // A few utilities related to Info objects.
 
 #include "NCrystal/interfaces/NCInfo.hh"
+#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -35,6 +36,9 @@ namespace NCRYSTAL_NAMESPACE {
     const DynamicInfo* findDynInfo( const Info& info,
                                     Optional<std::string>
                                     atomDisplayLabel = NullOpt );
+
+    //Determine the SG setting based on StructureInfo (throws if unable):
+    SpaceGroup getSpaceGroupFromStructureInfo( const StructureInfo& );
   }
 }
 
