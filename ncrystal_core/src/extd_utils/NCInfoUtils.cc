@@ -55,10 +55,20 @@ NC::InfoUtils::getSpaceGroupFromStructureInfo( const StructureInfo& si )
   nc_assert_always( si.spacegroup >= 1 && si.spacegroup <= 230 );
   if ( si.spacegroup_setting.has_value() )
     return SpaceGroup( si.spacegroup_setting.value() );
-  std::string spec = std::to_string( si.spacegroup );
-  if ( usesRhombohedralAxes( static_cast<int>( si.spacegroup ), si.alpha ) )
-    spec += ":r";
-  return SpaceGroup( spec, SpaceGroupParseMode::Relaxed );
+  const CellParameters cell{ si.lattice_a, si.lattice_b, si.lattice_c,
+                             si.alpha, si.beta, si.gamma };
+  const auto cands = settingsCompatibleWithCell( si.spacegroup, cell );
+  if ( cands.size() == 1 )
+    return cands.front();
+  if ( cands.empty() )
+    getSpaceGroupCandidateForHKLFromStructureInfo( si );//throws (details)
+  std::ostringstream msg;
+  msg << "The space group setting is unknown (the unit cell can be given in"
+         " several settings of space group " << si.spacegroup << ": ";
+  for ( auto& c : cands )
+    msg << ( &c == &cands.front() ? "" : ", " ) << c;
+  msg << ")";
+  NCRYSTAL_THROW(BadInput,msg.str());
 }
 
 NC::SpaceGroup

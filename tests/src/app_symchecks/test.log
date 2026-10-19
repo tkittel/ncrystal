@@ -19,7 +19,12 @@ All checks agree as expected
   Declared space group setting 225 is not a setting of space group number 227
   Declared space group setting 166:r does not match the unit cell axes (hexagonal versus rhombohedral)
   hkl candidate for SG-14 (90 100 90): 14:b1
+    setting: BadInput: The space group setting is unknown (the unit cell can be given in several settings of space group 14: 14:b1, 14:b2, 14:b3)
   hkl candidate for SG-14 (90 90 90): BadInput: The space group setting is unknown, and the unit cell can be given in settings of space group 14 with different symmetry-equivalent reflections (14:b1, 14:b2, 14:b3, 14:c1, 14:c2, 14:c3, 14:a1, 14:a2, 14:a3)
+    setting: BadInput: The space group setting is unknown (the unit cell can be given in several settings of space group 14: 14:b1, 14:b2, 14:b3, 14:c1, 14:c2, 14:c3, 14:a1, 14:a2, 14:a3)
   hkl candidate for SG-62 (90 90 90): 62:abc
+    setting: BadInput: The space group setting is unknown (the unit cell can be given in several settings of space group 62: 62:abc, 62:ba-c, 62:cab, 62:-cba, 62:bca, 62:a-cb)
   hkl candidate for SG-166 (90 90 120): 166:h
+    setting: 166:h
   hkl candidate for SG-227 (90 90 90, stored 227:2): 227:2
+    setting: 227:2
