@@ -228,6 +228,7 @@ std::unique_ptr<NC::PlaneProvider> NC::createStdPlaneProvider(const Info* info)
 NC::ExpandHKLHelper::ExpandHKLHelper( const Info& info )
 {
   if ( info.hasStructureInfo() && info.getStructureInfo().spacegroup )
-    m_sym.emplace(
-      InfoUtils::getSpaceGroupFromStructureInfo( info.getStructureInfo() ) );
+    m_sym.emplace
+      ( InfoUtils::getSpaceGroupCandidateForHKLFromStructureInfo
+        ( info.getStructureInfo() ) );
 }
