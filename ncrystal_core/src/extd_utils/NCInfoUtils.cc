@@ -60,6 +60,34 @@ NC::InfoUtils::getSpaceGroupFromStructureInfo( const StructureInfo& si )
   return SpaceGroup( spec, SpaceGroupParseMode::Relaxed );
 }
 
+NC::SpaceGroup
+NC::InfoUtils::getSpaceGroupCandidateForHKLFromStructureInfo( const StructureInfo& si )
+{
+  nc_assert_always( si.spacegroup >= 1 && si.spacegroup <= 230 );
+  if ( si.spacegroup_setting.has_value() )
+    return SpaceGroup( si.spacegroup_setting.value() );
+  const CellParameters cell{ si.lattice_a, si.lattice_b, si.lattice_c,
+                             si.alpha, si.beta, si.gamma };
+  const auto cands = settingsCompatibleWithCell( si.spacegroup, cell );
+  if ( cands.empty() )
+    NCRYSTAL_THROW2(BadInput,"Unit cell not consistent with any setting of"
+                    " space group "<<si.spacegroup);
+  const SGSymmetry& sym0 = SGSymmetry::get( cands.front() );
+  for ( auto& s : cands ) {
+    if ( haveSameRotationParts( SGSymmetry::get( s ), sym0 ) )
+      continue;
+    std::ostringstream msg;
+    msg << "The space group setting is unknown, and the unit cell can be"
+           " given in settings of space group " << si.spacegroup
+        << " with different symmetry-equivalent reflections (";
+    for ( auto& c : cands )
+      msg << ( &c == &cands.front() ? "" : ", " ) << c;
+    msg << ")";
+    NCRYSTAL_THROW(BadInput,msg.str());
+  }
+  return cands.front();
+}
+
 void NC::InfoUtils::completeAndCheckStructureInfoCell( StructureInfo& si )
 {
   nc_assert( si.spacegroup >= 1 && si.spacegroup <= 230 );
