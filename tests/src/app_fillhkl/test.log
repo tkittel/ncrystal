@@ -56,3 +56,13 @@ a,b,c=3,3,40 angles=90,90,90 dcutoff=1 : range=(3,3,40), max found=(3,3,40)
 a,b,c=3,3,40 angles=90,90,90 dcutoff=0.8 : range=(3,3,50), max found=(3,3,50)
 Checked 200 random lattices
 All OK
+==== KSqCalc ====
+cubic: max rel diff vs matrix < 4e-15, bit-identical pairs checked: 17578
+tetragonal: max rel diff vs matrix < 4e-15, bit-identical pairs checked: 8788
+tetragonal with a=c (odd setting): max rel diff vs matrix < 4e-15, bit-identical pairs checked: 8788
+orthorhombic: max rel diff vs matrix < 4e-15, bit-identical pairs checked: 6591
+hexagonal: max rel diff vs matrix < 4e-15, bit-identical pairs checked: 6593
+rhombohedral axes: max rel diff vs matrix < 4e-15, bit-identical pairs checked: 6591
+monoclinic: max rel diff vs matrix < 4e-15, bit-identical pairs checked: 2197
+triclinic: max rel diff vs matrix < 4e-15, bit-identical pairs checked: 2197
+All OK

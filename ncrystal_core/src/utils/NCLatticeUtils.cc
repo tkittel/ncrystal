@@ -191,6 +191,114 @@ double NC::dspacingFromHKL( int h, int k, int l, const RotMatrix& rec_lat )
   return k2Pi / std::sqrt(ksq);
 }
 
+NC::KSqCalc::KSqCalc( double a, double b, double c,
+                      double alpha, double beta, double gamma )
+{
+  nc_assert_always(alpha<kPi&&alpha>0);
+  nc_assert_always(beta<kPi&&beta>0);
+  nc_assert_always(gamma<kPi&&gamma>0);
+  nc_assert_always(a>0);
+  nc_assert_always(b>0);
+  nc_assert_always(c>0);
+
+  //Step 1: the six factors of |k|^2 = F1 h^2 + F2 k^2 + F3 l^2 + F4 hk + F5 hl
+  //+ F6 kl from the usual formulas for 1/d^2 (times 4pi^2). Factors which
+  //are equal by symmetry must be computed by the same expression, so that
+  //they are the same double (step 2 then merges them):
+  double F[6];
+  const double tol = 1e-14;//(exact angle detection, as in getLatticeRot)
+  const bool alpha90 = ncabs(alpha-kPiHalf)<tol;
+  const bool beta90 = ncabs(beta-kPiHalf)<tol;
+  const bool gamma90 = ncabs(gamma-kPiHalf)<tol;
+  const bool gamma120 = ncabs(gamma-kPi*(2/3.))<tol;
+  //Fixme: Consider using our custom versions of std::sin and std::cos below,
+  //       for added reproducibility.
+  if ( alpha90 && beta90 && gamma90 ) {
+    //Orthogonal axes (cubic, tetragonal, orthorhombic): 1/d^2 = h^2/a^2 +
+    //k^2/b^2 + l^2/c^2 (equal lengths give equal factors):
+    F[0] = ncsquare( k2Pi / a );
+    F[1] = ncsquare( k2Pi / b );
+    F[2] = ncsquare( k2Pi / c );
+    F[3] = F[4] = F[5] = 0.0;
+  } else if ( alpha90 && beta90 && gamma120 && a == b ) {
+    //Hexagonal axes: 1/d^2 = (4/3)(h^2+hk+k^2)/a^2 + l^2/c^2:
+    F[0] = F[1] = F[3] = (4.0/3.0) * ncsquare( k2Pi / a );
+    F[2] = ncsquare( k2Pi / c );
+    F[4] = F[5] = 0.0;
+  } else if ( a == b && b == c && alpha == beta && beta == gamma ) {
+    //Rhombohedral axes: 1/d^2 = [ (h^2+k^2+l^2) sin^2(alpha)
+    //+ 2(hk+hl+kl)(cos^2(alpha)-cos(alpha)) ] / [ a^2 (1-3cos^2(alpha)+2cos^3(alpha)) ]:
+    const double ca = std::cos(alpha), sa = std::sin(alpha);
+    const double denom = a*a*( 1.0 - 3.0*ca*ca + 2.0*ca*ca*ca );
+    nc_assert( denom > 0.0 );
+    F[0] = F[1] = F[2] = ncsquare(k2Pi) * sa*sa / denom;
+    F[3] = F[4] = F[5] = ncsquare(k2Pi) * 2.0*( ca*ca - ca ) / denom;
+  } else {
+    //General case (monoclinic, triclinic): the reciprocal metric G from the
+    //cell, with exact sines/cosines for 90 and 120 degree angles:
+    const double ca = alpha90 ? 0.0 : std::cos(alpha);
+    const double cb = beta90 ? 0.0 : std::cos(beta);
+    const double cg = gamma90 ? 0.0 : ( gamma120 ? -0.5 : std::cos(gamma) );
+    const double sa = alpha90 ? 1.0 : std::sin(alpha);
+    const double sb = beta90 ? 1.0 : std::sin(beta);
+    constexpr double sqrt3half
+      = 0.86602540378443864676372317075293618347140262690519;
+    const double sg = gamma90 ? 1.0 : ( gamma120 ? sqrt3half : std::sin(gamma) );
+    const double vfact = 1.0 - ca*ca - cb*cb - cg*cg + 2.0*ca*cb*cg;//(V/abc)^2
+    nc_assert( vfact > 0.0 );
+    const double q = ncsquare(k2Pi) / vfact;
+    F[0] = q * ncsquare( sa / a );//G11
+    F[1] = q * ncsquare( sb / b );//G22
+    F[2] = q * ncsquare( sg / c );//G33
+    F[3] = 2.0 * q * ( ca*cb - cg ) / ( a*b );//2*G12
+    F[4] = 2.0 * q * ( cg*ca - cb ) / ( a*c );//2*G13
+    F[5] = 2.0 * q * ( cb*cg - ca ) / ( b*c );//2*G23
+  }
+
+  //Step 2: merge terms with identical factors (zero factors are dropped):
+  for ( unsigned t = 0; t < 6; ++t ) {
+    if ( F[t] == 0.0 ) {
+      m_group_of_term[t] = 6;//(dummy group, never multiplied)
+      continue;
+    }
+    unsigned g = 0;
+    while ( g < m_ngroups && m_factor[g] != F[t] )
+      ++g;
+    if ( g == m_ngroups )
+      m_factor[m_ngroups++] = F[t];
+    m_group_of_term[t] = g;
+  }
+  nc_assert( m_ngroups >= 1 );
+}
+
+//|k|^2 = F1 h^2 + F2 k^2 + F3 l^2 + F4 hk + F5 hl + F6 kl, with the factors F
+//from the reciprocal metric of the cell. For symmetry-equal planes to get
+//identical results, the integer parts are summed exactly (64 bit) per distinct
+//factor before multiplying, so e.g. cubic 333 and 511 both compute F1*27.
+double NC::KSqCalc::ksq( int h, int k, int l ) const
+{
+  //Only the fma chain rounds:
+  const std::int64_t H = h, K = k, L = l;//(64 bit: exact for |h| < 1e9)
+  const std::int64_t intpart[6] = { H*H, K*K, L*L, H*K, H*L, K*L };
+  std::int64_t intsum[7] = { 0, 0, 0, 0, 0, 0, 0 };//[6] collects dropped terms
+  for ( unsigned t = 0; t < 6; ++t )
+    intsum[m_group_of_term[t]] += intpart[t];
+  double acc = 0.0;
+  for ( unsigned g = 0; g < m_ngroups; ++g )
+    acc = std::fma( m_factor[g], static_cast<double>( intsum[g] ), acc );
+  return acc;
+}
+
+double NC::KSqCalc::dspacing( int h, int k, int l ) const
+{
+  if (h==0&&k==0&&l==0)
+    NCRYSTAL_THROW(BadInput,"Can not calculate d-spacing for hkl=000");
+  const double k2 = ksq( h, k, l );
+  if (!(k2>0.0))
+    NCRYSTAL_THROW(CalcError,"Created invalid k-vector in d-spacing calculations (bad lattice parameters provided?)");
+  return k2Pi / std::sqrt(k2);
+}
+
   // Validate orientation parameters (check against null-vectors, parallel
   // vectors, consistency of angles in the two frames given dirtol,
   // etc.). Throws BadInput exception in case of issues.

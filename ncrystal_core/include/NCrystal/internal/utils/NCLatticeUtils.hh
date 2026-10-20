@@ -64,6 +64,21 @@ namespace NCRYSTAL_NAMESPACE {
   MaxHKL estimateHKLRange( double dcutoff, double lattice_a,
                            double lattice_b, double lattice_c );
 
+  //|k|^2 = (2pi/d)^2 and d-spacings for Miller indices in a given unit cell.
+  //Planes whose |k|^2 are equal by the symmetry of the cell (e.g. 333 and 511
+  //in a cubic cell) get identical values, on all platforms:
+  class KSqCalc final {
+  public:
+    KSqCalc( double lattice_a, double lattice_b, double lattice_c,
+             double alpha, double beta, double gamma );//(angles in radians)
+    double ksq( int h, int k, int l ) const;
+    double dspacing( int h, int k, int l ) const;//(BadInput for hkl=000)
+  private:
+    unsigned m_ngroups = 0;
+    double m_factor[6] = {};
+    unsigned m_group_of_term[6] = {};
+  };
+
   //Calculate d-spacing from Miller index and reciprocal lattice rotation:
   double dspacingFromHKL( int h, int k, int l, const RotMatrix& rec_lat );
 
