@@ -84,6 +84,7 @@ namespace NCRYSTAL_NAMESPACE {
     void handleSectionData_HEAD(const Parts&,unsigned);
     void handleSectionData_CELL(const Parts&,unsigned);
     void handleSectionData_ATOMPOSITIONS(const Parts&,unsigned);
+    void handleSectionData_ATOMSITES(const Parts&,unsigned);
     void handleSectionData_SPACEGROUP(const Parts&,unsigned);
     void handleSectionData_DEBYETEMPERATURE(const Parts&,unsigned);
     void handleSectionData_DYNINFO(const Parts&,unsigned);
@@ -250,6 +251,9 @@ void NC::NCMATParser::parseFile( TextData::Iterator itLine, TextData::Iterator i
   if (m_data.version>=7) {
     section2handler["TEMPERATURE"] = &NCMATParser::handleSectionData_TEMPERATURE;
   }
+  if (m_data.version>=8) {
+    section2handler["ATOMSITES"] = &NCMATParser::handleSectionData_ATOMSITES;
+  }
 
   //Technically handle the part before the first section ("@SECTIONNAME") by the
   //same code as all other parts of the file, by putting it in a "HEAD" section:
@@ -338,6 +342,12 @@ void NC::NCMATParser::parseFile( TextData::Iterator itLine, TextData::Iterator i
         if ( m_data.version<7 && (current_section=="TEMPERATURE") ) {
           NCRYSTAL_THROW2(BadInput,descr()<<": has @TEMPERATURE section which is not supported in the indicated"
                           " NCMAT format version, \"NCMAT v"<<m_data.version<<"\". It is only available starting with \"NCMAT v7\".");
+        }
+        if ( m_data.version<8 && (current_section=="ATOMSITES") ) {
+          NCRYSTAL_THROW2(BadInput,descr()
+                          <<": has @ATOMSITES section which is not supported in the indicated"
+                          " NCMAT format version, \"NCMAT v"<<m_data.version
+                          <<"\". It is only available starting with \"NCMAT v8\".");
         }
         NCRYSTAL_THROW2(BadInput,descr()<<": has @"<<current_section<<" section which is not a supported section name.");
       }
@@ -620,6 +630,32 @@ void NC::NCMATParser::handleSectionData_ATOMPOSITIONS(const Parts& parts, unsign
     }
   }
   m_data.atompos.emplace_back(parts.at(0),v);
+}
+
+void NC::NCMATParser::handleSectionData_ATOMSITES(const Parts& parts, unsigned lineno)
+{
+  if (parts.empty()) {
+    if (m_data.atomsites.empty())
+      NCRYSTAL_THROW2(BadInput,descr()<<": no sites specified in @ATOMSITES section (expected in line "<<lineno<<")");
+    try {
+      m_data.validateAtomSites();
+    } catch (Error::BadInput&e) {
+      NCRYSTAL_THROW2(BadInput,e.what()<<" (problem in the @ATOMSITES section ending in line "<<lineno<<")");
+    }
+    return;
+  }
+  validateElementName(parts.at(0),lineno);
+  if (parts.size()!=4)
+    NCRYSTAL_THROW2(BadInput,descr()<<": wrong number of data entries after element name \""<<parts.at(0)<<"\" in line "<<lineno<<" (expected three numbers)");
+  std::array<double,3> v;
+  for (unsigned i = 0; i<3; ++i) {
+    try {
+      v[i] = str2dbl_withfractions(parts.at(i+1));
+    } catch (Error::BadInput&e) {
+      NCRYSTAL_THROW2(BadInput,descr()<<": problem while decoding site position parameter #"<<i+1<<" for element \""<<parts.at(0)<<"\" in line "<<lineno<<" : "<<e.what());
+    }
+  }
+  m_data.atomsites.emplace_back(parts.at(0),v);
 }
 
 void NC::NCMATParser::handleSectionData_SPACEGROUP(const Parts& parts, unsigned lineno)
