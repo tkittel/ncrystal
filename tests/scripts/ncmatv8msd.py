@@ -20,14 +20,16 @@
 ##                                                                            ##
 ################################################################################
 
-# NEEDS: numpy
+# NEEDS: numpy spglib
 
-# The NCMAT v8 msd keyword of vdosdebye @DYNINFO sections ("msd <value>
-# at_temperature <T>"), in files and as written by NCMATComposer.set_dyninfo_msd.
+# The NCMAT v8 msd keyword of vdosdebye and scatknl @DYNINFO sections ("msd
+# <value> [at_temperature <T>]"), in files and as written by
+# NCMATComposer.set_dyninfo_msd, and the debye_temp keyword of scatknl sections.
 
 import NCTestUtils.enable_fpe # noqa F401
+import NCTestUtils.enable_testdatapath # noqa F401
 import NCrystalDev as NC
-from NCrystalDev.vdos import debyeTempFromIsotropicMSD
+from NCrystalDev.vdos import debyeTempFromIsotropicMSD, debyeIsotropicMSD
 from NCTestUtils.common import ensure_error
 
 def ncmat( dyninfo, *, cell = True, som = None ):
@@ -46,6 +48,10 @@ def load( content, cfg = ';dcutoff=0.5' ):
     return NC.createInfo( 'v8msd.ncmat' + cfg )
 
 def main():
+    vdosdebye()
+    scatknl()
+
+def vdosdebye():
     msd, T, mass = 0.0085, 293.15, 26.9815385
     dt_expected = debyeTempFromIsotropicMSD( msd = msd, mass = mass,
                                              temperature = T )
@@ -101,6 +107,98 @@ def main():
                        ' displacements in a solid, which is inconsistent with'
                        ' the declared state of matter "liquid"' ):
         c.create_ncmat()
+
+def li2o_kernels( li, o ):
+    #The two 10K scatknl sections of the Li2O test file, with extra lines:
+    t = NC.createTextData( 'Li2O_sg225_LithiumOxide_sabsmall_temp10K.ncmat' )
+    t = t.rawData
+    sec_li, sec_o = t[t.index('@DYNINFO'):].split('@DYNINFO')[1:]
+    assert 'element     Li' in sec_li and 'element     O' in sec_o
+    return f'@DYNINFO{sec_li}  {li}\n@DYNINFO{sec_o}  {o}\n'
+
+def li2o_structure():
+    lines, keep = [], False
+    for line in NC.createTextData( 'stdlib::Li2O_sg225_LithiumOxide.ncmat' ):
+        if line.startswith('@'):
+            keep = line.startswith( ('@CELL','@SPACEGROUP','@ATOMPOSITIONS') )
+        if keep:
+            lines.append( line + '\n' )
+    return ''.join( lines )
+
+def scatknl():
+    #Kernels at 10K, so the material temperature is 10K. The msd is
+    #transferred to 10K via the Debye model when given at another
+    #temperature, using the same functions as the loader (hence the tight
+    #tolerances):
+    T = 10.0
+    def msd_at_T( msd, at_T, mass ):
+        dt = debyeTempFromIsotropicMSD( msd = msd, temperature = at_T,
+                                        mass = mass )
+        return debyeIsotropicMSD( debye_temperature = dt, temperature = T,
+                                  mass = mass )
+
+    def load_cryst( li, o = 'debye_temp 600' ):
+        info = load( 'NCMAT v8\n' + li2o_structure() + li2o_kernels( li, o ),
+                     cfg = ';temp=10K;dcutoff=0.5' )
+        ai = { a.atomData.displayLabel() : a for a in info.atominfos }
+        return ai['Li'], ai['O']
+
+    mass_li = load_cryst( 'msd 0.02' )[0].atomData.averageMassAMU()
+    mass_o = load_cryst( 'msd 0.02' )[1].atomData.averageMassAMU()
+    dt_li = debyeTempFromIsotropicMSD( msd = 0.03, temperature = 300.0,
+                                       mass = mass_li )
+    print( 'Crystalline Li2O with scatknl sections at 10K:' )
+    for li, expected_msd in ( ( 'msd 0.02', 0.02 ),
+                              ( 'msd 0.02 at_temperature 10', 0.02 ),
+                              ( 'msd 0.03 at_temperature 300',
+                                msd_at_T( 0.03, 300.0, mass_li ) ),
+                              ( f'debye_temp {dt_li!r}',
+                                msd_at_T( 0.03, 300.0, mass_li ) ),
+                              ( 'debye_temp 400',
+                                debyeIsotropicMSD( debye_temperature = 400.0,
+                                                   temperature = T,
+                                                   mass = mass_li ) ) ):
+        ai_li, ai_o = load_cryst( li )
+        #The exact dt_li value is used as input, but printing it in full would
+        #expose platform-dependent last digits:
+        label = li.replace( repr(dt_li), f'{dt_li:.6g}' )
+        print( f'  Li "{label}": msd={ai_li.msd:.6g} Aa^2'
+               f' Debye temperature={ai_li.debyeTemperature:.6g} K' )
+        assert abs( ai_li.msd - expected_msd ) < 1e-12 * expected_msd
+        dt_expected = debyeTempFromIsotropicMSD( msd = expected_msd,
+                                                 temperature = T,
+                                                 mass = mass_li )
+        assert abs( ai_li.debyeTemperature - dt_expected ) < 1e-9 * dt_expected
+        o_msd = debyeIsotropicMSD( debye_temperature = 600.0, temperature = T,
+                                   mass = mass_o )
+        assert abs( ai_o.msd - o_msd ) < 1e-12 * o_msd
+    #Without keywords for O, its msd comes from the kernel analysis (only
+    #needing to be sane here), not affecting the explicit Li value:
+    ai_li, ai_o = load_cryst( 'msd 0.03 at_temperature 300', o = '' )
+    print( f'  O without keywords: msd={ai_o.msd:.3g} Aa^2 (from kernel)' )
+    assert 1e-4 < ai_o.msd < 0.1
+    assert ai_li.msd == load_cryst( 'msd 0.03 at_temperature 300' )[0].msd
+
+    #Non-crystalline solid: the msd enters only the incoherent elastic
+    #physics, so compare cross sections of equivalent descriptions:
+    def elas_xs( li, o = 'debye_temp 600' ):
+        content = ( 'NCMAT v8\n@STATEOFMATTER\n  solid\n'
+                    '@DENSITY\n  2.013 g_per_cm3\n' + li2o_kernels( li, o ) )
+        NC.registerInMemoryFileData( 'v8msd.ncmat', content )
+        sc = NC.createScatter( 'v8msd.ncmat;temp=10K;comp=elas' )
+        return tuple( sc.xsect( wl = wl ) for wl in ( 0.5, 1.0, 1.8, 4.0 ) )
+    ref = elas_xs( 'msd 0.03 at_temperature 300' )
+    print( 'Non-crystalline Li2O, elastic xs at 0.5, 1, 1.8, 4 Aa:',
+           ', '.join( f'{x:.5g}' for x in ref ), 'barn' )
+    def same( a, b ):
+        return all( abs( x - y ) <= 1e-12 * abs( y ) for x, y in zip( a, b ) )
+    assert same( elas_xs( f'debye_temp {dt_li!r}' ), ref )
+    msd10 = msd_at_T( 0.03, 300.0, mass_li )
+    assert same( elas_xs( f'msd {msd10!r}' ), ref )
+    assert same( elas_xs( f'msd {msd10!r} at_temperature 10' ), ref )
+    #(and the value matters):
+    assert not same( elas_xs( 'msd 0.03' ), ref )
+    print( '  identical for the equivalent msd and debye_temp entries' )
 
 if __name__ == '__main__':
     main()
