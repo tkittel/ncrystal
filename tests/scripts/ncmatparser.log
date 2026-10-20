@@ -1105,6 +1105,14 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 ==> Test 269
 ==> Correct! NCBadInput: Invalid (at least for this type of dynamic info) field "msd" specified (problem found in the @DYNINFO section ending in line 12)
 
+
+==> Test 270
+==> Correct! NCBadInput: invalid debye_temp value (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 271
+==> Correct! NCBadInput: invalid debye_temp value (problem found in the @DYNINFO section ending in line 14)
+
 Loading refnc1/Ag_sg225.ncmat
 Loading refnc1/Al2O3_sg167_Corundum.ncmat
 Loading refnc1/Al_sg225.ncmat
