@@ -1107,10 +1107,182 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 
 
 ==> Test 270
-==> Correct! NCBadInput: invalid debye_temp value (problem found in the @DYNINFO section ending in line 14)
+==> Ok.
 
 
 ==> Test 271
+==> Ok.
+
+
+==> Test 272
+==> Ok.
+
+
+==> Test 273
+==> Ok.
+
+
+==> Test 274
+==> Ok.
+
+
+==> Test 275
+==> Ok.
+
+
+==> Test 276
+==> Ok.
+
+
+==> Test 277
+==> Ok.
+
+
+==> Test 278
+==> Correct! NCBadInput: "(anonymous TextData, 790bytes, type=ncmat)": keyword "msd" is specified a second time in line 15
+
+
+==> Test 279
+==> Correct! NCBadInput: "(anonymous TextData, 828bytes, type=ncmat)": keyword "msd" is specified a second time in line 15
+
+
+==> Test 280
+==> Correct! NCBadInput: "(anonymous TextData, 802bytes, type=ncmat)": keyword "debye_temp" is specified a second time in line 15
+
+
+==> Test 281
+==> Correct! NCBadInput: "(anonymous TextData, 824bytes, type=ncmat)": keyword "effective_temperature" is specified a second time in line 15
+
+
+==> Test 282
+==> Correct! NCBadInput: @DYNINFO sections can not specify both the msd and the debye_temp keywords (problem found in the @DYNINFO section ending in line 15)
+
+
+==> Test 283
+==> Correct! NCBadInput: "(anonymous TextData, 776bytes, type=ncmat)": provides no arguments for keyword "msd" in line 14
+
+
+==> Test 284
+==> Correct! NCBadInput: "(anonymous TextData, 780bytes, type=ncmat)": problem while decoding "msd" parameters in line 14 : Invalid number in string is not a double: "bla"
+
+
+==> Test 285
+==> Correct! NCBadInput: "(anonymous TextData, 796bytes, type=ncmat)": invalid arguments for keyword "msd" in line 14 (expected "msd <value>" or "msd <value> at_temperature <temperature>")
+
+
+==> Test 286
+==> Correct! NCBadInput: "(anonymous TextData, 800bytes, type=ncmat)": problem while decoding "msd" parameters in line 14 : Invalid number in string is not a double: "bla"
+
+
+==> Test 287
+==> Correct! NCBadInput: "(anonymous TextData, 804bytes, type=ncmat)": invalid arguments for keyword "msd" in line 14 (expected "msd <value>" or "msd <value> at_temperature <temperature>")
+
+
+==> Test 288
+==> Correct! NCBadInput: "(anonymous TextData, 785bytes, type=ncmat)": invalid arguments for keyword "msd" in line 14 (expected "msd <value>" or "msd <value> at_temperature <temperature>")
+
+
+==> Test 289
+==> Correct! NCBadInput: "(anonymous TextData, 786bytes, type=ncmat)": invalid arguments for keyword "msd" in line 14 (expected "msd <value>" or "msd <value> at_temperature <temperature>")
+
+
+==> Test 290
+==> Correct! NCBadInput: "(anonymous TextData, 791bytes, type=ncmat)": invalid keyword "at_temperature" in line 14 (an "at_temperature" part must follow a "msd" value on the same line)
+
+
+==> Test 291
+==> Correct! NCBadInput: "(anonymous TextData, 800bytes, type=ncmat)": invalid keyword "at_temperature" in line 15 (an "at_temperature" part must follow a "msd" value on the same line)
+
+
+==> Test 292
+==> Correct! NCBadInput: invalid msd value (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 293
+==> Correct! NCBadInput: invalid msd value (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 294
+==> Correct! NCBadInput: invalid msd value (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 295
+==> Correct! NCBadInput: invalid temperature in the at_temperature part of the msd value (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 296
+==> Correct! NCBadInput: invalid temperature in the at_temperature part of the msd value (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 297
+==> Correct! NCBadInput: "(anonymous TextData, 788bytes, type=ncmat)": problem while decoding vector entry #2 in line 14 : Negative number
+
+
+==> Test 298
+==> Correct! NCBadInput: invalid effective_temperature value (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 299
+==> Correct! NCBadInput: effective_temperature keyword not followed by exactly one parameter (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 300
+==> Correct! NCBadInput: invalid debye_temp value (problem found in the @DYNINFO section ending in line 10)
+
+
+==> Test 301
+==> Correct! NCBadInput: invalid temperature in the at_temperature part of the msd value (problem found in the @DYNINFO section ending in line 10)
+
+
+==> Test 302
+==> Correct! NCBadInput: (anonymous TextData, 788bytes, type=ncmat) the msd and debye_temp keywords of @DYNINFO sections are only allowed in materials clearly describing solids (crystalline, or with an explicit @STATEOFMATTER solid declaration)
+
+
+==> Test 303
+==> Correct! NCBadInput: (anonymous TextData, 798bytes, type=ncmat) the msd and debye_temp keywords of @DYNINFO sections are only allowed in materials clearly describing solids (crystalline, or with an explicit @STATEOFMATTER solid declaration)
+
+
+==> Test 304
+==> Correct! NCBadInput: Invalid (at least for this type of dynamic info) field "effective_temperature" specified (problem found in the @DYNINFO section ending in line 11)
+
+
+==> Test 305
+==> Correct! NCBadInput: Invalid (at least for this type of dynamic info) field "debye_temp" specified (problem found in the @DYNINFO section ending in line 12)
+
+
+==> Test 306
+==> Correct! NCBadInput: Invalid (at least for this type of dynamic info) field "effective_temperature" specified (problem found in the @DYNINFO section ending in line 12)
+
+
+==> Test 307
+==> Correct! NCBadInput: Invalid (at least for this type of dynamic info) field "msd" specified (problem found in the @DYNINFO section ending in line 10)
+
+
+==> Test 308
+==> Correct! NCBadInput: Invalid (at least for this type of dynamic info) field "effective_temperature" specified (problem found in the @DYNINFO section ending in line 10)
+
+
+==> Test 309
+==> Correct! NCBadInput: Invalid (at least for this type of dynamic info) field "debye_temp" specified (problem found in the @DYNINFO section ending in line 10)
+
+
+==> Test 310
+==> Correct! NCBadInput: msd keyword in @DYNINFO sections is only allowed in NCMAT v8 or later (problem found in the @DYNINFO section ending in line 10)
+
+
+==> Test 311
+==> Correct! NCBadInput: @DYNINFO sections of type vdosdebye must contain either a debye_temp or an msd entry in NCMAT v8 or later (the @DEBYETEMPERATURE section is removed) (problem found in the @DYNINFO section ending in line 11)
+
+
+==> Test 312
+==> Correct! NCBadInput: (anonymous TextData, 811bytes, type=ncmat) Invalid @STATEOFMATTER value. Presence of  @CELL/ATOMPOSITIONS sections implies that the material must be a solid
+
+
+==> Test 313
+==> Correct! NCBadInput: invalid debye_temp value (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 314
 ==> Correct! NCBadInput: invalid debye_temp value (problem found in the @DYNINFO section ending in line 14)
 
 Loading refnc1/Ag_sg225.ncmat

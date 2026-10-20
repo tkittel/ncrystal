@@ -1302,6 +1302,72 @@ _v8_vdebye('msd 0.05\n'),
  '@DYNINFO\nelement Al\nfraction 1\ntype vdos\n'
  'vdos_egrid 0.01 0.03\nvdos_density 0.1 0.2 0.3 0.4 0.5\n'
  'msd 0.05 at_temperature 280\n')[:],
+#More valid keyword combinations and boundary values:
+(_v8_sk(difields='effective_temperature 300\n'),),
+(_v8_sk(difields='debye_temp 400\neffective_temperature 450\n'),),
+(_v8_sk(difields='msd 99.9 at_temperature 999999\n'),),
+(_v8_sk(difields='msd 1e-9 at_temperature 1e-9\n'),),
+(_v8_sk(difields='msd 0.05 at_temperature 300\n'),),
+(_v8_cryst(gen_fake_dyninfo_scatknl_fields(ename='Al',temp=300)
+           +'debye_temp 400\neffective_temperature 450\n'),),
+(_v8_cryst(gen_fake_dyninfo_scatknl_fields(ename='Al',temp=300)
+           +'msd 0.05 at_temperature 280\n')
+ .replace('@CELL','@STATEOFMATTER\nsolid\n@CELL'),),
+(_v8_cryst('element Al\nfraction 1\ntype vdosdebye\nmsd 0.05 at_temperature 280\n'),),
+#Invalid: repeated keywords:
+_v8_sk(difields='msd 0.05\nmsd 0.05\n'),
+_v8_sk(difields='msd 0.05 at_temperature 280\nmsd 0.05 at_temperature 280\n'),
+_v8_sk(difields='debye_temp 400\ndebye_temp 400\n'),
+_v8_sk(difields='effective_temperature 450\neffective_temperature 450\n'),
+#Invalid: msd and debye_temp together (other order):
+_v8_sk(difields='debye_temp 400\nmsd 0.05 at_temperature 280\n'),
+#Invalid: malformed msd entries:
+_v8_sk(difields='msd\n'),
+_v8_sk(difields='msd bla\n'),
+_v8_sk(difields='msd 0.05 at_temperature\n'),
+_v8_sk(difields='msd 0.05 at_temperature bla\n'),
+_v8_sk(difields='msd 0.05 at_temperature 280 300\n'),
+_v8_sk(difields='msd 0.05 280\n'),
+_v8_sk(difields='msd 0.05 0.06\n'),
+_v8_sk(difields='at_temperature 280\n'),
+_v8_sk(difields='msd 0.05\nat_temperature 280\n'),
+#Invalid: out of range values:
+_v8_sk(difields='msd 0\n'),
+_v8_sk(difields='msd 100\n'),
+_v8_sk(difields='msd inf\n'),
+_v8_sk(difields='msd 0.05 at_temperature 0\n'),
+_v8_sk(difields='msd 0.05 at_temperature 1e6\n'),
+_v8_sk(difields='debye_temp -400\n'),
+_v8_sk(difields='effective_temperature 1e6\n'),
+_v8_sk(difields='effective_temperature 450 500\n'),
+_v8_vdebye('debye_temp 0\n'),
+_v8_vdebye('msd 0.05 at_temperature 0\n'),
+#Invalid: msd/debye_temp in other non-solids:
+_v8_sk(som='liquid',difields='debye_temp 400\n'),
+_v8_sk(som='gas',difields='msd 0.05 at_temperature 280\n'),
+#Invalid: keywords in section types not supporting them:
+_v8_vdebye('debye_temp 350\neffective_temperature 450\n'),
+('NCMAT v8\n@STATEOFMATTER\n  solid\n@DENSITY\n  1.0 g_per_cm3\n'
+ '@DYNINFO\nelement Al\nfraction 1\ntype vdos\n'
+ 'vdos_egrid 0.01 0.03\nvdos_density 0.1 0.2 0.3 0.4 0.5\n'
+ 'debye_temp 400\n'),
+('NCMAT v8\n@STATEOFMATTER\n  solid\n@DENSITY\n  1.0 g_per_cm3\n'
+ '@DYNINFO\nelement Al\nfraction 1\ntype vdos\n'
+ 'vdos_egrid 0.01 0.03\nvdos_density 0.1 0.2 0.3 0.4 0.5\n'
+ 'effective_temperature 450\n'),
+('NCMAT v8\n@STATEOFMATTER\n  solid\n@DENSITY\n  1.0 g_per_cm3\n'
+ '@DYNINFO\nelement Al\nfraction 1\ntype freegas\nmsd 0.05 at_temperature 280\n'),
+('NCMAT v8\n@STATEOFMATTER\n  gas\n@DENSITY\n  1.0 g_per_cm3\n'
+ '@DYNINFO\nelement Al\nfraction 1\ntype freegas\neffective_temperature 450\n'),
+('NCMAT v8\n@STATEOFMATTER\n  solid\n@DENSITY\n  1.0 g_per_cm3\n'
+ '@DYNINFO\nelement Al\nfraction 1\ntype sterile\ndebye_temp 400\n'),
+#Invalid: new keywords in pre-v8 vdosdebye sections:
+_v8_vdebye('msd 0.05 at_temperature 280\n').replace('NCMAT v8','NCMAT v7'),
+#Invalid: v8 crystal with vdosdebye lacking debye_temp/msd:
+_v8_cryst('element Al\nfraction 1\ntype vdosdebye\n'),
+#Invalid: crystal declared non-solid:
+_v8_cryst(gen_fake_dyninfo_scatknl_fields(ename='Al',temp=300)
+          +'msd 0.05\n').replace('@CELL','@STATEOFMATTER\nliquid\n@CELL'),
 #Invalid: debye_temp out of range in scatknl sections:
 _v8_sk(difields='debye_temp 0\n'),
 _v8_sk(difields='debye_temp 1e6\n'),
