@@ -917,6 +917,111 @@ void run()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Grouping of positions into orbits
+////////////////////////////////////////////////////////////////////////////////
+
+//Tests groupPositionsIntoOrbits: positions expanded from several sites (in a
+//scrambled order, and shifted by lattice vectors) are grouped back into the
+//orbits of those sites, and incomplete orbits are rejected.
+
+namespace test_grouporbits {
+
+namespace {
+  struct Case {
+    const char * sg;
+    std::vector<NC::Vector> sites;
+  };
+
+  //Positions of the orbits of the sites, in a scrambled order and some
+  //shifted by lattice vectors, with the site index of each:
+  void expandAll( const NC::SGSymmetry& sym, const Case& c,
+                  std::vector<NC::Vector>& pos, std::vector<unsigned>& site_of )
+  {
+    struct Entry { double key; NC::Vector p; unsigned site, idx; };
+    std::vector<Entry> entries;
+    for ( auto isite : NC::ncrange( c.sites.size() ) ) {
+      const auto orbit = NC::expandSiteToOrbit( sym, c.sites.at( isite ) );
+      for ( auto& p : orbit.positions ) {
+        const double key = std::fmod( 13.7*p.x() + 7.3*p.y() + 3.1*p.z(), 1.0 );
+        const NC::Vector shift( entries.size() % 2, 0.0,
+                                entries.size() % 3 == 0 ? -1.0 : 0.0 );
+        entries.push_back( { key, p + shift, static_cast<unsigned>( isite ),
+                             static_cast<unsigned>( entries.size() ) } );
+      }
+    }
+    //std::sort with the original order as tie-breaker (std::stable_sort
+    //triggers deprecation warnings in some libstdc++ versions):
+    std::sort( entries.begin(), entries.end(),
+               []( const Entry& a, const Entry& b )
+               { return a.key != b.key ? a.key < b.key : a.idx < b.idx; } );
+    pos.clear();
+    site_of.clear();
+    for ( auto& e : entries ) {
+      pos.push_back( e.p );
+      site_of.push_back( e.site );
+    }
+  }
+}
+
+void run()
+{
+  const Case cases[] = {
+    { "225", { NC::Vector( 0.0, 0.0, 0.0 ), NC::Vector( 0.25, 0.25, 0.25 ),
+               NC::Vector( 0.1234, 0.2345, 0.3456 ) } },
+    { "227:2", { NC::Vector( 0.125, 0.125, 0.125 ),
+                 NC::Vector( 0.5, 0.5, 0.5 ) } },
+    { "194", { NC::Vector( 1.0/3, 2.0/3, 0.25 ),
+               NC::Vector( 0.1, 0.2, 0.3 ) } },
+    { "14:c1", { NC::Vector( 0.0, 0.0, 0.0 ), NC::Vector( 0.1, 0.2, 0.3 ) } },
+  };
+  for ( auto& c : cases ) {
+    const auto& sym
+      = NC::SGSymmetry::get( NC::SpaceGroup( c.sg, NC::SpaceGroupParseMode::Strict ) );
+    std::vector<NC::Vector> pos;
+    std::vector<unsigned> site_of;
+    expandAll( sym, c, pos, site_of );
+    const auto orbits = NC::groupPositionsIntoOrbits( sym, pos );
+    REQUIRE( orbits.size() == c.sites.size() );
+    std::size_t ntot = 0;
+    std::cout << "  " << c.sg << ": " << pos.size() << " positions in "
+              << orbits.size() << " orbits of sizes";
+    for ( auto io : NC::ncrange( orbits.size() ) ) {
+      const auto& orbit = orbits.at( io );
+      REQUIRE( std::is_sorted( orbit.begin(), orbit.end() ) );
+      if ( io > 0 )
+        REQUIRE( orbits.at( io - 1 ).front() < orbit.front() );
+      const unsigned site = site_of.at( orbit.front() );
+      for ( auto i : orbit )
+        REQUIRE( site_of.at( i ) == site );
+      REQUIRE( orbit.size()
+               == NC::expandSiteToOrbit( sym, c.sites.at( site ) ).positions.size() );
+      ntot += orbit.size();
+      std::cout << " " << orbit.size();
+    }
+    REQUIRE( ntot == pos.size() );
+    std::cout << std::endl;
+  }
+
+  //Incomplete orbit:
+  const auto& sym
+    = NC::SGSymmetry::get( NC::SpaceGroup( "225", NC::SpaceGroupParseMode::Strict ) );
+  std::vector<NC::Vector> pos;
+  std::vector<unsigned> site_of;
+  expandAll( sym, cases[0], pos, site_of );
+  pos.pop_back();
+  try {
+    NC::groupPositionsIntoOrbits( sym, pos );
+    REQUIRE( false );
+  } catch ( NC::Error::BadInput& e ) {
+    std::cout << "  225 with one position missing -> BadInput: " << e.what()
+              << std::endl;
+  }
+  std::cout << "All OK" << std::endl;
+}
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Structure symmetry check
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1074,6 +1179,8 @@ int main()
   test_cell::run();
   std::cout << "==== Expansion of sites into orbits ====" << std::endl;
   test_orbit::run();
+  std::cout << "==== Grouping of positions into orbits ====" << std::endl;
+  test_grouporbits::run();
   std::cout << "==== Structure symmetry check ====" << std::endl;
   test_structcheck::run();
   std::cout << "==== Settings compatible with a cell ====" << std::endl;
