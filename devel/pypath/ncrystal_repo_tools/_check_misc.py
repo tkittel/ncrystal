@@ -31,6 +31,8 @@ ignore_list_nonascii = {
 
 def main():
 
+    import platform
+
     from .dirs import reporoot
     from .srciter import all_files_iter
     #For log files (and indeed all files) we simply test the size:
@@ -58,11 +60,14 @@ def main():
         'tests/data/ptreduce/li_from_li2o_e0grid.txt' : 100,
         'tests/data/ptreduce/al_e0grid.txt' : 100,
     }
+    #slightly larger on windows (larger line endings):
+    limfactor = 1.02 if platform.system() == 'Windows' else 1.0
     for f in all_files_iter():
         lim = max_size_kb_log if f.suffix == '.log' else max_size_kb_other
         lim = max_size_overrides.get(
             str(f.relative_to( reporoot )).replace('\\','/'), lim
         )
+        lim *= limfactor
         size_kb =  len(f.read_bytes()) / 1024.
         if size_kb > lim:
             raise SystemExit(f'File too large ({size_kb:.2g} kb): {f}')
