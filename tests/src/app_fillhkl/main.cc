@@ -427,6 +427,106 @@ void run()
 
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// KSqCalc
+////////////////////////////////////////////////////////////////////////////////
+
+//Checks that KSqCalc agrees with the reciprocal lattice matrix, and that
+//planes whose |k|^2 are equal by the symmetry of the cell get bit-identical
+//values (cubic 333/511, hexagonal 700/530, index permutations and sign flips
+//along equal axes, ...).
+
+namespace test_ksqcalc {
+
+  using test_range::Lattice;
+
+  double ksqMatrix( const Lattice& lt, int h, int k, int l )
+  {
+    const auto rec = NC::getReciprocalLatticeRot( lt.a, lt.b, lt.c,
+                                                  lt.alpha * NC::kDeg,
+                                                  lt.beta * NC::kDeg,
+                                                  lt.gamma * NC::kDeg );
+    return ( rec * NC::Vector( h, k, l ) ).mag2();
+  }
+
+  void run()
+  {
+    struct Case { Lattice lt; const char * descr; };
+    const Case cases[] = {
+      { { 4.0, 4.0, 4.0, 90.0, 90.0, 90.0 }, "cubic" },
+      { { 4.0, 4.0, 5.0, 90.0, 90.0, 90.0 }, "tetragonal" },
+      { { 4.0, 5.0, 4.0, 90.0, 90.0, 90.0 }, "tetragonal with a=c (odd setting)" },
+      { { 4.0, 5.0, 6.0, 90.0, 90.0, 90.0 }, "orthorhombic" },
+      { { 3.0, 3.0, 5.0, 90.0, 90.0, 120.0 }, "hexagonal" },
+      { { 5.0, 5.0, 5.0, 70.0, 70.0, 70.0 }, "rhombohedral axes" },
+      { { 4.0, 6.0, 5.0, 90.0, 105.0, 90.0 }, "monoclinic" },
+      { { 4.0, 5.0, 6.0, 80.0, 95.0, 110.0 }, "triclinic" },
+    };
+    for ( auto& c : cases ) {
+      const auto& lt = c.lt;
+      const NC::KSqCalc calc( lt.a, lt.b, lt.c, lt.alpha * NC::kDeg,
+                              lt.beta * NC::kDeg, lt.gamma * NC::kDeg );
+      //Agreement with the matrix route (all |h|,|k|,|l| <= 8):
+      double maxreldiff = 0.0;
+      for ( int h = -8; h <= 8; ++h )
+        for ( int k = -8; k <= 8; ++k )
+          for ( int l = -8; l <= 8; ++l ) {
+            if ( !h && !k && !l )
+              continue;
+            const double v1 = calc.ksq( h, k, l ), v2 = ksqMatrix( lt, h, k, l );
+            maxreldiff = NC::ncmax( maxreldiff, NC::ncabs( v1 - v2 ) / v2 );
+          }
+      nc_assert_always( maxreldiff < 4e-15 );
+      //Bit-identical values where the cell symmetry implies equality. The
+      //axes with equal lengths (and 90 degree angles) can be permuted and
+      //flipped, and for the orthogonal/hexagonal/rhombohedral cases all
+      //planes with the same integer invariants agree:
+      unsigned nchecked = 0;
+      auto same = [&]( int h1, int k1, int l1, int h2, int k2, int l2 )
+      {
+        nc_assert_always( calc.ksq( h1, k1, l1 ) == calc.ksq( h2, k2, l2 ) );
+        ++nchecked;
+      };
+      const bool orth = ( lt.alpha == 90.0 && lt.beta == 90.0 && lt.gamma == 90.0 );
+      for ( int h = -6; h <= 6; ++h )
+        for ( int k = -6; k <= 6; ++k )
+          for ( int l = -6; l <= 6; ++l ) {
+            same( h, k, l, -h, -k, -l );//Friedel
+            if ( orth ) {
+              same( h, k, l, -h, k, l );
+              same( h, k, l, h, -k, l );
+              if ( lt.a == lt.b )
+                same( h, k, l, k, h, l );
+              if ( lt.a == lt.c )
+                same( h, k, l, l, k, h );
+              if ( lt.b == lt.c )
+                same( h, k, l, h, l, k );
+            }
+            if ( lt.gamma == 120.0 ) {
+              same( h, k, l, k, h, l );
+              same( h, k, l, -h-k, k, l );//(hexagonal: h^2+hk+k^2 invariant)
+            }
+            if ( lt.alpha == lt.beta && lt.beta == lt.gamma && lt.a == lt.b
+                 && lt.b == lt.c ) {
+              same( h, k, l, k, l, h );
+              same( h, k, l, l, h, k );
+            }
+          }
+      if ( lt.a == lt.b && lt.b == lt.c && orth ) {
+        same( 3, 3, 3, 5, 1, 1 );
+        same( 3, 3, 3, 1, 5, 1 );
+      }
+      if ( lt.gamma == 120.0 ) {
+        same( 7, 0, 0, 5, 3, 0 );
+        same( 7, 0, 1, 3, 5, 1 );
+      }
+      std::cout << c.descr << ": max rel diff vs matrix < 4e-15"
+                << ", bit-identical pairs checked: " << nchecked << std::endl;
+    }
+    std::cout << "All OK" << std::endl;
+  }
+}
+
 int main()
 {
   std::cout << "==== Bragg threshold and partial HKL lists ====" << std::endl;
@@ -435,5 +535,7 @@ int main()
   test_nosymbuffer::run();
   std::cout << "==== Range of HKL indices ====" << std::endl;
   test_range::run();
+  std::cout << "==== KSqCalc ====" << std::endl;
+  test_ksqcalc::run();
   return 0;
 }
