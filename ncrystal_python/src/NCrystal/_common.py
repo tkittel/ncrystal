@@ -628,16 +628,46 @@ def _latex_format(x):
         return e
     return f'{b:g}'+r'\cdot'+e
 
+class ReadOnlyDict(dict):
+    """Read-only dict: behaves like a dict for all lookups, printing, JSON
+    encoding and isinstance(..,dict) checks, but any attempt to modify it
+    raises a TypeError. Nested dicts are also read-only and nested lists are
+    tuples. Use .copy() (or dict(x)) for an editable shallow copy, and
+    copy.deepcopy(x) for an editable copy of the whole structure."""
+
+    def __readonly(self, *a, **kw):
+        raise TypeError('read-only dict (use .copy() for an editable copy)')
+    __setitem__ = __delitem__ = clear = pop = popitem = __readonly
+    setdefault = update = __ior__ = __readonly
+
+    def copy(self):
+        """Editable shallow copy as a plain dict."""
+        return dict(self)
+    __copy__ = copy
+
+    def __deepcopy__(self, memo):
+        return _create_mutable_copy(self)
+
+    def __reduce__(self):
+        return (dict, (dict(self),))
+
 def create_read_only_view(data):
     #Create read-only view of data, assuming only dict/list/tuple + basic
     #immutable types are used.
     if isinstance(data, dict):
-        from types import MappingProxyType
-        return MappingProxyType(
-            { k: create_read_only_view(v) for k,v in data.items() }
-        )
+        return ReadOnlyDict( (k, create_read_only_view(v))
+                             for k,v in data.items() )
     elif isinstance(data, (list, tuple)):
         return tuple(create_read_only_view(v) for v in data)
+    else:
+        return data
+
+def _create_mutable_copy(data):
+    #Inverse of create_read_only_view: dicts become plain dicts, tuples lists.
+    if isinstance(data, dict):
+        return { k: _create_mutable_copy(v) for k,v in data.items() }
+    elif isinstance(data, (list, tuple)):
+        return [ _create_mutable_copy(v) for v in data ]
     else:
         return data
 

@@ -348,16 +348,16 @@ class Info(RCBase):
         self.__queries = {}
 
     def _query(self, *query):
-        #Query the C++ layer about this object (cached so do not modify returned
-        #value!).
-        try:
-            return self.__queries[query]
-        except KeyError:
-            pass
-        import json
-        res = json.loads(_rawfct['info_jsonquery'](self._rawobj, query))
-        self.__queries[query] = res
-        return res
+        #Query the C++ layer about this object. Results are cached as
+        #read-only views (safe to share with callers).
+        if query not in self.__queries:
+            import json
+
+            from ._common import create_read_only_view
+            self.__queries[query] = create_read_only_view(
+                json.loads(_rawfct['info_jsonquery'](self._rawobj, query))
+            )
+        return self.__queries[query]
 
     def getUniqueID(self):
         """Unique identifier of object (UID)."""
