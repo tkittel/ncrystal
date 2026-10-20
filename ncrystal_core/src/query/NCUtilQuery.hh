@@ -234,6 +234,8 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr auto sv_browsefacts = StrView::make("browsefactories");
       constexpr auto sv_factthreads = StrView::make("factorythreads");
       constexpr auto sv_eqrefl = StrView::make("eqrefl");
+      constexpr auto sv_atomsites = StrView::make("atomsites");
+      constexpr auto sv_atompositions = StrView::make("atompositions");
       constexpr auto sv_sgsym = StrView::make("sgsym");
       if ( key == sv_list ) {
         if ( nargs != 0 )
@@ -279,6 +281,129 @@ namespace NCRYSTAL_NAMESPACE {
           os << ']';
         }
         os << ']';
+      } else if ( key == sv_atomsites || key == sv_atompositions ) {
+        //["util","atomsites",MODE,SG,"lbl,x,y,z",...]: group unit cell
+        //positions (fractional) into crystallographic sites, one per orbit
+        //of the space group: {"spacegroup_setting":"227:2",
+        //"is_default_setting":b,"sites":[[lbl,[x,y,z],multiplicity],...]}.
+        //SG is parsed in MODE "strict" or "relaxed" (cf. SpaceGroupParseMode),
+        //and in relaxed mode the setting is moreover deduced from the
+        //positions among all settings of the number with the same axes (so a
+        //bare number finds e.g. an origin choice 2 structure), while in strict
+        //mode the positions must have the symmetry of exactly the given
+        //setting (an error otherwise).
+        //["util","atompositions",MODE,SG,"lbl,x,y,z",...]: the inverse,
+        //expanding sites in the setting SG into all unit cell positions:
+        //[[lbl,[x,y,z]],...].
+        const bool tosites = ( key == sv_atomsites );
+        const auto usage = ( tosites
+                             ? "correct usage: [\"util\",\"atomsites\","
+                             "\"strict|relaxed\",SG,\"lbl,x,y,z\",...]"
+                             : "correct usage: [\"util\",\"atompositions\","
+                             "\"strict|relaxed\",SG,\"lbl,x,y,z\",...]" );
+        if ( nargs < 3 || ( arg(0) != "strict" && arg(0) != "relaxed" ) )
+          invalid( usage );
+        const bool strict = ( arg(0) == "strict" );
+        const SpaceGroup given( arg(1), ( strict ? SpaceGroupParseMode::Strict
+                                          : SpaceGroupParseMode::Relaxed ) );
+        auto wrap = []( double x ) {
+          double r = x - std::floor( x );
+          return ( r >= 1.0 || r == 0.0 ) ? 0.0 : r;
+        };
+        //Positions grouped by label, in order of first appearance:
+        std::vector<std::string> labels;
+        std::vector<std::vector<Vector>> positions;
+        for ( auto i : ncrange( std::size_t(2), nargs ) ) {
+          auto parts = arg(i).splitTrimmed(',');
+          if ( parts.size() != 4 )
+            invalid( usage );
+          double v[3];
+          for ( auto j : ncrange( 3 ) ) {
+            auto x = parts.at(j+1).toDbl();
+            if ( !x.has_value() || !std::isfinite( x.value() ) )
+              invalid( usage );
+            v[j] = wrap( x.value() );
+          }
+          const std::string lbl = parts.at(0).to_string();
+          std::size_t ilbl = 0;
+          while ( ilbl < labels.size() && labels[ilbl] != lbl )
+            ++ilbl;
+          if ( ilbl == labels.size() ) {
+            labels.push_back( lbl );
+            positions.emplace_back();
+          }
+          positions[ilbl].emplace_back( v[0], v[1], v[2] );
+        }
+        auto streamPos = [&os]( const Vector& p ) {
+          os << '[';
+          streamJSON( os, p.x() );
+          os << ',';
+          streamJSON( os, p.y() );
+          os << ',';
+          streamJSON( os, p.z() );
+          os << ']';
+        };
+        if ( tosites ) {
+          Optional<SpaceGroup> setting;
+          SGStructureCheck res;
+          if ( strict ) {
+            setting = given;
+            res = checkStructureSymmetry( given, positions );
+          } else {
+            const bool rhombo = ( given.settingInfo().hexFamilyAxes
+                                  == SGHexFamilyAxes::Rhombohedral );
+            res = checkStructureSymmetry( given.number(), rhombo, positions );
+            if ( res.settingIdx.has_value() )
+              setting.emplace( res.settingIdx.value() );
+          }
+          if ( !setting.has_value() || !( res.maxDeviation <= 1e-2 ) )
+            NCRYSTAL_THROW2(BadInput,"Atom positions are not consistent with"
+                            " space group "<<arg(1)<<" (largest deviation of"
+                            " a symmetry image from an atom of the same type: "
+                            <<fmt(res.maxDeviation,"%.2g")<<" in fractional"
+                            " coordinates)");
+          const SGSymmetry& sym = SGSymmetry::get( setting.value() );
+          streamJSONDictEntry( os, "spacegroup_setting",
+                               setting.value().toString(), JSONDictPos::FIRST );
+          streamJSONDictEntry( os, "is_default_setting",
+                               setting.value().isDefaultSetting() );
+          os << ",\"sites\":[";
+          bool first = true;
+          for ( auto ilbl : ncrange( labels.size() ) ) {
+            //(sorted, so the representative is the first of its orbit):
+            auto& plist = positions[ilbl];
+            std::sort( plist.begin(), plist.end(),
+                       []( const Vector& a, const Vector& b )
+                       { return std::make_tuple( a.x(), a.y(), a.z() )
+                                < std::make_tuple( b.x(), b.y(), b.z() ); } );
+            for ( auto& orbit : groupPositionsIntoOrbits( sym, plist ) ) {
+              os << ( first ? "[" : ",[" );
+              first = false;
+              streamJSON( os, labels[ilbl] );
+              os << ',';
+              streamPos( vectAt( plist, orbit.front() ) );
+              os << ',' << orbit.size() << ']';
+            }
+          }
+          os << "]}";
+        } else {
+          const SGSymmetry& sym = SGSymmetry::get( given );
+          os << '[';
+          bool first = true;
+          for ( auto ilbl : ncrange( labels.size() ) ) {
+            for ( auto& site : positions[ilbl] ) {
+              for ( auto& p : expandSiteToOrbit( sym, site ).positions ) {
+                os << ( first ? "[" : ",[" );
+                first = false;
+                streamJSON( os, labels[ilbl] );
+                os << ',';
+                streamPos( p );
+                os << ']';
+              }
+            }
+          }
+          os << ']';
+        }
       } else if ( key == sv_sgsym ) {
         //["util","sgsym",MODE,SG]: Symmetry operations of a space group
         //setting (SG as e.g. "225", "166:r", "227:2", "14:c1" or "62:cab",

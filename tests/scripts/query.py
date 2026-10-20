@@ -118,6 +118,7 @@ def main():
     test_cli('list')
     test_cli('mmc','list')
     test_cli('util','list')
+    test_atomsites()
     test_cli('util','wl2ekin','1.8')
     test_cli('util','ekin2wl','0.025')
     test_cli('util','eqrefl','relaxed','149','1,2,3','1,1,0')
@@ -264,6 +265,30 @@ def test_huge_arrays():
     assert not find_keys( res )
     print("Normal query with huge arrays worked afterwards")
 
+
+def test_atomsites():
+    #["util","atompositions",...] expands sites, ["util","atomsites",...]
+    #groups positions into sites (diamond in origin choice 2):
+    site = 'Si,0.125,0.125,0.125'
+    r = ncquery( ['util','atompositions','strict','227:2',site] )
+    print( f'227:2 site {site} -> {len(r)} positions' )
+    assert len(r) == 8
+    pos = [ f'{lbl},{x!r},{y!r},{z!r}' for lbl,(x,y,z) in r ]
+    test( 'util','atomsites','strict','227:2',*pos )
+    #Relaxed: the setting is deduced from the positions:
+    r = ncquery( ['util','atomsites','relaxed','227',*pos] )
+    print( 'relaxed 227 -> setting', r['spacegroup_setting'] )
+    assert r['spacegroup_setting'] == '227:2'
+    with ensure_error( NCBadInput, 'Atom positions are not consistent with'
+                       ' space group 227:1 (largest deviation of a symmetry'
+                       ' image from an atom of the same type: 0.25 in'
+                       ' fractional coordinates)' ):
+        ncquery( ['util','atomsites','strict','227:1',*pos] )
+    with ensure_error( NCBadInput, 'Invalid util query: ["util","atomsites",'
+                       '"227:2","Si,0.125,0.125,0.125"] (correct usage:'
+                       ' ["util","atomsites","strict|relaxed",SG,'
+                       '"lbl,x,y,z",...])' ):
+        ncquery( ['util','atomsites','227:2',site] )
 
 if __name__ == '__main__':
     main()
