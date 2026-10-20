@@ -1,0 +1,10 @@
+Checked 110 materials: 264 sites expanding to 1800 positions
+Al_sg225.ncmat (setting 225):
+  Al   (0, 0, 0) multiplicity 4
+Al2O3_sg167_Corundum.ncmat (setting 167:h):
+  O    (0, 0.30625, 0.25) multiplicity 18
+  Al   (0, 0, 0.14782) multiplicity 12
+PbO-alpha_sg129_Litharge.ncmat (setting 129:2):
+  O    (0.25, 0.75, 0) multiplicity 2
+  Pb   (0.25, 0.25, 0.237) multiplicity 2
+Without space group: sites unknown
