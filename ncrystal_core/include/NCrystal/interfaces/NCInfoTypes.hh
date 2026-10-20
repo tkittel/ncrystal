@@ -154,6 +154,19 @@ namespace NCRYSTAL_NAMESPACE {
     const AtomPositions& unitCellPositions() const noexcept { return m_pos; }
     unsigned numberPerUnitCell() const noexcept { return static_cast<unsigned>( m_pos.size() ); }
 
+    //The crystallographic sites: one per orbit of the space group setting, so
+    //the unit cell positions are the symmetry images of the site positions
+    //(the multiplicities add up to numberPerUnitCell()). Empty if unknown.
+    struct NCRYSTAL_API Site {
+      Pos position;              //orbit representative (fractional coordinates)
+      unsigned multiplicity = 0; //number of positions in the orbit
+      //Placeholders reserved for future work, never there currently:
+      Optional<double> occupancy;
+      Optional<std::array<double,6>> uij;
+    };
+    using AtomSites = std::vector<Site>;
+    const AtomSites& sites() const noexcept { return m_sites; }
+
     //Mean-square-displacements (a.k.a. "U_iso") in angstrom^2 is optional. Note
     //that this is the displacement projected onto a linear axis, for direct
     //usage in isotropic Debye-Waller factors:
@@ -166,18 +179,23 @@ namespace NCRYSTAL_NAMESPACE {
     const DynamicInfo* correspondingDynamicInfo() const { return m_dyninfo; }
 
     //Constructor:
-    AtomInfo( IndexedAtomData, AtomPositions&&, Optional<DebyeTemperature>, Optional<double> msd );
+    AtomInfo( IndexedAtomData, AtomPositions&&,
+              Optional<DebyeTemperature>, Optional<double> msd );
+    AtomInfo( IndexedAtomData, AtomSites&&,
+              Optional<DebyeTemperature>, Optional<double> msd );
   private:
     IndexedAtomData m_iad;
     Optional<DebyeTemperature> m_dt;
     Optional<double> m_msd;
     std::vector<Pos> m_pos;
+    std::vector<Site> m_sites;
     const DynamicInfo* m_dyninfo = nullptr;
   public:
     //Implementation details for builder infrastructure (todo: avoid with proper
     //builder-pattern for AtomInfo objects):
     void detail_setupLink(DynamicInfo*);
     std::vector<Pos>& detail_accessPos() { return m_pos; }
+    std::vector<Site>& detail_accessSites() { return m_sites; }
   };
 
   //NB: VSCode std::vectors does not support move-only objects apparently, so we
