@@ -250,6 +250,8 @@ void NC::NCMATData::unaliasElementNames()
   };
   for ( auto& e : atompos )
     doUnalias( e.first );
+  for ( auto& e : atomsites )
+    doUnalias( e.first );
   for ( auto& e : debyetemp_perelement )
     doUnalias( e.first );
   for ( auto& e : dyninfos )
@@ -264,7 +266,7 @@ bool NC::NCMATData::hasCell() const
 }
 
 bool NC::NCMATData::hasUnitCell() const {
-  nc_assert( hasCell()==hasAtomPos() && ( version>=4 || hasDebyeTemperature()==hasCell() ) );
+  nc_assert( hasCell()==(hasAtomPos()||hasAtomSites()) && ( version>=4 || hasDebyeTemperature()==hasCell() ) );
   return hasCell();
 }
 
@@ -379,6 +381,25 @@ void NC::NCMATData::validateAtomPos() const
   }
 }
 
+void NC::NCMATData::validateAtomSites() const
+{
+  if (!hasAtomSites())
+    return;
+  if ( version < 8 )
+    NCRYSTAL_THROW2(BadInput,sourceDescription<<" @ATOMSITES sections are only allowed in NCMAT v8 or later");
+  if ( !hasSpaceGroup() )
+    NCRYSTAL_THROW2(BadInput,sourceDescription<<" @ATOMSITES sections require a @SPACEGROUP section");
+  if ( hasAtomPos() )
+    NCRYSTAL_THROW2(BadInput,sourceDescription<<" can not have both @ATOMSITES and @ATOMPOSITIONS sections");
+  for ( auto& e : atomsites ) {
+    validateElementName(e.first);
+    if ( !(e.second[0]>=-1.0) || !(e.second[0]<=1.0)
+         || !(e.second[1]>=-1.0) || !(e.second[1]<=1.0)
+         || !(e.second[2]>=-1.0) || !(e.second[2]<=1.0) )
+      NCRYSTAL_THROW2(BadInput,sourceDescription<<" invalid site position detected for element \""<<e.first<<"\" (all position coordinates must be in [-1.0,1.0]");
+  }
+}
+
 bool NC::NCMATData::hasSpaceGroupSetting() const
 {
   return spacegroup_spec.find(':') != std::string::npos;
@@ -459,6 +480,7 @@ void NC::NCMATData::validate() const
   //validate individual sections:
   validateCell();
   validateAtomPos();
+  validateAtomSites();
   validateSpaceGroup();
   validateDebyeTemperature();
   validateTemperature();
@@ -524,11 +546,22 @@ void NC::NCMATData::validate() const
       NCRYSTAL_THROW2(BadInput,sourceDescription<<" missing Cell information (always required when specifying space group)");
   }
 
-  if ( hasCell() != hasAtomPos() )
-    NCRYSTAL_THROW2(BadInput,sourceDescription<<" either specify both Cell and Atom Position information, or specify none of them");
+  if ( hasCell() != ( hasAtomPos() || hasAtomSites() ) ) {
+    if ( version < 8 )
+      NCRYSTAL_THROW2(BadInput,sourceDescription
+                      <<(" either specify both Cell and Atom Position"
+                         " information, or specify none of them"));
+    NCRYSTAL_THROW2(BadInput,sourceDescription
+                    <<(" either specify both Cell section and Atom Position"
+                       " information (@ATOMPOSITIONS or @ATOMSITES), "
+                       "or specify none of them"));
+  }
 
   bool hasunitcellinfo = hasCell();
-  nc_assert(hasunitcellinfo==hasAtomPos());
+  nc_assert(hasunitcellinfo==(hasAtomPos()||hasAtomSites()));
+  if ( hasAtomSites() && dyninfos.empty() )
+    NCRYSTAL_THROW2(BadInput,sourceDescription
+                    <<" @ATOMSITES sections require @DYNINFO sections for all elements");
 
   if (!hasunitcellinfo&&!hasDynInfo())
     NCRYSTAL_THROW2(BadInput,sourceDescription<<" missing information about both unit cell and material dynamics so can not provide any interesting physics and can not even deduce the basic material composition");
@@ -563,12 +596,17 @@ void NC::NCMATData::validate() const
   //More detailed checks involving multiple sections.
 
   // First collect atomposition into elem->fraction map:
+  //(for sites, only the presence of elements is known here; the fractions
+  //are checked against the expanded positions by InfoBuilder):
   std::map<std::string,unsigned> atompos_elems2count;
   if (!atompos.empty()) {
     decltype(atompos)::const_iterator it(atompos.begin()), itE(atompos.end());
     for (;it!=itE;++it)
       atompos_elems2count[it->first] += 1;
   }
+  for ( auto& e : atomsites )
+    atompos_elems2count[e.first] += 1;
+  const bool countsKnown = atomsites.empty();
 
   for (auto& e : atompos_elems2count)
     allElementNames.insert(e.first);
@@ -582,12 +620,16 @@ void NC::NCMATData::validate() const
     double dyninfo_totfrac = 0.0;
     for (;it!=itE;++it) {
       if (dyninfo_elems2frac.count(it->element_name))
-        NCRYSTAL_THROW2(BadInput,sourceDescription<<" same element ("<<it->element_name<<") specified in two different dynamic info sections");
+        NCRYSTAL_THROW2(BadInput,sourceDescription<<" same element ("<<it->element_name
+                        <<") specified in two different dynamic info sections");
       dyninfo_elems2frac[it->element_name] = it->fraction;
       dyninfo_totfrac += it->fraction;
       //Check that all elements in dyninfo sections appear in atompos section:
-      if ( !atompos.empty() && !atompos_elems2count.count(it->element_name) )
-        NCRYSTAL_THROW2(BadInput,sourceDescription<<" element ("<<it->element_name<<") specified in dynamic info sections does not appear in the list of atom positions");
+      if ( !atompos_elems2count.empty() && !atompos_elems2count.count(it->element_name) )
+        NCRYSTAL_THROW2(BadInput,sourceDescription<<" element ("<<it->element_name
+                        <<(") specified in dynamic info sections does not"
+                           " appear in the list of atom positions")
+                        <<(version<8?"":" (@ATOMPOSITIONS or @ATOMSITES)"));
     }
     double dist = ncabs(1.0-dyninfo_totfrac);
     if (dist>1e-9)
@@ -604,6 +646,8 @@ void NC::NCMATData::validate() const
                         " sections or make sure there is a complete set of them)");
       // Check that fractions in DYNINFO sections are be consistent with
       // fractions inferred from ATOMPOSITIONS sections:
+      if ( !countsKnown )
+        continue;
       double calcfraction = itA->second*1.0/atompos.size();
       double dyninfofraction = dyninfo_elems2frac[itA->first];
       double distf = ncabs(calcfraction-dyninfofraction);
@@ -770,6 +814,25 @@ void NC::NCMATData::toJSON( std::ostream& ss ) const
   } else {
     streamJSONDictEntry( ss, "spacegroup", json_null_t{} );
     streamJSONDictEntry( ss, "spacegroup_setting", json_null_t{} );
+  }
+  if ( data.hasAtomSites() ) {
+    ss << ",\"atomsites\":[";
+    bool first = true;
+    for ( auto& e : data.atomsites ) {
+      ss << ( first ? "[" : ",[" );
+      first = false;
+      streamJSON( ss, e.first );
+      ss << ",[";
+      streamJSON( ss, e.second[0] );
+      ss << ',';
+      streamJSON( ss, e.second[1] );
+      ss << ',';
+      streamJSON( ss, e.second[2] );
+      ss << "]]";
+    }
+    ss << ']';
+  } else {
+    streamJSONDictEntry( ss, "atomsites", json_null_t{} );
   }
   if ( data.stateOfMatter.has_value() ) {
     streamJSONDictEntry( ss, "state_of_matter", NCMATData::stateOfMatter2Str(data.stateOfMatter.value()) );

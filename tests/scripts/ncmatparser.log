@@ -1349,6 +1349,74 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 ==> Test 330
 ==> Correct! NCBadInput: "(anonymous TextData, 128bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "227.0" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
 
+
+==> Test 331
+==> Ok.
+
+
+==> Test 332
+==> Ok.
+
+
+==> Test 333
+==> Correct! NCBadInput: "(anonymous TextData, 122bytes, type=ncmat)": has @ATOMSITES section which is not supported in the indicated NCMAT format version, "NCMAT v7". It is only available starting with "NCMAT v8".
+
+
+==> Test 334
+==> Correct! NCBadInput: "(anonymous TextData, 113bytes, type=ncmat)": no sites specified in @ATOMSITES section (expected in line 6)
+
+
+==> Test 335
+==> Correct! NCBadInput: "(anonymous TextData, 120bytes, type=ncmat)": wrong number of data entries after element name "Al" in line 7 (expected three numbers)
+
+
+==> Test 336
+==> Correct! NCBadInput: "(anonymous TextData, 124bytes, type=ncmat)": wrong number of data entries after element name "Al" in line 7 (expected three numbers)
+
+
+==> Test 337
+==> Correct! NCBadInput: "(anonymous TextData, 124bytes, type=ncmat)": problem while decoding site position parameter #3 for element "Al" in line 7 : Invalid number in string is not a double: "bla"
+
+
+==> Test 338
+==> Correct! NCBadInput: (anonymous TextData, 124bytes, type=ncmat) invalid site position detected for element "Al" (all position coordinates must be in [-1.0,1.0] (problem in the @ATOMSITES section ending in line 7)
+
+
+==> Test 339
+==> Correct! NCBadInput: (anonymous TextData, 146bytes, type=ncmat) can not have both @ATOMSITES and @ATOMPOSITIONS sections
+
+
+==> Test 340
+==> Correct! NCBadInput: (anonymous TextData, 137bytes, type=ncmat) element (Cr) appearing in list of atom positions is not specified in dynamic info sections (either remove all dynamic info sections or make sure there is a complete set of them)
+
+
+==> Test 341
+==> Correct! NCBadInput: (anonymous TextData, 106bytes, type=ncmat) @ATOMSITES sections require a @SPACEGROUP section (problem in the @ATOMSITES section ending in line 5)
+
+
+==> Test 342
+==> Correct! NCBadInput: (anonymous TextData, 106bytes, type=ncmat) missing Cell information (always required when specifying space group)
+
+
+==> Test 343
+==> Correct! NCBadInput: (anonymous TextData, 61bytes, type=ncmat) @ATOMSITES sections require @DYNINFO sections for all elements
+
+
+==> Test 344
+==> Correct! NCBadInput: (anonymous TextData, 102bytes, type=ncmat) either specify both Cell section and Atom Position information (@ATOMPOSITIONS or @ATOMSITES), or specify none of them
+
+
+==> Test 345
+==> Correct! NCBadInput: (anonymous TextData, 102bytes, type=ncmat) either specify both Cell and Atom Position information, or specify none of them
+
+
+==> Test 346
+==> Correct! NCBadInput: (anonymous TextData, 147bytes, type=ncmat) either specify both Cell section and Atom Position information (@ATOMPOSITIONS or @ATOMSITES), or specify none of them
+
+
+==> Test 347
+==> Correct! NCBadInput: (anonymous TextData, 143bytes, type=ncmat) @ATOMSITES sections require a @SPACEGROUP section (problem in the @ATOMSITES section ending in line 7)
+
 Loading refnc1/Ag_sg225.ncmat
 Loading refnc1/Al2O3_sg167_Corundum.ncmat
 Loading refnc1/Al_sg225.ncmat

@@ -25,6 +25,7 @@
 #include "NCrystal/internal/ncmat/NCNCMATData.hh"
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/internal/infobld/NCInfoBuilder.hh"
+#include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCrystal/internal/vdos/NCVDOSCache.hh"
 #include "NCrystal/internal/atomdb/NCAtomDBExtender.hh"
@@ -320,6 +321,8 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
     std::set<std::string> allNames;
     for ( const auto& e : data.atompos )
       allNames.insert(e.first);
+    for ( const auto& e : data.atomsites )
+      allNames.insert(e.first);
     for ( const auto& e : data.debyetemp_perelement )
       allNames.insert(e.first);
     for ( const auto& e : data.dyninfos )
@@ -368,7 +371,7 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
   const bool data_hasDebyeTemperature = data.hasDebyeTemperature();//@DEBYETEMPERATURE section (must also check @DYNINFO section)
   const bool data_hasDensity = data.hasDensity();
 
-  nc_assert_always( data_hasUnitCell == data.hasAtomPos() && data_hasUnitCell == data.hasCell() );
+  nc_assert_always( data_hasUnitCell == ( data.hasAtomPos() || data.hasAtomSites() ) && data_hasUnitCell == data.hasCell() );
 
   //Find Debye temperatures of elements from @DEBYETEMPERATURE section:
   std::map<AtomIndex,DebyeTemperature> perelemdebye_map;
@@ -700,13 +703,15 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
     si.beta = data.cell.angles[1];
     si.gamma = data.cell.angles[2];
     //Leave si.volume with zero value (InfoBuilder will calculate it).
-    si.n_atoms = data.atompos.size();
+    si.n_atoms = data.atompos.size();//(0 for sites: set by InfoBuilder)
 
     //==> Get sorted list of atom positions (so adjacant entries have same element name):
-    decltype(data.atompos) atompos = std::move(data.atompos);
+    const bool data_hasAtomSites = data.hasAtomSites();
+    decltype(data.atompos) atompos = std::move( data_hasAtomSites ? data.atomsites : data.atompos );
     nc_assert_always(!atompos.empty());
     std::stable_sort(atompos.begin(),atompos.end());
-    //Convert to elementname->positions map:
+    //Convert to elementname->positions map (the positions are sites for
+    //@ATOMSITES data, expanded by InfoBuilder):
     std::map<AtomIndex,std::vector<AtomInfo::Pos>> elem2pos;
     auto itAPE = atompos.end();
     for (auto itAP = atompos.begin() ; itAP != itAPE; ) {
@@ -720,12 +725,25 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
     }
 
     //==> Calculate element fractions (sanity check consistency with dyninfo
-    //fractions, which should have already been validated by data.validate()):
-    for (auto& ep : elem2pos) {
-      double fr_calc = double(ep.second.size()) / atompos.size();
-      //Whether or not the number already exists, we update with these higher precision fractions (e.g. 0.666667
-      //specified in file's dyninfo section might be consistent with 2./3. but it is not as precise):
-      elem2frac[ep.first] = fr_calc;
+    //fractions, which should have already been validated by data.validate()).
+    //For sites, the counts are only known after the expansion, and
+    //InfoBuilder then checks the fractions:
+    if ( !data_hasAtomSites ) {
+      for (auto& ep : elem2pos) {
+        double fr_calc = double(ep.second.size()) / atompos.size();
+        //Whether or not the number already exists, we update with these higher precision fractions (e.g. 0.666667
+        //specified in file's dyninfo section might be consistent with 2./3. but it is not as precise):
+        elem2frac[ep.first] = fr_calc;
+      }
+    } else {
+      //The number of atoms is needed below for the dcutoff heuristics:
+      const SGSymmetry& sym
+        = SGSymmetry::get( InfoUtils::getSpaceGroupFromStructureInfo( si ) );
+      std::size_t natoms = 0;
+      for ( auto& ep : elem2pos )
+        for ( auto& p : ep.second )
+          natoms += expandSiteToOrbit( sym, p.as<Vector>() ).positions.size();
+      si.n_atoms = static_cast<unsigned>( natoms );
     }
 
     if ( builder.dynamics.value().empty() && data_hasDebyeTemperature ) {
@@ -773,7 +791,17 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
         const auto mass = iad.atomDataSP->averageMassAMU();
         ai_debye_temp = debyeTempFromIsotropicMSD( msd, cfgvars.temp, mass );
       }
-      bldr_atomlist.emplace_back( std::move(iad), std::move(std::move(elem2pos.at(ef.first))), ai_debye_temp, msd );
+      if ( data_hasAtomSites ) {
+        AtomInfo::AtomSites sites;
+        for ( auto& p : elem2pos.at(ef.first) ) {
+          AtomInfo::Site site;
+          site.position = p;
+          sites.push_back( std::move( site ) );
+        }
+        bldr_atomlist.emplace_back( std::move(iad), std::move(sites), ai_debye_temp, msd );
+      } else {
+        bldr_atomlist.emplace_back( std::move(iad), std::move(std::move(elem2pos.at(ef.first))), ai_debye_temp, msd );
+      }
     }
 
   }//end of unit-cell specific stuff
