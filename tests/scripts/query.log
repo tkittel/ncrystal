@@ -473,7 +473,7 @@ Caught expected NCBadInput('Invalid key for JSON Huge Vector: "2"')
 Caught expected NCBadInput('Invalid key for JSON Huge Vector: "7"')
 Normal query with huge arrays worked afterwards
 >>> Info query ['list']:
-('structure',)
+('structure', 'sites')
 >>> Info query ['structure']:
 {'a': 4.04958,
  'alpha': 90.0,

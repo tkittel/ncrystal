@@ -623,6 +623,7 @@ class Info(RCBase):
     def hasStructureInfo(self):
         """Whether or not material has crystal structure information available."""
         return self._query('structure') is not None
+
     def getStructureInfo(self):
         """Information about crystal structure, as a dictionary with the keys
         spacegroup (number, 0 if unknown), spacegroup_setting (string like
@@ -631,6 +632,7 @@ class Info(RCBase):
         d = self._query('structure')
         nc_assert(d)
         return d
+
     structure_info = property(getStructureInfo)
 
     def _provideAtomData(self,atomindex):
@@ -718,9 +720,24 @@ class Info(RCBase):
 
         @property
         def positions(self):
-            """List (tuple actually) of positions of this atom in the unit cell. Each
-            entry is given as a tuple of three values, (x,y,z)"""
+            """List (tuple actually) of positions of this atom in the unit
+            cell. Each entry is given as a tuple of three values in fractional
+            coordinates, (x,y,z)
+            """
             return self.__pos
+
+        @property
+        def sites(self):
+            """The crystallographic sites of this atom: one per orbit of the space
+            group setting, as a list like [{'position':(x,y,z),'multiplicity':n},...]
+            where 'position' is one position of the orbit in fractional coordinates
+            and the multiplicities add up to .count. None if not available."""
+            _info = self._info_wr()
+            nc_assert(_info is not None,
+                      ("AtomInfo.sites can not be used after"
+                       " associated Info object is deleted"))
+            s = _info._query('sites')
+            return s[self._listidx] if s else None
 
         @property
         def atomIndex(self):
@@ -794,6 +811,7 @@ class Info(RCBase):
                                       ( dt if ( dt and  dt>0.0) else None),
                                       (msd if (msd and msd>0.0) else None),
                                      pos) )
+            ll[-1]._listidx = iatom
         self.__atominfo = ( natoms>0, hasmsd, ll, hasperelemdt )
 
     def hasHKLInfo(self):
