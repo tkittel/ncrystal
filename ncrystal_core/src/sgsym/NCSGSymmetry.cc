@@ -771,6 +771,50 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
+std::vector<std::vector<unsigned>>
+NC::groupPositionsIntoOrbits( const SGSymmetry& sym,
+                              const std::vector<Vector>& positions )
+{
+  nc_assert_always( positions.size() < std::numeric_limits<unsigned>::max() );
+  const unsigned n = static_cast<unsigned>( positions.size() );
+  std::vector<bool> assigned( n, false );
+  std::vector<std::vector<unsigned>> orbits;
+  for ( unsigned i = 0; i < n; ++i ) {
+    if ( assigned[i] )
+      continue;
+    const auto orbit = expandSiteToOrbit( sym, vectAt( positions, i ) );
+    std::vector<unsigned> members;
+    members.reserve( orbit.positions.size() );
+    for ( auto& img : orbit.positions ) {
+      //The nearest unassigned position (must exist, clearly):
+      unsigned best = n;
+      double bestdist = site_distinct_tol;
+      for ( unsigned j = 0; j < n; ++j ) {
+        if ( assigned[j] )
+          continue;
+        const double dist = periodicDist( wrapPos( vectAt( positions, j ) ), img );
+        if ( dist < bestdist ) {
+          bestdist = dist;
+          best = j;
+        }
+      }
+      if ( best == n )
+        NCRYSTAL_THROW2(BadInput,"Atom positions do not form complete orbits"
+                        " of the space group setting (no position near the"
+                        " symmetry image ("<<fmt(img.x())<<", "<<fmt(img.y())
+                        <<", "<<fmt(img.z())<<") of ("<<fmt(positions[i].x())
+                        <<", "<<fmt(positions[i].y())<<", "
+                        <<fmt(positions[i].z())<<"))");
+      assigned[best] = true;
+      members.push_back( best );
+    }
+    std::sort( members.begin(), members.end() );
+    nc_assert( members.front() == i );
+    orbits.push_back( std::move( members ) );
+  }
+  return orbits;
+}
+
 NC::SGStructureCheck
 NC::checkStructureSymmetry( unsigned number, bool rhombohedral_axes,
                             const std::vector<std::vector<Vector>>& positions )
