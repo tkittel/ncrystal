@@ -38,6 +38,11 @@ namespace NCRYSTAL_NAMESPACE {
 
   NCRYSTAL_FMADISPATCH_WINFMA_DECLARE(
     double, fillhkl_ksq,
+    ( const double* factor, const unsigned* group_of_term, unsigned ngroups,
+      int h, int k, int l )
+  )
+  NCRYSTAL_FMADISPATCH_WINFMA_DECLARE(
+    double, fillhkl_ksq_approx,
     ( const double* m9, double h, double k, double l )
   )
   NCRYSTAL_FMADISPATCH_WINFMA_DECLARE(
@@ -48,11 +53,30 @@ namespace NCRYSTAL_NAMESPACE {
   )
 
   NCRYSTAL_FMADISPATCH_DECLARATOR_C(double,detail_fillhkl_ksq,fillhkl_ksq)
+  ( const double* factor, const unsigned* group_of_term, unsigned ngroups,
+    int h, int k, int l )
+  {
+    NCRYSTAL_FMADISPATCH_WINFMA_FORWARD(fillhkl_ksq,(factor,group_of_term,ngroups,h,k,l));
+    //|k|^2 from a KSqCalc (NCLatticeUtils.hh): must stay identical to
+    //KSqCalc::ksq. Only the fma chain rounds (and identically everywhere):
+    const std::int64_t H = h, K = k, L = l;//(64 bit: exact for |h| < 1e9)
+    const std::int64_t intpart[6] = { H*H, K*K, L*L, H*K, H*L, K*L };
+    std::int64_t intsum[7] = { 0, 0, 0, 0, 0, 0, 0 };
+    for ( unsigned t = 0; t < 6; ++t )
+      intsum[group_of_term[t]] += intpart[t];
+    double acc = 0.0;
+    for ( unsigned g = 0; g < ngroups; ++g )
+      acc = std::fma( factor[g], static_cast<double>( intsum[g] ), acc );
+    return acc;
+  }
+
+  NCRYSTAL_FMADISPATCH_DECLARATOR_C(double,detail_fillhkl_ksq_approx,fillhkl_ksq_approx)
   ( const double* m9, double h, double k, double l )
   {
-    NCRYSTAL_FMADISPATCH_WINFMA_FORWARD(fillhkl_ksq,(m9,h,k,l));
-    //(rec_lat*hkl).mag2() with rec_lat given as its 9 row-major
-    //elements:
+    NCRYSTAL_FMADISPATCH_WINFMA_FORWARD(fillhkl_ksq_approx,(m9,h,k,l));
+    //Cheap |k|^2 = (rec_lat*hkl).mag2() with rec_lat given as its 9
+    //row-major elements, for the loose preselection of the box loop only
+    //(within rounding of the exact kernel, which has a 1e-5 slack there):
     const double r0 = std::fma( m9[0], h, std::fma( m9[1], k, m9[2]*l ) );
     const double r1 = std::fma( m9[3], h, std::fma( m9[4], k, m9[5]*l ) );
     const double r2 = std::fma( m9[6], h, std::fma( m9[7], k, m9[8]*l ) );

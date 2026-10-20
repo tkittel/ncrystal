@@ -53,6 +53,16 @@ namespace NCRYSTAL_NAMESPACE {
 }
 
 namespace NCRYSTAL_NAMESPACE {
+  //|k|^2 by the FMA-dispatched kernel (a friend of KSqCalc):
+  NCRYSTAL_FMADISPATCH_INLINE
+  double detail_ksqFillHKLKernel( const KSqCalc& c, int h, int k, int l )
+  {
+    return NCRYSTAL_APPLY_C_NAMESPACE(detail_fillhkl_ksq)(
+      c.m_factor, c.m_group_of_term, c.m_ngroups, h, k, l );
+  }
+}
+
+namespace NCRYSTAL_NAMESPACE {
   namespace {
     constexpr const double fsquarecut_lowest_possible_value = 1.0e-300;
 
@@ -132,11 +142,11 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Whether the plane has d-spacing in the requested range (calculated like
     //in the hkl loops):
-    bool isInDRange( const RotMatrix& rec_lat, const PairDD& dcut_interval,
+    bool isInDRange( const KSqCalc& rec_lat, const PairDD& dcut_interval,
                      const HKL& hkl )
     {
-      const double ksq = NCRYSTAL_APPLY_C_NAMESPACE(detail_fillhkl_ksq)(
-        &rec_lat.rawData()[0], hkl.h, hkl.k, hkl.l );
+      const double ksq = detail_ksqFillHKLKernel( rec_lat,
+                                                  hkl.h, hkl.k, hkl.l );
       return valueInInterval( dcut_interval, k2Pi / std::sqrt( ksq ) );
     }
 
@@ -296,7 +306,7 @@ namespace NCRYSTAL_NAMESPACE {
       //families in a single sweep. The grouping thus does not depend on the
       //loop order or any binning of values, and the memory used for buffering
       //is bounded (in practice a single buffer suffices for most crystals):
-      const RotMatrix rec_lat = getReciprocalLatticeRot( structureInfo );
+      const KSqCalc rec_lat = getKSqCalc( structureInfo );
       auto precalc = fillHKLPreCalc( structureInfo, atomList, cfg );
       if ( selected_hkl.has_value() )
         reduceLoopRangeForSelection( precalc, selected_hkl.value() );
@@ -432,8 +442,8 @@ namespace NCRYSTAL_NAMESPACE {
             const Vector hkl(loop_h,loop_k,loop_l);
 
             //calculate squared wave number:
-            const double ksq = NCRYSTAL_APPLY_C_NAMESPACE(detail_fillhkl_ksq)(
-              &rec_lat.rawData()[0], hkl.x(), hkl.y(), hkl.z() );
+            const double ksq = detail_ksqFillHKLKernel( rec_lat, loop_h,
+                                                        loop_k, loop_l );
             if ( !valueInInterval(precalc.ksq_preselect_interval,ksq))
               continue;
 
@@ -614,7 +624,8 @@ namespace NCRYSTAL_NAMESPACE {
       nc_assert( !env_ignorefsqcut
                  || cfg.fsquarecut <= fsquarecut_lowest_possible_value );
 
-      const RotMatrix rec_lat = getReciprocalLatticeRot( structureInfo );
+      const KSqCalc rec_lat = getKSqCalc( structureInfo );
+      const RotMatrix rec_lat_approx = getReciprocalLatticeRot( structureInfo );
       EqRefl sym( InfoUtils::getSpaceGroupCandidateForHKLFromStructureInfo( structureInfo ) );
       auto sym_findrepval = [&sym]( int hh, int kk, int ll )
       {
@@ -670,8 +681,8 @@ namespace NCRYSTAL_NAMESPACE {
 
             if ( ! valueInInterval(
                      ksq_loose_interval,
-                     NCRYSTAL_APPLY_C_NAMESPACE(detail_fillhkl_ksq)(
-                       &rec_lat.rawData()[0], loop_h, loop_k, loop_l ) ) )
+                     NCRYSTAL_APPLY_C_NAMESPACE(detail_fillhkl_ksq_approx)(
+                       &rec_lat_approx.rawData()[0], loop_h, loop_k, loop_l ) ) )
               continue;
 
             auto sym_key = sym_findrepval( loop_h, loop_k, loop_l );
@@ -681,8 +692,8 @@ namespace NCRYSTAL_NAMESPACE {
             //calculate squared wave number at the cost of a matrix
             //multiplication, and preselect on it:
             const Vector hkl(sym_key.h,sym_key.k,sym_key.l);
-            const double ksq = NCRYSTAL_APPLY_C_NAMESPACE(detail_fillhkl_ksq)(
-              &rec_lat.rawData()[0], hkl.x(), hkl.y(), hkl.z() );
+            const double ksq = detail_ksqFillHKLKernel( rec_lat, sym_key.h,
+                                                        sym_key.k, sym_key.l );
             if ( ! valueInInterval( precalc.ksq_preselect_interval , ksq ) )
               continue;
 
