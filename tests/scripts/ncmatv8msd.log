@@ -11,11 +11,8 @@ NCMAT v8
   cubic 4.04958
 @SPACEGROUP
   225
-@ATOMPOSITIONS
+@ATOMSITES
   Al 0 0 0
-  Al 0 1/2 1/2
-  Al 1/2 0 1/2
-  Al 1/2 1/2 0
 @DYNINFO
   element Al
   fraction 1

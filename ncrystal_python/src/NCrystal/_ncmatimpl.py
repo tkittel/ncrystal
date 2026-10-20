@@ -473,11 +473,13 @@ class NCMATComposerImpl:
             self.__params['fractions'] = {}
         self.__params['fractions'][label] = value
 
-    def __lines_cellsg(self,cellsg):
+    def __lines_cellsg(self,cellsg, atomsites = None ):
         if not cellsg:
             return ''
         c = cellsg
         spacegroup = c.get('spacegroup',None)
+        #(with sites, the setting must be declared):
+        sgstr = atomsites['spacegroup_setting'] if atomsites else spacegroup
         def fmt( x ):
             return _fmtprecisenum( x, strip_leading_zero = False )
         _sa, _sb, _sc = fmt(c['a']), fmt(c['b']), fmt(c['c'])
@@ -506,7 +508,7 @@ class NCMATComposerImpl:
         if spacegroup:
             ll+=f"""
             @SPACEGROUP
-            {spacegroup}
+            {sgstr}
             """
         return ll
 
@@ -766,12 +768,8 @@ class NCMATComposerImpl:
             #Differences (in a common basis) must be small:
             if d['reldiff'] is None or d['reldiff'] > 0.01:
                 raise _nc_core.NCBadInput('Failed to verify crystal structure with spglib.')
-            #The setting does not have to be spglib's standard one (e.g. axes
-            #might be permuted), as long as NCrystal's symmetry handling is
-            #valid:
-            _check_eqrefl_compatibility( spglib_cell, sgnumber, symprec,
-                                         _uses_rhombohedral_axes(
-                                             sgnumber, cellsg['alpha'] ) )
+            #(the setting does not have to be spglib's standard one: NCrystal
+            #determines and verifies it when the data is loaded)
 
     def set_atompos( self, atompos ):
         pos,occumap = [],{}
@@ -811,7 +809,7 @@ class NCMATComposerImpl:
             s.add(lbl)
         return s
 
-    def __lines_atompos(self, lbl_map, atompos ):
+    def __lines_atompos(self, lbl_map, atompos, sites = None ):
         if not atompos:
             return ''
         ll=[]
@@ -826,16 +824,37 @@ class NCMATComposerImpl:
             p=s.split('/')
             assert len(p)==2
             return float(p[0]) / float(p[1])
-        for lbl,x,y,z in atompos['pos']:
+        entries = ( [ ( lbl, p[0], p[1], p[2] ) for lbl, p, mult in sites ]
+                    if sites is not None else atompos['pos'] )
+        for lbl,x,y,z in entries:
             fx,fy,fz = fmt(x), fmt(y), fmt(z)
             ll.append( ( lbl_map.get(lbl,lbl),
                          extractval(fx), extractval(fy), extractval(fz),
                          fx, fy, fz ) )
         ll.sort()
-        out="@ATOMPOSITIONS\n"
+        out = "@ATOMSITES\n" if sites is not None else "@ATOMPOSITIONS\n"
         for lbl,_,_,_,fx,fy,fz in ll:
             out += f'{lbl} {fx} {fy} {fz}\n'
         return out
+
+    def __atomsites( self, cellsg, atompos ):
+        """Crystallographic sites (and the space group setting) of the atom
+        positions, from the sgsym atomsites query, or None if there is no
+        space group. The positions must have the symmetry of the space
+        group."""
+        if not ( cellsg and cellsg.get('spacegroup') and atompos ):
+            return None
+        sg = cellsg['spacegroup']
+        sgspec = f'{sg}:r' if _uses_rhombohedral_axes( sg, cellsg['alpha'] ) else str(sg)
+        from .misc import evaluate_query
+        #(relaxed: the setting is deduced among those of the number)
+        query = [ 'util', 'atomsites', 'relaxed', sgspec ]
+        query += [ f'{lbl},{x!r},{y!r},{z!r}' for lbl,x,y,z in atompos['pos'] ]
+        try:
+            return evaluate_query( query )
+        except _nc_core.NCBadInput as e:
+            raise _nc_core.NCBadInput( 'The atom positions do not have the'
+                                       f' symmetry of space group {sg}: {e}' )
 
     def __lines_dyninfo(self,lbl_map,fractions):
         dyninfos = self.__params.get('dyninfos',{})
@@ -1136,8 +1155,12 @@ class NCMATComposerImpl:
 
         lbl_map,atomdb_lines = determine_labels_and_atomdb( self.__params, fractions = fractions )
 
-        ll  = self.__lines_cellsg( cellsg )
-        ll += self.__lines_atompos( lbl_map, atompos )
+        #Crystals with a space group are written with their crystallographic
+        #sites (NCMAT v8 @ATOMSITES) rather than all positions:
+        atomsites = self.__atomsites( cellsg, atompos )
+        ll  = self.__lines_cellsg( cellsg, atomsites )
+        ll += self.__lines_atompos( lbl_map, atompos,
+                                    sites = atomsites['sites'] if atomsites else None )
         if density:
             _dval,_dunit = density
             _ncmat_dunit = {'g/cm3': 'g_per_cm3',
@@ -1149,12 +1172,13 @@ class NCMATComposerImpl:
         #used. The msd keyword (and debye_temp on scatknl) implies a solid,
         #which v8 requires non-crystalline materials to declare:
         dyninfos_all = self.__params.get('dyninfos',{}).values()
-        _needs_v8 = any( di.get('ditype')=='msd'
-                         or ( di.get('ditype')=='scatknl'
-                              and any( di.get(k) is not None
-                                       for k in ('effective_temperature','v8msd',
-                                                 'v8debye_temp') ) )
-                         for di in dyninfos_all )
+        _needs_v8 = atomsites is not None or any(
+            di.get('ditype')=='msd'
+            or ( di.get('ditype')=='scatknl'
+                 and any( di.get(k) is not None
+                          for k in ('effective_temperature','v8msd',
+                                    'v8debye_temp') ) )
+            for di in dyninfos_all )
         _implies_solid = any( di.get('ditype')=='msd'
                               or ( di.get('ditype')=='scatknl'
                                    and any( di.get(k) is not None
@@ -1902,61 +1926,6 @@ def _reldiff_atompos( spglib_cell1, spglib_cell2 ):
                 best = worst
     return math.sqrt(best) if best is not None else None
 
-def _eqrefl_test_hkls( rots ):
-    #Returns (ops,testhkls) for _check_eqrefl_compatibility, with ops the
-    #distinct +-R of the rotations (as an int array of shape (n,3,3)). The
-    #first 2n+1 test hkls are (1,t,t^2), no three of which are coplanar with
-    #the origin. A wrong NCrystal equivalence g can only pass for an hkl fixed
-    #by one of the n matrices +-R^-1.g (none being the identity), each fixing
-    #at most a plane and hence at most two of these hkls, so the check is
-    #complete. A few special hkls are added for good measure.
-    from ._numpy import _ensure_numpy
-    np = _ensure_numpy()
-    uniq = { tuple( s*int(x) for x in np.asarray(R).ravel() )
-             for R in ( rots if rots is not None else [] ) for s in (1,-1) }
-    ops = np.asarray( sorted(uniq), dtype = np.int64 ).reshape(-1,3,3)
-    testhkls = [ (1,t,t*t) for t in range( 1, 2*len(ops)+2 ) ]
-    testhkls += [ (1,0,0), (0,1,0), (0,0,1), (1,1,0),
-                  (1,-1,0), (1,0,1), (0,1,1), (1,1,1), (1,2,0), (2,1,0) ]
-    return ops, testhkls
-
-def _check_eqrefl_compatibility( spglib_cell, sgnumber, symprec,
-                                 rhombohedral_axes = False ):
-    #Check that all reflections which NCrystal considers equivalent for the
-    #space group, are actually equivalent for the structure as given (i.e. in
-    #the Laue orbit of spglib's symmetry operations in the input basis).
-    #
-    #The purpose here is to ensure that the setup is one where NCrystal never
-    #merges inequivalent reflections, which can happen depending on spacegroup
-    #settings (e.g. choice of origin etc.).
-
-
-    from ._numpy import _ensure_numpy
-    np = _ensure_numpy()
-    ds = _import_spglib().get_symmetry_dataset( spglib_cell, symprec = symprec )
-    rots = getattr( ds, 'rotations', None ) if ds else None
-    if rots is None and ds:
-        rots = ds['rotations']
-    ops, testhkls = _eqrefl_test_hkls( rots )
-    from .misc import evaluate_query
-    sgstr = f'{sgnumber}:r' if rhombohedral_axes else str(sgnumber)
-    eqrefl = evaluate_query( [ 'util', 'eqrefl', 'relaxed', sgstr ]
-                             + [ ','.join(str(x) for x in hkl)
-                                 for hkl in testhkls ] )
-    for hkl, eqlist in zip( testhkls, eqrefl ):
-        orbit = set( map( tuple, ( np.asarray( hkl, dtype = np.int64 )
-                                   @ ops ).tolist() ) )
-        for e in eqlist:
-            if tuple(e) not in orbit:
-                raise _nc_core.NCBadInput(
-                    f'Failed to verify crystal structure with spglib: The'
-                    f' structure is consistent with space group {sgnumber},'
-                    ' but not in a setting where the symmetry-equivalent'
-                    ' reflections assumed by NCrystal are valid (e.g. hkl='
-                    f'{hkl} and {tuple(e)} are not equivalent). Using'
-                    ' .refine_crystal_structure() transforms it to a'
-                    ' standard setting.' )
-
 def _spglib_std_transform( spglib_cell, symprec ):
     #Get the transformation (P,p,centring translations) used by spglib to
     #standardise a cell (x_std = P.x + p), or None if it can not be handled
@@ -2083,12 +2052,14 @@ def _check_cell_sg_consistency( sgnumber, a, b, c, alpha, beta, gamma ):
             raise _nc_core.NCBadInput(f'Space group {sgnumber} requires cell parameters alpha=beta=90 and gamma=120 '
                                 +f'(found alpha={alpha}, beta={beta}, gamma={gamma})')
     elif sgclass == 'monoclinic':
-        if not ( alpha == 90 and gamma == 90 and 0 < beta < 180 ):
-            raise _nc_core.NCBadInput(f'Space group {sgnumber} requires cell'
-                                      ' parameters alpha=gamma=90 (only'
-                                      ' monoclinic settings with unique axis'
-                                      f' b are supported) (found alpha={alpha},'
-                                      f' beta={beta}, gamma={gamma})')
+        #(which two angles are 90 depends on the unique axis of the setting,
+        #which is verified precisely when the data is loaded)
+        if not ( all( (0<_<180) for _ in ( alpha, beta, gamma ) )
+                 and sum( (_ == 90) for _ in ( alpha, beta, gamma ) ) >= 2 ):
+            raise _nc_core.NCBadInput(f'Space group {sgnumber} requires two'
+                                      ' cell angles of 90 degrees (found'
+                                      f' alpha={alpha}, beta={beta},'
+                                      f' gamma={gamma})')
     else:
         if not all( (0<a<180) for a in ( alpha, beta, gamma ) ):
             raise _nc_core.NCBadInput('Unit cell must have all angles between 0 and 180'
