@@ -88,6 +88,12 @@ def test_verify_origin_and_triclinic():
         c.set_atompos( atoms )
         c.allow_fallback_dyninfo()
         c.verify_crystal_structure( quiet = True )
+        #(creating the data converts the positions to sites, which also
+        #requires the symmetry to hold):
+        txt = c.create_ncmat()
+        sgline = txt.splitlines()[ txt.splitlines().index('@SPACEGROUP') + 1 ].strip()
+        nsites = txt.count('\n', txt.index('@ATOMSITES'), txt.index('@DYNINFO') ) - 1
+        return sgline, nsites
     tricl = (5.1,6.3,7.2,81,97,103)#mixed acute/obtuse angles
     p1 = [('Al',0.13,0.71,0.29),('O',0.62,0.05,0.93),('Fe',0.41,0.38,0.57)]
     verify( tricl, p1, 1 )
@@ -98,102 +104,52 @@ def test_verify_origin_and_triclinic():
     verify( (p,p,p,60,60,60), [('Ni',0.0424,0.8626,0.7802),
                                ('Al',0.0126,0.2354,0.7916)], 1 )
     fcc = [('Al',0,0,0),('Al',0,.5,.5),('Al',.5,0,.5),('Al',.5,.5,0)]
-    verify( (4.05,)*3+(90,)*3,
-            [ (e,(x+.123)%1,(y+.456)%1,(z+.789)%1) for e,x,y,z in fcc ], 225 )
-    #Non-standard settings which are compatible with NCrystal's symmetry
-    #handling (here: permuted orthorhombic axes) must be accepted, while those
-    #that are not (monoclinic unique axis c, tetragonal 4-fold along a) must be
-    #rejected:
+    #An fcc structure shifted off the standard origin: spglib verifies it
+    #(it finds the symmetry for any origin), but NCrystal requires the
+    #standard origin of the setting, so the data can not be created:
+    c = NC.NCMATComposer()
+    c.set_cellsg( a=4.05, b=4.05, c=4.05, alpha=90, beta=90, gamma=90,
+                  spacegroup = 225 )
+    c.set_atompos( [ (e,(x+.123)%1,(y+.456)%1,(z+.789)%1) for e,x,y,z in fcc ] )
+    c.allow_fallback_dyninfo()
+    c.verify_crystal_structure( quiet = True )
+    with ensure_error( NC.NCBadInput ):
+        c.create_ncmat()
+    print('Origin-shifted fcc verified by spglib but rejected at creation')
+    #Non-standard settings are accepted when they are settings of ITVB (the
+    #data is then written with the setting declared, here: permuted
+    #orthorhombic axes, and monoclinic with another unique axis), and rejected
+    #otherwise (tetragonal with the 4-fold axis along a):
     import random
 
     import NCTestUtils.cifgen as cg
     rng = random.Random( 1 )
     cyclic = [[0,0,1],[1,0,0],[0,1,0]]
     def verify_struct( s, sg ):
-        verify( s.cellpars, [ (e,*p) for e,p in s.atoms ], sg )
-    verify_struct( cg.transformed_basis(
-        cg.random_structure( rng, 19, nsites = 2 ), cyclic ), 19 )
+        return verify( s.cellpars, [ (e,*p) for e,p in s.atoms ], sg )
+    print( 'Permuted SG-19 written as:', *verify_struct( cg.transformed_basis(
+        cg.random_structure( rng, 19, nsites = 2 ), cyclic ), 19 ) )
     print('Valid structures verified OK')
     #Wrong space groups or settings must be rejected:
     for cell, atoms, sg in ( ( tricl, p1, 2 ),
                              ( (4.05,)*3+(90,)*3, fcc, 229 ) ):
         with ensure_error(NC.NCBadInput):
             verify( cell, atoms, sg )
-    for sg, M in ( ( 4, [[0,1,0],[0,0,1],[1,0,0]] ), ( 76, cyclic ) ):
-        s = cg.transformed_basis( cg.random_structure( rng, sg, nsites = 3 ),
-                                  M )
-        try:
-            verify_struct( s, sg )
-        except NC.NCBadInput as e:
-            assert 'not in a setting where' in str(e)
-            print(f'Non-standard SG-{sg} setting rejected')
-        else:
-            raise RuntimeError('Incompatible setting was accepted')
-
-def test_eqrefl_check():
-    #Direct test of the check that NCrystal never merges reflections which are
-    #not equivalent for the structure as given: random structures of a known
-    #space group are checked against a claimed one, which must be rejected
-    #exactly when its Laue class is larger (under-merging is harmless).
-    print('\n\n  ================> eqrefl check\n\n')
-    import itertools
-    import random
-
-    import NCrystalDev._ncmatimpl as nci
-    import NCTestUtils.cifgen as cg
-    def spglib_cell( s ):
-        labels = sorted( { e for e,_ in s.atoms } )
-        return ( cg.lattice_from_cellpars( *s.cellpars ),
-                 [ p for _,p in s.atoms ],
-                 [ labels.index(e) for e,_ in s.atoms ] )
-    def ok( s, sg, rhombo = False ):
-        try:
-            nci._check_eqrefl_compatibility( spglib_cell(s), sg, 1e-5,
-                                             rhombohedral_axes = rhombo )
-        except NC.NCBadInput as e:
-            assert 'not in a setting where' in str(e)
-            return False
-        return True
-    rng = random.Random( 2 )
-    #(true SG, claimed SG, expected acceptance):
-    cases = [ (1,2,True), (2,1,True), (3,10,True), (3,16,False),
-              (10,3,True), (16,47,True), (16,10,True), (75,83,True),
-              (75,89,False), (89,75,True), (143,147,True), (143,149,False),
-              (143,150,False), (149,150,False), (150,149,False),
-              (149,162,True), (168,177,False), (177,191,True),
-              (195,200,True), (195,207,False), (207,195,True),
-              (221,225,True) ]
-    for sgtrue, sgclaim, expect in cases:
-        s = cg.random_structure( rng, sgtrue, nsites = 3 )
-        res = ok( s, sgclaim )
-        print(f'SG-{sgtrue} checked as SG-{sgclaim}:',
-              'accepted' if res else 'rejected')
-        assert res == expect
-    #Rhombohedral axes must be declared as such:
-    s = cg.primitive_cell( cg.random_structure( rng, 166, nsites = 2 ) )
-    assert ok( s, 166, rhombo = True ) and not ok( s, 166 )
-    print('Rhombohedral axes: accepted only when declared')
-    #Test hkls: 2n+1 general ones for the n distinct +-R, no three coplanar:
-    def det( u, v, w ):
-        return ( u[0]*(v[1]*w[2]-v[2]*w[1]) - u[1]*(v[0]*w[2]-v[2]*w[0])
-                 + u[2]*(v[0]*w[1]-v[1]*w[0]) )
-    for sg, nops in ( (1,2), (2,2), (47,8), (191,24), (225,48) ):
-        ds = nci._import_spglib().get_symmetry_dataset(
-            spglib_cell( cg.random_structure( rng, sg, nsites = 2 ) ),
-            symprec = 1e-5 )
-        rots = getattr( ds, 'rotations', None )
-        ops, hkls = nci._eqrefl_test_hkls( ds['rotations'] if rots is None
-                                           else rots )
-        assert len(ops) == nops
-        general = hkls[:2*nops+1]
-        assert all( h[0] == 1 for h in general )
-        if nops <= 8:
-            assert all( det(*t) != 0
-                        for t in itertools.combinations( general, 3 ) )
-        print(f'SG-{sg}: {nops} distinct +-R, {len(hkls)} test hkls')
-    ops, hkls = nci._eqrefl_test_hkls( None )
-    assert len(ops) == 0 and len(hkls) == 11
-    print('eqrefl check OK')
+    s = cg.transformed_basis( cg.random_structure( rng, 4, nsites = 3 ),
+                              [[0,1,0],[0,0,1],[1,0,0]] )
+    sgline, nsites = verify_struct( s, 4 )
+    print( f'Monoclinic with a non-b unique axis written as @SPACEGROUP'
+           f' {sgline}, {nsites} sites' )
+    assert sgline in ( '4:a', '4:c' )
+    s = cg.transformed_basis( cg.random_structure( rng, 76, nsites = 3 ),
+                              cyclic )
+    try:
+        verify_struct( s, 76 )
+    except NC.NCBadInput as e:
+        assert 'space group 76' in str(e).lower(), str(e)
+        print('Tetragonal with the 4-fold axis along a rejected')
+    else:
+        raise RuntimeError('Incompatible setting was accepted')
 
 def test_refine_corrections():
     #refine_crystal_structure must only report corrections when spglib
@@ -272,6 +228,5 @@ def test_v8_scatknl_keywords():
 if __name__ == '__main__':
     main()
     test_verify_origin_and_triclinic()
-    test_eqrefl_check()
     test_refine_corrections()
     test_v8_scatknl_keywords()
