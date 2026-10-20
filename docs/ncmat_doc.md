@@ -98,12 +98,20 @@ of the crystal symmetry, which must be mathematically consistent with the unit
 cell layout provided in the @CELL and @ATOMPOSITIONS sections. The space group
 number is given as a single integer with a value from 1 to 230.
 
-The unit cell must be given in a standard setting of the space group: For the
-monoclinic space groups (3-15) this is the setting with unique axis b (i.e.
-alpha=gamma=90). For the rhombohedral space groups (146, 148, 155, 160, 161,
-166, 167) the cell can be given either in hexagonal axes (alpha=beta=90,
-gamma=120), or (from NCrystal 5.0.0) in rhombohedral axes (a=b=c and
-alpha=beta=gamma<120).
+The unit cell must be given in one of the standard settings of the space group,
+specifically those listed for the space group number in Table A1.4.2.7 of
+International Tables for Crystallography Volume B. In *NCMAT v8* files the
+setting can also be declared explicitly (see the section "The @SPACEGROUP
+section accepts a setting" further down).
+
+Note that NCrystal releases up to 4.4.6 always assumed the default setting of
+the number (the first one listed in that table, e.g. unique axis b for the
+monoclinic space groups 3-15 and hexagonal axes for the rhombohedral space
+groups 146, 148, 155, 160, 161, 166 and 167), without checking the atom
+positions against the symmetry. From NCrystal 5.0.0, the setting is deduced
+from the cell and the atom positions among all the standard settings of the
+number, and files whose atom positions do not have the symmetry of the space
+group in any of these settings are rejected.
 
 ## The @DEBYETEMPERATURE section ##
 
@@ -992,6 +1000,27 @@ sections of type *freegas* or *sterile* (which do not support the two
 keywords, and whose atoms previously got the Debye-Waller information needed
 for Bragg diffraction from the @DEBYETEMPERATURE section) can no longer be
 used in crystalline materials.
+
+## The @SPACEGROUP section accepts a setting ##
+
+Space group numbers only identify the symmetry up to a choice of setting
+(origin choice, unique axis and cell choice of monoclinic groups, axis
+permutation of orthorhombic groups, hexagonal or rhombohedral axes of the
+rhombohedral groups). The settings are those of Table A1.4.2.7 of
+International Tables for Crystallography Volume B, each identified there by
+a choice code. In *NCMAT v8* files the setting can be declared by
+appending this code to the number:
+
+```
+@SPACEGROUP
+  227:2
+```
+
+Other examples are `14:c1` (unique axis c, cell choice 1), `62:cab` (axis
+permutation), and `166:r` (rhombohedral axes). The declared setting must be
+a setting of the number and match the cell (hexagonal versus rhombohedral
+axes), and the atom positions must have its symmetry. With a bare number,
+the setting is deduced from the atom positions.
 
 # EMACS Syntax highlighting #
 
