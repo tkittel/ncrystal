@@ -8,3 +8,8 @@ PbO-alpha_sg129_Litharge.ncmat (setting 129:2):
   O    (0.25, 0.75, 0) multiplicity 2
   Pb   (0.25, 0.25, 0.237) multiplicity 2
 Without space group: sites unknown
+Multiphase, structure query: Info::hasStructureInfo should only be called on single-phase Info objects
+Multiphase, sites query: Info::hasAtomInfo should only be called on single-phase Info objects
+Multiphase, hasStructureInfo(): Info::hasStructureInfo should only be called on single-phase Info objects
+Multiphase, structure_info: Info::hasStructureInfo should only be called on single-phase Info objects
+Multiphase, atominfos: Info::hasAtomInfo should only be called on single-phase Info objects

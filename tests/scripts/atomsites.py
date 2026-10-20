@@ -114,6 +114,20 @@ def main():
     info = NC.createInfo( 'nosg.ncmat;inelas=0' )
     assert info.atominfos[0].sites is None
     print( 'Without space group: sites unknown' )
+    #Single-phase information must fail clearly for multiphase objects (not
+    #just look absent), whichever way it is requested:
+    multi = NC.createInfo( 'phases<0.5*Al_sg225.ncmat&0.5*Cu_sg225.ncmat>' )
+    for descr, fct in [ ('structure query', lambda : multi._query('structure')),
+                        ('sites query', lambda : multi._query('sites')),
+                        ('hasStructureInfo()', multi.hasStructureInfo),
+                        ('structure_info', lambda : multi.structure_info),
+                        ('atominfos', lambda : multi.atominfos) ]:
+        try:
+            fct()
+        except NC.NCLogicError as e:
+            print( f'Multiphase, {descr}: {e}' )
+        else:
+            raise SystemExit(f'Multiphase, {descr}: did not raise')
 
 if __name__ == '__main__':
     main()
