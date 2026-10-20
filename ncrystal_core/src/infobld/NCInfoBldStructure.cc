@@ -214,6 +214,13 @@ namespace NCRYSTAL_NAMESPACE {
           return true;
         }
 
+        AtomInfo::Pos wrapped( AtomInfo::Pos p )
+        {
+          for ( auto& x : p )
+            x -= std::floor( x );
+          return p;
+        }
+
         //An atom position with the element and coordinates as given:
         struct InputPos {
           AtomInfo::Pos pos;//mapped to [0,1)
@@ -280,6 +287,112 @@ namespace NCRYSTAL_NAMESPACE {
         return ntot;
       }
 
+      //Fill in the unit cell positions of AtomInfo objects given as sites
+      //(one position per orbit of the space group setting):
+      void expandSitesToPositions( const StructureInfo& si, AtomInfoList& atomlist )
+      {
+        if ( si.spacegroup == 0 )
+          NCRYSTAL_THROW(BadInput,"Atom positions given as sites require a"
+                         " space group");
+        const SpaceGroup sg = InfoUtils::getSpaceGroupFromStructureInfo( si );
+        const SGSymmetry& sym = SGSymmetry::get( sg );
+        //The sites expanded so far, to reject a site given twice:
+        struct ExpandedSite {
+          const AtomInfo* ai;
+          AtomInfo::Pos input;
+          AtomInfo::AtomPositions orbit;
+        };
+        std::vector<ExpandedSite> done;
+        auto checkNew = [&sg,&done]( const AtomInfo& ai,
+                                     const AtomInfo::Pos& input,
+                                     const AtomInfo::Pos& orbitpos )
+        {
+          auto isNew = [&orbitpos]( const AtomInfo::Pos& p )
+          {
+            return !details::samePosition( p, orbitpos );
+          };
+          for ( auto& e : done ) {
+            if ( std::all_of( e.orbit.begin(), e.orbit.end(), isNew ) )
+              continue;
+            const auto d1 = details::posDescr( *e.ai, e.input );
+            const auto d2 = details::posDescr( ai, input );
+            if ( d1 == d2 )
+              NCRYSTAL_THROW2(BadInput,"The site "<<d1<<" is specified twice");
+            if ( details::samePosition( details::wrapped( e.input ),
+                                        details::wrapped( input ) ) )
+              NCRYSTAL_THROW2(BadInput,"The sites "<<d1<<" and "<<d2
+                              <<" are the same position");
+            if ( e.ai->atom() == ai.atom() )
+              NCRYSTAL_THROW2(BadInput,"The sites "<<d1<<" and "<<d2
+                              <<" are symmetry-equivalent in space group "<<sg
+                              <<" (they generate the same atom positions),"
+                              " so the site is specified twice");
+            NCRYSTAL_THROW2(BadInput,"The sites "<<d1<<" and "<<d2
+                            <<" are symmetry-equivalent in space group "<<sg
+                            <<", so both elements would occupy the same atom"
+                            " positions");
+          }
+        };
+        for ( auto& ai : atomlist ) {
+          if ( !ai.unitCellPositions().empty() )
+            continue;
+          auto& sites = ai.detail_accessSites();
+          auto& positions = ai.detail_accessPos();
+          nc_assert( !sites.empty() );
+          for ( auto& site : sites ) {
+            const auto input = site.position;
+            const auto orbit = expandSiteToOrbit( sym, input.as<Vector>() );
+            //(representative: the first in the sorted order of the positions,
+            //as for sites derived from positions)
+            AtomInfo::AtomPositions orbitpos;
+            for ( auto& p : orbit.positions )
+              orbitpos.push_back( p.as<AtomInfo::Pos>() );
+            std::stable_sort( orbitpos.begin(), orbitpos.end(),
+                              details::atominfo_pos_compare );
+            checkNew( ai, input, orbitpos.front() );
+            site.position = orbitpos.front();
+            site.multiplicity = static_cast<unsigned>( orbitpos.size() );
+            for ( auto& p : orbitpos )
+              positions.push_back( p );
+            done.push_back( { &ai, input, std::move( orbitpos ) } );
+          }
+        }
+      }
+
+      //Fill in the sites of AtomInfo objects given as positions, by grouping
+      //the (sorted) positions into orbits; the representative of an orbit is
+      //its first position. Left empty if the grouping is not possible (e.g.
+      //positions accepted with a warning only by the structure check):
+      void groupPositionsIntoSites( const StructureInfo& si, AtomInfoList& atomlist )
+      {
+        if ( !si.spacegroup_setting.has_value() )
+          return;
+        const SGSymmetry& sym
+          = SGSymmetry::get( SpaceGroup( si.spacegroup_setting.value() ) );
+        for ( auto& ai : atomlist ) {
+          if ( !ai.sites().empty() )
+            continue;
+          std::vector<Vector> positions;
+          positions.reserve( ai.numberPerUnitCell() );
+          for ( auto& p : ai.unitCellPositions() )
+            positions.push_back( p.as<Vector>() );
+          std::vector<std::vector<unsigned>> orbits;
+          try {
+            orbits = groupPositionsIntoOrbits( sym, positions );
+          } catch ( Error::BadInput& ) {
+            continue;
+          }
+          auto& sites = ai.detail_accessSites();
+          sites.reserve( orbits.size() );
+          for ( auto& orbit : orbits ) {
+            AtomInfo::Site site;
+            site.position = vectAt( ai.unitCellPositions(), orbit.front() );
+            site.multiplicity = static_cast<unsigned>( orbit.size() );
+            sites.push_back( std::move( site ) );
+          }
+        }
+      }
+
       void validateAndCompleteUnitCell( InfoBuilder::UnitCell& uc )
       {
         auto& si = uc.structinfo;
@@ -289,8 +402,50 @@ namespace NCRYSTAL_NAMESPACE {
           si.spacegroup = SpaceGroup( si.spacegroup_setting.value() ).number();
         }
 
+        if ( si.spacegroup > 230 )
+          NCRYSTAL_THROW2(BadInput,"invalid spacegroup number ("<<si.spacegroup<<")");
+        if ( si.spacegroup > 0 ) {
+          //(a declared setting is validated before checking the cell with it)
+          declaredSetting( si );
+          //Without a declared setting, atom positions determine it (atoms
+          //given as sites can only be expanded in a known setting):
+          if ( !si.spacegroup_setting.has_value() && uc.atomlist.has_value()
+               && std::all_of( uc.atomlist.value().begin(),
+                               uc.atomlist.value().end(),
+                               []( const AtomInfo& ai )
+                               { return !ai.unitCellPositions().empty(); } ) )
+            si.spacegroup_setting
+              = deduceSettingFromPositions( si, uc.atomlist.value() ).settingIdx();
+          InfoUtils::completeAndCheckStructureInfoCell( si );
+        }
+        if ( !( si.lattice_a > 0.0 && si.lattice_b > 0.0 && si.lattice_c > 0.0 ) )
+          NCRYSTAL_THROW(BadInput,"lattice parameters must be positive numbers");
+
+        if ( ! ( si.alpha > 0 && si.alpha < 180 &&
+                 si.beta  > 0 && si.beta  < 180 &&
+                 si.gamma > 0 && si.gamma < 180 ) ) {
+          NCRYSTAL_THROW(BadInput,"Lattice angles must all be >0 and <180 degrees.");
+        }
+
+        if ( ! ( si.alpha > kPi || si.beta > kPi || si.gamma > kPi ) )
+          NCRYSTAL_THROW(BadInput,"Lattice angles specified in radians where degrees were expected.");
+
         if ( uc.atomlist.has_value() ) {
           auto& uc_atomlist = uc.atomlist.value();
+          bool anysites = false;
+          for ( auto& ai : uc_atomlist )
+            if ( ai.unitCellPositions().empty() )
+              anysites = true;
+          if ( anysites ) {
+            //(sites are expanded in, and the positions checked against, a
+            //known setting; this throws if the setting is unknown):
+            if ( si.spacegroup > 0 && !si.spacegroup_setting.has_value() )
+              si.spacegroup_setting
+                = InfoUtils::getSpaceGroupFromStructureInfo( si ).settingIdx();
+            expandSitesToPositions( si, uc_atomlist );
+            if ( si.n_atoms == 0 )
+              si.n_atoms = static_cast<unsigned>( totalNumberOfAtomsInUnitCell( uc_atomlist ) );
+          }
           //First validate total number of atoms is >0 and consistently specified:
           auto natompos = totalNumberOfAtomsInUnitCell( uc_atomlist );//throws if empty or have entries with 0 atoms
           nc_assert(natompos>0);
@@ -343,30 +498,6 @@ namespace NCRYSTAL_NAMESPACE {
         if ( ! ( si.n_atoms > 0 ) )
           NCRYSTAL_THROW2(BadInput,"StructureInfo n_atoms not a positive number: "<<si.n_atoms);
 
-        if ( si.spacegroup > 230 )
-          NCRYSTAL_THROW2(BadInput,"invalid spacegroup number ("<<si.spacegroup<<")");
-        if ( si.spacegroup > 0 ) {
-          //(a declared setting is validated before checking the cell with it)
-          declaredSetting( si );
-          //Without a declared setting, atom positions determine it:
-          if ( !si.spacegroup_setting.has_value() && uc.atomlist.has_value() )
-            si.spacegroup_setting
-              = deduceSettingFromPositions( si, uc.atomlist.value() ).settingIdx();
-          InfoUtils::completeAndCheckStructureInfoCell( si );
-        }
-        if ( !( si.lattice_a > 0.0 && si.lattice_b > 0.0 && si.lattice_c > 0.0 ) )
-          NCRYSTAL_THROW(BadInput,"lattice parameters must be positive numbers");
-
-
-        if ( ! ( si.alpha > 0 && si.alpha < 180 &&
-                 si.beta  > 0 && si.beta  < 180 &&
-                 si.gamma > 0 && si.gamma < 180 ) ) {
-          NCRYSTAL_THROW(BadInput,"Lattice angles must all be >0 and <180 degrees.");
-        }
-
-        if ( ! ( si.alpha > kPi || si.beta > kPi || si.gamma > kPi ) )
-          NCRYSTAL_THROW(BadInput,"Lattice angles specified in radians where degrees were expected.");
-
         //Calculate unit cell volume:
         auto latRot = getLatticeRot( si.lattice_a, si.lattice_b, si.lattice_c,
                                      si.alpha*kDeg, si.beta*kDeg, si.gamma*kDeg );
@@ -385,6 +516,8 @@ namespace NCRYSTAL_NAMESPACE {
         }
         if ( si.spacegroup_setting.has_value() )
           si.spacegroup_setting.value().validate();
+        if ( uc.atomlist.has_value() )
+          groupPositionsIntoSites( si, uc.atomlist.value() );
       }
 
   }

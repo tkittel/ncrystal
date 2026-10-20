@@ -132,6 +132,24 @@ NC::AtomInfo::AtomInfo( IndexedAtomData iad,
     NCRYSTAL_THROW2(LogicError,"Invalid debye temperature value passed to AtomInfo constructor: " << m_dt.value());
 }
 
+NC::AtomInfo::AtomInfo( IndexedAtomData iad,
+                        AtomSites&& sites,
+                        Optional<DebyeTemperature> dt,
+                        Optional<double> msd )
+  : m_iad(std::move(iad)),
+    m_dt(std::move(dt)),
+    m_msd(std::move(msd)),
+    m_sites(std::move(sites))
+{
+  nc_assert_always( m_sites.size()<100000 );
+  if ( m_sites.empty() )
+    NCRYSTAL_THROW(BadInput,"Empty site list passed to AtomInfo constructor.");
+  if ( m_msd.has_value() && !(m_msd.value()>0.0&&m_msd.value()<1e20) )
+    NCRYSTAL_THROW2(BadInput,"Invalid msd value passed to AtomInfo constructor:" << m_msd.value() );
+  if ( m_dt.has_value() && ! ( m_dt.value().dbl() >= 0.1 && m_dt.value().dbl() <= 1.0e6 ) )
+    NCRYSTAL_THROW2(LogicError,"Invalid debye temperature value passed to AtomInfo constructor: " << m_dt.value());
+}
+
 std::string NC::Info::toString(StateOfMatter som)
 {
   switch(som) {
