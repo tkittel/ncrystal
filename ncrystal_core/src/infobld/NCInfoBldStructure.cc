@@ -43,14 +43,20 @@ namespace NCRYSTAL_NAMESPACE {
         if ( setting.number() != si.spacegroup )
           NCRYSTAL_THROW2(BadInput,"Declared space group setting "<<setting
                           <<" is not a setting of space group number "
-                          <<si.spacegroup);
+                          <<si.spacegroup<<" (the allowed settings are: "
+                          <<SpaceGroup::listSettings( si.spacegroup )<<")");
         const bool rhombo
           = usesRhombohedralAxes( static_cast<int>( si.spacegroup ),
                                   si.alpha );
         if ( ( StrView( setting.choice() ) == "r" ) != rhombo )
           NCRYSTAL_THROW2(BadInput,"Declared space group setting "<<setting
-                          <<" does not match the unit cell axes (hexagonal"
-                          " versus rhombohedral)");
+                          <<" does not match the unit cell axes: the cell is"
+                          " given in "<<( rhombo ? "rhombohedral axes (a=b=c,"
+                                             " alpha=beta=gamma), for which the"
+                                             " setting is "
+                                           : "hexagonal axes (gamma=120), for"
+                                             " which the setting is " )
+                          <<si.spacegroup<<':'<<( rhombo ? 'r' : 'h' ));
         return setting;
       }
     }
@@ -137,17 +143,55 @@ namespace NCRYSTAL_NAMESPACE {
                                  const AtomInfoList& atomlist )
     {
       nc_assert_always( si.spacegroup_setting.has_value() );
-      const SpaceGroup setting( si.spacegroup_setting.value() );
-      const auto res = NC::checkStructureSymmetry( setting,
-                                                   positionsBySpecies( atomlist ) );
-      if ( !( res.maxDeviation <= tol_error ) )
-        NCRYSTAL_THROW2(BadInput,"Atom positions are not consistent with"
-                        " the space group setting "<<setting
-                        <<" (largest deviation of a symmetry image from an"
-                        " atom of the same type: "
-                        <<fmt(res.maxDeviation,"%.2g")<<" in fractional"
-                        " coordinates). Either the setting or the"
-                        " positions are wrong.");
+      const SpaceGroup ds( si.spacegroup_setting.value() );
+      const auto positions = positionsBySpecies( atomlist );
+      const auto res = NC::checkStructureSymmetry( ds, positions );
+      if ( !( res.maxDeviation <= tol_error ) ) {
+        //(only possible for a declared setting, as a deduced one fits)
+        std::ostringstream msg;
+        msg << "The declared space group setting is " << ds
+            << ", but the atom positions do not have its symmetry (largest"
+               " deviation of a symmetry image from an atom of the same type: "
+            << fmt(res.maxDeviation,"%.2g") << " in fractional coordinates).";
+        //Tell the user which settings of the number the positions do fit
+        //(e.g. 17:abc declared while the positions are in 17:cab):
+        std::vector<SpaceGroup> fits;
+        for ( auto& s : SpaceGroup::settingsOfNumber( si.spacegroup ) )
+          if ( NC::checkStructureSymmetry( s, positions ).maxDeviation
+               <= tol_error )
+            fits.push_back( s );
+        if ( fits.empty() ) {
+          msg << " Either the space group or the positions are wrong, as"
+                 " the positions do not fit any setting of space group "
+              << si.spacegroup;
+        } else {
+          msg << " The positions are consistent with the setting"
+              << ( fits.size() > 1 ? "s " : " " );
+          for ( auto& s : fits )
+            msg << ( &s == &fits.front() ? "" : ", " ) << s;
+          msg << ", which must then be declared instead";
+        }
+        if ( ds.hasMultipleSettings() ) {
+          //fixme: Hermann-Mauguin symbols (SpaceGroup::hmSymbol()) would
+          //make this listing more helpful to users.
+          msg << " (the settings of space group " << si.spacegroup
+              << " are: ";
+          bool firstsg = true;
+          for ( auto& s : SpaceGroup::settingsOfNumber( si.spacegroup ) ) {
+            msg << ( firstsg ? "" : ", " ) << s;
+            firstsg = false;
+            const bool fit = ( std::find( fits.begin(), fits.end(), s )
+                               != fits.end() );
+            if ( s.isDefaultSetting() || fit )
+              msg << " (" << ( s.isDefaultSetting() ? "default" : "" )
+                  << ( s.isDefaultSetting() && fit ? ", " : "" )
+                  << ( fit ? "consistent with the positions" : "" ) << ')';
+          }
+          msg << ")";
+        }
+        msg << '.';
+        NCRYSTAL_THROW(BadInput,msg.str());
+      }
       if ( !( res.maxDeviation <= tol_warn ) )
         NCRYSTAL_WARN("Atom positions deviate slightly from the symmetry"
                       " of space group "<<si.spacegroup<<" (largest"
