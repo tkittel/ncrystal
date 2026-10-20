@@ -21,7 +21,9 @@
 #include "NCrystal/internal/ncmat/NCParseNCMAT.hh"
 #include "NCrystal/core/NCException.hh"
 #include "NCrystal/internal/utils/NCString.hh"
+#include "NCrystal/internal/utils/NCStrView.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 #include <sstream>
 #if nc_cplusplus >= 201703L
 #  include <functional>//for std::invoke
@@ -634,13 +636,17 @@ void NC::NCMATParser::handleSectionData_SPACEGROUP(const Parts& parts, unsigned 
   }
   if ( m_data.spacegroup != 0 || parts.size()>1 )
     NCRYSTAL_THROW2(BadInput,descr()<<": multiple entries specified in @SPACEGROUP section in line "<<lineno<<" (requires just a single number)");
-  int sg(0);
+  //"<number>" or (v8+) "<number>:<setting choice>", e.g. "227:2". The
+  //number is extracted here with relaxed parsing (so a bare number is
+  //accepted for any version); validateSpaceGroup() applies the rules of
+  //the file's version:
+  m_data.spacegroup_spec = parts.at(0);
   try {
-    sg = str2int(parts.at(0));
+    m_data.spacegroup = static_cast<int>( SpaceGroup( m_data.spacegroup_spec,
+                                                      SpaceGroupParseMode::Relaxed ).number() );
   } catch (Error::BadInput&e) {
-    NCRYSTAL_THROW2(BadInput,descr()<<": problem while decoding spacegroup parameter in line "<<lineno<<" : "<<e.what());
+    NCRYSTAL_THROW2(BadInput,descr()<<": problem while decoding the @SPACEGROUP entry in line "<<lineno<<" : "<<e.what());
   }
-  m_data.spacegroup = sg;
 }
 
 void NC::NCMATParser::handleSectionData_DEBYETEMPERATURE(const Parts& parts, unsigned lineno)

@@ -407,11 +407,11 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 
 
 ==> Test 95
-==> Correct! NCBadInput: "(anonymous TextData, 23bytes, type=ncmat)": no spacegroup number specified in @SPACEGROUP section (expected in line 3)
+==> Correct! NCBadInput: "(anonymous TextData, 23bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 3 : Invalid space group specification: "0" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
 
 
 ==> Test 96
-==> Correct! NCBadInput: (anonymous TextData, 24bytes, type=ncmat) invalid section configuration for data claiming to be in legacy NCMAT version 1 (missing section with cell info)
+==> Correct! NCBadInput: "(anonymous TextData, 24bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 3 : Invalid space group specification: "-1" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
 
 
 ==> Test 97
@@ -419,7 +419,7 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 
 
 ==> Test 98
-==> Correct! NCBadInput: "(anonymous TextData, 30bytes, type=ncmat)": problem while decoding spacegroup parameter in line 3 : Invalid number in string is not an integer: "pb+3mbla"
+==> Correct! NCBadInput: "(anonymous TextData, 30bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 3 : Invalid space group specification: "pb+3mbla" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
 
 
 ==> Test 99
@@ -1284,6 +1284,70 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 
 ==> Test 314
 ==> Correct! NCBadInput: invalid debye_temp value (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 315
+==> Ok.
+
+
+==> Test 316
+==> Ok.
+
+
+==> Test 317
+==> Ok.
+
+
+==> Test 318
+==> Ok.
+
+
+==> Test 319
+==> Correct! NCBadInput: (anonymous TextData, 128bytes, type=ncmat) space group setting choices (like "227:2") are only allowed in NCMAT v8 or later (problem in the @SPACEGROUP section ending in line 5)
+
+
+==> Test 320
+==> Correct! NCBadInput: "(anonymous TextData, 128bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "227:x" (not a setting of space group 227, the settings are: 227:1 (default), 227:2)
+
+
+==> Test 321
+==> Correct! NCBadInput: "(anonymous TextData, 126bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "231" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+
+
+==> Test 322
+==> Correct! NCBadInput: "(anonymous TextData, 144bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "0" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+
+
+==> Test 323
+==> Correct! NCBadInput: "(anonymous TextData, 125bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: ":1" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+
+
+==> Test 324
+==> Correct! NCBadInput: "(anonymous TextData, 127bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "227:" (not a setting of space group 227, the settings are: 227:1 (default), 227:2)
+
+
+==> Test 325
+==> Correct! NCBadInput: "(anonymous TextData, 129bytes, type=ncmat)": multiple entries specified in @SPACEGROUP section in line 5 (requires just a single number)
+
+
+==> Test 326
+==> Correct! NCBadInput: "(anonymous TextData, 129bytes, type=ncmat)": multiple entries specified in @SPACEGROUP section in line 5 (requires just a single number)
+
+
+==> Test 327
+==> Correct! NCBadInput: "(anonymous TextData, 130bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "227:2:1" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+
+
+==> Test 328
+==> Correct! NCBadInput: "(anonymous TextData, 127bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "0227" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+
+
+==> Test 329
+==> Correct! NCBadInput: "(anonymous TextData, 127bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "+227" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+
+
+==> Test 330
+==> Correct! NCBadInput: "(anonymous TextData, 128bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "227.0" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
 
 Loading refnc1/Ag_sg225.ncmat
 Loading refnc1/Al2O3_sg167_Corundum.ncmat

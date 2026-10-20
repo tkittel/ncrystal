@@ -80,9 +80,12 @@ namespace NCRYSTAL_NAMESPACE {
     Optional<std::pair<Temperature,TemperatureType>> temperature;
     void validateTemperature() const;
 
-    //@SPACEGROUP
+    //@SPACEGROUP: the number, and the entry as written in the section ("227",
+    //or in v8+ a setting like "227:2"). 0 and/or empty if unavailable:
     int spacegroup = 0;
+    std::string spacegroup_spec;
     bool hasSpaceGroup() const { return spacegroup>0; }
+    bool hasSpaceGroupSetting() const;//entry has a ":<choice>" part (v8+)
     void validateSpaceGroup() const;
 
     //@DEBYETEMPERATURE (note that if absent, VDOSDebye DynInfo sections can have their own debye_temp field)
