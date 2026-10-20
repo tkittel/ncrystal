@@ -28,3 +28,7 @@ All checks agree as expected
     setting: 166:h
   hkl candidate for SG-227 (90 90 90, stored 227:2): 227:2
     setting: 227:2
+Al: 1 site (0,0,0) of multiplicity 4
+Diamond from site (0 0 0): 8 positions, 1 site of multiplicity 8, setting 227:1
+Diamond from site (1/8 1/8 1/8): 8 positions, 1 site of multiplicity 8, setting 227:2
+Diamond with a site given twice: The sites Si (0.125, 0.125, 0.125) and Si (0.875, 0.375, 0.375) are symmetry-equivalent in space group 227:2 (they generate the same atom positions), so the site is specified twice
