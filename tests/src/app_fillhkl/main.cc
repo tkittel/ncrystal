@@ -314,10 +314,8 @@ namespace {
     nc_assert_always( mx.h + 1 > lt.a / dcutoff );
     nc_assert_always( mx.k + 1 > lt.b / dcutoff );
     nc_assert_always( mx.l + 1 > lt.c / dcutoff );
-    const auto rec = NC::getReciprocalLatticeRot( lt.a, lt.b, lt.c,
-                                                  lt.alpha * NC::kDeg,
-                                                  lt.beta * NC::kDeg,
-                                                  lt.gamma * NC::kDeg );
+    const NC::KSqCalc rec( lt.a, lt.b, lt.c, lt.alpha * NC::kDeg,
+                           lt.beta * NC::kDeg, lt.gamma * NC::kDeg );
     const int bh = 2 * mx.h + 2;
     const int bk = 2 * mx.k + 2;
     const int bl = 2 * mx.l + 2;
@@ -328,7 +326,7 @@ namespace {
           if ( !h && !k && !l )
             continue;
           //Allow for rounding errors in the d-spacing calculation:
-          if ( NC::dspacingFromHKL( h, k, l, rec ) < dcutoff * ( 1.0 - 1e-12 ) )
+          if ( rec.dspacing( h, k, l ) < dcutoff * ( 1.0 - 1e-12 ) )
             continue;
           nc_assert_always( std::abs(h) <= mx.h );
           nc_assert_always( std::abs(k) <= mx.k );
