@@ -86,6 +86,17 @@ def _v8_cryst( dyninfo ):
              '@ATOMPOSITIONS\nAl 0 0 0\n@DYNINFO\n' + dyninfo )
 
 
+def _sg( sg, body='@ATOMPOSITIONS\nAl 0 0 0\n', v='v8' ):
+    #Crystal with the given @SPACEGROUP entry (the parser does not check the
+    #symmetry of the structure, and only needs a non-cubic cell for numbers
+    #below 195):
+    nbr = sg.split(':')[0].strip()
+    cubic = not ( nbr.isdigit() and int(nbr) < 195 )
+    cell = 'cubic 4.0' if cubic else 'lengths 4 5 6\nangles 90 90 90'
+    return ( f'NCMAT {v}\n@CELL\n{cell}\n@SPACEGROUP\n{sg}\n' + body
+             + '@DYNINFO\nelement Al\nfraction 1\ntype vdosdebye\ndebye_temp 400\n' )
+
+
 def simplecubic( vx, sg, length ):
     return f"""NCMAT {vx}
 @DEBYETEMPERATURE
@@ -1372,6 +1383,23 @@ _v8_cryst(gen_fake_dyninfo_scatknl_fields(ename='Al',temp=300)
 _v8_sk(difields='debye_temp 0\n'),
 _v8_sk(difields='debye_temp 1e6\n'),
 
+#@SPACEGROUP setting choices (v8):
+(_sg('227:2'),),
+(_sg('14:c1'),),
+(_sg('62:cab'),),
+(_sg('166:r'),),
+_sg('227:2',v='v7'),
+_sg('227:x'),
+_sg('231'),
+_sg('0'),
+_sg(':1'),
+_sg('227:'),
+_sg('227 :2'),
+_sg('227: 2'),
+_sg('227:2:1'),
+_sg('0227'),
+_sg('+227'),
+_sg('227.0'),
 ]
 
 #should support only \r\n and \n, disallow \r unless it is immediately followed by \n (in which case it is ignore)
