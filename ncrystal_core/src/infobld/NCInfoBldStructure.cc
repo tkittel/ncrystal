@@ -199,38 +199,63 @@ namespace NCRYSTAL_NAMESPACE {
             x=0.0;//remaps -0 to 0
         }
 
-        void detect_duplicate_positions( AtomInfo::AtomPositions& plist ) {
-          //Throws if two positions (all in [0,1)) are closer than a tolerance
-          //in all three coordinates, taking periodicity into account (so
-          //e.g. x=0.99999 and x=0.0 are close). Sorts plist by x, and then
-          //sweeps over it, comparing each position to those with nearby x
-          //(also across the x=1 boundary).
-          const double tol = 0.0001;//NB: Best if value matches the one in NCrystal/cifutils.py!
-          std::sort( plist.begin(), plist.end(), atominfo_pos_compare );
-          auto check = [tol]( const AtomInfo::Pos& p1, const AtomInfo::Pos& p2 )
+        //Tolerance for two positions to be the same:
+        constexpr double pos_tol = 0.0001;//NB: Best if value matches the
+                                          //    one in NCrystal/cifutils.py!
+
+        bool samePosition( const AtomInfo::Pos& p1, const AtomInfo::Pos& p2 )
+        {
+          //Periodic: e.g. x=0.99999 and x=0.0 are the same.
+          for ( auto k : ncrange( 3 ) ) {
+            const double d = ncabs( p1[k] - p2[k] );
+            if ( ncmin( d, 1.0 - d ) >= pos_tol )
+              return false;
+          }
+          return true;
+        }
+
+        //An atom position with the element and coordinates as given:
+        struct InputPos {
+          AtomInfo::Pos pos;//mapped to [0,1)
+          AtomInfo::Pos input;
+          const AtomInfo* ai;
+        };
+
+        std::string posDescr( const AtomInfo& ai, const AtomInfo::Pos& p )
+        {
+          std::ostringstream ss;
+          ss << ai.atomData().description(false) << " (" << fmt(p[0]) << ", "
+             << fmt(p[1]) << ", " << fmt(p[2]) << ")";
+          return ss.str();
+        }
+
+        void detect_duplicate_positions( std::vector<InputPos>& plist ) {
+          //Throws if two positions (all in [0,1)) are the same. Sorts plist
+          //by x, and then sweeps over it, comparing each position to those
+          //with nearby x (also across the x=1 boundary).
+          std::sort( plist.begin(), plist.end(),
+                     []( const InputPos& a, const InputPos& b )
+                     { return atominfo_pos_compare( a.pos, b.pos ); } );
+          auto check = []( const InputPos& p1, const InputPos& p2 )
           {
-            for ( auto k : ncrange( 3 ) ) {
-              const double d = ncabs( p1[k] - p2[k] );
-              if ( ncmin( d, 1.0 - d ) >= tol )
-                return;
-            }
-            NCRYSTAL_THROW2(BadInput,"The same atom position used more than"
-                            " once: ("<<p1[0]<<", "<<p1[1]<<", "<<p1[2]<<")"
-                            " and ("<<p2[0]<<", "<<p2[1]<<", "<<p2[2]<<")");
+            if ( samePosition( p1.pos, p2.pos ) )
+              NCRYSTAL_THROW2(BadInput,"The same atom position is used twice: "
+                              <<posDescr( *p1.ai, p1.input )<<" and "
+                              <<posDescr( *p2.ai, p2.input ));
           };
           const std::size_t n = plist.size();
           for ( auto i : ncrange( n ) ) {
-            const auto& p = vectAt( plist, i );
+            const auto& p = vectAt( plist, i ).pos;
             for ( auto j : ncrange( i+1, n ) ) {
-              if ( vectAt( plist, j )[0] - p[0] >= tol )
+              if ( vectAt( plist, j ).pos[0] - p[0] >= pos_tol )
                 break;
-              check( p, vectAt( plist, j ) );
+              check( vectAt( plist, i ), vectAt( plist, j ) );
             }
             //Across the x=1 boundary (x close to 1 vs. x close to 0):
             for ( auto j : ncrange( i ) ) {
-              if ( vectAt( plist, j )[0] + 1.0 - p[0] >= tol )
+              if ( vectAt( plist, j ).pos[0] + 1.0 - p[0] >= pos_tol )
                 break;
-              check( p, vectAt( plist, j ) );
+              check( vectAt( plist, i ), vectAt( plist, j ) );
             }
           }
         }
@@ -279,16 +304,17 @@ namespace NCRYSTAL_NAMESPACE {
                            { return rh.atomData() < lh.atomData(); } );
 
           //Check AtomInfo objects for consistency and standardise them a bit:
-          AtomInfo::AtomPositions all_positions;
+          std::vector<details::InputPos> all_positions;
           all_positions.reserve(natompos);
 
           for ( auto& ai : uc_atomlist ) {
             //Map all atom positions to interval [0,1) (e.g. 1.0 becomes 0.0, -0.3
             //becomes 0.7, etc.). However at most move 1.0:
             for ( auto& pos : ai.detail_accessPos() ) {
+              const auto input = pos;
               for ( auto& coord : pos )
                 details::atominfo_pos_remap( coord );
-              all_positions.push_back( pos );
+              all_positions.push_back( { pos, input, &ai } );
             }
 
             //Sort positions, ensuring a well defined ordering:

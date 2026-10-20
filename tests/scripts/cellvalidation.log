@@ -5,9 +5,11 @@ Caught expected NCBadInput('Unit cell not consistent with space group 191 (a, b=
 SG-4 with unique axis b: loaded with beta=100
 Caught expected NCBadInput('Atom positions have the symmetry of space group setting 4:b, but the unit cell is not consistent with it (a, b, c, alpha=90, beta, gamma=90): Lattice angle gamma must be 90 degrees for this space group (got 100)')
 Caught expected NCBadInput('Atom positions have the symmetry of space group setting 4:b, but the unit cell is not consistent with it (a, b, c, alpha=90, beta, gamma=90): Lattice angle alpha must be 90 degrees for this space group (got 100)')
-Coinciding atoms (across x boundary) rejected
-Coinciding atoms (across y and z boundaries) rejected
-Coinciding atoms (not adjacent in x-, y- or z-sorted lists) rejected
+Coinciding atoms (identical) rejected: The same atom position is used twice: Al (0.1, 0.2, 0.3) and Al (0.1, 0.2, 0.3)
+Coinciding atoms (differing by a lattice vector) rejected: The same atom position is used twice: Al (0, 0, 0) and Al (0, 0, 1)
+Coinciding atoms (across x boundary) rejected: The same atom position is used twice: O (0.99999, 0, 0) and Al (0, 0, 0)
+Coinciding atoms (across y and z boundaries) rejected: The same atom position is used twice: Al (0.5, 0, 0) and O (0.5, 0.99999, 2e-05)
+Coinciding atoms (not adjacent in x-, y- or z-sorted lists) rejected: The same atom position is used twice: Al (0.1, 0.1, 0.1) and O (0.10002, 0.10002, 0.10002)
 Nearby positions accepted (n_atoms=2)
 P1 structure in cubic cell (no SG): True
 P1 structure declared as SG-221 rejected

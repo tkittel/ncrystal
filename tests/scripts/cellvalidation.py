@@ -76,6 +76,8 @@ def test_duplicate_positions():
     #when they are not adjacent when sorted after x, y or z (a detection
     #method once used):
     cases = [
+        ( 'identical', [('Al','0.1 0.2 0.3'),('Al','0.1 0.2 0.3')] ),
+        ( 'differing by a lattice vector', [('Al','0 0 1'),('Al','0 0 0')] ),
         ( 'across x boundary', [('Al','0 0 0'),('O','0.99999 0 0')] ),
         ( 'across y and z boundaries',
           [('Al','0.5 0 0'),('O','0.5 0.99999 0.00002')] ),
@@ -87,8 +89,8 @@ def test_duplicate_positions():
         try:
             load( '4 5 6', '90 90 90', 0, atoms )
         except NC.NCBadInput as e:
-            assert 'The same atom position used more than once' in str(e)
-            print(f'Coinciding atoms ({descr}) rejected')
+            assert 'The same atom position is used twice' in str(e)
+            print(f'Coinciding atoms ({descr}) rejected: {e}')
         else:
             raise RuntimeError(f'Coinciding atoms ({descr}) not detected')
     #But nearby (0.0002) distinct positions are fine:
