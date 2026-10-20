@@ -1302,6 +1302,9 @@ _v8_vdebye('msd 0.05\n'),
  '@DYNINFO\nelement Al\nfraction 1\ntype vdos\n'
  'vdos_egrid 0.01 0.03\nvdos_density 0.1 0.2 0.3 0.4 0.5\n'
  'msd 0.05 at_temperature 280\n')[:],
+#Invalid: debye_temp out of range in scatknl sections:
+_v8_sk(difields='debye_temp 0\n'),
+_v8_sk(difields='debye_temp 1e6\n'),
 
 ]
 

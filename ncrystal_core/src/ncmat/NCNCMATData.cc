@@ -125,6 +125,7 @@ void NC::NCMATData::DynInfo::validate( int theversion ) const
     nc_assert( !has_msdt || has_msd );//parser guarantees
     if ( has_msd && has_dt )
       NCRYSTAL_THROW(BadInput,"@DYNINFO sections can not specify both the msd and the debye_temp keywords");
+    val1( "debye_temp", 0.0, 1e6, nullptr );
     val1( "msd", 0.0, 100.0, nullptr );//[Aa^2]
     val1( "msd_temperature", 0.0, 1e6,
           "temperature in the at_temperature part of the msd" );
@@ -190,15 +191,8 @@ void NC::NCMATData::DynInfo::validate( int theversion ) const
 
   } else if ( dyninfo_type==VDOSDebye ) {
     //fields specific for type=vdosdebye:
-    if ( fields.count("debye_temp") ) {
-      if ( theversion < 5 )
-        NCRYSTAL_THROW(BadInput,"debye_temp keyword in @DYNINFO section of type vdosdebye is only allowed in NCMAT v5 or later");
-      auto& v_dt = fields.at("debye_temp");
-      if ( v_dt.size()!=1 )
-        NCRYSTAL_THROW(BadInput,"debye_temp keyword not followed by exactly one parameter");
-      if ( !(v_dt.at(0)>0.0) || !(v_dt.at(0)<1e6) )
-        NCRYSTAL_THROW(BadInput,"invalid debye_temp value");
-    }
+    if ( theversion < 5 && fields.count("debye_temp") )
+      NCRYSTAL_THROW(BadInput,"debye_temp keyword in @DYNINFO section of type vdosdebye is only allowed in NCMAT v5 or later");
   } else if ( dyninfo_type==ScatKnl ) {
 
     //fields specific for type=scatknl:
