@@ -1775,6 +1775,13 @@ Wrapping and invalid input:
   1 -> BadInput: Invalid site coordinates: (nan, 0, 0)
   1 -> BadInput: Invalid site coordinates: (0, inf, 0)
 All OK
+==== Grouping of positions into orbits ====
+  225: 204 positions in 3 orbits of sizes 4 192 8
+  227:2: 24 positions in 2 orbits of sizes 8 16
+  194: 14 positions in 2 orbits of sizes 12 2
+  14:c1: 6 positions in 2 orbits of sizes 2 4
+  225 with one position missing -> BadInput: Atom positions do not form complete orbits of the space group setting (no position near the symmetry image (0.1544, 0.2345, 0.3766) of (1.8766, 0.8456, 0.2655))
+All OK
 ==== Structure symmetry check ====
   68:1ba-c has the same operations as 68:1
   68:1-cba has the same operations as 68:1cab
