@@ -75,6 +75,11 @@ namespace NCRYSTAL_NAMESPACE {
     bool hasAtomPos() const { return !atompos.empty(); }
     void validateAtomPos() const;
 
+    //@ATOMSITES (v8+):
+    std::vector<std::pair<std::string,Pos> > atomsites;
+    bool hasAtomSites() const { return !atomsites.empty(); }
+    void validateAtomSites() const;
+
     //@TEMPERATURE (v7+)
     enum class TemperatureType { Default, Fixed };
     Optional<std::pair<Temperature,TemperatureType>> temperature;

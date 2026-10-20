@@ -1400,6 +1400,25 @@ _sg('227:2:1'),
 _sg('0227'),
 _sg('+227'),
 _sg('227.0'),
+#@ATOMSITES (v8):
+(_sg('225','@ATOMSITES\nAl 0 0 0\n'),),
+(_sg('225','@ATOMSITES\nAl 1/4 1/4 1/4 #comment\n'),),
+_sg('225','@ATOMSITES\nAl 0 0 0\n',v='v7'),
+_sg('225','@ATOMSITES\n'),
+_sg('225','@ATOMSITES\nAl 0 0\n'),
+_sg('225','@ATOMSITES\nAl 0 0 0 0\n'),
+_sg('225','@ATOMSITES\nAl 0 0 bla\n'),
+_sg('225','@ATOMSITES\nAl 0 0 1.5\n'),
+_sg('225','@ATOMSITES\nAl 0 0 0\n@ATOMPOSITIONS\nAl 0 0 0\n'),
+_sg('225','@ATOMSITES\nAl 0 0 0\nCr 1/2 1/2 1/2\n'),
+_sg('225','@ATOMSITES\nAl 0 0 0\n').replace('@SPACEGROUP\n225\n',''),
+_sg('225','@ATOMSITES\nAl 0 0 0\n').replace('@CELL\ncubic 4.0\n',''),
+_sg('225','@ATOMSITES\nAl 0 0 0\n').split('@DYNINFO')[0],
+#@CELL and atom positions/sites must come together:
+_sg('225',''),
+_sg('225','',v='v7'),
+_v8_vdebye('debye_temp 400\n').replace('@DYNINFO','@ATOMPOSITIONS\nAl 0 0 0\n@DYNINFO'),
+_v8_vdebye('debye_temp 400\n').replace('@DYNINFO','@ATOMSITES\nAl 0 0 0\n@DYNINFO'),
 ]
 
 #should support only \r\n and \n, disallow \r unless it is immediately followed by \n (in which case it is ignore)
