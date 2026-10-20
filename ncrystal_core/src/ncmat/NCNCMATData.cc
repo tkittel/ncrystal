@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/ncmat/NCNCMATData.hh"
+#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/utils/NCAtomUtils.hh"
@@ -378,12 +379,30 @@ void NC::NCMATData::validateAtomPos() const
   }
 }
 
+bool NC::NCMATData::hasSpaceGroupSetting() const
+{
+  return spacegroup_spec.find(':') != std::string::npos;
+}
+
 void NC::NCMATData::validateSpaceGroup() const
 {
   if (!hasSpaceGroup())
     return;
   if (spacegroup<1||spacegroup>230)
     NCRYSTAL_THROW2(BadInput,sourceDescription<<" invalid spacegroup number (expects a number from 1 to 230)");
+  //Before v8 the section holds just the number; from v8 a setting can be
+  //specified, which is then parsed strictly with SpaceGroup's own messages:
+  if ( !hasSpaceGroupSetting() )
+    return;
+  if ( version < 8 )
+    NCRYSTAL_THROW2(BadInput,sourceDescription<<" space group setting choices (like \""<<spacegroup_spec
+                    <<"\") are only allowed in NCMAT v8 or later");
+  try {
+    SpaceGroup sg( spacegroup_spec, SpaceGroupParseMode::Strict );
+    nc_assert_always( static_cast<int>( sg.number() ) == spacegroup );
+  } catch ( Error::BadInput& e ) {
+    NCRYSTAL_THROW2(BadInput,sourceDescription<<" invalid @SPACEGROUP entry: "<<e.what());
+  }
 }
 
 void NC::NCMATData::validateDebyeTemperature() const
@@ -744,8 +763,13 @@ void NC::NCMATData::toJSON( std::ostream& ss ) const
   streamJSONDictEntry( ss, "ncmat_version", data.version, JSONDictPos::FIRST );
   if ( data.hasSpaceGroup()) {
     streamJSONDictEntry( ss, "spacegroup", data.spacegroup );
+    if ( !data.hasSpaceGroupSetting() )
+      streamJSONDictEntry( ss, "spacegroup_setting", json_null_t{} );
+    else
+      streamJSONDictEntry( ss, "spacegroup_setting", data.spacegroup_spec );
   } else {
     streamJSONDictEntry( ss, "spacegroup", json_null_t{} );
+    streamJSONDictEntry( ss, "spacegroup_setting", json_null_t{} );
   }
   if ( data.stateOfMatter.has_value() ) {
     streamJSONDictEntry( ss, "state_of_matter", NCMATData::stateOfMatter2Str(data.stateOfMatter.value()) );

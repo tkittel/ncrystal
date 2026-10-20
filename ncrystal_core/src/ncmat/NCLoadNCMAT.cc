@@ -25,6 +25,7 @@
 #include "NCrystal/internal/ncmat/NCNCMATData.hh"
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/internal/infobld/NCInfoBuilder.hh"
+#include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCrystal/internal/vdos/NCVDOSCache.hh"
 #include "NCrystal/internal/atomdb/NCAtomDBExtender.hh"
 #include "NCrystal/internal/extd_utils/NCFillHKL.hh"
@@ -682,6 +683,11 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
     //==> Cell layout (structure info)
     StructureInfo& si = builder.unitcell.value().structinfo;
     si.spacegroup = data_hasSpaceGroup ? data.spacegroup : 0;
+    if ( data_hasSpaceGroup && data.hasSpaceGroupSetting() ) {
+      //(v8+) a declared setting, validated when parsing:
+      si.spacegroup_setting = SpaceGroup( data.spacegroup_spec,
+                                          SpaceGroupParseMode::Strict ).settingIdx();
+    }
     si.lattice_a = data.cell.lengths[0];
     si.lattice_b = data.cell.lengths[1];
     si.lattice_c = data.cell.lengths[2];
