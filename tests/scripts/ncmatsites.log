@@ -1,0 +1,29 @@
+Al_sg225.ncmat: 1 sites -> 4 atoms (setting 225), same positions and xs
+Si_sg227.ncmat: 1 sites -> 8 atoms (setting 227:1), same positions and xs
+Al2O3_sg167_Corundum.ncmat: 2 sites -> 30 atoms (setting 167:h), same positions and xs
+PbO-alpha_sg129_Litharge.ncmat: 2 sites -> 4 atoms (setting 129:2), same positions and xs
+Mg_sg194.ncmat: 1 sites -> 2 atoms (setting 194), same positions and xs
+P2 with 2-fold along c (3:c): 2 atoms, ({'position': (0.1, 0.2, 0.3), 'multiplicity': 2},) setting 3:c
+  245 hkl families, all with the 2/m (unique axis c) equivalences
+Caught expected NCBadInput('bad.ncmat space group setting choices (like "3:c") are only allowed in NCMAT v8 or later (problem in the @SPACEGROUP section ending in line 6)')
+Caught expected NCBadInput('"bad.ncmat": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "3:x" (not a setting of space group 3, the settings are: 3:b (default), 3:c, 3:a)')
+Caught expected NCBadInput('bad.ncmat can not have both @ATOMSITES and @ATOMPOSITIONS sections')
+Caught expected NCBadInput('bad.ncmat @ATOMSITES sections require a @SPACEGROUP section (problem in the @ATOMSITES section ending in line 6)')
+Invalid inputs rejected
+Sites in 225: Al 1/4 1/4 1/4, Al 1/4 1/4 1/4
+Caught expected NCBadInput('The site Al (0.25, 0.25, 0.25) is specified twice')
+Sites in 225: Al 0 0 1, Al 0 0 0
+Caught expected NCBadInput('The sites Al (0, 0, 0) and Al (0, 0, 1) are the same position')
+Sites in 225: Al 0 0 0, Cr 0 0 -1
+Caught expected NCBadInput('The sites Al (0, 0, 0) and Cr (0, 0, -1) are the same position')
+Sites in 225: Al 0 0 0, Al 1/2 1/2 0
+Caught expected NCBadInput('The sites Al (0, 0, 0) and Al (0.5, 0.5, 0) are symmetry-equivalent in space group 225 (they generate the same atom positions), so the site is specified twice')
+Sites in 227:2: Si 1/8 1/8 1/8, Si 7/8 3/8 3/8
+Caught expected NCBadInput('The sites Si (0.125, 0.125, 0.125) and Si (0.875, 0.375, 0.375) are symmetry-equivalent in space group 227:2 (they generate the same atom positions), so the site is specified twice')
+Sites in 225: Al 0 0 0, Cr 1/2 1/2 0
+Caught expected NCBadInput('The sites Al (0, 0, 0) and Cr (0.5, 0.5, 0) are symmetry-equivalent in space group 225, so both elements would occupy the same atom positions')
+Sites in 225: Al 0.003 0 0
+Caught expected NCBadInput('The site (0.003, 0, 0) is close to a special position but not on it (symmetry-equivalent positions are only 0.006 apart in fractional coordinates). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.')
+Site Al (0.0001, 0, 0) in 225: 4 atoms
+Caught expected NCBadInput('Fractions specified in DynamicInfoList are incompatible with those calculated from unit cell content forAtom(descr="Al",index=0): 0.3 vs 0.5')
+Bare 3 with positions in 3:c: setting 3:c
