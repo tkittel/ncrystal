@@ -52,6 +52,43 @@ namespace NCRYSTAL_NAMESPACE {
       streamJSONDictEntry( os, "volume", si.volume );
       streamJSONDictEntry( os, "n_atoms", si.n_atoms, JSONDictPos::LAST );
     }
+
+    void queryimpl_sites( std::ostream& os, const Info& info )
+    {
+      //["sites"]: per AtomInfo (in order), the crystallographic sites as a
+      //list of {position,multiplicity} dicts, or null if unknown:
+      if ( !info.hasAtomInfo() ) {
+        os << "null";
+        return;
+      }
+      os << '[';
+      bool first_ai = true;
+      for ( auto& ai : info.getAtomInfos() ) {
+        if ( !first_ai )
+          os << ',';
+        first_ai = false;
+        if ( ai.sites().empty() ) {
+          os << "null";
+          continue;
+        }
+        os << '[';
+        bool first = true;
+        for ( auto& site : ai.sites() ) {
+          if ( !first )
+            os << ',';
+          first = false;
+          os << "{\"position\":[";
+          streamJSON( os, site.position[0] );
+          os << ',';
+          streamJSON( os, site.position[1] );
+          os << ',';
+          streamJSON( os, site.position[2] );
+          os << "],\"multiplicity\":" << site.multiplicity << '}';
+        }
+        os << ']';
+      }
+      os << ']';
+    }
   }
 }
 
@@ -62,13 +99,16 @@ void NC::JSONQueryInfo( std::ostream& os, const Info& info,
   const auto& key = query.front();
   constexpr auto sv_list = StrView::make("list");
   constexpr auto sv_structure = StrView::make("structure");
+  constexpr auto sv_sites = StrView::make("sites");
   if ( query.size() != 1 )
     NCRYSTAL_THROW2(BadInput, "Invalid Info JSON query (no arguments"
                     " should follow key \""<<key<<"\")");
   if ( key == sv_list ) {
-    os << "[\"structure\"]";
+    os << "[\"structure\",\"sites\"]";
   } else if ( key == sv_structure ) {
     queryimpl_structure( os, info );
+  } else if ( key == sv_sites ) {
+    queryimpl_sites( os, info );
   } else {
     NCRYSTAL_THROW2(BadInput, "Invalid Info JSON query key: \""<<key<<'"');
   }
