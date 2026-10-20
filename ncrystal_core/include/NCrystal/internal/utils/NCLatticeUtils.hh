@@ -74,13 +74,13 @@ namespace NCRYSTAL_NAMESPACE {
     double ksq( int h, int k, int l ) const;
     double dspacing( int h, int k, int l ) const;//(BadInput for hkl=000)
   private:
+    //For the FMA-dispatched kernel in NCFillHKL.cc:
+    friend inline double detail_ksqFillHKLKernel( const KSqCalc&,
+                                                  int, int, int );
     unsigned m_ngroups = 0;
     double m_factor[6] = {};
     unsigned m_group_of_term[6] = {};
   };
-
-  //Calculate d-spacing from Miller index and reciprocal lattice rotation:
-  double dspacingFromHKL( int h, int k, int l, const RotMatrix& rec_lat );
 
   //Whether the space group is one of the rhombohedral (R) ones, and whether
   //a unit cell of such a space group with lattice angle alpha (degrees) is

@@ -23,6 +23,7 @@
 
 #include "NCrystal/internal/utils/NCRotMatrix.hh"
 #include "NCrystal/interfaces/NCSCOrientation.hh"
+#include "NCrystal/internal/utils/NCLatticeUtils.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -43,6 +44,7 @@ namespace NCRYSTAL_NAMESPACE {
   //Convenience wrapper, providing the reciprocal lattice matrix needed above
   //directly from aStructureInfo object:
   RotMatrix getReciprocalLatticeRot( const StructureInfo& );
+  KSqCalc getKSqCalc( const StructureInfo& );
 
 }
 

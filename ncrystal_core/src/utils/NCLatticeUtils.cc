@@ -181,16 +181,6 @@ bool NC::usesRhombohedralAxes( int sg, double alpha )
   return isRhombohedralSpaceGroup( sg ) && alpha > 0.0 && alpha != 90.0;
 }
 
-double NC::dspacingFromHKL( int h, int k, int l, const RotMatrix& rec_lat )
-{
-  if (h==0&&k==0&&l==0)
-    NCRYSTAL_THROW(BadInput,"Can not calculate d-spacing for hkl=000");
-  double ksq = ( rec_lat * Vector(h,k,l) ).mag2();
-  if (!(ksq>0.0))
-    NCRYSTAL_THROW(CalcError,"Created invalid k-vector in d-spacing calculations (bad lattice rotation provided?)");
-  return k2Pi / std::sqrt(ksq);
-}
-
 NC::KSqCalc::KSqCalc( double a, double b, double c,
                       double alpha, double beta, double gamma )
 {
@@ -277,7 +267,8 @@ NC::KSqCalc::KSqCalc( double a, double b, double c,
 //factor before multiplying, so e.g. cubic 333 and 511 both compute F1*27.
 double NC::KSqCalc::ksq( int h, int k, int l ) const
 {
-  //Only the fma chain rounds:
+  //Only the fma chain rounds. NB: Must stay identical to detail_fillhkl_ksq
+  //in NCFillHKL_FMA.hh:
   const std::int64_t H = h, K = k, L = l;//(64 bit: exact for |h| < 1e9)
   const std::int64_t intpart[6] = { H*H, K*K, L*L, H*K, H*L, K*L };
   std::int64_t intsum[7] = { 0, 0, 0, 0, 0, 0, 0 };//[6] collects dropped terms
