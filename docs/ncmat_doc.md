@@ -419,10 +419,12 @@ written here, no spaces allowed).
 As mentioned, it is since *NCMAT v2* possible to omit all of the @SPACEGROUP,
 @CELL and @ATOMPOSITIONS sections, in order to describe non-crystalline
 materials. If at least one of the @CELL and @ATOMPOSITIONS is present, they must
-both be present. The @DEBYETEMPERATURE section should likewise never be specified if
-there are no @CELL/@ATOMPOSITION sections in the file, and is also required if there
-are @CELL/@ATOMPOSITIONS in the file (as will be mentioned below this changes in
-*NCMAT v4* where the @DEBYETEMPERATURE section becomes optional in some cases).
+both be present. Crystalline materials are thus exactly those with a @CELL
+section. The @DEBYETEMPERATURE section should likewise never be specified if
+there are no @CELL/@ATOMPOSITION sections in the file, and is also required if
+there are @CELL/@ATOMPOSITIONS in the file (as will be mentioned below this
+changes in *NCMAT v4* where the @DEBYETEMPERATURE section becomes optional in
+some cases).
 
 ### The @ATOMPOSITIONS section supports fractions ###
 
@@ -762,10 +764,10 @@ instance:
   debye_temp 350
 ```
 
-Note that files for crystalline materials (those having @CELL and @ATOMPOSITIONS
-sections) which do not have a @DEBYETEMPERATURE section, are instead required to
-have all @DYNINFO sections being of type *vdos* or *vdosdebye*. This restriction
-is needed to ensure adequate information required for Debye Waller factor
+Note that files for crystalline materials (those having a @CELL section) which
+do not have a @DEBYETEMPERATURE section, are instead required to have all
+@DYNINFO sections being of type *vdos* or *vdosdebye*. This restriction is
+needed to ensure adequate information required for Debye Waller factor
 estimation in all crystalline materials.
 
 ## The @STATEOFMATTER section ##
@@ -781,12 +783,12 @@ illustrated by the following example:
   liquid
 ```
 
-Crystalline materials (those having @CELL and @ATOMPOSITIONS sections) or
-materials where one or more @DYNINFO sections are of *vdos* or *vdosdebye* type,
-are automatically classified as *solid*, so for such materials the
-@STATEOFMATTER section is optional. It can nonetheless be provided, but is then
-only allowed to specify the state as *solid*. Future NCMAT versions might change
-this requirement (for instance to allow VDOS usage for liquids).
+Crystalline materials (those having a @CELL section) or materials where one or
+more @DYNINFO sections are of *vdos* or *vdosdebye* type, are automatically
+classified as *solid*, so for such materials the @STATEOFMATTER section is
+optional. It can nonetheless be provided, but is then only allowed to specify
+the state as *solid*. Future NCMAT versions might change this requirement (for
+instance to allow VDOS usage for liquids).
 
 ## Effect of state of matter on NCrystal physics modelling #
 
@@ -886,8 +888,61 @@ effective temperature information. This is of particular benefit for files using
 scattering kernels (type *scatknl*), which can now both be used in crystalline
 materials and provide their own displacement and effective temperature data,
 rather than relying on the automatic estimation of these quantities directly
-from the kernels. Additionally, rules concerning the @STATEOFMATTER sections
-have been updated and the @DEBYETEMPERATURE section removed.
+from the kernels. Additionally, rules concerning the @STATEOFMATTER and
+@SPACEGROUP sections have been updated, the @DEBYETEMPERATURE section is no
+longer allowed, and a new @ATOMSITES section is introduced.
+
+## The @SPACEGROUP section accepts a setting ##
+
+Space group numbers only identify the symmetry up to a choice of setting (origin
+choice, unique axis and cell choice of monoclinic groups, axis permutation of
+orthorhombic groups, hexagonal or rhombohedral axes of the rhombohedral groups).
+Therefore, *NCMAT v8* tightens the requirements to the symmetry specification in
+the @SPACEGROUP section by requiring the specific setting to be uniquely
+identified. Thus, for the 90 space groups that have more than one setting the
+setting must be specified. The settings supported are those of Table A1.4.2.7 of
+International Tables for Crystallography Volume B, each identified there by a
+choice code, and the setting must be declared by appending this code to the
+number:
+
+```
+@SPACEGROUP
+  227:2
+```
+
+Other examples are `14:c1` (unique axis c, cell choice 1), `62:cab` (axis
+permutation), and `166:r` (rhombohedral axes). The declared setting must be a
+valid setting of the number. The 140 space group numbers which only have a
+single setting must still be specified with just the space group number. In all
+cases, the space group setting must be consistent with the @CELL layout and with
+the atom positions if such are specified via the @ATOMPOSITIONS section.
+
+## The @ATOMSITES section ##
+
+The new @ATOMSITES section is an optional alternative to the @ATOMPOSITIONS
+section, in which just one position per crystallographic site (i.e. per orbit of
+the space group) is listed. The @ATOMSITES section is only allowed in files with
+@CELL and @SPACEGROUP sections, and a file can not contain both an @ATOMSITES
+and an @ATOMPOSITIONS section. The syntax for specification of positions is
+similar to that of the @ATOMPOSITIONS, and the fractions in the @DYNINFO
+sections must still be consistent with the generated numbers of atoms once they
+have been expanded to the full list by the symmetry operations of the declared
+space group setting. Sites on special positions should be given precisely,
+preferably as exact fractions (e.g. `1/3` rather than `0.333`), since a site
+close to a special position without clearly being on it might be rejected.
+
+As an example, diamond silicon can be given by its single site:
+
+```
+@CELL
+  cubic 5.43
+@SPACEGROUP
+  227:2
+@ATOMSITES
+  Si 1/8 1/8 1/8
+```
+
+Here the site is expanded to the 8 atoms of the unit cell.
 
 ## Changes for the @DYNINFO section ##
 
@@ -926,12 +981,12 @@ using the `temperature` keyword in @DYNINFO sections of `scatknl` type, or in a
 Previously, only @DYNINFO sections of type *vdosdebye* allowed specification of
 `debye_temp`. It is now also allowed to add either a `debye_temp` or `msd` entry
 to sections of type *scatknl* - but only when the file clearly describes a solid
-material: those that are crystalline (having @CELL and @ATOMPOSITIONS sections)
-or have an explicit @STATEOFMATTER `solid` declaration. This is intended to
-allow materials whose dynamic information comes as pre-calculated scattering
-kernels to also support elastic scattering. The two keywords remain disallowed
-in sections of any other type; in particular, the displacement information of a
-*vdos* section always derives from the VDOS curve itself.
+material: those that are crystalline (having a @CELL section) or have an
+explicit @STATEOFMATTER `solid` declaration. This is intended to allow materials
+whose dynamic information comes as pre-calculated scattering kernels to also
+support elastic scattering. The two keywords remain disallowed in sections of
+any other type; in particular, the displacement information of a *vdos* section
+always derives from the VDOS curve itself.
 
 When a solid material has a @DYNINFO section of type *scatknl* without an `msd`
 or `debye_temp` field, NCrystal will automatically analyse the kernel itself in
@@ -961,12 +1016,12 @@ value must be at least as large as the *temperature* field of the section.
 
 ## Crystalline materials with scattering kernels ##
 
-The *NCMAT v5* restriction that crystalline materials (those having @CELL and
-@ATOMPOSITIONS sections) without a @DEBYETEMPERATURE section must have all
-@DYNINFO sections of type *vdos* or *vdosdebye*, is relaxed: sections of type
-*scatknl* are now also allowed, with the mean-squared displacement information
-needed for Debye-Waller factors either provided explicitly via the `msd` or
-`debye_temp` keywords, or confidently inferred from the kernel data itself.
+The *NCMAT v5* restriction that crystalline materials (those having a @CELL
+section) without a @DEBYETEMPERATURE section must have all @DYNINFO sections of
+type *vdos* or *vdosdebye*, is relaxed: sections of type *scatknl* are now also
+allowed, with the mean-squared displacement information needed for Debye-Waller
+factors either provided explicitly via the `msd` or `debye_temp` keywords, or
+confidently inferred from the kernel data itself.
 
 In summary, the complete *NCMAT v8* rule is thus: crystalline materials must
 have all @DYNINFO sections of type *vdos*, *vdosdebye*, or *scatknl*, with the
@@ -980,14 +1035,13 @@ NCrystal refuses to analyse confidently).
 
 ## The @STATEOFMATTER section is now mandatory for non-crystalline materials ##
 
-Starting with *NCMAT v8*, non-crystalline materials (those without @CELL and
-@ATOMPOSITIONS sections) must contain a @STATEOFMATTER section explicitly
-declaring the state of matter. Crystalline materials are always solids and,
-as before, can either omit the section or declare the state as `solid`. Thus,
-no *NCMAT v8* material has an unknown state of matter, removing any ambiguity
-as to which materials are solids - which matters more than before, given the
-new elastic physics of solid materials with *scatknl* dynamics described
-above.
+Starting with *NCMAT v8*, non-crystalline materials (those without a @CELL
+section) must contain a @STATEOFMATTER section explicitly declaring the state of
+matter. Crystalline materials are always solids and, as before, can either omit
+the section or declare the state as `solid`. Thus, no *NCMAT v8* material has an
+unknown state of matter, removing any ambiguity as to which materials are
+solids - which matters more than before, given the new elastic physics of solid
+materials with *scatknl* dynamics described above.
 
 ## The @DEBYETEMPERATURE section is removed ##
 
@@ -1001,27 +1055,6 @@ keywords, and whose atoms previously got the Debye-Waller information needed
 for Bragg diffraction from the @DEBYETEMPERATURE section) can no longer be
 used in crystalline materials.
 
-## The @SPACEGROUP section accepts a setting ##
-
-Space group numbers only identify the symmetry up to a choice of setting
-(origin choice, unique axis and cell choice of monoclinic groups, axis
-permutation of orthorhombic groups, hexagonal or rhombohedral axes of the
-rhombohedral groups). The settings are those of Table A1.4.2.7 of
-International Tables for Crystallography Volume B, each identified there by
-a choice code. In *NCMAT v8* files the setting can be declared by
-appending this code to the number:
-
-```
-@SPACEGROUP
-  227:2
-```
-
-Other examples are `14:c1` (unique axis c, cell choice 1), `62:cab` (axis
-permutation), and `166:r` (rhombohedral axes). The declared setting must be
-a setting of the number and match the cell (hexagonal versus rhombohedral
-axes), and the atom positions must have its symmetry. With a bare number,
-the setting is deduced from the atom positions.
-
 # EMACS Syntax highlighting #
 
 If using EMACS, add the following to your ~/.emacs configuration file to enable
@@ -1030,8 +1063,9 @@ a basic syntax highlighting of .ncmat files:
 ```
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Major mode for .ncmat files:
-(setq ncmat-sections '("CELL" "ATOMPOSITIONS" "SPACEGROUP" "DEBYETEMPERATURE" "DYNINFO" "TEMPERATURE"
-                       "DENSITY" "ATOMDB" "STATEOFMATTER" "OTHERPHASES" "CUSTOM_[A-Z]+"))
+(setq ncmat-sections '("CELL" "ATOMPOSITIONS" "ATOMSITES" "SPACEGROUP"
+                       "DEBYETEMPERATURE" "DYNINFO" "TEMPERATURE" "DENSITY"
+                       "ATOMDB" "STATEOFMATTER" "OTHERPHASES" "CUSTOM_[A-Z]+"))
 (setq ncmat-fields '("lengths" "angles" "cubic" "element" "fraction" "type"
                      "debye_temp" "temperature" "msd" "at_temperature"
                      "effective_temperature" "sab_scaled" "sab"
