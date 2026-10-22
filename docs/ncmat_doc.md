@@ -101,17 +101,17 @@ number is given as a single integer with a value from 1 to 230.
 The unit cell must be given in one of the standard settings of the space group,
 specifically those listed for the space group number in Table A1.4.2.7 of
 International Tables for Crystallography Volume B. In *NCMAT v8* files the
-setting can also be declared explicitly (see the section "The @SPACEGROUP
-section accepts a setting" further down).
+setting is declared explicitly (see the section "The @SPACEGROUP section accepts
+a setting" further down).
 
 Note that NCrystal releases up to 4.4.6 always assumed the default setting of
 the number (the first one listed in that table, e.g. unique axis b for the
 monoclinic space groups 3-15 and hexagonal axes for the rhombohedral space
 groups 146, 148, 155, 160, 161, 166 and 167), without checking the atom
-positions against the symmetry. From NCrystal 5.0.0, the setting is deduced
-from the cell and the atom positions among all the standard settings of the
-number, and files whose atom positions do not have the symmetry of the space
-group in any of these settings are rejected.
+positions against the symmetry. From NCrystal 5.0.0, the setting is deduced from
+the cell and the atom positions among all the standard settings of the number,
+and files whose atom positions do not have the symmetry of the space group in
+any of these settings are rejected.
 
 ## The @DEBYETEMPERATURE section ##
 
@@ -897,25 +897,26 @@ longer allowed, and a new @ATOMSITES section is introduced.
 Space group numbers only identify the symmetry up to a choice of setting (origin
 choice, unique axis and cell choice of monoclinic groups, axis permutation of
 orthorhombic groups, hexagonal or rhombohedral axes of the rhombohedral groups).
-Therefore, *NCMAT v8* tightens the requirements to the symmetry specification in
+Therefore, *NCMAT v8* tightens the requirements on the symmetry specification in
 the @SPACEGROUP section by requiring the specific setting to be uniquely
-identified. Thus, for the 90 space groups that have more than one setting the
-setting must be specified. The settings supported are those of Table A1.4.2.7 of
-International Tables for Crystallography Volume B, each identified there by a
-choice code, and the setting must be declared by appending this code to the
-number:
+identified. Consequently, for the 90 space group numbers that have more than one
+setting, the setting must always be specified explicitly.
 
-```
-@SPACEGROUP
-  227:2
-```
+The 140 space group numbers which only have a single setting must still be
+specified with just the space group number. In all cases, the space group
+setting must be consistent with the @CELL layout and with the atom positions
+specified in the @ATOMSITES or @ATOMPOSITIONS section.
 
-Other examples are `14:c1` (unique axis c, cell choice 1), `62:cab` (axis
-permutation), and `166:r` (rhombohedral axes). The declared setting must be a
-valid setting of the number. The 140 space group numbers which only have a
-single setting must still be specified with just the space group number. In all
-cases, the space group setting must be consistent with the @CELL layout and with
-the atom positions if such are specified via the @ATOMPOSITIONS section.
+The settings are those of Table A1.4.2.7 of International Tables for
+Crystallography Volume B, where the settings of the 90 space group numbers with
+several settings are identified by the choice codes in the first column. In
+these cases, the setting must be declared by appending this code to the number,
+separated by a colon, like `166:h` (in lower case and without spaces). The table
+leaves the default setting of the 46 orthorhombic numbers whose other settings
+are axis permutations (17, 18, 20, 21, 25-46, 49, 51-58, 60-67 and 72-74)
+without a code, so these are written with the explicit code `abc` defined in the
+footnote of the table (e.g. `62:abc`, with the permuted settings as `62:ba-c`,
+`62:cab`, ...).
 
 ## The @ATOMSITES section ##
 
