@@ -1419,6 +1419,20 @@ _sg('225',''),
 _sg('225','',v='v7'),
 _v8_vdebye('debye_temp 400\n').replace('@DYNINFO','@ATOMPOSITIONS\nAl 0 0 0\n@DYNINFO'),
 _v8_vdebye('debye_temp 400\n').replace('@DYNINFO','@ATOMSITES\nAl 0 0 0\n@DYNINFO'),
+#Settings policy (v8): explicit setting choice exactly for the numbers with
+#several settings:
+(_sg('227',v='v7'),),
+(_sg('62:abc'),),
+_sg('227'),
+_sg('62'),
+_sg('14'),
+_sg('225:1'),
+_sg('225:abc'),
+#Setting choice codes are case-sensitive (v8):
+_sg('166:H'),
+_sg('166:R'),
+_sg('62:CAB'),
+_sg('14:C1'),
 ]
 
 #should support only \r\n and \n, disallow \r unless it is immediately followed by \n (in which case it is ignore)

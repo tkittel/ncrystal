@@ -1,5 +1,5 @@
 P2 with 2-fold along c (3:c): 2 atoms, setting 3:c
   245 hkl families, all with the 2/m (unique axis c) equivalences
-Caught expected NCBadInput('p2c.ncmat space group setting choices (like "3:c") are only allowed in NCMAT v8 or later (problem in the @SPACEGROUP section ending in line 6)')
+Caught expected NCBadInput('"p2c.ncmat": problem while decoding the @SPACEGROUP entry in line 6 : space group setting choices (like "3:c") are only allowed in NCMAT v8 or later')
 Caught expected NCBadInput('"p2c.ncmat": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "3:x" (not a setting of space group 3, the settings are: 3:b (default), 3:c, 3:a)')
 Caught expected NCBadInput('The declared space group setting is 3:b, but the atom positions do not have its symmetry (largest deviation of a symmetry image from an atom of the same type: 0.4 in fractional coordinates). The positions are consistent with the setting 3:c, which must then be declared instead (the settings of space group 3 are: 3:b (default), 3:c (consistent with the positions), 3:a).')

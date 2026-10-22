@@ -405,8 +405,12 @@ def test_spacegroups( spacegroups, seed = 99 ):
         except RuntimeError:
             s = cifgen.random_structure( rng, sg, max_atoms = 200 )
         ncmat = compose( s.cellpars, [ (e,*p) for e,p in s.atoms ] )
+        #(NCMAT v8: the default setting is spelled out for numbers with
+        #several settings, e.g. "3:b"):
+        from NCrystalDev.misc import evaluate_query
+        sgspec = evaluate_query( ['util','sgsym','relaxed',str(sg)] )['spacegroup']
         ncmat = ncmat.replace( '@ATOMPOSITIONS',
-                               f'@SPACEGROUP\n  {sg}\n@ATOMPOSITIONS' )
+                               f'@SPACEGROUP\n  {sgspec}\n@ATOMPOSITIONS' )
         dcut = safe_dcutoff( s.cellpars, 120 )
         info = load_info( ncmat, dcut )
         ntot += check_cell( f'SG-{sg}', info, dcut )
