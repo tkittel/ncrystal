@@ -686,8 +686,11 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
     //==> Cell layout (structure info)
     StructureInfo& si = builder.unitcell.value().structinfo;
     si.spacegroup = data_hasSpaceGroup ? data.spacegroup : 0;
-    if ( data_hasSpaceGroup && data.hasSpaceGroupSetting() ) {
-      //(v8+) a declared setting, validated when parsing:
+    if ( data_hasSpaceGroup && data.version >= 8 ) {
+      //NCMAT v8: the entry is unambiguous (strict parsing, validated when
+      //parsing), so the setting is declared and the positions are checked
+      //against exactly it. For files before v8, InfoBuilder deduces the
+      //setting from the positions:
       si.spacegroup_setting = SpaceGroup( data.spacegroup_spec,
                                           SpaceGroupParseMode::Strict ).settingIdx();
     }
