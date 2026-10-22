@@ -1303,7 +1303,7 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 
 
 ==> Test 319
-==> Correct! NCBadInput: (anonymous TextData, 128bytes, type=ncmat) space group setting choices (like "227:2") are only allowed in NCMAT v8 or later (problem in the @SPACEGROUP section ending in line 5)
+==> Correct! NCBadInput: "(anonymous TextData, 128bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : space group setting choices (like "227:2") are only allowed in NCMAT v8 or later
 
 
 ==> Test 320
@@ -1416,6 +1416,50 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 
 ==> Test 347
 ==> Correct! NCBadInput: (anonymous TextData, 143bytes, type=ncmat) @ATOMSITES sections require a @SPACEGROUP section (problem in the @ATOMSITES section ending in line 7)
+
+
+==> Test 348
+==> Ok.
+
+
+==> Test 349
+==> Ok.
+
+
+==> Test 350
+==> Correct! NCBadInput: "(anonymous TextData, 126bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "227" (space group 227 has several settings, so one of them must be specified: 227:1 (default), 227:2)
+
+
+==> Test 351
+==> Correct! NCBadInput: "(anonymous TextData, 145bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "62" (space group 62 has several settings, so one of them must be specified: 62:abc (default), 62:ba-c, 62:cab, 62:-cba, 62:bca, 62:a-cb)
+
+
+==> Test 352
+==> Correct! NCBadInput: "(anonymous TextData, 145bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "14" (space group 14 has several settings, so one of them must be specified: 14:b1 (default), 14:b2, 14:b3, 14:c1, 14:c2, 14:c3, 14:a1, 14:a2, 14:a3)
+
+
+==> Test 353
+==> Correct! NCBadInput: "(anonymous TextData, 128bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "225:1" (space group 225 has only one setting, which is written as just "225")
+
+
+==> Test 354
+==> Correct! NCBadInput: "(anonymous TextData, 130bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "225:abc" (space group 225 has only one setting, which is written as just "225")
+
+
+==> Test 355
+==> Correct! NCBadInput: "(anonymous TextData, 148bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "166:H" (setting choice codes are case-sensitive and lower case, change it to "166:h" if that is the intention)
+
+
+==> Test 356
+==> Correct! NCBadInput: "(anonymous TextData, 148bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "166:R" (setting choice codes are case-sensitive and lower case, change it to "166:r" if that is the intention)
+
+
+==> Test 357
+==> Correct! NCBadInput: "(anonymous TextData, 149bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "62:CAB" (setting choice codes are case-sensitive and lower case, change it to "62:cab" if that is the intention)
+
+
+==> Test 358
+==> Correct! NCBadInput: "(anonymous TextData, 148bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "14:C1" (setting choice codes are case-sensitive and lower case, change it to "14:c1" if that is the intention)
 
 Loading refnc1/Ag_sg225.ncmat
 Loading refnc1/Al2O3_sg167_Corundum.ncmat
