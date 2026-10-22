@@ -672,14 +672,18 @@ void NC::NCMATParser::handleSectionData_SPACEGROUP(const Parts& parts, unsigned 
   }
   if ( m_data.spacegroup != 0 || parts.size()>1 )
     NCRYSTAL_THROW2(BadInput,descr()<<": multiple entries specified in @SPACEGROUP section in line "<<lineno<<" (requires just a single number)");
-  //"<number>" or (v8+) "<number>:<setting choice>", e.g. "227:2". The
-  //number is extracted here with relaxed parsing (so a bare number is
-  //accepted for any version); validateSpaceGroup() applies the rules of
-  //the file's version:
+  //"<number>" before v8. From v8 parsed strictly, i.e. "<number>:<choice>"
+  //(e.g. "227:2") for numbers with several settings, a bare number otherwise:
   m_data.spacegroup_spec = parts.at(0);
   try {
+    if ( m_data.version < 8 && contains( m_data.spacegroup_spec, ':' ) )
+      NCRYSTAL_THROW2(BadInput,"space group setting choices (like \""
+                      <<m_data.spacegroup_spec
+                      <<"\") are only allowed in NCMAT v8 or later");
+    auto mode = ( m_data.version >= 8 ? SpaceGroupParseMode::Strict
+                                      : SpaceGroupParseMode::Relaxed );
     m_data.spacegroup = static_cast<int>( SpaceGroup( m_data.spacegroup_spec,
-                                                      SpaceGroupParseMode::Relaxed ).number() );
+                                                      mode ).number() );
   } catch (Error::BadInput&e) {
     NCRYSTAL_THROW2(BadInput,descr()<<": problem while decoding the @SPACEGROUP entry in line "<<lineno<<" : "<<e.what());
   }

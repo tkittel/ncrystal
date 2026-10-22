@@ -478,7 +478,9 @@ class NCMATComposerImpl:
             return ''
         c = cellsg
         spacegroup = c.get('spacegroup',None)
-        #(with sites, the setting must be declared):
+        #With sites (NCMAT v8), the setting is written in its canonical form
+        #("227:1", "14:b1", "17", "17:cab"), as v8 requires explicit choices
+        #for the numbers whose default setting has a choice code:
         sgstr = atomsites['spacegroup_setting'] if atomsites else spacegroup
         def fmt( x ):
             return _fmtprecisenum( x, strip_leading_zero = False )
