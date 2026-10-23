@@ -193,6 +193,16 @@ NCS::SABBetaStripSampler::calcStripBound( double b0, double b1,
   return { { b0, b1, a0, a1, smax }, ia0, ia1 };
 }
 
+std::vector<NCS::SABBetaStripSampler::StripBound>
+NCS::SABBetaStripSampler::stripBounds() const
+{
+  std::vector<StripBound> res;
+  res.reserve( m_strips.size() );
+  for ( auto& s : m_strips )
+    res.push_back( calcStripBound( s.b0, s.b1, s.ib ).bound );
+  return res;
+}
+
 double NCS::SABBetaStripSampler::evalSCell( double alpha, double beta,
                                             std::size_t ia,
                                             std::size_t ib ) const

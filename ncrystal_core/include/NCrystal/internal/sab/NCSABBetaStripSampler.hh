@@ -85,6 +85,12 @@ namespace NCRYSTAL_NAMESPACE {
         return m_totalWeight * 4.0 * std::sqrt( e ) / integralWithinKB;
       }
 
+      //Rectangle [b0,b1]x[a0,a1] and S bound of each strip used (strips
+      //without S>0 are dropped), from the same calcStripBound calls as in the
+      //constructor. For tests:
+      struct StripBound { double b0, b1, a0, a1, smax; };
+      std::vector<StripBound> stripBounds() const;
+
     private:
       //Strip within beta cell ib, with alpha cells ia0..ia1 covering KB(e):
       struct Strip {
@@ -93,9 +99,7 @@ namespace NCRYSTAL_NAMESPACE {
       };
       double evalSCell( double alpha, double beta,
                         std::size_t ia, std::size_t ib ) const;
-      //Strip rectangle [b0,b1]x[a0,a1] and S bound, plus the alpha cells
-      //containing a0 and a1:
-      struct StripBound { double b0, b1, a0, a1, smax; };
+      //Strip bound, plus the alpha cells containing a0 and a1:
       struct StripCalc { StripBound bound; std::uint32_t ia0, ia1; };
       StripCalc calcStripBound( double b0, double b1, std::uint32_t ib ) const;
       shared_obj<const SABData> m_sab;
