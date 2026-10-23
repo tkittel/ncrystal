@@ -118,6 +118,18 @@ def main():
     test_cli('list')
     test_cli('mmc','list')
     test_cli('util','list')
+    test_cli('sab','list')
+    test_cli('vdos','list')
+    for k in ('sab','vdos'):
+        with ensure_error(NCBadInput,
+                          f'Invalid {k.upper()} JSON query: ["{k}","list","x"]'
+                          f' (no arguments should come after: ["{k}","list"])'):
+            test(k,'list','x')
+    with ensure_error(NCBadInput,
+                      'Invalid SAB JSON query: ["sab","surveyor","@1@2@x","@1@2"]'
+                      ' (correct usage: ["sab","surveyor",ALPHAGRID,BETAGRID],'
+                      " with grids encoded as '@val1@..@valn')"):
+        test('sab','surveyor','@1@2@x','@1@2')
     test_atomsites()
     test_cli('util','wl2ekin','1.8')
     test_cli('util','ekin2wl','0.025')
