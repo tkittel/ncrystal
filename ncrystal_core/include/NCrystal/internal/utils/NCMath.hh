@@ -609,20 +609,33 @@ inline double NCrystal::nclerp(double a, double b, double t)
   return std::fma( t, b - a, a );//most accurate of the forms tried, exact at t=0
 }
 
+namespace NCRYSTAL_NAMESPACE {
+  namespace detail {
+    //1+x/2+x^2/6+...+x^6/5040 (Horner's method with std::fma throughout for
+    //reproducibility):
+    inline double expm1_smallarg_poly( double x )
+    {
+      double p = 0.00019841269841269841269841269841269841;
+      p = std::fma( x, p, 0.00138888888888888888888888888888888889 );
+      p = std::fma( x, p, 0.00833333333333333333333333333333333333 );
+      p = std::fma( x, p, 0.04166666666666666666666666666666666667 );
+      p = std::fma( x, p, 0.16666666666666666666666666666666666667 );
+      p = std::fma( x, p, 0.5 );
+      return std::fma( x, p, 1.0 );
+    }
+  }
+}
+
 inline double NCrystal::exp_smallarg_approx( double x )
 {
   //7th order taylor expansion
-  return 1.0+x*(1+x*(0.5+x*(0.16666666666666666666666666666666666667+x*(0.04166666666666666666666666666666666667
-           +x*(0.00833333333333333333333333333333333333+x*(0.00138888888888888888888888888888888889
-           +x*0.00019841269841269841269841269841269841))))));
+  return std::fma( x, detail::expm1_smallarg_poly( x ), 1.0 );
 }
 
 inline double NCrystal::expm1_smallarg_approx( double x )
 {
   //7th order taylor expansion
-  return x*(1+x*(0.5+x*(0.16666666666666666666666666666666666667+x*(0.04166666666666666666666666666666666667
-           +x*(0.00833333333333333333333333333333333333+x*(0.00138888888888888888888888888888888889
-           +x*0.00019841269841269841269841269841269841))))));
+  return x * detail::expm1_smallarg_poly( x );
 }
 
 inline double NCrystal::exp_negarg_approx( double x )
