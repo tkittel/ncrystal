@@ -20,7 +20,7 @@
 
 #include "NCrystal/virtualapi/NCVirtAPIFactory.hh"
 #include "NCrystal/virtualapi/NCVirtAPI_Type1_v1.hh"
-#include "TestLib_fpe/FPE.hh"
+#include "TestLibFpe/FPE.hh"
 #include <iostream>
 #include <vector>
 #include <cmath>

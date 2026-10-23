@@ -273,18 +273,26 @@ function(
     get_filename_component(bn "${libdir}" NAME)
     string(SUBSTRING "${bn}" 4 -1 "bn")
 
+    #Test libraries are named TestLib<Name>, where <Name> is the directory
+    #name (without the lib_ prefix) with the first letter capitalised (e.g.
+    #TestLibFpe for lib_fpe), and their headers are included as
+    #"TestLib<Name>/header.hh" (no underscores, since the same names are used
+    #for simplebuild packages):
+    string( SUBSTRING "${bn}" 0 1 tmp_first )
+    string( TOUPPER "${tmp_first}" tmp_first )
+    string( SUBSTRING "${bn}" 1 -1 tmp_rest )
+    set( capbn "${tmp_first}${tmp_rest}" )
     if ( is_module )
-      set( libprefix "TestMod_" )
+      set( name "TestMod_${bn}" )
     else()
-      set( libprefix "TestLib_" )
+      set( name "TestLib${capbn}" )
     endif()
-    set( name "${libprefix}${bn}" )
     mctools_testutils_internal_getsrcfiles( srcfiles is_cxx "${libdir}" is_module )
     mctools_testutils_internal_detectlibdeps( "deplist" "${srcfiles}" )
     foreach( dep ${deplist} )
-      if ( NOT "x${dep}" STREQUAL "x${bn}" )
+      if ( NOT "x${dep}" STREQUAL "x${capbn}" )
         #Private because not headers (TODO: Add headers as explicit deps?):
-        target_link_libraries( ${bn} PRIVATE "TestLib_${dep}" )
+        target_link_libraries( ${bn} PRIVATE "TestLib${dep}" )
       endif()
     endforeach()
     if ( is_module )
@@ -323,10 +331,10 @@ function(
           "Modules can not export headers and should therefore not"
           " contain include dirs. Offending directory is: ${libdir}/include")
       else()
-        if ( NOT EXISTS "${libdir}/include/TestLib_${bn}" )
+        if ( NOT EXISTS "${libdir}/include/TestLib${capbn}" )
           message(
             FATAL_ERROR
-            "${libdir}/include does not include TestLib_${bn} subdir"
+            "${libdir}/include does not include TestLib${capbn} subdir"
           )
         endif()
         file( GLOB tmp LIST_DIRECTORIES true "${libdir}/include/*" )
@@ -334,7 +342,7 @@ function(
         if ( NOT tmp EQUAL 1 )
           message(
             FATAL_ERROR
-            "${libdir}/include can only contain an TestLib_${bn} subdir"
+            "${libdir}/include can only contain an TestLib${capbn} subdir"
           )
         endif()
         target_include_directories( ${name} PUBLIC "${libdir}/include" )
@@ -369,7 +377,7 @@ function(
     target_compile_options( ${bn} PRIVATE ${tmp_extra_cflags} )
     mctools_testutils_internal_detectlibdeps( "deplist" "${srcfiles}" "" )
     foreach( dep ${deplist} )
-      target_link_libraries( ${bn} PRIVATE "TestLib_${dep}" )
+      target_link_libraries( ${bn} PRIVATE "TestLib${dep}" )
     endforeach()
     target_link_libraries( ${bn} PRIVATE ${extra_link_libs} )
     target_include_directories( ${bn} ${extra_inc_dirs} )
@@ -457,13 +465,13 @@ endfunction()
 
 function( mctools_testutils_internal_detectlibdeps resvar files )
   #Determine dependencies on test libs by looking
-  #for '#include #"TestLib_<DEPNAME>/'
+  #for '#include #"TestLib<DEPNAME>/'
   set(deplist "")
   foreach( file ${files} )
-    file( STRINGS "${file}" inclines REGEX "^#include *\"TestLib_.*/.*\"" )
+    file( STRINGS "${file}" inclines REGEX "^#include *\"TestLib[A-Z][^/]*/.*\"" )
     foreach( entry ${inclines} )
-      string(FIND "${entry}" "\"TestLib_" loc)
-      math(EXPR loc "${loc}+9")#9 is length of '"TestLib_'
+      string(FIND "${entry}" "\"TestLib" loc)
+      math(EXPR loc "${loc}+8")#8 is length of '"TestLib'
       string(SUBSTRING "${entry}" ${loc} -1 entry)
       string(FIND "${entry}" "/" loc)
       string(SUBSTRING "${entry}" 0 ${loc} entry)
