@@ -1246,7 +1246,13 @@ namespace NCRYSTAL_NAMESPACE {
             return res;
           }
           ++res.ntries;
-          nc_assert(res.ntries<100000);
+          //Guard against endless loops in pathological cases: warn at 1e4
+          //tries, abort at 1e5:
+          if ( res.ntries == 10000 ) {
+            static Msg::WarnFirstTime wf;
+            wf("S(alpha,beta) full-cell sampling needed 10000 tries.");
+          }
+          nc_assert_always( res.ntries < 100000 );
         }
       }
 
