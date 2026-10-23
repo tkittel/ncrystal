@@ -198,7 +198,7 @@ NCS::BoundedCellSampler::sampleAlphaBeta( RNG& rng )
     optEdge.emplace();
     initEdge(optEdge.value(),offset);
   }
-  const double overlay_val_orig = m_overlay[offset/2];
+  const double overlay_val = m_overlay[offset/2];
   const auto& edge = optEdge.value();
   const auto& c = m_cell;
 
@@ -208,33 +208,14 @@ NCS::BoundedCellSampler::sampleAlphaBeta( RNG& rng )
 
   Result res;
   res.ntries = 0;
-  double max_overlay_val_seen = -1.0;
-  double overlay_val = overlay_val_orig;
   while ( true ) {
     ++res.ntries;
-    nc_assert_always(res.ntries< 200);//fixme _always + we should be able to
-                                      //lower this!
-#if 0
-    //FIXME: Just testing a way to limit worst performance. Instead of raising
-    //the overlay, we could also simply pick the previous best value after N
-    //tries? (where "best" includes both the actual value and the R value used
-    //for comparison.
-    if ( res.ntries == 200 && max_overlay_val_seen == 0.0 ) {
+    //Acceptance rates of ~1% occur, so only guard against endless loops:
+    if ( res.ntries == 10000 ) {
       static Msg::WarnFirstTime wf;
-      wf("S(alpha,beta) cell sampling takes unexpectedly long"
-         " to find accepted candidate.");
-      overlay_val = 0.0;
+      wf("S(alpha,beta) bounded-cell sampling needed 10000 tries.");
     }
-    //fixme: just do this at init time (for cells with huge k or 1/k), and lower
-    //cached overlay values? That way we can also use more values (e.g. 100).
-    if ( res.ntries > 50 && max_overlay_val_seen > 0.0 ) {
-      const double new_overlay = (res.ntries>20?1.2:2.0)*max_overlay_val_seen;
-      overlay_val = ncmin(overlay_val_orig,new_overlay);
-    }
-    overlay_val = ncmax(overlay_val,1.001*max_overlay_val_seen);
-#endif
-
-    nc_assert_always( res.ntries < 10000ull );
+    nc_assert_always( res.ntries < 100000 );
     double a = sampler.sample(rng);
     const double dpmb = std::sqrt(m_4e*a);
     double bl = a-dpmb;
@@ -257,7 +238,6 @@ NCS::BoundedCellSampler::sampleAlphaBeta( RNG& rng )
     //interpolation).
     double bmidheight_multdb = ( offset ? (bmid-c.b1) : (c.b2-bmid ) );
     const double actual_val = bwidth*bmidheight_multdb;
-    max_overlay_val_seen = ncmax(max_overlay_val_seen,actual_val);
     if ( rng.generate() * overlay_val > actual_val )
       continue;//reject
 
