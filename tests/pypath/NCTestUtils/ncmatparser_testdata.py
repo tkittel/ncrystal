@@ -1435,4 +1435,20 @@ _sg('62:CAB'),
 _sg('14:C1'),
 ]
 
+#egrid with 1 value (Emax), 3 values (Emin, Emax, npts with npts integral), or
+#at least 10 values (the grid itself):
+def _egrid( vals ):
+    return _v8_sk( difields='egrid '+' '.join(str(v) for v in vals)+'\n' )
+testdata += [
+    (_egrid([20.0]),),
+    (_egrid([1e-5,5.0,1000]),),
+    (_egrid([0,0,1000]),),
+    (_egrid([1e-5*2**i for i in range(10)]),),
+    (_egrid([1e-5*2**i for i in range(11)]),),
+    _egrid([1e-5,5.0]),
+    _egrid([1e-5,5.0,1000.5]),
+    _egrid([1e-5*2**i for i in range(4)]),
+    _egrid([1e-5*2**i for i in range(9)]),
+]
+
 #should support only \r\n and \n, disallow \r unless it is immediately followed by \n (in which case it is ignore)

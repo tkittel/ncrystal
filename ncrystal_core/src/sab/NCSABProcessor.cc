@@ -728,7 +728,7 @@ namespace NCRYSTAL_NAMESPACE {
             //complete egrid given directly by request, so in this case we
             //simply honour it and return it directly (we can only assume that
             //the users know what they are doing):
-            if ( !( re.size() > 10 ) )
+            if ( !( re.size() >= 10 ) )
               NCRYSTAL_THROW2(BadInput,"Invalid requested egrid (must have"
                               " length 1, 3, or >=10)");
             VectD res;
