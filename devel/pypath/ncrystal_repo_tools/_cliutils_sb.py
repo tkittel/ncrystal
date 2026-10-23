@@ -39,15 +39,11 @@ def _find_sbcmd( cmdname ):
         raise SystemExit('ERROR: Please install simple-build-system')
     return cmd
 
-def _invoke( cmdname, args, env, block = False):
+def _invoke( cmdname, args, env ):
     import subprocess
     cmd = _find_sbcmd( cmdname )
-    ev = subprocess.run([cmd]+args, env = env,
-                        capture_output = block,
-                        check = False)
+    ev = subprocess.run([cmd]+args, env = env, check = False)
     if ev.returncode != 0:
-        if block:
-            print( ev.stderr.decode() )
         raise SystemExit(ev.returncode)
 
 def mainsb( mode, is_debug, parser ):
@@ -74,6 +70,8 @@ def mainsb( mode, is_debug, parser ):
     elif mode == 'sbenv':
         _invoke( 'sbenv', args, env )
     elif mode == 'sbrun':
-        _invoke( 'unwrapped_simplebuild', ['--quiet'], env, block = True )
-        _invoke( 'sbenv', args, env )
+        #NB: Using sbrun rather than "unwrapped_simplebuild --quiet" followed
+        #by sbenv, since the latter would invoke the dynamic_generator script
+        #twice (it is invoked by each simplebuild command):
+        _invoke( 'sbrun', args, env )
     raise SystemExit(0)
