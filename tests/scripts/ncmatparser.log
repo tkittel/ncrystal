@@ -1461,6 +1461,42 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 ==> Test 358
 ==> Correct! NCBadInput: "(anonymous TextData, 148bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "14:C1" (setting choice codes are case-sensitive and lower case, change it to "14:c1" if that is the intention)
 
+
+==> Test 359
+==> Ok.
+
+
+==> Test 360
+==> Ok.
+
+
+==> Test 361
+==> Ok.
+
+
+==> Test 362
+==> Ok.
+
+
+==> Test 363
+==> Ok.
+
+
+==> Test 364
+==> Correct! NCBadInput: egrid must have either at least 10 entries or exactly 3 or 1 entries (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 365
+==> Correct! NCBadInput: egrid with 3 entries must have integral number as third entry (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 366
+==> Correct! NCBadInput: egrid must have either at least 10 entries or exactly 3 or 1 entries (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 367
+==> Correct! NCBadInput: egrid must have either at least 10 entries or exactly 3 or 1 entries (problem found in the @DYNINFO section ending in line 14)
+
 Loading refnc1/Ag_sg225.ncmat
 Loading refnc1/Al2O3_sg167_Corundum.ncmat
 Loading refnc1/Al_sg225.ncmat

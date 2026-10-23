@@ -166,7 +166,7 @@ void NC::NCMATData::DynInfo::validate( int theversion ) const
           if ( v_e.at(2) != static_cast<unsigned long>(v_e.at(2)) )
             NCRYSTAL_THROW(BadInput,"egrid with 3 entries must have integral number as third entry");
         } else if ( v_e.size() != 1 ) {
-          NCRYSTAL_THROW(BadInput,"egrid must have either more than 10 entries or exactly 3 or 1 entries");
+          NCRYSTAL_THROW(BadInput,"egrid must have either at least 10 entries or exactly 3 or 1 entries");
         }
       }
     }
