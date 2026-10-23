@@ -384,6 +384,14 @@ def main(do_plot,luxlvl,mplvl,test_select):
                       0.027532855700519426,
                       0.026748257342144074 ] },
 
+        #Steep S along alpha, KB(E) far smaller than the cell (bounded-cell
+        #acceptance rate of a few percent):
+        {'E_div_kT': 9.4e-9,'alpha': (0.0,5.1),'beta': (-0.0124,3.95),
+         'svals': [6.7e-11,4.4e-12,0.144,2.3e-10]},
+        {'E_div_kT': 0.0092,'alpha': (7.6e-5,1.15),'beta': (0.0107,5.07),
+         'svals': [7e-4,2.3e-9,0.087,2.1e-8]},
+        {'E_div_kT': 1.25e-6,'alpha': (2.7e-6,0.347),'beta': (0.0023,0.75),
+         'svals': [6.7e-6,2.1e-3,0.172,6.9e-11]},
         #Edge@b1 needs large-k treatment, while the linear edge@b2 (S=0 at
         #alpha1) is restricted to alpha values starting just above alpha1
         #(alpha1 is 1e-13 of the cell width below alpha-(E/kT,b1)):
