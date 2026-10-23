@@ -608,7 +608,7 @@ double NC::randKPowX( double k, double lnk, double R )
     constexpr double inv12 = 1.0/12.0;
     constexpr double inv24 = 1.0/24.0;
     //Horner's method with std::fma for extra reproducibility
-    const double c2 = std::fma( std::fma(4.0,R,-3.0), R, -1.0 )*R*inv12;
+    const double c2 = std::fma( 4.0 * R - 3.0, R, -1.0 )*R*inv12;
     const double c3 = std::fma( std::fma( std::fma(-6.0,R,4.0), R, 1.0 ),
                                 R, 1.0 )*R*inv24;
     const double inner1 = std::fma( u, c3, c2 );

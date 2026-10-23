@@ -405,7 +405,7 @@ namespace NCRYSTAL_NAMESPACE {
     const double c2m1 = mx2 * q;//cos(A/2)-1
     const double k = 2.0 * c2m1;
     //sin(A)=2*sin(A/2)*cos(A/2)=(k+2)*s2; cos(A)=1+k*(c2m1+2)/...:
-    *sinA = std::fma( 2.0, c2m1, 2.0 ) * s2;
+    *sinA = ( k + 2.0 ) * s2;
     *cosA = std::fma( k, std::fma( mx2, q, 2.0 ), 1.0 );
   }
 

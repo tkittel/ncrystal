@@ -241,7 +241,8 @@ NCrystal::SABUtils::interpolate_loglin_fast2_NEW(double a, double fa,
   auto flexexp = [](double xx)
   {
     //exp_smallarg_approx has 7th order Taylor, which might be faster than a
-    //library call.
+    //library call. FIXME: std::exp might differ slightly across platforms
+    //(libm implementations), consider stable_exp (check speed):
     return ncabs(xx)<0.02 ? exp_smallarg_approx(xx) : std::exp(xx);
   };
   PairDD res;
@@ -249,16 +250,18 @@ NCrystal::SABUtils::interpolate_loglin_fast2_NEW(double a, double fa,
     //choose forms most numerically stable (and with smallest flexexp arg) for x
     //near a
     const double r = (x-a) / bma;
-    const double dlf = (logfb-logfa)*r;
+    const double dl = logfb-logfa;
+    const double dlf = dl*r;
     res.first = fa * flexexp(dlf);
-    res.second = logfa+dlf;
+    res.second = std::fma( dl, r, logfa );
   } else {
     //choose forms most numerically stable (and with smallest flexexp arg) for x
     //near b
     const double s = (b-x) / bma;
-    const double dlf = (logfa-logfb)*s;
+    const double dl = logfa-logfb;
+    const double dlf = dl*s;
     res.first = fb * flexexp(dlf);
-    res.second = logfb+dlf;
+    res.second = std::fma( dl, s, logfb );
   }
   return res;
 }
