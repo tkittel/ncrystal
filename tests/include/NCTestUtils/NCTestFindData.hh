@@ -37,8 +37,11 @@ namespace nctest {
       nc_assert_always(sbld_datadir);
       std::string pkgname;
       if ( subdir ) {
-        pkgname = "NCTestData_";
+        //NB: "NCTestData" + subdir with first letter capitalised:
+        pkgname = "NCTestData";
         pkgname += subdir;
+        if ( pkgname.size() > 10 && pkgname[10] >= 'a' && pkgname[10] <= 'z' )
+          pkgname[10] = static_cast<char>( pkgname[10] - 'a' + 'A' );
       } else {
         pkgname = "NCTestUtils";
       }

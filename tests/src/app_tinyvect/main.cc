@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/utils/NCTinyVector.hh"
-#include "TestLib_fpe/FPE.hh"
+#include "TestLibFpe/FPE.hh"
 
 #include <iostream>
 #include <vector>
