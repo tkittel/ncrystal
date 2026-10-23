@@ -804,7 +804,7 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
                                       opt_nsample.value() );
   } else if ( key == sv_surveyor ) {
     const char * usage = ( "correct usage: [\"sab\",\"surveyor\",ALPHAGRID,"
-                           "BETAGRID], with grids encoded as '@val1@..@valn" );
+                           "BETAGRID], with grids encoded as '@val1@..@valn'" );
     if ( nargs != 2 )
       invalid(usage);
     auto decodeGrid = [](StrView v) -> VectD
@@ -816,7 +816,7 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
       res.reserve(vs.size());
       for ( auto& e : vs ) {
         auto val = e.toDbl();
-        if (!e.has_value())
+        if (!val.has_value())
           return {};
         res.push_back(val.value());
       }
@@ -987,7 +987,7 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
     }
   } else if ( key == sv_list ) {
     if ( nargs != 0 )
-      invalid("no arguments should come after: [\"mmc\",\"list\"]");
+      invalid("no arguments should come after: [\"sab\",\"list\"]");
     streamJSON( os, std::array<StrView,8>{ sv_analyse,
                                            sv_integschemes,
                                            sv_proc,
