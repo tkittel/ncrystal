@@ -23,7 +23,7 @@ import itertools
 import os
 
 from . import dirs
-from .cfg import cfg
+from .cfg import capitalize_first, cfg
 from .file import add_file, create_files
 
 _pydep2sblddep = { 'ase':'ASE',
@@ -73,7 +73,7 @@ def create_pkg_extratestscripts(pkgname):
 
 def create_pkg_virtualapiproject(pkgname,srcdir):
     return# NOTE: Disabling for now, gave linking issues.
-    create_pkginfo( pkgname, pkg_deps = ['TestLib_fpe'] )
+    create_pkginfo( pkgname, pkg_deps = [cfg.sbpkgname_testlib('fpe')] )
     #handle all except main and ncrystal_load.cc:
     main = srcdir.joinpath('main.cc')
     ncload = srcdir.joinpath('ncrystal_load.cc')
@@ -97,7 +97,7 @@ def create_pkg_virtualapiproject(pkgname,srcdir):
         main_content += line
     assert mainfct_count==1
 
-    main_content += ( '\n#include "TestLib_fpe/FPE.hh"\n'
+    main_content += ( '\n#include "TestLibFpe/FPE.hh"\n'
                       '\nint main() { NCTests::catch_fpe();'
                       ' return the_real_main(); }\n' )
     add_file( f'pkgs/{pkgname}/app_test/{main.name}', content=main_content )
@@ -465,11 +465,11 @@ mod.main()
         tlname = testlibdir.name[4:]
         pkgname = cfg.sbpkgname_testlib(tlname)
         testlib_pkgnames.append(pkgname)
-        incdir = testlibdir.joinpath('include',f'TestLib_{tlname}')
+        incdir = testlibdir.joinpath('include',pkgname)
         all_test_pkgs.append(pkgname)
         deps = [cfg.sbpkgname_ncrystalhh]
         if tlname=='fpe':
-            deps=[]#TestLib_fpe should not have any NCrystal deps, for the
+            deps=[]#TestLibFpe should not have any NCrystal deps, for the
                    #NCVirtualapiProject test to make sense.
         create_pkginfo(pkgname,pkg_deps=deps)
         sfs_cpp = pglob(testlibdir,'*.cc')
@@ -500,7 +500,7 @@ mod.main()
     testmods_pkgnames = []
     for moddir in pglob(dirs.testroot.joinpath('modules'),'lib_*'):
         tlname = moddir.name[4:]
-        pkgname = f'NCTestMod_{tlname}'
+        pkgname = f'NCTestMod{capitalize_first(tlname)}'
         testmods_pkgnames.append(pkgname)
         all_test_pkgs.append(pkgname)
         create_pkginfo(pkgname,
@@ -541,7 +541,7 @@ mod.main()
         if sf.is_file() and '#' not in sf.name and '~' not in sf.name:
             add_file( f'pkgs/{pkgname}/data/{sf.name}', link_target = sf )
         if sf.is_dir() and not dirs.is_empty_dir( sf ):
-            pkgname_edp = f'NCTestData_{sf.name}'
+            pkgname_edp = f'NCTestData{capitalize_first(sf.name)}'
             extra_data_pkgs.append( (pkgname_edp, sf)  )
 
     create_pkginfo( pkgname,
