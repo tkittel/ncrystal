@@ -70,6 +70,13 @@ CHANGELOG at release time, after which both files are dropped).
        result per object; structure_info/hasStructureInfo() use it,
        and structure_info gains the key spacegroup_setting ("227:2",
        "166:r", ..., or None).
+     * Requests for single-phase information on multi-phase Info objects
+       raise an error in all APIs with a message that makes sense in all
+       of them. Python Info.hklObjects() raises such errors when called
+       rather than at the first iteration. Info.isCrystalline() means
+       "has structure info" in both C++ and Python (unchanged results),
+       and InfoBuilder now requires hkl planes and unit cell structure to
+       come together in both directions.
 
 ### .laz/.lau files
 

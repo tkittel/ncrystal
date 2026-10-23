@@ -387,13 +387,14 @@ namespace NCRYSTAL_NAMESPACE {
         //are.: "Additionally, all crystalline phases will have HKL lists
         //available, and if Atom lists are available, Structure info must also
         //be available.". The latter requirements comes from the way we have set
-        //up the InfoBuilder::UnitCell struct, so we just have to check that if
-        //the unitcell field is set, hklPlanes must also be there.:
+        //up the InfoBuilder::UnitCell struct, so we just have to check that the
+        //unitcell and hklPlanes fields are either both set or both unset (so
+        //Info::isCrystalline() can simply check for structure info):
 
-        if ( in.unitcell.has_value() && ! in.hklPlanes.has_value() )
-          NCRYSTAL_THROW2(BadInput,"Info objects that have unit cell structure"
-                          " available must always have hklPlanes available as well.");
-        const bool isCrystalline = in.hklPlanes.has_value();
+        if ( in.unitcell.has_value() != in.hklPlanes.has_value() )
+          NCRYSTAL_THROW2(BadInput,"Info objects must have either both unit cell"
+                          " structure and hklPlanes available, or neither.");
+        const bool isCrystalline = in.unitcell.has_value();
 
         //State of matter:
         validateAndCompleteStateOfMatter( isCrystalline, in.dynamics, in.stateOfMatter );
