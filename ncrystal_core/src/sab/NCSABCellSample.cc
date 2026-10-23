@@ -359,6 +359,14 @@ NCS::BoundedCellSampler::prepareBCSData( double probability_b1_edge,
     double a2 = cell.a2;
     //find restricted S/logS values if relevant:
     auto s_interp = [&cell](double a,int offset) {
+      //Only one edge might need large k treatment, the other might have S=0
+      //values and thus linear interpolation (with logS=0 where S=0):
+      if ( !( ncmin( cell.S[offset], cell.S[offset+1] ) > 0.0 ) ) {
+        const double s = interpolate_linlin_NEW( cell.a1, cell.S[offset],
+                                                 cell.a2, cell.S[offset+1],
+                                                 a );
+        return PairDD{ s, ( s > 0.0 ? std::log( s ) : 0.0 ) };
+      }
       return interpolate_loglin_fast2_NEW( cell.a1, cell.S[offset],
                                            cell.a2, cell.S[offset+1],
                                            a,
