@@ -799,12 +799,16 @@ NC::groupPositionsIntoOrbits( const SGSymmetry& sym,
         }
       }
       if ( best == n )
+        //Print coordinates with fewer digits, since rounding noise in the
+        //last digit (of the image, or of computed input positions) could
+        //otherwise show up:
         NCRYSTAL_THROW2(BadInput,"Atom positions do not form complete orbits"
                         " of the space group setting (no position near the"
-                        " symmetry image ("<<fmt(img.x())<<", "<<fmt(img.y())
-                        <<", "<<fmt(img.z())<<") of ("<<fmt(positions[i].x())
-                        <<", "<<fmt(positions[i].y())<<", "
-                        <<fmt(positions[i].z())<<"))");
+                        " symmetry image ("<<fmt(img.x(),"%.6g")<<", "
+                        <<fmt(img.y(),"%.6g")<<", "<<fmt(img.z(),"%.6g")
+                        <<") of ("<<fmt(positions[i].x(),"%.6g")
+                        <<", "<<fmt(positions[i].y(),"%.6g")<<", "
+                        <<fmt(positions[i].z(),"%.6g")<<"))");
       assigned[best] = true;
       members.push_back( best );
     }

@@ -1780,7 +1780,7 @@ All OK
   227:2: 24 positions in 2 orbits of sizes 8 16
   194: 14 positions in 2 orbits of sizes 12 2
   14:c1: 6 positions in 2 orbits of sizes 2 4
-  225 with one position missing -> BadInput: Atom positions do not form complete orbits of the space group setting (no position near the symmetry image (0.15439999999999998, 0.2345, 0.37660000000000005) of (1.8766, 0.8456, 0.2655))
+  225 with one position missing -> BadInput: Atom positions do not form complete orbits of the space group setting (no position near the symmetry image (0.1544, 0.2345, 0.3766) of (1.8766, 0.8456, 0.2655))
 All OK
 ==== Structure symmetry check ====
   68:1ba-c has the same operations as 68:1
