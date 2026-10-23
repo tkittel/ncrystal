@@ -228,8 +228,8 @@ void NC::VDOS::JSONQuery( std::ostream& os, const Query& query )
 
   } else if ( key == sv_list ) {
     if ( nargs != 0 )
-      invalid("no arguments should come after: [\"mmc\",\"list\"]");
-    streamJSON( os, std::array<StrView,2>{ sv_expand } );
+      invalid("no arguments should come after: [\"vdos\",\"list\"]");
+    streamJSON( os, std::array<StrView,1>{ sv_expand } );
   } else {
     invalid(nullptr);
   }

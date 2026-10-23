@@ -104,6 +104,28 @@ Caught expected NCBadInput('Invalid JSON query key: "foo"')
  'eqrefl',
  'sgsym']
 ===========================================
+============= CLI >>sab list<< ====================
+['analyse',
+ 'integschemes',
+ 'proc',
+ 'refeval',
+ 'refsample',
+ 'samplepb',
+ 'sglcell',
+ 'surveyor']
+===========================================
+============= CLI >>vdos list<< ====================
+['expand']
+===========================================
+
+>>> Sending query: ['sab', 'list', 'x']
+Caught expected NCBadInput('Invalid SAB JSON query: ["sab","list","x"] (no arguments should come after: ["sab","list"])')
+
+>>> Sending query: ['vdos', 'list', 'x']
+Caught expected NCBadInput('Invalid VDOS JSON query: ["vdos","list","x"] (no arguments should come after: ["vdos","list"])')
+
+>>> Sending query: ['sab', 'surveyor', '@1@2@x', '@1@2']
+Caught expected NCBadInput('Invalid SAB JSON query: ["sab","surveyor","@1@2@x","@1@2"] (correct usage: ["sab","surveyor",ALPHAGRID,BETAGRID], with grids encoded as \'@val1@..@valn\')')
 227:2 site Si,0.125,0.125,0.125 -> 8 positions
 
 >>> Sending query: ['util', 'atomsites', 'strict', '227:2', 'Si,0.125,0.125,0.125', 'Si,0.875,0.875,0.875', 'Si,0.875,0.375,0.375', 'Si,0.375,0.875,0.375', 'Si,0.375,0.375,0.875', 'Si,0.125,0.625,0.625', 'Si,0.625,0.125,0.625', 'Si,0.625,0.625,0.125']
