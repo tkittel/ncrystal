@@ -128,9 +128,14 @@ class HKLEntry:
         return self.__mult
 
 def _iter_hklobjects( info ):
+    #The two calls below raise errors for multiphase or non-crystalline
+    #materials. This function is not a generator (only _gen is), so they do so
+    #when it is called rather than at the first iteration:
     hklinfotype = info.hklInfoType()
     issymeqv = info.hklIsSymEqvGroup()
-    for hh,kk,ll,mult,dsp,fsq in info.hklList(all_indices=True):
-        yield HKLEntry(hh,kk,ll,mult,dsp,fsq,
-                       hklinfotype,issymeqv)
+    def _gen():
+        for hh,kk,ll,mult,dsp,fsq in info.hklList(all_indices=True):
+            yield HKLEntry(hh,kk,ll,mult,dsp,fsq,
+                           hklinfotype,issymeqv)
+    return _gen()
 

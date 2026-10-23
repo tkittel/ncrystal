@@ -32,7 +32,7 @@ namespace NCRYSTAL_NAMESPACE {
 
 double NC::Info::hklDMinVal() const
 {
-  singlePhaseOnly(__func__);
+  singlePhaseOnly("HKL info");
   nc_assert(hasHKLInfo());
   auto& hklList = m_data->hklList();
   if (hklList.empty())
@@ -42,7 +42,7 @@ double NC::Info::hklDMinVal() const
 
 double NC::Info::hklDMaxVal() const
 {
-  singlePhaseOnly(__func__);
+  singlePhaseOnly("HKL info");
   nc_assert(hasHKLInfo());
   auto& hklList = m_data->hklList();
   if (hklList.empty())
@@ -88,7 +88,7 @@ NC::DI_VDOSDebye::~DI_VDOSDebye() = default;
 
 unsigned NC::Info::countCustomSections(const NC::Info::CustomSectionName& sectionname ) const
 {
-  singlePhaseOnly(__func__);
+  singlePhaseOnly("custom section data");
   unsigned i = 0;
   for (const auto& e: m_data->custom) {
     if (e.first==sectionname)
@@ -100,7 +100,7 @@ unsigned NC::Info::countCustomSections(const NC::Info::CustomSectionName& sectio
 const NC::Info::CustomSectionData& NC::Info::getCustomSection( const NC::Info::CustomSectionName& name,
                                                                unsigned index ) const
 {
-  singlePhaseOnly(__func__);
+  singlePhaseOnly("custom section data");
   unsigned i = 0;
   for (const auto& e: m_data->custom) {
     if (e.first!=name)
@@ -169,10 +169,13 @@ const NC::Info::PhaseList& NC::detail::getEmptyPL()
   return pl;
 }
 
-void NC::Info::singlePhaseOnlyRaiseError(const char*fctname) const
+void NC::Info::singlePhaseOnlyRaiseError(const char*what) const
 {
   nc_assert(isMultiPhase());
-  NCRYSTAL_THROW2(LogicError,"Info::"<<fctname<<" should only be called on single-phase Info objects");
+  //Names the information rather than a C++ method, so it also reads right
+  //when the request comes via the C or Python APIs:
+  NCRYSTAL_THROW2(LogicError,"Info object is multi-phase, but "<<what
+                  <<" is only available for single-phase objects");
 }
 
 
@@ -260,7 +263,7 @@ void NC::Info::Data::doInitHKLList() const
 
 NC::HKLInfoType NC::Info::hklInfoType() const
 {
-  singlePhaseOnly(__func__);
+  singlePhaseOnly("HKL info");
   auto& data = *m_data;
   if( !data.hkl_dlower_and_dupper.has_value() ) {
     hklList();//This triggers exception
@@ -281,7 +284,7 @@ NC::HKLInfoType NC::Info::hklInfoType() const
 
 NC::Optional<NC::NeutronWavelength> NC::Info::getBraggThreshold() const
 {
-  singlePhaseOnly(__func__);
+  singlePhaseOnly("HKL info");
 
   auto& data = *m_data;
   if( !data.hkl_dlower_and_dupper.has_value() )
@@ -326,7 +329,7 @@ NC::Optional<NC::NeutronWavelength> NC::Info::getBraggThreshold() const
 NC::Optional<NC::HKLList> NC::Info::hklListPartialCalc( Optional<double> dlower,
                                                         Optional<double> dupper ) const
 {
-  singlePhaseOnly(__func__);
+  singlePhaseOnly("HKL info");
   auto& data = *m_data;
   nc_assert(data.hkl_dlower_and_dupper.has_value());
   if ( !data.hkl_ondemand_fct )
@@ -366,7 +369,7 @@ NC::Optional<NC::HKLList> NC::Info::hklListPartialCalc( Optional<double> dlower,
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"//Needed for KSqCalc
 double NC::Info::dspacingFromHKL( int h, int k, int l ) const
 {
-  singlePhaseOnly(__func__);
+  singlePhaseOnly("structure info");
   if (!hasStructureInfo())
     NCRYSTAL_THROW(MissingInfo,"Info object lacks Structure information.");
   const StructureInfo & si = getStructureInfo();
