@@ -1169,7 +1169,7 @@ namespace NCRYSTAL_NAMESPACE {
         if ( muIsotropicAtBeta(alphabeta.beta,ekin.get()*m_invkT) ) {//fixme: reuse E/kT
           //close to kinematical end-point, numerically safe fall-back:
           dE = alphabeta.beta*m_kT;
-          mu = std::fma( rng.generate(), 2.0, -1.0 );
+          mu = 2.0 * rng.generate() - 1.0;
         } else {
           auto dEmu = convertAlphaBetaToDeltaEMu( alphabeta.alpha,
                                                   alphabeta.beta, ekin, m_kT );
