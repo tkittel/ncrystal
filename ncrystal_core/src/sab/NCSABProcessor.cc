@@ -833,7 +833,8 @@ namespace NCRYSTAL_NAMESPACE {
                                             //can detect)
           if ( npts < 80 )
             npts = 80;
-          const std::size_t n = npts-n_lowe;
+          //+1 since the point at Emin is shared by both ranges:
+          const std::size_t n = npts + 1 - n_lowe;
           constexpr double lowE_factor = 1e-4;
           final_egrid.reserve(n+n_lowe);
           for ( auto ee : geomspace(E_min_max.first.get()*lowE_factor,
@@ -843,6 +844,7 @@ namespace NCRYSTAL_NAMESPACE {
           for ( auto ee : geomspace(E_min_max.first.get(),
                                     E_min_max.second.get(), n) )
             final_egrid.push_back(ee);
+          nc_assert_always( final_egrid.size() == npts );
         }
 
         const double invkT = 1.0/kT;
