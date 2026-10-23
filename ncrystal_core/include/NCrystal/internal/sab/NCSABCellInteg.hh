@@ -69,9 +69,16 @@ namespace NCRYSTAL_NAMESPACE {
       static void integrateFullCell( const CellData& c, StableSumKahan& tgt )
       {
 #ifndef NDEBUG
+        //logS must be log(S). For subnormal S (which do occur in kernels),
+        //S=exp(logS) is only representable to within a few denorm_min, which
+        //can be ~1e-3 relative, so compare in S space with that precision:
+        constexpr double dmin = std::numeric_limits<double>::denorm_min();
         for ( auto i : ncrange(4) )
           nc_assert_always( c.S[i]==0.0
-                            || floateq( std::log(c.S[i]),c.logS[i]) );
+                            || ( c.S[i] >= std::numeric_limits<double>::min()
+                                 ? floateq( std::log(c.S[i]),c.logS[i])
+                                 : ncabs( std::exp(c.logS[i]) - c.S[i] )
+                                   <= 4.0 * dmin + 1e-6 * c.S[i] ) );
 #endif
         const double f = 0.5 * (c.b2-c.b1);
         nc_assert( f >= 0.0 );
