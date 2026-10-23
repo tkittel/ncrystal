@@ -398,17 +398,13 @@ namespace NCRYSTAL_NAMESPACE {
           }
 
           const double fullCellIntegral = mgr.getCellIntegral( it->cellidx );
-#define NCRYSTAL_SUMADD_NEW//fixme ensure this is correct and then enable
-#ifndef NCRYSTAL_SUMADD_NEW
-          sumFullCells.add(fullCellIntegral);
-#endif
           if ( E_div_kT >= it->e_cover ) {
             //fully covers cells:
             sumCoveredCells.add(fullCellIntegral);
           } else {
             double contrib;
-            const double cutoffref
-              = (sumFullCells.sumUncorrected()+prev_contrib)*threshold;
+            const double cutoffref = prev_contrib * threshold;
+            sumFullCells.add(fullCellIntegral);
             //We want to apply a "don't waste time on irrelevant cell" short
             //cut, but it becomes too sensitive to FFT-convolution noise in the
             //input SAB if we use a hard threshold. So we instead use a smooth
@@ -441,11 +437,6 @@ namespace NCRYSTAL_NAMESPACE {
             }
           }
         }
-#ifdef NCRYSTAL_SUMADD_NEW
-        sumFullCells.add(sumCoveredCells);
-        sumFullCells.add(sum);
-#endif
-
         //Handle interactions with prev_E cache:
         if ( prev_E >= 0.0 )
           sumCoveredCells.add(prev.sumFullyCoveredCells);
@@ -1013,6 +1004,20 @@ namespace NCRYSTAL_NAMESPACE {
             sIntegralAtE( E_div_kT, m_cellmgr, surv, scheme, integAtE,
                           do_sample );
             m_sIntegral.push_back( integAtE.integralWithinKB );
+#ifndef NDEBUG
+            //The incremental touched-cells integral must equal a direct sum
+            //(checked at a few energy grid points only, to keep Debug builds
+            //fast):
+            const std::size_t ie = m_sIntegral.size() - 1;
+            if ( ie % 37 == 0 || ie + 1 == m_eGrid.size() ) {
+              StableSumKahan touched;
+              auto cells = surv.data();
+              for ( auto i : ncrange( integAtE.nTouchedCells ) )
+                touched.add( m_cellmgr.getCellIntegral( cells[i].cellidx ) );
+              nc_assert_always( floateq( touched.sum(),
+                                         integAtE.integralTouchedCells ) );
+            }
+#endif
             if ( do_diag )
               m_diagnostics_fcAR.push_back( integAtE.integralTouchedCells
                                             ? ( integAtE.integralWithinKB
