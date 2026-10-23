@@ -550,7 +550,10 @@ double NC::checkIsRegularVDOSGrid( const PairDD& egrid, const VectD& density, do
 
   const unsigned long nbins_below_emin = static_cast<unsigned long>(nbins_below_emin_flt+0.5);
   const double  binwidth = emin / nbins_below_emin;
-  const double emax_corrected = emin + (npts-1)*binwidth;
+  //Explicit fma, so the result does not depend on compiler contraction (and
+  //matches the new_emax of regulariseVDOSGrid):
+  const double emax_corrected = std::fma( static_cast<double>(npts-1),
+                                          binwidth, emin );
   nc_assert( emax_corrected>0.0 );
   return emax_corrected;
 }
