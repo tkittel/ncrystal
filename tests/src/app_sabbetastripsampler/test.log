@@ -1,0 +1,6 @@
+Cell topologies: 104 with 4^4 corner S combinations, 36608 configurations, 79262 strips as expected, 4777 dropped with S=0, 11288 samplers refused without any S>0
+symmetric beta grid: 21 configurations, 966 strips as expected, 26 dropped with S=0
+asymmetric beta grid: 21 configurations, 734 strips as expected, 26 dropped with S=0
+beta grid without 0: 21 configurations, 288 strips as expected, 0 dropped with S=0
+short alpha grid: 21 configurations, 168 strips as expected, 16 dropped with S=0
+zero beta rows: 21 configurations, 822 strips as expected, 170 dropped with S=0
