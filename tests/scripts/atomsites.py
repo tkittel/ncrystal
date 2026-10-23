@@ -121,7 +121,9 @@ def main():
                         ('sites query', lambda : multi._query('sites')),
                         ('hasStructureInfo()', multi.hasStructureInfo),
                         ('structure_info', lambda : multi.structure_info),
-                        ('atominfos', lambda : multi.atominfos) ]:
+                        ('atominfos', lambda : multi.atominfos),
+                        ('isCrystalline()', multi.isCrystalline),
+                        ('hklObjects()', multi.hklObjects) ]:
         try:
             fct()
         except NC.NCLogicError as e:

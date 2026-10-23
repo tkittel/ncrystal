@@ -406,6 +406,8 @@ namespace NCRYSTAL_NAMESPACE {
     Info( clone_underlying_t, const Info& );
     shared_obj<const Data> m_data;
     optional_shared_obj<const OverrideableData> m_oData;
+    //Raise error for multi-phase objects (arg: description of the requested
+    //information, like "structure info"):
     void singlePhaseOnly(const char*) const;
     void singlePhaseOnlyRaiseError(const char*) const;
   };
@@ -526,69 +528,77 @@ namespace NCRYSTAL_NAMESPACE {
     return phs;
   }
   inline Info::StateOfMatter Info::stateOfMatter() const noexcept { return m_data->stateOfMatter; }
-  inline bool Info::isCrystalline() const { singlePhaseOnly(__func__); return hasHKLInfo(); }
-  inline bool Info::hasStructureInfo() const { singlePhaseOnly(__func__); return m_data->structinfo.has_value(); }
-  inline const StructureInfo& Info::getStructureInfo() const  { singlePhaseOnly(__func__); nc_assert(hasStructureInfo()); return m_data->structinfo.value(); }
-  inline bool Info::providesNonBraggXSects() const { singlePhaseOnly(__func__); return !!m_data->xsectprovider; }
-  inline CrossSect Info::xsectScatNonBragg(NeutronEnergy ekin) const  { singlePhaseOnly(__func__); nc_assert(!!m_data->xsectprovider); return m_data->xsectprovider(ekin); }
+  inline bool Info::isCrystalline() const
+  {
+    singlePhaseOnly("crystallinity info");
+    //InfoBuilder guarantees that structure info comes with HKL info, and that
+    //atom info needs structure info:
+    nc_assert( hasStructureInfo() == hasHKLInfo() );
+    nc_assert( hasStructureInfo() || !hasAtomInfo() );
+    return hasStructureInfo();
+  }
+  inline bool Info::hasStructureInfo() const { singlePhaseOnly("structure info"); return m_data->structinfo.has_value(); }
+  inline const StructureInfo& Info::getStructureInfo() const  { singlePhaseOnly("structure info"); nc_assert(hasStructureInfo()); return m_data->structinfo.value(); }
+  inline bool Info::providesNonBraggXSects() const { singlePhaseOnly("non-Bragg cross section info"); return !!m_data->xsectprovider; }
+  inline CrossSect Info::xsectScatNonBragg(NeutronEnergy ekin) const  { singlePhaseOnly("non-Bragg cross section info"); nc_assert(!!m_data->xsectprovider); return m_data->xsectprovider(ekin); }
   inline bool Info::hasTemperature() const { return m_data->temp.has_value(); }
-  inline const AtomInfoList& Info::getAtomInfos() const { singlePhaseOnly(__func__); return m_data->atomlist; }
+  inline const AtomInfoList& Info::getAtomInfos() const { singlePhaseOnly("atom info"); return m_data->atomlist; }
   inline Temperature Info::getTemperature() const { nc_assert(hasTemperature()); return m_data->temp.value(); }
-  inline bool Info::hasAtomMSD() const { singlePhaseOnly(__func__); return hasAtomInfo() && m_data->atomlist.front().msd().has_value(); }
-  inline bool Info::hasAtomDebyeTemp() const { singlePhaseOnly(__func__); return hasAtomInfo() && m_data->atomlist.front().debyeTemp().has_value(); }
-  inline bool Info::hasAtomInfo() const  { singlePhaseOnly(__func__); return !m_data->atomlist.empty(); }
-  inline AtomInfoList::const_iterator Info::atomInfoBegin() const { singlePhaseOnly(__func__); return m_data->atomlist.begin(); }
-  inline AtomInfoList::const_iterator Info::atomInfoEnd() const { singlePhaseOnly(__func__); return m_data->atomlist.end(); }
-  inline bool Info::hasHKLInfo() const { singlePhaseOnly(__func__); return m_data->hkl_dlower_and_dupper.has_value(); }
-  inline const HKLList& Info::hklList() const { singlePhaseOnly(__func__); return m_data->hklList(); }
+  inline bool Info::hasAtomMSD() const { singlePhaseOnly("atom info"); return hasAtomInfo() && m_data->atomlist.front().msd().has_value(); }
+  inline bool Info::hasAtomDebyeTemp() const { singlePhaseOnly("atom info"); return hasAtomInfo() && m_data->atomlist.front().debyeTemp().has_value(); }
+  inline bool Info::hasAtomInfo() const  { singlePhaseOnly("atom info"); return !m_data->atomlist.empty(); }
+  inline AtomInfoList::const_iterator Info::atomInfoBegin() const { singlePhaseOnly("atom info"); return m_data->atomlist.begin(); }
+  inline AtomInfoList::const_iterator Info::atomInfoEnd() const { singlePhaseOnly("atom info"); return m_data->atomlist.end(); }
+  inline bool Info::hasHKLInfo() const { singlePhaseOnly("HKL info"); return m_data->hkl_dlower_and_dupper.has_value(); }
+  inline const HKLList& Info::hklList() const { singlePhaseOnly("HKL info"); return m_data->hklList(); }
   inline bool Info::hklListIsFullyInitialised() const
   {
-    singlePhaseOnly(__func__);
+    singlePhaseOnly("HKL info");
     nc_assert(hasHKLInfo());
     return !m_data->detail_hkllist_needs_init.load();
   }
-  inline unsigned Info::nHKL() const { singlePhaseOnly(__func__); return m_data->hklList().size(); }
-  inline HKLList::const_iterator Info::hklBegin() const { singlePhaseOnly(__func__); return m_data->hklList().begin(); }
+  inline unsigned Info::nHKL() const { singlePhaseOnly("HKL info"); return m_data->hklList().size(); }
+  inline HKLList::const_iterator Info::hklBegin() const { singlePhaseOnly("HKL info"); return m_data->hklList().begin(); }
   inline HKLList::const_iterator Info::hklLast() const
   {
-    singlePhaseOnly(__func__);
+    singlePhaseOnly("HKL info");
     auto& hklList = m_data->hklList();
     return hklList.empty() ? hklList.end() : std::prev(hklList.end());
   }
-  inline HKLList::const_iterator Info::hklEnd() const { singlePhaseOnly(__func__); return m_data->hklList().end(); }
-  inline double Info::hklDLower() const { singlePhaseOnly(__func__); nc_assert(hasHKLInfo()); return m_data->hkl_dlower_and_dupper.value().first; }
-  inline double Info::hklDUpper() const { singlePhaseOnly(__func__); nc_assert(hasHKLInfo()); return m_data->hkl_dlower_and_dupper.value().second; }
+  inline HKLList::const_iterator Info::hklEnd() const { singlePhaseOnly("HKL info"); return m_data->hklList().end(); }
+  inline double Info::hklDLower() const { singlePhaseOnly("HKL info"); nc_assert(hasHKLInfo()); return m_data->hkl_dlower_and_dupper.value().first; }
+  inline double Info::hklDUpper() const { singlePhaseOnly("HKL info"); nc_assert(hasHKLInfo()); return m_data->hkl_dlower_and_dupper.value().second; }
   inline Density Info::getDensity() const { return ovrData().density; }
   inline NumberDensity Info::getNumberDensity() const { return ovrData().numberdensity; }
   inline const Cfg::CfgData& Info::getCfgData() const { return ovrData().cfgData; }
 
-  inline bool Info::hasDynamicInfo() const { singlePhaseOnly(__func__); return !m_data->dyninfolist.empty(); }
-  inline const DynamicInfoList& Info::getDynamicInfoList() const  { singlePhaseOnly(__func__); return m_data->dyninfolist; }
-  inline const Info::CustomData& Info::getAllCustomSections() const { singlePhaseOnly(__func__); return m_data->custom; }
+  inline bool Info::hasDynamicInfo() const { singlePhaseOnly("dynamic info"); return !m_data->dyninfolist.empty(); }
+  inline const DynamicInfoList& Info::getDynamicInfoList() const  { singlePhaseOnly("dynamic info"); return m_data->dyninfolist; }
+  inline const Info::CustomData& Info::getAllCustomSections() const { singlePhaseOnly("custom section data"); return m_data->custom; }
   inline const Info::Composition& Info::getComposition() const { return m_data->composition; }
   inline const std::string& Info::displayLabel(const AtomIndex& ai) const
   {
-    singlePhaseOnly(__func__);
+    singlePhaseOnly("atom data by atom index");
     nc_assert(ai.get()<m_data->displayLabels.size());
     return m_data->displayLabels[ai.get()];
   }
 
   inline AtomDataSP Info::atomDataSP( const AtomIndex& ai ) const
   {
-    singlePhaseOnly(__func__);
+    singlePhaseOnly("atom data by atom index");
     nc_assert( ai.get() < m_data->atomDataSPs.size());
     return m_data->atomDataSPs[ai.get()];
   }
 
   inline const AtomData& Info::atomData( const AtomIndex& ai ) const
   {
-    singlePhaseOnly(__func__);
+    singlePhaseOnly("atom data by atom index");
     nc_assert( ai.get() < m_data->atomDataSPs.size());
     return m_data->atomDataSPs[ai.get()];
   }
   inline IndexedAtomData Info::indexedAtomData( const AtomIndex& ai ) const
   {
-    singlePhaseOnly(__func__);
+    singlePhaseOnly("atom data by atom index");
     nc_assert( ai.get() < m_data->atomDataSPs.size());
     return IndexedAtomData{m_data->atomDataSPs[ai.get()],{ai}};
   }
@@ -596,10 +606,10 @@ namespace NCRYSTAL_NAMESPACE {
     : fraction(fr), atom(std::move(iad))
   {
   }
-  inline void Info::singlePhaseOnly(const char*fctname) const
+  inline void Info::singlePhaseOnly(const char*what) const
   {
     if ( isMultiPhase() )
-      singlePhaseOnlyRaiseError(fctname);
+      singlePhaseOnlyRaiseError(what);
   }
   inline bool Info::detail_hasDifferentUnderlying() const noexcept
   {
