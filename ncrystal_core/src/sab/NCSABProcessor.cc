@@ -513,15 +513,18 @@ namespace NCRYSTAL_NAMESPACE {
         const double e2 = e_search_range.second;
         const double logf1 = std::log(f_of_e( e1 ));
         const double logf2 = std::log(f_of_e( e2 ));
+        //f usually increases, but can decrease (e.g. for kernels where S falls
+        //off quickly along the diagonal), so the target is a small change in
+        //either direction (flat or non-finite: no low-energy regime found):
         const double logS_raise_target = 1e-3*(logf2-logf1);//fixme: lux?
-        nc_assert_always(logS_raise_target > 0.0);
-        const double logf1pluseps = logf1 + logS_raise_target;
-        if ( logf2 <= logf1pluseps )
+        if ( !( logS_raise_target != 0.0 && std::isfinite(logS_raise_target) ) )
           return e2;
+        const double sgn = ( logS_raise_target > 0.0 ? 1.0 : -1.0 );
+        const double logf1pluseps = logf1 + logS_raise_target;
         const double loge1 = std::log(e1);
         const double loge2 = std::log(e2);
         unsigned long ncalls = 2;
-        auto froot = [&f_of_e,logf1pluseps,&ncalls,
+        auto froot = [&f_of_e,logf1pluseps,&ncalls,sgn,
                       logf1,logf2,loge1,loge2]( double loge )
         {
           ++ncalls;
@@ -534,7 +537,7 @@ namespace NCRYSTAL_NAMESPACE {
           } else {
             val = std::log(f_of_e(std::exp(loge)));
           }
-          return val - logf1pluseps;
+          return sgn * ( val - logf1pluseps );
         };
         if ( false ) {//fixme
           std::string fn = "ncrystal_logemin_info.txt";
