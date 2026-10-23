@@ -63,7 +63,7 @@ def get_named_test_data_dir(name, for_updates = False ):
         from .modeinfo import is_ncrystalverify_mode, is_simplebuild_mode
         if is_simplebuild_mode():
             import os
-            ddir = _Path(os.environ['SBLD_DATA_DIR'])/f'NCTestData_{name}'
+            ddir = _Path(os.environ['SBLD_DATA_DIR'])/f'NCTestData{name[:1].upper()}{name[1:]}'
         elif is_ncrystalverify_mode():
             ddir = _pymoddir.parent.parent.joinpath('data',name)
         else:

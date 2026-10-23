@@ -19,7 +19,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "TestLib_fpe/FPE.hh"
+#include "TestLibFpe/FPE.hh"
 
 
 //NOTE: Code duplicated below between:

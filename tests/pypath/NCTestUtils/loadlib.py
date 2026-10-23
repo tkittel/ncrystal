@@ -224,7 +224,8 @@ def _find_testmod(name):
 
 def _find_testmod_sbld( name ):
     name = name.removeprefix('TestMod_')
-    name = name if name.startswith('NCTestMod_') else f'NCTestMod_{name}'
+    name = name.removeprefix('NCTestMod')
+    name = f'NCTestMod{name[:1].upper()}{name[1:]}'
     import os
     import pathlib
     d = pathlib.Path(os.environ['SBLD_LIB_DIR'])

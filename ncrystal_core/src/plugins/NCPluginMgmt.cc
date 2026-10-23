@@ -431,9 +431,9 @@ void NCP::ensurePluginsLoaded()
     loadstdplugin("NCScatFact","stdscat","register_stdscat_factory");
     loadstdplugin("NCScatFact","stdmpscat","register_stdmpscat_factory");
     loadstdplugin("NCExperimental","stdexpscat","register_experimentalscatfact");
-    loadstdplugin("NCFactory_Laz","stdlaz","register_stdlaz_factory");
+    loadstdplugin("NCFactoryLaz","stdlaz","register_stdlaz_factory");
     loadstdplugin("NCAbsFact","stdabs","register_stdabs_factory");
-    loadstdplugin("NCFactory_NCMAT","stdncmat","register_stdncmat_factory");
+    loadstdplugin("NCFactoryNCMAT","stdncmat","register_stdncmat_factory");
     loadstdplugin("NCQuickFact","stdquick","register_quick_factory");
     //loadstdplugin("NCNXSFactories","legacynxslaz","register_nxslaz_factories");
 #endif
