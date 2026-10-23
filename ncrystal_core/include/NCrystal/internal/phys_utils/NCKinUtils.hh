@@ -128,8 +128,10 @@ namespace NCRYSTAL_NAMESPACE {
     const double sq = std::sqrt( ekin_div_kT * kk );
     const double aminus = ( detail::alphaMinusNeedsTaylor( ekin_div_kT, beta )
                             ? detail::alphaMinusTaylor( ekin_div_kT, beta )
-                            : std::max(0.0, std::fma(-2.0, sq, a)) );
-    const double aplus = std::fma(2.0, sq, a);
+                            : std::max(0.0, a - 2.0 * sq) );
+    //No std::fma needed in a+-2*sq: multiplication by 2 is exact, and sq (a
+    //sqrt) is far from overflowing:
+    const double aplus = a + 2.0 * sq;
     nc_assert( aplus >= aminus );
     return { aminus, aplus };
   }
@@ -144,8 +146,8 @@ namespace NCRYSTAL_NAMESPACE {
     const double sq = std::sqrt( ekin_div_kT * kk );
     const double aminus = ( detail::alphaMinusNeedsTaylor( ekin_div_kT, beta )
                             ? detail::alphaMinusTaylor( ekin_div_kT, beta )
-                            : std::max(0.0, std::fma(-2.0, sq, a)) );
-    const double aplus = std::fma(2.0, sq, a);
+                            : std::max(0.0, a - 2.0 * sq) );
+    const double aplus = a + 2.0 * sq;
     return { aminus, aplus, 4.0*sq };
   }
 
@@ -159,7 +161,7 @@ namespace NCRYSTAL_NAMESPACE {
     nc_assert( kk >= 0.0 );
     const double a = kk + ekin_div_kT;
     const double sq = std::sqrt( ekin_div_kT * kk );
-    return std::max(0.0, std::fma(-2.0, sq, a));
+    return std::max(0.0, a - 2.0 * sq);
   }
 
   inline double getAlphaPlus( double ekin_div_kT, double beta )
@@ -171,7 +173,7 @@ namespace NCRYSTAL_NAMESPACE {
     nc_assert( kk >= 0.0 );
     const double a = kk + ekin_div_kT;
     const double sq = std::sqrt( ekin_div_kT * kk );
-    return std::fma(2.0, sq, a);
+    return a + 2.0 * sq;
   }
 
   namespace detail {
@@ -207,16 +209,15 @@ namespace NCRYSTAL_NAMESPACE {
   inline double getBetaMinus( double ekin_div_kT, double alpha )
   {
     nc_assert(ekin_div_kT*alpha>=0);
-    //See getAlphaLimits for why std::fma is used explicitly here:
     return ( detail::betaMinusNeedsTaylor( ekin_div_kT, alpha )
              ? detail::betaMinusTaylor( ekin_div_kT, alpha )
-             : std::fma(-2.0, std::sqrt(ekin_div_kT*alpha), alpha) );
+             : alpha - 2.0 * std::sqrt(ekin_div_kT*alpha) );
   }
 
   inline double getBetaPlus( double ekin_div_kT, double alpha )
   {
     nc_assert(ekin_div_kT*alpha>=0);
-    return std::fma(2.0, std::sqrt(ekin_div_kT*alpha), alpha);
+    return alpha + 2.0 * std::sqrt(ekin_div_kT*alpha);
   }
 
   inline BetaLimits_t getBetaLimits( double ekin_div_kT, double alpha )
@@ -226,7 +227,7 @@ namespace NCRYSTAL_NAMESPACE {
     const double sq = std::sqrt(ekin_div_kT*alpha);
     return { ( detail::betaMinusNeedsTaylor( ekin_div_kT, alpha )
                ? detail::betaMinusTaylor( ekin_div_kT, alpha )
-               : std::fma(-2.0, sq, alpha) ), std::fma(2.0, sq, alpha) };
+               : alpha - 2.0 * sq ), alpha + 2.0 * sq };
   }
 }
 
