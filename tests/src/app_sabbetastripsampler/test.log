@@ -4,3 +4,47 @@ asymmetric beta grid: 21 configurations, 734 strips as expected, 26 dropped with
 beta grid without 0: 21 configurations, 288 strips as expected, 0 dropped with S=0
 short alpha grid: 21 configurations, 168 strips as expected, 16 dropped with S=0
 zero beta rows: 21 configurations, 822 strips as expected, 170 dropped with S=0
+Closed-form reference alpha integrals agree with numerical quadrature
+symmetric beta grid: sampling at emax=0.0001, e/emax=1, nstrips=1 consistent with S
+symmetric beta grid: sampling at emax=0.0001, e/emax=1, nstrips=4 consistent with S
+symmetric beta grid: sampling at emax=0.0001, e/emax=0.01, nstrips=1 consistent with S
+symmetric beta grid: sampling at emax=0.0001, e/emax=0.01, nstrips=4 consistent with S
+symmetric beta grid: sampling at emax=0.05, e/emax=1, nstrips=1 consistent with S
+symmetric beta grid: sampling at emax=0.05, e/emax=1, nstrips=4 consistent with S
+symmetric beta grid: sampling at emax=0.05, e/emax=0.01, nstrips=1 consistent with S
+symmetric beta grid: sampling at emax=0.05, e/emax=0.01, nstrips=4 consistent with S
+asymmetric beta grid: sampling at emax=0.0001, e/emax=1, nstrips=1 consistent with S
+asymmetric beta grid: sampling at emax=0.0001, e/emax=1, nstrips=4 consistent with S
+asymmetric beta grid: sampling at emax=0.0001, e/emax=0.01, nstrips=1 consistent with S
+asymmetric beta grid: sampling at emax=0.0001, e/emax=0.01, nstrips=4 consistent with S
+asymmetric beta grid: sampling at emax=0.05, e/emax=1, nstrips=1 consistent with S
+asymmetric beta grid: sampling at emax=0.05, e/emax=1, nstrips=4 consistent with S
+asymmetric beta grid: sampling at emax=0.05, e/emax=0.01, nstrips=1 consistent with S
+asymmetric beta grid: sampling at emax=0.05, e/emax=0.01, nstrips=4 consistent with S
+beta grid without 0: sampling at emax=0.0001, e/emax=1, nstrips=1 consistent with S
+beta grid without 0: sampling at emax=0.0001, e/emax=1, nstrips=4 consistent with S
+beta grid without 0: sampling at emax=0.0001, e/emax=0.01, nstrips=1 consistent with S
+beta grid without 0: sampling at emax=0.0001, e/emax=0.01, nstrips=4 consistent with S
+beta grid without 0: sampling at emax=0.05, e/emax=1, nstrips=1 consistent with S
+beta grid without 0: sampling at emax=0.05, e/emax=1, nstrips=4 consistent with S
+beta grid without 0: sampling at emax=0.05, e/emax=0.01, nstrips=1 consistent with S
+beta grid without 0: sampling at emax=0.05, e/emax=0.01, nstrips=4 consistent with S
+short alpha grid: sampling at emax=0.0001, e/emax=1, nstrips=1 consistent with S
+short alpha grid: sampling at emax=0.0001, e/emax=1, nstrips=4 consistent with S
+short alpha grid: sampling at emax=0.0001, e/emax=0.01, nstrips=1 consistent with S
+short alpha grid: sampling at emax=0.0001, e/emax=0.01, nstrips=4 consistent with S
+short alpha grid: sampling at emax=0.05, e/emax=1, nstrips=1 consistent with S
+short alpha grid: sampling at emax=0.05, e/emax=1, nstrips=4 consistent with S
+short alpha grid: sampling at emax=0.05, e/emax=0.01, nstrips=1 consistent with S
+short alpha grid: sampling at emax=0.05, e/emax=0.01, nstrips=4 consistent with S
+zero beta rows: sampling at emax=0.0001, e/emax=1, nstrips=1 consistent with S
+zero beta rows: sampling at emax=0.0001, e/emax=1, nstrips=4 consistent with S
+zero beta rows: sampling at emax=0.0001, e/emax=0.01, nstrips=1 consistent with S
+zero beta rows: sampling at emax=0.0001, e/emax=0.01, nstrips=4 consistent with S
+zero beta rows: sampling at emax=0.05, e/emax=1, nstrips=1 consistent with S
+zero beta rows: sampling at emax=0.05, e/emax=1, nstrips=4 consistent with S
+zero beta rows: sampling at emax=0.05, e/emax=0.01, nstrips=1 consistent with S
+zero beta rows: sampling at emax=0.05, e/emax=0.01, nstrips=4 consistent with S
+large-k cell: sampling at emax=1, e/emax=1, nstrips=1 consistent with S
+large-k cell: sampling at emax=1, e/emax=1, nstrips=4 consistent with S
+Cell topologies: 1248 sampling configurations consistent with S
