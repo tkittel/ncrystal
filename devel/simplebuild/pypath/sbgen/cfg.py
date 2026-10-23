@@ -19,6 +19,12 @@
 ##                                                                            ##
 ################################################################################
 
+def capitalize_first( s ):
+    #Used to construct package names without underscores (which are best
+    #avoided since they make the names of commands like sb_<pkg>_<cmd>
+    #ambiguous):
+    return s[:1].upper() + s[1:]
+
 class Cfg:
 
     @property
@@ -28,16 +34,16 @@ class Cfg:
     def sbpkgname_comp(self, compname):
         orig = """NCAbsFact NCBkgdExtCurve NCCore NCElIncScatter NCFactories
                 NCFreeGas NCInterfaces NCPowderBragg NCScatFact NCDump NCAbsOOV
-                NCCfgUtils NCData NCExperimental NCFactory_Laz NCGasMix
+                NCCfgUtils NCData NCExperimental NCFactoryLaz NCGasMix
                 NCLCBragg NCPubUtils NCSAB NCSCBragg NCUtils NCAtomDB
-                NCCInterface NCDynInfoUtils NCExtdUtils NCFactory_NCMAT
+                NCCInterface NCDynInfoUtils NCExtdUtils NCFactoryNCMAT
                 NCInfoBld NCMiniMC NCQuickFact NCSABScatter NCThreads NCVDOS"""
         guess = { e[2:].lower(): e for e in orig.split() }
         if compname not in guess:
             e = {'extd_utils':'NCExtdUtils',
                  'misc':'NCPubUtils',
-                 'ncmat':'NCFactory_NCMAT',
-                 'lazlau':'NCFactory_Laz',
+                 'ncmat':'NCFactoryNCMAT',
+                 'lazlau':'NCFactoryLaz',
                  'sanshardsphere':'NCExperimental',
                  'stdscatfactory':'NCScatFact',
                  'elasincoh':'NCElIncScatter'
@@ -48,7 +54,7 @@ class Cfg:
         return guess[compname]
 
     def sbpkgname_testlib(self, testlibname):
-        return f'TestLib_{testlibname}'#NB: no NC prefix
+        return f'TestLib{capitalize_first(testlibname)}'#NB: no NC prefix
 
     @property
     def sbpkgname_lib(self):
