@@ -430,9 +430,14 @@ class Info(RCBase):
         return self._som
 
     def isCrystalline(self):
-        """Whether or not object is crystalline (i.e. has unit cell structure or list of
-        reflection planes)."""
-        return self.hasStructureInfo() or self.hasAtomInfo() or self.hasHKLInfo()
+        """Whether or not object is crystalline (i.e. has unit cell structure,
+        which always comes with a list of reflection planes)."""
+        res = self.hasStructureInfo()
+        #NCrystal guarantees that hkl info comes exactly with structure info,
+        #and that atom info needs structure info:
+        nc_assert( res == self.hasHKLInfo() )
+        nc_assert( res or not self.hasAtomInfo() )
+        return res
 
     def hasComposition(self):
         """OBSOLETE FUNCTION (always available now)."""
@@ -859,7 +864,7 @@ class Info(RCBase):
 
         """
         from ._hklobjects import _iter_hklobjects
-        yield from _iter_hklobjects(self)
+        return _iter_hklobjects(self)
 
     def getBraggThreshold(self):
         """Get Bragg threshold in Aa (returns None if non-crystalline). This
