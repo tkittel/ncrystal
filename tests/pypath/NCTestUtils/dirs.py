@@ -89,7 +89,9 @@ def _test_data_dir_for_updates():
         return False
     if not reporoot.joinpath('ncrystal_core','pyproject.toml').is_file():
         return False
-    if not reporoot.joinpath('.git','config').is_file():
+    #.git is a directory, or a file in git worktrees:
+    gitpath = reporoot.joinpath('.git')
+    if not ( gitpath.joinpath('config').is_file() or gitpath.is_file() ):
         return False
     tdir = reporoot.joinpath('tests','data')
     if not tdir.is_dir():
