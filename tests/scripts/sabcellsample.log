@@ -674,6 +674,18 @@ Probability edge@b1 (FullCell)   : 51%
 Probability edge@b1 (BoundedCell): 51%
 
 =============>
+=============> Launching test 58
+=============>
+
+Chosen method: FullCell
+Alternative method: BoundedCell
+Predicted FullCell AR: 99%
+Actual FullCell AR   : 99%
+Actual BoundedCell AR: 99%
+Probability edge@b1 (FullCell)   : 2.8%
+Probability edge@b1 (BoundedCell): 2.8%
+
+=============>
 =============> Final summary
 =============>
 
@@ -734,3 +746,4 @@ P-value for test #54 : OK
 P-value for test #55 : OK
 P-value for test #56 : OK
 P-value for test #57 : OK
+P-value for test #58 : OK
