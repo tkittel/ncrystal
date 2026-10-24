@@ -170,3 +170,9 @@ CHANGELOG at release time, after which both files are dropped).
      * NCMAT v8 setting choice codes are case-sensitive and lower case, as
        in the ITVB table; a code which is only wrong in case (e.g. the
        spglib-style 166:H) gets an error naming the correct code.
+
+### Documentation
+
+     * ncmat_doc.md: the sab_scaled keyword gives
+       S'(alpha,beta)=S(alpha,beta)*exp(beta/2), as always implemented; the
+       documentation had the opposite sign in the exponent.
