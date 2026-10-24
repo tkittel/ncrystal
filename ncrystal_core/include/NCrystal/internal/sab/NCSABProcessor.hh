@@ -75,6 +75,11 @@ namespace NCRYSTAL_NAMESPACE {
       };
       AlphaBetaOutcome sampleScatterAlphaBeta( RNG&, NeutronEnergy ) const;
 
+      //Below this E/kT, beta is sampled at that value, and alpha uniformly
+      //within the kinematic limits (i.e. mu is isotropic). Both are exact to
+      //~1e-8, while the precision of mu from alpha degrades as eps/sqrt(E/kT):
+      static constexpr double lowEFloorEDivKT = 1e-16;
+
       struct ScatOutcomeDiag {
         ScatterOutcomeIsotropic ekinmu;
         AlphaBetaOutcome alphabeta;
@@ -83,8 +88,8 @@ namespace NCRYSTAL_NAMESPACE {
 
       bool hasSampleSupport() const;
 
-      //fixme: also a streamJSONSummary?
-      void toJSON( std::ostream& ) const;
+      //Internal diagnostics, for queries only:
+      void toJSONDiagnostics( std::ostream& ) const;
 
       //Stream information to JSON (appropriate for usage in a Process). If an
       //optional sigma_scale is provided (which would be the elemental cross

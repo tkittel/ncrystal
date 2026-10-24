@@ -101,6 +101,51 @@ NCrystal WARNING: Discarding 52 edges of provided kernel data due to missing S v
 
 
 =============>
+=============> Launching test 21
+=============>
+
+
+=============>
+=============> Launching test 22
+=============>
+
+
+=============>
+=============> Launching test 23
+=============>
+
+
+=============>
+=============> Launching test 24
+=============>
+
+
+=============>
+=============> Launching test 25
+=============>
+
+
+=============>
+=============> Launching test 26
+=============>
+
+
+=============>
+=============> Launching test 27
+=============>
+
+
+=============>
+=============> Launching test 28
+=============>
+
+
+=============>
+=============> Launching test 29
+=============>
+
+
+=============>
 =============> Final summary
 =============>
 
@@ -124,3 +169,12 @@ P-value for test #17 : OK
 P-value for test #18 : OK
 P-value for test #19 : OK
 P-value for test #20 : OK
+P-value for test #21 : OK
+P-value for test #22 : OK
+P-value for test #23 : OK
+P-value for test #24 : OK
+P-value for test #25 : OK
+P-value for test #26 : OK
+P-value for test #27 : OK
+P-value for test #28 : OK
+P-value for test #29 : OK

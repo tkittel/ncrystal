@@ -585,17 +585,9 @@ NC::SABUtils::TailedBreakdown NC::SABUtils::createTailedBreakdown( const Span<co
                         tp.alpha = alpha;
                         tp.sval = interpSVal(aidx,alpha);
                         nc_assert(std::isfinite(tp.sval));
-                        //We used to have here:
-                        // tp.logsval = ( tp.sval > 0.0
-                        //                ? std::log(tp.sval)
-                        //                : -kInfinity );
-                        //However in a rare case (1 test in release builds with
-                        //intel one api compiler) that lead to an FPE in the log
-                        //call. To move forward we instead limit svalues to the
-                        //smallest positive non-subnormal number (2.2e-308
-                        //before passing to the log):
-                        constexpr double z = std::numeric_limits<double>::min();
-                        tp.logsval = std::log( std::max<double>( tp.sval, z ) );
+                        //Consistent with the logs of the grid values (the
+                        //naive ternary can give FPEs, see safeLogOrElse):
+                        tp.logsval = safeLogOrElse( tp.sval, -kInfinity );
                       };
 
   //Enough setting up, time to analyse the tails and how they fall wrt the grid:

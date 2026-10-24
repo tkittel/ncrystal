@@ -363,6 +363,27 @@ def main(do_plot,luxlvl,test_select):
         { 'cfgstr': 'benzene_solid_100K_sabsmall.ncmat;vdoslux=2001',
           'atomlbl': 'H', 'ekin': '7.0' },
 
+        #Low energies, where full-cell sampling is inefficient (legacy and
+        #next-gen VDOS expansion, and direct kernels), including below the
+        #energy grid:
+        { 'cfgstr': 'stdlib::Al_sg225.ncmat;vdoslux=1001', 'ekin': '3e-6' },
+        { 'cfgstr': 'stdlib::Al_sg225.ncmat;vdoslux=1001', 'ekin': '1e-11' },
+        { 'cfgstr': 'stdlib::Polyethylene_CH2.ncmat;vdoslux=1001',
+          'atomlbl': 'H', 'ekin': '5e-6' },
+        { 'cfgstr': 'stdlib::Polyethylene_CH2.ncmat;vdoslux=2003',
+          'atomlbl': 'H', 'ekin': '2e-7' },
+        { 'cfgstr': 'benzene_solid_100K_sabsmall.ncmat',
+          'atomlbl': 'H', 'ekin': '9e-8' },
+        { 'cfgstr': 'C_from_benzene_solid_20K_sabsmall.ncmat', 'ekin': '1e-8' },
+        { 'cfgstr': 'Li2O_sg225_LithiumOxide_sabsmall_temp10K.ncmat',
+          'atomlbl': 'Li', 'ekin': '5e-9' },
+        #Kernel with loose strip S bounds (see the file header), at E/kT~1e-5
+        #and ~1e-4:
+        { 'cfgstr': 'H_from_ethanol_liquid_200K_sabsmall.ncmat',
+          'ekin': '1.7e-7' },
+        { 'cfgstr': 'H_from_ethanol_liquid_200K_sabsmall.ncmat',
+          'ekin': '1.7e-6' },
+
     ]
     npvals_tot = 0
     pvals = []

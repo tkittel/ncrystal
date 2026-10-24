@@ -79,6 +79,9 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Functions for sampling:
     double sampleLogLinDist(double a, double fa, double b, double fb, double rand);
+    //Sample t in [0,1] from a density proportional to exp(L*t), without
+    //overflow for any finite L:
+    double sampleExpUnitInterval( double L, double rand );
     double sampleLogLinDist_fast(double a, double fa, double b, double fb, double rand, double logfa, double logfb);
 
     //The next two functions can be used to evaluate a SAB integral over a bin
@@ -172,15 +175,17 @@ inline double NCrystal::SABUtils::interpolate_loglin_fallbacklinlin(double a, do
   nc_assert ( fa>=0.0 && fb >= 0.0 );
   nc_assert ( x >= a && x <= b );
   const double midpoint = 0.5 * ( b + a );
-  const bool linlin_mode = ( fa*fb == 0.0 );
+  const bool linlin_mode = !( fa > 0.0 && fb > 0.0 );
+  if ( linlin_mode )
+    return interpolate_linear(a,fa,b,fb,x);
+  //log of ratio rather than ratio, which can overflow:
+  const double dl = std::log(fb) - std::log(fa);
   if ( x < midpoint ) {
     //choose form most numerically stable for x near a
-    const double r = (x-a) / (b-a);
-    return ( linlin_mode ? nclerp(fa,fb,r) : fa * std::pow(fb/fa,r) );
+    return fa * std::exp( dl * ( (x-a) / (b-a) ) );
   } else {
     //choose form most numerically stable for x near b
-    const double s = (b-x) / (b-a);
-    return ( linlin_mode ? nclerp(fb,fa,s) : fb * std::pow(fa/fb,s) );
+    return fb * std::exp( -dl * ( (b-x) / (b-a) ) );
   }
 }
 
@@ -193,7 +198,7 @@ inline double NCrystal::SABUtils::interpolate_loglin_fallbacklinlin_fast(double 
   const double bma = b - a;
   nc_assert( bma > 0.0 );
   const double midpoint = 0.5 * ( b + a );
-  const bool linlin_mode = ( fa*fb == 0.0 );//fixme: -> !ncmin(fa,fb) (also elsewhere in file)
+  const bool linlin_mode = !( fa > 0.0 && fb > 0.0 );
   if ( x < midpoint ) {
     //choose form most numerically stable for x near a
     const double r = (x-a) / bma;
@@ -343,7 +348,8 @@ inline double NCrystal::SABUtils::integrateAlphaInterval(double a1,double s1, do
     return da*ps*std::fma( -ysq, p, 0.5 );
   }
   //Evaluate via analytical expression or fall-back to trapezoidal integration:
-  return ncmin(s1,s2)<1e-300 ? 0.5*da*ps : da*ds/std::log(s2/s1);
+  return ( ncmin(s1,s2) > std::numeric_limits<double>::denorm_min()
+           ? da*ds/(std::log(s2)-std::log(s1)) : 0.5*da*ps );
 }
 
 inline double NCrystal::SABUtils::safeLogOrElse( double s, double valueIfNonPositive )
@@ -354,12 +360,9 @@ inline double NCrystal::SABUtils::safeLogOrElse( double s, double valueIfNonPosi
   //Workaround for buggy clang behaviour (seen in clang 21.1.8): clang -O3
   //optimises the ternary above into an unconditional log(s), so causing a
   //std::log(0.0) call despite our guard -> FPE.
-  volatile double vs = ( s > 0.0 ? s
-                         : std::numeric_limits<double>::denorm_min() );
+  volatile double vs = ( s > 0.0 ? s : 1.0 );
   const double lv = std::log( vs );
-  if ( lv <= -744.4400719213812 )
-    return valueIfNonPositive;
-  return lv;
+  return ( s > 0.0 ? lv : valueIfNonPositive );
 #endif
 }
 
@@ -375,7 +378,7 @@ inline double NCrystal::SABUtils::integrateAlphaInterval_fast(double a1,double s
   const double da = a2-a1;
   const double ps = s1+s2;
   const double ds = s2-s1;
-  if ( ncmin(s1,s2) < 1e-300 )//1e-300, because we want to stay clear of log(s)=-inf issues.
+  if ( !( ncmin(s1,s2) > std::numeric_limits<double>::denorm_min() ) )
     return 0.5*da*ps;//trapezoidal integration
   if ( ncabs(ds) > 0.006*ps ) {
     nc_assert_always(!ncisinf(logs1)&&!ncisinf(logs2));//should have been caught by checks above
@@ -401,12 +404,18 @@ inline double NCrystal::SABUtils::sampleLogLinDist(double a, double fa, double b
   nc_assert(fa>=0.);
   nc_assert(fb>=0.);
   double df = fb-fa;
-  if ( fa*fb*df != 0.0 ) {
+  if ( fa > 0.0 && fb > 0.0 && df != 0.0 ) {
     //usual, non-degenerate case:
     double a_sub_b = a-b;
-    double logfa_fb = std::log(fb/fa);
-    if ( a_sub_b * logfa_fb != 0.0 )
-      return a_sub_b*std::log(fa*std::exp(a*logfa_fb/a_sub_b)/(fa+rand*df))/logfa_fb;
+    double logfa_fb = std::log(fb) - std::log(fa);
+    if ( a_sub_b * logfa_fb != 0.0 ) {
+      const double x = a_sub_b*std::log(fa*std::exp(a*logfa_fb/a_sub_b)
+                                        /(fa+rand*df))/logfa_fb;
+      if ( x >= a && x <= b )
+        return x;
+      //over- or underflow in the expression above:
+      return a + (b-a) * sampleExpUnitInterval( logfa_fb, rand );
+    }
     df = 0.0;
   }
   if (!df)
@@ -426,12 +435,18 @@ inline double NCrystal::SABUtils::sampleLogLinDist_fast(double a, double fa, dou
   nc_assert(fa>=0.);
   nc_assert(fb>=0.);
   double df = fb-fa;
-  if ( fa*fb*df != 0.0 ) {
+  if ( fa > 0.0 && fb > 0.0 && df != 0.0 ) {
     //usual, non-degenerate case:
     double a_sub_b = a-b;
     double logfa_fb = logfb-logfa;
-    if ( a_sub_b * logfa_fb != 0.0 )
-      return a_sub_b*std::log(fa*std::exp(a*logfa_fb/a_sub_b)/(fa+rand*df))/logfa_fb;
+    if ( a_sub_b * logfa_fb != 0.0 ) {
+      const double x = a_sub_b*std::log(fa*std::exp(a*logfa_fb/a_sub_b)
+                                        /(fa+rand*df))/logfa_fb;
+      if ( x >= a && x <= b )
+        return x;
+      //over- or underflow in the expression above:
+      return a + (b-a) * sampleExpUnitInterval( logfa_fb, rand );
+    }
     df = 0.0;
   }
   if (!df)
@@ -440,6 +455,19 @@ inline double NCrystal::SABUtils::sampleLogLinDist_fast(double a, double fa, dou
   nc_assert(fa||fb);
   double x = (b-a)*std::sqrt(rand);
   return (fa ? b-x : a + x);
+}
+
+inline double NCrystal::SABUtils::sampleExpUnitInterval( double L, double R )
+{
+  //Inverse CDF t=log1p(R*expm1(L))/L, for L>0 via s=1-t (density exp(-L*s))
+  //so expm1 never overflows:
+  nc_assert( std::isfinite(L) && R >= 0.0 && R <= 1.0 );
+  if ( L == 0.0 )
+    return R;
+  const double t = ( L < 0.0
+                     ? std::log1p( R * std::expm1( L ) ) / L
+                     : 1.0 - std::log1p( ( 1.0 - R ) * std::expm1( -L ) ) / -L );
+  return ncclamp( t, 0.0, 1.0 );
 }
 
 inline double NCrystal::SABUtils::interpolate_linear(double a, double fa, double b, double fb, double x)

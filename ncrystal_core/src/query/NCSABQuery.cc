@@ -18,6 +18,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "NCrystal/internal/sab/NCSABBetaStripSampler.hh"
 #include "NCrystal/internal/sab/NCSABRefEval.hh"
 #include "NCrystal/internal/sab/NCSABKBCellSmpl.hh"
 #include "NCrystal/internal/sab/NCSABSurveyor.hh"
@@ -339,7 +340,7 @@ namespace NCRYSTAL_NAMESPACE {
         os << "{\"extender\":";
         streamJSON( os, use_sct ? "SCT" : "FreeGas" );
         os << ",\"sabproc\":";
-        spe->processor().toJSON(os);
+        spe->processor().toJSONDiagnostics(os);
         os << ",\"sample\":";
         if ( !nsample ) {
           streamJSON(os,json_null_t{});
@@ -361,6 +362,44 @@ namespace NCRYSTAL_NAMESPACE {
         os << ",\"beta\":";
         streamJSONHugeDblVect(os,std::move(b));
         os << "}}";
+      }
+
+      void query_impl_proctries( std::ostream& os,
+                                 shared_obj<const SABData> sab,
+                                 std::uint64_t nperpoint,
+                                 std::uint64_t seed,
+                                 int knllux )
+      {
+        //Mean number of sampling tries at each energy grid point, along with
+        //the diagnostics of the sampling methods:
+        if ( knllux < 0 )
+          knllux = SABCfg::sablux_default_luxury;
+        SABProcessor sp( SABCfg::createConfig(knllux), std::move(sab), nullptr,
+                         SABProcessor::SampleSupport::YES,
+                         SABProcessor::StoreExtraDiagnostics::YES );
+        auto rng = createBuiltinRNG( seed );
+        VectD mean_tries;
+        mean_tries.reserve( sp.getEDivKTGrid().size() );
+        const double kT = sp.kT();
+        const double invkT = 1.0 / kT;
+        for ( auto e : sp.getEDivKTGrid() ) {
+          //Exactly at the grid point (not above it due to rounding):
+          double E = e * kT;
+          while ( E * invkT > e )
+            E = std::nextafter( E, 0.0 );
+          const NeutronEnergy ekin{ E };
+          std::uint64_t ntries = 0;
+          for ( std::uint64_t i = 0; i < nperpoint; ++i )
+            ntries += sp.sampleScatterAlphaBeta( *rng, ekin ).ntries;
+          mean_tries.push_back( double(ntries) / double(nperpoint) );
+        }
+        os << "{\"sabproc\":";
+        sp.toJSONDiagnostics(os);
+        os << ",\"nperpoint\":";
+        streamJSON(os,nperpoint);
+        os << ",\"mean_tries\":";
+        streamJSON(os,mean_tries);
+        os << '}';
       }
 
       void query_impl_refsample( std::ostream& os,
@@ -406,6 +445,51 @@ namespace NCRYSTAL_NAMESPACE {
         streamJSONHugeDblVect(os,std::move(ab.first));
         os << ",\"beta\":";
         streamJSONHugeDblVect(os,std::move(ab.second));
+        os << "}}";
+      }
+
+      void query_impl_stripsample( std::ostream& os,
+                                   shared_obj<const SABData> sab,
+                                   std::uint64_t nsample,
+                                   std::uint64_t seed,
+                                   NeutronEnergy sample_ekin )
+      {
+        //Samples with a SABBetaStripSampler built for emax=E (alpha and beta
+        //empty if S=0 everywhere within KB(E)):
+        auto rng = createBuiltinRNG( seed );
+        const double kT = sab->temperature().kT();
+        const double E_div_kT = sample_ekin.dbl() / kT;
+        SABBetaStripSampler sampler( std::move(sab), E_div_kT );
+        VectD a, b;
+        std::uint64_t ntries = 0;
+        if ( sampler.hasStrips() ) {
+          a.reserve( countToSizeT( nsample ) );
+          b.reserve( countToSizeT( nsample ) );
+          for ( std::uint64_t i = 0; i < nsample; ++i ) {
+            auto r = sampler.sample( *rng, E_div_kT );
+            ntries += r.ntries;
+            a.push_back( r.alpha );
+            b.push_back( r.beta );
+          }
+        }
+        os << "{\"refsample\":{\"type\":\"strip\",\"E\":";
+        streamJSON(os,sample_ekin);
+        os << ",\"E_div_kT\":";
+        streamJSON(os,E_div_kT);
+        os << ",\"kT\":";
+        streamJSON(os,kT);
+        os << ",\"seed\":";
+        streamJSON(os,seed);
+        os << ",\"nsample\":";
+        streamJSON(os,nsample);
+        os << ",\"has_strips\":";
+        streamJSON(os,sampler.hasStrips());
+        os << ",\"ntries\":";
+        streamJSON(os,ntries);
+        os << ",\"alpha\":";
+        streamJSONHugeDblVect(os,std::move(a));
+        os << ",\"beta\":";
+        streamJSONHugeDblVect(os,std::move(b));
         os << "}}";
       }
 
@@ -762,6 +846,7 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
   constexpr auto sv_sglcell = StrView::make("sglcell");
   constexpr auto sv_integschemes = StrView::make("integschemes");
   constexpr auto sv_proc = StrView::make("proc");
+  constexpr auto sv_proctries = StrView::make("proctries");
   constexpr auto sv_refsample = StrView::make("refsample");
   constexpr auto sv_analyse = StrView::make("analyse");
 
@@ -920,7 +1005,8 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
               " be left as an empty string for monoatomic materials)" )
           : ( "correct usage: [\"sab\",\"refsample\",MATCFGSTR,"
               "ATOMDISPLAYLABEL,NSAMPLE,SEED,SAMPLE_EVAL,TYPE] where TYPE is one"
-              " of \"legacy\", \"legacy_oversample\", and \"ref\" (the"
+              " of \"legacy\", \"legacy_oversample\", \"ref\", and \"strip\""
+              " (SAMPLE_EVAL>0 for the latter) (the"
               " ATOMDISPLAYLABEL can be left as an empty string for monoatomic"
               " materials)" ) );
     if ( nargs < 5 )
@@ -949,12 +1035,17 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
     VectD egrid;
     bool refsample_type_is_legacy(false);
     bool legacy_oversample(false);
+    bool refsample_type_is_strip(false);
     if ( !is_proc ) {
       if ( nargs != 6 )
         invalid(usage);
       //parse TYPE
       if ( arg(5) == "ref" ) {
         refsample_type_is_legacy = false;
+      } else if ( arg(5) == "strip" ) {
+        if ( !( sample_ekin.dbl() > 0.0 ) )
+          invalid(usage);
+        refsample_type_is_strip = true;
       } else if ( arg(5) == "legacy" ) {
         refsample_type_is_legacy = true;
       } else if ( arg(5) == "legacy_oversample" ) {
@@ -978,19 +1069,40 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
       query_impl_proc( os, std::move(sabdata), teff, std::move(egrid),
                        nsample, seed, sample_ekin, knllux );
     } else {
-      if ( refsample_type_is_legacy )
+      if ( refsample_type_is_strip )
+        query_impl_stripsample( os, std::move(sabdata), nsample, seed,
+                                sample_ekin );
+      else if ( refsample_type_is_legacy )
         query_impl_legacysample( os, std::move(sabdata), nsample, seed,
                                  sample_ekin, legacy_oversample );
       else
         query_impl_refsample( os, std::move(sabdata), teff, nsample, seed,
                               sample_ekin, knllux );
     }
+  } else if ( key == sv_proctries ) {
+    const char * usage
+      = ( "correct usage: [\"sab\",\"proctries\",MATCFGSTR,ATOMDISPLAYLABEL,"
+          "NPERPOINT,SEED] (the ATOMDISPLAYLABEL can be left as an empty"
+          " string for monoatomic materials)" );
+    if ( nargs != 4 )
+      invalid(usage);
+    Optional<std::string> atomdsplbl;
+    if ( !arg(1).empty() )
+      atomdsplbl = argstr(1);
+    auto optn = arg(2).toUInt64();
+    auto optsd = arg(3).toUInt64();
+    if ( !optn.has_value() || !( optn.value() > 0 ) || !optsd.has_value() )
+      invalid(usage);
+    auto extracted = query_impl_extractSabData( argstr(0), atomdsplbl );
+    query_impl_proctries( os, std::move( extracted.sab ), optn.value(),
+                          optsd.value(), MatCfg(argstr(0)).get_knllux() );
   } else if ( key == sv_list ) {
     if ( nargs != 0 )
       invalid("no arguments should come after: [\"sab\",\"list\"]");
-    streamJSON( os, std::array<StrView,8>{ sv_analyse,
+    streamJSON( os, std::array<StrView,9>{ sv_analyse,
                                            sv_integschemes,
                                            sv_proc,
+                                           sv_proctries,
                                            sv_refeval,
                                            sv_refsample,
                                            sv_samplepb,

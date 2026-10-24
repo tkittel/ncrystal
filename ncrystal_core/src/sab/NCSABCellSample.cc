@@ -129,6 +129,8 @@ NCS::LogLinDistSampler::LogLinDistSampler( double a, double fa, double logfa,
       m_cache1 = m_b-m_a;
       m_cache2 = fb/fa;
       m_cache3 = logfb-logfa;
+      if ( !( std::isfinite(m_cache2) && m_cache2 > 0.0 ) )
+        m_cache2 = 0.0;//ratio over/underflows: sample() uses m_cache3 only
     }
   }
 

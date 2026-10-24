@@ -221,7 +221,11 @@ inline double NCrystal::SABUtils::LogLinDistSampler::sample( RNG& rng ) const
       val = m_cache3 + m_cache4 * rng.generate();
     }
   } else {
-    nclikely val = m_a + m_cache1 * randKPowX(m_cache2,m_cache3,rng.generate());
+    nclikely val = m_a + m_cache1 * ( m_cache2 > 0.0
+                                      ? randKPowX( m_cache2, m_cache3,
+                                                   rng.generate() )
+                                      : sampleExpUnitInterval( m_cache3,
+                                                               rng.generate() ) );
   }
   return ncclamp( val, m_a, m_b );
 }

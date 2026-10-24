@@ -1,0 +1,9 @@
+stdlib::Al_sg225.ncmat;vdoslux=1 []: 300 grid points, beta-strip sampling used: yes
+stdlib::Al_sg225.ncmat;vdoslux=2003 []: 300 grid points, beta-strip sampling used: yes
+stdlib::Polyethylene_CH2.ncmat;vdoslux=1 [H]: 300 grid points, beta-strip sampling used: yes
+stdlib::Polyethylene_CH2.ncmat;vdoslux=2003 [H]: 300 grid points, beta-strip sampling used: yes
+benzene_solid_100K_sabsmall.ncmat [H]: 300 grid points, beta-strip sampling used: yes
+C_from_benzene_solid_20K_sabsmall.ncmat []: 300 grid points, beta-strip sampling used: yes
+Li2O_sg225_LithiumOxide_sabsmall_temp10K.ncmat [Li]: 300 grid points, beta-strip sampling used: yes
+H_from_ethanol_liquid_200K_sabsmall.ncmat []: 300 grid points, beta-strip sampling used: yes
+All cases OK

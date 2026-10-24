@@ -103,9 +103,7 @@ NCS::SABBetaStripSampler::SABBetaStripSampler( shared_obj<const SABData> sd,
     const double bcap = getBetaPlus( m_emax, ag.back() );
     const double bhi = ncmin( bg.back(), bcap );
     if ( !( bhi > blo ) )
-      NCRYSTAL_THROW2( BadInput, "SABBetaStripSampler: no kernel data in"
-                       " the kinematically accessible region at E/kT="
-                       << m_emax );
+      return;//no kernel data within KB(emax)
     const std::uint32_t nacells = static_cast<std::uint32_t>( ag.size()-1 );
     const unsigned n = nStripsPerBetaCell;
     VectD weights;
@@ -135,9 +133,7 @@ NCS::SABBetaStripSampler::SABBetaStripSampler( shared_obj<const SABData> sd,
       }
     }
     if ( m_strips.empty() )
-      NCRYSTAL_THROW2( BadInput, "SABBetaStripSampler: S(alpha,beta)=0"
-                       " everywhere in the kinematically accessible region"
-                       " at E/kT=" << m_emax );
+      return;
     initAliasTable( weights, m_aliasProb, m_alias );
     StableSum sumw;
     for ( auto w : weights )
@@ -236,6 +232,7 @@ NCS::SABBetaStripSampler::sample( RNG& rng, double e ) const
 {
 #ifndef NDEBUG
   nc_assert_always( e > 0.0 && e <= m_emax );
+  nc_assert_always( hasStrips() );
 #endif
   Result res;
   res.ntries = 0;

@@ -216,7 +216,7 @@ namespace {
     return NC::ncabs( a - b ) <= 1e-12 * scale;
   }
 
-  struct Counts { unsigned nconf = 0, nused = 0, ndropped = 0, nthrow = 0; };
+  struct Counts { unsigned nconf = 0, nused = 0, ndropped = 0, nrefused = 0; };
 
   //Reference strips (independent of S): the beta cells in the beta range of
   //KB(emax) on the kernel grid, each split in nstrips, with the smallest alpha
@@ -264,21 +264,19 @@ namespace {
   //Checks the strips of a SABBetaStripSampler on kernel k against the
   //reference strips: same beta ranges and rectangles, and the reference S
   //maximum in the rectangle. Strips must only be dropped where S=0, and a
-  //sampler without any strips must refuse construction:
+  //sampler without any strips must not be created:
   void checkStrips( const Kernel& k, double emax, unsigned nstrips,
                     const std::vector<RefStrip>& expected, Counts& counts )
   {
     ++counts.nconf;
-    NC::Optional<NS::SABBetaStripSampler> sampler;
-    try {
-      sampler.emplace( k.sd, emax, nstrips );
-    } catch ( NC::Error::BadInput& ) {
+    NS::SABBetaStripSampler sampler( k.sd, emax, nstrips );
+    if ( !sampler.hasStrips() ) {
       for ( auto& rs : expected )
         REQUIRE( !refHasS( k, rs ) );
-      ++counts.nthrow;
+      ++counts.nrefused;
       return;
     }
-    const auto strips = sampler.value().stripBounds();
+    const auto strips = sampler.stripBounds();
     std::size_t istrip = 0;
     for ( auto& rs : expected ) {
       const bool used = ( istrip < strips.size()
@@ -523,13 +521,9 @@ namespace {
                       unsigned nstrips, unsigned nsamples,
                       unsigned nfine_per_cell = 4 )
   {
-    NC::Optional<NS::SABBetaStripSampler> optsampler;
-    try {
-      optsampler.emplace( kernel.sd, emax, nstrips );
-    } catch ( NC::Error::BadInput& ) {
+    NS::SABBetaStripSampler sampler( kernel.sd, emax, nstrips );
+    if ( !sampler.hasStrips() )
       return false;//no strips at all (tested elsewhere)
-    }
-    const auto& sampler = optsampler.value();
     const auto& ag = kernel.ag;
     const auto& bg = kernel.bg;
     constexpr unsigned nu = 4;
@@ -745,7 +739,7 @@ int main()
   std::cout << "Cell topologies: " << topos.size() << " with "
             << svals.size() << "^4 corner S combinations, " << ctopo.nconf
             << " configurations, " << ctopo.nused << " strips as expected, "
-            << ctopo.ndropped << " dropped with S=0, " << ctopo.nthrow
+            << ctopo.ndropped << " dropped with S=0, " << ctopo.nrefused
             << " samplers refused without any S>0" << std::endl;
 
   //2) Larger smooth kernels over a wide range of emax:
