@@ -297,7 +297,7 @@ Eupper=20eV can be requested with:
   egrid 20.0
 ```
 
-Finally, it is possible to specify `S'(alpha,beta)=S(alpha,beta)*exp(-beta/2)`
+Finally, it is possible to specify `S'(alpha,beta)=S(alpha,beta)*exp(beta/2)`
 values instead of `S(alpha,beta)` values, by using the `sab_scaled` keyword
 instead of `sab`. When using `sab_scaled` it is optionally possible to specify
 just the table at non-negative values of `beta`, and assume
