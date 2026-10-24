@@ -390,9 +390,13 @@ NCS::BoundedCellSampler::prepareBCSData( double probability_b1_edge,
       logS[3] = sls2.second;
       a2 = regions.front().alpha_up;
     }
-    //recheck if still needs largek treatment in this reduced range:
-    needs_largek[0] = LargeKHandling::needsLargeKTreatment( S[0], S[1] );
-    needs_largek[1] = LargeKHandling::needsLargeKTreatment( S[2], S[3] );
+    //recheck if still needs largek treatment in this reduced range (this can
+    //only turn it off: edges which are linear in the full cell remain linear,
+    //even if both restricted values are positive):
+    needs_largek[0] = ( needs_largek[0]
+                        && LargeKHandling::needsLargeKTreatment( S[0], S[1] ) );
+    needs_largek[1] = ( needs_largek[1]
+                        && LargeKHandling::needsLargeKTreatment( S[2], S[3] ) );
     //Find the reduced ranges if needed:
     for ( int i = 0; i < 2; ++i ) {
       auto offset = 2*i;

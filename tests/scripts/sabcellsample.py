@@ -384,6 +384,11 @@ def main(do_plot,luxlvl,mplvl,test_select):
                       0.027532855700519426,
                       0.026748257342144074 ] },
 
+        #Edge@b1 needs large-k treatment, while the linear edge@b2 (S=0 at
+        #alpha1) is restricted to alpha values starting just above alpha1
+        #(alpha1 is 1e-13 of the cell width below alpha-(E/kT,b1)):
+        {'E_div_kT': 1.0,'alpha': (0.0505102572167269,1.0),'beta': (0.5,1.0),
+         'svals': [1e-30,1.0,0.0,1.0]},
     ]
 
     npvals_tot = 0
