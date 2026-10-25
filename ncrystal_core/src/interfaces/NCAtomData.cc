@@ -92,8 +92,8 @@ std::string NC::AtomData::elementName() const
   return name;
 }
 
-NC::AtomData::AtomData( SigmaBound incXS, double cohSL, SigmaAbsorption captureXS, AtomMass avrMassAMU, unsigned Z, unsigned A )
-  : m_m(DoValidate,avrMassAMU), m_ixs(incXS.get()), m_csl(cohSL), m_axs(captureXS.get()), m_classify(A), m_z(Z)
+NC::AtomData::AtomData( SigmaBound incXS, ScatLenFM cohSL, SigmaAbsorption captureXS, AtomMass avrMassAMU, unsigned Z, unsigned A )
+  : m_m(DoValidate,avrMassAMU), m_ixs(incXS.get()), m_csl(cohSL.value), m_axs(captureXS.get()), m_classify(A), m_z(Z)
 {
   nc_assert(m_z>0);
   nc_assert(m_classify>=0);
@@ -201,7 +201,8 @@ NC::AtomData::AtomData( const NC::AtomData::ComponentList& components )
         const double w = cf.fraction;
         const AtomData& c = cf.data;
         double tmp = c.m_csl-m_csl;
-        sum_w_newixs.add( w * (c.m_ixs+k4Pi*tmp*tmp) );
+        constexpr double kkk = k4Pi*0.01;//0.01 is barn/fm^2
+        sum_w_newixs.add( w * (c.m_ixs+kkk*tmp*tmp) );
       }
       m_ixs = sum_w_newixs.sum()*w_correction_factor;
       Impl::setComponents(this,components);
