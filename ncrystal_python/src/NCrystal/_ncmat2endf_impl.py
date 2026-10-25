@@ -1317,7 +1317,7 @@ def _impl_ncmat2endf( *,
     density = loaded['info_obj'].density
     if verbosity > 0:
         ncprint('Files created:')
-        from ._common import prettyFmtValue as pfmt
+        from ._fmt import prettyFmtValue as pfmt
         for fn, frac, sym in output_composition:
             ncprint(f'  {fn} : {sym} with fraction {pfmt(frac)}')
         if len(temperatures)==1:

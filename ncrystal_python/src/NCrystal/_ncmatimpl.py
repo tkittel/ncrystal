@@ -30,6 +30,7 @@ import copy
 import math
 
 from . import _common as _nc_common
+from . import _fmt as _nc_fmt
 from . import core as _nc_core
 
 _magic_two_space=b'\xc3\x98@'.decode('utf8')
@@ -815,7 +816,7 @@ class NCMATComposerImpl:
         if not atompos:
             return ''
         ll=[]
-        fmt = _nc_common.prettyFmtValue
+        fmt = _nc_fmt.prettyFmtValue
         #NB: We sort on the val->string->val values, not the original
         #values. Because otherwise we get irreproducibilities when in
         #principle two x values are almost identical and their order might
@@ -871,7 +872,7 @@ class NCMATComposerImpl:
             if not isinstance(fracinfo,float) and len(fracinfo)==3:
                 _fracval_flt,frac_prettyprint,_ = fracinfo
             else:
-                _fracval_flt,frac_prettyprint = fracinfo, _nc_common.prettyFmtValue( fracinfo )
+                _fracval_flt,frac_prettyprint = fracinfo, _nc_fmt.prettyFmtValue( fracinfo )
             lines += '@DYNINFO\n'
             dyninfo = dyninfos.get(lbl,None)
 
@@ -1062,7 +1063,7 @@ class NCMATComposerImpl:
                 d[k] = v
         res = sorted( (k,v) for k,v in d.items() )
         if as_str:
-            return _nc_common.format_chemform( res )
+            return _nc_fmt.format_chemform( res )
         else:
             return res
 
@@ -1277,7 +1278,7 @@ class NCMATComposerImpl:
             _lbl_counts = sorted( fractions.items())
 
         _chem_compos = self.get_chemical_composition( as_str = False)
-        _chemform = _nc_common.format_chemform( _chem_compos )
+        _chemform = _nc_fmt.format_chemform( _chem_compos )
 
         _title =  _chemform
         if cellsg:
@@ -1710,7 +1711,7 @@ def determine_labels_and_atomdb( _self_params, *, fractions, allow_siteoccu_ncma
     for i,lbl in enumerate(sorted(lbls_with_nonunit_occu)):
         origelem_mass = calc_mass(lbl,compositions[lbl])
         compos = compositions[lbl][:]
-        origelem_lbl = lbl if compos is None else _nc_common.format_chemform([(v,k) for k,v in compos])
+        origelem_lbl = lbl if compos is None else _nc_fmt.format_chemform([(v,k) for k,v in compos])
         assert 0.0 < origelem_mass < 2000.0
         #In principle I should check this is not already used, but if anyone
         #actually needs Og999 or thereabouts, they are obviously just trying
