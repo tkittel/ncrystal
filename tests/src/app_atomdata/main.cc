@@ -26,11 +26,10 @@ namespace NC = NCrystal;
 
 int main()
 {
-  const double fm = 0.1;
-  auto H_direct = std::make_shared<NC::AtomData>( NC::SigmaBound{80.26}, -3.7390*fm, NC::SigmaAbsorption{0.3326}, NC::AtomMass{1.007825032241}, 1 );
-  auto H1 = std::make_shared<NC::AtomData>( NC::SigmaBound{80.27}, -3.7406*fm, NC::SigmaAbsorption{0.3326}, NC::AtomMass{1.0078}, 1, 1 );
-  auto H2 = std::make_shared<NC::AtomData>( NC::SigmaBound{2.05}, 6.671*fm, NC::SigmaAbsorption{0.000519}, NC::AtomMass{2.01410177811}, 1, 2 );
-  auto H3 = std::make_shared<NC::AtomData>( NC::SigmaBound{0.14}, 4.792*fm, NC::SigmaAbsorption{0.0}, NC::AtomMass{3.01604928199}, 1, 3 );
+  auto H_direct = std::make_shared<NC::AtomData>( NC::SigmaBound{80.26}, NC::AtomData::ScatLenFM{-3.7390}, NC::SigmaAbsorption{0.3326}, NC::AtomMass{1.007825032241}, 1 );
+  auto H1 = std::make_shared<NC::AtomData>( NC::SigmaBound{80.27}, NC::AtomData::ScatLenFM{-3.7406}, NC::SigmaAbsorption{0.3326}, NC::AtomMass{1.0078}, 1, 1 );
+  auto H2 = std::make_shared<NC::AtomData>( NC::SigmaBound{2.05}, NC::AtomData::ScatLenFM{6.671}, NC::SigmaAbsorption{0.000519}, NC::AtomMass{2.01410177811}, 1, 2 );
+  auto H3 = std::make_shared<NC::AtomData>( NC::SigmaBound{0.14}, NC::AtomData::ScatLenFM{4.792}, NC::SigmaAbsorption{0.0}, NC::AtomMass{3.01604928199}, 1, 3 );
   std::cout<< *H1<<std::endl;
   std::cout<< *H2<<std::endl;
   std::cout<< *H3<<std::endl;
@@ -39,12 +38,12 @@ int main()
   std::cout<< *H_composed<<std::endl;
   std::cout<< *H_direct<<std::endl;
 
-  auto Ti_direct = std::make_shared<NC::AtomData>( NC::SigmaBound{2.87}, -3.438*fm, NC::SigmaAbsorption{6.09}, NC::AtomMass{47.867}, 22 );
-  auto Ti46 = std::make_shared<NC::AtomData>( NC::SigmaBound{0.0}, 4.93*fm, NC::SigmaAbsorption{0.59}, NC::AtomMass{45.9526316}, 22, 46 );
-  auto Ti47 = std::make_shared<NC::AtomData>( NC::SigmaBound{1.5}, 3.63*fm, NC::SigmaAbsorption{1.7}, NC::AtomMass{46.9517631}, 22, 47 );
-  auto Ti48 = std::make_shared<NC::AtomData>( NC::SigmaBound{0.}, -6.08*fm, NC::SigmaAbsorption{7.84}, NC::AtomMass{47.9479463}, 22, 48 );
-  auto Ti49 = std::make_shared<NC::AtomData>( NC::SigmaBound{3.3}, 1.04*fm, NC::SigmaAbsorption{2.2}, NC::AtomMass{48.9478700}, 22, 49 );
-  auto Ti50 = std::make_shared<NC::AtomData>( NC::SigmaBound{0.}, 6.18*fm, NC::SigmaAbsorption{0.179}, NC::AtomMass{49.9447912}, 22, 50 );
+  auto Ti_direct = std::make_shared<NC::AtomData>( NC::SigmaBound{2.87}, NC::AtomData::ScatLenFM{-3.438}, NC::SigmaAbsorption{6.09}, NC::AtomMass{47.867}, 22 );
+  auto Ti46 = std::make_shared<NC::AtomData>( NC::SigmaBound{0.0}, NC::AtomData::ScatLenFM{4.93}, NC::SigmaAbsorption{0.59}, NC::AtomMass{45.9526316}, 22, 46 );
+  auto Ti47 = std::make_shared<NC::AtomData>( NC::SigmaBound{1.5}, NC::AtomData::ScatLenFM{3.63}, NC::SigmaAbsorption{1.7}, NC::AtomMass{46.9517631}, 22, 47 );
+  auto Ti48 = std::make_shared<NC::AtomData>( NC::SigmaBound{0.}, NC::AtomData::ScatLenFM{-6.08}, NC::SigmaAbsorption{7.84}, NC::AtomMass{47.9479463}, 22, 48 );
+  auto Ti49 = std::make_shared<NC::AtomData>( NC::SigmaBound{3.3}, NC::AtomData::ScatLenFM{1.04}, NC::SigmaAbsorption{2.2}, NC::AtomMass{48.9478700}, 22, 49 );
+  auto Ti50 = std::make_shared<NC::AtomData>( NC::SigmaBound{0.}, NC::AtomData::ScatLenFM{6.18}, NC::SigmaAbsorption{0.179}, NC::AtomMass{49.9447912}, 22, 50 );
   auto Ti_composed = std::make_shared<NC::AtomData>( NC::AtomData::ComponentList{ {0.082,Ti46},
                                                                                   {0.074,Ti47},
                                                                                   {0.738,Ti48},
