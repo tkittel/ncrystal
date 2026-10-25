@@ -40,6 +40,15 @@ namespace NCRYSTAL_NAMESPACE {
 
       using ScatLenFM = AtomData::ScatLenFM;
 
+      std::string atomDBDataString( double mass_amu, ScatLenFM csl,
+                                    double inc_xs, double abs_xs )
+      {
+        std::ostringstream ss;
+        ss << fmt(mass_amu) << "u " << fmt(csl.value) << "fm "
+           << fmt(inc_xs) << "b " << fmt(abs_xs) << 'b';
+        return ss.str();
+      }
+
       class AtomDBKey {
       public:
         //Key is essentially (Z,A) where A=0 indicates natural element. For
@@ -85,8 +94,8 @@ namespace NCRYSTAL_NAMESPACE {
           ss << elementZToName(Z());
           if ( A()!=0 )
             ss << A();
-          ss << ' ' << fmt(m_mass_amu) << "u " << fmt(m_coh_sl.value) << "fm "
-             << fmt(m_inc_xs) << "b " << fmt(m_abs_xs) << 'b';
+          ss << ' ' << atomDBDataString( m_mass_amu, m_coh_sl,
+                                         m_inc_xs, m_abs_xs );
           return ss.str();
         }
       private:
@@ -202,6 +211,14 @@ NC::OptionalAtomDataSP NC::AtomDB::getIsotopeOrNatElem( const std::string& name 
     return nullptr;
 
   return internal::getStdAtomDBFact().create(internal::AtomDBKey(Z,A));
+}
+
+std::string NC::AtomDB::atomDBDataString( const AtomData& ad )
+{
+  return internal::atomDBDataString( ad.averageMassAMU().dbl(),
+                                     AtomData::ScatLenFM{ ad.coherentScatLenFM() },
+                                     ad.incoherentXS().dbl(),
+                                     ad.captureXS().dbl() );
 }
 
 unsigned NC::AtomDB::getAllEntriesCount()
