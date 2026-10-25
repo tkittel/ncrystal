@@ -31,7 +31,7 @@ B11(cohSL=6.65fm cohXS=5.55716barn incXS=0.21barn absXS=0.0055barn mass=11.0093a
 C(cohSL=6.646fm cohXS=5.55048barn incXS=0.001barn absXS=0.0035barn mass=12.011amu Z=6)
 '12.0110369031873u 6.646fm 0.001b 0.0035b'
 C12(cohSL=6.6511fm cohXS=5.559barn incXS=0barn absXS=0.00353barn mass=12amu Z=6 A=12)
-'12.0u 6.6511fm 0b 0.00353b'
+'12u 6.6511fm 0b 0.00353b'
 C13(cohSL=6.19fm cohXS=4.81494barn incXS=0.034barn absXS=0.00137barn mass=13.0034amu Z=6 A=13)
 '13.00335483521u 6.19fm 0.034b 0.00137b'
 N(cohSL=9.36fm cohXS=11.0093barn incXS=0.5barn absXS=1.9barn mass=14.0068amu Z=7)
@@ -123,7 +123,7 @@ K41(cohSL=2.69fm cohXS=0.909315barn incXS=0.3barn absXS=1.46barn mass=40.9618amu
 Ca(cohSL=5.795fm cohXS=4.22004barn incXS=0.05barn absXS=0.43barn mass=40.078amu Z=20)
 '40.0780225128u 5.795fm 0.05b 0.43b'
 Ca40(cohSL=5.90962fm cohXS=4.38864barn incXS=0barn absXS=0.41barn mass=39.9626amu Z=20 A=40)
-'39.962590865u 5.90962fm 0b 0.41b'
+'39.962590865u 5.909624496225fm 0b 0.41b'
 Ca42(cohSL=3.36fm cohXS=1.41869barn incXS=0barn absXS=0.68barn mass=41.9586amu Z=20 A=42)
 '41.958617828u 3.36fm 0b 0.68b'
 Ca43(cohSL=-1.56fm cohXS=0.305815barn incXS=0.5barn absXS=6.2barn mass=42.9588amu Z=20 A=43)
@@ -313,7 +313,7 @@ Mo98(cohSL=6.58fm cohXS=5.44079barn incXS=0barn absXS=0.127barn mass=97.9054amu 
 Mo100(cohSL=6.73fm cohXS=5.69167barn incXS=0barn absXS=0.4barn mass=99.9075amu Z=42 A=100)
 '99.907467976u 6.73fm 0b 0.4b'
 Tc(cohSL=6.8fm cohXS=5.81069barn incXS=0.5barn absXS=20barn mass=98amu Z=43)
-'98.0u 6.8fm 0.5b 20b'
+'98u 6.8fm 0.5b 20b'
 Ru(cohSL=7.03fm cohXS=6.21041barn incXS=0.4barn absXS=2.56barn mass=101.07amu Z=44)
 '101.070135u 7.03fm 0.4b 2.56b'
 Rh(cohSL=5.88fm cohXS=4.34475barn incXS=0.3barn absXS=144.8barn mass=102.905amu Z=45)
@@ -473,7 +473,7 @@ Nd148(cohSL=5.7fm cohXS=4.08281barn incXS=0barn absXS=2.5barn mass=147.917amu Z=
 Nd150(cohSL=5.3fm cohXS=3.52989barn incXS=0barn absXS=1.2barn mass=149.921amu Z=60 A=150)
 '149.92090153u 5.3fm 0b 1.2b'
 Pm(cohSL=12.6fm cohXS=19.9504barn incXS=1.3barn absXS=168.4barn mass=145amu Z=61)
-'145.0u 12.6fm 1.3b 168.4b'
+'145u 12.6fm 1.3b 168.4b'
 Sm(cohSL=0.8fm cohXS=0.0804248barn incXS=39barn absXS=5922barn mass=150.35amu Z=62)
 '150.35023831u 0.8fm 39b 5922b'
 Sm144(cohSL=-3fm cohXS=1.13097barn incXS=0barn absXS=0.7barn mass=143.912amu Z=62 A=144)
@@ -677,7 +677,7 @@ Bi(cohSL=8.532fm cohXS=9.14769barn incXS=0.0084barn absXS=0.0338barn mass=208.98
 Bi209(cohSL=8.532fm cohXS=9.14769barn incXS=0.0084barn absXS=0.0338barn mass=208.98amu Z=83 A=209)
 '208.98039852u 8.532fm 0.0084b 0.0338b'
 Ra(cohSL=10fm cohXS=12.5664barn incXS=0barn absXS=12.8barn mass=226amu Z=88)
-'226.0u 10fm 0b 12.8b'
+'226u 10fm 0b 12.8b'
 Th(cohSL=10.31fm cohXS=13.3576barn incXS=0barn absXS=7.37barn mass=232.038amu Z=90)
 '232.03805369u 10.31fm 0b 7.37b'
 Th232(cohSL=10.31fm cohXS=13.3576barn incXS=0barn absXS=7.37barn mass=232.038amu Z=90 A=232)
