@@ -127,7 +127,7 @@ void NC::AtomDBExtender::addData( const NC::VectS& words, unsigned format_versio
 
     //Data entry:
     double mass = getDblWithUnit(words.at(1),"u"_s,"mass",false,false);
-    double csl = getDblWithUnit(words.at(2),"fm"_s,"coherent scattering length",true,true)*0.1;//fm=1e-15m -> sqrt(barn)=1e-14m
+    AtomData::ScatLenFM csl{ getDblWithUnit(words.at(2),"fm"_s,"coherent scattering length",true,true) };
     double incxs = getDblWithUnit(words.at(3),"b"_s,"incoherent cross section",true,false);
     double absxs = getDblWithUnit(words.at(4),"b"_s,"absorption cross section",true,false);
     nc_assert( !(mass<=0.0) );

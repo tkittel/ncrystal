@@ -112,8 +112,11 @@ namespace NCRYSTAL_NAMESPACE {
     // Constructors and plumbing //
     ///////////////////////////////
 
+    //Coherent scattering length in fm:
+    struct ScatLenFM final { double value; };
+
     //Natural elements (provide just Z) or single isotopes (provide both Z and A):
-    AtomData( SigmaBound incXS, double cohSL, SigmaAbsorption captureXS, AtomMass avrMassAMU, unsigned Z, unsigned A=0 );
+    AtomData( SigmaBound incXS, ScatLenFM cohSL, SigmaAbsorption captureXS, AtomMass avrMassAMU, unsigned Z, unsigned A=0 );
 
     //Composite:
     using ComponentList = std::vector<Component>;
@@ -222,17 +225,18 @@ inline NCrystal::SigmaBound NCrystal::AtomData::incoherentXS() const
 
 inline double NCrystal::AtomData::coherentScatLen() const
 {
-  return m_csl;
+  return m_csl*0.1;//0.1 is sqrt(barn)/fm
 }
 
 inline double NCrystal::AtomData::coherentScatLenFM() const
 {
-  return m_csl*10.0;//10 is sqrt(barn)/fm
+  return m_csl;
 }
 
 inline NCrystal::SigmaBound NCrystal::AtomData::coherentXS() const
 {
-  return NCrystal::SigmaBound{m_csl*m_csl*k4Pi};
+  constexpr double kkk = k4Pi*0.01;//0.01 is barn/fm^2
+  return NCrystal::SigmaBound{m_csl*m_csl*kkk};
 }
 
 inline NCrystal::SigmaBound NCrystal::AtomData::scatteringXS() const
