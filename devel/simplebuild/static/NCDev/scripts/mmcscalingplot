@@ -44,7 +44,7 @@ def fit_amdahl( nthreads, throughput, throughput_stddev ):
     return xx, yscale * fit_func(xx,res_params[0]),res_params[0]
 
 def prettyfmt(x):
-    from NCrystalDev._common import _frexp10
+    from NCrystalDev._fmt import _frexp10
     b,e = _frexp10(x)
     if b==1 and e>3:
         return f'1e{e}'
