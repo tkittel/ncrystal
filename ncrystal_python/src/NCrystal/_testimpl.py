@@ -75,10 +75,10 @@ def _actualtest( verbose ):
             raise RuntimeError(f'check failed ({a:.16g} != {b:.16g}, diff {a-b:g})')
         return True
     require(hasFactory('stdncmat'))
-    from . import _common as nc_common
-    require( nc_common.prettyFmtValue(0.25) == '1/4' )
-    require( nc_common.prettyFmtValue(0.25 + 1e-12) != '1/4' )
-    require( nc_common.prettyFmtValue(0.25 + 1e-15) == '1/4' )
+    from . import _fmt as nc_fmt
+    require( nc_fmt.prettyFmtValue(0.25) == '1/4' )
+    require( nc_fmt.prettyFmtValue(0.25 + 1e-12) != '1/4' )
+    require( nc_fmt.prettyFmtValue(0.25 + 1e-15) == '1/4' )
 
     _cfgstr='stdlib::Al_sg225.ncmat;dcutoff=1.4'
     prfct(f'Trying to createInfo("{_cfgstr}")')

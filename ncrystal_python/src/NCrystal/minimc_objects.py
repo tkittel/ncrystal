@@ -150,7 +150,7 @@ class MMCResults:
         s = self.setup['src']['metadata']['energy_description']
         g = self.setup['geom']['decoded']['short_description']
         if latex:
-            from ._common import _latex_format
+            from ._fmt import _latex_format
             n = f'${_latex_format(n)}$'
         return f'{n} {s} neutrons through {g}'
 

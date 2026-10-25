@@ -36,6 +36,7 @@ __all__ = [
 ]
 
 from . import _common as _nc_common
+from . import _fmt as _nc_fmt
 from . import _ncmatimpl as _nc_ncmatimpl
 from . import core as _nc_core
 from . import ncmat as _nc_ncmat
@@ -990,7 +991,7 @@ def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature, skip_d
         atomcount = _extract_atomcount( a )
         for elemfrac, eleminfo in a['composition']:
             total_composition.append( ( eleminfo, elemfrac * atomcount ) )
-    formula = _nc_common.format_chemform( total_composition )
+    formula = _nc_fmt.format_chemform( total_composition )
 
 
     expected_formula = cifloader.raw_cif_chemformula
@@ -1080,7 +1081,7 @@ def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature, skip_d
             if formulas_incompatible(total_composition,actual_expected_formula_dict):
                 s = f'"{expected_formula}"'
                 if remap:
-                    _ = _nc_common.format_chemform( sorted(actual_expected_formula_dict.items() ) )
+                    _ = _nc_fmt.format_chemform( sorted(actual_expected_formula_dict.items() ) )
                     s += f' remapped to "{_}"'
                 raise _nc_core.NCBadInput(f'Formula encoded in CIF data ({s}) is not compatible with formula of loaded structure ("{formula}")')
 

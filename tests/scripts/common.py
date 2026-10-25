@@ -22,6 +22,7 @@
 
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev._common as nc_common
+import NCrystalDev._fmt as nc_fmt
 import os
 from NCrystalDev._ncmatimpl import _extractInitialHeaderCommentsFromNCMATData
 
@@ -37,8 +38,8 @@ for v in [(0.25,'1/4'),
           (0.999999999999999889,'.999999999999999889'),
           (0.9999999999999999999889,'1'),
           (0.00,'0')]:
-    vfmt = nc_common.prettyFmtValue(v[0])
-    print( f'nc_common.prettyFmtValue({v[0]}):',repr(vfmt))
+    vfmt = nc_fmt.prettyFmtValue(v[0])
+    print( f'nc_fmt.prettyFmtValue({v[0]}):',repr(vfmt))
     require( vfmt == v[1] )
     if '/' in vfmt:
         _ = vfmt.split('/')
@@ -50,7 +51,7 @@ for v in [(0.25,'1/4'),
     require( (fmtval==0.0) == (v[0]==0.0) )
 
 def testcf( c ):
-    print(f'format_chemform({c}):', repr(nc_common.format_chemform(c)) )
+    print(f'format_chemform({c}):', repr(nc_fmt.format_chemform(c)) )
 
 testcf( [('Al',0.99),('Cr',0.005),('B10',0.005)] )
 testcf( [('Al',0.9),('Cr',0.1)])
