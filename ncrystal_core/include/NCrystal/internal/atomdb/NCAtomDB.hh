@@ -52,6 +52,10 @@ namespace NCRYSTAL_NAMESPACE {
     unsigned getAllEntriesCount();
     std::vector<std::pair<unsigned,unsigned>> getAllEntries();
 
+    //Values formatted as in NCMAT @ATOMDB lines (e.g. "28.09u 4.1491fm 0.004b
+    //0.171b"):
+    std::string atomDBDataString( const AtomData& );
+
   }
 }
 
