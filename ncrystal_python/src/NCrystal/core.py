@@ -283,7 +283,9 @@ class AtomData(RCBase):
         assert -1e99 < coh_scat_len < 1e99
         assert 0.0 <= incoh_xs < 1e99
         assert 0.0 <= abs_xs < 1e99
-        return f'{mass}u{sep}{coh_scat_len or 0:g}fm{sep}{incoh_xs or 0:g}b{sep}{abs_xs or 0:g}b'
+        from ._fmt import fmt as f
+        return ( f'{f(mass)}u{sep}{f(coh_scat_len)}fm{sep}{f(incoh_xs)}b'
+                 f'{sep}{f(abs_xs)}b' )
 
     def to_atomdb_str( self, sep=' ' ):
         """Return data formatted in a string in a format like suitable for the
