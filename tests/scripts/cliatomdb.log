@@ -1,0 +1,175 @@
+============= CLI >>atomdb --help<< =============
+usage: ncrystal_atomdb [options] [PATTERN ...]
+
+Browse NCrystal's database of isotopes and natural elements, with their masses,
+scattering lengths, and cross sections.
+
+Each PATTERN can be:
+
+  - an element (e.g. He, also selecting its isotopes),
+  - an isotope (e.g. B10, with D and T meaning H2 and H3),
+  - a condition, such as "absxs>1000" or A==0 (see --cond-help).
+
+other options:
+  -h, --help   show this help message and exit
+  --cond-help  Show the properties usable in conditions and exit.
+  --json       Output all properties of the selected entries as JSON.
+  --ncmat      Output in NCMAT @ATOMDB format.
+
+examples:
+  ncrystal_atomdb He B10                  # natural He and its isotopes, and B10
+  ncrystal_atomdb "absxs>1000"            # strong absorbers
+  ncrystal_atomdb Gd --ncmat              # output in NCMAT @ATOMDB format
+
+Use --cond-help for the list of properties.
+
+============= CLI >>atomdb --cond-help<< =============
+conditions:
+  Conditions compare a property with a value, like "absxs>100" (conditions with
+  < or > need quotes). Text comparisons ignore case.
+
+examples:
+  "absxs>1000"                  strong absorbers
+  A=0 "cohsl<0"                 natural elements with negative cohsl
+  He A!=0                       only the isotopes of He
+
+properties:
+  Z        atomic number
+  A        mass number (0 for natural elements)
+  mass     atomic mass [amu]
+  cohsl    coherent scattering length [fm]
+  cohxs    coherent scattering cross section [barn]
+  incohxs  incoherent scattering cross section [barn]
+  scatxs   scattering cross section [barn]
+  absxs    absorption cross section at 2200m/s [barn]
+============= CLI >>atomdb He help<< =============
+usage: ncrystal_atomdb [options] [PATTERN ...]
+
+Browse NCrystal's database of isotopes and natural elements, with their masses,
+scattering lengths, and cross sections.
+
+Each PATTERN can be:
+
+  - an element (e.g. He, also selecting its isotopes),
+  - an isotope (e.g. B10, with D and T meaning H2 and H3),
+  - a condition, such as "absxs>1000" or A==0 (see --cond-help).
+
+other options:
+  -h, --help   show this help message and exit
+  --cond-help  Show the properties usable in conditions and exit.
+  --json       Output all properties of the selected entries as JSON.
+  --ncmat      Output in NCMAT @ATOMDB format.
+
+examples:
+  ncrystal_atomdb He B10                  # natural He and its isotopes, and B10
+  ncrystal_atomdb "absxs>1000"            # strong absorbers
+  ncrystal_atomdb Gd --ncmat              # output in NCMAT @ATOMDB format
+
+Use --cond-help for the list of properties.
+
+============= CLI >>atomdb He b10<< =============
+LABEL  Z   A             MASS    COHSL     COHXS  INCOHXS    SCATXS    ABSXS
+-----  -  --  ---------------  -------  --------  -------  --------  -------
+He     2   0  4.0026018729265  3.26548  1.339997        0  1.339997  0.00747
+He3    2   3    3.01602932265     5.74     4.140      1.6      5.74     5333
+He4    2   4    4.00260325413     3.26     1.336        0     1.336        0
+B10    5  10     10.012936862     -0.1     0.001        3       3.0     3835
+============= CLI >>atomdb 'absxs > 1000' A=0<< =============
+LABEL   Z  A           MASS  COHSL  COHXS  INCOHXS  SCATXS  ABSXS
+-----  --  -  -------------  -----  -----  -------  ------  -----
+Cd     48  0  112.410057988   4.87  2.980     3.46    6.44   2520
+Sm     62  0   150.35023831    0.8   0.08       39    39.1   5922
+Eu     63  0   151.96457732   7.22  6.551      2.5    9.05   4530
+Gd     64  0    157.2510281    6.5   5.31      151   156.3  49700
+============= CLI >>atomdb Li<< =============
+LABEL  Z  A           MASS  COHSL  COHXS  INCOHXS  SCATXS   ABSXS
+-----  -  -  -------------  -----  -----  -------  ------  ------
+Li     3  0  6.94093739547   -1.9   0.45     0.92    1.37    70.5
+Li6    3  6  6.01512288742      2    0.5     0.46     1.0     940
+Li7    3  7  7.01600343666  -2.22  0.619     0.78   1.399  0.0454
+============= CLI >>atomdb H --json<< =============
+[
+ {
+  "Z": 1,
+  "A": 0,
+  "label": "H",
+  "mass": 1.007975973752,
+  "cohsl": -3.739,
+  "cohxs": 1.7567938171958557,
+  "incohxs": 80.26,
+  "scatxs": 82.01679381719586,
+  "absxs": 0.3326
+ },
+ {
+  "Z": 1,
+  "A": 1,
+  "label": "H1",
+  "mass": 1.00782503224,
+  "cohsl": -3.7406,
+  "cohxs": 1.7582976800062105,
+  "incohxs": 80.27,
+  "scatxs": 82.0282976800062,
+  "absxs": 0.3326
+ },
+ {
+  "Z": 1,
+  "A": 2,
+  "label": "H2",
+  "mass": 2.01410177811,
+  "cohsl": 6.671,
+  "cohxs": 5.592316535755301,
+  "incohxs": 2.05,
+  "scatxs": 7.642316535755301,
+  "absxs": 0.000519
+ },
+ {
+  "Z": 1,
+  "A": 3,
+  "label": "H3",
+  "mass": 3.01604928199,
+  "cohsl": 4.792,
+  "cohxs": 2.8856488593937186,
+  "incohxs": 0.14,
+  "scatxs": 3.0256488593937187,
+  "absxs": 0.0
+ }
+]
+============= CLI >>atomdb He N15 --ncmat<< =============
+@ATOMDB
+  He  4.0026018729265u 3.26548fm     0b 0.00747b
+  He3   3.01602932265u    5.74fm   1.6b    5333b
+  He4   4.00260325413u    3.26fm     0b       0b
+  N15  15.00010889894u    6.44fm 5e-05b 2.4e-05b
+============= CLI >>atomdb D T<< =============
+LABEL  Z  A           MASS  COHSL   COHXS  INCOHXS  SCATXS     ABSXS
+-----  -  -  -------------  -----  ------  -------  ------  --------
+H2     1  2  2.01410177811  6.671  5.5923     2.05   7.642  0.000519
+H3     1  3  3.01604928199  4.792  2.8856     0.14   3.026         0
+============= CLI >>atomdb 'absxs > 1e9'<< =============
+No matching entries found.
+============= CLI >>atomdb He B10<< =============
+  -> 6 lines of output
+============= CLI >>atomdb 'absxs>1000'<< =============
+  -> 19 lines of output
+============= CLI >>atomdb Gd --ncmat<< =============
+  -> 9 lines of output
+============= CLI >>atomdb 'absxs>1000'<< =============
+  -> 19 lines of output
+============= CLI >>atomdb A=0 'cohsl<0'<< =============
+  -> 7 lines of output
+============= CLI >>atomdb He 'A!=0'<< =============
+  -> 4 lines of output
+============= CLI >>atomdb 'sg>1'<< =============
+Caught expected ArgumentError('Invalid property "sg" in condition "sg>1" (must be one of: Z, A, mass, cohsl, cohxs, incohxs, scatxs, absxs)')
+============= CLI >>atomdb 'scatxs>foo'<< =============
+Caught expected ArgumentError('Invalid condition "scatxs>foo" (value "foo" is not a number)')
+============= CLI >>atomdb 'COHSL<0'<< =============
+Caught expected ArgumentError('Invalid property "COHSL" in condition "COHSL<0" (names are case-sensitive, did you mean "cohsl"?)')
+============= CLI >>atomdb label=He<< =============
+Caught expected ArgumentError('Invalid condition "label=He" ("label" can not be used in conditions)')
+============= CLI >>atomdb He foo<< =============
+Caught expected ArgumentError('Unknown element or isotope "foo" (specify elements or isotopes, e.g. He B10)')
+============= CLI >>atomdb --json --ncmat<< =============
+Caught expected ArgumentError('Do not specify both --json and --ncmat.')
+============= CLI >>atomdb a=0<< =============
+Caught expected ArgumentError('Invalid property "a" in condition "a=0" (names are case-sensitive, did you mean "A"?)')
