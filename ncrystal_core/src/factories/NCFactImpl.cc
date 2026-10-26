@@ -89,11 +89,17 @@ namespace NCRYSTAL_NAMESPACE {
       protected:
         ShPtr actualCreate(const key_type& key) const final
         {
-          return FactDef::transformTProdRVToShPtr( searchAndCreateTProdRV(key) );
+          return FactDef::transformTProdRVToShPtr( searchAndCreateTProdRV(key).produced );
         }
 
       public:
-        typename FactDef::TProdRV searchAndCreateTProdRV(const key_type& key) const
+        struct SearchResult {
+          typename FactDef::TProdRV produced;
+          const char * factory;//name of the factory which produced it
+          VectS shadowed;//other able factories, highest priority first
+        };
+
+        SearchResult searchAndCreateTProdRV(const key_type& key) const
         {
           const bool verbose = getFactoryVerbosity();
 
@@ -160,7 +166,7 @@ namespace NCRYSTAL_NAMESPACE {
                 if ( verbose )
                   NCRYSTAL_MSG("FactImpl selected factory [specific request] \""<<f->name()
                                <<"\" to create "<<FactDef::name()<<" based on key "<<key.toString());
-                return f->produce(key.getUserFactoryKey());
+                return SearchResult{ f->produce(key.getUserFactoryKey()), f->name(), {} };
               }
             }
             FactDef::produceCustomNoSpecificFactAvail( key, requested.specificRequest() );
@@ -170,8 +176,8 @@ namespace NCRYSTAL_NAMESPACE {
 
           //Nothing specific requested, query all non-excluded factories for
           //their priorities:
-          const FactoryClass* best = nullptr;
-          Priority best_priority{Priority::Unable};
+          using PrioFact = std::pair<uint_fast32_t,const FactoryClass*>;
+          SmallVector<PrioFact,4> able;
           for (auto f : db) {
             auto priority = FactDef::isSuitableForKey(*f,key) ? f->query( key.getUserFactoryKey() ) : Priority::Unable;
             const bool unable = ( !priority.canServiceRequest() || priority.needsExplicitRequest() );
@@ -188,22 +194,27 @@ namespace NCRYSTAL_NAMESPACE {
               }
               Msg::outputMsg(ss.str());
             }
-            if ( unable )
-              continue;
-            if ( best == nullptr || best_priority.priority() < priority.priority() ) {
-              best = f;
-              best_priority = priority;
-            }
+            if ( !unable )
+              able.emplace_back( priority.priority(), f );
           }
-          if ( best == nullptr ) {
+          if ( able.empty() ) {
             FactDef::produceCustomNoFactFoundError( key );//give possibility to throw custom msg
             NCRYSTAL_THROW2(BadInput,"Could not find factory to service "<<FactDef::name()
                             <<" creation request for \""<<key.toString()<<"\" ("<<db.size()<<" factories considered)");
           }
+          //Highest priority first (ties in registration order):
+          std::stable_sort( able.begin(), able.end(),
+                            []( const PrioFact& a, const PrioFact& b )
+                            { return a.first > b.first; } );
+          const FactoryClass* best = able.front().second;
           if ( verbose )
             NCRYSTAL_MSG("FactImpl selected factory [highest priority] \""<<best->name()
                          <<"\" to create "<<FactDef::name()<<" based on key "<<key.toString());
-          return best->produce(key.getUserFactoryKey());
+          VectS shadowed;
+          for ( auto i : ncrange( std::size_t(1), able.size() ) )
+            shadowed.emplace_back( able[i].second->name() );
+          return SearchResult{ best->produce(key.getUserFactoryKey()), best->name(),
+                               std::move(shadowed) };
         }
 
       private:
@@ -478,7 +489,7 @@ NC::shared_obj<const NC::TextData> NCF::createTextData( const TextDataPath& path
 {
   //Always recheck the source without cache (file might have changed on-disk,
   //process might have changed working directory, ...):
-  auto textDataSource = textDataDB().searchAndCreateTProdRV( path );
+  auto textDataSource = textDataDB().searchAndCreateTProdRV( path ).produced;
 
   //But whenever identical (and possible given memory constraints of caching),
   //the object is the same as the one returned on previous calls:
