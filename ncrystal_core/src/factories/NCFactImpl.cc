@@ -28,6 +28,7 @@
 #include "NCrystal/internal/cfgutils/NCCfgManip.hh"
 #include "NCrystal/internal/extd_utils/NCProcCompBldr.hh"
 #include "NCrystal/threads/NCFactThreads.hh"
+#include "NCTDProd.hh"
 #include "NCrystal/internal/fact_utils/NCFactoryJobs.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include <list>
@@ -478,13 +479,6 @@ std::vector<NC::shared_obj<const NCF::InfoFactory>> NCF::getInfoFactoryList() { 
 std::vector<NC::shared_obj<const NCF::ScatterFactory>> NCF::getScatterFactoryList() { return scatterDB().getFactoryList(); }
 std::vector<NC::shared_obj<const NCF::AbsorptionFactory>> NCF::getAbsorptionFactoryList() { return absorptionDB().getFactoryList(); }
 
-namespace NCRYSTAL_NAMESPACE {
-  namespace FactImpl {
-    //Fwd declare fct implemented in NCTDProd.cc:
-   TextDataSP produceTextDataSP_PreferPreviousObject( const TextDataPath&, TextDataSource&& );
-  }
-}
-
 NC::shared_obj<const NC::TextData> NCF::createTextData( const TextDataPath& path )
 {
   //Always recheck the source without cache (file might have changed on-disk,
@@ -493,7 +487,7 @@ NC::shared_obj<const NC::TextData> NCF::createTextData( const TextDataPath& path
 
   //But whenever identical (and possible given memory constraints of caching),
   //the object is the same as the one returned on previous calls:
-  return produceTextDataSP_PreferPreviousObject( path, std::move(textDataSource) );
+  return produceTextDataSP_PreferPreviousObject( path, std::move(textDataSource) ).td;
 }
 
 namespace NCRYSTAL_NAMESPACE {

@@ -18,7 +18,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/factories/NCFactImpl.hh"
+#include "NCTDProd.hh"
 #include "NCrystal/internal/utils/NCFileUtils.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 
@@ -29,7 +29,7 @@ namespace NCRYSTAL_NAMESPACE {
     template<std::size_t NCACHED>
     class TDProdDB {
     public:
-      TextDataSP produceTextDataSP_PreferPreviousObject( TextData&& newtd )
+      ProducedTextData produceTextDataSP_PreferPreviousObject( TextData&& newtd )
       {
         nc_assert(newtd.dataUID().isUnset());
         uint64_t checkSum = newtd.rawData().calcCheckSum();
@@ -61,7 +61,7 @@ namespace NCRYSTAL_NAMESPACE {
           //add to back (which is the correct position indicating most recent
           //access):
           m_db.push_back(std::pair<uint64_t,TextDataSP>(checkSum,newtdsp));
-          return newtdsp;
+          return { newtdsp, false };
         } else {
           //Found existing! But before returning we need to reorder entries,
           //moving the requested entry to the back and sliding the other ones
@@ -71,7 +71,7 @@ namespace NCRYSTAL_NAMESPACE {
           for ( auto it2 = it; it2 != itLast; ++it2 )
             *it2 = std::move( *std::next(it2) );
           *itLast = std::pair<uint64_t,TextDataSP>(checkSum,result);
-          return result;
+          return { result, true };
         }
       }
       void clear() { m_db.clear(); }
@@ -148,7 +148,7 @@ namespace NCRYSTAL_NAMESPACE {
                          std::move(lastKnownOnDiskPath) );
       }
 
-      TextDataSP produceTextDataSP_PreferPreviousObject( TextData&& td )
+      ProducedTextData produceTextDataSP_PreferPreviousObject( TextData&& td )
       {
         std::size_t size = std::distance(td.rawData().begin(),td.rawData().end());
         if ( size <= small_threshold_nBytes ) {
@@ -167,7 +167,7 @@ namespace NCRYSTAL_NAMESPACE {
           NCRYSTAL_THROW2(DataLoadError,"Input has unsupported data size ("<<(size*1e-6)
                           <<"MB, max allowed is "<<(very_large_threshold_nBytes*1e-6)
                           <<"MB): " << td.dataSourceName() << extraguidance );
-          return OptionalTextDataSP{nullptr};//dummy
+          return { OptionalTextDataSP{nullptr}, false };//dummy
         }
       }
     };
@@ -186,8 +186,7 @@ namespace NCRYSTAL_NAMESPACE {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    //Functions fwd declared and used in FactImpl.cc:
-    TextDataSP produceTextDataSP_PreferPreviousObject( const TextDataPath& path, TextDataSource&& tds)
+    ProducedTextData produceTextDataSP_PreferPreviousObject( const TextDataPath& path, TextDataSource&& tds)
     {
       TextData td = TDProd::produceTextDataWithoutCache( path, std::move(tds) );
       nc_assert(td.dataUID().isUnset());//unset, if we don't actually need it we should ideally not consume an UID
