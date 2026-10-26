@@ -483,11 +483,20 @@ NC::shared_obj<const NC::TextData> NCF::createTextData( const TextDataPath& path
 {
   //Always recheck the source without cache (file might have changed on-disk,
   //process might have changed working directory, ...):
-  auto textDataSource = textDataDB().searchAndCreateTProdRV( path ).produced;
+  auto sr = textDataDB().searchAndCreateTProdRV( path );
 
   //But whenever identical (and possible given memory constraints of caching),
   //the object is the same as the one returned on previous calls:
-  return produceTextDataSP_PreferPreviousObject( path, std::move(textDataSource) ).td;
+  auto res = produceTextDataSP_PreferPreviousObject( path, std::move(sr.produced) );
+
+  //Warn about shadowed entries, but not again for already cached data:
+  if ( !res.wasCached ) {
+    for ( auto& f : sr.shadowed )
+      NCRYSTAL_WARN("Reading \""<<path.path()<<"\" from \""<<sr.factory
+                    <<"\" which shadows a \""<<f<<"\" entry. Use explicit \""
+                    <<f<<"::"<<path.path()<<"\" to access the shadowed entry.");
+  }
+  return res.td;
 }
 
 namespace NCRYSTAL_NAMESPACE {
