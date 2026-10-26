@@ -23,7 +23,8 @@
 
 Utilities for accessing NCrystal's database of atomic data, with information
 about atomic masses, scattering lengths, etc. Also contains a few other related
-utilities, like a list of all element names.
+utilities, like a list of all element names, and the AtomDBBrowser class for
+browsing and searching the database.
 
 """
 
@@ -174,3 +175,166 @@ def isKnownElement( label ):
     if __all_known_element_names[1] is None:
         knownElementNames()#trigger init
     return label in __all_known_element_names[1]
+
+def atomdb_fields_doc( conditions = False ):
+    """List of (name,description) of the AtomDBBrowser fields (or only those
+    usable in conditions)."""
+    from ._conditions import _docs_for
+    return _docs_for( _atomdb_docs, _atomdb_kinds, conditions )
+
+class AtomDBBrowser:
+    """Browse NCrystal's database of isotopes and natural elements. The
+    selection methods return new AtomDBBrowser objects, and iteration gives
+    the entries as dicts (see atomdb_fields_doc())."""
+
+    def __init__( self, *patterns, where = () ):
+        """Browse all entries, applying any patterns and where conditions."""
+        rows = [ { k: d[k] for k,_ in _atomdb_docs }
+                 for d in _atomdb_data() ]
+        self._rows = tuple( rows )
+        b = self.match( *patterns ).where(
+            *( [where] if isinstance( where, str ) else where ) )
+        self._rows = b._rows
+
+    def _derived( self, rows ):
+        b = object.__new__( AtomDBBrowser )
+        b._rows = tuple( rows )
+        return b
+
+    def match( self, *patterns ):
+        """Select entries matching any of the patterns: an element (e.g. "He",
+        also selecting its isotopes) or an isotope (e.g. "He3", with D and T
+        meaning H2 and H3). Matching is case-insensitive."""
+        if not patterns:
+            return self
+        #Element names by Z (natural elements have A=0):
+        elem = { d['Z']: d['label'].lower()
+                 for d in _atomdb_data() if d['A'] == 0 }
+        def ok( d, p ):
+            p = { 'd': 'h2', 't': 'h3' }.get( p.lower(), p.lower() )
+            return p in ( d['label'].lower(), elem.get( d['Z'], '' ) )
+        return self._derived( [ d for d in self._rows
+                                if any( ok( d, p ) for p in patterns ) ] )
+
+    def where( self, *conditions ):
+        """Select entries fulfilling all conditions like "absxs>100" or "A=0"
+        (see atomdb_fields_doc(conditions=True))."""
+        from ._conditions import _Condition
+        names = [ n for n,_ in _atomdb_docs ]
+        conds = [ _Condition( c, names, _atomdb_kinds ) for c in conditions ]
+        return self._derived( [ d for d in self._rows
+                                if all( c( d ) for c in conds ) ] )
+
+    def names( self ):
+        """List of the labels of the entries."""
+        return [ d['label'] for d in self._rows ]
+
+    def __len__( self ):
+        return len( self._rows )
+
+    def __bool__( self ):
+        return bool( self._rows )
+
+    def __iter__( self ):
+        return ( dict(d) for d in self._rows )
+
+    def __repr__( self ):
+        n = len(self)
+        return f'AtomDBBrowser({n} entr{"y" if n==1 else "ies"})'
+
+    def table( self ):
+        """Text table of the entries, with stored values as stored and derived
+        ones (cohxs and scatxs) rounded at their uncertainty."""
+        cols = [ n for n,_ in _atomdb_docs if n != 'label' ]
+        header = [ 'label' ] + cols
+        rows = [ _atomdb_row_strs( d, header ) for d in self._rows ]
+        return _fmt_text_table( [ h.upper() for h in header ], rows,
+                                leftcols = {0} )
+
+    def atomdb_lines( self, align = True ):
+        """Lines in NCMAT @ATOMDB format (e.g. "He3 3.01602932265u 5.74fm 1.6b
+        5333b"), with aligned columns if align=True."""
+        lines = { (d['Z'],d['A']): d['atomdbline'] for d in _atomdb_data() }
+        res = [ lines[(d['Z'],d['A'])] for d in self._rows ]
+        if not align or not res:
+            return res
+        rows = [ ll.split() for ll in res ]
+        w = [ max( len( r[k] ) for r in rows ) for k in range(5) ]
+        return [ ' '.join( ( v.ljust(w[k]) if k == 0 else v.rjust(w[k]) )
+                           for k,v in enumerate(r) ) for r in rows ]
+
+    def to_json( self ):
+        """JSON string with all fields of the entries."""
+        import json
+        return json.dumps( [ dict(d) for d in self._rows ], indent = 1 ) + '\n'
+
+_atomdb_docs = [
+    ('Z', 'atomic number'),
+    ('A', 'mass number (0 for natural elements)'),
+    ('label', 'e.g. Al or He3'),
+    ('mass', 'atomic mass [amu]'),
+    ('cohsl', 'coherent scattering length [fm]'),
+    ('cohxs', 'coherent scattering cross section [barn]'),
+    ('incohxs', 'incoherent scattering cross section [barn]'),
+    ('scatxs', 'scattering cross section [barn]'),
+    ('absxs', 'absorption cross section at 2200m/s [barn]'),
+]
+
+_atomdb_kinds = { 'label': 'nocond' }
+
+_atomdb_cache = [None]
+def _atomdb_data():
+    #Entries of the "atomdb" query, which is only needed once since the atom
+    #database is static (NB: callers must not modify the returned dicts):
+    if _atomdb_cache[0] is None:
+        from .misc import evaluate_query
+        _atomdb_cache[0] = tuple( evaluate_query( ['util','atomdb'] ) )
+    return _atomdb_cache[0]
+
+def _atomdb_row_strs( d, header ):
+    #Text values of an atomdb entry. Values stored in the database (mass,
+    #cohsl, incohxs, absxs) are formatted with at most 15 significant digits,
+    #which reproduces their stored decimal form. Their uncertainty is taken
+    #as half a unit in their last digit, and propagated to the derived
+    #cohxs=4*pi*cohsl^2 and scatxs=cohxs+incohxs, which are rounded at the
+    #decimal place of the leading digit of their uncertainty (so rounding adds
+    #at most half of it).
+    stored = { k: _dbval_str( d[k] ) for k in ('mass','cohsl','incohxs','absxs') }
+    dcoh = ( d['cohxs'] * 2.0 * _half_ulp( stored['cohsl'] ) / abs( d['cohsl'] )
+             if d['cohsl'] else 0.0 )
+    dinc = _half_ulp( stored['incohxs'] ) if d['incohxs'] else 0.0
+    vals = dict( stored, cohxs = _fmt_with_uncertainty( d['cohxs'], dcoh ),
+                 scatxs = _fmt_with_uncertainty( d['scatxs'], dcoh + dinc ) )
+    return [ vals[c] if c in vals else str( d[c] ) for c in header ]
+
+def _dbval_str( v ):
+    #Stored decimal form in plain notation (e.g. "0.00005", not "5e-05"):
+    s = format( v, '.15g' )
+    if 'e' not in s:
+        return s
+    import decimal
+    return format( decimal.Decimal( s ), 'f' )
+
+def _half_ulp( s ):
+    #Half a unit in the last digit of the plain number string s (e.g. 0.005
+    #for "5.74"):
+    return 0.5 * 10.0**( -len( s.partition('.')[2] ) )
+
+def _fmt_with_uncertainty( v, dv ):
+    #Round v at the decimal place of the leading digit of its uncertainty dv:
+    if v == 0.0 or dv <= 0.0:
+        return _dbval_str( v )
+    import math
+    p = math.floor( math.log10( dv ) )
+    return f'{v:.{-p}f}' if p < 0 else f'{round( v, -p ):.0f}'
+
+def _fmt_text_table( header, rows, *, leftcols ):
+    #NB: Rows are never truncated (no data should be lost).
+    widths = [ max( len(r[k]) for r in rows + [header] )
+               for k in range(len(header)) ]
+    def fmt( r ):
+        return '  '.join( ( v.ljust(w) if k in leftcols else v.rjust(w) )
+                          for k,(v,w) in enumerate(zip(r,widths)) ).rstrip()
+    rule = '  '.join( '-'*w for w in widths )
+    return ''.join( ll + '\n' for ll in [ fmt(header), rule ]
+                    + [ fmt(r) for r in rows ] )
