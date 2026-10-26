@@ -97,6 +97,8 @@ Caught expected NCBadInput('Invalid JSON query key: "foo"')
  'mathval',
  'fmadiagnose',
  'kinutils',
+ 'browsedb',
+ 'browsefactories',
  'factorythreads',
  'eqrefl',
  'sgsym']
