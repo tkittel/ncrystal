@@ -188,11 +188,11 @@ examples:
     parser.add_argument('--plugins', action='store_true',
                         help='List currently enabled loaded plugins.')
     parser.add_argument('-b','--browse', action='store_true',
-                        help='List data available in standard locations (e.g. the files in the current directory or search path)')
+                        help=('List data (obsolete, use the ncrystal browse'
+                              ' command instead).'))
     parser.add_argument('--extract', type=str, default=None, metavar="DATANAME",
-                        help='''Extract contents of DATANAME (e.g. a file name) using the same lookup mechanism as used for data
-                        specified in NCrystal cfg strings. This can therefore also be used to inspect
-                        in-memory (or on-demand created) data.''')
+                        help=('Extract contents of DATANAME (obsolete, use'
+                              ' the ncrystal browse command instead).'))
 
     if return_parser:
         return parser
