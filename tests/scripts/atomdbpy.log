@@ -1042,3 +1042,70 @@ U238(cohSL=8.402fm cohXS=8.87105barn incXS=0barn absXS=2.68barn mass=238.051amu 
 (92, 234)
 (92, 235)
 (92, 238)
+to_atomdb_str() identical to the C++ formatting for all entries
+atomdb fields: ['Z', 'A', 'label', 'mass', 'cohsl', 'cohxs', 'incohxs', 'scatxs', 'absxs']
+He + b10 (case-insensitive): ['He', 'He3', 'He4', 'B10']
+Li: ['Li', 'Li6', 'Li7']
+where: ['Cd', 'Sm', 'Eu', 'Gd']
+==> text table:
+LABEL  Z   A             MASS    COHSL     COHXS  INCOHXS    SCATXS    ABSXS
+-----  -  --  ---------------  -------  --------  -------  --------  -------
+He     2   0  4.0026018729265  3.26548  1.339997        0  1.339997  0.00747
+He3    2   3    3.01602932265     5.74     4.140      1.6      5.74     5333
+He4    2   4    4.00260325413     3.26     1.336        0     1.336        0
+B10    5  10     10.012936862     -0.1     0.001        3       3.0     3835
+==> json:
+[{'Z': 2,
+  'A': 0,
+  'label': 'He',
+  'mass': 4.0026018729,
+  'cohsl': 3.26548,
+  'cohxs': 1.3399972911,
+  'incohxs': 0.0,
+  'scatxs': 1.3399972911,
+  'absxs': 0.00747},
+ {'Z': 2,
+  'A': 3,
+  'label': 'He3',
+  'mass': 3.0160293227,
+  'cohsl': 5.74,
+  'cohxs': 4.1403175245,
+  'incohxs': 1.6,
+  'scatxs': 5.7403175245,
+  'absxs': 5333.0},
+ {'Z': 2,
+  'A': 4,
+  'label': 'He4',
+  'mass': 4.0026032541,
+  'cohsl': 3.26,
+  'cohxs': 1.3355036034,
+  'incohxs': 0.0,
+  'scatxs': 1.3355036034,
+  'absxs': 0.0},
+ {'Z': 5,
+  'A': 10,
+  'label': 'B10',
+  'mass': 10.012936862,
+  'cohsl': -0.1,
+  'cohxs': 0.0012566370614,
+  'incohxs': 3.0,
+  'scatxs': 3.0012566371,
+  'absxs': 3835.0}]
+==> atomdb_lines():
+He    4.0026018729265u 3.26548fm       0b 0.00747b
+He3     3.01602932265u    5.74fm     1.6b    5333b
+He4     4.00260325413u    3.26fm       0b       0b
+N15    15.00010889894u    6.44fm   5e-05b 2.4e-05b
+In113   112.904060448u    5.39fm 3.7e-05b      12b
+Gd157    156.92396787u   -1.14fm     394b  259000b
+==> atomdb_lines(align=False):
+He 4.0026018729265u 3.26548fm 0b 0.00747b
+He3 3.01602932265u 5.74fm 1.6b 5333b
+He4 4.00260325413u 3.26fm 0b 0b
+N15 15.00010889894u 6.44fm 5e-05b 2.4e-05b
+atomdb_lines roundtrip OK for 348 entries
+Caught expected NCBadInput('Invalid property "foo" in condition "foo > 1" (must be one of: Z, A, mass, cohsl, cohxs, incohxs, scatxs, absxs)')
+Caught expected NCBadInput('Invalid property "COHSL" in condition "COHSL<0" (names are case-sensitive, did you mean "cohsl"?)')
+Caught expected NCBadInput('Invalid property "a" in condition "a=0" (names are case-sensitive, did you mean "A"?)')
+Caught expected NCBadInput('Invalid condition "label=He" ("label" can not be used in conditions)')
+AtomDB OK
