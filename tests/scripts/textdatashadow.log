@@ -1,0 +1,14 @@
+==> createTextData("Al_sg225.ncmat"):
+    3487 bytes
+==> createTextData("Al_sg225.ncmat"):
+NCrystal WARNING: Reading "Al_sg225.ncmat" from "virtual" which shadows a "stdlib" entry. Use explicit "stdlib::Al_sg225.ncmat" to access the shadowed entry.
+    20 bytes
+==> createTextData("Al_sg225.ncmat"):
+    20 bytes
+==> createTextData("stdlib::Al_sg225.ncmat"):
+    3487 bytes
+==> createTextData("virtual::Al_sg225.ncmat"):
+    20 bytes
+==> createTextData("Al_sg225.ncmat"):
+NCrystal WARNING: Reading "Al_sg225.ncmat" from "virtual" which shadows a "stdlib" entry. Use explicit "stdlib::Al_sg225.ncmat" to access the shadowed entry.
+    20 bytes
