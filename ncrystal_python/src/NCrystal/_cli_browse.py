@@ -183,11 +183,13 @@ def _docs_str( pd ):
             out += [ ' '*(w+4)+e for e in ll[1:] ]
     return '\n'.join(out)
 
-def _cond_help_str( examples, docs ):
+def _cond_help_str( examples, docs, yesno = True ):
     txt = ( 'Conditions compare a property with a value, like "absxs>100"'
             ' (conditions with < or > need quotes). Text comparisons ignore'
-            ' case. Yes/no values can also be given as true/false, on/off,'
-            ' or 1/0.' )
+            ' case.' )
+    if yesno:
+        txt += ( ' Yes/no values can also be given as true/false, on/off,'
+                 ' or 1/0.' )
     import textwrap
     return ( 'conditions:\n'
              + ''.join( f'  {ll}\n' for ll in textwrap.wrap( txt, 77 ) )
