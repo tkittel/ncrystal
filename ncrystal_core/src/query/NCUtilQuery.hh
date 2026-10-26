@@ -22,6 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/query/NCQuery.hh"
+#include "NCBrowseQuery.hh"
 #include "NCrystal/threads/NCFactThreads.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
@@ -229,6 +230,8 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr auto sv_mathval = StrView::make("mathval");
       constexpr auto sv_fmadiagnose = StrView::make("fmadiagnose");
       constexpr auto sv_kinutils = StrView::make("kinutils");
+      constexpr auto sv_browsedb = StrView::make("browsedb");
+      constexpr auto sv_browsefacts = StrView::make("browsefactories");
       constexpr auto sv_factthreads = StrView::make("factorythreads");
       constexpr auto sv_eqrefl = StrView::make("eqrefl");
       constexpr auto sv_atomsites = StrView::make("atomsites");
@@ -238,7 +241,8 @@ namespace NCRYSTAL_NAMESPACE {
         if ( nargs != 0 )
           invalid("no arguments should come after: [\"util\",\"list\"]");
         os<<"[\"wl2ekin\", \"ekin2wl\", \"mathval\", \"fmadiagnose\","
-          " \"kinutils\", \"factorythreads\", \"eqrefl\", \"sgsym\"]";
+          " \"kinutils\", \"browsedb\", \"browsefactories\","
+          " \"factorythreads\", \"eqrefl\", \"sgsym\"]";
       } else if ( key == sv_eqrefl ) {
         //["util","eqrefl",MODE,SG,"h1,k1,l1","h2,k2,l2",...]: For each
         //requested hkl, return the list of reflections considered
@@ -457,6 +461,16 @@ namespace NCRYSTAL_NAMESPACE {
         streamJSONDictEntry( os, "nthreads",
                              static_cast<unsigned>( nt ),
                              JSONDictPos::LAST );
+      } else if ( key == sv_browsedb ) {
+        std::vector<StrView> args;
+        for ( auto i : ncrange( nargs ) )
+          args.push_back( arg(i) );
+        BrowseQuery::browseDB( os, args );
+      } else if ( key == sv_browsefacts ) {
+        if ( nargs != 0 )
+          invalid("no arguments should come after:"
+                  " [\"util\",\"browsefactories\"]");
+        BrowseQuery::browseFactories( os );
       } else if ( key == sv_fmadiagnose ) {
         if ( nargs != 0 )
           invalid("no arguments should come after:"
