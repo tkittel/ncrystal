@@ -1,0 +1,501 @@
+============= CLI >>browse --help<< =============
+usage: ncrystal_browse [options] [PATTERN ...]
+
+Browse and search the data available to NCrystal from built-in sources or
+plugins.
+
+Each PATTERN can be:
+
+  - a substring of the data name (e.g. parts of the file name),
+  - the name of an element or isotope in the materials (e.g. Al or B10),
+  - a condition, such as "absxs>100" or sg==225 (see --cond-help).
+
+Substrings are case-insensitive, but element and isotope names must be written
+exactly (e.g. B for boron).
+
+other options:
+  -h, --help           show this help message and exit
+  --full-help          Show detailed help and exit.
+  --cond-help          Show the properties usable in conditions and exit.
+  -s, --search WORD    Only show data with WORD in names or comments.
+  -x, --extract ENTRY  Print the full content of ENTRY.
+
+examples:
+  ncrystal_browse Al_sg225                # data with "al_sg225" in the name
+  ncrystal_browse Al                      # name has "al", or material has Al
+  ncrystal_browse B10                     # name has "b10", or material has B10
+  ncrystal_browse D                       # name has "d", or material has D
+  ncrystal_browse "absxs>100"             # strong absorbers
+  ncrystal_browse sg==225 "density<3"     # all conditions must be fulfilled
+  ncrystal_browse scatknl=yes             # materials with scattering kernels
+  ncrystal_browse state!=solid            # liquids, gases, or unknown state
+  ncrystal_browse state=liquid H          # liquids with "h" in name, or with H
+  ncrystal_browse -s metal                # header comments with "metal"
+  ncrystal_browse -x Al_sg225.ncmat       # show the full content
+
+Use --cond-help for the list of properties, and --full-help for all options.
+
+============= CLI >>browse --full-help<< =============
+usage: ncrystal_browse [-h] [--full-help] [--cond-help] [-s WORD] [-f SRC]
+                       [--json] [--color WHEN] [-x ENTRY]
+                       [PATTERN ...]
+
+Browse and search the data available to NCrystal from built-in sources or
+plugins.
+
+Each PATTERN can be:
+
+  - a substring of the data name (e.g. parts of the file name),
+  - the name of an element or isotope in the materials (e.g. Al or B10),
+  - a condition, such as "absxs>100" or sg==225 (see --cond-help).
+
+Substrings are case-insensitive, but element and isotope names must be written
+exactly (e.g. B for boron).
+
+Data from all sources is listed, e.g. files in the standard data library,
+in-memory data, or data created on-demand like "solid::B4C/2.52gcm3". Files
+found relative to the current directory are only listed with "-f relpath".
+Element names and conditions require all candidate materials to be loaded.
+
+Listed names include their source (like "stdlib::Al_sg225.ncmat"). When several
+sources provide the same name, the first one listed is used when the name is
+given without its source.
+
+positional arguments:
+  PATTERN               Substring, element, or condition (see above).
+
+options:
+  -h, --help            show this help message and exit
+  --full-help           Show detailed help and exit.
+  --cond-help           Show the properties usable in conditions and exit.
+
+selecting data:
+  -s, --search WORD     Only show data which contain WORD in their name or
+                        NCMAT header comments (case-insensitive). Can be
+                        specified multiple times, in which case all words must
+                        be present. Matching comment lines are shown.
+  -f, --factory SRC     Only show data from the source SRC (e.g. "stdlib" or
+                        "virtual", see "-f help").
+
+output:
+  --json                Output all information about the selected data
+                        (including physics properties) as JSON.
+  --color, --colour WHEN
+                        Highlight --search hits: "always", "never", or "auto"
+                        (default, only on a terminal).
+
+other:
+  -x, --extract ENTRY   Print the full content of ENTRY (e.g. a file name).
+
+examples:
+  ncrystal_browse Al_sg225                # data with "al_sg225" in the name
+  ncrystal_browse Al                      # name has "al", or material has Al
+  ncrystal_browse B10                     # name has "b10", or material has B10
+  ncrystal_browse D                       # name has "d", or material has D
+  ncrystal_browse "absxs>100"             # strong absorbers
+  ncrystal_browse sg==225 "density<3"     # all conditions must be fulfilled
+  ncrystal_browse scatknl=yes             # materials with scattering kernels
+  ncrystal_browse state!=solid            # liquids, gases, or unknown state
+  ncrystal_browse state=liquid H          # liquids with "h" in name, or with H
+  ncrystal_browse -s metal                # header comments with "metal"
+  ncrystal_browse -x Al_sg225.ncmat       # show the full content
+
+Use --cond-help for the list of properties, and "-f help" for the data sources.
+
+============= CLI >>browse --full<< =============
+usage: ncrystal_browse [-h] [--full-help] [--cond-help] [-s WORD] [-f SRC]
+                       [--json] [--color WHEN] [-x ENTRY]
+                       [PATTERN ...]
+
+Browse and search the data available to NCrystal from built-in sources or
+plugins.
+
+Each PATTERN can be:
+
+  - a substring of the data name (e.g. parts of the file name),
+  - the name of an element or isotope in the materials (e.g. Al or B10),
+  - a condition, such as "absxs>100" or sg==225 (see --cond-help).
+
+Substrings are case-insensitive, but element and isotope names must be written
+exactly (e.g. B for boron).
+
+Data from all sources is listed, e.g. files in the standard data library,
+in-memory data, or data created on-demand like "solid::B4C/2.52gcm3". Files
+found relative to the current directory are only listed with "-f relpath".
+Element names and conditions require all candidate materials to be loaded.
+
+Listed names include their source (like "stdlib::Al_sg225.ncmat"). When several
+sources provide the same name, the first one listed is used when the name is
+given without its source.
+
+positional arguments:
+  PATTERN               Substring, element, or condition (see above).
+
+options:
+  -h, --help            show this help message and exit
+  --full-help           Show detailed help and exit.
+  --cond-help           Show the properties usable in conditions and exit.
+
+selecting data:
+  -s, --search WORD     Only show data which contain WORD in their name or
+                        NCMAT header comments (case-insensitive). Can be
+                        specified multiple times, in which case all words must
+                        be present. Matching comment lines are shown.
+  -f, --factory SRC     Only show data from the source SRC (e.g. "stdlib" or
+                        "virtual", see "-f help").
+
+output:
+  --json                Output all information about the selected data
+                        (including physics properties) as JSON.
+  --color, --colour WHEN
+                        Highlight --search hits: "always", "never", or "auto"
+                        (default, only on a terminal).
+
+other:
+  -x, --extract ENTRY   Print the full content of ENTRY (e.g. a file name).
+
+examples:
+  ncrystal_browse Al_sg225                # data with "al_sg225" in the name
+  ncrystal_browse Al                      # name has "al", or material has Al
+  ncrystal_browse B10                     # name has "b10", or material has B10
+  ncrystal_browse D                       # name has "d", or material has D
+  ncrystal_browse "absxs>100"             # strong absorbers
+  ncrystal_browse sg==225 "density<3"     # all conditions must be fulfilled
+  ncrystal_browse scatknl=yes             # materials with scattering kernels
+  ncrystal_browse state!=solid            # liquids, gases, or unknown state
+  ncrystal_browse state=liquid H          # liquids with "h" in name, or with H
+  ncrystal_browse -s metal                # header comments with "metal"
+  ncrystal_browse -x Al_sg225.ncmat       # show the full content
+
+Use --cond-help for the list of properties, and "-f help" for the data sources.
+
+============= CLI >>browse --cond-help<< =============
+conditions:
+  Conditions compare a property with a value, like "absxs>100" (conditions with
+  < or > need quotes). Text comparisons ignore case. Yes/no values can also be
+  given as true/false, on/off, or 1/0.
+
+examples:
+  sg=225                        space group 225
+  "absxs>100"                   strong absorbers
+  state=liquid nelements=2      liquids with two elements
+  scatknl=yes                   data with full scattering kernels
+  state!=solid                  liquids, gases, or unknown state
+  crystal=no                    non-crystalline materials
+
+properties:
+  nelements       number of elements
+  formula         chemical formula, e.g. Al2O3
+  mass            average atomic mass [amu]
+  cohsl           average coherent scattering length [fm]
+  cohxs           coherent scattering cross section [barn/atom]
+  incohxs         incoherent scattering cross section [barn/atom]
+  scatxs          free scattering cross section [barn/atom]
+  absxs           absorption cross section at 2200m/s [barn/atom]
+  density         density [g/cm3]
+  numdens         number density [atoms/Aa3]
+  state           solid, liquid, gas, or unknown
+  crystal         yes or no
+  crystalsystem   triclinic, monoclinic, orthorhombic, tetragonal, trigonal,
+                  hexagonal, or cubic
+  sg              space group number
+  natoms          number of atoms in the unit cell
+  braggthreshold  Bragg threshold [Aa]
+  vdos, vdosdebye, scatknl, freegas, sterile
+                  whether some atoms have this type of dynamics (yes or no)
+  nphases         number of phases
+============= CLI >>browse Al help<< =============
+usage: ncrystal_browse [options] [PATTERN ...]
+
+Browse and search the data available to NCrystal from built-in sources or
+plugins.
+
+Each PATTERN can be:
+
+  - a substring of the data name (e.g. parts of the file name),
+  - the name of an element or isotope in the materials (e.g. Al or B10),
+  - a condition, such as "absxs>100" or sg==225 (see --cond-help).
+
+Substrings are case-insensitive, but element and isotope names must be written
+exactly (e.g. B for boron).
+
+other options:
+  -h, --help           show this help message and exit
+  --full-help          Show detailed help and exit.
+  --cond-help          Show the properties usable in conditions and exit.
+  -s, --search WORD    Only show data with WORD in names or comments.
+  -x, --extract ENTRY  Print the full content of ENTRY.
+
+examples:
+  ncrystal_browse Al_sg225                # data with "al_sg225" in the name
+  ncrystal_browse Al                      # name has "al", or material has Al
+  ncrystal_browse B10                     # name has "b10", or material has B10
+  ncrystal_browse D                       # name has "d", or material has D
+  ncrystal_browse "absxs>100"             # strong absorbers
+  ncrystal_browse sg==225 "density<3"     # all conditions must be fulfilled
+  ncrystal_browse scatknl=yes             # materials with scattering kernels
+  ncrystal_browse state!=solid            # liquids, gases, or unknown state
+  ncrystal_browse state=liquid H          # liquids with "h" in name, or with H
+  ncrystal_browse -s metal                # header comments with "metal"
+  ncrystal_browse -x Al_sg225.ncmat       # show the full content
+
+Use --cond-help for the list of properties, and --full-help for all options.
+
+============= CLI >>browse -f help<< =============
+--factory SRC (or -f SRC) only shows data from the source SRC.
+
+Common sources:
+
+  stdlib    the standard data library of NCrystal
+  stdpath   files in directories listed in NCRYSTAL_DATA_PATH
+  relpath   files found relative to the current directory (only shown on
+            explicit request)
+  virtual   in-memory data (e.g. registered with registerInMemoryFileData)
+  solid, gasmix, freegas
+            data created on demand (e.g. "solid::B4C/2.52gcm3")
+
+Plugins can provide additional sources.
+
+Listed names include their source (e.g. "stdlib::Al_sg225.ncmat"), which can be
+used to request data from a specific source.
+============= CLI >>browse -f virtual<< =============
+virtual::Al_sg225.ncmat
+virtual::mycrystal.ncmat
+virtual::mytestmat.ncmat
+virtual::notncmat.laz
+virtual::othermat.ncmat
+============= CLI >>browse Al_sg225<< =============
+virtual::Al_sg225.ncmat
+stdlib::Al_sg225.ncmat
+============= CLI >>browse stdlib::Be<< =============
+stdlib::Be3N2_sg206_BerylliumNitride.ncmat
+stdlib::BeF2_sg152_Beryllium_Fluoride.ncmat
+stdlib::BeO_sg186.ncmat
+stdlib::Be_sg194.ncmat
+============= CLI >>browse -f stdlib sg229<< =============
+stdlib::Ba_sg229.ncmat
+stdlib::Ca_sg229_Calcium-gamma.ncmat
+stdlib::Cr_sg229.ncmat
+stdlib::Fe_sg229_Iron-alpha.ncmat
+stdlib::K_sg229.ncmat
+stdlib::Mo_sg229.ncmat
+stdlib::Na_sg229.ncmat
+stdlib::Nb_sg229.ncmat
+stdlib::Rb_sg229.ncmat
+stdlib::V_sg229.ncmat
+stdlib::W_sg229.ncmat
+============= CLI >>browse -s togo -f virtual<< =============
+virtual::mytestmat.ncmat
+    | Some more comments mentioning Togo and VDOS.
+============= CLI >>browse -s TOGO -s vdos -f virtual<< =============
+virtual::mytestmat.ncmat
+    | Some more comments mentioning Togo and VDOS.
+============= CLI >>browse -s togo -s nonexistentword<< =============
+No matching data found.
+============= CLI >>browse -s togo -f stdlib Al_sg225<< =============
+stdlib::Al_sg225.ncmat
+    | A. Togo and I. Tanaka, Scripta Materialia 108 (2015) 1-5
+============= CLI >>browse -s 'togo|nomatch' -f virtual<< =============
+No matching data found.
+============= CLI >>browse 'my.*mat'<< =============
+No matching data found.
+============= CLI >>browse mytest othermat<< =============
+virtual::mytestmat.ncmat
+virtual::othermat.ncmat
+============= CLI >>browse formula=o -f virtual<< =============
+virtual::Al_sg225.ncmat
+virtual::othermat.ncmat
+============= CLI >>browse crystal=yes sg=225 natoms=4 -f virtual<< =============
+virtual::mycrystal.ncmat
+============= CLI >>browse 'sg > 200' -f virtual<< =============
+virtual::mycrystal.ncmat
+============= CLI >>browse crystal=no 'density<1.5' -f virtual<< =============
+virtual::mytestmat.ncmat
+============= CLI >>browse 'absxs>0.2' nelements=1 state=solid -f virtual<< =============
+virtual::mycrystal.ncmat
+virtual::mytestmat.ncmat
+============= CLI >>browse formula=D2O -f stdlib Liquid<< =============
+stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat
+============= CLI >>browse state=liquid nelements=2 -f stdlib Liquid<< =============
+stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat
+stdlib::LiquidWaterH2O_T293.6K.ncmat
+============= CLI >>browse 'formula!=O' nphases=1 -f virtual<< =============
+virtual::mycrystal.ncmat
+virtual::mytestmat.ncmat
+============= CLI >>browse crystalsystem=CUBIC 'braggthreshold>4' -f virtual<< =============
+virtual::mycrystal.ncmat
+============= CLI >>browse vdosdebye=YES crystal=off -f virtual<< =============
+virtual::Al_sg225.ncmat
+virtual::mytestmat.ncmat
+virtual::othermat.ncmat
+============= CLI >>browse Al -f virtual<< =============
+virtual::Al_sg225.ncmat
+virtual::mycrystal.ncmat
+============= CLI >>browse O nelements=1 -f virtual<< =============
+virtual::Al_sg225.ncmat
+virtual::othermat.ncmat
+============= CLI >>browse al -f virtual<< =============
+virtual::Al_sg225.ncmat
+virtual::mycrystal.ncmat
+============= CLI >>browse -f virtual mycrystl<< =============
+No matching data found.
+Did you mean: mycrystal.ncmat?
+============= CLI >>browse -f virtual mycrystal 'absxs > 100'<< =============
+No matching data found.
+============= CLI >>browse -f virtual qwertyzzz<< =============
+No matching data found.
+============= CLI >>browse -f virtual mycrystal --json<< =============
+[{'name': 'mycrystal.ncmat',
+  'fullkey': 'virtual::mycrystal.ncmat',
+  'factory': 'virtual',
+  'source': 'virtual',
+  'priority': 130,
+  'hidden': False,
+  'datatype': 'ncmat',
+  'path': None,
+  'description': 'A small crystal.',
+  'comments': ['A small crystal.'],
+  'props': {'elements': ['Al'],
+            'nelements': 1,
+            'formula': 'Al',
+            'mass': 26.981538408,
+            'cohsl': 3.449,
+            'cohxs': 1.4948453085,
+            'incohxs': 0.0082,
+            'scatxs': 1.3966686416,
+            'absxs': 0.231,
+            'density': 2.6986455177,
+            'numdens': 0.060232382561,
+            'state': 'solid',
+            'crystal': True,
+            'crystalsystem': 'cubic',
+            'sg': 225,
+            'natoms': 4,
+            'braggthreshold': 4.6760522062,
+            'vdos': False,
+            'vdosdebye': True,
+            'scatknl': False,
+            'freegas': False,
+            'sterile': False,
+            'nphases': 1},
+  'error': None}]
+============= CLI >>browse -f virtual mytestmat -s truncated<< =============
+virtual::mytestmat.ncmat
+    | truncated in the listing.
+============= CLI >>browse 'foo>1'<< =============
+Caught expected ArgumentError('Invalid property "foo" in condition "foo>1" (must be one of: nelements, formula, mass, cohsl, cohxs, incohxs, scatxs, absxs, density, numdens, state, crystal, crystalsystem, sg, natoms, braggthreshold, vdos, vdosdebye, scatknl, freegas, sterile, nphases)')
+============= CLI >>browse 'COHSL<0'<< =============
+Caught expected ArgumentError('Invalid property "COHSL" in condition "COHSL<0" (names are case-sensitive, did you mean "cohsl"?)')
+============= CLI >>browse 'absxs>x'<< =============
+Caught expected ArgumentError('Invalid condition "absxs>x" (value "x" is not a number)')
+============= CLI >>browse elements=B<< =============
+Caught expected ArgumentError('Invalid condition "elements=B" ("elements" can not be used in conditions)')
+============= CLI >>browse crystalsystem=bla<< =============
+Caught expected ArgumentError('Invalid condition "crystalsystem=bla" ("crystalsystem" must be one of: triclinic, monoclinic, orthorhombic, tetragonal, trigonal, hexagonal, cubic)')
+============= CLI >>browse crystal=maybe<< =============
+Caught expected ArgumentError('Invalid condition "crystal=maybe" (value "maybe" is not yes or no)')
+============= CLI >>browse .la<< =============
+virtual::mem.lau
+virtual::mem.laz
+virtual::notncmat.laz
+============= CLI >>browse .la -f relpath<< =============
+relpath::disk.lau
+relpath::disk.laz
+============= CLI >>browse -s disk -f relpath<< =============
+relpath::disk.lau
+relpath::disk.laz
+============= CLI >>browse -f relpath sg=225<< =============
+relpath::disk.lau
+relpath::disk.laz
+============= CLI >>browse -f virtual sg==225<< =============
+virtual::mem.lau
+virtual::mem.laz
+virtual::mycrystal.ncmat
+============= CLI >>browse Al_sg225<< =============
+  -> 2 lines of output
+============= CLI >>browse Al<< =============
+  -> 28 lines of output
+============= CLI >>browse B10<< =============
+  -> 2 lines of output
+============= CLI >>browse D<< =============
+  -> 64 lines of output
+============= CLI >>browse 'absxs>100'<< =============
+  -> 7 lines of output
+============= CLI >>browse sg==225 'density<3'<< =============
+  -> 13 lines of output
+============= CLI >>browse scatknl=yes<< =============
+  -> 2 lines of output
+============= CLI >>browse 'state!=solid'<< =============
+  -> 21 lines of output
+============= CLI >>browse state=liquid H<< =============
+  -> 2 lines of output
+============= CLI >>browse -s metal<< =============
+  -> 32 lines of output
+============= CLI >>browse -x Al_sg225.ncmat<< =============
+  -> 8 lines of output
+============= CLI >>browse sg=225<< =============
+  -> 36 lines of output
+============= CLI >>browse 'absxs>100'<< =============
+  -> 7 lines of output
+============= CLI >>browse state=liquid nelements=2<< =============
+  -> 2 lines of output
+============= CLI >>browse scatknl=yes<< =============
+  -> 2 lines of output
+============= CLI >>browse 'state!=solid'<< =============
+  -> 21 lines of output
+============= CLI >>browse crystal=no<< =============
+  -> 46 lines of output
+============= CLI >>browse -x mytestmat.ncmat<< =============
+NCMAT v7
+#
+#   My test material (for testing only).
+#   Second line of description which is long enough that it will have to be
+#   truncated in the listing.
+#
+#   Some more comments mentioning Togo and VDOS.
+#
+@DENSITY
+  1 g_per_cm3
+@DYNINFO
+  element H
+  fraction 1
+  type vdosdebye
+  debye_temp 300
+============= CLI >>browse -x nonexistent.ncmat<< =============
+Caught expected NCFileNotFound('Could not find data: "nonexistent.ncmat"')
+============= CLI >>browse -x mytestmat.ncmat -f virtual<< =============
+Caught expected ArgumentError('--extract can not be combined with other options.')
+============= CLI >>browse -s togo -s my -f virtual<< =============
+virtual::mytestmat.ncmat
+    | My test material (for testing only).
+    | Some more comments mentioning Togo and VDOS.
+============= CLI >>browse -s togo -s my -f virtual --color=always<< =============
+virtual::<ESC>[01;31m<ESC>[Kmy<ESC>[m<ESC>[Ktestmat.ncmat
+    | <ESC>[01;31m<ESC>[KMy<ESC>[m<ESC>[K test material (for testing only).
+    | Some more comments mentioning <ESC>[01;31m<ESC>[KTogo<ESC>[m<ESC>[K and VDOS.
+============= CLI >>browse -s togo -f virtual --colour=yes<< =============
+virtual::mytestmat.ncmat
+    | Some more comments mentioning <ESC>[01;31m<ESC>[KTogo<ESC>[m<ESC>[K and VDOS.
+============= CLI >>browse -s togo -f virtual --color=never<< =============
+virtual::mytestmat.ncmat
+    | Some more comments mentioning Togo and VDOS.
+============= CLI >>browse -s togo --color mytestmat<< =============
+virtual::mytestmat.ncmat
+    | Some more comments mentioning Togo and VDOS.
+============= CLI >>browse -s togo -f virtual<< =============
+virtual::mytestmat.ncmat
+    | Some more comments mentioning <ESC>[01;31m<ESC>[KTogo<ESC>[m<ESC>[K and VDOS.
+============= CLI >>browse -s togo -f virtual<< =============
+virtual::mytestmat.ncmat
+    | Some more comments mentioning Togo and VDOS.
+============= CLI >>browse -s togo -f virtual --color=always<< =============
+virtual::mytestmat.ncmat
+    | Some more comments mentioning <ESC>[01;31m<ESC>[KTogo<ESC>[m<ESC>[K and VDOS.
+============= CLI >>browse -s togo -f virtual --color=always<< =============
+virtual::mytestmat.ncmat
+    | Some more comments mentioning <ESC>[01;32m<ESC>[KTogo<ESC>[m<ESC>[K and VDOS.
+============= CLI >>browse -s tog -s ogo -f virtual --color=always<< =============
+virtual::mytestmat.ncmat
+    | Some more comments mentioning <ESC>[01;31m<ESC>[KTogo<ESC>[m<ESC>[K and VDOS.
+============= CLI >>browse --color=blue<< =============
+Caught expected ArgumentError("argument --color/--colour: invalid choice: 'blue' (choose from 'always', 'auto', 'force', 'if-tty', 'never', 'no', 'none', 'tty', 'yes')")
