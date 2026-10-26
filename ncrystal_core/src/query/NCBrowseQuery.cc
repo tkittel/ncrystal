@@ -23,6 +23,7 @@
 #include "NCrystal/factories/NCDataSources.hh"
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/factories/NCMatCfg.hh"
+#include "NCrystal/internal/atomdb/NCAtomDB.hh"
 #include "NCrystal/misc/NCCompositionUtils.hh"
 #include "NCrystal/internal/fact_utils/NCFactoryJobs.hh"
 #include "NCrystal/threads/NCFactThreads.hh"
@@ -423,6 +424,36 @@ void NC::BrowseQuery::browseDB( std::ostream& os,
     if ( i )
       os << ',';
     os << vectAt( results, i );
+  }
+  os << ']';
+}
+
+void NC::BrowseQuery::atomDB( std::ostream& os )
+{
+  os << '[';
+  bool first = true;
+  for ( auto& za : AtomDB::getAllEntries() ) {
+    auto ad = AtomDB::getIsotopeOrNatElem( za.first, za.second );
+    nc_assert_always( ad != nullptr );
+    os << ( first ? "" : "," );
+    first = false;
+    streamJSONDictEntry( os, "Z", za.first, JSONDictPos::FIRST );
+    streamJSONDictEntry( os, "A", za.second );
+    streamJSONDictEntry( os, "label", ad->description( false ) );
+    Optional<std::string> elem;
+    if ( ad->isElement() )
+      elem = ad->elementName();
+    streamJSONDictEntry( os, "element", elem );
+    streamJSONDictEntry( os, "natural", ad->isNaturalElement() );
+    streamJSONDictEntry( os, "mass", ad->averageMassAMU().dbl() );
+    streamJSONDictEntry( os, "cohsl", ad->coherentScatLenFM() );
+    streamJSONDictEntry( os, "cohxs", ad->coherentXS().dbl() );
+    streamJSONDictEntry( os, "incohxs", ad->incoherentXS().dbl() );
+    streamJSONDictEntry( os, "scatxs", ad->scatteringXS().dbl() );
+    streamJSONDictEntry( os, "absxs", ad->captureXS().dbl() );
+    streamJSONDictEntry( os, "atomdbline", ad->description( false ) + ' '
+                         + AtomDB::atomDBDataString( *ad ),
+                         JSONDictPos::LAST );
   }
   os << ']';
 }
