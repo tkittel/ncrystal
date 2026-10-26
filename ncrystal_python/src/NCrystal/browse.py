@@ -357,14 +357,6 @@ def _q( *args ):
     from .misc import evaluate_query
     return evaluate_query( ['util'] + list(args) )
 
-_atomdb_cache = [None]
-def _atomdb_data():
-    #The atom database is static, so the query is only needed once (NB:
-    #callers must not modify the returned dicts):
-    if _atomdb_cache[0] is None:
-        _atomdb_cache[0] = tuple( _q( 'atomdb' ) )
-    return _atomdb_cache[0]
-
 def _aslist( x ):
     return [ x ] if isinstance( x, str ) or callable( x ) else list( x )
 
@@ -474,6 +466,7 @@ def _fmt_prop( v ):
 
 def _atom_labels():
     #Labels of all atom database entries, and the D and T aliases:
+    from .atomdata import _atomdb_data
     return { d['label'] for d in _atomdb_data() } | { 'D', 'T' }
 
 def _atom_za( label ):
