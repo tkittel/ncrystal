@@ -115,6 +115,8 @@ NCS::SABBetaStripSampler::SABBetaStripSampler( shared_obj<const SABData> sd,
     const std::uint32_t nacells = static_cast<std::uint32_t>( ag.size()-1 );
     const unsigned n = nStripsPerBetaCell;
     VectD weights;
+    weights.reserve( 4096 );
+    m_strips.reserve( 4096 );
     //Each beta cell (clipped to [blo,bhi]) is split in n equal strips:
     for ( auto ibcell : ncrange( bg.size() - 1 ) ) {
       const auto ib = static_cast<std::uint32_t>( ibcell );
@@ -140,6 +142,8 @@ NCS::SABBetaStripSampler::SABBetaStripSampler( shared_obj<const SABData> sd,
         weights.push_back( smax * std::sqrt( b1pemax ) * ( b1 - b0 ) );
       }
     }
+    //Kept for the lifetime of the object, so release the excess capacity:
+    std::vector<Strip>( m_strips ).swap( m_strips );
     if ( m_strips.empty() )
       return;
     initAliasTable( weights, m_aliasProb, m_alias );
