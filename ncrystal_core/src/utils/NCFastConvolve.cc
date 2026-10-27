@@ -54,7 +54,12 @@ namespace NCRYSTAL_NAMESPACE {
         std::vector<std::pair<std::uint32_t,std::uint32_t>> pattern;
         int output_log_size = 0;
       };
-      using WTable = std::vector< std::complex<double> >;
+      //W factors exp(i*2pi*k/n), only for k<n/2 since the butterflies in fft()
+      //never use the rest:
+      struct WTable final {
+        std::vector< std::complex<double> > w;
+        unsigned long n = 0;
+      };
 
       static shared_obj<WTable> defaultWTable()
       {
@@ -122,7 +127,7 @@ namespace NCRYSTAL_NAMESPACE {
 
       static std::size_t memUsage( const WTable& t )
       {
-        return t.capacity() * sizeof(WTable::value_type);
+        return t.w.capacity() * sizeof(decltype(t.w)::value_type);
       }
 
       static std::size_t memUsage( const SwapPatternCache& s )
@@ -241,7 +246,7 @@ NC::FastConvolve& NC::FastConvolve::operator=( FastConvolve&& o ) noexcept
 }
 
 void NC::FastConvolveCacheMgr::initWTable( unsigned long n_size_raw,
-                                           std::vector< std::complex<double> >& wtable ) const
+                                           WTable& wtab ) const
 {
   static_assert( sizeof(unsigned long) >= sizeof(std::uint32_t), "");
   nc_assert_always(n_size_raw<=1000000000u);
@@ -253,12 +258,15 @@ void NC::FastConvolveCacheMgr::initWTable( unsigned long n_size_raw,
     ++log2_nsize;
   }
 
+  wtab.n = nsize;
+  auto& wtable = wtab.w;
   wtable.clear();
-  wtable.reserve(nsize);
+  const unsigned long nhalf = nsize / 2;
+  wtable.reserve(nhalf);
 
   ComplexSD phaseval{1.0,0.0};
   const ComplexSD phase1n = calcPhaseSD(1, log2_nsize);
-  for( unsigned long i = 0; i < nsize; ++i ) {
+  for( unsigned long i = 0; i < nhalf; ++i ) {
     if ( i%2==1 ) {
       //for odd i, we anyway would end up calculating it like this inside
       //calcPhase - but this way we can reuse the previous phaseval:
@@ -477,10 +485,10 @@ void NC::FastConvolve::Impl::fft( std::vector<std::complex<double>> &data,
   const int output_size = ( 1 << output_log_size );
   nc_assert( data.size() <= (std::size_t)output_size );
 
-  if ( m_w->size() < (std::size_t)output_size )
+  if ( m_w->n < (unsigned long)output_size )
     m_w = getFastConvolveCacheMgr().getWTable( output_size );
 
-  const auto& wtable = *m_w;
+  const auto& wtable = m_w->w;
 
   if( data.size() != (size_t)output_size )
     data.resize(output_size,std::complex<double>());
@@ -507,8 +515,9 @@ void NC::FastConvolve::Impl::fft( std::vector<std::complex<double>> &data,
   }
 #endif
 
-  nc_assert_always(wtable.size()%output_size==0);
-  const int jump = wtable.size()/output_size;
+  //The largest W index used below is (output_size/2-1)*jump < m_w->n/2:
+  nc_assert_always(m_w->n%output_size==0);
+  const int jump = m_w->n/output_size;
 
   //For a given stage i, the (j>>i)%2 condition below is true for
   //alternating runs of i1=(1<<i) CONSECUTIVE j-values (starting at

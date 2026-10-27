@@ -255,9 +255,10 @@ namespace {
     REQUIRE( NC::FastConvolve::currentCacheMemUsage() == n1 );
     doConvolve( 100000 );
     const auto n2 = NC::FastConvolve::currentCacheMemUsage();
-    //The second convolution needs an FFT of 2^18 complex numbers:
+    //The second convolution needs an FFT of 2^18 complex numbers (cached: 2^17
+    //W factors of 16 bytes and ~2^17 swap index pairs of 8 bytes):
     REQUIRE( n2 > 2*n1 );
-    REQUIRE( n2 >= 16*262144 && n2 < 5*16*262144 );
+    REQUIRE( n2 >= 8*262144 && n2 < 5*8*262144 );
     //Trimming discards the largest tables only:
     NC::FastConvolve::trimCaches( n2 );
     REQUIRE( NC::FastConvolve::currentCacheMemUsage() == n2 );
