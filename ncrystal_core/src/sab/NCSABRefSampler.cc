@@ -184,7 +184,9 @@ namespace NCRYSTAL_NAMESPACE {
         const double minusE = -E_div_kT;
         auto ptInsideKB = [foure]( double a, double b )
         {
-          return ncsquare( a-b ) < foure * a;//fixme: <= ?
+          //Strict: a cell with a corner exactly on the boundary is left to
+          //the (equally exact) partial-coverage integration:
+          return ncsquare( a-b ) < foure * a;
         };
 
         for ( auto ia : ncrange(na-1) ) {
