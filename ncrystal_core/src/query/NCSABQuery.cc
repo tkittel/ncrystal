@@ -24,7 +24,6 @@
 #include "NCrystal/internal/sab/NCSABProcessor.hh"
 #include "NCrystal/internal/sab/NCSABCellInteg.hh"
 #include "NCrystal/internal/sab/NCSABCellSample.hh"
-#include "NCrystal/internal/sab/NCSABBoundedCellSample.hh"
 #include "NCrystal/internal/sab/NCSABRefSampler.hh"
 #include "NCrystal/internal/sab/NCSABExtended.hh"
 #include "NCrystal/internal/sab/NCSABExtender.hh"
@@ -120,70 +119,6 @@ namespace NCRYSTAL_NAMESPACE {
           if ( ncsquare(ab.first-ab.second) <= ab.first*foure ) {
             res.a.push_back( ab.first );
             res.b.push_back( ab.second );
-          }
-        }
-        return res;
-      }
-
-      SampleResult testBoundedCellSample( const SABCellSurvey& cellsurv,
-                                          double E_div_kT,
-                                          RNG& rng,
-                                          const CellData& c,
-                                          std::uint64_t nsample,
-                                          std::uint64_t ntries_max )
-      {
-        //Use contributions from each individual cell edge to find probability
-        //of scattering from that edge.
-
-        //Calculate prob1 (will be cached in actual production usage alg):
-        double prob1;
-        const auto scheme
-          = SABCfg::IntegrationScheme::MaxPrec;//fixme
-        {
-          CellData c1 = c;
-          c1.S[2]=c1.S[3]=c1.logS[2]=c1.logS[3]=0.0;
-          CellData c2 = c;
-          c2.S[0]=c2.S[1]=c2.logS[0]=c2.logS[1]=0.0;
-          StableSumKahan sum;
-          StdLogLinCellIntegrator::integrateWithinKB( c1, E_div_kT,
-                                                      scheme, sum );
-          const double W1 = sum.sum();
-          StdLogLinCellIntegrator::integrateWithinKB( c2, E_div_kT,
-                                                      scheme, sum );
-          //fixme: can also just use the regular dual-edge integration result in
-          //place of W1plusW2.
-          const double W1plusW2 = sum.sum();
-          nc_assert_always(W1plusW2>0.0);
-          prob1 = W1 / W1plusW2;
-        }
-
-        auto bcsdata
-          = BoundedCellSampler::prepareBCSData( prob1, cellsurv, c, E_div_kT );
-
-        {
-          //Small serialisation test:
-          MixedDataVector dummy_cache;
-          dummy_cache.append(123.0);
-          auto packidx = BoundedCellSampler::pack(dummy_cache, bcsdata );
-          nc_assert_always(packidx>0&&packidx<dummy_cache.size_bytes());
-          dummy_cache.append(456.0);
-          std::memset( &bcsdata, 17, sizeof(bcsdata) );
-          bcsdata = BoundedCellSampler::unpack(dummy_cache, packidx );
-        }
-
-        BoundedCellSampler sampler( c, bcsdata, E_div_kT );
-        SampleResult res;
-        res.prob1 = prob1;
-        res.a.reserve( countToSizeT( nsample ) );
-        res.b.reserve( countToSizeT( nsample ) );
-        while( res.a.size() < nsample ) {
-          auto ab = sampler.sampleAlphaBeta(rng);
-          res.a.push_back(ab.alpha);
-          res.b.push_back(ab.beta);
-          res.ntries += ab.ntries;
-          if ( res.ntries > ntries_max ) {
-            NCRYSTAL_WARN("Early abort of FixedKBCellSample due to bad AR.");
-            break;
           }
         }
         return res;
@@ -531,26 +466,21 @@ namespace NCRYSTAL_NAMESPACE {
               ? cellinteg_pb_chosen_for_fcsample/cellinteg_full
               : -1.0 );
 
-        const bool useBoundedCellSample = ( cellinteg_pb_chosen_for_fcsample
-                                            < 0.1*cellinteg_full );//fixme: thr?
-
         nc_assert_always(surv.data().size()==1);
         const double E_div_kT_touch = surv.data().front().e_touch;
-        SampleResult samples_fc, samples_bc, samples_ref;
-        Optional<double> prob1_fc, prob1_bc;
+        SampleResult samples_fc, samples_ref;
+        Optional<double> prob1_fc;
         auto rng = createBuiltinRNG( seed );
         if ( nsample>0 && E_div_kT>E_div_kT_touch ) {
           samples_ref = produceRefCellSamples( E_div_kT, rng, cell,
                                                nsample, ntries_max );
           nc_assert_always( samples_ref.a.size() == nsample );
           nc_assert_always( samples_ref.b.size() == nsample );
-          if ( predicted_fc_ar > 0.001 || !useBoundedCellSample )
+          //Full-cell sampling only when not too inefficient:
+          if ( predicted_fc_ar > 0.001 )
             samples_fc = testFullCellOverlaySample( E_div_kT, rng, cell,
                                                     nsample, ntries_max );
-          samples_bc = testBoundedCellSample( cellsurv, E_div_kT, rng,
-                                              cell, nsample, ntries_max );
           prob1_fc = samples_fc.prob1;
-          prob1_bc = samples_bc.prob1;
         }
         os<<"{\"alpha\":";
         streamJSON(os,alpha);
@@ -598,26 +528,16 @@ namespace NCRYSTAL_NAMESPACE {
           os<<']';
         }
         os <<"]},\"sampling\":{";
-        os <<"\"chosen_sample_method\":";
-        streamJSON(os,(useBoundedCellSample?"bc":"fc"));
-        os <<",\"fc_predicted_AR\":";
+        os <<"\"fc_predicted_AR\":";
         streamJSON(os,predicted_fc_ar);
         os <<",\"fc_sampled_alpha\":";
         streamJSONHugeDblVect(os,std::move(samples_fc.a));
         os <<",\"fc_sampled_beta\":";
         streamJSONHugeDblVect(os,std::move(samples_fc.b));
-        os <<",\"bc_sampled_alpha\":";
-        streamJSONHugeDblVect(os,std::move(samples_bc.a));
-        os <<",\"bc_sampled_beta\":";
-        streamJSONHugeDblVect(os,std::move(samples_bc.b));
-        os <<",\"bc_sampled_ntries\":";
-        streamJSON(os,samples_bc.ntries);
         os <<",\"fc_sampled_ntries\":";
         streamJSON(os,samples_fc.ntries);
         os <<",\"fc_prob_edge_1\":";
         streamJSON(os,prob1_fc);
-        os <<",\"bc_prob_edge_1\":";
-        streamJSON(os,prob1_bc);
         os <<",\"ref_sampled_alpha\":";
         streamJSONHugeDblVect(os,std::move(samples_ref.a));
         os <<",\"ref_sampled_beta\":";
