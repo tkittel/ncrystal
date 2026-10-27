@@ -69,6 +69,11 @@ namespace NCRYSTAL_NAMESPACE {
     public:
       SABBetaStripSampler( shared_obj<const SABData>, double emax_div_kT,
                            unsigned nStripsPerBetaCell = 4 );
+      //Same, but sharing a log(S) table from createLogSTable (NCSABUtils.hh):
+      SABBetaStripSampler( shared_obj<const SABData>,
+                           shared_obj<const VectD> logSTable,
+                           double emax_div_kT,
+                           unsigned nStripsPerBetaCell = 4 );
 
       //False if S=0 everywhere within KB(emax), in which case the object can
       //not be used for anything else:
@@ -107,7 +112,7 @@ namespace NCRYSTAL_NAMESPACE {
       struct StripCalc { StripBound bound; std::uint32_t ia0, ia1; };
       StripCalc calcStripBound( double b0, double b1, std::uint32_t ib ) const;
       shared_obj<const SABData> m_sab;
-      VectD m_logS;
+      shared_obj<const VectD> m_logS;
       double m_emax;
       std::vector<Strip> m_strips;
       //Alias table for picking strips:
