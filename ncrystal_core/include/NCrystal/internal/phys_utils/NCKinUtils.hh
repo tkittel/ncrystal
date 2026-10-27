@@ -35,6 +35,16 @@ namespace NCRYSTAL_NAMESPACE {
   DeltaEMuVal_t convertAlphaBetaToDeltaEMu(double alpha, double beta, NeutronEnergy ekin, double kT );
   DeltaEMuVal_t convertAlphaBetaToDeltaEMu(PairDD alphabeta, NeutronEnergy ekin, double kT );
 
+  //Like convertAlphaBetaToDeltaEMu, but where alpha-, alpha and alpha+ are
+  //numerically indistinguishable (see muIsotropicAtBeta), or ekin/kT is below
+  //isotropicBelowEDivKT, mu is instead sampled isotropically with the RNG
+  //(the exact limit there, as S is constant over the tiny alpha range):
+  DeltaEMuVal_t
+  convertABToDeltaEMuWithIsotropicFallback( double alpha, double beta,
+                                            NeutronEnergy ekin, double kT,
+                                            RNG&,
+                                            double isotropicBelowEDivKT = 0.0 );
+
   //Get kinematically accessible alpha region for given ekin/kT and beta:
   double getAlphaMinus( double ekin_div_kT, double beta );
   double getAlphaPlus( double ekin_div_kT, double beta );

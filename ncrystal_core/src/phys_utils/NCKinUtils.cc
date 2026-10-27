@@ -22,6 +22,18 @@
 #include "NCrystal/internal/utils/NCMath.hh"
 namespace NC = NCrystal;
 
+NC::DeltaEMuVal_t
+NC::convertABToDeltaEMuWithIsotropicFallback( double alpha, double beta,
+                                              NeutronEnergy ekin, double kT,
+                                              RNG& rng,
+                                              double isotropicBelowEDivKT )
+{
+  const double E_div_kT = ekin.get() / kT;
+  if ( E_div_kT < isotropicBelowEDivKT || muIsotropicAtBeta( beta, E_div_kT ) )
+    return { beta * kT, 2.0 * rng.generate() - 1.0 };
+  return convertAlphaBetaToDeltaEMu( alpha, beta, ekin, kT );
+}
+
 NC::DeltaEMuVal_t NC::convertAlphaBetaToDeltaEMu(double alpha, double beta, NeutronEnergy ekin, double kT )
 {
   DeltaEMuVal_t res;
