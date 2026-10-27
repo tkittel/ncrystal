@@ -610,6 +610,8 @@ void NCV::VDOSGn::Impl::produceNewOrderByConvolution( Order order )
   if ( m_mt_jobs.has_value() ) {
     m_mt_jobs.value().waitAll();
     //Transfer concurrently generated results:
+    m_mt_pending_gndata.reserve( m_mt_pending_gndata.size()
+                                 + m_mt_buffer.size() );
     for ( auto i : ncrange( m_mt_buffer.size() ) )
       m_mt_pending_gndata
         .emplace_back( std::move( m_mt_buffer.at( m_mt_buffer.size()-1-i ).value() ) );
