@@ -336,6 +336,7 @@ namespace NCRYSTAL_NAMESPACE {
       //(reference dspacing, index in hkllist) of families from previous
       //buffers, sorted by dspacing:
       std::vector<std::pair<double,std::size_t>> famidx;
+      famidx.reserve( 4096 );
 
       //Families are matched against the values of their first member, but
       //finally get the average values of all members, calculated as first +
@@ -343,6 +344,7 @@ namespace NCRYSTAL_NAMESPACE {
       //result is in practice independent of the order of members, is exactly
       //the common value if all members agree, and never leaves their range:
       std::vector<PairDD> famdevsums;//(d,fsq) sums of member-first
+      famdevsums.reserve( 4096 );
 
       const double tol = cfg.merge_tolerance;
       auto isCompatible = [tol]( const Pt& p, const HKLInfo& hi )
@@ -410,6 +412,8 @@ namespace NCRYSTAL_NAMESPACE {
           //Not fitting in existing group, set up new.
           if ( hkllist.size()>1000000 && !env_ignorefsqcut )//guard against crazy setups
             throwCombinatoricsTooGreat( cfg.dcutoff );
+          if ( hkllist.size() == HKLList::nsmall+1 )
+            hkllist.reserve_hint( 4096 );
           hkllist.emplace_back();
           HKLInfo& hi = hkllist.back();
           hi.multiplicity = 2;
@@ -417,7 +421,9 @@ namespace NCRYSTAL_NAMESPACE {
           hi.dspacing = p.d;
           hi.explicitValues = ncmake_unique<HKLInfo::ExplicitVals>();
           hi.explicitValues->list.emplace<std::vector<HKL>>();
-          hi.explicitValues->list.get<std::vector<HKL>>().push_back( p.hkl );
+          auto& famhkls = hi.explicitValues->list.get<std::vector<HKL>>();
+          famhkls.reserve( 24 );//half the max multiplicity of a symmetric family
+          famhkls.push_back( p.hkl );
           famdevsums.emplace_back( 0.0, 0.0 );
         }
         pts.clear();
@@ -479,14 +485,14 @@ namespace NCRYSTAL_NAMESPACE {
         hi.dspacing += famdevsums[i].first / n;
         hi.fsquared += famdevsums[i].second / n;
       }
-      famdevsums.clear();
-      famdevsums.shrink_to_fit();
+      std::vector<PairDD>().swap( famdevsums );
 
-      //Sort explicit HKL entries and use first as representative index:
+      //Sort explicit HKL entries (releasing excess capacity) and use first as
+      //representative index:
       for ( auto& hi : hkllist ) {
         auto& v = hi.explicitValues->list.get<std::vector<HKL>>();
         std::sort(v.begin(),v.end());
-        v.shrink_to_fit();
+        std::vector<HKL>( v ).swap( v );
         hi.hkl = v.front();
       }
 
@@ -715,7 +721,7 @@ namespace NCRYSTAL_NAMESPACE {
             if ( hkllist.size()> 1000000 && !env_ignorefsqcut )//guard against crazy setups
               throwCombinatoricsTooGreat( cfg.dcutoff );
 
-            if ( hkllist.size() == decltype(hkllist)::nsmall+1 )
+            if ( hkllist.size() == HKLList::nsmall+1 )
               hkllist.reserve_hint( 4096 );
 
             hkllist.emplace_back();
