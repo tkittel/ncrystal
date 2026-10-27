@@ -24,6 +24,7 @@
 #include "NCrystal/internal/sab/NCSABProcessor.hh"
 #include "NCrystal/internal/sab/NCSABCellInteg.hh"
 #include "NCrystal/internal/sab/NCSABCellSample.hh"
+#include "NCrystal/internal/sab/NCSABBoundedCellSample.hh"
 #include "NCrystal/internal/sab/NCSABRefSampler.hh"
 #include "NCrystal/internal/sab/NCSABExtended.hh"
 #include "NCrystal/internal/sab/NCSABExtender.hh"
