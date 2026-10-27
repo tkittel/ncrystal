@@ -23,6 +23,7 @@
 #include "NCrystal/internal/sab/NCSABCellInteg.hh"
 #include "NCrystal/internal/sab/NCSABCellSample.hh"
 #include "NCrystal/internal/sab/NCSABBoundedCellSample.hh"
+#include "NCrystal/internal/sab/NCSABBetaStripSampler.hh"
 #include "NCrystal/internal/sab/NCSABIdx.hh"
 #include "NCrystal/internal/utils/NCMixedDataVector.hh"
 #include "NCrystal/internal/utils/NCTinyVector.hh"
@@ -285,6 +286,12 @@ namespace NCRYSTAL_NAMESPACE {
           std::vector<CellInfo> cellInfo;
         };
         CellMgr m_cellmgr;
+
+        //Beta-strip samplers with increasing emax, and the one to use at each
+        //energy grid point (-1 for none):
+        std::vector<SABBetaStripSampler> m_strips;
+        std::vector<std::int32_t> m_stripIdx;
+        void initStripLadder( const VectD& fcAR );
       private:
         std::vector<BCEnergyPoint> m_bcEptInfo;
         //sample info (indexed by the .bcSampleInfoIndex properties):
@@ -987,6 +994,7 @@ namespace NCRYSTAL_NAMESPACE {
         const auto scheme = cfg.integScheme;
 
         std::size_t nTouchedCellsMax(0);
+        VectD fcAR;//full-cell acceptance rate at each energy grid point
         {
           static_assert
             ( -static_cast<std::int64_t>(std::numeric_limits<std::int32_t>::min())
@@ -1006,6 +1014,8 @@ namespace NCRYSTAL_NAMESPACE {
           }
           if ( do_diag )
             m_diagnostics_fcAR.reserve( m_eGrid.size() );
+          if ( do_sample && cfg.betaStripSampling )
+            fcAR.reserve( m_eGrid.size() );
           for ( auto& E_div_kT : m_eGrid ) {
             sIntegralAtE( E_div_kT, m_cellmgr, surv, scheme, integAtE,
                           do_sample );
@@ -1032,8 +1042,16 @@ namespace NCRYSTAL_NAMESPACE {
             if (!do_sample)
               continue;
 
+            if ( cfg.betaStripSampling )
+              fcAR.push_back( integAtE.integralTouchedCells > 0.0
+                              ? ( integAtE.integralWithinKB
+                                  / integAtE.integralTouchedCells )
+                              : 0.0 );
+            //With betaStripSampling, full-cell sampling unless
+            //initStripLadder picks a strip sampler:
             const bool needsBoundedCellSampler
-              = ( integAtE.integralWithinKB
+              = ( !cfg.betaStripSampling
+                  && integAtE.integralWithinKB
                   < (cfg.fullCellSamplingARThreshold
                      *integAtE.integralTouchedCells) );
             nc_assert( integAtE.nTouchedCells < n_cellmax );
@@ -1072,6 +1090,9 @@ namespace NCRYSTAL_NAMESPACE {
           nc_assert( m_cumulFCInt.size() == nTouchedCellsMax );
           nc_assert( m_cumulFCInt_cellidx.size() == nTouchedCellsMax );
           m_bcEptInfo.shrink_to_fit();
+          m_stripIdx.assign( m_eGrid.size(), -1 );
+          if ( cfg.betaStripSampling )
+            initStripLadder( fcAR );
         }
 
 
@@ -1201,6 +1222,14 @@ namespace NCRYSTAL_NAMESPACE {
           E_div_kT_overlay = m_eGrid[idx_E_overlay];
         }
         nc_assert(m_sampleIdx.size()==m_eGrid.size());
+        if ( E_div_kT > 0.0 && E_div_kT <= m_eGrid.back() ) {
+          const std::int32_t istrip = vectAt( m_stripIdx, idx_E_overlay );
+          if ( istrip >= 0 ) {
+            auto r = vectAt( m_strips, static_cast<std::size_t>( istrip ) )
+              .sample( rng, E_div_kT );
+            return { r.alpha, r.beta, r.ntries };
+          }
+        }
         std::int32_t sampleIdx = vectAt(m_sampleIdx,idx_E_overlay);
         ABRes alphabeta;
         const double foure = E_div_kT*4.0;
@@ -1226,6 +1255,55 @@ namespace NCRYSTAL_NAMESPACE {
         res.beta = alphabeta.b;
         res.ntries = ntries;
         return res;
+      }
+
+      void SABProcImpl::initStripLadder( const VectD& fcAR )
+      {
+        //Walking up the energy grid, a strip sampler is built with emax at the
+        //highest grid point within ladderFactor of the lowest one not yet
+        //covered, and used at the grid points where stripTryCost times its
+        //expected tries is below the expected full-cell tries. Stops at the
+        //first sampler used nowhere, if the full-cell acceptance rate is at
+        //least minFullCellAR at all its grid points:
+        constexpr double ladderFactor = 5.0;
+        constexpr double stripTryCost = 1.0;
+        constexpr double minFullCellAR = 0.4;
+        const std::size_t n = m_eGrid.size();
+        nc_assert_always( fcAR.size() == n && m_stripIdx.size() == n );
+        std::size_t h = 0;
+        while ( h < n ) {
+          std::size_t j = h;
+          while ( j + 1 < n
+                  && ( vectAt( m_eGrid, j + 1 )
+                       <= ladderFactor * vectAt( m_eGrid, h ) ) )
+            ++j;
+          SABBetaStripSampler st( m_cellmgr.sabDataPtr(),
+                                  vectAt( m_eGrid, j ) );
+          if ( !st.hasStrips() ) {
+            h = j + 1;
+            continue;//S=0 within KB(emax), nothing to sample
+          }
+          bool used = false;
+          double minAR = 1.0;
+          for ( std::size_t k = h; k <= j; ++k ) {
+            const double ar = vectAt( fcAR, k );
+            const double integ = vectAt( m_sIntegral, k );
+            minAR = ncmin( minAR, ar );
+            if ( !( integ > 0.0 && ar > 0.0 ) )
+              continue;
+            if ( stripTryCost * st.expectedTries( vectAt( m_eGrid, k ), integ )
+                 < 1.0 / ar ) {
+              vectAt( m_stripIdx, k )
+                = static_cast<std::int32_t>( m_strips.size() );
+              used = true;
+            }
+          }
+          if ( used )
+            m_strips.push_back( std::move( st ) );
+          else if ( minAR >= minFullCellAR )
+            break;
+          h = j + 1;
+        }
       }
 
       SABProcImpl::ABRes
