@@ -1,0 +1,6 @@
+minimal []: sampling methods and tries OK
+diagonal_sliver []: sampling methods and tries OK
+alpha_far []: sampling methods and tries OK
+tiny_values []: sampling methods and tries OK
+tiny_values: sigma(E)*sqrt(E) constant below the energy grid
+huge_values: sigma(E)*sqrt(E) constant below the energy grid

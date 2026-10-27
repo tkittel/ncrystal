@@ -23,6 +23,7 @@
 
 import math
 
+import numpy as np
 from NCrystalDev.misc import evaluate_query as ncquery
 
 from NCTestUtils.sabsampleutils import onedim_projections
@@ -40,9 +41,8 @@ def pval_from_samples( samples1, samples2 ):
         pvals[key] = pv
     return pvals, pvals_worst
 
-nperpt = 400
-
-def check_method_choice( cfg, lbl ):
+def check_method_choice( cfg, lbl, nperpt = 400, require_strips = True,
+                         check_fc = True, name = None ):
     d = ncquery( ['sab','proctries',cfg,lbl,str(nperpt),'1234'] )
     sp = d['sabproc']
     ar = sp['diagnostics']['full_cell_AR']
@@ -50,7 +50,7 @@ def check_method_choice( cfg, lbl ):
     si = sp['sample_info']
     strip = dict( zip( si['epts_with_beta_strip_sampling'],
                        si['beta_strip_expected_tries'] ) )
-    assert strip, 'beta-strip sampling not used anywhere'
+    assert strip or not require_strips, 'beta-strip sampling not used anywhere'
     assert not si['epts_with_bounded_cell_sampling']
     for k, (a, ded, meas) in enumerate( zip( ar, dedicated, d['mean_tries'] ) ):
         if k in strip:
@@ -59,6 +59,20 @@ def check_method_choice( cfg, lbl ):
             #Mean of nperpt geometric-like try counts (6 sigma):
             tol = 6 * math.sqrt( max( t - 1.0, 0.0 ) / t / nperpt ) + 0.01
             assert abs( meas / t - 1 ) < tol, f'grid point {k}: {meas} vs {t} tries'
-        elif ded > 0.0 and a > 0.0:
+        elif check_fc and ded > 0.0 and a > 0.0:
             assert 1.0 / a < 2.0 * ded, f'full-cell sampling much worse at grid point {k}'
-    print(f'{cfg} [{lbl}]: sampling methods and tries OK')
+    print(f'{name or cfg} [{lbl}]: sampling methods and tries OK')
+
+class _AB:
+    def __init__( self, d ):
+        self.alpha, self.beta = np.asarray(d['alpha']), np.asarray(d['beta'])
+
+def compare_with_ref( cfg, lbl, ekin, nsample, seed ):
+    #Worst KS p-value of the 1D projections of (alpha,beta) samples from
+    #SABProcessor and the reference sampler:
+    n, e = str(nsample), str(ekin)
+    proc = ncquery( ['sab','proc',cfg,lbl,n,str(seed),e],
+                    huge_arrays = True )['sample']
+    ref = ncquery( ['sab','refsample',cfg,lbl,n,str(seed+1),e,'ref'],
+                   huge_arrays = True )['refsample']
+    return pval_from_samples( _AB(proc), _AB(ref) )[1]
