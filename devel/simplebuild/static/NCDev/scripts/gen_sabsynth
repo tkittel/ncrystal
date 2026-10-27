@@ -1,0 +1,129 @@
+#!/usr/bin/env python3
+
+################################################################################
+##                                                                            ##
+##  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   ##
+##                                                                            ##
+##  Copyright 2015-2026 NCrystal developers                                   ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+# Writes the synthetic scattering kernels in tests/data/synth, each aimed at a
+# weakness of kernel processing and sampling. S values have 4 significant
+# digits and grid points 6, to keep the files small. Intended usage:
+#
+#   ncdevtool sbrun sb_ncdev_gen_sabsynth tests/data/synth
+
+import argparse
+import pathlib
+
+import numpy as np
+from NCrystalDev.ncmat import NCMATComposer
+
+
+def rounded( x, ndigits ):
+    return np.asarray( [ float( f'{v:.{ndigits}g}' )
+                         for v in np.asarray( x, dtype=float ).flat ] )
+
+def write( outdir, name, descr, alpha, beta, s ):
+    alpha = rounded( alpha, 6 )
+    beta = rounded( beta, 6 )
+    assert ( np.diff( alpha ) > 0 ).all() and ( np.diff( beta ) > 0 ).all()
+    s = np.asarray( s, dtype=float )
+    assert s.shape == ( len(beta), len(alpha) )
+    c = NCMATComposer()
+    c.add_comments( [ ( 'Synthetic kernel for tests (written by'
+                        ' devel/simplebuild/static/NCDev/scripts/gen_sabsynth):' ),
+                      descr ] )
+    c.set_composition( 'H', 'H' )
+    c.set_density( 1.0, 'g/cm3' )
+    c.set_state_of_matter( 'liquid' )
+    c.set_dyninfo_scatknl( 'H', alphagrid = alpha, betagrid = beta,
+                           temperature = 293.6,
+                           sab_scaled = rounded( s, 4 ) )
+    fn = outdir / f'sabsynth_{name}.ncmat'
+    fn.write_text( c.create_ncmat( meta_data = False ) )
+    print(f'{fn}: {len(alpha)}x{len(beta)}, {fn.stat().st_size//1024} kB')
+
+def smooth( alpha, beta ):
+    a = alpha[None, :]
+    b = beta[:, None]
+    return np.exp(-a) * np.exp(-b**2 / (1.0 + a)) / np.sqrt(1.0 + a)
+
+def main( outdir ):
+    geom = np.geomspace
+
+    a = geom(1e-2, 50.0, 60)
+    b = np.concatenate(([0.0, 1e-5, 1e-4, 1e-3], geom(1e-2, 20.0, 40)))
+    s = smooth(a, b)
+    s[0, 0] = 1e10
+    write( outdir, 'spike_alphamin', 'Huge S=1e10 at the first alpha grid point'
+           ' of the beta=0 row, alpha grid starting at 0.01.', a, b, s )
+
+    a = geom(1e-4, 100.0, 300)
+    b = np.array([0.0, 2.0, 5.0, 10.0, 20.0, 40.0])
+    s = np.exp(-30.0 * a[None, :]) * (1.0 + b[:, None])**-2
+    write( outdir, 'steep_alpha_coarse_beta', 'S ~ exp(-30 alpha) (underflowing'
+           ' in the tail) on a coarse grid of 6 beta points.', a, b, s )
+
+    a = geom(1e-4, 50.0, 108)
+    b = np.concatenate(([0.0], geom(1e-4, 30.0, 108)))
+    s = smooth(a, b)
+    ia = np.arange(len(a))[None, :] // 6
+    ib = np.arange(len(b))[:, None] // 6
+    s[(ia + ib) % 2 == 0] = 0.0
+    write( outdir, 'zero_holes', 'Checkerboard of blocks with S=0.', a, b, s )
+
+    a = geom(1e-4, 50.0, 70)
+    b = np.concatenate(([0.0], geom(1e-4, 30.0, 70)))
+    for name, scale, descr in [
+            ( 'tiny_values', 1e-250, 'Tiny S values (~1e-250).' ),
+            ( 'subnormal_values', 1e-300,
+              'Tiny S values (~1e-300), mostly subnormal at larger alpha.' ) ]:
+        s = smooth(a, b) * scale
+        s[:, len(a)//2:] *= 1e-15
+        write( outdir, name, descr, a, b, s )
+    write( outdir, 'huge_values', 'Huge S values (~1e150, so S^2 overflows).',
+           a, b, smooth(a, b) * 1e150 )
+
+    rng = np.random.default_rng(12345)
+    s = 10.0**rng.uniform(-200.0, 50.0, size=(len(b), len(a)))
+    write( outdir, 'noise', 'Log-random S values in [1e-200,1e50].', a, b, s )
+
+    a = geom(0.5, 50.0, 60)
+    b = np.concatenate(([0.0], geom(1e-3, 30.0, 60)))
+    write( outdir, 'alpha_far', 'Alpha grid starting at 0.5.', a, b,
+           smooth(a, b) )
+
+    write( outdir, 'minimal', 'Smallest allowed grid (5x5) with constant S.',
+           geom(1e-3, 1.0, 5), np.array([0.0, 0.25, 0.5, 0.75, 1.0]),
+           np.ones((5, 5)) )
+
+    a = geom(1e-4, 50.0, 100)
+    b = np.concatenate(([0.0], geom(1e-4, 50.0, 100)))
+    s = smooth(a, b)
+    s[ np.abs( np.log( (a[None, :] + 1e-6) / (b[:, None] + 1e-6) ) ) > 0.3 ] = 0.0
+    write( outdir, 'diagonal_sliver', 'S>0 only in cells near alpha=beta.',
+           a, b, s )
+
+    a = np.array([1e-4, 1e-2, 1.0, 10.0, 50.0])
+    b = np.concatenate(([0.0], geom(1e-6, 30.0, 999)))
+    write( outdir, 'fine_beta_coarse_alpha', 'Fine beta grid (1000 points)'
+           ' with a coarse alpha grid (5 points).', a, b, smooth(a, b) )
+
+if __name__ == '__main__':
+    p = argparse.ArgumentParser( description = 'Write synthetic kernels.' )
+    p.add_argument( 'outdir', type = pathlib.Path )
+    main( p.parse_args().outdir )
