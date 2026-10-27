@@ -172,7 +172,7 @@ inline double NCrystal::SABUtils::interpolate_loglin_fallbacklinlin(double a, do
   nc_assert ( fa>=0.0 && fb >= 0.0 );
   nc_assert ( x >= a && x <= b );
   const double midpoint = 0.5 * ( b + a );
-  const bool linlin_mode = ( fa*fb == 0.0 );
+  const bool linlin_mode = !( fa > 0.0 && fb > 0.0 );
   if ( x < midpoint ) {
     //choose form most numerically stable for x near a
     const double r = (x-a) / (b-a);
@@ -193,7 +193,7 @@ inline double NCrystal::SABUtils::interpolate_loglin_fallbacklinlin_fast(double 
   const double bma = b - a;
   nc_assert( bma > 0.0 );
   const double midpoint = 0.5 * ( b + a );
-  const bool linlin_mode = ( fa*fb == 0.0 );//fixme: -> !ncmin(fa,fb) (also elsewhere in file)
+  const bool linlin_mode = !( fa > 0.0 && fb > 0.0 );
   if ( x < midpoint ) {
     //choose form most numerically stable for x near a
     const double r = (x-a) / bma;
@@ -400,7 +400,7 @@ inline double NCrystal::SABUtils::sampleLogLinDist(double a, double fa, double b
   nc_assert(fa>=0.);
   nc_assert(fb>=0.);
   double df = fb-fa;
-  if ( fa*fb*df != 0.0 ) {
+  if ( fa > 0.0 && fb > 0.0 && df != 0.0 ) {
     //usual, non-degenerate case:
     double a_sub_b = a-b;
     double logfa_fb = std::log(fb/fa);
@@ -425,7 +425,7 @@ inline double NCrystal::SABUtils::sampleLogLinDist_fast(double a, double fa, dou
   nc_assert(fa>=0.);
   nc_assert(fb>=0.);
   double df = fb-fa;
-  if ( fa*fb*df != 0.0 ) {
+  if ( fa > 0.0 && fb > 0.0 && df != 0.0 ) {
     //usual, non-degenerate case:
     double a_sub_b = a-b;
     double logfa_fb = logfb-logfa;
