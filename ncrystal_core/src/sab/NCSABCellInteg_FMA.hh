@@ -42,7 +42,6 @@ namespace NCRYSTAL_NAMESPACE {
                           ? 2.0*dbpm
                           : ncmax(0.0,bu-bl) );
       nc_assert(bumbl >= 0.0 );
-      nc_assert(smiddle >= -1e-9 );
       const double res = ncmax(0.0,bumbl*smiddle);
       nc_assert(res >= 0.0);
       nc_assert(std::isfinite(res));
@@ -110,6 +109,7 @@ namespace NCRYSTAL_NAMESPACE {
         nc_assert(valueInInterval(-0.01,1.01,(bmiddle-b1)*invdb));
         const double rb = ncclamp((bmiddle-b1)*invdb,0.0,1.0);
         const double smiddle = nclerp( s_at_b1, s_at_b2, rb );
+        nc_assert( smiddle >= -1e-9 * ncmax( s_at_b1, s_at_b2 ) );
         return calc_bu_minus_bl_times_smiddle( is_bounded_by_both,
                                                dbpm, bu, bl, smiddle );
       }
@@ -160,6 +160,7 @@ namespace NCRYSTAL_NAMESPACE {
           const double bmiddle( is_bounded_on_both_sides ? a : (bu+bl)*0.5 );
           double rb = (bmiddle-cs_b1)*invdb;
           double smiddle = nclerp(Sb1,Sb2,rb);
+          nc_assert( smiddle >= -1e-9 * ncmax( Sb1, Sb2 ) );
           contrib_out[i] = calc_bu_minus_bl_times_smiddle( is_bounded_on_both_sides,
                                                            dbpm, bu, bl, smiddle );
         }
