@@ -132,31 +132,22 @@ NC::SABCfg::Cfg NC::SABCfg::createConfig( int sablux )
   case 0:
     c.integScheme = IntegrationScheme::Simpson3;
     c.integSchemeDetermineEGrid = IntegrationScheme::Simpson3;
-    c.integSchemeBCSample = IntegrationScheme::Flex5;
     c.egrid_npts = 100;//fixme: too low for sampling speed?
     c.egrid_emin_accuracy = 1e-5;
-    c.fullCellSamplingARThreshold = 0.15;
-    c.bcSamplingLargeSRatioThreshold = 1e-2;
     c.sct_table_npts = 40;
     break;
   case 1:
     c.integScheme = IntegrationScheme::Romberg5;
     c.integSchemeDetermineEGrid = IntegrationScheme::Romberg5;
-    c.integSchemeBCSample = IntegrationScheme::Flex5;
     c.egrid_npts = 140;
     c.egrid_emin_accuracy = 1e-6;
-    c.fullCellSamplingARThreshold = 0.15;
-    c.bcSamplingLargeSRatioThreshold = 1e-3;
     c.sct_table_npts = 50;
     break;
   case 2:
     c.integScheme = IntegrationScheme::Flex5;
     c.integSchemeDetermineEGrid = IntegrationScheme::Flex5;
-    c.integSchemeBCSample = IntegrationScheme::Flex5;
     c.egrid_npts = 200;
     c.egrid_emin_accuracy = 1e-7;
-    c.fullCellSamplingARThreshold = 0.15;
-    c.bcSamplingLargeSRatioThreshold = 1e-4;
     c.sct_table_npts = 70;
     break;
   case 3:
@@ -167,31 +158,22 @@ NC::SABCfg::Cfg NC::SABCfg::createConfig( int sablux )
     static_assert( sablux_default_luxury == 3, "" );
     nc_assert( c.integScheme == IntegrationScheme::Flex9);
     nc_assert( c.integSchemeDetermineEGrid == IntegrationScheme::Flex5);
-    nc_assert( c.integSchemeBCSample == IntegrationScheme::Flex9 );
     nc_assert( c.egrid_npts == 300 );
     nc_assert( c.egrid_emin_accuracy == 1e-8 );
-    nc_assert( c.fullCellSamplingARThreshold == 0.15 );
-    nc_assert( c.bcSamplingLargeSRatioThreshold == 1e-5);
     nc_assert( c.sct_table_npts == 90 );
     break;
   case 4:
     c.integScheme = IntegrationScheme::Flex17;
     c.integSchemeDetermineEGrid = IntegrationScheme::Flex9;
-    c.integSchemeBCSample = IntegrationScheme::Flex17;
     c.egrid_npts = 450;
     c.egrid_emin_accuracy = 1e-9;
-    c.fullCellSamplingARThreshold = 0.15;
-    c.bcSamplingLargeSRatioThreshold = 1e-6;
     c.sct_table_npts = 150;
     break;
   case 5:
     c.integScheme = IntegrationScheme::Flex33;
     c.integSchemeDetermineEGrid = IntegrationScheme::Flex9;
-    c.integSchemeBCSample = IntegrationScheme::Flex33;
     c.egrid_npts = 600;
     c.egrid_emin_accuracy = 1e-9;
-    c.fullCellSamplingARThreshold = 0.15;
-    c.bcSamplingLargeSRatioThreshold = 1e-7;
     c.sct_table_npts = 200;
     break;
   case 6:
@@ -199,13 +181,10 @@ NC::SABCfg::Cfg NC::SABCfg::createConfig( int sablux )
                    == IntegrationScheme::Flex65, "" );
     c.integScheme = IntegrationScheme::MaxPrec;
     c.integSchemeDetermineEGrid = IntegrationScheme::MaxPrec;
-    c.integSchemeBCSample = IntegrationScheme::MaxPrec;
     //It would be great to have e.g. npts=100000, but it simply takes
     //forever. So we use 4 times as many pts as for knllux=5.
     c.egrid_npts = 2400;
     c.egrid_emin_accuracy = 1e-10;
-    c.fullCellSamplingARThreshold = 0.15;
-    c.bcSamplingLargeSRatioThreshold = 1e-8;
     c.sct_table_npts = 1000;
     break;
   default:

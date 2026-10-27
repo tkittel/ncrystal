@@ -22,7 +22,6 @@
 #include "NCrystal/internal/sab/NCSABSurveyor.hh"
 #include "NCrystal/internal/sab/NCSABCellInteg.hh"
 #include "NCrystal/internal/sab/NCSABCellSample.hh"
-#include "NCrystal/internal/sab/NCSABBoundedCellSample.hh"
 #include "NCrystal/internal/sab/NCSABBetaStripSampler.hh"
 #include "NCrystal/internal/sab/NCSABIdx.hh"
 #include "NCrystal/internal/utils/NCMixedDataVector.hh"
@@ -253,14 +252,10 @@ namespace NCRYSTAL_NAMESPACE {
         //if none):
         VectD m_diagnostics_stripTries;
 
-        //We know how to sample at all the energy values in the grid, and the
-        //method used is governed by a single idx. If it is negative, it represent
-        //minus the number of touched cells, and we can simply use full-cell
-        //rejection sampling with all the touched cells. If it is non-negative, a
-        //more careful method must be used and the value represents the idx into
-        //the m_bcEptInfo vector.
-        std::vector<std::int32_t> m_sampleIdx;
-        bool canSample() const { return !m_sampleIdx.empty(); }
+        //Number of touched cells at each energy grid point, for full-cell
+        //sampling (empty without sampling support):
+        std::vector<std::uint32_t> m_nTouchedCells;
+        bool canSample() const { return !m_nTouchedCells.empty(); }
         ////////////////////////////////////////////
         //Data needed for the full-cell sampling:
 
@@ -270,24 +265,6 @@ namespace NCRYSTAL_NAMESPACE {
         //The corresponding packed cell indices:
         std::vector<SABIdx::PackedIndex> m_cumulFCInt_cellidx;
 
-        ///////////////////////////////////////////
-        //Data needed for bounded-cell sampling:
-        //fixme: not the most efficient structure initially:
-
-        //The sampleIdx gives us a way to select the information needed to
-        //sample at a particular energy point (fixme: pack all this more
-        //efficiently, avoid large amounts of small vectors and just use offsets
-        //into a single large vector?):
-        struct BCEnergyPoint {
-          //fixme: something different than vectors? ~std::vector<>() uses ~1% of
-          //the total time in benchmarks.
-          VectD cumulCellContrib;
-          struct CellInfo {
-            SABIdx::PackedIndex sabCellIndex;
-            std::uint32_t bcSampleInfoIndex;//== ::max() for full cell sampling
-          };
-          std::vector<CellInfo> cellInfo;
-        };
         CellMgr m_cellmgr;
 
         //Beta-strip samplers with increasing emax, and the one to use at each
@@ -299,38 +276,23 @@ namespace NCRYSTAL_NAMESPACE {
         static constexpr double lowEFloorEDivKT
           = SABProcessor::lowEFloorEDivKT;
         //Strip sampler with emax at the lowest grid point, used below the
-        //energy grid (with betaStripSampling) and below lowEFloorEDivKT:
+        //energy grid:
         Optional<SABBetaStripSampler> m_stripBelowGrid;
-        bool m_stripBelowGridAll = false;//use for all energies below the grid
-        void initStripBelowGrid( bool betaStripSampling );
+        void initStripBelowGrid();
         using ABOutcome = SABProcessor::AlphaBetaOutcome;
         ABOutcome sampleBelowFloor( RNG&, double E_div_kT ) const;
       private:
-        std::vector<BCEnergyPoint> m_bcEptInfo;
-        //sample info (indexed by the .bcSampleInfoIndex properties):
-        MixedDataVector m_bcSample;
 
         //Sample a scattering event:
         struct ABRes { double a, b; std::size_t ntries; };
         ABRes sampleAlphaBetaFC( RNG&, double E_div_kT,
                                  std::size_t nCellsTouched ) const;
-        ABRes sampleAlphaBetaBC( RNG&, double E_div_kT,
-                                 const BCEnergyPoint& ) const;
 
       };
 
       struct sIntegralAtE_Result {
         double integralWithinKB;
         double integralTouchedCells;
-
-        //Detailed crossed-cell integrals are also recorded, in case they are
-        //needed for BoundedCell sampling later. Note that these are in the same
-        //order as on the original SABSurveyor object.
-        std::vector<std::pair<double,SABSurveyor::cellidx_t>> crossedIntegrals;
-
-        //fixme: better with : <0 is crossedIntegral, >=0 means full cell
-        //integral. And for final cumul-value storage we should sort first so
-        //the lowest contrib comes first.
 
         //Number of cells touched (they will all be located at the beginning of
         //SABSurveyor::data()):
@@ -350,8 +312,7 @@ namespace NCRYSTAL_NAMESPACE {
                          const CellMgr& mgr,
                          const SABSurveyor& surv,
                          StdLogLinCellIntegrator::IntegrationScheme scheme,
-                         sIntegralAtE_Result& result,
-                         bool do_sample )
+                         sIntegralAtE_Result& result )
       {
         auto& prev = result.prevCache;
         const double prev_E = ( ( prev.E_div_kT >= 0.0
@@ -361,7 +322,6 @@ namespace NCRYSTAL_NAMESPACE {
                                    ? prev.sumFullyCoveredCells.sum() : 0.0 );
 
 
-        result.crossedIntegrals.clear();
         nc_assert(E_div_kT>0&&std::isfinite(E_div_kT));
         //Find all touched cells:
         auto survCells = surv.data();
@@ -452,9 +412,6 @@ namespace NCRYSTAL_NAMESPACE {
                 contrib *= s;
               }
               sum.add( contrib );
-            }
-            if ( do_sample ) {
-              result.crossedIntegrals.emplace_back( contrib, it->cellidx );
             }
           }
         }
@@ -804,12 +761,11 @@ namespace NCRYSTAL_NAMESPACE {
                                                E_min_max.second.get()/kT );
 
           sIntegralAtE_Result tmp_result;
-          tmp_result.crossedIntegrals.reserve(1024);
           auto f = [&cellmgr, &surv, &tmp_result,scheme]( double E_div_kT ) {
             nc_assert(E_div_kT>0.0);
             const double se = std::sqrt(E_div_kT);
             nc_assert(se>0.0);
-            sIntegralAtE( E_div_kT, cellmgr, surv, scheme, tmp_result, false );
+            sIntegralAtE( E_div_kT, cellmgr, surv, scheme, tmp_result );
             return tmp_result.integralWithinKB / se;
           };
           E_min_max.first = NeutronEnergy{ kT*determineEMinDivKT( cfg, r, f ) };
@@ -875,119 +831,6 @@ namespace NCRYSTAL_NAMESPACE {
         return final_egrid;
       }
 
-      SABProcImpl::BCEnergyPoint
-      prepareBCEPt( double E_div_kT, const SABSurveyor& surv,
-                    const CellMgr& mgr, const sIntegralAtE_Result& integAtE,
-                    SABCfg::IntegrationScheme scheme,
-                    MixedDataVector& commonStorage )
-      {
-        nc_assert( commonStorage.size_bytes() < static_cast<std::size_t>
-                   (std::numeric_limits<std::uint32_t>::max()) );
-        const double e = E_div_kT;
-        SABProcImpl::BCEnergyPoint res;
-
-        auto itNextCrossed = integAtE.crossedIntegrals.begin();
-        using TmpE = std::pair<double,SABProcImpl::BCEnergyPoint::CellInfo>;
-        std::vector<TmpE> tmp;
-        tmp.reserve(2*integAtE.crossedIntegrals.size());
-
-        for( auto& cell : surv.data() ) {
-          if ( e < cell.e_touch )//fixme: it used to be "if ( e > cell.e_touch ) break" ?????
-            break;//not touching any more cells
-          double fullCellInteg = mgr.getCellIntegral( cell.cellidx );
-          double contrib;
-          if ( e >= cell.e_cover ) {
-            contrib = fullCellInteg;
-          } else {
-            nc_assert( itNextCrossed != integAtE.crossedIntegrals.end() );
-            nc_assert( itNextCrossed->second.val == cell.cellidx.val );
-            contrib = itNextCrossed->first;
-            ++itNextCrossed;
-          }
-
-          if ( !(contrib>0.0) )
-            continue;//skip irrelevant cell
-
-          tmp.emplace_back();
-          auto& entry = tmp.back();
-          entry.first = contrib;
-          entry.second.sabCellIndex = cell.cellidx;
-
-          //If full cell sampling acceptance rate is high enough, mark this cell
-          //for full-cell sampling .
-          constexpr double fc_threshold = 0.2;//fixme: tune
-          if ( contrib >= fc_threshold*fullCellInteg ) {
-            //Full cell sampling acceptance rate is good enough:
-            entry.second.bcSampleInfoIndex
-              = std::numeric_limits<std::uint32_t>::max();
-          } else {
-            //Needs bounded cell sampling:
-            using BCS = BoundedCellSampler;
-
-            CellData cellData = mgr.lookupCellInfo( cell.cellidx );
-            SABCellSurvey cellSurvey( cellData.a1, cellData.a2,
-                                      cellData.b1, cellData.b2,
-                                      E_div_kT );
-            double prob1;
-            {
-              CellData c1 = cellData;
-              c1.S[2]=c1.S[3]=c1.logS[2]=c1.logS[3]=0.0;
-              CellData c2 = cellData;
-              c2.S[0]=c2.S[1]=c2.logS[0]=c2.logS[1]=0.0;
-              StableSumKahan sum;
-              StdLogLinCellIntegrator::integrateWithinKB( c1, E_div_kT,
-                                                          scheme, sum );
-              const double W1 = sum.sum();
-              StdLogLinCellIntegrator::integrateWithinKB( c2, E_div_kT,
-                                                          scheme, sum );
-              //fixme: can also just use the regular dual-edge integration
-              //result in place of W1plusW2.
-              const double W1plusW2 = sum.sum();
-              nc_assert(W1plusW2>0.0);
-              prob1 = W1 / W1plusW2;
-              nc_assert( prob1 >= 0.0 );
-              nc_assert( prob1 <= 1.0 );
-            }
-
-            BCS::BCSData bcsdata = BCS::prepareBCSData( prob1, cellSurvey,
-                                                        cellData, E_div_kT );
-            std::size_t pack_idx = BCS::pack( commonStorage, bcsdata );
-            nc_assert( pack_idx < std::numeric_limits<std::uint32_t>::max() );
-            entry.second.bcSampleInfoIndex = static_cast<std::uint32_t>(pack_idx);
-          }
-        }
-        nc_assert( itNextCrossed==integAtE.crossedIntegrals.end() );
-        nc_assert( commonStorage.size_bytes()
-                   < std::numeric_limits<std::uint32_t>::max() );
-
-        //For best numerical stability, sort so smallest contrib comes first in
-        //the cumul vector. We do not need stable sort, since sabCellIndex
-        //should be unique.
-        std::sort( tmp.begin(), tmp.end(),
-                   [](const TmpE& a, const TmpE& b) {
-                     if ( a.first != b.first )
-                       return a.first < b.first;//by ascending contrib
-                     //rare contrib tie (written to support self-comparison):
-                     if ( a.second.sabCellIndex.val
-                          != b.second.sabCellIndex.val )
-                       return ( a.second.sabCellIndex.val
-                                < b.second.sabCellIndex.val );
-                     return ( a.second.bcSampleInfoIndex
-                              < b.second.bcSampleInfoIndex );
-                   } );
-
-        //Put in final data structures and return:
-        res.cumulCellContrib.reserve(tmp.size());
-        res.cellInfo.reserve(tmp.size());
-        StableSumKahan contribSum;
-        for ( auto& ee : tmp ) {
-          contribSum.add( ee.first );
-          res.cumulCellContrib.push_back(contribSum.sum());
-          res.cellInfo.push_back( ee.second );
-        }
-        return res;
-      }
-
       SABProcImpl::SABProcImpl( const SABCfg::Cfg& cfg,
                                 shared_obj<const SABData> sd,
                                 std::shared_ptr<const VectD> requested_egrid,
@@ -1021,17 +864,13 @@ namespace NCRYSTAL_NAMESPACE {
           m_sIntegral.reserve( m_eGrid.size() );
           sIntegralAtE_Result integAtE;
           if ( do_sample ) {
-            m_sampleIdx.reserve( m_eGrid.size() );
-            integAtE.crossedIntegrals.reserve(256);
-            m_bcEptInfo.reserve(128);
+            m_nTouchedCells.reserve( m_eGrid.size() );
+            fcAR.reserve( m_eGrid.size() );
           }
           if ( do_diag )
             m_diagnostics_fcAR.reserve( m_eGrid.size() );
-          if ( do_sample && cfg.betaStripSampling )
-            fcAR.reserve( m_eGrid.size() );
           for ( auto& E_div_kT : m_eGrid ) {
-            sIntegralAtE( E_div_kT, m_cellmgr, surv, scheme, integAtE,
-                          do_sample );
+            sIntegralAtE( E_div_kT, m_cellmgr, surv, scheme, integAtE );
             m_sIntegral.push_back( integAtE.integralWithinKB );
 #ifndef NDEBUG
             //The incremental touched-cells integral must equal a direct sum
@@ -1055,37 +894,17 @@ namespace NCRYSTAL_NAMESPACE {
             if (!do_sample)
               continue;
 
-            if ( cfg.betaStripSampling )
-              fcAR.push_back( integAtE.integralTouchedCells > 0.0
-                              ? ( integAtE.integralWithinKB
-                                  / integAtE.integralTouchedCells )
-                              : 0.0 );
-            //With betaStripSampling, full-cell sampling unless
-            //initStripLadder picks a strip sampler:
-            const bool needsBoundedCellSampler
-              = ( !cfg.betaStripSampling
-                  && integAtE.integralWithinKB
-                  < (cfg.fullCellSamplingARThreshold
-                     *integAtE.integralTouchedCells) );
+            fcAR.push_back( integAtE.integralTouchedCells > 0.0
+                            ? ( integAtE.integralWithinKB
+                                / integAtE.integralTouchedCells )
+                            : 0.0 );
+            //Full-cell sampling, unless initStripLadder picks a strip sampler:
             nc_assert( integAtE.nTouchedCells < n_cellmax );
             nc_assert( integAtE.nTouchedCells > 0 );
-            if ( needsBoundedCellSampler ) {
-              //Needs bounded cell sampler.
-              auto sidx = m_bcEptInfo.size();
-              nc_assert(sidx<n_cellmax);
-              m_sampleIdx.push_back(static_cast<std::int32_t>(sidx));
-              m_bcEptInfo.push_back( prepareBCEPt( E_div_kT, surv, m_cellmgr,
-                                                   integAtE,
-                                                   cfg.integSchemeBCSample,
-                                                   m_bcSample ) );
-            } else {
-              //Full cell sampling is OK, store -nTouchedCells.
-              m_sampleIdx.push_back(-static_cast<std::int32_t>
-                                    (integAtE.nTouchedCells));
-              nTouchedCellsMax = std::max<std::size_t>(nTouchedCellsMax,
-                                                       integAtE.nTouchedCells);
-
-            }
+            m_nTouchedCells.push_back( static_cast<std::uint32_t>
+                                       ( integAtE.nTouchedCells ) );
+            nTouchedCellsMax = std::max<std::size_t>( nTouchedCellsMax,
+                                                      integAtE.nTouchedCells );
           }
         }
 
@@ -1102,11 +921,9 @@ namespace NCRYSTAL_NAMESPACE {
           }
           nc_assert( m_cumulFCInt.size() == nTouchedCellsMax );
           nc_assert( m_cumulFCInt_cellidx.size() == nTouchedCellsMax );
-          m_bcEptInfo.shrink_to_fit();
           m_stripIdx.assign( m_eGrid.size(), -1 );
-          if ( cfg.betaStripSampling )
-            initStripLadder( fcAR );
-          if ( do_diag && cfg.betaStripSampling ) {
+          initStripLadder( fcAR );
+          if ( do_diag ) {
             m_diagnostics_stripTries.reserve( m_eGrid.size() );
             for ( auto k : ncrange( m_eGrid.size() ) ) {
               const double e = vectAt( m_eGrid, k );
@@ -1124,7 +941,7 @@ namespace NCRYSTAL_NAMESPACE {
         m_lowEExtrapolationConstant = ( m_sIntegral.front()
                                         * std::sqrt(1.0/m_eGrid.front()) );
         if ( do_sample )
-          initStripBelowGrid( cfg.betaStripSampling );
+          initStripBelowGrid();
 
         if ( cfg.sIntegralInterp == SABCfg::SIntegralInterpolation::Smooth ) {
           //We set up PCHIP interpolation. For more "proper" PCHIP behaviour, we
@@ -1244,21 +1061,17 @@ namespace NCRYSTAL_NAMESPACE {
         if ( m_stripBelowGrid.has_value() ) {
           if ( E_div_kT < lowEFloorEDivKT )
             return sampleBelowFloor( rng, E_div_kT );
-          if ( m_stripBelowGridAll && E_div_kT < m_eGrid.front() ) {
+          if ( E_div_kT < m_eGrid.front() ) {
             auto r = m_stripBelowGrid.value().sample( rng, E_div_kT );
             return { r.alpha, r.beta, r.ntries };
           }
         }
-        std::size_t idx_E_overlay;
-        double E_div_kT_overlay;
-        {
-          nc_assert(m_eGrid.size()>=2);
-          idx_E_overlay = fastLowerBoundIdx(m_eGrid.data(), m_eGrid.size(), E_div_kT);
-          if ( idx_E_overlay == m_eGrid.size() )
-            --idx_E_overlay;
-          E_div_kT_overlay = m_eGrid[idx_E_overlay];
-        }
-        nc_assert(m_sampleIdx.size()==m_eGrid.size());
+        nc_assert(m_eGrid.size()>=2);
+        std::size_t idx_E_overlay
+          = fastLowerBoundIdx(m_eGrid.data(), m_eGrid.size(), E_div_kT);
+        if ( idx_E_overlay == m_eGrid.size() )
+          --idx_E_overlay;
+        nc_assert(m_nTouchedCells.size()==m_eGrid.size());
         if ( E_div_kT > 0.0 && E_div_kT <= m_eGrid.back() ) {
           const std::int32_t istrip = vectAt( m_stripIdx, idx_E_overlay );
           if ( istrip >= 0 ) {
@@ -1267,30 +1080,14 @@ namespace NCRYSTAL_NAMESPACE {
             return { r.alpha, r.beta, r.ntries };
           }
         }
-        std::int32_t sampleIdx = vectAt(m_sampleIdx,idx_E_overlay);
-        ABRes alphabeta;
-        const double foure = E_div_kT*4.0;
-        auto phaseSpaceNotOK = [foure](const ABRes& ab )
-        {
-          return ( ncsquare( ab.a - ab.b ) > foure * ab.a );
-        };
-        std::size_t ntries(0);
-        if ( sampleIdx < 0 ) {
-          std::size_t nCellsTouched = static_cast<std::size_t>(-sampleIdx);
-          alphabeta = sampleAlphaBetaFC( rng, E_div_kT, nCellsTouched );
-          ntries += alphabeta.ntries;
-          nc_assert( !phaseSpaceNotOK(alphabeta) );
-        } else {
-          const auto& bcEpt = vectAt(m_bcEptInfo,static_cast<std::size_t>(sampleIdx));
-          do {
-            alphabeta = sampleAlphaBetaBC( rng, E_div_kT_overlay, bcEpt );
-            ntries += alphabeta.ntries;
-          } while( phaseSpaceNotOK(alphabeta) );
-        }
+        const std::size_t nCellsTouched = vectAt(m_nTouchedCells,idx_E_overlay);
+        ABRes alphabeta = sampleAlphaBetaFC( rng, E_div_kT, nCellsTouched );
+        nc_assert( ncsquare( alphabeta.a - alphabeta.b )
+                   <= E_div_kT * 4.0 * alphabeta.a );
         SABProcessor::AlphaBetaOutcome res;
         res.alpha = alphabeta.a;
         res.beta = alphabeta.b;
-        res.ntries = ntries;
+        res.ntries = static_cast<unsigned>( alphabeta.ntries );
         return res;
       }
 
@@ -1343,7 +1140,7 @@ namespace NCRYSTAL_NAMESPACE {
         }
       }
 
-      void SABProcImpl::initStripBelowGrid( bool betaStripSampling )
+      void SABProcImpl::initStripBelowGrid()
       {
         //Efficient at all e below its emax (tries independent of e), so a
         //single sampler covers all energies below the grid:
@@ -1353,7 +1150,6 @@ namespace NCRYSTAL_NAMESPACE {
         if ( !st.hasStrips() )
           return;
         m_stripBelowGrid = std::move( st );
-        m_stripBelowGridAll = betaStripSampling;
       }
 
       SABProcessor::AlphaBetaOutcome
@@ -1410,49 +1206,6 @@ namespace NCRYSTAL_NAMESPACE {
         }
       }
 
-      SABProcImpl::ABRes
-      SABProcImpl::sampleAlphaBetaBC( RNG& rng,
-                                      double E_div_kT,
-                                      const BCEnergyPoint& bce ) const
-      {
-        std::size_t idx = pickRandIdxByWeight( rng, bce.cumulCellContrib );
-        const auto& bce_ci = vectAt(bce.cellInfo,idx);
-        CellData cellData = m_cellmgr.lookupCellInfo( bce_ci.sabCellIndex );
-        const double foure = 4.0*E_div_kT;
-        ABRes res;
-        res.ntries = 0;
-        if ( bce_ci.bcSampleInfoIndex
-             == std::numeric_limits<std::uint32_t>::max() ) {
-          //Sample in cell with full cell overlay:
-          FullCellSampler fc(&cellData);
-          while ( true ) {
-            auto ab = fc.sampleAlphaBeta( rng );
-            ++res.ntries;
-            if ( ncsquare(ab.first-ab.second)<=foure*ab.first ) {
-              res.a = ab.first;
-              res.b = ab.second;
-              return res;
-            }
-            nc_assert(res.ntries<100000);
-          }
-        } else {
-          //Sample in cell with bounded cell overlay:
-          auto bcsdata = BoundedCellSampler::unpack( m_bcSample,
-                                                     bce_ci.bcSampleInfoIndex );
-          BoundedCellSampler bc( cellData, bcsdata, E_div_kT );
-          while ( true ) {
-            auto ab = bc.sampleAlphaBeta( rng );
-            res.ntries += ab.ntries;
-            if ( ncsquare(ab.alpha-ab.beta)<=foure*ab.alpha ) {
-              res.a = ab.alpha;
-              res.b = ab.beta;
-              return res;
-            }
-            nc_assert(res.ntries<100000);
-          }
-        }
-      }
-
       void SABProcImpl::toJSON( std::ostream& os ) const
       {
         //Lots of diagnostics: Things related to egrid search (like how many
@@ -1486,17 +1239,9 @@ namespace NCRYSTAL_NAMESPACE {
 
         if ( can_sample ) {
           os << ",\"sample_info\":{";
-          std::vector<std::uint32_t> epts_with_bc;
-          epts_with_bc.reserve(512);
-          nc_assert_always( m_sampleIdx.size() == m_eGrid.size() );
+          nc_assert_always( m_nTouchedCells.size() == m_eGrid.size() );
           const std::uint32_t n
-            = static_cast<std::uint32_t>(m_sampleIdx.size());
-          for ( std::uint32_t i = 0; i < n; ++i ) {
-            if ( vectAt(m_sampleIdx,i) >= 0 )
-              epts_with_bc.push_back(i);
-          }
-          os << "\"epts_with_bounded_cell_sampling\":";
-          streamJSON(os,epts_with_bc);
+            = static_cast<std::uint32_t>(m_nTouchedCells.size());
           //Beta-strip sampling: grid points and expected tries:
           std::vector<std::uint32_t> epts_with_strip;
           VectD strip_tries;
@@ -1510,7 +1255,7 @@ namespace NCRYSTAL_NAMESPACE {
                                    .expectedTries( vectAt(m_eGrid,i),
                                                    vectAt(m_sIntegral,i) ) );
           }
-          os << ",\"epts_with_beta_strip_sampling\":";
+          os << "\"epts_with_beta_strip_sampling\":";
           streamJSON(os,epts_with_strip);
           os << ",\"beta_strip_expected_tries\":";
           streamJSON(os,strip_tries);

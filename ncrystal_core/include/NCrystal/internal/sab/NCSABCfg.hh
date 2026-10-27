@@ -94,19 +94,12 @@ namespace NCRYSTAL_NAMESPACE {
       //fixme: consistent snake case vs. camel case here
       IntegrationScheme integScheme = IntegrationScheme::Flex9;
       IntegrationScheme integSchemeDetermineEGrid = IntegrationScheme::Flex5;
-      IntegrationScheme integSchemeBCSample = IntegrationScheme::Flex9;
       SIntegralInterpolation sIntegralInterp = SIntegralInterpolation::Default;
       ExtenderModel extender_model = ExtenderModel::Default;
 
       unsigned egrid_npts = 300;
       unsigned sct_table_npts = 90;//SCT extender lookup table npts
       double egrid_emin_accuracy = 1e-8;//fixme: just use 1e-11 for all levels? To improve reproducibility! Also, increase trunc level in vdosgn to 1e-12-ish ?
-      double fullCellSamplingARThreshold = 0.15;
-      double bcSamplingLargeSRatioThreshold = 1e-5;//fixme: not used yet
-      //FIXME: Temporary field, until benchmarking is done: beta-strip
-      //sampling (true) or bounded-cell sampling (false) where full-cell
-      //sampling is inefficient:
-      bool betaStripSampling = true;
     };
 
     ////////////////////////////////////////////
