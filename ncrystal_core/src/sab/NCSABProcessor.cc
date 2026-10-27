@@ -737,10 +737,10 @@ namespace NCRYSTAL_NAMESPACE {
                                               sab.temperature().kT() );
         const double kT = sab.temperature().kT();
 
-        Optional<NeutronEnergy> suggestedEMin = NullOpt;//fixme
+        Optional<NeutronEnergy> suggestedEMin = suggestedEMin_by_egrid;
         Optional<NeutronEnergy> suggestedEMax;
         if ( sab.suggestedEmax() > 0.0 )
-          suggestedEMax = sab.suggestedEmax();//fixme this should not compile!
+          suggestedEMax = NeutronEnergy{ sab.suggestedEmax() };
         if ( suggestedEMax_by_egrid.has_value() )
           suggestedEMax = suggestedEMax_by_egrid;
 
@@ -748,9 +748,6 @@ namespace NCRYSTAL_NAMESPACE {
         E_min_max.second = ( suggestedEMax.has_value()
                              ? suggestedEMax.value()
                              : determineEMax( sab.temperature(), sIntByEtouch.sint, sIntByEtouch.e ) );
-
-        if ( suggestedEMin_by_egrid.has_value() )
-          suggestedEMin = suggestedEMin_by_egrid;
 
         if ( suggestedEMin.has_value() ) {
           E_min_max.first = suggestedEMin.value();
