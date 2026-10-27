@@ -58,26 +58,15 @@ def testcell(*,E_div_kT, alpha, beta, svals = None,
     res = ncquery( query, huge_arrays=True)
 
     sm=res['sampling']
-    mtd = sm['chosen_sample_method']
-    altmtd = 'bc' if mtd=='fc' else 'fc'
-    def methodfullName(m):
-        assert m in ('bc','fc')
-        return 'BoundedCell' if m=='bc' else 'FullCell'
-    print(f"Chosen method: {methodfullName(mtd)}")
-    print(f"Alternative method: {methodfullName(altmtd)}")
     ndig = 5 if verbose else 2
     print(f"Predicted FullCell AR: %.{ndig}g%%"%(100.0*sm['fc_predicted_AR']))
     actual_fc_ar = ( len(sm['fc_sampled_alpha'])/sm['fc_sampled_ntries']
                      if sm['fc_sampled_ntries'] else None )
     if actual_fc_ar is not None:
         print(f"Actual FullCell AR   : %.{ndig}g%%"%(100.0*actual_fc_ar))
-    print(f"Actual BoundedCell AR: %.{ndig}g%%"
-          %(100.0*len(sm['bc_sampled_alpha'])/sm['bc_sampled_ntries']))
     if sm['fc_prob_edge_1'] != -1.0:
         print(f"Probability edge@b1 (FullCell)   : %.{ndig}g%%"
               %(100.0*sm['fc_prob_edge_1']))
-    print(f"Probability edge@b1 (BoundedCell): %.{ndig}g%%"
-          %(100.0*sm['bc_prob_edge_1']))
 
     AR_prec = 0.1
     if sm['fc_predicted_AR']>0.01:
@@ -92,19 +81,13 @@ def testcell(*,E_div_kT, alpha, beta, svals = None,
                           sm['ref_sampled_beta'],
                           sm['ref_sampled_ntries'] )
     samples_std = samples_ref.clone_empty('std')
-    samples_alt = samples_ref.clone_empty('alt')
 
     samples = { 'ref': samples_ref,
-                'std': samples_std,
-                'alt': samples_alt }
+                'std': samples_std }
 
-
-    samples_std.add_data( sm[f'{mtd}_sampled_alpha'],
-                          sm[f'{mtd}_sampled_beta'],
-                          sm[f'{mtd}_sampled_ntries'] )
-    samples_alt.add_data( sm[f'{altmtd}_sampled_alpha'],
-                          sm[f'{altmtd}_sampled_beta'],
-                          sm[f'{altmtd}_sampled_ntries'] )
+    samples_std.add_data( sm['fc_sampled_alpha'],
+                          sm['fc_sampled_beta'],
+                          sm['fc_sampled_ntries'] )
 
     mpsamples = None
     if nsamples_mpref:
@@ -122,33 +105,26 @@ def testcell(*,E_div_kT, alpha, beta, svals = None,
         samples_mp.add_data( mp_a, mp_b, None )
         samples['mp'] = samples_mp
 
-    sampled_a = np.asarray(sm[f'{mtd}_sampled_alpha'],dtype=float)
-    sampled_b = np.asarray(sm[f'{mtd}_sampled_beta'],dtype=float)
-    altsampled_a = np.asarray(sm[f'{altmtd}_sampled_alpha'],dtype=float)
-    altsampled_b = np.asarray(sm[f'{altmtd}_sampled_beta'],dtype=float)
+    sampled_a = np.asarray(sm['fc_sampled_alpha'],dtype=float)
+    sampled_b = np.asarray(sm['fc_sampled_beta'],dtype=float)
 
     ref_sampled_a = np.asarray(sm['ref_sampled_alpha'],dtype=float)
     ref_sampled_b = np.asarray(sm['ref_sampled_beta'],dtype=float)
 
-    altsampled_ok = len(altsampled_a) > 0.01*len(sampled_a)
-    altsampled_ok_for_stats = len(altsampled_a) > 0.1*len(sampled_a)
-
+    #Full-cell sampling is only done when not too inefficient:
     ksp = kolmogorov_smirnov_pvalue
     pvals = {}
-    pvals_alt = {}
-    for key, fct in onedim_projections:
-        tmp = fct(sampled_a,sampled_b)
-        pvals[key] = ksp(fct(ref_sampled_a,ref_sampled_b),tmp)
-        if altsampled_ok_for_stats:
-            pvals_alt[key] = ksp(fct(altsampled_a,altsampled_b),tmp)
+    if len(sampled_a) > 0:
+        for key, fct in onedim_projections:
+            pvals[key] = ksp(fct(ref_sampled_a,ref_sampled_b),
+                             fct(sampled_a,sampled_b))
 
     pval_global_worst = 1.0
     npvals = 0
     def print_pvalline(k,p):
         print(f"   {k.rjust(3)} : {p*100:.4g}%")
 
-    for ttt, pvdict in [('std vs. ref',pvals),
-                        ('std vs. alt',pvals_alt)]:
+    for ttt, pvdict in [('std vs. ref',pvals)]:
         if not pvdict:
             continue
         if verbose:
@@ -191,7 +167,7 @@ def testcell(*,E_div_kT, alpha, beta, svals = None,
             pctx.finalise( do_grid = False, do_legend='draggable' )
         nmax2d = 10000
         plot2dcell(axes[0,0],sampled_a,sampled_b,
-                   f'sampled (C++, {mtd.upper()})',nmax=nmax2d)
+                   'sampled (C++, FC)',nmax=nmax2d)
         plot2dcell(axes[1,0],ref_sampled_a,ref_sampled_b,'Ref (C++)',nmax=nmax2d)
 
         def plothist(ax,key):
@@ -202,36 +178,26 @@ def testcell(*,E_div_kT, alpha, beta, svals = None,
             assert hists['ref'].integral>0
             href = hists['ref']
             hstd = hists['std']
-            halt = hists['alt']
             hmp = hists.get('mp')
             for k,v in hists.items():
                 if k!='ref' and v.integral>0.0:
                     v.scale( (href.binwidth*href.integral)
                                     /(v.binwidth*v.integral) )
             pval = hstd.check_compat(href,return_pval=True,check=False)
-            pval_alt = ( hstd.check_compat(halt,return_pval=True,check=False)
-                         if altsampled_ok else None )
             href.plot(label='Ref (C++)',
                       color='blue',alpha=0.5,
                       error_bands=True,
-                      **pctx.kwargs_subcontext())
-            if altsampled_ok:
-                halt.plot(label=f'Alt (C++, {altmtd.upper()})',
-                          color='orange',alpha=0.3,
-                          error_bands=True,
                       **pctx.kwargs_subcontext())
             if hmp is not None and hmp.integral>0:
                 hmp.plot(label='mpmath',
                          color='green',alpha=0.3,
                          error_bands=True,
                          **pctx.kwargs_subcontext())
-            hstd.plot(label=f'Std (C++, {mtd.upper()})',
+            hstd.plot(label='Std (C++, FC)',
                       color='none',
                       **pctx.kwargs_subcontext())
 
-            t_alt = ('' if pval_alt is None
-                    else f', pval_fc_vs_bc: {pval_alt*100:.3g}%')
-            ax.set_title(f'{key} (pval: {pval*100:.3g}%{t_alt})')
+            ax.set_title(f'{key} (pval: {pval*100:.3g}%)')
             pctx.finalise(do_legend=('draggable' if key=='a' else False))
 
         plothist(axes[0,1],'a')

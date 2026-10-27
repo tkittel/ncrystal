@@ -505,7 +505,7 @@ Caught expected NCBadInput('Can not use character 0x07 (ASCII BEL) in JSON query
 
 Collected huge array
 Caught expected NCBadInput('Invalid key for JSON Huge Vector: "2"')
-Caught expected NCBadInput('Invalid key for JSON Huge Vector: "7"')
+Caught expected NCBadInput('Invalid key for JSON Huge Vector: "5"')
 Normal query with huge arrays worked afterwards
 >>> Info query ['list']:
 ('structure', 'sites')
