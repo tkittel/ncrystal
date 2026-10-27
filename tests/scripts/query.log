@@ -108,6 +108,7 @@ Caught expected NCBadInput('Invalid JSON query key: "foo"')
 ['analyse',
  'integschemes',
  'proc',
+ 'proctries',
  'refeval',
  'refsample',
  'samplepb',

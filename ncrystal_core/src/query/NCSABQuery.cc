@@ -364,6 +364,37 @@ namespace NCRYSTAL_NAMESPACE {
         os << "}}";
       }
 
+      //Processor JSON (with diagnostics) and the mean number of tries of
+      //nperpt samplings of (alpha,beta) at each energy grid point:
+      void query_impl_proctries( std::ostream& os,
+                                 shared_obj<const SABData> sab,
+                                 std::uint64_t nperpt,
+                                 std::uint64_t seed,
+                                 int knllux )
+      {
+        if ( knllux < 0 )
+          knllux = SABCfg::sablux_default_luxury;
+        SABProcessor sp( SABCfg::createConfig(knllux), std::move(sab),
+                         std::make_shared<VectD>(),
+                         SABProcessor::SampleSupport::YES,
+                         SABProcessor::StoreExtraDiagnostics::YES );
+        os << "{\"sabproc\":";
+        sp.toJSON(os);
+        auto rng = createBuiltinRNG( seed );
+        VectD meantries;
+        for ( auto e : sp.getEDivKTGrid() ) {
+          //Just below the grid point (e*kT/kT might round up to the next one):
+          const NeutronEnergy ekin{ e * sp.kT() * ( 1.0 - 1e-12 ) };
+          StableSum sum;
+          for ( std::uint64_t i = 0; i < nperpt; ++i )
+            sum.add( sp.sampleScatterAlphaBeta( rng, ekin ).ntries );
+          meantries.push_back( nperpt ? sum.sum() / nperpt : 0.0 );
+        }
+        os << ",\"mean_tries\":";
+        streamJSON(os,meantries);
+        os << '}';
+      }
+
       void query_impl_refsample( std::ostream& os,
                                  shared_obj<const SABData> sab,
                                  Optional<Temperature> teff,
@@ -763,6 +794,7 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
   constexpr auto sv_sglcell = StrView::make("sglcell");
   constexpr auto sv_integschemes = StrView::make("integschemes");
   constexpr auto sv_proc = StrView::make("proc");
+  constexpr auto sv_proctries = StrView::make("proctries");
   constexpr auto sv_refsample = StrView::make("refsample");
   constexpr auto sv_analyse = StrView::make("analyse");
 
@@ -986,12 +1018,30 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
         query_impl_refsample( os, std::move(sabdata), teff, nsample, seed,
                               sample_ekin, knllux );
     }
+  } else if ( key == sv_proctries ) {
+    const char * usage
+      = ( "correct usage: [\"sab\",\"proctries\",MATCFGSTR,"
+          "ATOMDISPLAYLABEL,NPERPT,SEED] (the ATOMDISPLAYLABEL can be left as"
+          " an empty string for monoatomic materials)" );
+    if ( nargs != 4 )
+      invalid(usage);
+    Optional<std::string> atomdsplbl;
+    if ( !arg(1).empty() )
+      atomdsplbl = argstr(1);
+    auto extracted = query_impl_extractSabData( argstr(0), atomdsplbl );
+    auto optn = arg(2).toUInt64();
+    auto optsd = arg(3).toUInt64();
+    if ( !optn.has_value() || !optsd.has_value() )
+      invalid(usage);
+    query_impl_proctries( os, std::move( extracted.sab ), optn.value(),
+                          optsd.value(), MatCfg(argstr(0)).get_knllux() );
   } else if ( key == sv_list ) {
     if ( nargs != 0 )
       invalid("no arguments should come after: [\"sab\",\"list\"]");
-    streamJSON( os, std::array<StrView,8>{ sv_analyse,
+    streamJSON( os, std::array<StrView,9>{ sv_analyse,
                                            sv_integschemes,
                                            sv_proc,
+                                           sv_proctries,
                                            sv_refeval,
                                            sv_refsample,
                                            sv_samplepb,
