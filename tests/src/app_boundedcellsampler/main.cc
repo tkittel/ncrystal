@@ -18,7 +18,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/internal/sab/NCSABBoundedCellSample.hh"
+#include "NCSABBoundedCellSample.hh"
 #include "NCrystal/internal/sab/NCSABCellSample.hh"
 #include "NCrystal/internal/sab/NCSABCellInteg.hh"
 #include "NCrystal/internal/sab/NCSABSurveyor.hh"

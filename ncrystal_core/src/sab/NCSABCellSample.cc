@@ -236,9 +236,8 @@ namespace NCRYSTAL_NAMESPACE {
           nc_assert_always(m_aup <= cell.a2);
 
           //The contribution(alpha) might have local maxima at a few special
-          //values (found in connection with the BoundedCellSampler), so for
-          //added safety, we must also evaluate on these if they fall in a given
-          //alpha-bin. Otherwise the overlay value determined purely from the
+          //values, so for added safety, we must also evaluate on these if they
+          //fall in a given alpha-bin. Otherwise the overlay value determined purely from the
           //alpha-bin edges could be underestimated.
           TinyVector<double,7> special_avals;
           {
