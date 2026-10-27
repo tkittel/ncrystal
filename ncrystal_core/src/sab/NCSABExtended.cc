@@ -158,21 +158,12 @@ NCS::SABExtended::sampleScatter( RNG& rng, NeutronEnergy ekin ) const
 {
   auto ab = sampleScatterAlphaBeta( rng, ekin );
 
-  //Fixme: this code is duplicated in too many places (and is it even
-  //technically correct that we end up isotropic??)
-  double dE, mu;
-  const double E_div_kT = ekin.get()*m_invkT;
-  if ( E_div_kT < SABProcessor::lowEFloorEDivKT
-       || muIsotropicAtBeta(ab.second,E_div_kT) ) {
-    //close to kinematical end-point, numerically safe fall-back:
-    dE = ab.second*m_kT;
-    mu = 2.0 * rng.generate() - 1.0;
-  } else {
-    auto dEmu = convertAlphaBetaToDeltaEMu( ab.first, ab.second, ekin, m_kT );
-    dE = dEmu.deltaE;
-    mu = dEmu.mu;
-  }
-  return { NeutronEnergy{ncmax(0.0,ekin.dbl()+dE)}, CosineScatAngle{mu} };
+  constexpr double floorEDivKT = SABProcessor::lowEFloorEDivKT;
+  auto r = convertABToDeltaEMuWithIsotropicFallback( ab.first, ab.second,
+                                                     ekin, m_kT, rng,
+                                                     floorEDivKT );
+  return { NeutronEnergy{ ncmax( 0.0, ekin.dbl() + r.deltaE ) },
+           CosineScatAngle{ r.mu } };
  }
 
 NC::shared_obj<const NC::SABUtils::SABExtended>
