@@ -59,20 +59,6 @@ namespace NCRYSTAL_NAMESPACE {
 #endif
       class CellMgr final : private NoCopyMove {
 
-        void initLogSCache()
-        {
-#ifndef NDEBUG
-          (void)dummy_testsabidx;
-#endif
-          auto& sab = m_sab->sab();
-          nc_assert(m_logS==nullptr);
-          m_logS = ncmake_unique_array_noinit<double>(sab.size());
-          auto itS = sab.begin();
-          auto itSE = sab.end();
-          double * itLS = m_logS.get();
-          for ( ; itS != itSE; ++itS, ++itLS )
-            *itLS = NCS::safeLogOrElse( *itS, 0.0 );
-        }
         void initCellIntegrals()
         {
           auto& sab = m_sab->sab();
@@ -92,8 +78,7 @@ namespace NCRYSTAL_NAMESPACE {
           VectD alphaint_cache;
           alphaint_cache.resize(nalphacells.value(),0.0);
           auto itS = sab.begin();
-          nc_assert( m_logS != nullptr );
-          const double * itLogS = m_logS.get();
+          const double * itLogS = m_logS->data();
           //NB: S(alpha[ia],beta[ib]) = sab[ ib*nalpha+ia ]
           {
             //Init alphaint_cache with cell edge integrals at ib=0:
@@ -113,9 +98,9 @@ namespace NCRYSTAL_NAMESPACE {
             ++itS;
             ++itLogS;
             nc_assert( (std::size_t)std::distance(sab.begin(),itS) == (ib+1)*nalpha.value() );
-            nc_assert( (std::size_t)std::distance(static_cast<const double*>(m_logS.get()),itLogS) == (ib+1)*nalpha.value() );
+            nc_assert( (std::size_t)std::distance(static_cast<const double*>(m_logS->data()),itLogS) == (ib+1)*nalpha.value() );
             nc_assert( itS == std::next(sab.begin(),(ib+1)*nalpha.value()) );
-            nc_assert( itLogS == std::next(m_logS.get(),(ib+1)*nalpha.value()) );
+            nc_assert( itLogS == std::next(m_logS->data(),(ib+1)*nalpha.value()) );
             const double b1 = vectAt(beta,ib);//fixme: use iterators instead
             const double b2 = vectAt(beta,ib+1);
             const double half_db = 0.5 * (b2-b1);
@@ -147,7 +132,7 @@ namespace NCRYSTAL_NAMESPACE {
           }
           nc_assert(m_cellIntegral.size()==ncells);
           nc_assert(std::next(itS)==sab.end());
-          nc_assert(std::next(itLogS)==m_logS.get()+sab.size());
+          nc_assert(std::next(itLogS)==m_logS->data()+sab.size());
         }
 
       public:
@@ -156,12 +141,18 @@ namespace NCRYSTAL_NAMESPACE {
         shared_obj<const SABData> sabDataPtr() const { return m_sab; }
 
         CellMgr( shared_obj<const SABData> sab )
-          : m_sab(std::move(sab))
+          : m_sab(std::move(sab)),
+            m_logS( NCS::createLogSTable( *m_sab ) )
         {
+#ifndef NDEBUG
+          (void)dummy_testsabidx;
+#endif
           m_nalpham1 = m_sab->alphaGrid().size()-1;
-          initLogSCache();
           initCellIntegrals();
         }
+
+        //Table of log(S) values, also shared with SABBetaStripSampler:
+        const shared_obj<const VectD>& logSTable() const { return m_logS; }
 
         CellData lookupCellInfo( cellidx_t packed_idx ) const
         {
@@ -181,9 +172,9 @@ namespace NCRYSTAL_NAMESPACE {
           //auto idx_sab = ib*na + ia;
           nc_assert( idx_sab.value() == ib*na.value() + ia );
           auto itS = std::next(sab.begin(),idx_sab.value());
-          const double * itLogS = m_logS.get() + idx_sab.value();
+          const double * itLogS = m_logS->data() + idx_sab.value();
           nc_assert(std::next(itS)<sab.end());
-          nc_assert(std::next(itLogS)<m_logS.get()+sab.size());
+          nc_assert(std::next(itLogS)<m_logS->data()+sab.size());
           res.S[0] = *itS++;
           res.S[1] = *itS;
           res.logS[0] = *itLogS++;
@@ -193,7 +184,7 @@ namespace NCRYSTAL_NAMESPACE {
           itS += m_nalpham1;
           itLogS += m_nalpham1;
           nc_assert(std::next(itS)<sab.end());
-          nc_assert(std::next(itLogS)<m_logS.get()+sab.size());
+          nc_assert(std::next(itLogS)<m_logS->data()+sab.size());
           res.S[2] = *itS++;
           res.S[3] = *itS;
           res.logS[2] = *itLogS++;
@@ -208,9 +199,9 @@ namespace NCRYSTAL_NAMESPACE {
         }
 
       private:
-        std::unique_ptr<double[]> m_logS;
-        VectD m_cellIntegral;
         shared_obj<const SABData> m_sab;
+        shared_obj<const VectD> m_logS;
+        VectD m_cellIntegral;
         std::size_t m_nalpham1;
       };
 
@@ -950,7 +941,8 @@ namespace NCRYSTAL_NAMESPACE {
             for ( auto k : ncrange( m_eGrid.size() ) ) {
               const double e = vectAt( m_eGrid, k );
               const double integ = vectAt( m_sIntegral, k );
-              SABBetaStripSampler st( m_cellmgr.sabDataPtr(), e );
+              SABBetaStripSampler st( m_cellmgr.sabDataPtr(),
+                                      m_cellmgr.logSTable(), e );
               const bool ok = st.hasStrips() && integ > 0.0;
               m_diagnostics_stripTries.push_back( ok
                                                   ? st.expectedTries( e, integ )
@@ -1134,6 +1126,7 @@ namespace NCRYSTAL_NAMESPACE {
                        <= ladderFactor * vectAt( m_eGrid, h ) ) )
             ++j;
           SABBetaStripSampler st( m_cellmgr.sabDataPtr(),
+                                  m_cellmgr.logSTable(),
                                   vectAt( m_eGrid, j ) );
           if ( !st.hasStrips() ) {
             h = j + 1;
@@ -1168,7 +1161,8 @@ namespace NCRYSTAL_NAMESPACE {
         //single sampler covers all energies below the grid:
         if ( !( m_lowEExtrapolationConstant > 0.0 ) )
           return;//S=0 within KB(e) at low e: never sampled there
-        SABBetaStripSampler st( m_cellmgr.sabDataPtr(), m_eGrid.front() );
+        SABBetaStripSampler st( m_cellmgr.sabDataPtr(), m_cellmgr.logSTable(),
+                                m_eGrid.front() );
         if ( !st.hasStrips() )
           return;
         m_stripBelowGrid = std::move( st );
