@@ -49,7 +49,9 @@ namespace NCRYSTAL_NAMESPACE {
     class FastConvolveCacheMgr final : private NoCopyMove {
     public:
       struct SwapPatternCache final {
-        std::vector<std::pair<unsigned long,unsigned long>> pattern;
+        //Index pairs to swap, doubled for use on the raw array of doubles
+        //(below 2^31, see initSwapPattern):
+        std::vector<std::pair<std::uint32_t,std::uint32_t>> pattern;
         int output_log_size = 0;
       };
       using WTable = std::vector< std::complex<double> >;
@@ -394,14 +396,20 @@ void NC::FastConvolve::Impl::convolve( const VectD& a1, const VectD& a2,
 void NC::FastConvolveCacheMgr::initSwapPattern( int output_log_size, SwapPatternCache& swap_cache ) const
 {
   nc_assert( swap_cache.output_log_size != output_log_size );
+  //Keeps the doubled indices below 2^31, so they fit both int and uint32:
+  nc_assert_always( output_log_size >= 0 && output_log_size <= 30 );
 
   decltype(swap_cache.pattern) pattern;
   pattern.swap(swap_cache.pattern);
   swap_cache.output_log_size = 0;
   pattern.clear();
-  pattern.reserve(65536);
 
   const int output_size = 1 << output_log_size;
+  //Exact number of swaps, (output_size - nr of bit-palindromes)/2:
+  const std::size_t nswaps
+    = ( static_cast<std::size_t>(output_size)
+        - ( std::size_t(1) << ( ( output_log_size + 1 ) / 2 ) ) ) / 2;
+  pattern.reserve( nswaps );
   const int output_size_m1 = output_size-1;
   for(int j=1;j<output_size_m1;++j)
     {
@@ -425,10 +433,12 @@ void NC::FastConvolveCacheMgr::initSwapPattern( int output_log_size, SwapPattern
       if(j<i) {
         nc_assert( j < output_size );
         nc_assert( i < output_size );
-        pattern.emplace_back(i<<1,j<<1);//<<1 is *2
+        pattern.emplace_back( static_cast<std::uint32_t>(i<<1),
+                              static_cast<std::uint32_t>(j<<1) );//<<1 is *2
       }
     }
 
+  nc_assert_always( pattern.size() == nswaps );
   swap_cache.output_log_size = output_log_size;
   pattern.swap(swap_cache.pattern);
 }
