@@ -161,7 +161,9 @@ NCS::SABExtended::sampleScatter( RNG& rng, NeutronEnergy ekin ) const
   //Fixme: this code is duplicated in too many places (and is it even
   //technically correct that we end up isotropic??)
   double dE, mu;
-  if ( muIsotropicAtBeta(ab.second,ekin.get()*m_invkT) ) {
+  const double E_div_kT = ekin.get()*m_invkT;
+  if ( E_div_kT < SABProcessor::lowEFloorEDivKT
+       || muIsotropicAtBeta(ab.second,E_div_kT) ) {
     //close to kinematical end-point, numerically safe fall-back:
     dE = ab.second*m_kT;
     mu = 2.0 * rng.generate() - 1.0;
