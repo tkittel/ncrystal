@@ -95,11 +95,12 @@ namespace NCRYSTAL_NAMESPACE {
     class RefCellSampler final : private MoveOnly {
 
       //////////////////////////////////////////////////////////////////////////
-      // Like BoundedCellSampler, but with a reference algorithm which has a
-      // much higher initialisation overhead, and might not be particularly fast
-      // to sample (but always with a non-abysmal acceptance rate). Its primary
-      // purpose is to be used as a reference in tests, and not to be used for
-      // actual end-user sampling.
+      // Sample (alpha,beta) in the intersection between a given cell and the
+      // kinematic bounds of a given neutron E/kT, with a reference algorithm
+      // which has a much higher initialisation overhead, and might not be
+      // particularly fast to sample (but always with a non-abysmal acceptance
+      // rate). Its primary purpose is to be used as a reference in tests, and
+      // not to be used for actual end-user sampling.
 
     public:
 
