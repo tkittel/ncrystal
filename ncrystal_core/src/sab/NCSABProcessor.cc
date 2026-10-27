@@ -292,6 +292,16 @@ namespace NCRYSTAL_NAMESPACE {
         std::vector<SABBetaStripSampler> m_strips;
         std::vector<std::int32_t> m_stripIdx;
         void initStripLadder( const VectD& fcAR );
+
+        static constexpr double lowEFloorEDivKT
+          = SABProcessor::lowEFloorEDivKT;
+        //Strip sampler with emax at the lowest grid point, used below the
+        //energy grid (with betaStripSampling) and below lowEFloorEDivKT:
+        Optional<SABBetaStripSampler> m_stripBelowGrid;
+        bool m_stripBelowGridAll = false;//use for all energies below the grid
+        void initStripBelowGrid( bool betaStripSampling );
+        using ABOutcome = SABProcessor::AlphaBetaOutcome;
+        ABOutcome sampleBelowFloor( RNG&, double E_div_kT ) const;
       private:
         std::vector<BCEnergyPoint> m_bcEptInfo;
         //sample info (indexed by the .bcSampleInfoIndex properties):
@@ -1098,6 +1108,8 @@ namespace NCRYSTAL_NAMESPACE {
 
         m_lowEExtrapolationConstant = ( m_sIntegral.front()
                                         * std::sqrt(1.0/m_eGrid.front()) );
+        if ( do_sample )
+          initStripBelowGrid( cfg.betaStripSampling );
 
         if ( cfg.sIntegralInterp == SABCfg::SIntegralInterpolation::Smooth ) {
           //We set up PCHIP interpolation. For more "proper" PCHIP behaviour, we
@@ -1190,7 +1202,9 @@ namespace NCRYSTAL_NAMESPACE {
                                const AlphaBetaOutcome& alphabeta ) const
       {
         double dE, mu;
-        if ( muIsotropicAtBeta(alphabeta.beta,ekin.get()*m_invkT) ) {//fixme: reuse E/kT
+        const double E_div_kT = ekin.get()*m_invkT;
+        if ( E_div_kT < lowEFloorEDivKT
+             || muIsotropicAtBeta(alphabeta.beta,E_div_kT) ) {
           //close to kinematical end-point, numerically safe fall-back:
           dE = alphabeta.beta*m_kT;
           mu = 2.0 * rng.generate() - 1.0;
@@ -1212,6 +1226,14 @@ namespace NCRYSTAL_NAMESPACE {
         //Find the index of the first value in the energy grid whose value exceeds
         //ekin (or the last value if ekin>=m_eGrid.back()):
         const double E_div_kT = ekin.dbl()*m_invkT;
+        if ( m_stripBelowGrid.has_value() ) {
+          if ( E_div_kT < lowEFloorEDivKT )
+            return sampleBelowFloor( rng, E_div_kT );
+          if ( m_stripBelowGridAll && E_div_kT < m_eGrid.front() ) {
+            auto r = m_stripBelowGrid.value().sample( rng, E_div_kT );
+            return { r.alpha, r.beta, r.ntries };
+          }
+        }
         std::size_t idx_E_overlay;
         double E_div_kT_overlay;
         {
@@ -1304,6 +1326,42 @@ namespace NCRYSTAL_NAMESPACE {
             break;
           h = j + 1;
         }
+      }
+
+      void SABProcImpl::initStripBelowGrid( bool betaStripSampling )
+      {
+        //Efficient at all e below its emax (tries independent of e), so a
+        //single sampler covers all energies below the grid:
+        if ( !( m_lowEExtrapolationConstant > 0.0 ) )
+          return;//S=0 within KB(e) at low e: never sampled there
+        SABBetaStripSampler st( m_cellmgr.sabDataPtr(), m_eGrid.front() );
+        if ( !st.hasStrips() )
+          return;
+        m_stripBelowGrid = std::move( st );
+        m_stripBelowGridAll = betaStripSampling;
+      }
+
+      SABProcessor::AlphaBetaOutcome
+      SABProcImpl::sampleBelowFloor( RNG& rng, double E_div_kT ) const
+      {
+        //Beta sampled at e=lowEFloorEDivKT (resampling the rare
+        //beta<-E/kT), alpha uniformly within KB(E):
+        nc_assert( E_div_kT >= 0.0 && E_div_kT < lowEFloorEDivKT );
+        const auto& st = m_stripBelowGrid.value();
+        nc_assert( st.emaxDivKT() >= lowEFloorEDivKT );
+        SABProcessor::AlphaBetaOutcome res;
+        res.ntries = 0;
+        while ( true ) {
+          auto r = st.sample( rng, lowEFloorEDivKT );
+          res.ntries += r.ntries;
+          if ( r.beta >= -E_div_kT ) {
+            res.beta = r.beta;
+            break;
+          }
+        }
+        const auto alim = getAlphaLimits( E_div_kT, res.beta );
+        res.alpha = randInterval( rng, alim.first, alim.second );
+        return res;
       }
 
       SABProcImpl::ABRes
@@ -1456,6 +1514,15 @@ NCS::SABProcessor::crossSectionUnitSigmaBound( NeutronEnergy ekin ) const
   //directly interpolate results as per the old SABXSProvider?)
   //fixme: keep synchronized with getEMaxInfo()
   auto sp = sp_cimpl(m_impl);
+  if ( !( ekin.dbl() * sp->m_invkT > sp->m_eGrid.front() ) ) {
+    //Below the energy grid Sint=k*sqrt(E/kT), so xs=k*sqrt(kT)/(4*sqrt(E)),
+    //computed in a way which avoid zero division and infinities in the result.
+    const double e = ncmax( ekin.dbl(),
+                            std::numeric_limits<double>::denorm_min() );
+    return CrossSect{ ncmin( sp->m_lowEExtrapolationConstant * 0.25
+                             * std::sqrt( sp->m_kT ) / std::sqrt( e ),
+                             std::numeric_limits<double>::max() ) };
+  }
   const double Sint = sp->phaseSpaceIntegral(ekin);
   const double kTdiv4 = sp->m_kT * 0.25;//fixme: cache?
   return CrossSect{ Sint * kTdiv4 / ekin.dbl() };

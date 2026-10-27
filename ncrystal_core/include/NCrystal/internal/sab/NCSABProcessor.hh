@@ -75,6 +75,10 @@ namespace NCRYSTAL_NAMESPACE {
       };
       AlphaBetaOutcome sampleScatterAlphaBeta( RNG&, NeutronEnergy ) const;
 
+      //Below this E/kT, beta is sampled at that value and mu is isotropic
+      //(both exact to ~1e-8, while mu from alpha degrades as eps/sqrt(E/kT)):
+      static constexpr double lowEFloorEDivKT = 1e-16;
+
       struct ScatOutcomeDiag {
         ScatterOutcomeIsotropic ekinmu;
         AlphaBetaOutcome alphabeta;
