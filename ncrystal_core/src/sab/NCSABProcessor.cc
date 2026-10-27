@@ -1550,12 +1550,14 @@ NCS::SABProcessor::crossSectionUnitSigmaBound( NeutronEnergy ekin ) const
   //directly interpolate results as per the old SABXSProvider?)
   //fixme: keep synchronized with getEMaxInfo()
   auto sp = sp_cimpl(m_impl);
-  if ( !( ekin.dbl() > 0.0 ) ) {
-    //E=0: value at the smallest positive E, keeping ratios between materials
-    //and components right (Sint=k*sqrt(E/kT) below the energy grid):
-    const double emin = std::numeric_limits<double>::denorm_min();
-    return CrossSect{ sp->m_lowEExtrapolationConstant * 0.25
-                      * std::sqrt( sp->m_kT ) / std::sqrt( emin ) };
+  if ( !( ekin.dbl() * sp->m_invkT > sp->m_eGrid.front() ) ) {
+    //Below the energy grid Sint=k*sqrt(E/kT), so xs=k*sqrt(kT)/(4*sqrt(E)),
+    //computed in a way which avoid zero division and infinities in the result.
+    const double e = ncmax( ekin.dbl(),
+                            std::numeric_limits<double>::denorm_min() );
+    return CrossSect{ ncmin( sp->m_lowEExtrapolationConstant * 0.25
+                             * std::sqrt( sp->m_kT ) / std::sqrt( e ),
+                             std::numeric_limits<double>::max() ) };
   }
   const double Sint = sp->phaseSpaceIntegral(ekin);
   const double kTdiv4 = sp->m_kT * 0.25;//fixme: cache?
