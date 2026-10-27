@@ -28,6 +28,7 @@
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
 import numpy as np
+from NCTestUtils.common import ensure_error
 
 cfgs = [ 'stdlib::Al_sg225.ncmat;temp=20K;comp=inelas;knllux=3',
          'stdlib::Polyethylene_CH2.ncmat;comp=inelas;knllux=3' ]
@@ -51,3 +52,23 @@ for cfg in cfgs:
         #(no values for E=0 or subnormal E, where some platforms flush to 0)
         val = f'xs*sqrt(E/eV)={xs*np.sqrt(e):.4g} barn, ' if e >= 1e-300 else ''
         print(f'  E={e:g} eV: {val}checks OK')
+
+#Next-gen processing requires the S(alpha,beta) grid to cover the line
+#alpha=beta, reached by neutrons of all energies down to E=0:
+def nodiag_kernel():
+    a = np.geomspace( 2.0, 10.0, 20 )
+    b = np.linspace( 0.0, 1.0, 11 )
+    c = NC.NCMATComposer()
+    c.set_composition( 'H', 'H' )
+    c.set_density( 1.0, 'g/cm3' )
+    c.set_state_of_matter( 'liquid' )
+    c.set_dyninfo_scatknl( 'H', alphagrid = a, betagrid = b,
+                           temperature = 293.6,
+                           sab_scaled = np.ones( len(a)*len(b) ) )
+    return c.create_ncmat( meta_data = False )
+NC.registerInMemoryFileData( 'nodiag.ncmat', nodiag_kernel() )
+with ensure_error( NC.NCBadInput,
+                   'The S(alpha,beta) grid (alpha in [2,10], beta in [-1,1])'
+                   ' does not cover the line alpha=beta (beta>=0), which'
+                   ' neutrons of all energies down to E=0 can reach.' ):
+    NC.createScatter( 'nodiag.ncmat;knllux=3;comp=inelas' )

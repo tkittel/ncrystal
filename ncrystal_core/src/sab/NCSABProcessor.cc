@@ -350,8 +350,6 @@ namespace NCRYSTAL_NAMESPACE {
           NCRYSTAL_THROW2(BadInput,"Phase-space of neutron energy E/kT="
                           <<fmt(E_div_kT)
                           <<" does not touch any S(alpha,beta) cells!");
-        //fixme: should we require all sab tables grids to intersect the E=0
-        //phasespace line?
         StableSumKahan sum;
         StableSumKahan sumFullCells;
         StableSumKahan sumCoveredCells;
@@ -842,6 +840,20 @@ namespace NCRYSTAL_NAMESPACE {
       {
         const bool do_sample( sampleSupport == SampleSupport::YES );
         const bool do_diag( extraDiag == StoreExtraDiagnostics::YES );
+        {
+          //All neutron energies down to E=0 reach the line alpha=beta (with
+          //beta>=0), so the grid must cross it:
+          const auto& ag = m_cellmgr.sabData().alphaGrid();
+          const auto& bg = m_cellmgr.sabData().betaGrid();
+          if ( !( ncmax( ag.front(), ncmax( bg.front(), 0.0 ) )
+                  < ncmin( ag.back(), bg.back() ) ) )
+            NCRYSTAL_THROW2( BadInput, "The S(alpha,beta) grid (alpha in ["
+                             << fmt( ag.front() ) << "," << fmt( ag.back() )
+                             << "], beta in [" << fmt( bg.front() ) << ","
+                             << fmt( bg.back() ) << "]) does not cover the"
+                             " line alpha=beta (beta>=0), which neutrons of"
+                             " all energies down to E=0 can reach." );
+        }
         SABSurveyor surv(m_cellmgr.sabData());
 
         m_eGrid = determineEGrid( cfg, m_cellmgr.sabData(), m_cellmgr,
