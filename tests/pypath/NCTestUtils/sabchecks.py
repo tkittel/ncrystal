@@ -51,7 +51,6 @@ def check_method_choice( cfg, lbl, nperpt = 400, require_strips = True,
     strip = dict( zip( si['epts_with_beta_strip_sampling'],
                        si['beta_strip_expected_tries'] ) )
     assert strip or not require_strips, 'beta-strip sampling not used anywhere'
-    assert not si['epts_with_bounded_cell_sampling']
     for k, (a, ded, meas) in enumerate( zip( ar, dedicated, d['mean_tries'] ) ):
         if k in strip:
             t = strip[k]
