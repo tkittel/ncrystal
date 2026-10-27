@@ -26,6 +26,7 @@
 # dedicated strip sampler, and measured strip tries as expected.
 
 import NCTestUtils.enable_fpe # noqa F401
+import NCTestUtils.enable_testdatapath # noqa F401
 from NCrystalDev.misc import evaluate_query as ncquery
 import math
 
@@ -55,3 +56,5 @@ def check( cfg, lbl ):
 check( 'stdlib::Al_sg225.ncmat;temp=20K;knllux=3', '' )
 check( 'stdlib::Polyethylene_CH2.ncmat;knllux=3', 'H' )
 check( 'stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=20K;knllux=3', 'H' )
+#Hard case (quasi-elastic peak on the beta=0 row):
+check( 'H_from_ethanol_liquid_200K_sabsmall.ncmat;knllux=3', '' )
