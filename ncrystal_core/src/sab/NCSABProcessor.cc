@@ -1033,20 +1033,12 @@ namespace NCRYSTAL_NAMESPACE {
                                NeutronEnergy ekin,
                                const AlphaBetaOutcome& alphabeta ) const
       {
-        double dE, mu;
-        const double E_div_kT = ekin.get()*m_invkT;
-        if ( E_div_kT < lowEFloorEDivKT
-             || muIsotropicAtBeta(alphabeta.beta,E_div_kT) ) {
-          //close to kinematical end-point, numerically safe fall-back:
-          dE = alphabeta.beta*m_kT;
-          mu = 2.0 * rng.generate() - 1.0;
-        } else {
-          auto dEmu = convertAlphaBetaToDeltaEMu( alphabeta.alpha,
-                                                  alphabeta.beta, ekin, m_kT );
-          dE = dEmu.deltaE;
-          mu = dEmu.mu;
-        }
-        return { NeutronEnergy{ncmax(0.0,ekin.dbl()+dE)}, CosineScatAngle{mu} };
+        auto r = convertABToDeltaEMuWithIsotropicFallback( alphabeta.alpha,
+                                                           alphabeta.beta,
+                                                           ekin, m_kT, rng,
+                                                           lowEFloorEDivKT );
+        return { NeutronEnergy{ ncmax( 0.0, ekin.dbl() + r.deltaE ) },
+                 CosineScatAngle{ r.mu } };
       }
 
 

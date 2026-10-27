@@ -106,14 +106,11 @@ namespace NCRYSTAL_NAMESPACE {
           if ( valueInInterval( alims.first, alims.second, result.alphaBeta.first ) )
             break;
         }
-        if ( muIsotropicAtBeta( result.alphaBeta.second, m_ekin_div_kT ) ) {
-          result.dEMu.deltaE = ncmax(-m_ekin.get(),result.alphaBeta.second*m_kT);
-          result.dEMu.mu = 2.0*rng()-1.0;
-        } else {
-          result.dEMu = convertAlphaBetaToDeltaEMu( result.alphaBeta.first,
-                                                    result.alphaBeta.second,
-                                                    m_ekin, m_kT );
-        }
+        result.dEMu
+          = convertABToDeltaEMuWithIsotropicFallback( result.alphaBeta.first,
+                                                      result.alphaBeta.second,
+                                                      m_ekin, m_kT, rng );
+        result.dEMu.deltaE = ncmax( -m_ekin.get(), result.dEMu.deltaE );
         return result;
       }
 
