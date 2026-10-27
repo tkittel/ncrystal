@@ -70,6 +70,10 @@ namespace NCRYSTAL_NAMESPACE {
       SABBetaStripSampler( shared_obj<const SABData>, double emax_div_kT,
                            unsigned nStripsPerBetaCell = 4 );
 
+      //False if S=0 everywhere within KB(emax), in which case the object can
+      //not be used for anything else:
+      bool hasStrips() const noexcept { return !m_strips.empty(); }
+
       //Sample at 0<e<=emax. Requires S>0 somewhere within KB(e), and is only
       //efficient if expectedTries(e,..) is small:
       struct Result { double alpha, beta; unsigned ntries; };
