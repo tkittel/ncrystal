@@ -241,7 +241,9 @@ inline NCrystal::SigmaBound NCrystal::AtomData::coherentXS() const
 
 inline NCrystal::SigmaBound NCrystal::AtomData::scatteringXS() const
 {
-  return NCrystal::SigmaBound{m_ixs + coherentXS().get()};
+  //Explicit fma, since contraction could differ between inlined copies:
+  constexpr double kkk = k4Pi*0.01;//0.01 is barn/fm^2
+  return NCrystal::SigmaBound{std::fma(m_csl*m_csl,kkk,m_ixs)};
 }
 
 inline NCrystal::SigmaAbsorption NCrystal::AtomData::captureXS() const
