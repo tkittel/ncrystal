@@ -98,6 +98,10 @@ namespace NCRYSTAL_NAMESPACE {
     //ternary: unsafe under clang, see definition below.
     double safeLogOrElse( double s, double valueIfNonPositive );
 
+    //safeLogOrElse(S,0.0) for all values of the S(alpha,beta) table (same
+    //indexing as SABData::sab()), to be shared by all users of a kernel:
+    shared_obj<const VectD> createLogSTable( const SABData& );
+
     //Find the grid cells touched by the kinematically accessible region for
     //ekin_div_kt = ekin/kT. The ibeta_low index will indicate the lowest
     //beta-bin, which will span [ibeta_low,ibeta_low+1], and the alpha-values
