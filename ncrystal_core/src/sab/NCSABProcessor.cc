@@ -304,6 +304,9 @@ namespace NCRYSTAL_NAMESPACE {
           double E_div_kT = -1.0;//-1.0 means "n/a"
           StableSumKahan sumFullyCoveredCells;
           std::size_t nLastTouched = 0;
+          //Cells touched but not fully covered at E_div_kT (in SABSurveyor
+          //order), so later calls need not loop over all touched cells:
+          std::vector<SABSurveyor::CellInfo> active;
         } prevCache;
 
       };
@@ -366,15 +369,19 @@ namespace NCRYSTAL_NAMESPACE {
         nc_assert( floateq( std::log(taperBand), logTaperBand ) );
         constexpr double twoLogTaperBand = 2.0*logTaperBand;
 
-        for ( auto it = survCells.begin(); it!=itLastTouchedE; ++it) {
+        //Cells fully covered at prev_E are already included in .prevCache, so
+        //only visit the active ones and those newly touched (keeping the
+        //SABSurveyor order, which fixes the summation order):
+        auto& active = prev.active;
+        if ( prev_E < 0.0 )
+          active.clear();
+        active.insert( active.end(),
+                       survCells.begin()
+                       + ( prev_E >= 0.0 ? prev.nLastTouched : 0 ),
+                       itLastTouchedE );
+        for ( auto it = active.begin(); it != active.end(); ++it ) {
           nc_assert( E_div_kT >= it->e_touch );
-          if ( prev_E >= it->e_cover ) {
-            nc_assert( E_div_kT >= it->e_cover );
-            //Was already fully covered at previous energy point, so the same
-            //will be true at this energy point. We already have the accumulated
-            //info for this cell included in the .prevCache, so skip it here.
-            nclikely continue;
-          }
+          nc_assert( prev_E < it->e_cover );
 
           const double fullCellIntegral = mgr.getCellIntegral( it->cellidx );
           if ( E_div_kT >= it->e_cover ) {
@@ -418,6 +425,10 @@ namespace NCRYSTAL_NAMESPACE {
           sumCoveredCells.add(prev.sumFullyCoveredCells);
 
         //Prepare cache for next:
+        active.erase( std::remove_if( active.begin(), active.end(),
+                                      [E_div_kT]( const SABSurveyor::CellInfo& c )
+                                      { return c.e_cover <= E_div_kT; } ),
+                      active.end() );
         prev.sumFullyCoveredCells.set(sumCoveredCells);
         prev.E_div_kT = E_div_kT;
         prev.nLastTouched = result.nTouchedCells;
