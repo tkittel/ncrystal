@@ -26,8 +26,8 @@ import NCTestUtils.enable_fpe # noqa F401
 import NCTestUtils.enable_testdatapath # noqa F401
 from NCTestUtils.env import ncsetenv
 from NCrystalDev.misc import evaluate_query as ncquery
-from NCTestUtils.stat import kolmogorov_smirnov_pvalue
 from NCTestUtils.sabsampleutils import Samples, onedim_projections
+from NCTestUtils.sabchecks import pval_from_samples
 from NCTestUtils import sabsampleutils
 from dataclasses import dataclass
 from typing import Optional
@@ -86,17 +86,6 @@ def sample(template = None, get_egrid = False, **kwargs):
         s = Samples(name=sr.method)
     s.add_data( avals = sr.alpha, bvals = sr.beta, keepdata = True )
     return ( s, sr.egrid_div_kT ) if get_egrid else s
-
-def pval_from_samples( samples1, samples2 ):
-    ksp = kolmogorov_smirnov_pvalue
-    pvals = {}
-    pvals_worst = 2.0
-    for key, fct in onedim_projections:
-        tmp = fct(samples1.alpha,samples1.beta)
-        pv = ksp(fct(samples2.alpha,samples2.beta),tmp)
-        pvals_worst = min( pv, pvals_worst )
-        pvals[key] = pv
-    return pvals, pvals_worst
 
 def test( *,cfgstr,ekin, atomlbl='',
           do_plot=False, luxlvl=0, verbose=True ):
