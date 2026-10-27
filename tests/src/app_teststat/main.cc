@@ -66,8 +66,6 @@ int main()
     t7.push_back( i % 7 );
   for ( int i = 0; i < 40; ++i )
     t5.push_back( i % 5 );
-  //Reference by brute force over all distinct values (NB: NCTestUtils/stat.py
-  //gives D=0.4 here, as it does not count all tied values):
   check( "with ties", t7, t5, 0.28, 0.061339816229094256 );
   return 0;
 }

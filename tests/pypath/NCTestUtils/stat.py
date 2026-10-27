@@ -30,26 +30,12 @@ def kolmogorov_smirnov_dist(x, y):
     nx, ny = len(x), len(y)
     if nx == 0 or ny == 0:
         raise RuntimeError("KS distance requires non-empty samples.")
-
-    # Find positions where values cross:
     x, y = np.sort(x), np.sort(y)
-    idx_in_y = np.searchsorted(y, x, side='right')
-    idx_in_x = np.searchsorted(x, y, side='right')
-    del x, y
-
-    # CDF differences at x points:
-    tmp = np.arange(1, nx + 1, dtype = float )
-    tmp *= (1.0/nx)
-    tmp -= idx_in_y * (1.0/ny)
-    distx = max(tmp.max(),-tmp.min())#like np.max(np.abs(t)) without temporary arr.
-    del idx_in_y
-
-    # CDF differences at y points:
-    tmp = np.arange(1, ny + 1, dtype = float )
-    tmp *=  ( 1.0 / ny )
-    tmp -= idx_in_x * ( 1.0 / nx)
-    return max(distx,tmp.max(),-tmp.min())
-
+    # Both CDFs at all distinct values (counting all tied values):
+    v = np.unique(np.concatenate((x, y)))
+    cdfx = np.searchsorted(x, v, side='right') * (1.0/nx)
+    cdfy = np.searchsorted(y, v, side='right') * (1.0/ny)
+    return float(np.abs(cdfx - cdfy).max())
 
 def kolmogorov_smirnov_pvalue( x, y ):
     """Based on the Kolmogorov-Smirnov distance, find the p-value for the two 1D
