@@ -103,6 +103,10 @@ namespace NCRYSTAL_NAMESPACE {
       double egrid_emin_accuracy = 1e-8;//fixme: just use 1e-11 for all levels? To improve reproducibility! Also, increase trunc level in vdosgn to 1e-12-ish ?
       double fullCellSamplingARThreshold = 0.15;
       double bcSamplingLargeSRatioThreshold = 1e-5;//fixme: not used yet
+      //FIXME: Temporary field, until benchmarking is done: beta-strip
+      //sampling (true) or bounded-cell sampling (false) where full-cell
+      //sampling is inefficient:
+      bool betaStripSampling = true;
     };
 
     ////////////////////////////////////////////
