@@ -22,6 +22,7 @@
 #include "NCrystal/internal/sab/NCSABSurveyor.hh"
 #include "NCrystal/internal/sab/NCSABCellInteg.hh"
 #include "NCrystal/internal/sab/NCSABCellSample.hh"
+#include "NCrystal/internal/sab/NCSABBoundedCellSample.hh"
 #include "NCrystal/internal/sab/NCSABIdx.hh"
 #include "NCrystal/internal/utils/NCMixedDataVector.hh"
 #include "NCrystal/internal/utils/NCTinyVector.hh"
