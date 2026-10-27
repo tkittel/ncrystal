@@ -27,31 +27,7 @@
 
 import NCTestUtils.enable_fpe # noqa F401
 import NCTestUtils.enable_testdatapath # noqa F401
-from NCrystalDev.misc import evaluate_query as ncquery
-import math
-
-nperpt = 400
-
-def check( cfg, lbl ):
-    d = ncquery( ['sab','proctries',cfg,lbl,str(nperpt),'1234'] )
-    sp = d['sabproc']
-    ar = sp['diagnostics']['full_cell_AR']
-    dedicated = sp['diagnostics']['dedicated_strip_expected_tries']
-    si = sp['sample_info']
-    strip = dict( zip( si['epts_with_beta_strip_sampling'],
-                       si['beta_strip_expected_tries'] ) )
-    assert strip, 'beta-strip sampling not used anywhere'
-    assert not si['epts_with_bounded_cell_sampling']
-    for k, (a, ded, meas) in enumerate( zip( ar, dedicated, d['mean_tries'] ) ):
-        if k in strip:
-            t = strip[k]
-            assert t * a < 1.0, f'strips chosen at grid point {k} but more expensive'
-            #Mean of nperpt geometric-like try counts (6 sigma):
-            tol = 6 * math.sqrt( max( t - 1.0, 0.0 ) / t / nperpt ) + 0.01
-            assert abs( meas / t - 1 ) < tol, f'grid point {k}: {meas} vs {t} tries'
-        elif ded > 0.0 and a > 0.0:
-            assert 1.0 / a < 2.0 * ded, f'full-cell sampling much worse at grid point {k}'
-    print(f'{cfg} [{lbl}]: sampling methods and tries OK')
+from NCTestUtils.sabchecks import check_method_choice as check
 
 check( 'stdlib::Al_sg225.ncmat;temp=20K;knllux=3', '' )
 check( 'stdlib::Polyethylene_CH2.ncmat;knllux=3', 'H' )
