@@ -476,9 +476,16 @@ void NC::FastConvolve::Impl::fft( std::vector<std::complex<double>> &data,
   static_assert( sizeof(int) == sizeof(std::int32_t), "" );//otherwise we need
                                                            //to update the code
                                                            //in this class!!
+  //Bound the memory usage (cached tables need ~12 bytes per point, and VDOS
+  //expansions so far never needed more than 2^18 points). This also keeps
+  //1<<output_log_size well within an int:
+  constexpr unsigned long max_output_size = (1ul<<26);
+  if ( minimum_output_size > max_output_size )
+    NCRYSTAL_THROW2(CalcError,"FFT convolution would need "
+                    <<minimum_output_size<<" points (more than the allowed "
+                    <<max_output_size<<")");
   //Actual output_size is minimum_output_size rounded up to next power of 2
   //(with integers, to avoid floating point precision issues):
-  nc_assert_always( minimum_output_size <= (1ul<<31) );
   int output_log_size = 0;
   while ( (1ul<<output_log_size) < minimum_output_size )
     ++output_log_size;
