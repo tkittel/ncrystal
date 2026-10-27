@@ -137,6 +137,16 @@ NC::ScatKnlData NC::SABUtils::trimZeroEdgesFromKernel(ScatKnlData&& input)
   return res;
 }
 
+NC::shared_obj<const NC::VectD>
+NC::SABUtils::createLogSTable( const SABData& sd )
+{
+  auto res = makeSO<VectD>();
+  res->reserve( sd.sab().size() );
+  for ( auto v : sd.sab() )
+    res->push_back( safeLogOrElse( v, 0.0 ) );
+  return res;
+}
+
 NC::SABData NC::SABUtils::transformKernelToStdFormat( ScatKnlData&& input_orig )
 {
   validateScatKnlData(input_orig);

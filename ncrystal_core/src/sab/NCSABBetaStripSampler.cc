@@ -81,18 +81,26 @@ namespace NCRYSTAL_NAMESPACE {
 NCS::SABBetaStripSampler::SABBetaStripSampler( shared_obj<const SABData> sd,
                                                double emax_div_kT,
                                                unsigned nStripsPerBetaCell )
+  : SABBetaStripSampler( sd, createLogSTable( sd ), emax_div_kT,
+                         nStripsPerBetaCell )
+{
+}
+
+NCS::SABBetaStripSampler::SABBetaStripSampler( shared_obj<const SABData> sd,
+                                               shared_obj<const VectD> logST,
+                                               double emax_div_kT,
+                                               unsigned nStripsPerBetaCell )
   : m_sab( std::move(sd) ),
+    m_logS( std::move(logST) ),
     m_emax( emax_div_kT )
 {
 #ifndef NDEBUG
+  nc_assert_always( m_logS->size() == m_sab->sab().size() );
   nc_assert_always( emax_div_kT > 0.0 && std::isfinite(emax_div_kT) );
   nc_assert_always( nStripsPerBetaCell >= 1 && nStripsPerBetaCell <= 1000 );
 #endif
   const auto& ag = m_sab->alphaGrid();
   const auto& bg = m_sab->betaGrid();
-  m_logS.reserve( m_sab->sab().size() );
-  for ( auto v : m_sab->sab() )
-    m_logS.push_back( safeLogOrElse( v, 0.0 ) );
 
   //Strips covering KB(e) for all e<=emax, weighted by
   //Smax*(b1-b0)*sqrt(b1+emax) (the largest alpha range of KB(e) in the strip
@@ -217,8 +225,8 @@ double NCS::SABBetaStripSampler::evalSCell( double alpha, double beta,
     const double s2 = vectAt( sab, i + 1 );
     if ( s1 > 0.0 && s2 > 0.0 )
       return interpolate_loglin_fast2_NEW( a1, s1, a2, s2, alpha,
-                                           vectAt( m_logS, i ),
-                                           vectAt( m_logS, i + 1 ) ).first;
+                                           vectAt( *m_logS, i ),
+                                           vectAt( *m_logS, i + 1 ) ).first;
     return interpolate_linlin_NEW( a1, s1, a2, s2, alpha );
   };
   //Along beta: linear.
