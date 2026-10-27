@@ -1,0 +1,5 @@
+identical samples: D=0 p=1
+disjoint samples: D=1 p=0.1813
+same distribution: D=0.00275 p=1
+different distributions: D=0.0685 p=0.0308769
+with ties: D=0.28 p=0.0613398
