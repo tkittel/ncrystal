@@ -249,6 +249,9 @@ namespace NCRYSTAL_NAMESPACE {
 
         //Extra diagnostics data
         VectD m_diagnostics_fcAR; //Full cell AR at at each m_eGrid pt
+        //Expected tries of a strip sampler with emax at each m_eGrid pt (-1
+        //if none):
+        VectD m_diagnostics_stripTries;
 
         //We know how to sample at all the energy values in the grid, and the
         //method used is governed by a single idx. If it is negative, it represent
@@ -1103,6 +1106,18 @@ namespace NCRYSTAL_NAMESPACE {
           m_stripIdx.assign( m_eGrid.size(), -1 );
           if ( cfg.betaStripSampling )
             initStripLadder( fcAR );
+          if ( do_diag && cfg.betaStripSampling ) {
+            m_diagnostics_stripTries.reserve( m_eGrid.size() );
+            for ( auto k : ncrange( m_eGrid.size() ) ) {
+              const double e = vectAt( m_eGrid, k );
+              const double integ = vectAt( m_sIntegral, k );
+              SABBetaStripSampler st( m_cellmgr.sabDataPtr(), e );
+              const bool ok = st.hasStrips() && integ > 0.0;
+              m_diagnostics_stripTries.push_back( ok
+                                                  ? st.expectedTries( e, integ )
+                                                  : -1.0 );
+            }
+          }
         }
 
 
@@ -1462,6 +1477,10 @@ namespace NCRYSTAL_NAMESPACE {
         if (!m_diagnostics_fcAR.empty()) {
           os << ",\"diagnostics\":{\"full_cell_AR\":";
           streamJSON(os,m_diagnostics_fcAR);
+          if ( !m_diagnostics_stripTries.empty() ) {
+            os << ",\"dedicated_strip_expected_tries\":";
+            streamJSON(os,m_diagnostics_stripTries);
+          }
           os << '}';
         }
 
@@ -1478,6 +1497,23 @@ namespace NCRYSTAL_NAMESPACE {
           }
           os << "\"epts_with_bounded_cell_sampling\":";
           streamJSON(os,epts_with_bc);
+          //Beta-strip sampling: grid points and expected tries:
+          std::vector<std::uint32_t> epts_with_strip;
+          VectD strip_tries;
+          for ( std::uint32_t i = 0; i < n; ++i ) {
+            const auto is = vectAt(m_stripIdx,i);
+            if ( is < 0 )
+              continue;
+            epts_with_strip.push_back(i);
+            strip_tries.push_back( vectAt( m_strips,
+                                           static_cast<std::size_t>(is) )
+                                   .expectedTries( vectAt(m_eGrid,i),
+                                                   vectAt(m_sIntegral,i) ) );
+          }
+          os << ",\"epts_with_beta_strip_sampling\":";
+          streamJSON(os,epts_with_strip);
+          os << ",\"beta_strip_expected_tries\":";
+          streamJSON(os,strip_tries);
           os << '}';
         }
         os << '}';
