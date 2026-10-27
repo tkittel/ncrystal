@@ -993,7 +993,15 @@ namespace NCRYSTAL_NAMESPACE {
                             <<" while expected value was around "
                             <<fmtg(leftSlope)<<".");
           }
-          //FIXME: No check of slope at Emax?!?
+          //No constraint on the slope at Emax (the grid ends where enough of
+          //the kernel is covered, and SABExtended takes over above), but the
+          //S integral can only increase with E, as KB(E) grows. With such
+          //values, the PCHIP interpolation never decreases either:
+          for ( auto i : ncrange( std::size_t(1), m_sIntegral.size() ) )
+            if ( vectAt( m_sIntegral, i ) < vectAt( m_sIntegral, i - 1 ) )
+              NCRYSTAL_THROW2(CalcError,"Integral(S(alpha,beta)) over"
+                              " available phasespace decreases with E at"
+                              " E/kT=" << fmtg( vectAt( m_eGrid, i ) ) );
         }
       }
 
