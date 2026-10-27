@@ -106,7 +106,9 @@ namespace NCRYSTAL_NAMESPACE {
         }
         if ( !info.hasHKLInfo() )
           return;
-        for ( auto& hkl : info.hklList() )
+        const auto& hkllist = info.hklList();
+        edges.reserve( edges.size() + hkllist.size() );
+        for ( auto& hkl : hkllist )
           edges.push_back( 2.0 * hkl.dspacing );
       }
 
@@ -211,6 +213,7 @@ namespace NCRYSTAL_NAMESPACE {
         std::vector<char> keep( n, 0 );
         keep.front() = keep.back() = 1;
         std::vector<std::pair<std::size_t,std::size_t>> stack;
+        stack.reserve( 64 );
         stack.emplace_back( 0, n - 1 );
         while ( !stack.empty() ) {
           auto ij = stack.back();
@@ -245,6 +248,8 @@ namespace NCRYSTAL_NAMESPACE {
           }
         }
         std::vector<std::size_t> res;
+        res.reserve( static_cast<std::size_t>
+                     ( std::count( keep.begin(), keep.end(), 1 ) ) );
         for ( std::size_t k = 0; k < n; ++k )
           if ( keep[k] )
             res.push_back( k );
@@ -423,6 +428,8 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
   while ( true ) {
     idx = reducePoints( x, y, tol_build, params.algo, abs_floor );
     VectD add_x, add_y;
+    add_x.reserve( x.size() );//at most one point per interval
+    add_y.reserve( x.size() );
     std::size_t seg = 0;//table segment is from x[idx[seg]] to x[idx[seg+1]]
     for ( std::size_t k = 0; k + 1 < x.size(); ++k ) {
       while ( idx[seg+1] <= k )
@@ -518,6 +525,7 @@ NCF::Table NCF::createTable( const MatCfg& cfg, const TableParams& params )
 
   std::set<std::string> names;
   VectD discontinuities;
+  discontinuities.reserve( 64 );//Bragg edges reserve more below
   inspectProcess( *scat, names, discontinuities );
   inspectProcess( *absn, names, discontinuities );
   for ( auto& n : names )
