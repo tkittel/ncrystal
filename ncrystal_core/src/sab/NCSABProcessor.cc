@@ -846,6 +846,8 @@ namespace NCRYSTAL_NAMESPACE {
           m_invkT( 1.0 / m_kT ),
           m_cellmgr(sd)
       {
+        //Fixme (before 5.0.0): init is ~5-10x slower than legacy (radix sort in
+        //SABSurveyor, integration of partially covered cells).
         const bool do_sample( sampleSupport == SampleSupport::YES );
         const bool do_diag( extraDiag == StoreExtraDiagnostics::YES );
         {
