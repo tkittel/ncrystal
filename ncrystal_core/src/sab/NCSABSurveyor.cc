@@ -78,64 +78,63 @@ namespace NCRYSTAL_NAMESPACE {
         constexpr int TOTAL_PASSES  = NC_TOTAL_PASSES;
         constexpr int BUCKETS       = NC_BUCKETS;
         //constexpr int MASK          = NC_MASK;
-        auto tmpbuf = ncmake_unique_array_noinit<std::size_t>(2*BUCKETS);
+        //The trick is to interpret the double bits as an uint64_t, and then
+        //extract BITS_PER_PASS in each pass. With our constraints of
+        //non-negative (no -0.0 but +inf allowed) values, this gives the same
+        //sorting as for the doubles:
+        static_assert(std::numeric_limits<double>::is_iec559,"");
+        static_assert(sizeof(double) == sizeof(std::uint64_t), "");
+        auto keyBits = [key_extract]( T& t )
+        {
+          double v = key_extract(t);
+          std::uint64_t bits;
+          std::memcpy(&bits, &v, sizeof(double));
+          return bits;
+        };
 
-        std::size_t * counts = tmpbuf.get();
-        std::size_t * offsets = counts + BUCKETS;
-        auto resetCounts = [&counts]() { std::fill_n(counts, NC_BUCKETS,
-                                                     std::size_t{0}); };
+        //Digit counts for all passes, collected in a single read of the data:
+        auto tmpbuf = ncmake_unique_array<std::size_t>(TOTAL_PASSES*BUCKETS+BUCKETS);
+        std::size_t * allcounts = tmpbuf.get();
+        std::size_t * offsets = allcounts + TOTAL_PASSES*BUCKETS;
         static_assert( TOTAL_PASSES == 4, "" );
         static_assert( BUCKETS == 65536, "" );
+        for (std::size_t i = 0; i < n; ++i) {
+          const std::uint64_t bits = keyBits(src[i]);
+          for (int pass = 0; pass < TOTAL_PASSES; ++pass)
+            ++allcounts[pass*BUCKETS + ((bits >> (pass*BITS_PER_PASS)) & NC_MASK)];
+        }
 
         for (int pass = 0; pass < TOTAL_PASSES; ++pass) {
           const int shift = pass * BITS_PER_PASS;
-          auto radix = [shift,key_extract,src](std::size_t i)
-          {
-            double v = key_extract(src[i]);
-            //The trick is to interpret the double bits as an uint64_t, and then
-            //extract BITS_PER_PASS in each pass. With our constraints of
-            //non-negative (no -0.0 but +inf allowed) integers, this should have
-            //the same sorting with standard double implementations:
-            static_assert(std::numeric_limits<double>::is_iec559,"");
-            static_assert(sizeof(double) == sizeof(std::uint64_t), "");
-            std::uint64_t bits;
-            std::memcpy(&bits, &v, sizeof(double));
-            int res = (bits >> shift) & NC_MASK;
-            nc_assert( res >= 0 && res < NC_BUCKETS );
-            return res;
-          };
-          resetCounts();
-          for (std::size_t i = 0; i < n; ++i)
-            ++counts[radix(i)];
+          const std::size_t * counts = allcounts + pass*BUCKETS;
+          //Skip passes where all keys have the same digit (no reordering):
+          const std::size_t digit0 = (keyBits(src[0]) >> shift) & NC_MASK;
+          if ( counts[digit0] == n )
+            continue;
           offsets[0] = 0;
           for (int i = 1; i < BUCKETS; ++i)
             offsets[i] = offsets[i - 1] + counts[i - 1];
           for (std::size_t i = 0; i < n; ++i)
-            dst[offsets[radix(i)]++] = src[i];
-          //every second pass we use the original array as the new target
-          //buffer for the next step:
+            dst[offsets[(keyBits(src[i]) >> shift) & NC_MASK]++] = src[i];
           std::swap(src, dst);
         }
 
-        //Even number of swaps should have left the results in dataArray.data():
-        static_assert( TOTAL_PASSES%2 == 0, "" );
-        nc_assert( src == dataArray.get() );
+        //Skipped passes might leave the results in the scratch buffer:
+        if ( src != dataArray.get() )
+          std::copy( src, src + n, dataArray.get() );
+        src = dataArray.get();
 
         //Release buffer:
         dst = nullptr;
         buffer = nullptr;
 
         //Radix sort done on primary double key, now resolve ties:
-        double key0 = key_extract(src[0]);
-        const double nm1 = n-1;
-        for (std::size_t i = 1, i0 = 0; i <= nm1; ++i) {
-          double key = key_extract(src[i]);
-          if ( i == nm1 || key != key0 ) {
-            if ( i - i0 > 1 ) {
+        std::size_t i0 = 0;
+        for (std::size_t i = 1; i <= n; ++i) {
+          if ( i == n || key_extract(src[i]) != key_extract(src[i0]) ) {
+            if ( i - i0 > 1 )
               std::sort( src + i0, src + i, tie_breaker);
-            }
             i0 = i;
-            key0 = key;
           }
         }
       }
