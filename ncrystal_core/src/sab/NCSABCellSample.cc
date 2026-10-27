@@ -176,8 +176,8 @@ namespace NCRYSTAL_NAMESPACE {
           res.bup = ncmin(m_cell.b2,bu);
           if ( bl >= m_cell.b1 && bu <= m_cell.b2 ) {
             res.bmid = a;
-            res.bwidth = bu-bl;//fixme: is this hardened against catastrophic
-                               //cancellation?
+            //Exactly 4*sqrt(e*a) (bu-bl would cancel for narrow bands):
+            res.bwidth = 4.0 * std::sqrt( m_e * a );
           } else {
             res.bmid = 0.5*(res.blow+res.bup);
             res.bwidth = res.bup - res.blow;
