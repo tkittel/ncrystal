@@ -61,6 +61,7 @@ namespace NCRYSTAL_NAMESPACE {
       {
         nc_assert_always(sabdata!=nullptr);
         std::vector<std::pair<double,cell_index_t>> cell_contribs;
+        cell_contribs.reserve( 4096 );
         StableSum touched_cells_total_integral;
         for ( auto cellidx : ncrange( m_sabeval.nRawCellIdxMax() ) ) {
           auto cell = m_sabeval.getCell( cellidx );
@@ -72,6 +73,8 @@ namespace NCRYSTAL_NAMESPACE {
         }
         std::sort( cell_contribs.begin(), cell_contribs.end() );
         StableSum contrib_commul;
+        m_cell_integrals_commul.reserve( cell_contribs.size() );
+        m_cell_idx.reserve( cell_contribs.size() );
         for ( auto cc : cell_contribs ) {
           contrib_commul.add( cc.first );
           m_cell_integrals_commul.push_back(contrib_commul.sum());
