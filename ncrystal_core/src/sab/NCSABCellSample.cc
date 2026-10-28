@@ -296,7 +296,8 @@ namespace NCRYSTAL_NAMESPACE {
           while (true) {
             ++res.ntries;
             nc_assert_always(res.ntries<1000);
-            auto ibin = pickRandIdxByWeight( rng, m_bincontrib_commul );
+            auto ibin
+              = RandIdxByWeightPicker::oneShotPick( rng, m_bincontrib_commul );
             const double overlay = vectAt( m_bincontrib, ibin );
             a = randInterval( rng,
                               vectAt( m_abinedges, ibin ),

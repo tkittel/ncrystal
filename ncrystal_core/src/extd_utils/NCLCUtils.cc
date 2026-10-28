@@ -537,7 +537,8 @@ void NC::LCHelper::genScatter( LCHelper::Cache& cache, RNG& rng, double wl, cons
   }
 
   //Choose ROI, according to cross-section of each ROI:
-  std::size_t idx = pickRandIdxByWeight(rng,cache.m_roixs_commul);
+  std::size_t idx
+    = RandIdxByWeightPicker::oneShotPick(rng,cache.m_roixs_commul);
   nc_assert(idx<cache.m_roilist.size());
   const LCROI& roi = cache.m_roilist[idx];
 

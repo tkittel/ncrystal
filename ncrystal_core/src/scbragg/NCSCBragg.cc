@@ -280,7 +280,7 @@ void NC::SCBragg::pimpl::genScat( Cache& cache, RNG& rng, NC::Vector& outdir ) c
   nc_assert(cache.xs_commul.back()>0.0);
   nc_assert(cache.xs_commul.size()==cache.scatcache.size());
 
-  std::size_t idx = pickRandIdxByWeight(rng,cache.xs_commul);
+  std::size_t idx = RandIdxByWeightPicker::oneShotPick(rng,cache.xs_commul);
   nc_assert(idx<cache.scatcache.size());
   GaussMos::ScatCache& chosen_scatcache = cache.scatcache[idx];
 
