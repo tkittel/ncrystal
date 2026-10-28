@@ -1,0 +1,12 @@
+OK: single entry (n=1)
+OK: two entries (n=2)
+OK: small, with zero weights (n=6)
+OK: all weights zero (n=10)
+OK: cumul-with-ties, zeroFrac=0 (n=2000)
+OK: cumul-with-ties, zeroFrac=0.3 (n=2000)
+OK: cumul-with-ties, zeroFrac=0.7 (n=2000)
+OK: cumul-with-ties, zeroFrac=0.95 (n=2000)
+OK: cumul-with-ties, large (n=150000)
+OK: clustered (n=3000)
+OK: near-ULP-spaced (n=50)
+All 268402 checks passed.
