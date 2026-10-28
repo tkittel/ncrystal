@@ -216,6 +216,7 @@ namespace {
 
 int main() {
   std::cout<<"Launching PCHIPInterp tests"<<std::endl;
+  //Fixme: also test PCHIPInterp::OptimiseForLogSpacedX::YES
   testPCHIPInterp1();
   testPCHIPInterp2();
   std::cout<<"All OK"<<std::endl;

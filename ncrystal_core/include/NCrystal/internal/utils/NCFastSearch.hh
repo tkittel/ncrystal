@@ -66,6 +66,35 @@ namespace NCRYSTAL_NAMESPACE {
     return fastUpperBoundIdx( s.data(), s.size(), val );
   }
 
+  //Guide table for searches in a fixed sorted array (see RandIdxByWeightPicker
+  //in NCRandUtils.hh for the method and references), but with its steps taken
+  //in the bit pattern of the values rather than in the values. For positive
+  //doubles the bit pattern orders like the values and is roughly linear in
+  //log2(x), so a subtraction and a shift select the step (no log or division),
+  //giving roughly log-spaced steps. Useful for sorted arrays of positive finite
+  //values roughly evenly spaced in log (e.g. energy grids spanning orders of
+  //magnitude), for any searched values. Results are identical to
+  //fastLowerBoundIdx/fastUpperBoundIdx, also outside the array range. The
+  //array is passed to the search functions, and must be the one the table was
+  //built from.
+  class LogGuideTable final {
+  public:
+    LogGuideTable() = default;
+    LogGuideTable( const double* x, std::size_t n );
+    std::size_t lowerBoundIdx( const double* x, std::size_t n, double val ) const ncnoexceptndebug;
+    std::size_t upperBoundIdx( const double* x, std::size_t n, double val ) const ncnoexceptndebug;
+  private:
+    std::vector<std::uint32_t> m_guide;
+    std::uint64_t m_base = 0;
+    unsigned m_shift = 0;
+    static std::uint64_t bits( double v ) noexcept
+    {
+      std::uint64_t b;
+      std::memcpy( &b, &v, sizeof(b) );
+      return b;
+    }
+  };
+
 }
 
 ////////////////////////////
@@ -102,6 +131,63 @@ inline std::size_t NCrystal::fastUpperBoundIdx( const double* a, std::size_t n,
   if ( len && NCRYSTAL_UNPREDICTABLE( !( val < a[lo] ) ) )
     ++lo;
   return lo;
+}
+
+inline NCrystal::LogGuideTable::LogGuideTable( const double* x,
+                                                       std::size_t n )
+{
+  static_assert( sizeof(double) == sizeof(std::uint64_t), "" );
+  static_assert( std::numeric_limits<double>::is_iec559, "" );
+#ifndef NDEBUG
+  nc_assert_always( n >= 1 && n < std::numeric_limits<std::uint32_t>::max() );
+  nc_assert_always( x[0] > 0.0 && std::isfinite( x[n-1] ) );
+  nc_assert_always( std::is_sorted( x, x + n ) );
+#endif
+  m_base = bits( x[0] );
+  const std::uint64_t range = bits( x[n-1] ) - m_base;
+  //Smallest power-of-two bucket width giving at most ~4 buckets per point:
+  while ( ( range >> m_shift ) >= 4 * static_cast<std::uint64_t>( n ) )
+    ++m_shift;
+  const std::size_t nbuckets = static_cast<std::size_t>( range >> m_shift ) + 1;
+  m_guide.reserve( nbuckets + 1 );
+  std::size_t j = 0;
+  for ( auto b : ncrange( nbuckets ) ) {
+    //Index of first element with bit pattern >= the bucket start:
+    const std::uint64_t start = m_base + ( static_cast<std::uint64_t>( b ) << m_shift );
+    while ( j < n && bits( x[j] ) < start )
+      ++j;
+    m_guide.push_back( static_cast<std::uint32_t>( j ) );
+  }
+  m_guide.push_back( static_cast<std::uint32_t>( n ) );
+}
+
+inline std::size_t NCrystal::LogGuideTable::lowerBoundIdx( const double* x,
+                                                               std::size_t n,
+                                                               double val ) const ncnoexceptndebug
+{
+  nc_assert( !m_guide.empty() );
+  if ( !( val > x[0] && val <= x[n-1] ) )
+    return fastLowerBoundIdx( x, n, val );
+  //Elements before m_guide[b] are below val, those from m_guide[b+1] above:
+  const std::size_t b = static_cast<std::size_t>( ( bits( val ) - m_base ) >> m_shift );
+  nc_assert( b + 1 < m_guide.size() );
+  const std::size_t lo = m_guide[b];
+  const std::size_t hi = m_guide[b+1];
+  return lo + ( hi > lo ? fastLowerBoundIdx( x + lo, hi - lo, val ) : 0 );
+}
+
+inline std::size_t NCrystal::LogGuideTable::upperBoundIdx( const double* x,
+                                                               std::size_t n,
+                                                               double val ) const ncnoexceptndebug
+{
+  nc_assert( !m_guide.empty() );
+  if ( !( val > x[0] && val < x[n-1] ) )
+    return fastUpperBoundIdx( x, n, val );
+  const std::size_t b = static_cast<std::size_t>( ( bits( val ) - m_base ) >> m_shift );
+  nc_assert( b + 1 < m_guide.size() );
+  const std::size_t lo = m_guide[b];
+  const std::size_t hi = m_guide[b+1];
+  return lo + ( hi > lo ? fastUpperBoundIdx( x + lo, hi - lo, val ) : 0 );
 }
 
 #undef NCRYSTAL_UNPREDICTABLE
