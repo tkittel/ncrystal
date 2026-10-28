@@ -223,7 +223,8 @@ double NC::PiecewiseLinearFct1D::evalEdgeCase( VectD::const_iterator it,
 }
 
 NC::PCHIPInterp::PCHIPInterp( Span<const double> x, Span<const double> y,
-                              Optional<double> opt_ls, Optional<double> opt_rs )
+                              Optional<double> opt_ls, Optional<double> opt_rs,
+                              OptimiseForLogSpacedX optlogspacedx )
 {
 #ifndef NDEBUG
   nc_assert(x.size() == y.size());
@@ -235,6 +236,9 @@ NC::PCHIPInterp::PCHIPInterp( Span<const double> x, Span<const double> y,
 #endif
   m_data.resize(5u * x.size() - 2u);
   m_n = x.size();
+
+  if ( x.front() > 0.0 && optlogspacedx == OptimiseForLogSpacedX::YES )
+    m_guide.emplace( x.data(), x.size() );
 
   const std::size_t oh = 2 * m_n;
   const std::size_t oi = 3 * m_n - 1;
@@ -330,7 +334,9 @@ double NC::PCHIPInterp::eval(double x) const
 #endif
   if (x == xp[m_n - 1])
     return yp[m_n - 1];
-  const std::size_t i = NC::fastUpperBoundIdx(xp, m_n, x) - 1;
+  const std::size_t i = ( m_guide.has_value()
+                          ? m_guide.value().upperBoundIdx(xp, m_n, x)
+                          : NC::fastUpperBoundIdx(xp, m_n, x) ) - 1;
   const double t = (x - xp[i]) * ip[i];
   const double t2 = t * t;
   const double u = 1.0 - t;

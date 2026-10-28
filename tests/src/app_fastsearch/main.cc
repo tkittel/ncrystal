@@ -19,9 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// Correctness stress-test for NC::fastLowerBoundIdx/fastUpperBoundIdx
-// (NCFastSearch.hh): checks, across a wide variety of grid shapes and query
-// points, that they return *exactly* the same index as
+// Correctness stress-test for NC::fastLowerBoundIdx/fastUpperBoundIdx and
+// NC::LogGuideTable (NCFastSearch.hh): checks, across a wide variety of
+// grid shapes and query points, that they return *exactly* the same index as
 // (std::lower_bound/upper_bound(first,first+n,val)-first). Grid
 // shapes deliberately include cases designed to stress the loop's boundary
 // arithmetic: n=1, n=2, grids starting exactly at 0.0 or going negative,
@@ -44,10 +44,11 @@ namespace {
 
   using NC::VectD;
   using NC::ncrange;
+  constexpr double kInf = NC::kInfinity;
 
   std::uint64_t g_ntrials = 0;
 
-  void checkOne( const VectD& x, double t )
+  void checkOne( const VectD& x, const NC::LogGuideTable* pg, double t )
   {
     const auto fullLo = static_cast<std::size_t>(
       std::lower_bound( x.begin(), x.end(), t ) - x.begin() );
@@ -59,26 +60,40 @@ namespace {
 
     REQUIRE( fastLo == fullLo );
     REQUIRE( fastUp == fullUp );
+    if ( pg ) {
+      REQUIRE( pg->lowerBoundIdx( x.data(), x.size(), t ) == fullLo );
+      REQUIRE( pg->upperBoundIdx( x.data(), x.size(), t ) == fullUp );
+    }
     ++g_ntrials;
   }
 
   void stressGrid( const char* label, const VectD& x )
   {
     REQUIRE( !x.empty() );
-    for ( auto v : x )
-      checkOne( x, v );
+    NC::Optional<NC::LogGuideTable> opt_pg;
+    if ( x.front() > 0.0 && std::isfinite( x.back() ) )
+      opt_pg.emplace( x.data(), x.size() );
+    const NC::LogGuideTable* pg = opt_pg.has_value() ? &opt_pg.value() : nullptr;
+    for ( auto v : x ) {
+      checkOne( x, pg, v );
+      checkOne( x, pg, std::nextafter( v, -kInf ) );
+      checkOne( x, pg, std::nextafter( v, kInf ) );
+    }
     for ( auto i : ncrange(std::size_t(1),x.size()) )
-      checkOne( x, 0.5*(x[i-1]+x[i]) );
+      checkOne( x, pg, 0.5*(x[i-1]+x[i]) );
     //Out-of-range queries (below/above the grid) are well-defined for
     //std::lower_bound/upper_bound too (0 or n respectively), so check them:
-    checkOne( x, x.front() - 1.0 );
-    checkOne( x, x.back() + 1.0 );
+    checkOne( x, pg, x.front() - 1.0 );
+    checkOne( x, pg, x.back() + 1.0 );
+    for ( double t : { 0.0, -0.0, kInf, -kInf,
+                       std::numeric_limits<double>::denorm_min() } )
+      checkOne( x, pg, t );
 
     auto rng = NC::getRNG();
     const double span = x.back() - x.front();
     for ( unsigned i = 0; i < 3000; ++i )
-      checkOne( x, x.front() + rng->generate()*span );
-    std::cout << "OK: " << label << " (n=" << x.size() << ")" << std::endl;
+      checkOne( x, pg, x.front() + rng->generate()*span );
+    std::cout << "OK: " << label << " (n=" << x.size() << ( pg ? ", incl. LogGuideTable" : "" ) << ")" << std::endl;
   }
 
   VectD logspaceGrid( double lo, double hi, std::size_t n )
@@ -141,6 +156,21 @@ int main()
   stressGrid( "log-uniform, small", logspaceGrid(1e-5,1e3,3) );
   stressGrid( "log-uniform, medium", logspaceGrid(1e-5,1e3,300) );
   stressGrid( "log-uniform, large", logspaceGrid(1e-8,1e8,2400) );
+  {
+    //Extreme ranges (logspaceGrid would overflow in hi/lo):
+    auto extremeGrid = []( double loglo, double loghi, std::size_t n )
+    {
+      VectD x(n);
+      for ( auto i : ncrange(n) )
+        x[i] = std::exp( loglo + ( loghi - loglo ) * i / ( n - 1 ) );
+      return x;
+    };
+    stressGrid( "log-uniform, extreme range",
+                extremeGrid( std::log(1e-300), std::log(1e300), 500 ) );
+    VectD x = extremeGrid( std::log(1e-300), 0.0, 200 );
+    x.front() = std::numeric_limits<double>::denorm_min();
+    stressGrid( "log-uniform, from denorm_min", x );
+  }
   stressGrid( "linear-uniform, medium", linspaceGrid(0.0,1.0,300) );
   stressGrid( "linear-uniform, from 0", linspaceGrid(0.0,50.0,140) );
   stressGrid( "linear-uniform, negative range", linspaceGrid(-10.0,10.0,140) );
@@ -181,6 +211,6 @@ int main()
   }
 
   std::cout << "All " << g_ntrials << " fastLowerBoundIdx/fastUpperBoundIdx"
-               " checks passed." << std::endl;
+               "/LogGuideTable checks passed." << std::endl;
   return 0;
 }

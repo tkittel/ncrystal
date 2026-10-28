@@ -137,10 +137,12 @@ namespace NCRYSTAL_NAMESPACE {
     // debug builds.
     //
   public:
+    enum class OptimiseForLogSpacedX { YES, NO };
     PCHIPInterp( Span<const double> x,
                  Span<const double> y,
                  Optional<double> leftSlopeRequest = NullOpt,
-                 Optional<double> rightSlopeRequest = NullOpt );
+                 Optional<double> rightSlopeRequest = NullOpt,
+                 OptimiseForLogSpacedX = OptimiseForLogSpacedX::NO );
 
     // Evaluate the interpolation for x in [x.front(),x.back()]:
     double eval(double x) const;
@@ -152,6 +154,7 @@ namespace NCRYSTAL_NAMESPACE {
   private:
     VectD m_data;
     std::size_t m_n = 0;
+    Optional<LogGuideTable> m_guide;//if all x>0
   };
 }
 
