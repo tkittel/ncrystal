@@ -257,9 +257,14 @@ NC::RandIdxByWeightPicker::RandIdxByWeightPicker( VectD&& v )
   m_step = ( m_v.back() - m_lo ) / n;
   m_invStep = 1.0 / m_step;
   m_guide.reserve( n + 1 );
-  for ( auto k : ncrange( n ) )
-    m_guide.push_back( static_cast<std::uint32_t>
-                       ( fastLowerBoundIdx( m_v.data(), n, guideVal(k) ) ) );
+  //Lower bounds of the (non-decreasing) guide values, in a single sweep:
+  std::size_t j = 0;
+  for ( auto k : ncrange( n ) ) {
+    const double gv = guideVal(k);
+    while ( j < n && m_v[j] < gv )
+      ++j;
+    m_guide.push_back( static_cast<std::uint32_t>( j ) );
+  }
   //Last entry is n, so it bounds all val (even if guideVal(n) rounds below
   //m_v.back()):
   m_guide.push_back( static_cast<std::uint32_t>( n ) );
