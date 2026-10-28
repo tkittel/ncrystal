@@ -20,8 +20,12 @@
 
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCRandUtils.hh"
 #include <iostream>
+#include <sstream>
 #include <limits>
+#include <cstring>
+#include <cstdio>
 
 namespace NC = NCrystal;
 #define REQUIRE(x) nc_assert_always(__LINE__ && x)
@@ -272,6 +276,90 @@ void test_misc() {
   REQUIRE(NC::str2uint64("9223372036854775808")==9223372036854775808ULL);
 }
 
+namespace {
+  //Str2DblConverter must agree with safe_str2dbl and str2dbl on everything
+  //(values, failures and exception messages), also when good and bad inputs
+  //are interleaved:
+  struct ConverterCheck {
+    NC::Str2DblConverter conv;
+    std::size_t nchecks = 0;
+    void check( const std::string& s )
+    {
+      double v1(0.0);
+      const bool ok1 = NC::safe_str2dbl( s, v1 );
+      const auto r2 = conv.tryConvert( s );
+      REQUIRE( ok1 == r2.has_value() );
+      const double v2 = r2.value_or( 0.0 );
+      if ( ok1 )
+        REQUIRE( NC::ncisnan(v1) ? NC::ncisnan(v2)
+                 : std::memcmp( &v1, &v2, sizeof(double) ) == 0 );
+      std::string e1, e2;
+      try {
+        NC::str2dbl( s );
+      } catch ( NC::Error::BadInput& e ) {
+        e1 = e.what();
+      }
+      try {
+        conv.convert( s );
+      } catch ( NC::Error::BadInput& e ) {
+        e2 = e.what();
+      }
+      REQUIRE( e1 == e2 );
+      ++nchecks;
+    }
+  };
+}
+
+void test_str2dblconverter()
+{
+  ConverterCheck cc;
+  const char * fixed[] = {
+    "2.0", "2.0e-3", "-2.0E-3", "-1E-3", "2.0a", " 2.0", "2.0 ", "2e.0", "e-3",
+    "inf", "-inf", "+inf", "INF", "+INF", "-INF", "nan", "NaN", "NAN", "-nan",
+    "infinity", "INFINITY", "\tinf", "inf ", "", "-", "+", ".", "1e", "1e+",
+    "0x1p3", "0x10", "1,5", "1.5.2", "--1", "+-1", "0", "-0", "-0.0", "+0.",
+    ".5", "5.", "00012", "1_000", "\t1", "1\n", "1e308", "1e309", "-1e309",
+    "1.7976931348623157e308", "1.7976931348623159e308",
+    "2.2250738585072014e-308", "4.94066e-324", "5e-324", "1e-320", "1e-301",
+    "1.123456789123456789e-315", "-5e-320", "1e-400", "1e-3001",
+    "3.14159265358979323846264338327950288419716939937510582097494459",
+  };
+  for ( auto s : fixed )
+    cc.check( s );
+
+  //Random bit patterns (all exponents, denormals, inf, nan) in several formats,
+  //and random strings of number characters (mostly invalid):
+  NC::RandXRSRImpl rng( 12345 );
+  const char * fmtstrs[] = { "%.17g", "%.6e", "%g", "%.3f", "%a" };
+  for ( int i = 0; i < 20000; ++i ) {
+    const std::uint64_t bits = rng.genUInt64();
+    double x;
+    std::memcpy( &x, &bits, sizeof(double) );
+    std::ostringstream ss;
+    ss << NC::fmt( x );
+    cc.check( ss.str() );
+    for ( auto fs : fmtstrs ) {
+      char buf[512];//"%.3f" of 1e308 needs ~315 chars
+      std::snprintf( buf, sizeof(buf), fs, x );
+      cc.check( buf );
+    }
+    const char chars[] = "0123456789.eE+-";
+    std::string s;
+    const auto n = 1 + rng.genUInt64() % 8;
+    for ( std::uint64_t j = 0; j < n; ++j )
+      s += chars[ rng.genUInt64() % ( sizeof(chars) - 1 ) ];
+    cc.check( s );
+  }
+
+  //Still agrees after being moved:
+  NC::Str2DblConverter conv2( std::move( cc.conv ) );
+  cc.conv = std::move( conv2 );
+  for ( auto s : fixed )
+    cc.check( s );
+  std::cout << "Str2DblConverter agrees with str2dbl in "
+            << cc.nchecks << " checks" << std::endl;
+}
+
 int main(int,char**) {
   std::cout<<"test_split begin"<<std::endl;
   test_split();
@@ -279,6 +367,7 @@ int main(int,char**) {
   std::cout<<"test_misc begin"<<std::endl;
   test_misc();
   std::cout<<"test_misc emd"<<std::endl;
+  test_str2dblconverter();
   std::cout<<"all done"<<std::endl;
   return 0;
 }
