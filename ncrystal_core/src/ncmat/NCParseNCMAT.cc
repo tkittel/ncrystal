@@ -77,7 +77,7 @@ namespace NCRYSTAL_NAMESPACE {
     void parseFile( TextData::Iterator itLine, TextData::Iterator itLineE );
     void parseLine( const std::string&, Parts&, unsigned linenumber ) const;
     void validateElementName(const std::string& s, unsigned lineno) const;
-    double str2dbl_withfractions(const std::string&) const;
+    double str2dbl_withfractions(const std::string&);
 
     //Section handling:
     typedef void (NCMATParser::*handleSectionDataFn)(const Parts&,unsigned);
@@ -97,6 +97,10 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Collected data:
     NCMATData m_data;
+
+    //For all number conversions (str2dbl is slow for the many numbers in large
+    //files):
+    Str2DblConverter m_str2dbl;
 
     //Long vectors of data in @DYNINFO sections are kept in:
     NCMATData::DynInfo * m_active_dyninfo;
@@ -130,10 +134,10 @@ namespace NCRYSTAL_NAMESPACE {
 
 }
 
-double NC::NCMATParser::str2dbl_withfractions(const std::string& ss) const
+double NC::NCMATParser::str2dbl_withfractions(const std::string& ss)
 {
 if (!contains(ss,'/'))
-  return str2dbl(ss);
+  return m_str2dbl.convert(ss);
  if (m_data.version==1)
    NCRYSTAL_THROW2(BadInput,"specification with fractions not supported in"
                    " NCMAT v1 files (offending parameter is \""<<ss<<"\")");
@@ -145,8 +149,8 @@ if (!contains(ss,'/'))
  for (auto&e: parts)
    if (e.empty())
      NCRYSTAL_THROW2(BadInput,"empty denominator or numerator so could not parse \""<<ss<<"\"");
- double a = str2dbl(parts.at(0));
- double b = str2dbl(parts.at(1));
+ double a = m_str2dbl.convert(parts.at(0));
+ double b = m_str2dbl.convert(parts.at(1));
  if (ncisnan(a)||ncisnan(b)||ncisinf(a)||ncisinf(b))
    NCRYSTAL_THROW2(BadInput,"invalid division attempted in \""<<ss<<"\"");
  if (!b)
@@ -552,7 +556,7 @@ void NC::NCMATParser::handleSectionData_CELL(const Parts& parts, unsigned lineno
     if ( parts.size() != 2 )
       NCRYSTAL_THROW2(BadInput,descr()<<": wrong number of data entries after \"cubic\" keyword in line "<<lineno<<" (expected a single number)");
     try {
-      double cubic_val = str2dbl(parts.at(1));
+      double cubic_val = m_str2dbl.convert(parts.at(1));
       m_cell_cubic = cubic_val;
       if ( !(cubic_val>0.0) || cubic_val>1e4 )
         NCRYSTAL_THROW(BadInput,"invalid value or value out of range");
@@ -586,7 +590,7 @@ void NC::NCMATParser::handleSectionData_CELL(const Parts& parts, unsigned lineno
       continue;
     }
     try {
-      v[i] = str2dbl(parts.at(i+1));
+      v[i] = m_str2dbl.convert(parts.at(i+1));
     } catch (Error::BadInput&e) {
       NCRYSTAL_THROW2(BadInput,descr()<<": problem while decoding \""<<keyword<<"\" parameter #"<<i+1<<" in line "<<lineno<<" : "<<e.what());
     }
@@ -709,7 +713,7 @@ void NC::NCMATParser::handleSectionData_DEBYETEMPERATURE(const Parts& parts, uns
     if ( !m_data.debyetemp_perelement.empty() )//global DT not supported if per-element entries already seen (or if NCMAT version is v4 or later, but that is handled below).
       NCRYSTAL_THROW2(BadInput,descr()<<": invalid entries found in line "<<lineno<<" (missing element name or temperature?)");
     try {
-      double tmp = str2dbl(parts.at(0));
+      double tmp = m_str2dbl.convert(parts.at(0));
       m_data.debyetemp_global = DebyeTemperature{ tmp };
     } catch (Error::BadInput&e) {
       NCRYSTAL_THROW2(BadInput,descr()<<": problem while decoding global Debye temperature in line "<<lineno<<" : "<<e.what());
@@ -722,7 +726,7 @@ void NC::NCMATParser::handleSectionData_DEBYETEMPERATURE(const Parts& parts, uns
     validateElementName(parts.at(0),lineno);
     DebyeTemperature dt;
     try {
-      dt = DebyeTemperature{ str2dbl(parts.at(1)) };
+      dt = DebyeTemperature{ m_str2dbl.convert(parts.at(1)) };
     } catch (Error::BadInput&e) {
       NCRYSTAL_THROW2(BadInput,descr()<<": problem while decoding debye temperature for element \""<<parts.at(0)<<"\" in line "<<lineno<<" : "<<e.what());
     }
@@ -838,9 +842,9 @@ void NC::NCMATParser::handleSectionData_DYNINFO(const Parts& parts, unsigned lin
                         <<" (expected \"msd <value>\" or \"msd <value> at_temperature <temperature>\")");
       double v_msd(-1.0), v_t(-1.0);
       try {
-        v_msd = str2dbl( parts.at(1) );
+        v_msd = m_str2dbl.convert( parts.at(1) );
         if ( with_att )
-          v_t = str2dbl( parts.at(3) );
+          v_t = m_str2dbl.convert( parts.at(3) );
       } catch (Error::BadInput&e) {
         NCRYSTAL_THROW2(BadInput,e1<<": problem while decoding \"msd\" parameters in line "<<lineno<<" : "<<e.what());
       }
@@ -906,7 +910,7 @@ void NC::NCMATParser::handleSectionData_DYNINFO(const Parts& parts, unsigned lin
           NCRYSTAL_THROW2(BadInput,"repeated entry count parameter must be >= 2");
         repeat_count = irc;
       }
-      val = str2dbl(*srcnumstr);
+      val = m_str2dbl.convert(*srcnumstr);
     } catch (Error::BadInput&e) {
       NCRYSTAL_THROW2(BadInput,e1<<": problem while decoding vector entry #"<<1+(itParseToVect-parts.begin())<<" in line "<<lineno<<" : "<<e.what());
     }
@@ -937,7 +941,7 @@ void NC::NCMATParser::handleSectionData_DENSITY(const Parts& parts, unsigned lin
     NCRYSTAL_THROW2(BadInput,descr()<<": wrong number of entries on line "<<lineno<<" in @DENSITY section");
   double density_val;
   try {
-    density_val = str2dbl(parts.at(0));
+    density_val = m_str2dbl.convert(parts.at(0));
   } catch (Error::BadInput&e) {
     NCRYSTAL_THROW2(BadInput,descr()<<": problem while decoding density value in line "<<lineno<<" : "<<e.what());
   }
