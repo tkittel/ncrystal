@@ -261,7 +261,7 @@ namespace NCRYSTAL_NAMESPACE {
 
         //The cumulative full cell integrals, ordered in the order in which they
         //are touched by neutron phasespace as energy increases.
-        VectD m_cumulFCInt;
+        RandIdxByWeightPicker m_cumulFCInt;
         //The corresponding packed cell indices:
         std::vector<SABIdx::PackedIndex> m_cumulFCInt_cellidx;
 
@@ -930,15 +930,17 @@ namespace NCRYSTAL_NAMESPACE {
 
         if ( do_sample) {
           auto itCellInfo = surv.data().begin();
-          m_cumulFCInt.reserve(nTouchedCellsMax);
+          VectD cumulFCInt;
+          cumulFCInt.reserve(nTouchedCellsMax);
           m_cumulFCInt_cellidx.reserve(nTouchedCellsMax);
           StableSumKahan sum_cumulFCInt;
           for ( std::size_t i = 0; i < nTouchedCellsMax; ++i, ++itCellInfo ) {
             nc_assert(itCellInfo != surv.data().end());
             sum_cumulFCInt.add( m_cellmgr.getCellIntegral( itCellInfo->cellidx ) );
-            m_cumulFCInt.push_back(sum_cumulFCInt.sum());
+            cumulFCInt.push_back(sum_cumulFCInt.sum());
             m_cumulFCInt_cellidx.push_back(itCellInfo->cellidx);
           }
+          m_cumulFCInt = RandIdxByWeightPicker( std::move( cumulFCInt ) );
           nc_assert( m_cumulFCInt.size() == nTouchedCellsMax );
           nc_assert( m_cumulFCInt_cellidx.size() == nTouchedCellsMax );
           m_stripIdx.assign( m_eGrid.size(), -1 );
@@ -1203,10 +1205,8 @@ namespace NCRYSTAL_NAMESPACE {
         ABRes res;
         res.ntries = 1;
         const double foure = 4.0*E_div_kT;
-        Span<const double> cumulContrib( m_cumulFCInt.data(),
-                                         m_cumulFCInt.data()+nCellsTouched );
         while ( true ) {
-          std::size_t randidx = pickRandIdxByWeight( rng, cumulContrib );
+          std::size_t randidx = m_cumulFCInt.pick( rng, nCellsTouched );
           auto cellidx = vectAt(m_cumulFCInt_cellidx,randidx);
           auto cellData = m_cellmgr.lookupCellInfo( cellidx );
           auto ab = FullCellSampler::sampleOneAlphaBeta(cellData,rng);
