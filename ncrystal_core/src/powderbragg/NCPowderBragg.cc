@@ -21,7 +21,6 @@
 #include "NCrystal/internal/powderbragg/NCPowderBragg.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
-#include "NCrystal/internal/utils/NCFastSearch.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include <functional>//std::greater
 
@@ -107,7 +106,15 @@ void NC::PowderBragg::init( double v0_times_natoms, VectDFM&& origdata )
   //Transfer while squeezing memory:
   VectD(fdm_commul.begin(),fdm_commul.end()).swap(m_fdm_commul);
   VectD(v2dE.begin(),v2dE.end()).swap(m_2dE);
+  initGuide();
   nc_assert( m_threshold.get() > 0.0 );
+}
+
+void NC::PowderBragg::initGuide()
+{
+  m_2dEGuide = ( m_2dE.empty()
+                 ? LogGuideTable()
+                 : LogGuideTable( m_2dE.data(), m_2dE.size() ) );
 }
 
 NC::PowderBragg::PowderBragg( const StructureInfo& si, VectDFM&&  data)
@@ -151,14 +158,15 @@ NC::EnergyDomain NC::PowderBragg::domain() const noexcept
 }
 
 std::size_t NC::PowderBragg::findLastValidPlaneIdx( NC::NeutronEnergy ekin) const {
-  //Quick binary search to find index of the plane with the smallest d-spacing
+  //Guided search to find index of the plane with the smallest d-spacing
   //satisfying wl<=2d, but in energy-space: Finding the index of the plane with
   //the largest value of ekin2wl(2d) satisfying ekin>=ekin2wl(2d).  We already
-  //know that ekin>=m_2dE[0], so we search from one past this entry:
+  //know that ekin>=m_2dE[0], so the upper bound is at least 1, and the index
+  //is one below it:
   nc_assert( !ncisnan(ekin.dbl()) );
   nc_assert( ekin >= m_threshold );
   nc_assert( std::isfinite( ekin.dbl() ) );
-  return fastUpperBoundIdx( m_2dE.data()+1, m_2dE.size()-1, ekin.get() );
+  return m_2dEGuide.upperBoundIdx( m_2dE.data(), m_2dE.size(), ekin.get() ) - 1;
 }
 
 
@@ -223,9 +231,10 @@ std::shared_ptr<NC::ProcImpl::Process> NC::PowderBragg::createMerged( const Proc
   auto& o = *optr;
 
   auto result = std::make_shared<PowderBragg>( no_init );//empty instance
-  auto fixThreshold = [&result]()
+  auto finishInit = [&result]()
   {
     result->m_threshold = NeutronEnergy{ result->m_2dE.front() };
+    result->initGuide();
   };
 
   //transfer "a" (2dE) and "b" (fdm_commul) vectors, sorted by a:
@@ -246,12 +255,12 @@ std::shared_ptr<NC::ProcImpl::Process> NC::PowderBragg::createMerged( const Proc
   if ( old1_a.empty() ) {
     new_a = old2_a;
     new_b = vectorTrf(old2_b, [scale2](double x) {return x*scale2;});
-    return fixThreshold(), result;
+    return finishInit(), result;
   }
   if ( old2_a.empty() ) {
     new_a = old1_a;
     new_b = vectorTrf(old1_b, [scale1](double x) {return x*scale1;});
-    return fixThreshold(), result;
+    return finishInit(), result;
   }
 
   //Merge lists, sort so m_2dE is ordered by increasing magnitude. And keep in
@@ -323,7 +332,7 @@ std::shared_ptr<NC::ProcImpl::Process> NC::PowderBragg::createMerged( const Proc
   new_a.shrink_to_fit();
   new_b.shrink_to_fit();
 
-  return fixThreshold(), result;
+  return finishInit(), result;
 }
 
 NC::Optional<std::string> NC::PowderBragg::specificJSONDescription() const
