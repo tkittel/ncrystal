@@ -372,7 +372,8 @@ NC::ScatterOutcome NCPI::ProcComposition::sampleScatter( CachePtr& cacheptr,
   auto& cache = ( m_materialType == MaterialType::Anisotropic
                   ? Impl::updateCacheAnisotropic( this, cacheptr, ekin, dir )
                   : Impl::updateCacheIsotropic( this, cacheptr, ekin ) );
-  auto ichoice = pickRandIdxByWeight( rng, cache.componentXSectCommul );
+  auto ichoice
+    = RandIdxByWeightPicker::oneShotPick( rng, cache.componentXSectCommul );
   return m_components[ichoice].process->sampleScatter(cache.componentCache[ichoice].cachePtr,rng,ekin,dir);
 }
 
@@ -384,7 +385,8 @@ NC::ScatterOutcomeIsotropic NCPI::ProcComposition::sampleScatterIsotropic( Cache
     return { ekin, CosineScatAngle{1.0} };//no effect when xs=0
   nc_assert( m_materialType == MaterialType::Isotropic );
   auto& cache = Impl::updateCacheIsotropic( this, cacheptr, ekin );
-  auto ichoice = pickRandIdxByWeight( rng, cache.componentXSectCommul );
+  auto ichoice
+    = RandIdxByWeightPicker::oneShotPick( rng, cache.componentXSectCommul );
   return m_components[ichoice].process->sampleScatterIsotropic(cache.componentCache[ichoice].cachePtr,rng,ekin);
 }
 
@@ -644,7 +646,8 @@ NCPI::ProcComposition::evalXSAndSampleScatter( CachePtr& cachePtr,
   auto& cache = ( m_materialType == MaterialType::Anisotropic
                   ? Impl::updateCacheAnisotropic( this, cachePtr, ekin, dir )
                   : Impl::updateCacheIsotropic( this, cachePtr, ekin ) );
-  auto ichoice = pickRandIdxByWeight( rng, cache.componentXSectCommul );
+  auto ichoice
+    = RandIdxByWeightPicker::oneShotPick( rng, cache.componentXSectCommul );
   return { CrossSect{cache.tot_xs},
            m_components[ichoice].process->sampleScatter(cache.componentCache[ichoice].cachePtr,rng,ekin,dir) };
 }
@@ -658,7 +661,8 @@ NCPI::ProcComposition::evalXSAndSampleScatterIsotropic( CachePtr& cachePtr,
     return { CrossSect{0.0}, { ekin, CosineScatAngle{1.0} } };
   nc_assert( m_materialType == MaterialType::Isotropic );
   auto& cache = Impl::updateCacheIsotropic( this, cachePtr, ekin );
-  auto ichoice = pickRandIdxByWeight( rng, cache.componentXSectCommul );
+  auto ichoice
+    = RandIdxByWeightPicker::oneShotPick( rng, cache.componentXSectCommul );
   return { CrossSect{cache.tot_xs},
            m_components[ichoice].process->sampleScatterIsotropic(cache.componentCache[ichoice].cachePtr,rng,ekin) };
 }

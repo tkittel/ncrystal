@@ -80,7 +80,7 @@ NC::ScatterOutcome NC::LCBraggRef::sampleScatter(CachePtr& cp, RNG& rng, Neutron
     return { ekin, indir_nd };
   }
   //Select one phi rotation at random:
-  const PhiRot& phirot = pr.at(pickRandIdxByWeight(rng,xs));
+  const PhiRot& phirot = pr.at(RandIdxByWeightPicker::oneShotPick(rng,xs));
 
   //Scatter!
   auto ndir = phirot.rotateVectorAroundAxis( indir, m_lcaxislab, lccross, lcdot ).as<NeutronDirection>();
@@ -160,7 +160,8 @@ NC::ScatterOutcome NC::LCBraggRndmRot::sampleScatter(CachePtr&cp, RNG& rng, Neut
   }
 
   //Select one phi rotation at random:
-  const PhiRot& phirot = cache.rotations.at(pickRandIdxByWeight(rng,cache.xscommul));
+  const PhiRot& phirot = cache.rotations.at(
+    RandIdxByWeightPicker::oneShotPick(rng,cache.xscommul));
 
   //Scatter!
   auto ndir = phirot.rotateVectorAroundAxis( indir, m_lcaxislab).as<NeutronDirection>();

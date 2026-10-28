@@ -40,7 +40,7 @@ namespace NCRYSTAL_NAMESPACE {
       //Walker-Vose (cf.  https://en.wikipedia.org/wiki/Alias_method) for
       //picking indices in proportion to weights w with a single random
       //number is used.
-      //FIXME: Move to a common utility and use with pickRandIdxByWeight?
+      //FIXME: Move to a common utility, next to RandIdxByWeightPicker?
       void initAliasTable( const VectD& w, VectD& prob,
                            std::vector<std::uint32_t>& alias )
       {

@@ -184,7 +184,7 @@ NC::CosineScatAngle NC::ElIncXS::EPointAnalysis::sampleMu( const ElIncXS& ei,
   if ( elm_data.size() == 1 )
     return sampleMuMonoAtomic( rng, this->ekin, elm_data.front().first );
   nc_assert( contribs.size() > 1 );
-  auto choiceidx = pickRandIdxByWeight( rng, contribs );
+  auto choiceidx = RandIdxByWeightPicker::oneShotPick( rng, contribs );
   nc_assert( choiceidx < elm_data.size() );
   return sampleMuMonoAtomic( rng, this->ekin, elm_data[choiceidx].first );
 }
@@ -196,7 +196,7 @@ NC::CosineScatAngle NC::ElIncXS::sampleMu( RNG& rng, NeutronEnergy ekin )
   auto contribs = evalXSContribsCommul(ekin);
   nc_assert( contribs.size() > 1 );
   nc_assert( contribs.size() == m_elm_data.size() );
-  auto choiceidx = pickRandIdxByWeight( rng, contribs );
+  auto choiceidx = RandIdxByWeightPicker::oneShotPick( rng, contribs );
   nc_assert( choiceidx < m_elm_data.size() );
   return sampleMuMonoAtomic( rng, ekin, m_elm_data[choiceidx].first );
 }
