@@ -60,7 +60,51 @@ namespace NCRYSTAL_NAMESPACE {
   //>=tail (but more efficient):
   double randNormTail(double tail, RNG& rng);
 
-  //Pick index according to weights (values must be commulative):
+  class RandIdxByWeightPicker final : private MoveOnly {
+  public:
+
+    //Utility for picking random indices with probabilities proportional to
+    //weights stored in a commulative list.
+    //
+    //For weights which change between picks, or for small arrays, use the static
+    //oneShotPick: it needs no set-up, and costs O(log n) per pick.
+    //
+    //For fixed weights used for many picks, construct an instance instead: it
+    //costs O(n) once, after which each pick is O(1) on average however uneven
+    //the weights.
+    //
+    //All methods give identical results for identical input, and uses a single
+    //random number in case of multiple candidates
+    //
+    //Refer to the implementation for details.
+
+    static std::size_t oneShotPick( RNG&, Span<const double> commulvals );
+    static std::size_t oneShotPick( double rand01val,
+                                    Span<const double> commulvals );
+
+    RandIdxByWeightPicker() = default;//empty, can not be used for picking
+    explicit RandIdxByWeightPicker( VectD&& commulvals );
+
+    std::size_t pick( RNG& ) const;
+    std::size_t pick( double rand01val ) const;
+    std::size_t pick( RNG&, std::size_t n ) const;
+    std::size_t pick( double rand01val, std::size_t n ) const;
+
+    std::size_t size() const noexcept { return m_v.size(); }
+
+  private:
+    VectD m_v;
+    std::vector<std::uint32_t> m_guide;
+    double m_lo = 0.0;
+    double m_step = 0.0;
+    double m_invStep = 0.0;
+    double guideVal( std::size_t k ) const noexcept { return m_lo + k * m_step; }
+    std::size_t lowerBoundIdx( double val ) const noexcept;
+  };
+
+  //FIXME: Kept for the ncplugin-MagScat plugin (NCParamagneticScatter.cc), which
+  //should be updated (PR) to use RandIdxByWeightPicker::oneShotPick before the
+  //release, after which these can be removed:
   std::size_t pickRandIdxByWeight( RNG&, Span<const double> commulvals);
   std::size_t pickRandIdxByWeight( double rand01val, Span<const double> commulvals);
 
@@ -138,9 +182,31 @@ namespace NCRYSTAL_NAMESPACE {
 // Inline implementations //
 ////////////////////////////
 
+inline std::size_t NCrystal::RandIdxByWeightPicker::oneShotPick( RNG& rng,
+                                                                 Span<const double> commulvals )
+{
+  return commulvals.size()==1 ? 0 : oneShotPick( rng.generate(), commulvals );
+}
+
+inline std::size_t NCrystal::RandIdxByWeightPicker::pick( RNG& rng ) const
+{
+  return pick( rng, m_v.size() );
+}
+
+inline std::size_t NCrystal::RandIdxByWeightPicker::pick( double rand01val ) const
+{
+  return pick( rand01val, m_v.size() );
+}
+
+inline std::size_t NCrystal::RandIdxByWeightPicker::pick( RNG& rng,
+                                                          std::size_t n ) const
+{
+  return n==1 ? 0 : pick( rng.generate(), n );
+}
+
 inline std::size_t NCrystal::pickRandIdxByWeight( RNG& rng, Span<const double> commulvals)
 {
-  return commulvals.size()==1 ? 0 : pickRandIdxByWeight( rng.generate(), commulvals );
+  return RandIdxByWeightPicker::oneShotPick( rng, commulvals );
 }
 
 inline double NCrystal::randIsotropicScatterAngle( NCrystal::RNG& rng )
