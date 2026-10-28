@@ -99,7 +99,8 @@ namespace NCRYSTAL_NAMESPACE {
       SampleResult sampleScatter( RNG& rng ) const
       {
         SampleResult result;
-        auto cell_contrib_nbr = pickRandIdxByWeight( rng, m_cell_integrals_commul );
+        auto cell_contrib_nbr
+          = RandIdxByWeightPicker::oneShotPick( rng, m_cell_integrals_commul );
         auto cell = m_sabeval.getCell( m_cell_idx.at(cell_contrib_nbr) );
         while ( true ) {
           result.alphaBeta = cell.sample(rng);

@@ -356,7 +356,8 @@ NC::SABRef::refSampleAlphaBeta( RNG& rng,
   std::vector<std::size_t> cellcount( ncells, 0 );
   for ( std::uint64_t i = 0; i < nsample; ++i ) {
     if ( probabilityExtension <= 0.0 || rng() >= probabilityExtension )
-      ++vectAt( cellcount, pickRandIdxByWeight( rng, analysedEpt.cumul ) );
+      ++vectAt( cellcount,
+                RandIdxByWeightPicker::oneShotPick( rng, analysedEpt.cumul ) );
   }
 
   //Now do the actual sampling - first in cells:
