@@ -196,29 +196,121 @@ double NC::randNormTail(double tail, NC::RNG& rng)
   }
 }
 
-std::size_t NC::pickRandIdxByWeight( double rand01val, Span<const double> commulvals)
-{
-  nc_assert(!commulvals.empty());
-  const auto n = commulvals.size();
-  constexpr decltype(n) binary_search_threshold = 5;//NB: Not tuned, just assumed!
-  static_assert( binary_search_threshold > 1,"" );
-  if ( n < binary_search_threshold ) {
-    if ( n==1 ) {
-      //No real choice, no need to consume RNG!
-      return 0;
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+
+    //The RandIdxByWeightPicker O(1) implementation uses a guide table
+    //(H.C. Chen and Y. Asau, AIIE Transactions 6 (1974) 163; L. Devroye,
+    //"Non-Uniform Random Variate Generation", Springer 1986, section III.2.4):
+    //the index at which each of n equal steps of the cumulative range starts,
+    //so a pick only bisects within one step.
+
+    template<class TLowerBound>
+    std::size_t pickRandIdxByWeightImpl( double rand01val,
+                                         Span<const double> commulvals,
+                                         TLowerBound lowerBound )
+    {
+      //Shared by all RandIdxByWeightPicker picks, with lowerBound(x) giving the
+      //index of the first value in commulvals which is not below x:
+      nc_assert(!commulvals.empty());
+      const auto n = commulvals.size();
+      constexpr decltype(n) binary_search_threshold = 5;//NB: Not tuned
+      static_assert( binary_search_threshold > 1,"" );
+      if ( n < binary_search_threshold ) {
+        if ( n==1 ) {
+          //No real choice, no need to consume RNG!
+          return 0;
+        }
+        //Small number of values => linear search:
+        const double rand_choice = commulvals.back() * rand01val;
+        auto itB = commulvals.begin();
+        auto itE = commulvals.end();
+        for (auto it = itB; it!=itE; ++it )
+          if ( *it > rand_choice )
+            return std::distance(itB,it);
+        return n-1;
+      }
+      //Binary search:
+      auto idx = lowerBound( commulvals.back() * rand01val );
+      return std::min<std::size_t>(idx,n-1);
     }
-    //Small number of values => linear search:
-    const double rand_choice = commulvals.back() * rand01val;
-    auto itB = commulvals.begin();
-    auto itE = commulvals.end();
-    for (auto it = itB; it!=itE; ++it )
-      if ( *it > rand_choice )
-        return std::distance(itB,it);
-    return n-1;
   }
-  //Binary search:
-  auto idx = fastLowerBoundIdx( commulvals, commulvals.back() * rand01val );
-  return std::min<std::size_t>(idx,n-1);
+}
+
+std::size_t NC::RandIdxByWeightPicker::oneShotPick( double rand01val,
+                                                    Span<const double> commulvals )
+{
+  return pickRandIdxByWeightImpl( rand01val, commulvals,
+                                  [commulvals]( double x )
+                                  { return fastLowerBoundIdx( commulvals, x ); } );
+}
+
+std::size_t NC::pickRandIdxByWeight( double rand01val,
+                                     Span<const double> commulvals)
+{
+  return RandIdxByWeightPicker::oneShotPick( rand01val, commulvals );
+}
+
+NC::RandIdxByWeightPicker::RandIdxByWeightPicker( VectD&& v )
+  : m_v( std::move(v) )
+{
+#ifndef NDEBUG
+  nc_assert_always( std::is_sorted( m_v.begin(), m_v.end() ) );
+#endif
+  const std::size_t n = m_v.size();
+  nc_assert_always( n < std::numeric_limits<std::uint32_t>::max() );
+  if ( n < 2 || !( m_v.back() > m_v.front() ) )
+    return;//no guide table needed (or possible)
+  m_lo = m_v.front();
+  m_step = ( m_v.back() - m_lo ) / n;
+  m_invStep = 1.0 / m_step;
+  m_guide.reserve( n + 1 );
+  //Lower bounds of the (non-decreasing) guide values, in a single sweep:
+  std::size_t j = 0;
+  for ( auto k : ncrange( n ) ) {
+    const double gv = guideVal(k);
+    while ( j < n && m_v[j] < gv )
+      ++j;
+    m_guide.push_back( static_cast<std::uint32_t>( j ) );
+  }
+  //Last entry is n, so it bounds all val (even if guideVal(n) rounds below
+  //m_v.back()):
+  m_guide.push_back( static_cast<std::uint32_t>( n ) );
+}
+
+std::size_t NC::RandIdxByWeightPicker::lowerBoundIdx( double val ) const noexcept
+{
+  //Same result as fastLowerBoundIdx on m_v:
+  const std::size_t n = m_v.size();
+  if ( m_guide.empty() || !( val > m_lo ) )
+    return n ? fastLowerBoundIdx( m_v.data(), n, val ) : 0;
+  //Find k with guideVal(k) <= val <= guideVal(k+1) (the last guide entry
+  //bounds all val), guarding against rounding in the initial estimate:
+  const std::size_t kmax = m_guide.size() - 2;
+  std::size_t k = ( val < m_v.back()
+                    ? std::min<std::size_t>( static_cast<std::size_t>
+                                             ( ( val - m_lo ) * m_invStep ),
+                                             kmax )
+                    : kmax );
+  while ( k > 0 && guideVal(k) > val )
+    --k;
+  while ( k < kmax && guideVal(k+1) < val )
+    ++k;
+  //All entries before m_guide[k] are below val, all from m_guide[k+1] are not:
+  const std::size_t lo = m_guide[k];
+  const std::size_t hi = m_guide[k+1];
+  return lo + ( hi > lo ? fastLowerBoundIdx( m_v.data() + lo, hi - lo, val ) : 0 );
+}
+
+std::size_t NC::RandIdxByWeightPicker::pick( double rand01val,
+                                             std::size_t n ) const
+{
+  nc_assert( n >= 1 && n <= m_v.size() );
+  //Lower bounds in m_v and its first n values agree, since the searched value
+  //never exceeds m_v[n-1]:
+  return pickRandIdxByWeightImpl( rand01val,
+                                  Span<const double>( m_v.data(), m_v.data() + n ),
+                                  [this]( double x ) { return lowerBoundIdx( x ); } );
 }
 
 double NC::randExpDivSqrt( RNG& rng, double c, double a, double b )
