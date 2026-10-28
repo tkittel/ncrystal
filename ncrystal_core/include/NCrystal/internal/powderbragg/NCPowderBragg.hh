@@ -23,6 +23,7 @@
 
 #include "NCrystal/interfaces/NCInfo.hh"
 #include "NCrystal/interfaces/NCProcImpl.hh"
+#include "NCrystal/internal/utils/NCFastSearch.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -91,6 +92,8 @@ namespace NCRYSTAL_NAMESPACE {
     NeutronEnergy m_threshold = NeutronEnergy{kInfinity};
     VectD m_2dE;
     VectD m_fdm_commul;
+    LogGuideTable m_2dEGuide;
+    void initGuide();
     void init( const StructureInfo&, VectDFM&& );
     void init( double v0_times_natoms, VectDFM&& );
   };
