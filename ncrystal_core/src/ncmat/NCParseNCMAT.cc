@@ -130,6 +130,9 @@ namespace NCRYSTAL_NAMESPACE {
 
 }
 
+//FIXME: Number parsing is slow (~45% of loading a large kernel file such as a
+//JENDL-5 liquid): str2dbl constructs and imbues a new std::istream for every
+//number. Look at e.g. letting the parser own one reusable stream.
 double NC::NCMATParser::str2dbl_withfractions(const std::string& ss) const
 {
 if (!contains(ss,'/'))
