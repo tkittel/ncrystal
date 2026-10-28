@@ -99,6 +99,22 @@ namespace NCRYSTAL_NAMESPACE {
   std::int64_t str2int64( StrView, const char * errmsg = 0);
   std::uint64_t str2uint64( StrView, const char * errmsg = 0);
 
+  //Same results as str2dbl and safe_str2dbl, but faster when converting many
+  //numbers (e.g. when parsing data files), since it reuses one stream instead
+  //of creating and imbuing a new one for each number:
+  class Str2DblConverter final : private MoveOnly {
+  public:
+    Str2DblConverter();
+    ~Str2DblConverter();
+    Str2DblConverter( Str2DblConverter&& ) noexcept;
+    Str2DblConverter& operator=( Str2DblConverter&& ) noexcept;
+    double convert( StrView, const char * errmsg = 0 );
+    Optional<double> tryConvert( StrView );
+  private:
+    struct Impl;
+    Pimpl<Impl> m_impl;
+  };
+
   //Versions which don't throw:
   bool safe_str2dbl( StrView, double& result );
   bool safe_str2int( StrView, std::int32_t& result );

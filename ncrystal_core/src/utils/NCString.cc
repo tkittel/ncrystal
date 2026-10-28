@@ -177,46 +177,118 @@ std::uint64_t NC::str2uint64( StrView sv, const char * errmsg)
   return result;
 }
 
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    //Shared by safe_str2dbl and Str2DblConverter, with rawConv(data,size)
+    //giving the same result as detail::raw_str2dbl:
+    template<class TRawConv>
+    bool safe_str2dbl_impl( StrView s, double& result, TRawConv&& rawConv )
+    {
+      const auto n_size = s.size();
+      if ( n_size==0 || isWhiteSpace( s.front() ) || isWhiteSpace( s.back() ) )
+        return false;
+
+      {
+        auto try_conv = rawConv( s.data_begin(), n_size );
+        if ( try_conv.has_value() ) {
+          result = try_conv.value();
+          return true;
+        }
+      }
+
+      //Did not work, check for "+-inf"/"+-INF"/"nan"/"NaN","NAN" for
+      //cross-platform consistency:
+      if ( n_size == 3 ) {
+        if ( isOneOf(s,"inf","INF") ) {
+          result = kInfinity;
+          return true;
+        }
+        if ( isOneOf(s,"nan","NAN","NaN") ) {
+          static_assert(std::numeric_limits<double>::has_quiet_NaN,"");
+          result = std::numeric_limits<double>::quiet_NaN();
+          return true;
+        }
+      }
+      if ( n_size == 4 ) {
+        if ( isOneOf(s,"+inf","+INF") ) {
+          result = kInfinity;
+          return true;
+        }
+        if ( isOneOf(s,"-inf","-INF") ) {
+          result = -kInfinity;
+          return true;
+        }
+      }
+
+      //Syntax error:
+      return false;
+    }
+
+    //Stream reading from a memory buffer which can be changed between reads:
+    struct ResettableMemBuf : std::streambuf {
+      void reset( const char * data, std::size_t size )
+      {
+        char* p = const_cast<char*>(data);
+        this->setg( p, p, p + size );
+      }
+    };
+  }
+}
+
 bool NC::safe_str2dbl( StrView s, double& result )
 {
-  const auto n_size = s.size();
-  if ( n_size==0 || isWhiteSpace( s.front() ) || isWhiteSpace( s.back() ) )
-    return false;
+  return safe_str2dbl_impl( s, result,
+                            []( const char * d, std::size_t n )
+                            { return detail::raw_str2dbl( d, n ); } );
+}
 
+//FIXME: Most of the remaining cost is the stream extraction itself (copying
+//characters to a temporary string before strtod). The platform's own
+//locale-independent strtod_l (_strtod_l on MSVC) would avoid it, if it gives
+//identical results on all platforms. Also consider using this class in other
+//readers of large text files (e.g. .laz/.lau), and for str2int.
+struct NC::Str2DblConverter::Impl {
+  ResettableMemBuf buf;
+  std::istream is;
+  Impl() : is( &buf ) { is.imbue( std::locale::classic() ); }
+  Optional<double> rawConvert( const char * d, std::size_t n )
   {
-    auto try_conv = detail::raw_str2dbl( s.data_begin(), n_size );
-    if ( try_conv.has_value() ) {
-      result = try_conv.value();
-      return true;
-    }
+    //Plain values are read as in detail::raw_str2dbl, but with the stream
+    //reused. Anything else (syntax errors, denormals, ...) is rare, and is left
+    //to detail::raw_str2dbl itself, to keep its handling in one place:
+    buf.reset( d, n );
+    is.clear();
+    double val;
+    is >> val;
+    if ( !is.fail() && is.eof() )
+      return val;
+    return detail::raw_str2dbl( d, n );
   }
+};
 
-  //Did not work, check for "+-inf"/"+-INF"/"nan"/"NaN","NAN" for cross-platform
-  //consistency:
-  if ( n_size == 3 ) {
-    if ( isOneOf(s,"inf","INF") ) {
-      result = kInfinity;
-      return true;
-    }
-    if ( isOneOf(s,"nan","NAN","NaN") ) {
-      static_assert(std::numeric_limits<double>::has_quiet_NaN,"");
-      result = std::numeric_limits<double>::quiet_NaN();
-      return true;
-    }
-  }
-  if ( n_size == 4 ) {
-    if ( isOneOf(s,"+inf","+INF") ) {
-      result = kInfinity;
-      return true;
-    }
-    if ( isOneOf(s,"-inf","-INF") ) {
-      result = -kInfinity;
-      return true;
-    }
-  }
+NC::Str2DblConverter::Str2DblConverter() = default;
+NC::Str2DblConverter::~Str2DblConverter() = default;
+NC::Str2DblConverter::Str2DblConverter( Str2DblConverter&& ) noexcept = default;
+NC::Str2DblConverter&
+NC::Str2DblConverter::operator=( Str2DblConverter&& ) noexcept = default;
 
-  //Syntax error:
-  return false;
+NC::Optional<double> NC::Str2DblConverter::tryConvert( StrView s )
+{
+  auto& impl = *m_impl;
+  double result;
+  if ( !safe_str2dbl_impl( s, result,
+                           [&impl]( const char * d, std::size_t n )
+                           { return impl.rawConvert( d, n ); } ) )
+    return NullOpt;
+  return result;
+}
+
+double NC::Str2DblConverter::convert( StrView sv, const char * errmsg )
+{
+  auto result = tryConvert( sv );
+  if ( !result.has_value() )
+    NCRYSTAL_THROW2(BadInput,(errmsg?errmsg:"Invalid number in string is not a double")<<": \""<<sv<<"\"");
+  return result.value();
 }
 
 bool NC::safe_str2int( StrView s, int32_t& result )
