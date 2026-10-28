@@ -230,6 +230,7 @@ namespace NCRYSTAL_NAMESPACE {
 
         //Sorted energy grid (E/kT):
         VectD m_eGrid;
+        LogGuideTable m_eGridGuide;//for fast searches in m_eGrid
         //Equivalent phase-spaced bounded integral of S for each of the energy
         //points:
         VectD m_sIntegral;
@@ -859,6 +860,8 @@ namespace NCRYSTAL_NAMESPACE {
 
         m_eGrid = determineEGrid( cfg, m_cellmgr.sabData(), m_cellmgr,
                                   surv, requested_egrid );
+        nc_assert_always( !m_eGrid.empty() && m_eGrid.front() > 0.0 );
+        m_eGridGuide = LogGuideTable( m_eGrid.data(), m_eGrid.size() );
 
         const auto scheme = cfg.integScheme;
 
@@ -1043,7 +1046,7 @@ namespace NCRYSTAL_NAMESPACE {
 #endif
         }
         //linear interpolation:
-        std::size_t i = fastLowerBoundIdx(x.data(), x.size(), t); // 1..n-1
+        std::size_t i = m_eGridGuide.lowerBoundIdx(x.data(), x.size(), t); // 1..n-1
         nc_assert( i>0 );
         nc_assert( i<x.size() );
         double x0 = x[i-1], x1 = x[i];
@@ -1084,7 +1087,7 @@ namespace NCRYSTAL_NAMESPACE {
         }
         nc_assert(m_eGrid.size()>=2);
         std::size_t idx_E_overlay
-          = fastLowerBoundIdx(m_eGrid.data(), m_eGrid.size(), E_div_kT);
+          = m_eGridGuide.lowerBoundIdx(m_eGrid.data(), m_eGrid.size(), E_div_kT);
         if ( idx_E_overlay == m_eGrid.size() )
           --idx_E_overlay;
         nc_assert(m_nTouchedCells.size()==m_eGrid.size());

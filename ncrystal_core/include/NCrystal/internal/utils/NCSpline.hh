@@ -152,6 +152,7 @@ namespace NCRYSTAL_NAMESPACE {
   private:
     VectD m_data;
     std::size_t m_n = 0;
+    Optional<LogGuideTable> m_guide;//if all x>0
   };
 }
 
