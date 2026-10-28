@@ -51,4 +51,5 @@ Testing str2int64 out of bound values
 Testing str2uint64
 Testing str2uint64 out of bound values
 test_misc emd
+Str2DblConverter agrees with str2dbl in 140120 checks
 all done
