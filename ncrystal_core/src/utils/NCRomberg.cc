@@ -31,7 +31,7 @@ void NCrystal::Romberg::evalFuncMany(double* fvals, unsigned n, double offset, d
   double * it = &fvals[0];
   double nn = n;//only cast once
   for ( double i = 0; i < nn; ++i )
-    *(it++) = evalFunc( std::fma( delta, i, offset ) );
+    *(it++) = evalFunc( ncfma( delta, i, offset ) );
 }
 
 double NCrystal::Romberg::evalFuncManySum(unsigned n, double offset, double delta) const
@@ -39,7 +39,7 @@ double NCrystal::Romberg::evalFuncManySum(unsigned n, double offset, double delt
   double sum = 0.0;
   double nn = n;//only cast once
   for ( double i = 0; i < nn; ++i )
-    sum += evalFunc( std::fma( delta, i, offset ) );
+    sum += evalFunc( ncfma( delta, i, offset ) );
   return sum;
 }
 

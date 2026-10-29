@@ -45,23 +45,23 @@ namespace NCRYSTAL_NAMESPACE {
 
     h *= 0.5;
     const double R00 = (fvals[0] + fvals[16])*h;
-    const double R10 = std::fma( h, fvals[8], 0.5*R00 );
-    const double R11 = std::fma( (4./3.), R10, (-1./3.)*R00 );
+    const double R10 = ncfma( h, fvals[8], 0.5*R00 );
+    const double R11 = ncfma( (4./3.), R10, (-1./3.)*R00 );
     h *= 0.5;
-    const double R20 = std::fma( h, fvals[4]+fvals[12], 0.5*R10 );
-    const double R21 = std::fma( (4./3.), R20, (-1./3.)*R10 );
-    const double R22 = std::fma( (16./15.), R21, (-1./15.)*R11 );
+    const double R20 = ncfma( h, fvals[4]+fvals[12], 0.5*R10 );
+    const double R21 = ncfma( (4./3.), R20, (-1./3.)*R10 );
+    const double R22 = ncfma( (16./15.), R21, (-1./15.)*R11 );
     h *= 0.5;
-    const double R30 = std::fma( h, (fvals[2]+fvals[6])+(fvals[10]+fvals[14]), 0.5*R20 );
-    const double R31 = std::fma( (4./3.), R30, (-1./3.)*R20 );
-    const double R32 = std::fma( (16./15.), R31, (-1./15.)*R21 );
-    const double R33 = std::fma( (64./63.), R32, (-1./63.)*R22 );
+    const double R30 = ncfma( h, (fvals[2]+fvals[6])+(fvals[10]+fvals[14]), 0.5*R20 );
+    const double R31 = ncfma( (4./3.), R30, (-1./3.)*R20 );
+    const double R32 = ncfma( (16./15.), R31, (-1./15.)*R21 );
+    const double R33 = ncfma( (64./63.), R32, (-1./63.)*R22 );
     h *= 0.5;
-    const double R40 = std::fma( h, ((fvals[1]+fvals[3])+(fvals[5]+fvals[7]))+((fvals[9]+fvals[11])+(fvals[13]+fvals[15])), 0.5*R30 );
-    const double R41 = std::fma( (4./3.), R40, (-1./3.)*R30 );
-    const double R42 = std::fma( (16./15.), R41, (-1./15.)*R31 );
-    const double R43 = std::fma( (64./63.), R42, (-1./63.)*R32 );
-    const double R44 = std::fma( (256./255.), R43, (-1./255.)*R33 );
+    const double R40 = ncfma( h, ((fvals[1]+fvals[3])+(fvals[5]+fvals[7]))+((fvals[9]+fvals[11])+(fvals[13]+fvals[15])), 0.5*R30 );
+    const double R41 = ncfma( (4./3.), R40, (-1./3.)*R30 );
+    const double R42 = ncfma( (16./15.), R41, (-1./15.)*R31 );
+    const double R43 = ncfma( (64./63.), R42, (-1./63.)*R32 );
+    const double R44 = ncfma( (256./255.), R43, (-1./255.)*R33 );
 
     if (self->accept(4,R33,R44,a,b))
       return R44;
@@ -69,12 +69,12 @@ namespace NCRYSTAL_NAMESPACE {
     //R(4,4) was not enough, try R(5,5):
     const double c5 = self->evalFuncManySum(16, a+h*0.5, h);
     h *= 0.5;
-    const double R50 = std::fma( h, c5, 0.5*R40 );
-    const double R51 = std::fma( (4./3.), R50, (-1./3.)*R40 );
-    const double R52 = std::fma( (16./15.), R51, (-1./15.)*R41 );
-    const double R53 = std::fma( (64./63.), R52, (-1./63.)*R42 );
-    const double R54 = std::fma( (256./255.), R53, (-1./255.)*R43 );
-    const double R55 = std::fma( (1024./1023.), R54, (-1./1023.)*R44 );
+    const double R50 = ncfma( h, c5, 0.5*R40 );
+    const double R51 = ncfma( (4./3.), R50, (-1./3.)*R40 );
+    const double R52 = ncfma( (16./15.), R51, (-1./15.)*R41 );
+    const double R53 = ncfma( (64./63.), R52, (-1./63.)*R42 );
+    const double R54 = ncfma( (256./255.), R53, (-1./255.)*R43 );
+    const double R55 = ncfma( (1024./1023.), R54, (-1./1023.)*R44 );
 
     if (self->accept(5,R44,R55,a,b))
       return R55;
@@ -100,13 +100,13 @@ namespace NCRYSTAL_NAMESPACE {
       nj *= 2;
       double c = self->evalFuncManySum(nj, a+h, hh);
 
-      row[0] = std::fma( h, c, 0.5*row_prev[0] ); //R(i,0)
+      row[0] = ncfma( h, c, 0.5*row_prev[0] ); //R(i,0)
 
       double n_k = 1.;
       for(unsigned j = 0; j < i; ++j) {
         n_k *= 4.0;
         //extrapolate value for R(i,j):
-        row[j+1] = std::fma( n_k, row[j], -row_prev[j] ) / (n_k-1.0);
+        row[j+1] = ncfma( n_k, row[j], -row_prev[j] ) / (n_k-1.0);
       }
 
       if (self->accept(i,row_prev[i-1],row[i],a,b))

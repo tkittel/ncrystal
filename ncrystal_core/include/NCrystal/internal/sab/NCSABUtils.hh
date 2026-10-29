@@ -257,7 +257,7 @@ NCrystal::SABUtils::interpolate_loglin_fast2_NEW(double a, double fa,
     const double dl = logfb-logfa;
     const double dlf = dl*r;
     res.first = fa * flexexp(dlf);
-    res.second = std::fma( dl, r, logfa );
+    res.second = ncfma( dl, r, logfa );
   } else {
     //choose forms most numerically stable (and with smallest flexexp arg) for x
     //near b
@@ -265,7 +265,7 @@ NCrystal::SABUtils::interpolate_loglin_fast2_NEW(double a, double fa,
     const double dl = logfa-logfb;
     const double dlf = dl*s;
     res.first = fb * flexexp(dlf);
-    res.second = std::fma( dl, s, logfb );
+    res.second = ncfma( dl, s, logfb );
   }
   return res;
 }
@@ -337,14 +337,14 @@ inline double NCrystal::SABUtils::integrateAlphaInterval(double a1,double s1, do
     const double c5           = 0.0108984020095131206242317353428464539575650687  ; // = 5098/467775
     const double c6           = 0.00839377592816746255899695053134206573360012513 ; // = 5359534/638512875
     const double ysq = y*y;
-    //Horner's method with std::fma for extra reproducibility:
+    //Horner's method with ncfma for extra reproducibility:
     double p = c6;
-    p = std::fma( ysq, p, c5 );
-    p = std::fma( ysq, p, c4 );
-    p = std::fma( ysq, p, c3 );
-    p = std::fma( ysq, p, c2 );
-    p = std::fma( ysq, p, c1 );
-    return da*ps*std::fma( -ysq, p, 0.5 );
+    p = ncfma( ysq, p, c5 );
+    p = ncfma( ysq, p, c4 );
+    p = ncfma( ysq, p, c3 );
+    p = ncfma( ysq, p, c2 );
+    p = ncfma( ysq, p, c1 );
+    return da*ps*ncfma( -ysq, p, 0.5 );
   }
   //Evaluate via analytical expression or fall-back to trapezoidal integration:
   return ncmin(s1,s2)<1e-300 ? 0.5*da*ps : da*ds/std::log(s2/s1);
@@ -390,11 +390,11 @@ inline double NCrystal::SABUtils::integrateAlphaInterval_fast(double a1,double s
   const double c2           = 0.0444444444444444444444444444444444444444444444  ; // = 2/45
   const double c3           = 0.0232804232804232804232804232804232804232804233  ; // = 22/945
   const double ysq = y*y;
-  //Horner's method with std::fma for extra reproducibility:
+  //Horner's method with ncfma for extra reproducibility:
   double p = c3;
-  p = std::fma( ysq, p, c2 );
-  p = std::fma( ysq, p, c1 );
-  return da*ps*std::fma( -ysq, p, 0.5 );
+  p = ncfma( ysq, p, c2 );
+  p = ncfma( ysq, p, c1 );
+  return da*ps*ncfma( -ysq, p, 0.5 );
 }
 
 inline double NCrystal::SABUtils::sampleLogLinDist(double a, double fa, double b, double fb, double rand)

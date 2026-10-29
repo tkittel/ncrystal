@@ -25,11 +25,9 @@
 
 //ncforceinline: force-inlining, e.g. for small helpers called from
 //NCRYSTAL_FMADISPATCH_ATTR functions, so they are compiled into each dispatch
-//variant of their caller (a non-inlined helper would only get the baseline ISA,
-//and a separately dispatched one costs an ifunc call). In this case helpers
-//must obey the same rules as their callers (e.g. explicit std::fma
-//everywhere). Of course, force-inlining might have other uses outside the FMA
-//dispatching:
+//variant of their caller. In this case helpers must obey the same rules as
+//their callers (e.g. explicit ncfma everywhere).  Of course, force-inlining
+//might have uses outside the FMA dispatching:
 #if defined(__GNUC__) || defined(__clang__)
 #  define ncforceinline inline __attribute__((always_inline))
 #elif defined(_MSC_VER)

@@ -80,15 +80,15 @@ inline double NCV::detail::stirlingsSeriesSum9thOrder(double inv_n)
   constexpr double c9 = 432261921612371./514904800886784000.;
   //Horner's method with explicit for reproducibility and precision:
   double p = c9;
-  p = std::fma( inv_n, p, c8 );
-  p = std::fma( inv_n, p, c7 );
-  p = std::fma( inv_n, p, c6 );
-  p = std::fma( inv_n, p, c5 );
-  p = std::fma( inv_n, p, c4 );
-  p = std::fma( inv_n, p, c3 );
-  p = std::fma( inv_n, p, c2 );
-  p = std::fma( inv_n, p, c1 );
-  return std::fma( inv_n, p, 1.0 );
+  p = ncfma( inv_n, p, c8 );
+  p = ncfma( inv_n, p, c7 );
+  p = ncfma( inv_n, p, c6 );
+  p = ncfma( inv_n, p, c5 );
+  p = ncfma( inv_n, p, c4 );
+  p = ncfma( inv_n, p, c3 );
+  p = ncfma( inv_n, p, c2 );
+  p = ncfma( inv_n, p, c1 );
+  return ncfma( inv_n, p, 1.0 );
 }
 
 NC::VectD
@@ -190,7 +190,7 @@ NCV::detail::fillSABFromVDOS( const VDOSGn& Gn_asym,
       const double logn = std::log(n);
       const double nAsDbl = static_cast<double>(n);
       for (auto x : enumerate(x_vals) ) {
-        const double exparg = std::fma( nAsDbl,
+        const double exparg = ncfma( nAsDbl,
                                         vectAt(logx_vals,x.idx) - logn + 1.0,
                                         -x.val );
         nc_assert_always(exparg <= 708.0);

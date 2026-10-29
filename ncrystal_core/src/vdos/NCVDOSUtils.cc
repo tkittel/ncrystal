@@ -600,7 +600,7 @@ NC::VectD NC::VDOS::evalPWLSum( Span<const PWLFct> fs,
       while (end < grid.size() && gridPtr[end] <= xmax + xtol)
         ++end;
       for (std::size_t k = g; k < end; ++k)
-        outPtr[k] = std::fma( weight, y, outPtr[k] );
+        outPtr[k] = ncfma( weight, y, outPtr[k] );
     }
   }
 
@@ -821,31 +821,31 @@ double NC::VDOS::estimateSpectrumCrossing( double x0, double binwidth,
     S0 += 1.0;
     S1 += x;
     S2 += x2;
-    S3 = std::fma( x2, x, S3 );
-    S4 = std::fma( x2, x2, S4 );
+    S3 = ncfma( x2, x, S3 );
+    S4 = ncfma( x2, x2, S4 );
     T0 += y;
-    T1 = std::fma( x, y, T1 );
-    T2 = std::fma( x2, y, T2 );
+    T1 = ncfma( x, y, T1 );
+    T2 = ncfma( x2, y, T2 );
   }
   if ( S0 < 5.0 )
     return twoPointFallback(true);
   //Solve linear (matrix mult) equation
   //   [S0 S1 S2; S1 S2 S3; S2 S3 S4]*[a;b;c] = [T0;T1;T2]
   //via Cramer's rule and, with every 2x2 minor and determinant as explicit
-  //std::fma:
-  const double m00  = std::fma( S2, S4, -(S3*S3) );
-  const double m01  = std::fma( S1, S4, -(S3*S2) );
-  const double m02  = std::fma( S1, S3, -(S2*S2) );
-  const double m01T = std::fma( T1, S4, -(S3*T2) );
-  const double m02T = std::fma( T1, S3, -(S2*T2) );
-  const double m12T = std::fma( S1, T2, -(T1*S2) );
-  const double m02TT= std::fma( S2, T2, -(T1*S3) );
-  const double D  = std::fma( S2, m02,  std::fma( -S1, m01,  S0*m00 ) );
+  //ncfma:
+  const double m00  = ncfma( S2, S4, -(S3*S3) );
+  const double m01  = ncfma( S1, S4, -(S3*S2) );
+  const double m02  = ncfma( S1, S3, -(S2*S2) );
+  const double m01T = ncfma( T1, S4, -(S3*T2) );
+  const double m02T = ncfma( T1, S3, -(S2*T2) );
+  const double m12T = ncfma( S1, T2, -(T1*S2) );
+  const double m02TT= ncfma( S2, T2, -(T1*S3) );
+  const double D  = ncfma( S2, m02,  ncfma( -S1, m01,  S0*m00 ) );
   if ( !( ncabs(D) > 0.0 ) )
     return twoPointFallback(true);//determinant not >0
-  const double Da = std::fma( S2, m02T, std::fma( -S1, m01T, T0*m00 ) );
-  const double Db = std::fma( S2, m12T, std::fma( -T0, m01,  S0*m01T) );
-  const double Dc = std::fma( T0, m02,  std::fma( -S1, m12T, S0*m02TT) );
+  const double Da = ncfma( S2, m02T, ncfma( -S1, m01T, T0*m00 ) );
+  const double Db = ncfma( S2, m12T, ncfma( -T0, m01,  S0*m01T) );
+  const double Dc = ncfma( T0, m02,  ncfma( -S1, m12T, S0*m02TT) );
   const double a = Da/D, b = Db/D, c = Dc/D;
   const double target = std::log(yval) - a;//solve c*xc^2+b*xc-target=0
   double xcross;
@@ -855,7 +855,7 @@ double NC::VDOS::estimateSpectrumCrossing( double x0, double binwidth,
       return twoPointFallback(true);
     xcross = target/b;
   } else {
-    const double disc = std::fma( 4.0*c, target, b*b );
+    const double disc = ncfma( 4.0*c, target, b*b );
     if ( !(disc >= 0.0) )
       return twoPointFallback(true);
     const double sq = std::sqrt(disc);

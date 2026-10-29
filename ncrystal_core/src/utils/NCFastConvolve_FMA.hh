@@ -41,7 +41,7 @@ namespace NCRYSTAL_NAMESPACE {
     )
 
     //Pointwise complex multiply of two interleaved-[re,im,re,im,...] arrays, in
-    //place into the first (data1 *= data2). Done with std::fma+FMADISPATCH_ATTR
+    //place into the first (data1 *= data2). Done with ncfma+FMADISPATCH_ATTR
     //and without std::complex, for precision, speed, and platform independence.
     NCRYSTAL_FMADISPATCH_DECLARATOR(void,fastConvolveSpectralMultiply)
     ( double* ncrestrict data1, const double* ncrestrict data2, std::size_t n )
@@ -51,13 +51,13 @@ namespace NCRYSTAL_NAMESPACE {
       for ( std::size_t i = 0; i < n; ++i ) {
         const double a = data1[2*i], b = data1[2*i+1];
         const double c = data2[2*i], d = data2[2*i+1];
-        data1[2*i]   = std::fma( a, c, -(b*d) );
-        data1[2*i+1] = std::fma( a, d, b*c );
+        data1[2*i]   = ncfma( a, c, -(b*d) );
+        data1[2*i+1] = ncfma( a, d, b*c );
       }
     }
 
     //One stage of the FFT butterfly, applied to a run of count consecutive
-    //j-values. Again, using std::fma+FMADISPATCH and no std::complex, to be
+    //j-values. Again, using ncfma+FMADISPATCH and no std::complex, to be
     //precise, portable, and fast.
     NCRYSTAL_FMADISPATCH_DECLARATOR(void,fastConvolveButterflyRun)
     ( double* ncrestrict data_j, double* ncrestrict data_sympos,
@@ -83,8 +83,8 @@ namespace NCRYSTAL_NAMESPACE {
         const double a = data_j[0], b = data_j[1];
         const double c = wtable[0];
         const double d = ( is_forward ? wtable[1] : -wtable[1] );
-        const double jr = std::fma( a, c, -(b*d) );
-        const double ji = std::fma( a, d, b*c );
+        const double jr = ncfma( a, c, -(b*d) );
+        const double ji = ncfma( a, d, b*c );
         const double sr = data_sympos[0], si = data_sympos[1];
         data_j[0] = sr - jr;
         data_j[1] = si - ji;

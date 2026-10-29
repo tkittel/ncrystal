@@ -336,7 +336,7 @@ namespace NCRYSTAL_NAMESPACE {
     {
       for ( std::size_t i = 0; i < n; ++i ) {
         const double a = data[2*i], b = data[2*i+1];
-        out[i] = std::fma( a, a, b*b );
+        out[i] = ncfma( a, a, b*b );
       }
     }
 

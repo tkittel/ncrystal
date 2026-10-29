@@ -276,7 +276,7 @@ double NC::KSqCalc::ksq( int h, int k, int l ) const
     intsum[m_group_of_term[t]] += intpart[t];
   double acc = 0.0;
   for ( unsigned g = 0; g < m_ngroups; ++g )
-    acc = std::fma( m_factor[g], static_cast<double>( intsum[g] ), acc );
+    acc = ncfma( m_factor[g], static_cast<double>( intsum[g] ), acc );
   return acc;
 }
 
