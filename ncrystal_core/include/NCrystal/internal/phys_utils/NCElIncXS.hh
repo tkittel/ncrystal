@@ -84,7 +84,7 @@ namespace NCRYSTAL_NAMESPACE {
       CrossSect getXS() const { return CrossSect{ data.back() }; }
       CosineScatAngle sampleMu( const ElIncXS&, RNG& ) const;
     };
-    EPointAnalysis analyseEnergyPoint( NeutronEnergy ekin ) const { return { evalXSContribsCommul(ekin), ekin }; };
+    void analyseEnergyPoint( NeutronEnergy ekin, EPointAnalysis& ) const;
 
     ////////////////////////////////////////////////////////////////////////////////////
     //
@@ -127,7 +127,7 @@ namespace NCRYSTAL_NAMESPACE {
     SmallVector<PairDD,16> m_elm_data;//for exact eval, (msd,boundincohxs*scale)
     static double eval_1mexpmtdivt(double t);//safe/fast eval of (1-exp(-t))/t for t>=0.0 with >10 sign. digits
 
-    SmallVector<double,32> evalXSContribsCommul( NeutronEnergy ) const;
+    void evalXSContribsCommul( NeutronEnergy, SmallVector<double,32>& ) const;
     friend struct EPointAnalysis;
   };
 }
