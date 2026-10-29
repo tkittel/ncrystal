@@ -23,6 +23,7 @@
 
 #include "NCrystal/internal/utils/NCRect.hh"
 #include "NCrystal/internal/utils/NCSpan.hh"
+#include "NCrystal/internal/utils/NCFMA.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -99,7 +100,7 @@ namespace NCRYSTAL_NAMESPACE {
     void topOffGrid( VectD& g, std::size_t npts, double rtol = 0.1 );
 
     // Position of point i of an equidistant grid: x0+i*binWidth, but calculated
-    // with a single rounding (using an explicit std::fma). For consistency, all
+    // with a single rounding (using an explicit ncfma). For consistency, all
     // node positions of equidistant grids and piecewise linear functions must
     // be calculated with this function.
     double equidistantGridPoint( double x0, double binWidth, std::size_t i );
@@ -195,7 +196,7 @@ namespace NCRYSTAL_NAMESPACE {
     inline double equidistantGridPoint( double x0, double binWidth,
                                         std::size_t i )
     {
-      return std::fma( binWidth, static_cast<double>(i), x0 );
+      return ncfma( binWidth, static_cast<double>(i), x0 );
     }
 
     inline double PWLFct::xAt( std::size_t i ) const

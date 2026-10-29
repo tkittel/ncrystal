@@ -245,7 +245,7 @@ namespace NCRYSTAL_NAMESPACE {
           //Assuming cos(phase)*factor=sin(phase)*factor=|factor| gives us a
           //cheap upper limit on fsquared:
           real_or_imag_upper_limit
-            = std::fma( double( m_pc.atomic_pos[i].size() ),
+            = ncfma( double( m_pc.atomic_pos[i].size() ),
                         ncabs( factor ), real_or_imag_upper_limit );
         }
         //If the upper limit on fsq is below fsquarecut, we can skip already and
