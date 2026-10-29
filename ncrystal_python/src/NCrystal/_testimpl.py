@@ -191,7 +191,7 @@ def _actualtest( verbose ):
                  ( 0.04019429812207957, -0.9619814414415885 ),
                  ( 0.08983559328581395, -0.5822087429342399 ) ]
 
-    if _np is None:
+    if not _np:
         ekin,mu=[],[]
         for i in range(30):
             _ekin,_mu=nipc.sampleScatterIsotropic(wl2ekin(nipc_testwl))

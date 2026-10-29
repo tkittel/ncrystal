@@ -50,7 +50,9 @@ const_neutron_mass_evc2 = ( ( const_neutron_mass_amu * constant_dalton2eVc2 )
                             / (constant_c*constant_c) ) # [ eV/(Aa/s)^2 ]
 
 
-_as_np_array = ( lambda x : _np.asarray(x,dtype=float) ) if _np else ( lambda *a,**kwargs : _ensure_numpy() )
+def _as_np_array( x ):
+    _ensure_numpy()
+    return _np.asarray(x,dtype=float)
 def wlsq2ekin( wlsq ):
     """Neutron wavelength squared (angstrom^2) to energy (eV)"""
     if hasattr(wlsq,'__len__'):
