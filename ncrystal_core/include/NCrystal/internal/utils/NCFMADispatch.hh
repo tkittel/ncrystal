@@ -21,7 +21,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/core/NCDefs.hh"
+#include "NCrystal/internal/utils/NCFMA.hh"
 
 //Helper macros for writing a NCRYSTAL_FMADISPATCH_ATTR function that also
 //gets an MSVC/x86-only "Windows-fast" twin, dispatched to at runtime. Usable
@@ -150,19 +150,6 @@ namespace NCRYSTAL_NAMESPACE {
      } while(0)
 #else
 #  define NCRYSTAL_FMADISPATCH_WINFMA_FORWARD(name,args) do {} while(0)
-#endif
-
-//ncforceinline: force-inlining, e.g. for small helpers called from
-//NCRYSTAL_FMADISPATCH_ATTR functions, so they are compiled into each dispatch
-//variant of their caller (a non-inlined helper would only get the baseline
-//ISA, and a separately dispatched one costs an ifunc call). Helpers must obey
-//the same rules as their callers (e.g. explicit std::fma everywhere):
-#if defined(__GNUC__) || defined(__clang__)
-#  define ncforceinline inline __attribute__((always_inline))
-#elif defined(_MSC_VER)
-#  define ncforceinline __forceinline
-#else
-#  define ncforceinline inline
 #endif
 
 #endif
