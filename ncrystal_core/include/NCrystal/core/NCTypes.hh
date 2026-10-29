@@ -478,6 +478,17 @@ namespace NCRYSTAL_NAMESPACE {
   NCRYSTAL_API std::ostream& operator<<( std::ostream&, const ScatterOutcome& );
   NCRYSTAL_API std::ostream& operator<<( std::ostream&, const ScatterOutcomeIsotropic& );
 
+  struct IsoXSDescr final {
+    //Flexible standard description of smooth isotropic cross
+    //sections (refer to NCIsoXSUtils.hh for details):
+    struct Tabulation final : private MoveOnly {
+      VectD E, p, q, r;
+      double tail[5] = {0};
+    };
+    Optional<Tabulation> table;
+    VectD breakpts;
+  };
+
   //Index identifying RNG streams:
   class NCRYSTAL_API RNGStreamIndex final : public EncapsulatedValue<RNGStreamIndex,uint64_t> {
   public:
