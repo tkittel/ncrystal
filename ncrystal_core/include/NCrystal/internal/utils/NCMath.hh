@@ -23,6 +23,7 @@
 
 #include "NCrystal/core/NCTypes.hh"
 #include "NCrystal/internal/utils/NCSpan.hh"
+#include "NCrystal/internal/utils/NCFMA.hh"
 #include "NCrystal/internal/utils/NCRomberg.hh"
 #include <functional>
 
