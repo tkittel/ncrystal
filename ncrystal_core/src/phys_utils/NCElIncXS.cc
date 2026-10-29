@@ -40,11 +40,19 @@ double NC::ElIncXS::eval_1mexpmtdivt(double t)
   //safe eval of (1-exp(-t))/t for t>=0.0
   nc_assert(t>=0.0);
   if ( t < 0.01 ) {
-    //evaluate with Taylor expansion - for numerical stability (gives 10 sign. digits at t=0.01):
-    return ( 1 + t * (  -0.5 + t * 0.16666666666666666666666666666666666666666667 * ( 1.-0.25*t ) ) );
+    //Taylor expansion, sum_k (-t)^k/(k+1)!, for numerical stability. Terms up
+    //to t^6 make the truncation error (<t^7/8!=2.5e-19 at t=0.01) negligible,
+    //so there is no jump at t=0.01:
+    double p = 1.0 / 5040.0;
+    p = std::fma( t, p, -1.0 / 720.0 );
+    p = std::fma( t, p, 1.0 / 120.0 );
+    p = std::fma( t, p, -1.0 / 24.0 );
+    p = std::fma( t, p, 1.0 / 6.0 );
+    p = std::fma( t, p, -0.5 );
+    return std::fma( t, p, 1.0 );
   }
-  if ( t > 24.0 ) {
-    //limiting behaviour at t->inf (~10 significant digits after t>-ln(1e-10)~=23, no need for exp)
+  if ( t > 37.0 ) {
+    //Limiting behaviour, exact to double precision since exp(-37)<1e-16:
     return 1.0 / t;
   }
   //evaluate at intermediate t using actual formula (precision is fine without
