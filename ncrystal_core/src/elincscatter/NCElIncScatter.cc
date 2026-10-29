@@ -199,7 +199,7 @@ NC::CrossSect NC::ElIncScatter::crossSectionIsotropic( CachePtr& cp, NeutronEner
 {
   auto& cache = accessCache<CacheElInc>(cp);
   if ( cache.data.ekin != ekin )
-    cache.data = m_elincxs->analyseEnergyPoint( ekin );
+    m_elincxs->analyseEnergyPoint( ekin, cache.data );
   return cache.data.getXS();
 }
 
@@ -207,7 +207,7 @@ NC::ScatterOutcomeIsotropic NC::ElIncScatter::sampleScatterIsotropic( CachePtr& 
 {
   auto& cache = accessCache<CacheElInc>(cp);
   if ( cache.data.ekin != ekin )
-    cache.data = m_elincxs->analyseEnergyPoint( ekin );
+    m_elincxs->analyseEnergyPoint( ekin, cache.data );
   return { ekin, cache.data.sampleMu( *m_elincxs, rng ) };
 }
 
@@ -258,7 +258,7 @@ NC::ElIncScatter::evalXSAndSampleScatterIsotropic( CachePtr& cp, RNG& rng, Neutr
 {
   auto& cache = accessCache<CacheElInc>(cp);
   if ( cache.data.ekin != ekin )
-    cache.data = m_elincxs->analyseEnergyPoint( ekin );
+    m_elincxs->analyseEnergyPoint( ekin, cache.data );
   return {
     cache.data.getXS(),
     { ekin, cache.data.sampleMu( *m_elincxs, rng ) }

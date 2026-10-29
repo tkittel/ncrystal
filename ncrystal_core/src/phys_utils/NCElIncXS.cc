@@ -127,9 +127,16 @@ NC::CrossSect NC::ElIncXS::evaluate(NeutronEnergy ekin) const
   return CrossSect{ xs };
 }
 
-NC::SmallVector<double,32> NC::ElIncXS::evalXSContribsCommul( NeutronEnergy ekin ) const
+void NC::ElIncXS::analyseEnergyPoint( NeutronEnergy ekin,
+                                      EPointAnalysis& res ) const
 {
-  SmallVector<double,32> res;
+  evalXSContribsCommul( ekin, res.data );
+  res.ekin = ekin;
+}
+
+void NC::ElIncXS::evalXSContribsCommul( NeutronEnergy ekin,
+                                        SmallVector<double,32>& res ) const
+{
   res.resize( m_elm_data.size() );
   constexpr double kkk = 16.0 * kPiSq * ekin2wlsqinv(1.0);
   double e = kkk*ekin.dbl();
@@ -137,7 +144,6 @@ NC::SmallVector<double,32> NC::ElIncXS::evalXSContribsCommul( NeutronEnergy ekin
   unsigned i = 0;
   for ( auto& elmdata : m_elm_data )
     res[i++] = ( xs += elmdata.second * eval_1mexpmtdivt( elmdata.first * e ) );
-  return res;
 }
 
 void NC::ElIncXS::evaluateMany( Span<const double> ekin, Span<double> tgt) const
@@ -193,7 +199,8 @@ NC::CosineScatAngle NC::ElIncXS::sampleMu( RNG& rng, NeutronEnergy ekin )
 {
   if ( m_elm_data.size() == 1 )
     return sampleMuMonoAtomic( rng, ekin, m_elm_data.front().first );
-  auto contribs = evalXSContribsCommul(ekin);
+  SmallVector<double,32> contribs;
+  evalXSContribsCommul( ekin, contribs );
   nc_assert( contribs.size() > 1 );
   nc_assert( contribs.size() == m_elm_data.size() );
   auto choiceidx = RandIdxByWeightPicker::oneShotPick( rng, contribs );
