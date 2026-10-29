@@ -203,6 +203,14 @@ namespace NCRYSTAL_NAMESPACE {
       CrossSect crossSection(CachePtr&, NeutronEnergy, const NeutronDirection& ) const final;
       ScatterOutcome sampleScatter(CachePtr&, RNG&, NeutronEnergy, const NeutronDirection& ) const override;
 
+      //Standard description of the cross section of the process (see
+      //NCIsoXSUtils.hh). If the returned description has a table, it must agree
+      //with calls to the crossSectionIsotropic method within rounding (~ulp
+      //level), and be strictly zero outside domain(). The default
+      //implementation returns breakpts at any finite non-zero domain bounds,
+      //and no table:
+      virtual IsoXSDescr isoXSDescr() const;
+
 #ifdef NCRYSTAL_ALLOW_ABI_BREAKAGE
       bool isPureElasticScatter() const override;
       void evalManyXS( CachePtr&, const double*, const double*, const double*,
