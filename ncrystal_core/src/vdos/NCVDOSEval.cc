@@ -69,15 +69,15 @@ namespace NCRYSTAL_NAMESPACE {
         constexpr double c12 = -1382./638512875.;
         constexpr double c14 = 4./18243225.;
         const double y = x*x;
-        //Horner's method with std::fma for extra reproducibility:
+        //Horner's method with ncfma for extra reproducibility:
         double p = c14;
-        p = std::fma( y, p, c12 );
-        p = std::fma( y, p, c10 );
-        p = std::fma( y, p, c8 );
-        p = std::fma( y, p, c6 );
-        p = std::fma( y, p, c4 );
-        p = std::fma( y, p, c2 );
-        return std::fma( y, p, c0 );
+        p = ncfma( y, p, c12 );
+        p = ncfma( y, p, c10 );
+        p = ncfma( y, p, c8 );
+        p = ncfma( y, p, c6 );
+        p = ncfma( y, p, c4 );
+        p = ncfma( y, p, c2 );
+        return ncfma( y, p, c0 );
       } else {
         return x / stable_tanh(x);
       }
@@ -101,17 +101,17 @@ namespace NCRYSTAL_NAMESPACE {
         constexpr double c18 = -3617./162820783125;
         constexpr double c20 = 87734./38979295480125;
         const double y = x*x;
-        //Horner's method with std::fma for extra reproducibility:
+        //Horner's method with ncfma for extra reproducibility:
         double p = c20;
-        p = std::fma( y, p, c18 );
-        p = std::fma( y, p, c16 );
-        p = std::fma( y, p, c14 );
-        p = std::fma( y, p, c12 );
-        p = std::fma( y, p, c10 );
-        p = std::fma( y, p, c8 );
-        p = std::fma( y, p, c6 );
-        p = std::fma( y, p, c4 );
-        p = std::fma( y, p, c2 );
+        p = ncfma( y, p, c18 );
+        p = ncfma( y, p, c16 );
+        p = ncfma( y, p, c14 );
+        p = ncfma( y, p, c12 );
+        p = ncfma( y, p, c10 );
+        p = ncfma( y, p, c8 );
+        p = ncfma( y, p, c6 );
+        p = ncfma( y, p, c4 );
+        p = ncfma( y, p, c2 );
         return y*p;
       } else {
         return x*x*x / stable_tanh(x);
@@ -128,12 +128,12 @@ namespace NCRYSTAL_NAMESPACE {
         constexpr double c6 = -31./15120.;
         constexpr double c8 = 127./604800.;
         const double y = x*x;
-        //Horner's method with std::fma for extra reproducibility:
+        //Horner's method with ncfma for extra reproducibility:
         double p = c8;
-        p = std::fma( y, p, c6 );
-        p = std::fma( y, p, c4 );
-        p = std::fma( y, p, c2 );
-        return std::fma( y, p, 1.0 );
+        p = ncfma( y, p, c6 );
+        p = ncfma( y, p, c4 );
+        p = ncfma( y, p, c2 );
+        return ncfma( y, p, 1.0 );
       } else {
         return x / stable_sinh(x);
       }
@@ -195,17 +195,17 @@ void NC::VDOSEval::integrateBinsWithFunction( Fct f, TStableSum& sum ) const
   for ( unsigned ibin = 0; ibin < nbins; ++ibin ) {
     const double d0=m_density.at(ibin);
     const double d1=m_density.at(ibin+1);
-    const double e0 = std::fma( m_binwidth, static_cast<double>(ibin), m_emin );
+    const double e0 = ncfma( m_binwidth, static_cast<double>(ibin), m_emin );
     const double e1 = ( ibin+1==nbins ? m_emax
-                        : std::fma( m_binwidth, static_cast<double>(ibin+1),
+                        : ncfma( m_binwidth, static_cast<double>(ibin+1),
                                    m_emin ) );
     //In this bin, rho(E) = (E-e0)*(d1-d0)/(e1-e0) + d0 = A*E+B,
     //with A=(d1-d0)/(e1-e0), B=d0-e0 *A
     const double A = (d1-d0)*m_invbinwidth;
-    const double B = std::fma( e0, -A, d0 );
+    const double B = ncfma( e0, -A, d0 );
     //NB: Reduced from integrateRomberg33 to integrateRomberg17 since it showed
     //up in profiling:
-    double bincontrib = integrateRomberg17([&f,A,B](double e){return f(e)*std::fma(A,e,B);}, e0, e1);
+    double bincontrib = integrateRomberg17([&f,A,B](double e){return f(e)*ncfma(A,e,B);}, e0, e1);
     sum.add(bincontrib);
   }
 }
@@ -552,7 +552,7 @@ double NC::checkIsRegularVDOSGrid( const PairDD& egrid, const VectD& density, do
   const double  binwidth = emin / nbins_below_emin;
   //Explicit fma, so the result does not depend on compiler contraction (and
   //matches the new_emax of regulariseVDOSGrid):
-  const double emax_corrected = std::fma( static_cast<double>(npts-1),
+  const double emax_corrected = ncfma( static_cast<double>(npts-1),
                                           binwidth, emin );
   nc_assert( emax_corrected>0.0 );
   return emax_corrected;
@@ -693,12 +693,12 @@ std::pair<NC::VectD,NC::VectD> NC::regulariseVDOSGrid( const VectD& orig_egrid, 
   double mm = std::floor( oldEmaxMinusEminDivEmin * best.second );
   nc_assert_always ( mm <= 20000 );
   unsigned new_npts = static_cast<unsigned>( mm + 0.5 ) + 1;
-  double new_emax = std::fma( new_binwidth,
+  double new_emax = ncfma( new_binwidth,
                               static_cast<double>(new_npts - 1), emin );
   if ( new_emax < oldEmax ) {
     //Add one extra point to make sure new range encompasses old range.
     ++new_npts;
-    new_emax = std::fma( new_binwidth,
+    new_emax = ncfma( new_binwidth,
                          static_cast<double>(new_npts - 1), emin );
   }
   nc_assert( new_emax >= oldEmax);
@@ -740,7 +740,7 @@ std::pair<NC::VectD,NC::VectD> NC::regulariseVDOSGrid( const VectD& orig_egrid, 
   for ( auto ieval : ncrange(new_npts) ) {
     const double eval = ( ieval + 1 == new_npts
                           ? new_emax
-                          : std::fma( new_binwidth,
+                          : ncfma( new_binwidth,
                                       static_cast<double>(ieval++), emin ) );
     //Increment position in old grid if needed:
     while ( it != itLast && eval >= *std::next(it) )

@@ -53,9 +53,9 @@ namespace NCRYSTAL_NAMESPACE {
       nc_assert( end >= g );
       nc_assert( buffersDisjoint( out+g, end-g, gridPtr+g, end-g ) );
       for ( std::size_t k = g; k < end; ++k ) {
-        const double v = ncclamp( std::fma(slope,gridPtr[k]-xLeft,y0),
+        const double v = ncclamp( ncfma(slope,gridPtr[k]-xLeft,y0),
                                   ylo, yhi );
-        out[k] = std::fma( weight, v, out[k] );
+        out[k] = ncfma( weight, v, out[k] );
       }
     }
 

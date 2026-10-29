@@ -58,27 +58,27 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr double c13 = 1.0/6227020800.0;
       constexpr double c14 = 1.0/87178291200.0;
       double tmp = c14;
-      tmp = std::fma( x, tmp, c13 );
-      tmp = std::fma( x, tmp, c12 );
-      tmp = std::fma( x, tmp, c11 );
-      tmp = std::fma( x, tmp, c10 );
-      tmp = std::fma( x, tmp, c9 );
-      tmp = std::fma( x, tmp, c8 );
-      tmp = std::fma( x, tmp, c7 );
-      tmp = std::fma( x, tmp, c6 );
-      tmp = std::fma( x, tmp, c5 );
-      tmp = std::fma( x, tmp, c4 );
-      tmp = std::fma( x, tmp, c3 );
-      return std::fma( x, tmp, c2 );
+      tmp = ncfma( x, tmp, c13 );
+      tmp = ncfma( x, tmp, c12 );
+      tmp = ncfma( x, tmp, c11 );
+      tmp = ncfma( x, tmp, c10 );
+      tmp = ncfma( x, tmp, c9 );
+      tmp = ncfma( x, tmp, c8 );
+      tmp = ncfma( x, tmp, c7 );
+      tmp = ncfma( x, tmp, c6 );
+      tmp = ncfma( x, tmp, c5 );
+      tmp = ncfma( x, tmp, c4 );
+      tmp = ncfma( x, tmp, c3 );
+      return ncfma( x, tmp, c2 );
     }
 
     //Taylor expansion of expm1(x)=exp(x)-1. Enough terms to be fully accurate
-    //for |r|<ln2/2 and using std::fma for max portability.
+    //for |r|<ln2/2 and using ncfma for max portability.
     NCRYSTAL_FMADISPATCH_ATTR
     double expm1_taylor14( double x )
     {
       constexpr double c1 = 1.0;
-      const double tmp = std::fma( x, expm1_taylor14_p2( x ), c1 );
+      const double tmp = ncfma( x, expm1_taylor14_p2( x ), c1 );
       return x*tmp;
     }
 
@@ -116,21 +116,21 @@ namespace NCRYSTAL_NAMESPACE {
       if ( x >= 709.78271289338397 )
         return kInfinity;
       const double n = std::round( x * invln2 );
-      double r = std::fma( -n, ln2_hi, x );
-      r = std::fma( -n, ln2_lo, r );
+      double r = ncfma( -n, ln2_hi, x );
+      r = ncfma( -n, ln2_lo, r );
       const double exp_r = expm1_taylor14( r ) + 1.0;
       return std::ldexp( exp_r, static_cast<int>(n) );
     }
     if ( x <= -40.0 )
       return -1.0;
     const double n = std::round( x * invln2 );
-    double r = std::fma( -n, ln2_hi, x );
-    r = std::fma( -n, ln2_lo, r );
+    double r = ncfma( -n, ln2_hi, x );
+    r = ncfma( -n, ln2_lo, r );
     //|r| is now less than ln2/2 ~= 0.34657359028, so ok for 14th order taylor:
     const double expm1_of_r = expm1_taylor14( r );
     //static cast to int is safe since x in (-40,710):
     const double pow2n = std::ldexp( 1.0, static_cast<int>(n) );
-    return std::fma( pow2n, expm1_of_r, pow2n - 1.0 );
+    return ncfma( pow2n, expm1_of_r, pow2n - 1.0 );
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -148,19 +148,11 @@ namespace NCRYSTAL_NAMESPACE {
   //                correctly rounded results reach those values.
   //
   // erf(-x)=-erf(x) and erfc(-x)=2-erfc(x). Every multiply-add is an explicit
-  // std::fma and no plain product feeds a plain sum, so results are
+  // ncfma and no plain product feeds a plain sum, so results are
   // bit-identical on all platforms. Worst errors vs. correctly rounded values
   // (50M points incl. dense windows at all thresholds): 1ULP for erf, 2ULP for
   // erfc (normal results; subnormal erfc results within 1 step).
   //////////////////////////////////////////////////////////////////////////////
-
-  //FIXME: On targets without hardware FMA (WebAssembly has no fused
-  //multiply-add instruction at all; also pre-2013 x86 CPUs) each std::fma here
-  //becomes a libc software fma call: measured ~550ns/call in wasm (vs ~8ns
-  //with hardware FMA, ~25-35x slower than musl's erf). Possible remedy (also
-  //for all other explicit-fma code): an internal correctly rounded fma for
-  //round-to-nearest and our argument ranges, built from error-free
-  //transformations (cf. Boldo-Melquiond), verified bit-identical to hardware.
 
   namespace {
 
@@ -216,15 +208,15 @@ namespace NCRYSTAL_NAMESPACE {
     {
       const double t = x*x;
       double a = ncerf_a7;
-      a = std::fma( t, a, ncerf_a6 );
-      a = std::fma( t, a, ncerf_a5 );
-      a = std::fma( t, a, ncerf_a4 );
-      a = std::fma( t, a, ncerf_a3 );
-      a = std::fma( t, a, ncerf_a2 );
-      a = std::fma( t, a, ncerf_a1 );
-      a = std::fma( t, a, ncerf_a0 );
+      a = ncfma( t, a, ncerf_a6 );
+      a = ncfma( t, a, ncerf_a5 );
+      a = ncfma( t, a, ncerf_a4 );
+      a = ncfma( t, a, ncerf_a3 );
+      a = ncfma( t, a, ncerf_a2 );
+      a = ncfma( t, a, ncerf_a1 );
+      a = ncfma( t, a, ncerf_a0 );
       //x*(c0hi+c0lo+t*A(t)):
-      return std::fma( x, ncerf_c0hi, x * std::fma( t, a, ncerf_c0lo ) );
+      return ncfma( x, ncerf_c0hi, x * ncfma( t, a, ncerf_c0lo ) );
     }
 
     //For 1/2<=x<x0 returns v and k with erfc(x)=v*2^-k, v in ~[0.01,1]:
@@ -233,49 +225,49 @@ namespace NCRYSTAL_NAMESPACE {
     {
       //exp(-x^2) = 2^-k*(1+T), using x^2=h+l, -x^2 = -k*ln2 + r + c:
       const double h = x*x;
-      const double l = std::fma( x, x, -h );
-      const int k = static_cast<int>( std::fma( h, invln2, 0.5 ) );
+      const double l = ncfma( x, x, -h );
+      const int k = static_cast<int>( ncfma( h, invln2, 0.5 ) );
       const double kd = static_cast<double>( k );
-      const double r = std::fma( kd, ln2_hi, -h );//exact (k*ln2_hi exact)
-      const double c = std::fma( kd, ln2_lo, -l );//|c|<~2e-7
-      const double cc = std::fma( 0.5*c, c, c );//expm1(c)
+      const double r = ncfma( kd, ln2_hi, -h );//exact (k*ln2_hi exact)
+      const double c = ncfma( kd, ln2_lo, -l );//|c|<~2e-7
+      const double cc = ncfma( 0.5*c, c, c );//expm1(c)
       const double rq = r * expm1_taylor14_p2( r );
-      const double em1 = std::fma( r, rq, r );//expm1(r)
-      const double T = em1 + std::fma( cc, em1, cc );
+      const double em1 = ncfma( r, rq, r );//expm1(r)
+      const double T = em1 + ncfma( cc, em1, cc );
       //eps(x):
       double p = ncerf_p9;
-      p = std::fma( x, p, ncerf_p8 );
-      p = std::fma( x, p, ncerf_p7 );
-      p = std::fma( x, p, ncerf_p6 );
-      p = std::fma( x, p, ncerf_p5 );
-      p = std::fma( x, p, ncerf_p4 );
-      p = std::fma( x, p, ncerf_p3 );
-      p = std::fma( x, p, ncerf_p2 );
-      p = std::fma( x, p, ncerf_p1 );
-      p = std::fma( x, p, ncerf_p0 );
+      p = ncfma( x, p, ncerf_p8 );
+      p = ncfma( x, p, ncerf_p7 );
+      p = ncfma( x, p, ncerf_p6 );
+      p = ncfma( x, p, ncerf_p5 );
+      p = ncfma( x, p, ncerf_p4 );
+      p = ncfma( x, p, ncerf_p3 );
+      p = ncfma( x, p, ncerf_p2 );
+      p = ncfma( x, p, ncerf_p1 );
+      p = ncfma( x, p, ncerf_p0 );
       double q = ncerf_q10;
-      q = std::fma( x, q, ncerf_q9 );
-      q = std::fma( x, q, ncerf_q8 );
-      q = std::fma( x, q, ncerf_q7 );
-      q = std::fma( x, q, ncerf_q6 );
-      q = std::fma( x, q, ncerf_q5 );
-      q = std::fma( x, q, ncerf_q4 );
-      q = std::fma( x, q, ncerf_q3 );
-      q = std::fma( x, q, ncerf_q2 );
-      q = std::fma( x, q, ncerf_q1 );
-      q = std::fma( x, q, 1.0 );
+      q = ncfma( x, q, ncerf_q9 );
+      q = ncfma( x, q, ncerf_q8 );
+      q = ncfma( x, q, ncerf_q7 );
+      q = ncfma( x, q, ncerf_q6 );
+      q = ncfma( x, q, ncerf_q5 );
+      q = ncfma( x, q, ncerf_q4 );
+      q = ncfma( x, q, ncerf_q3 );
+      q = ncfma( x, q, ncerf_q2 );
+      q = ncfma( x, q, ncerf_q1 );
+      q = ncfma( x, q, 1.0 );
       const double eps = p / q;
-      const double W = std::fma( eps, T, eps + T );//(1+eps)(1+T)-1
+      const double W = ncfma( eps, T, eps + T );//(1+eps)(1+T)-1
       //Anchor c3/(x+c3) = y0*(1+d), via exact 2Sum s+slo=x+c3 and the exact
       //division remainder c3-s*y0:
       const double s = x + ncerf_c3;
       const double sb = s - x;
       const double slo = ( x - ( s - sb ) ) + ( ncerf_c3 - sb );
       const double y0 = ncerf_c3 / s;
-      const double d = std::fma( -slo, y0, std::fma( -s, y0, ncerf_c3 ) )
+      const double d = ncfma( -slo, y0, ncfma( -s, y0, ncerf_c3 ) )
                        * ncerf_invc3;
-      const double S = W + std::fma( W, d, d );//(1+W)(1+d)-1
-      return { std::fma( y0, S, y0 ), k };
+      const double S = W + ncfma( W, d, d );//(1+W)(1+d)-1
+      return { ncfma( y0, S, y0 ), k };
     }
   }
 
@@ -295,7 +287,7 @@ namespace NCRYSTAL_NAMESPACE {
     if ( ax >= ncerf_x1 )
       return std::copysign( 1.0, x );
     const ncerf_tail_t tl = ncerf_tail( ax );
-    return std::copysign( std::fma( -tl.v, ncerf_pow2( -tl.k ), 1.0 ), x );
+    return std::copysign( ncfma( -tl.v, ncerf_pow2( -tl.k ), 1.0 ), x );
   }
 
   NCRYSTAL_FMADISPATCH_WINFMA_DECLARE(
@@ -317,7 +309,7 @@ namespace NCRYSTAL_NAMESPACE {
       return 2.0;
     const ncerf_tail_t tl = ncerf_tail( ax );
     if ( x < 0.0 )
-      return std::fma( -tl.v, ncerf_pow2( -tl.k ), 2.0 );
+      return ncfma( -tl.v, ncerf_pow2( -tl.k ), 2.0 );
     //Scale in two steps, so only the last (into subnormals) can be inexact:
     const int k1 = tl.k / 2;
     return ( tl.v * ncerf_pow2( -k1 ) ) * ncerf_pow2( k1 - tl.k );
@@ -325,7 +317,7 @@ namespace NCRYSTAL_NAMESPACE {
 
   //////////////////////////////////////////////////////////////////////
   // The Taylor kernels behind sincos_mpi2pi2, cos_mpipi, cos_mpi2pi2 //
-  // and sin_mpi2pi2, written as explicit std::fma Horner chains.     //
+  // and sin_mpi2pi2, written as explicit ncfma Horner chains.     //
   //////////////////////////////////////////////////////////////////////
 
   namespace {
@@ -337,17 +329,17 @@ namespace NCRYSTAL_NAMESPACE {
       //cos(x) = 1 + mx2*Horner (Taylor to 22nd order, mx2=-x^2),
       //coefficients 1/(2n)!:
       double q =           8.89679139245057328674889744250246834331248809e-22;
-      q = std::fma( mx2, q, 4.1103176233121648584779906184361403746103695e-19 );
-      q = std::fma( mx2, q, 1.56192069685862264622163643500573334235194041e-16 );
-      q = std::fma( mx2, q, 4.77947733238738529743820749111754402759693765e-14 );
-      q = std::fma( mx2, q, 1.14707455977297247138516979786821056662326504e-11 );
-      q = std::fma( mx2, q, 2.08767569878680989792100903212014323125434237e-9 );
-      q = std::fma( mx2, q, 2.75573192239858906525573192239858906525573192e-7 );
-      q = std::fma( mx2, q, 2.48015873015873015873015873015873015873015873e-5 );
-      q = std::fma( mx2, q, 1.38888888888888888888888888888888888888888889e-3 );
-      q = std::fma( mx2, q, 4.16666666666666666666666666666666666666666667e-2 );
-      q = std::fma( mx2, q, 0.5 );
-      return std::fma( mx2, q, 1.0 );
+      q = ncfma( mx2, q, 4.1103176233121648584779906184361403746103695e-19 );
+      q = ncfma( mx2, q, 1.56192069685862264622163643500573334235194041e-16 );
+      q = ncfma( mx2, q, 4.77947733238738529743820749111754402759693765e-14 );
+      q = ncfma( mx2, q, 1.14707455977297247138516979786821056662326504e-11 );
+      q = ncfma( mx2, q, 2.08767569878680989792100903212014323125434237e-9 );
+      q = ncfma( mx2, q, 2.75573192239858906525573192239858906525573192e-7 );
+      q = ncfma( mx2, q, 2.48015873015873015873015873015873015873015873e-5 );
+      q = ncfma( mx2, q, 1.38888888888888888888888888888888888888888889e-3 );
+      q = ncfma( mx2, q, 4.16666666666666666666666666666666666666666667e-2 );
+      q = ncfma( mx2, q, 0.5 );
+      return ncfma( mx2, q, 1.0 );
     }
 
     ncforceinline
@@ -356,15 +348,15 @@ namespace NCRYSTAL_NAMESPACE {
       //sin(x)/x = 1 + mx2*Horner (Taylor to 19th order, mx2=-x^2),
       //coefficients 1/(2n+1)!:
       double p =           8.22063524662432971695598123687228074922073899e-18;
-      p = std::fma( mx2, p, 2.81145725434552076319894558301032001623349274e-15 );
-      p = std::fma( mx2, p, 7.64716373181981647590113198578807044415510024e-13 );
-      p = std::fma( mx2, p, 1.60590438368216145993923771701549479327257105e-10 );
-      p = std::fma( mx2, p, 2.50521083854417187750521083854417187750521084e-8 );
-      p = std::fma( mx2, p, 2.75573192239858906525573192239858906525573192e-6 );
-      p = std::fma( mx2, p, 1.98412698412698412698412698412698412698412698e-4 );
-      p = std::fma( mx2, p, 8.33333333333333333333333333333333333333333333e-3 );
-      p = std::fma( mx2, p, 1.66666666666666666666666666666666666666666667e-1 );
-      return std::fma( mx2, p, 1.0 );
+      p = ncfma( mx2, p, 2.81145725434552076319894558301032001623349274e-15 );
+      p = ncfma( mx2, p, 7.64716373181981647590113198578807044415510024e-13 );
+      p = ncfma( mx2, p, 1.60590438368216145993923771701549479327257105e-10 );
+      p = ncfma( mx2, p, 2.50521083854417187750521083854417187750521084e-8 );
+      p = ncfma( mx2, p, 2.75573192239858906525573192239858906525573192e-6 );
+      p = ncfma( mx2, p, 1.98412698412698412698412698412698412698412698e-4 );
+      p = ncfma( mx2, p, 8.33333333333333333333333333333333333333333333e-3 );
+      p = ncfma( mx2, p, 1.66666666666666666666666666666666666666666667e-1 );
+      return ncfma( mx2, p, 1.0 );
     }
   }
 
@@ -387,26 +379,26 @@ namespace NCRYSTAL_NAMESPACE {
     const double x = 0.5 * A;
     const double mx2 = -( x * x );
     double p =           7.64716373181981647590113198578807044415510024e-13;
-    p = std::fma( mx2, p, 1.60590438368216145993923771701549479327257105e-10 );
-    p = std::fma( mx2, p, 2.50521083854417187750521083854417187750521084e-8 );
-    p = std::fma( mx2, p, 2.75573192239858906525573192239858906525573192e-6 );
-    p = std::fma( mx2, p, 1.98412698412698412698412698412698412698412698e-4 );
-    p = std::fma( mx2, p, 8.33333333333333333333333333333333333333333333e-3 );
-    p = std::fma( mx2, p, 1.66666666666666666666666666666666666666666667e-1 );
-    const double s2 = x * std::fma( mx2, p, 1.0 );
+    p = ncfma( mx2, p, 1.60590438368216145993923771701549479327257105e-10 );
+    p = ncfma( mx2, p, 2.50521083854417187750521083854417187750521084e-8 );
+    p = ncfma( mx2, p, 2.75573192239858906525573192239858906525573192e-6 );
+    p = ncfma( mx2, p, 1.98412698412698412698412698412698412698412698e-4 );
+    p = ncfma( mx2, p, 8.33333333333333333333333333333333333333333333e-3 );
+    p = ncfma( mx2, p, 1.66666666666666666666666666666666666666666667e-1 );
+    const double s2 = x * ncfma( mx2, p, 1.0 );
     double q =           4.77947733238738529743820749111754402759693765e-14;
-    q = std::fma( mx2, q, 1.14707455977297247138516979786821056662326504e-11 );
-    q = std::fma( mx2, q, 2.08767569878680989792100903212014323125434237e-9 );
-    q = std::fma( mx2, q, 2.75573192239858906525573192239858906525573192e-7 );
-    q = std::fma( mx2, q, 2.48015873015873015873015873015873015873015873e-5 );
-    q = std::fma( mx2, q, 1.38888888888888888888888888888888888888888889e-3 );
-    q = std::fma( mx2, q, 4.16666666666666666666666666666666666666666667e-2 );
-    q = std::fma( mx2, q, 0.5 );
+    q = ncfma( mx2, q, 1.14707455977297247138516979786821056662326504e-11 );
+    q = ncfma( mx2, q, 2.08767569878680989792100903212014323125434237e-9 );
+    q = ncfma( mx2, q, 2.75573192239858906525573192239858906525573192e-7 );
+    q = ncfma( mx2, q, 2.48015873015873015873015873015873015873015873e-5 );
+    q = ncfma( mx2, q, 1.38888888888888888888888888888888888888888889e-3 );
+    q = ncfma( mx2, q, 4.16666666666666666666666666666666666666666667e-2 );
+    q = ncfma( mx2, q, 0.5 );
     const double c2m1 = mx2 * q;//cos(A/2)-1
     const double k = 2.0 * c2m1;
     //sin(A)=2*sin(A/2)*cos(A/2)=(k+2)*s2; cos(A)=1+k*(c2m1+2)/...:
     *sinA = ( k + 2.0 ) * s2;
-    *cosA = std::fma( k, std::fma( mx2, q, 2.0 ), 1.0 );
+    *cosA = ncfma( k, ncfma( mx2, q, 2.0 ), 1.0 );
   }
 
   NCRYSTAL_FMADISPATCH_DECLARATOR_C(double,detail_cos_mpi2pi2,cos_mpi2pi2)

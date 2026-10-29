@@ -27,7 +27,7 @@
 //NCRYSTAL_FMADISPATCH_ATTR functions, so they are compiled into each dispatch
 //variant of their caller (a non-inlined helper would only get the baseline
 //ISA, and a separately dispatched one costs an ifunc call). Helpers must obey
-//the same rules as their callers (e.g. explicit std::fma everywhere):
+//the same rules as their callers (e.g. explicit ncfma everywhere):
 #if defined(__GNUC__) || defined(__clang__)
 #  define ncforceinline inline __attribute__((always_inline))
 #elif defined(_MSC_VER)

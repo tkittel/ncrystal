@@ -31,8 +31,8 @@ namespace NCRYSTAL_NAMESPACE {
     ncforceinline
     double fillhkl_dot_fma( const Vector& a, const Vector& b )
     {
-      return std::fma( a.x(), b.x(),
-                       std::fma( a.y(), b.y(), a.z() * b.z() ) );
+      return ncfma( a.x(), b.x(),
+                       ncfma( a.y(), b.y(), a.z() * b.z() ) );
     }
   }
 
@@ -66,7 +66,7 @@ namespace NCRYSTAL_NAMESPACE {
       intsum[group_of_term[t]] += intpart[t];
     double acc = 0.0;
     for ( unsigned g = 0; g < ngroups; ++g )
-      acc = std::fma( factor[g], static_cast<double>( intsum[g] ), acc );
+      acc = ncfma( factor[g], static_cast<double>( intsum[g] ), acc );
     return acc;
   }
 
@@ -77,10 +77,10 @@ namespace NCRYSTAL_NAMESPACE {
     //Cheap |k|^2 = (rec_lat*hkl).mag2() with rec_lat given as its 9
     //row-major elements, for the loose preselection of the box loop only
     //(within rounding of the exact kernel, which has a 1e-5 slack there):
-    const double r0 = std::fma( m9[0], h, std::fma( m9[1], k, m9[2]*l ) );
-    const double r1 = std::fma( m9[3], h, std::fma( m9[4], k, m9[5]*l ) );
-    const double r2 = std::fma( m9[6], h, std::fma( m9[7], k, m9[8]*l ) );
-    return std::fma( r0, r0, std::fma( r1, r1, r2*r2 ) );
+    const double r0 = ncfma( m9[0], h, ncfma( m9[1], k, m9[2]*l ) );
+    const double r1 = ncfma( m9[3], h, ncfma( m9[4], k, m9[5]*l ) );
+    const double r2 = ncfma( m9[6], h, ncfma( m9[7], k, m9[8]*l ) );
+    return ncfma( r0, r0, ncfma( r1, r1, r2*r2 ) );
   }
 
   NCRYSTAL_FMADISPATCH_DECLARATOR_C(double,detail_fillhkl_fsq,fillhkl_fsq)
@@ -120,10 +120,10 @@ namespace NCRYSTAL_NAMESPACE {
         cpsum.add( spcp.cos );
         spsum.add( spcp.sin );
       }
-      re = std::fma( factor, cpsum.sum(), re );
-      im = std::fma( factor, spsum.sum(), im );
+      re = ncfma( factor, cpsum.sum(), re );
+      im = ncfma( factor, spsum.sum(), im );
     }
-    return std::fma( re, re, im*im );
+    return ncfma( re, re, im*im );
   }
 
 }

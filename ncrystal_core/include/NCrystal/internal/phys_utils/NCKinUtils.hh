@@ -22,6 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/core/NCTypes.hh"
+#include "NCrystal/internal/utils/NCFMA.hh"
 
 //Various utilities related to kinematics, including those related to the
 //S(alpha,beta) formalism.
@@ -110,16 +111,16 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr double c4 = 5./64.;
       constexpr double c3 = - 1./8.;
       constexpr double c2 = 1./4.;
-      //Horner's method with std::fma throughout for reproducibility (same
+      //Horner's method with ncfma throughout for reproducibility (same
       //technique as e.g. safe_xcothx in NCVDOSEval.cc):
       double p = c9;
-      p = std::fma( x, p, c8 );
-      p = std::fma( x, p, c7 );
-      p = std::fma( x, p, c6 );
-      p = std::fma( x, p, c5 );
-      p = std::fma( x, p, c4 );
-      p = std::fma( x, p, c3 );
-      p = std::fma( x, p, c2 );
+      p = ncfma( x, p, c8 );
+      p = ncfma( x, p, c7 );
+      p = ncfma( x, p, c6 );
+      p = ncfma( x, p, c5 );
+      p = ncfma( x, p, c4 );
+      p = ncfma( x, p, c3 );
+      p = ncfma( x, p, c2 );
       return beta*x*p;
     }
   }
@@ -139,7 +140,7 @@ namespace NCRYSTAL_NAMESPACE {
     const double aminus = ( detail::alphaMinusNeedsTaylor( ekin_div_kT, beta )
                             ? detail::alphaMinusTaylor( ekin_div_kT, beta )
                             : std::max(0.0, a - 2.0 * sq) );
-    //No std::fma needed in a+-2*sq: multiplication by 2 is exact, and sq (a
+    //No ncfma needed in a+-2*sq: multiplication by 2 is exact, and sq (a
     //sqrt) is far from overflowing:
     const double aplus = a + 2.0 * sq;
     nc_assert( aplus >= aminus );
@@ -203,15 +204,15 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr double c6 = 21./1048576.;
       constexpr double c7 = -33./8388608.;
       constexpr double c8 = 429./536870912.;
-      //Horner's method with std::fma throughout for reproducibility:
+      //Horner's method with ncfma throughout for reproducibility:
       double p = c8;
-      p = std::fma( x, p, c7 );
-      p = std::fma( x, p, c6 );
-      p = std::fma( x, p, c5 );
-      p = std::fma( x, p, c4 );
-      p = std::fma( x, p, c3 );
-      p = std::fma( x, p, c2 );
-      p = std::fma( x, p, c1 );
+      p = ncfma( x, p, c7 );
+      p = ncfma( x, p, c6 );
+      p = ncfma( x, p, c5 );
+      p = ncfma( x, p, c4 );
+      p = ncfma( x, p, c3 );
+      p = ncfma( x, p, c2 );
+      p = ncfma( x, p, c1 );
       return ekin_div_kT*x*p;
     }
   }
