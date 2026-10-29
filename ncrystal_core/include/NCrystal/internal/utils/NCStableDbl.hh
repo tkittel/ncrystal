@@ -22,6 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/core/NCDefs.hh"
+#include "NCrystal/internal/utils/NCFMA.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -114,7 +115,7 @@ namespace NCRYSTAL_NAMESPACE {
     nc_assert(std::isfinite(a));
     nc_assert(std::isfinite(b));
     const double p = a * b;
-    return StableDbl(p, std::fma(a, b, -p));
+    return StableDbl(p, ncfma(a, b, -p));
   }
 
   inline StableDbl StableDbl::ddAdd(StableDbl a, StableDbl b)

@@ -190,7 +190,7 @@ namespace NCRYSTAL_NAMESPACE {
   double intervalPos01(double a, double b, double relpos);
 
   //Linear interpolation, from a at t=0 to b at t=1 (a,b need not be ordered and
-  //t outside [0,1] simply extrapolates). Is inlined and uses std::fma.
+  //t outside [0,1] simply extrapolates). Is inlined and uses ncfma.
   double nclerp(double a, double b, double t);
 
   class Fct1D {
@@ -467,7 +467,7 @@ inline NCrystal::sincosval_t NCrystal::sincos_2pix( double x )
   //version which pulls out the sincos_02pi internals to fma-proof the
   //subtraction by kPi:
   const double u = x - std::floor(x);//in [0,1)
-  const double Am = std::fma( u, k2Pi, -kPi );//u*2pi-pi, in [-pi,pi]
+  const double Am = ncfma( u, k2Pi, -kPi );//u*2pi-pi, in [-pi,pi]
   const double Amabs = ncabs( Am );
   sincos_mpi2pi2( ncmin( Amabs, kPi - Amabs ), res.cos, res.sin );
   res.cos = std::copysign( res.cos, Amabs - kPiHalf );
@@ -588,7 +588,7 @@ inline double NCrystal::intervalPos(double a, double b, double relpos)
   nc_assert( std::isfinite(b) );
   nc_assert( !ncisnan(relpos) );
   nc_assert( b >= a );
-  return std::fma(relpos, b, (1.0-relpos)*a);
+  return ncfma(relpos, b, (1.0-relpos)*a);
 }
 
 inline double NCrystal::intervalPos01(double a, double b, double relpos)
@@ -599,7 +599,7 @@ inline double NCrystal::intervalPos01(double a, double b, double relpos)
   nc_assert( b >= a );
   nc_assert( 0.0 <= relpos );
   nc_assert( relpos <= 1.0 );
-  return ncclamp(std::fma(relpos, b, (1.0-relpos)*a),a,b);
+  return ncclamp(ncfma(relpos, b, (1.0-relpos)*a),a,b);
 }
 
 inline double NCrystal::nclerp(double a, double b, double t)
@@ -607,22 +607,22 @@ inline double NCrystal::nclerp(double a, double b, double t)
   nc_assert( std::isfinite(a) );
   nc_assert( std::isfinite(b) );
   nc_assert( std::isfinite(t) );
-  return std::fma( t, b - a, a );//most accurate of the forms tried, exact at t=0
+  return ncfma( t, b - a, a );//most accurate of the forms tried, exact at t=0
 }
 
 namespace NCRYSTAL_NAMESPACE {
   namespace detail {
-    //1+x/2+x^2/6+...+x^6/5040 (Horner's method with std::fma throughout for
+    //1+x/2+x^2/6+...+x^6/5040 (Horner's method with ncfma throughout for
     //reproducibility):
     inline double expm1_smallarg_poly( double x )
     {
       double p = 0.00019841269841269841269841269841269841;
-      p = std::fma( x, p, 0.00138888888888888888888888888888888889 );
-      p = std::fma( x, p, 0.00833333333333333333333333333333333333 );
-      p = std::fma( x, p, 0.04166666666666666666666666666666666667 );
-      p = std::fma( x, p, 0.16666666666666666666666666666666666667 );
-      p = std::fma( x, p, 0.5 );
-      return std::fma( x, p, 1.0 );
+      p = ncfma( x, p, 0.00138888888888888888888888888888888889 );
+      p = ncfma( x, p, 0.00833333333333333333333333333333333333 );
+      p = ncfma( x, p, 0.04166666666666666666666666666666666667 );
+      p = ncfma( x, p, 0.16666666666666666666666666666666666667 );
+      p = ncfma( x, p, 0.5 );
+      return ncfma( x, p, 1.0 );
     }
   }
 }
@@ -630,7 +630,7 @@ namespace NCRYSTAL_NAMESPACE {
 inline double NCrystal::exp_smallarg_approx( double x )
 {
   //7th order taylor expansion
-  return std::fma( x, detail::expm1_smallarg_poly( x ), 1.0 );
+  return ncfma( x, detail::expm1_smallarg_poly( x ), 1.0 );
 }
 
 inline double NCrystal::expm1_smallarg_approx( double x )
