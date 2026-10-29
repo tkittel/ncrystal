@@ -28,7 +28,7 @@
 namespace NCRYSTAL_NAMESPACE {
 
   namespace {
-    NCRYSTAL_FMADISPATCH_INLINE
+    ncforceinline
     double fillhkl_dot_fma( const Vector& a, const Vector& b )
     {
       return std::fma( a.x(), b.x(),
