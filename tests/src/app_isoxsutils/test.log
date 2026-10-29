@@ -1,0 +1,13 @@
+OK: two points (n=2)
+OK: geometric 1e-9..10 (n=300)
+OK: with 1-ulp intervals (n=120)
+OK: two points (n=2, with q)
+OK: geometric 1e-9..10 (n=300, with q)
+OK: with 1-ulp intervals (n=120, with q)
+OK: two points (n=2, with r)
+OK: geometric 1e-9..10 (n=300, with r)
+OK: with 1-ulp intervals (n=120, with r)
+OK: two points (n=2, with q, with r)
+OK: geometric 1e-9..10 (n=300, with q, with r)
+OK: with 1-ulp intervals (n=120, with q, with r)
+evalIsoXS agrees with the reference in 245100 checks
