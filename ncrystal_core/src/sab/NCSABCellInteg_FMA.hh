@@ -29,7 +29,7 @@ namespace NCRYSTAL_NAMESPACE {
   namespace SABUtils {
 
     //Shared by contribImpl and fillContribAtAlpha below; not itself
-    //fma-dispatched (no std::fma calls), so needs no #ifdef split:
+    //fma-dispatched (no ncfma calls), so needs no #ifdef split:
     inline double calc_bu_minus_bl_times_smiddle( bool is_bounded_by_both,
                                                   double dbpm,
                                                   double bu,
@@ -82,7 +82,7 @@ namespace NCRYSTAL_NAMESPACE {
       {
         NCRYSTAL_FMADISPATCH_WINFMA_FORWARD(fmaRampFill,(out,i0,i1,slope,offset));
         for ( unsigned i = i0; i < i1; ++i )
-          out[i] = std::fma( slope, static_cast<double>(i), offset );
+          out[i] = ncfma( slope, static_cast<double>(i), offset );
       }
 
       //Body of IntegrandOfA::contrib (NCSABCellInteg.cc), extracted as a free

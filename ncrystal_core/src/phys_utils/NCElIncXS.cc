@@ -44,12 +44,12 @@ double NC::ElIncXS::eval_1mexpmtdivt(double t)
     //to t^6 make the truncation error (<t^7/8!=2.5e-19 at t=0.01) negligible,
     //so there is no jump at t=0.01:
     double p = 1.0 / 5040.0;
-    p = std::fma( t, p, -1.0 / 720.0 );
-    p = std::fma( t, p, 1.0 / 120.0 );
-    p = std::fma( t, p, -1.0 / 24.0 );
-    p = std::fma( t, p, 1.0 / 6.0 );
-    p = std::fma( t, p, -0.5 );
-    return std::fma( t, p, 1.0 );
+    p = ncfma( t, p, -1.0 / 720.0 );
+    p = ncfma( t, p, 1.0 / 120.0 );
+    p = ncfma( t, p, -1.0 / 24.0 );
+    p = ncfma( t, p, 1.0 / 6.0 );
+    p = ncfma( t, p, -0.5 );
+    return ncfma( t, p, 1.0 );
   }
   if ( t > 37.0 ) {
     //Limiting behaviour, exact to double precision since exp(-37)<1e-16:
@@ -123,7 +123,7 @@ NC::CosineScatAngle NC::ElIncXS::sampleMuMonoAtomic( RNG& rng, NeutronEnergy eki
     // argument in [exp(-2a),1]. This avoids the slower expm1/log1p, with an
     // absolute error in x of ~1e-16/a<1e-14:
     const double R = rng.generate();
-    const double y = std::fma( 1.0 - R, std::exp( -2.0 * a ), R );
+    const double y = ncfma( 1.0 - R, std::exp( -2.0 * a ), R );
     return CosineScatAngle{ ncclamp( 1.0 + std::log( y ) / a, -1.0, 1.0 ) };
   }
 }

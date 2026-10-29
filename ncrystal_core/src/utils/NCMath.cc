@@ -77,7 +77,7 @@ NC::VectD NC::linspace(double start, double stop, unsigned num)
   unsigned num_minus_1 = num - 1;
   const double interval = (stop-start)/num_minus_1;
   for (unsigned i = 0; i<num_minus_1;++i)
-    v.push_back(std::fma(static_cast<double>(i),interval,start));
+    v.push_back(ncfma(static_cast<double>(i),interval,start));
   v.push_back( stop );
   return v;
 }
@@ -110,32 +110,32 @@ NC::VectD NC::powspace(double a, double b, unsigned num, double p )
   if (p == 2.0) {
     for (double i = 1.0; i < nm1; i += 1.0) {
       const double s = i * step;
-      res.push_back(std::fma(delta,ncsquare(s),a));
+      res.push_back(ncfma(delta,ncsquare(s),a));
     }
   } else if (p == 3.0) {
     for (double i = 1.0; i < nm1; i += 1.0) {
       const double s = i * step;
-      res.push_back(std::fma(delta*ncsquare(s),s,a));
+      res.push_back(ncfma(delta*ncsquare(s),s,a));
     }
   } else if (p == 4.0) {
     for (double i = 1.0; i < nm1; i += 1.0) {
       const double s = i * step;
-      res.push_back(std::fma(delta,ncsquare(ncsquare(s)),a));
+      res.push_back(ncfma(delta,ncsquare(ncsquare(s)),a));
     }
   } else if (p == 1.5) {
     for (double i = 1.0; i < nm1; i += 1.0) {
       const double s = i * step;
-      res.push_back(std::fma(delta,s * std::sqrt(s),a));
+      res.push_back(ncfma(delta,s * std::sqrt(s),a));
     }
   } else if (p == 0.5) {
     for (double i = 1.0; i < nm1; i += 1.0) {
       const double s = i * step;
-      res.push_back(std::fma(delta,std::sqrt(s),a));
+      res.push_back(ncfma(delta,std::sqrt(s),a));
     }
   } else {
     for (double i = 1.0; i < nm1; i += 1.0) {
       const double s = i * step;
-      res.push_back(std::fma(delta,std::pow(s, p),a));
+      res.push_back(ncfma(delta,std::pow(s, p),a));
     }
   }
 
@@ -381,7 +381,7 @@ double NC::stable_log( double x )
   //within a handful of ULP of x by construction, well within the 2x
   //factor Sterbenz's lemma requires for an exact FP subtraction), so no
   //separate stabilisation is needed there -- just a plain division and
-  //sum (no std::fma: the correction here has unit scale, so a plain sum
+  //sum (no ncfma: the correction here has unit scale, so a plain sum
   //is already a single rounding, unlike stable_exp's multiply-add):
   const double expy0 = std::exp(y0);
   if ( !( expy0 > 0.0 ) || !std::isfinite(expy0) )
@@ -425,8 +425,8 @@ double NC::stable_sinh( double x )
     if ( x >= 710.47586007394398 )
       return kInfinity;//sinh(x) > DBL_MAX
     const double n = std::round( x * invln2 );
-    double r = std::fma( -n, ln2_hi, x );
-    r = std::fma( -n, ln2_lo, r );
+    double r = ncfma( -n, ln2_hi, x );
+    r = ncfma( -n, ln2_lo, r );
     const double exp_r = expm1_taylor14( r ) + 1.0;
     return std::ldexp( exp_r, static_cast<int>(n) - 1 );
   } else {
@@ -869,9 +869,9 @@ NC::reducePtsByEquidistribution(Span<const double> x,
   for (std::size_t i = 0; i + 1 < n; ++i) {
     double d = w_uniform * invL;
     if (w_lin > 0.0)
-      d = std::fma(w_lin, vectAt(dlin, i), d);
+      d = ncfma(w_lin, vectAt(dlin, i), d);
     if (w_log > 0.0)
-      d = std::fma(w_log, vectAt(dlog, i), d);
+      d = ncfma(w_log, vectAt(dlog, i), d);
     csum.add(d * vectAt(width, i));
     vectAt(cum, i + 1) = csum.sum();
   }
@@ -1038,9 +1038,9 @@ NC::reducePtsByEquidistributionRobust(Span<const double> x,
   for (std::size_t i = 0; i + 1 < n; ++i) {
     double d = w_uniform * invL;
     if (w_lin > 0.0)
-      d = std::fma(w_lin, vectAt(dlin, i), d);
+      d = ncfma(w_lin, vectAt(dlin, i), d);
     if (w_log > 0.0)
-      d = std::fma(w_log, vectAt(dlog, i), d);
+      d = ncfma(w_log, vectAt(dlog, i), d);
     csum.add(d * vectAt(width, i));
     vectAt(cum, i + 1) = csum.sum();
   }

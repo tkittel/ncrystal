@@ -51,8 +51,8 @@ namespace NCRYSTAL_NAMESPACE {
       nc_assert( buffersDisjoint( cre, n, cim, n ) );
       for ( std::size_t i = 0; i < n; ++i ) {
         double a = re[i], b = im[i], c = cre[i], d = cim[i];
-        re[i] = std::fma( a, c, -(b*d) );
-        im[i] = std::fma( a, d, b*c );
+        re[i] = ncfma( a, c, -(b*d) );
+        im[i] = ncfma( a, d, b*c );
       }
     }
 

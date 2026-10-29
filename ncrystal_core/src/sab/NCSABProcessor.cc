@@ -404,8 +404,8 @@ namespace NCRYSTAL_NAMESPACE {
                 //vanish at both ends, so no kink at the band edges either.
                 //FIXME: Code duplicated with NCVDOSUtils.cc, need common NCMath
                 //util fct.
-                //Explicit std::fma for the inner Horner steps:
-                const double s = t*t*t*std::fma( t, std::fma(t,6.0,-15.0), 10.0 );
+                //Explicit ncfma for the inner Horner steps:
+                const double s = t*t*t*ncfma( t, ncfma(t,6.0,-15.0), 10.0 );
                 contrib *= s;
               }
               sum.add( contrib );
