@@ -111,8 +111,12 @@ NC::CosineScatAngle NC::ElIncXS::sampleMuMonoAtomic( RNG& rng, NeutronEnergy eki
     //
     // x(R) = log( 1 + R * ( exp(2*a)-1 ) ) / a - 1
     //
-    // Which can preferably be evaluated with expm1/log1p functions.
-    return CosineScatAngle{ ncclamp(std::log1p( rng.generate() * std::expm1(2.0*a) ) / a - 1.0,-1.0,1.0) };
+    // Or equivalently x(R) = 1 + log( R + (1-R)*exp(-2a) ) / a, with the log
+    // argument in [exp(-2a),1]. This avoids the slower expm1/log1p, with an
+    // absolute error in x of ~1e-16/a<1e-14:
+    const double R = rng.generate();
+    const double y = std::fma( 1.0 - R, std::exp( -2.0 * a ), R );
+    return CosineScatAngle{ ncclamp( 1.0 + std::log( y ) / a, -1.0, 1.0 ) };
   }
 }
 
