@@ -20,8 +20,9 @@
 ################################################################################
 
 
-"""Internal module providing optional access to numpy (as _np, which is None
-if numpy is unavailable) along with a few numpy-related helper functions"""
+"""Internal module providing optional access to numpy (as _np, which evaluates
+to False if numpy is unavailable) along with a few numpy-related helper
+functions"""
 
 __all__ = [
     '_ensure_numpy',
@@ -32,10 +33,36 @@ __all__ = [
     '_np_trapezoid',
 ]
 
-try:
-    import numpy as _np
-except ImportError:
-    _np = None
+_numpy_mod = []#loaded module (or None if unavailable), once tried
+
+class _LazyNumpy:
+    """Stand-in for the numpy module, which is only imported upon first use
+    (saving ~30ms when importing NCrystal for tasks not needing numpy). It
+    evaluates to False if numpy is unavailable. Attributes are cached on the
+    instance, so later lookups bypass __getattr__ (faster than the module)."""
+    @staticmethod
+    def _load():
+        if not _numpy_mod:
+            try:
+                import numpy
+            except ImportError:
+                numpy = None
+            _numpy_mod.append( numpy )
+        return _numpy_mod[0]
+    def __bool__( self ):
+        return _LazyNumpy._load() is not None
+    def __getattr__( self, name ):
+        m = _LazyNumpy._load()
+        if m is None:
+            if name.startswith('__'):
+                #Python's own probing (hasattr, copy, pickle) expects this:
+                raise AttributeError( name )
+            _ensure_numpy()
+        v = getattr( m, name )
+        setattr( self, name, v )
+        return v
+
+_np = _LazyNumpy()
 
 def _ensure_numpy():
     if not _np:

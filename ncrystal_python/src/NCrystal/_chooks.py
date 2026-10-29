@@ -582,7 +582,7 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
     functions['ncrystal_register_in_mem_file_data']=ncrystal_register_in_mem_file_data
 
     def _prepare_many(ekin,repeat):
-        if _np is None and repeat is not None:
+        if not _np and repeat is not None:
             raise NCBadInput('Can not use "repeat" parameter when Numpy is absent on the system')
         if repeat is None and not hasattr(ekin,'__len__'):
             return None#scalar case, array interface not triggered
@@ -595,10 +595,12 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
     _raw_xs_no = _wrap('ncrystal_crosssection_nonoriented',None,(ncrystal_process_t,_dbl,_dblp),hide=True)
     _raw_xs_no_many = _wrap('ncrystal_crosssection_nonoriented_many_sz',None,(ncrystal_process_t,_dblp,_size_t,
                                                                               _size_t,_dblp),hide=True)
-    _empty_arrayf = _np.empty(shape=(0,),dtype=float) if _np else ()
-    _empty_arrayf_2tuple = ( ( _np.empty(shape=(0,),dtype=float),
-                               _np.empty(shape=(0,),dtype=float) )
-                             if _np else ((),()) )
+    def _empty_arrayf():
+        return _np.empty(shape=(0,),dtype=float) if _np else ()
+    def _empty_arrayf_2tuple():
+        return ( ( _np.empty(shape=(0,),dtype=float),
+                   _np.empty(shape=(0,),dtype=float) )
+                 if _np else ((),()) )
 
     def ncrystal_crosssection_nonoriented(scat,ekin,repeat=None):
         many = _prepare_many(ekin,repeat)
@@ -609,7 +611,7 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
         else:
             ekin_ct,n_ekin,repeat,_ekin_nparr = many
             if repeat == 0:
-                return _empty_arrayf
+                return _empty_arrayf()
             xs, xs_ct = _create_numpy_double_array(n_ekin*repeat)
             _raw_xs_no_many(scat,ekin_ct,n_ekin,repeat,xs_ct)
             return xs
@@ -638,7 +640,7 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
             ekin_ct,n_ekin,repeat,_ekin_nparr = many
             if repeat == 0:
                 #special case which happens often in our nctool usage:
-                return _empty_arrayf_2tuple
+                return _empty_arrayf_2tuple()
             ekin_final, ekin_final_ct = _create_numpy_double_array(n_ekin*repeat)
             mu, mu_ct = _create_numpy_double_array(n_ekin*repeat)
             _raw_samplesct_iso_many(scat,ekin_ct,n_ekin,repeat,ekin_final_ct,mu_ct)
