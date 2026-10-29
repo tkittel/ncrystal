@@ -54,7 +54,7 @@ namespace NCRYSTAL_NAMESPACE {
 
 namespace NCRYSTAL_NAMESPACE {
   //|k|^2 by the FMA-dispatched kernel (a friend of KSqCalc):
-  NCRYSTAL_FMADISPATCH_INLINE
+  ncforceinline
   double detail_ksqFillHKLKernel( const KSqCalc& c, int h, int k, int l )
   {
     return NCRYSTAL_APPLY_C_NAMESPACE(detail_fillhkl_ksq)(
