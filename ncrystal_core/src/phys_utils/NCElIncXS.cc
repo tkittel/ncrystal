@@ -31,6 +31,10 @@ NC::ElIncXS::ElIncXS( const VectD& elm_msd,
   set( elm_msd, elm_bixs, elm_scale );
 }
 
+//FIXME: Revisit the libm usage (std::exp/std::log here and in
+//sampleMuMonoAtomic) for platform reproducibility: stable_expm1 etc. are slower
+//(especially in wasm without fast fma), the NCMath.hh approximations too. Maybe
+//tabulate (1-exp(-t))/t, e.g. with a spline from NCSpline.hh.
 double NC::ElIncXS::eval_1mexpmtdivt(double t)
 {
   //safe eval of (1-exp(-t))/t for t>=0.0
@@ -43,11 +47,9 @@ double NC::ElIncXS::eval_1mexpmtdivt(double t)
     //limiting behaviour at t->inf (~10 significant digits after t>-ln(1e-10)~=23, no need for exp)
     return 1.0 / t;
   }
-  //evaluate at intermediate t using actual formula (in principle no need for
-  //std::expm1 from C++11 for reasons of precision since t>0.01, but it seems to
-  //be significantly faster):
-  t = -t;
-  return std::expm1(t) / t;
+  //evaluate at intermediate t using actual formula (precision is fine without
+  //std::expm1 since t>0.01, and std::exp is typically faster):
+  return ( 1.0 - std::exp( -t ) ) / t;
 }
 
 NC::CrossSect NC::ElIncXS::evaluateMonoAtomic(NeutronEnergy ekin, double meanSqDisp, SigmaBound bound_incoh_xs)
@@ -109,8 +111,12 @@ NC::CosineScatAngle NC::ElIncXS::sampleMuMonoAtomic( RNG& rng, NeutronEnergy eki
     //
     // x(R) = log( 1 + R * ( exp(2*a)-1 ) ) / a - 1
     //
-    // Which can preferably be evaluated with expm1/log1p functions.
-    return CosineScatAngle{ ncclamp(std::log1p( rng.generate() * std::expm1(2.0*a) ) / a - 1.0,-1.0,1.0) };
+    // Or equivalently x(R) = 1 + log( R + (1-R)*exp(-2a) ) / a, with the log
+    // argument in [exp(-2a),1]. This avoids the slower expm1/log1p, with an
+    // absolute error in x of ~1e-16/a<1e-14:
+    const double R = rng.generate();
+    const double y = std::fma( 1.0 - R, std::exp( -2.0 * a ), R );
+    return CosineScatAngle{ ncclamp( 1.0 + std::log( y ) / a, -1.0, 1.0 ) };
   }
 }
 
