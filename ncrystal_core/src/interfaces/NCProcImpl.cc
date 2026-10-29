@@ -36,6 +36,18 @@ NC::ScatterOutcome NCPI::ScatterIsotropicMat::sampleScatter( CachePtr& cp,
   return { outcome_isotropic.ekin, outdir };
 }
 
+NC::IsoXSDescr NCPI::ScatterIsotropicMat::isoXSDescr() const
+{
+  IsoXSDescr res;
+  const auto d = domain();
+  if ( d.isNull() )
+    return res;
+  for ( auto e : { d.elow.dbl(), d.ehigh.dbl() } )
+    if ( e > 0.0 && std::isfinite( e ) )
+      res.breakpts.push_back( e );
+  return res;
+}
+
 NC::CrossSect NCPI::ScatterAnisotropicMat::crossSectionIsotropic( CachePtr&, NeutronEnergy ) const
 {
   NCRYSTAL_THROW(LogicError,"Process::crossSectionIsotropic can only be called for isotropic materials.");

@@ -36,6 +36,51 @@ namespace {
     }
   };
 
+  //Isotropic process with a configurable domain, keeping the default
+  //isoXSDescr():
+  class MyIsoScatDomain final : public NC::ProcImpl::ScatterIsotropicMat {
+  public:
+    MyIsoScatDomain( NC::EnergyDomain d ) : m_d( d ) {}
+    const char* name() const noexcept final { return "MyIsoScatDomain"; }
+    NC::EnergyDomain domain() const noexcept final { return m_d; }
+    NC::CrossSect crossSectionIsotropic(NC::CachePtr&, NC::NeutronEnergy ) const final
+    {
+      return NC::CrossSect{1.0};
+    }
+    NC::ScatterOutcomeIsotropic sampleScatterIsotropic(NC::CachePtr&, NC::RNG&, NC::NeutronEnergy ekin ) const final
+    {
+      return { ekin, NC::CosineScatAngle{0.5} };
+    }
+  private:
+    NC::EnergyDomain m_d;
+  };
+
+  //Isotropic process overriding isoXSDescr() with a table (xs = 2 barn):
+  class MyIsoScatTabulated final : public NC::ProcImpl::ScatterIsotropicMat {
+  public:
+    const char* name() const noexcept final { return "MyIsoScatTabulated"; }
+    NC::CrossSect crossSectionIsotropic(NC::CachePtr&, NC::NeutronEnergy ) const final
+    {
+      return NC::CrossSect{2.0};
+    }
+    NC::ScatterOutcomeIsotropic sampleScatterIsotropic(NC::CachePtr&, NC::RNG&, NC::NeutronEnergy ekin ) const final
+    {
+      return { ekin, NC::CosineScatAngle{0.5} };
+    }
+    NC::IsoXSDescr isoXSDescr() const override
+    {
+      NC::IsoXSDescr d;
+      d.breakpts = { 0.5 };
+      NC::IsoXSDescr::Tabulation t;
+      t.E = { 1.0, 2.0 };
+      t.p = { 2.0, 2.0, 0.0, 0.0 };//e*xs = 2*e = 2 + 2*u on [1,2]
+      t.tail[1] = 2.0;
+      t.tail[3] = 2.0;
+      d.table = std::move( t );
+      return d;
+    }
+  };
+
   class MyAnisoScat final : public NC::ProcImpl::ScatterAnisotropicMat {
   public:
     const char* name() const noexcept final { return "MyAnisoScat"; }
@@ -72,5 +117,35 @@ int main() {
   (void)std::make_shared<NC::ProcImpl::ProcComposition>();
   (void)std::make_shared<NC::ProcImpl::NullScatter>();
   (void)std::make_shared<NC::ProcImpl::NullAbsorption>();
+
+  //Default isoXSDescr(): breakpts at the finite, non-zero domain bounds, no table:
+  {
+    using NC::NeutronEnergy;
+    auto check = []( NC::EnergyDomain d, const NC::VectD& expected )
+    {
+      MyIsoScatDomain p( d );
+      const NC::ProcImpl::ScatterIsotropicMat& base = p;
+      NC::IsoXSDescr x = base.isoXSDescr();
+      nc_assert_always( x.breakpts == expected );
+      nc_assert_always( !x.table.has_value() );
+    };
+    check( { NeutronEnergy{0.0}, NeutronEnergy{NC::kInfinity} }, {} );
+    check( { NeutronEnergy{1e-3}, NeutronEnergy{2.0} }, { 1e-3, 2.0 } );
+    check( { NeutronEnergy{0.0}, NeutronEnergy{2.0} }, { 2.0 } );
+    check( { NeutronEnergy{1e-3}, NeutronEnergy{NC::kInfinity} }, { 1e-3 } );
+    check( NC::EnergyDomain::null(), {} );
+    nc_assert_always( MyIsoScat().isoXSDescr().breakpts.empty() );
+  }
+  //An override is returned intact through the base class:
+  {
+    MyIsoScatTabulated p;
+    const NC::ProcImpl::ScatterIsotropicMat& base = p;
+    NC::IsoXSDescr x = base.isoXSDescr();
+    nc_assert_always( ( x.breakpts == NC::VectD{ 0.5 } ) );
+    nc_assert_always( x.table.has_value() );
+    const auto& t = x.table.value();
+    nc_assert_always( ( t.E == NC::VectD{ 1.0, 2.0 } ) && t.p.size() == 4 );
+    nc_assert_always( t.tail[1] == 2.0 && t.tail[3] == 2.0 );
+  }
 
 }
