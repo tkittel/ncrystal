@@ -42,7 +42,7 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Taylor expansion of (expm1(x)-x)/x^2, with the terms of expm1_taylor14
     //below (which is expm1(x) = x*(1+x*expm1_taylor14_p2(x))):
-    NCRYSTAL_FMADISPATCH_INLINE double expm1_taylor14_p2( double x )
+    ncforceinline double expm1_taylor14_p2( double x )
     {
       constexpr double c2 = 1.0/2.0;
       constexpr double c3 = 1.0/6.0;
@@ -203,7 +203,7 @@ namespace NCRYSTAL_NAMESPACE {
     //End of generated block.
 
     //2^m for -1022<=m<=1023, from its bit pattern:
-    NCRYSTAL_FMADISPATCH_INLINE double ncerf_pow2( int m )
+    ncforceinline double ncerf_pow2( int m )
     {
       const std::uint64_t b = static_cast<std::uint64_t>( m + 1023 ) << 52;
       double r;
@@ -212,7 +212,7 @@ namespace NCRYSTAL_NAMESPACE {
     }
 
     //erf(x) for |x|<1/2 (monotonic, single final rounding):
-    NCRYSTAL_FMADISPATCH_INLINE double ncerf_small( double x )
+    ncforceinline double ncerf_small( double x )
     {
       const double t = x*x;
       double a = ncerf_a7;
@@ -229,7 +229,7 @@ namespace NCRYSTAL_NAMESPACE {
 
     //For 1/2<=x<x0 returns v and k with erfc(x)=v*2^-k, v in ~[0.01,1]:
     struct ncerf_tail_t { double v; int k; };
-    NCRYSTAL_FMADISPATCH_INLINE ncerf_tail_t ncerf_tail( double x )
+    ncforceinline ncerf_tail_t ncerf_tail( double x )
     {
       //exp(-x^2) = 2^-k*(1+T), using x^2=h+l, -x^2 = -k*ln2 + r + c:
       const double h = x*x;
@@ -331,7 +331,7 @@ namespace NCRYSTAL_NAMESPACE {
   namespace {
 
 
-    NCRYSTAL_FMADISPATCH_INLINE
+    ncforceinline
     double trig_cos22_from_mx2( double mx2 )
     {
       //cos(x) = 1 + mx2*Horner (Taylor to 22nd order, mx2=-x^2),
@@ -350,7 +350,7 @@ namespace NCRYSTAL_NAMESPACE {
       return std::fma( mx2, q, 1.0 );
     }
 
-    NCRYSTAL_FMADISPATCH_INLINE
+    ncforceinline
     double trig_sin19_over_x_from_mx2( double mx2 )
     {
       //sin(x)/x = 1 + mx2*Horner (Taylor to 19th order, mx2=-x^2),
