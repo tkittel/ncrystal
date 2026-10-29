@@ -48,7 +48,8 @@ namespace {
 
   std::uint64_t g_ntrials = 0;
 
-  void checkOne( const VectD& x, const NC::LogGuideTable* pg, double t )
+  void checkOne( const VectD& x, const NC::LogGuideTable* pg,
+                 const NC::LogGuideTable* pgfine, double t )
   {
     const auto fullLo = static_cast<std::size_t>(
       std::lower_bound( x.begin(), x.end(), t ) - x.begin() );
@@ -63,6 +64,12 @@ namespace {
     if ( pg ) {
       REQUIRE( pg->lowerBoundIdx( x.data(), x.size(), t ) == fullLo );
       REQUIRE( pg->upperBoundIdx( x.data(), x.size(), t ) == fullUp );
+      REQUIRE( pg->upperBoundIdxScan( x.data(), x.size(), t ) == fullUp );
+    }
+    if ( pgfine ) {
+      REQUIRE( pgfine->lowerBoundIdx( x.data(), x.size(), t ) == fullLo );
+      REQUIRE( pgfine->upperBoundIdx( x.data(), x.size(), t ) == fullUp );
+      REQUIRE( pgfine->upperBoundIdxScan( x.data(), x.size(), t ) == fullUp );
     }
     ++g_ntrials;
   }
@@ -70,29 +77,32 @@ namespace {
   void stressGrid( const char* label, const VectD& x )
   {
     REQUIRE( !x.empty() );
-    NC::Optional<NC::LogGuideTable> opt_pg;
-    if ( x.front() > 0.0 && std::isfinite( x.back() ) )
+    NC::Optional<NC::LogGuideTable> opt_pg, opt_pgfine;
+    if ( x.front() > 0.0 && std::isfinite( x.back() ) ) {
       opt_pg.emplace( x.data(), x.size() );
+      opt_pgfine.emplace( x.data(), x.size(), 16 );
+    }
     const NC::LogGuideTable* pg = opt_pg.has_value() ? &opt_pg.value() : nullptr;
+    const NC::LogGuideTable* pgfine = opt_pgfine.has_value() ? &opt_pgfine.value() : nullptr;
     for ( auto v : x ) {
-      checkOne( x, pg, v );
-      checkOne( x, pg, std::nextafter( v, -kInf ) );
-      checkOne( x, pg, std::nextafter( v, kInf ) );
+      checkOne( x, pg, pgfine, v );
+      checkOne( x, pg, pgfine, std::nextafter( v, -kInf ) );
+      checkOne( x, pg, pgfine, std::nextafter( v, kInf ) );
     }
     for ( auto i : ncrange(std::size_t(1),x.size()) )
-      checkOne( x, pg, 0.5*(x[i-1]+x[i]) );
+      checkOne( x, pg, pgfine, 0.5*(x[i-1]+x[i]) );
     //Out-of-range queries (below/above the grid) are well-defined for
     //std::lower_bound/upper_bound too (0 or n respectively), so check them:
-    checkOne( x, pg, x.front() - 1.0 );
-    checkOne( x, pg, x.back() + 1.0 );
+    checkOne( x, pg, pgfine, x.front() - 1.0 );
+    checkOne( x, pg, pgfine, x.back() + 1.0 );
     for ( double t : { 0.0, -0.0, kInf, -kInf,
                        std::numeric_limits<double>::denorm_min() } )
-      checkOne( x, pg, t );
+      checkOne( x, pg, pgfine, t );
 
     auto rng = NC::getRNG();
     const double span = x.back() - x.front();
     for ( unsigned i = 0; i < 3000; ++i )
-      checkOne( x, pg, x.front() + rng->generate()*span );
+      checkOne( x, pg, pgfine, x.front() + rng->generate()*span );
     std::cout << "OK: " << label << " (n=" << x.size() << ( pg ? ", incl. LogGuideTable" : "" ) << ")" << std::endl;
   }
 

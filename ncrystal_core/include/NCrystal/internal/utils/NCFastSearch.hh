@@ -77,12 +77,19 @@ namespace NCRYSTAL_NAMESPACE {
   //fastLowerBoundIdx/fastUpperBoundIdx, also outside the array range. The
   //array is passed to the search functions, and must be the one the table was
   //built from.
+  //
+  //The table has at most ~bucketsPerPoint steps per array element. Within a
+  //step, upperBoundIdx does a binary search, while upperBoundIdxScan scans
+  //forward from the step's first element: faster when the steps are finer
+  //than most array intervals (e.g. bucketsPerPoint=8), and still correct
+  //(just slower) where elements cluster.
   class LogGuideTable final {
   public:
     LogGuideTable() = default;
-    LogGuideTable( const double* x, std::size_t n );
+    LogGuideTable( const double* x, std::size_t n, unsigned bucketsPerPoint = 4 );
     std::size_t lowerBoundIdx( const double* x, std::size_t n, double val ) const ncnoexceptndebug;
     std::size_t upperBoundIdx( const double* x, std::size_t n, double val ) const ncnoexceptndebug;
+    std::size_t upperBoundIdxScan( const double* x, std::size_t n, double val ) const ncnoexceptndebug;
   private:
     std::vector<std::uint32_t> m_guide;
     std::uint64_t m_base = 0;
@@ -134,7 +141,8 @@ inline std::size_t NCrystal::fastUpperBoundIdx( const double* a, std::size_t n,
 }
 
 inline NCrystal::LogGuideTable::LogGuideTable( const double* x,
-                                                       std::size_t n )
+                                                       std::size_t n,
+                                                       unsigned bucketsPerPoint )
 {
   static_assert( sizeof(double) == sizeof(std::uint64_t), "" );
   static_assert( std::numeric_limits<double>::is_iec559, "" );
@@ -142,11 +150,14 @@ inline NCrystal::LogGuideTable::LogGuideTable( const double* x,
   nc_assert_always( n >= 1 && n < std::numeric_limits<std::uint32_t>::max() );
   nc_assert_always( x[0] > 0.0 && std::isfinite( x[n-1] ) );
   nc_assert_always( std::is_sorted( x, x + n ) );
+  nc_assert_always( bucketsPerPoint >= 1 && bucketsPerPoint <= 1024 );
 #endif
   m_base = bits( x[0] );
   const std::uint64_t range = bits( x[n-1] ) - m_base;
-  //Smallest power-of-two bucket width giving at most ~4 buckets per point:
-  while ( ( range >> m_shift ) >= 4 * static_cast<std::uint64_t>( n ) )
+  //Smallest power-of-two bucket width giving at most ~bucketsPerPoint buckets
+  //per point:
+  while ( ( range >> m_shift ) >= ( static_cast<std::uint64_t>( bucketsPerPoint )
+                                    * static_cast<std::uint64_t>( n ) ) )
     ++m_shift;
   const std::size_t nbuckets = static_cast<std::size_t>( range >> m_shift ) + 1;
   m_guide.reserve( nbuckets + 1 );
@@ -188,6 +199,24 @@ inline std::size_t NCrystal::LogGuideTable::upperBoundIdx( const double* x,
   const std::size_t lo = m_guide[b];
   const std::size_t hi = m_guide[b+1];
   return lo + ( hi > lo ? fastUpperBoundIdx( x + lo, hi - lo, val ) : 0 );
+}
+
+inline std::size_t NCrystal::LogGuideTable::upperBoundIdxScan( const double* x,
+                                                                   std::size_t n,
+                                                                   double val ) const ncnoexceptndebug
+{
+  nc_assert( !m_guide.empty() );
+  if ( !( val > x[0] && val < x[n-1] ) )
+    return fastUpperBoundIdx( x, n, val );
+  //Elements before m_guide[b] are below val, and x[n-1] is above it, so the
+  //scan stops before reaching the end of the array:
+  const std::size_t b = static_cast<std::size_t>( ( bits( val ) - m_base ) >> m_shift );
+  nc_assert( b + 1 < m_guide.size() );
+  std::size_t i = m_guide[b];
+  while ( !( val < x[i] ) )
+    ++i;
+  nc_assert( i < n );
+  return i;
 }
 
 #undef NCRYSTAL_UNPREDICTABLE
