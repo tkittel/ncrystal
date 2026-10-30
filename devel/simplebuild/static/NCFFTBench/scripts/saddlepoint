@@ -1,0 +1,137 @@
+#!/usr/bin/env python3
+
+################################################################################
+##                                                                            ##
+##  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   ##
+##                                                                            ##
+##  Copyright 2015-2026 NCrystal developers                                   ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+# FFTBENCH TEMPORARY: saddlepoint approximation of Sjolander's G_n (Al,
+# 293.15K) vs. NCrystal's G_n at its own grid points (accurate to ~1e-7 there,
+# cf. the harmonic benchmark). With K1(s) = ln Int G1(beta) e^{s beta} dbeta
+# (cumulants add under convolution, so G_n has K_n = n K1):
+#   G_n(beta) ~ exp(n K1(s) - s beta) / sqrt(2 pi n K1''(s)),  n K1'(s) = beta,
+# optionally times the 2nd-order factor 1 + (l4/8 - 5 l3^2/24)/n (l3, l4 the
+# standardised 3rd/4th cumulants at s), optionally renormalised. K1 and its
+# derivatives come from 6-point Gauss-Legendre on each segment of NCrystal's
+# piecewise-linear G1. Usage: saddlepoint [quick].
+
+import math
+import sys
+
+import NCrystalDev as NC
+import numpy as np
+from NCrystalDev.constants import constant_boltzmann
+from NCrystalDev.vdos import extractGn
+
+
+class SaddlePoint:
+    def __init__( self, b1, g1 ):
+        xg, wg = np.polynomial.legendre.leggauss( 6 )
+        h = np.diff( b1 )
+        mid = 0.5 * ( b1[1:] + b1[:-1] )
+        self.x = ( mid[:, None] + 0.5 * h[:, None] * xg[None, :] ).ravel()
+        self.w = ( ( 0.5 * h[:, None] * wg[None, :] ).ravel()
+                   * np.interp( self.x, b1, g1 ) )
+        self.bmin, self.bmax = b1[0], b1[-1]
+
+    def cumulants( self, s ):
+        #K1(s), K1', K1'', K1''', K1'''' (log-sum-exp stabilised):
+        ref = s * ( self.bmax if s > 0 else self.bmin )
+        e = self.w * np.exp( s * self.x - ref )
+        m0 = e.sum()
+        m1 = ( e * self.x ).sum() / m0
+        d = self.x - m1
+        c2 = ( e * d * d ).sum() / m0
+        c3 = ( e * d**3 ).sum() / m0
+        c4 = ( e * d**4 ).sum() / m0
+        return math.log( m0 ) + ref, m1, c2, c3, c4 - 3 * c2 * c2
+
+    def solve( self, n, beta ):
+        #n K1'(s) = beta (K1' increasing): bracketing + safeguarded Newton
+        lo, hi = -1.0, 1.0
+        while n * self.cumulants( lo )[1] > beta:
+            lo *= 2
+        while n * self.cumulants( hi )[1] < beta:
+            hi *= 2
+        s = 0.0 if lo < 0.0 < hi else 0.5 * ( lo + hi )
+        for _ in range( 200 ):
+            _, k1, k2, _, _ = self.cumulants( s )
+            f = n * k1 - beta
+            if f > 0:
+                hi = s
+            else:
+                lo = s
+            snew = s - f / ( n * k2 )
+            if not ( lo < snew < hi ):
+                snew = 0.5 * ( lo + hi )
+            if abs( snew - s ) < 1e-14 * max( 1.0, abs( s ) ):
+                return snew
+            s = snew
+        return s
+
+    def gn( self, n, beta, corr ):
+        out = np.empty( beta.size )
+        for i, b in enumerate( beta ):
+            s = self.solve( n, b )
+            k0, _, k2, k3, k4 = self.cumulants( s )
+            v = math.exp( n * k0 - s * b ) / math.sqrt( 2 * math.pi * n * k2 )
+            if corr:
+                l3, l4 = k3 / k2**1.5, k4 / k2**2
+                v *= 1.0 + ( l4 / 8 - 5 * l3 * l3 / 24 ) / n
+            out[i] = v
+        return out
+
+def main():
+    quick = ( sys.argv[1:] == ['quick'] )
+    info = NC.createInfo( 'stdlib::Al_sg225.ncmat;temp=293.15K' )
+    di = info.dyninfos[0]
+    T, m = di.temperature, di.atomData.averageMassAMU()
+    kT = constant_boltzmann * T
+    def Gn( n ):
+        e, g = extractGn( di, n, m, T, 1.0 )
+        return np.asarray( e ) / kT, np.asarray( g ) * kT
+    b1, g1 = Gn( 1 )
+    sp = SaddlePoint( b1, g1 )
+    print(f'Al 293.15K, G1 support |beta|<={sp.bmax:.4f}. Max rel. errors of'
+          ' saddlepoint G_n at (up to 150) NCrystal G_n nodes with G_n >='
+          ' 1e-2 / 1e-6 / 1e-12 of max:')
+    print('    n  plain                      2nd-order                 '
+          '2nd-order+renormalised')
+    for n in ( (8, 30) if quick else (4, 8, 15, 30, 60, 100) ):
+        bn, g = Gn( n )
+        keep = np.nonzero( ( bn > 0.999 * n * sp.bmin )
+                           & ( bn < 0.999 * n * sp.bmax ) & ( g > 0 ) )[0]
+        keep = keep[ :: max( 1, keep.size // 150 ) ]
+        bk, gk = bn[keep], g[keep]
+        #Renormalisation: unit integral on the full node grid (fine enough):
+        full = np.nonzero( ( bn > 0.999 * n * sp.bmin )
+                           & ( bn < 0.999 * n * sp.bmax ) )[0]
+        full = full[ :: max( 1, full.size // 600 ) ]
+        norm = np.trapezoid( sp.gn( n, bn[full], True ), bn[full] )
+        out = [ sp.gn( n, bk, False ), sp.gn( n, bk, True ) ]
+        out.append( out[1] / norm )
+        txt = []
+        for F in out:
+            errs = [ np.abs( F[sel] / gk[sel] - 1 ).max()
+                     for sel in ( gk >= thr * g.max()
+                                  for thr in ( 1e-2, 1e-6, 1e-12 ) ) ]
+            txt.append( ' '.join( f'{e:.1e}' for e in errs ) )
+        print(f'  {n:3d}  ' + '  |  '.join( txt ), flush = True )
+
+if __name__ == '__main__':
+    main()
