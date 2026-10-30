@@ -1,0 +1,152 @@
+#!/usr/bin/env python3
+
+################################################################################
+##                                                                            ##
+##  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   ##
+##                                                                            ##
+##  Copyright 2015-2026 NCrystal developers                                   ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+# FFTBENCH TEMPORARY: accuracy and speed of the candidate convolution schemes
+# in math_utils (["mathutils","convolve",...] query) vs. exact results:
+# Gaussian*Gaussian, Gaussian*Laplace (kink), and a narrow Lorentzian-like
+# input (the Liquids diffusion-law regime) on a wide smooth function, for
+# uniform and non-uniform grids of varying spacing. Usage: convolve [quick].
+
+import math
+import sys
+
+import numpy as np
+from NCrystalDev.misc import evaluate_query
+from scipy.special import erfc
+
+SCHEMES = ('direct', 'directswap', 'exactlin', 'fft')
+
+def convolve( xf, f, xg, g, z, scheme, step = 0.0 ):
+    #directswap: trapezoid over the xg nodes instead (f interpolated)
+    if scheme == 'directswap':
+        return convolve( xg, g, xf, f, z, 'direct' )
+    r = evaluate_query( ['mathutils', 'convolve', xf, f, xg, g, z,
+                         f'scheme={scheme}', f'step={step}'],
+                        huge_arrays = True )
+    return r['h'], r['cpu_seconds']
+
+def gauss( x, s ):
+    return np.exp( -0.5 * ( x / s )**2 ) / ( s * math.sqrt( 2 * math.pi ) )
+
+def laplace( x, lam ):
+    return 0.5 * lam * np.exp( -lam * np.abs( x ) )
+
+def gauss_laplace( z, s, lam ):
+    a, r2 = lam * s * s, s * math.sqrt( 2.0 )
+    return 0.25 * lam * ( np.exp( 0.5 * (lam*s)**2 - lam*z ) * erfc( (a-z)/r2 )
+                          + np.exp( 0.5 * (lam*s)**2 + lam*z ) * erfc( (a+z)/r2 ) )
+
+def lorentz( x, gam ):
+    return gam / ( math.pi * ( x*x + gam*gam ) )
+
+def voigt_ref( z, s, gam ):
+    #Gaussian*Lorentzian via a very fine direct quadrature in the Gaussian
+    #variable (reference only):
+    u = np.linspace( -12*s, 12*s, 200001 )
+    w = gauss( u, s ) * ( u[1] - u[0] )
+    return np.array( [ np.dot( w, lorentz( zz - u, gam ) ) for zz in z ] )
+
+def grid( lo, hi, d, nonuniform ):
+    n = round( ( hi - lo ) / d ) + 1
+    x = np.linspace( lo, hi, n )
+    if nonuniform:
+        #Smoothly varying spacing (ratio ~3 between finest and coarsest):
+        u = np.linspace( -1.0, 1.0, n )
+        x = 0.5*(lo+hi) + 0.5*(hi-lo) * ( u + 0.4 * u**3 ) / 1.4
+    return x
+
+def errs( h, exact ):
+    sel = exact >= 1e-8 * exact.max()
+    core = exact >= 1e-3 * exact.max()
+    rel = np.abs( h / np.where( sel, exact, 1.0 ) - 1.0 )
+    return rel[sel].max(), rel[core].max()
+
+def bench_accuracy( quick ):
+    #Output grid offset to avoid accidental alignment with the input nodes
+    #(which hides the interpolation error of g):
+    z = np.linspace( -6.0, 6.0, 801 ) + 1e-3 * math.pi
+    cases = []
+    #(name, f(x) and its range, g(x) and its range, exact(z))
+    cases.append( ( 'Gauss(1)*Gauss(0.5)', lambda x : gauss(x,1.0), 9.0,
+                    lambda x : gauss(x,0.5), 5.0,
+                    gauss( z, math.sqrt(1.25) ) ) )
+    cases.append( ( 'Gauss(1)*Laplace(2)', lambda x : gauss(x,1.0), 9.0,
+                    lambda x : laplace(x,2.0), 15.0,
+                    gauss_laplace( z, 1.0, 2.0 ) ) )
+    #Narrow Lorentzian (truncated at +-L, so the reference uses the same
+    #truncation implicitly through renormalisation errors -- compare within
+    #the core only):
+    gam, L = 0.01, 20.0
+    vr = voigt_ref( z, 1.0, gam )
+    cases.append( ( f'Gauss(1)*Lorentz({gam})', lambda x : gauss(x,1.0), 9.0,
+                    lambda x : lorentz(x,gam), L, vr ) )
+    for name, ff, fr, gg, gr, exact in cases:
+        print(f'=== {name}: {z.size} output points in [{z[0]:g},{z[-1]:g}]')
+        for d in ( (0.1, 0.02) if quick else (0.2, 0.1, 0.05, 0.02, 0.005) ):
+            for nonuni in ( False, True ):
+                xf = grid( -fr, fr, d, nonuni )
+                #g grid at the same spacing (also for the narrow g, which is
+                #then under-resolved unless d << gamma):
+                xg = grid( -gr, gr, d, nonuni )
+                for scheme in SCHEMES:
+                    h, cpu = convolve( xf, ff(xf), xg, gg(xg), z, scheme )
+                    e, ec = errs( h, exact )
+                    print(f'  d={d:<6g} {"nonuni" if nonuni else "uni   "}'
+                          f' Nf={xf.size:<6d} Ng={xg.size:<6d} {scheme:10s}'
+                          f' maxrel={e:.2e} core={ec:.2e} cpu={cpu*1e3:9.2f}ms',
+                          flush = True )
+        if 'Lorentz' in name:
+            #Narrow g resolved by its own fine grid (geometric around 0):
+            print('  narrow g on its own grid (geometric spacing near 0):')
+            pos = np.geomspace( gam*1e-3, L, 400 )
+            xg = np.concatenate( [ -pos[::-1], [0.0], pos ] )
+            for d in ( 0.1, 0.02 ):
+                xf = grid( -fr, fr, d, False )
+                for scheme in SCHEMES:
+                    h, cpu = convolve( xf, ff(xf), xg, gg(xg), z, scheme,
+                                       step = 0.25 * gam )
+                    e, ec = errs( h, exact )
+                    print(f'  d_f={d:<6g} Nf={xf.size:<6d} Ng={xg.size:<6d}'
+                          f' {scheme:10s} maxrel={e:.2e} core={ec:.2e}'
+                          f' cpu={cpu*1e3:9.2f}ms', flush = True )
+
+def bench_speed( quick ):
+    print('=== Speed: 801 output points, uniform grids, cpu ms')
+    z = np.linspace( -6.0, 6.0, 801 )
+    for nf, ng in ( ( (1000, 1000), (10000, 1000) ) if quick else
+                    ( (1000, 100), (1000, 1000), (10000, 1000),
+                      (10000, 10000), (100000, 1000) ) ):
+        xf = np.linspace( -9.0, 9.0, nf )
+        xg = np.linspace( -5.0, 5.0, ng )
+        f, g = gauss( xf, 1.0 ), gauss( xg, 0.5 )
+        row = [ min( convolve( xf, f, xg, g, z, s )[1] for _ in range(3) )
+                for s in SCHEMES ]
+        print(f'  Nf={nf:<7d} Ng={ng:<7d} ' + ' '.join(
+            f'{s}={v*1e3:9.2f}' for s, v in zip( SCHEMES, row ) ), flush = True )
+
+def main():
+    quick = ( sys.argv[1:] == ['quick'] )
+    bench_accuracy( quick )
+    bench_speed( quick )
+
+if __name__ == '__main__':
+    main()

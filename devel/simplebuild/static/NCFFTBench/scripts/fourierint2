@@ -1,0 +1,187 @@
+#!/usr/bin/env python3
+
+################################################################################
+##                                                                            ##
+##  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   ##
+##                                                                            ##
+##  Copyright 2015-2026 NCrystal developers                                   ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+# FFTBENCH TEMPORARY: second round of finite Fourier integral benchmarks
+# (["mathutils","fourierint",...] query), all real even f(t) with exact
+# transforms F(w) = (1/pi) Int_0^inf f(t) cos(wt) dt:
+#
+#   1. Output beyond the Nyquist frequency pi/h: f = exp(-t) (Lorentzian F,
+#      kink at t=0 in the even extension) and f = 1/(1+t^2) (smooth at 0).
+#   2. Data truncated before it has decayed: f = exp(-t^2/2) on [0,T] only,
+#      vs. the exact transform of the truncated function.
+#   3. Slow decays: ES diffusion (exponential decay, alpha=1e-3) and
+#      f = 1/(1+t^2) (power law), with long ranges vs. truncation at T with
+#      and without an analytic exponential tail continuation.
+#
+# Usage: fourierint2
+
+import cmath
+import math
+
+import numpy as np
+from NCrystalDev.misc import evaluate_query
+from scipy.special import erf, k1e
+
+SCHEMES = ('trap', 'trapec', 'lin', 'cubic')
+
+def fourierint( f, w, h, scheme, ev = 'direct', oversample = 8,
+                tail = 'none', fi = None ):
+    r = evaluate_query( ['mathutils', 'fourierint', f,
+                         'none' if fi is None else fi, w, f'h={h}',
+                         f'scheme={scheme}', f'eval={ev}',
+                         f'oversample={oversample}', f'tail={tail}'],
+                        huge_arrays = True )
+    return r['F'], r['cpu_seconds']
+
+def relerr( F, exact, thr = 1e-8 ):
+    sel = np.abs( exact ) >= thr * np.abs( exact ).max()
+    return np.abs( F[sel] / exact[sel] - 1.0 ).max()
+
+def bench_nyquist():
+    print('=== 1. Output beyond Nyquist (w up to 20x pi/h), max rel. error'
+          ' for w below / above Nyquist')
+    cases = [ ( 'exp(-t)', lambda t : np.exp( -t ), 40.0,
+                lambda w : 1.0 / ( math.pi * ( 1.0 + w*w ) ) ),
+              ( '1/(1+t^2)', lambda t : 1.0 / ( 1.0 + t*t ), 2e4,
+                lambda w : 0.5 * np.exp( -np.abs( w ) ) ) ]
+    for name, f, T, exact in cases:
+        for h in ( 0.2, 0.05 ):
+            nyq = math.pi / h
+            w = np.linspace( 0.0, 20 * nyq, 4001 )[1:]
+            t = np.arange( 0.0, T + 0.5 * h, h )
+            ex = exact( w )
+            lo, hi = w < nyq, w >= nyq
+            for scheme in SCHEMES:
+                for ev in ( ('direct',) if t.size > 1e5 else
+                            ('direct', 'fftcubic') ):
+                    F, cpu = fourierint( f( t ), w, h, scheme, ev )
+                    e_lo = relerr( F[lo], ex[lo] )
+                    selhi = hi & ( ex >= 1e-8 * ex.max() )
+                    e_hi = ( np.abs( F[selhi]/ex[selhi] - 1 ).max()
+                             if selhi.any() else float('nan') )
+                    print(f'  {name:10s} h={h:<5g} N={t.size:<7d} {scheme:6s}'
+                          f' {ev:8s} below={e_lo:.2e} above={e_hi:.2e}'
+                          f' cpu={cpu*1e3:8.2f}ms', flush = True )
+
+def bench_truncation():
+    print('=== 2. Truncated data: exp(-t^2/2) on [0,T], exact transform of the'
+          ' truncated function, w in [0,10]')
+    w = np.linspace( 0.0, 10.0, 501 )
+    for T in ( 2.0, 3.0, 4.0 ):
+        #(1/pi) Re Int_0^T exp(-t^2/2+iwt) dt via the complex error function:
+        ex = np.array( [ ( math.sqrt( math.pi / 2 ) * cmath.exp( -0.5*ww*ww )
+                           * ( erf( complex( T, -ww ) / math.sqrt(2) )
+                               - erf( complex( 0.0, -ww ) / math.sqrt(2) ) )
+                           ).real / math.pi for ww in w ] )
+        for h in ( 0.1, 0.02 ):
+            n = round( T / h )
+            t = np.linspace( 0.0, T, n + 1 )
+            for scheme in SCHEMES:
+                F, _ = fourierint( np.exp( -0.5 * t * t ), w, t[1], scheme )
+                #exact changes sign: use absolute error relative to max:
+                e = np.abs( F - ex ).max() / np.abs( ex ).max()
+                print(f'  T={T:<4g} f(T)={math.exp(-0.5*T*T):.1e} h={h:<5g}'
+                      f' {scheme:6s} max|F-exact|/max|exact|={e:.2e}',
+                      flush = True )
+
+def tail_exp( fT, lam, T, w, h ):
+    #Trapezoid sum of the exponential continuation fT*exp(-lam(t-T)) for
+    #t>=T (complementing the h/2 end weight at T), a geometric series:
+    #(h/pi) Re[ fT e^{iwT} ( 1/(1-e^{(-lam+iw)h}) - 1/2 ) ]
+    z = np.exp( ( -lam + 1j * w ) * h )
+    return ( h * fT * np.exp( 1j * w * T ) * ( 1.0 / ( 1.0 - z ) - 0.5 )
+             ).real / math.pi
+
+def slowerr( F, ex, w ):
+    sel = ex >= 1e-8 * ex.max()
+    rel = np.abs( F[sel] / ex[sel] - 1 )
+    return rel.max(), rel[w[sel] >= 1e-2].max()
+
+def bench_slowdecay():
+    print('=== 3. Slow decays: long range vs. truncation (+ exponential tail)')
+    c, b = 1.0, math.sqrt( 1.25 )
+    a = 2 * c * 0.1 * 1e-3
+    es = ( 'ES(alpha=1e-3)',
+           lambda t : np.exp( -a * ( np.sqrt( t*t + b*b ) - c ) ),
+           lambda w : ( a * b * k1e( b * np.sqrt( a*a + w*w ) )
+                        * np.exp( a*c - b*np.sqrt( a*a + w*w ) )
+                        / ( np.sqrt( a*a + w*w ) * math.pi ) ),
+           np.concatenate( [ [0.0], np.geomspace( 1e-6, 30.0, 400 ) ] ),
+           0.25 )
+    cauchy = ( '1/(1+t^2)', lambda t : 1.0 / ( 1.0 + t*t ),
+               lambda w : 0.5 * np.exp( -np.abs( w ) ),
+               np.concatenate( [ [0.0], np.geomspace( 1e-6, 30.0, 400 ) ] ),
+               0.1 )
+    for name, f, exact, w, h in ( es, cauchy ):
+        ex = exact( w )
+        print(f'  --- {name}, h={h}, {w.size} outputs in [0,{w[-1]:g}]'
+              ' (log-spaced from 1e-6), errors over F >= 1e-8 max(F)')
+        for T in ( 1e2, 1e3, 1e4, 1e5, 1e6 ):
+            t = np.arange( 0.0, T + 0.5 * h, h )
+            if t.size > 4.1e6:
+                continue
+            ft = f( t )
+            F, cpu = fourierint( ft, w, h, 'trap', 'direct' )
+            #Exponential tail matched to the local log-slope at T:
+            lam = -( math.log( ft[-1] ) - math.log( ft[-2] ) ) / h
+            Ft = F + tail_exp( ft[-1], lam, t[-1], w, h )
+            #Same via the C++ tail=geometric option:
+            Fg, _ = fourierint( ft, w, h, 'trap', 'direct', tail = 'geometric' )
+            assert np.abs( Fg - Ft ).max() <= 1e-9 * np.abs( Ft ).max()
+            e1, e1b = slowerr( F, ex, w )
+            e2, e2b = slowerr( Ft, ex, w )
+            print(f'    T={T:<7g} N={t.size:<8d} f(T)={ft[-1]:.1e}'
+                  f' truncated: max={e1:.1e} (w>=0.01: {e1b:.1e})'
+                  f' +exp tail: max={e2:.1e} (w>=0.01: {e2b:.1e})'
+                  f' cpu={cpu*1e3:.0f}ms', flush = True )
+
+def bench_complextail():
+    print('=== 4. Complex damped oscillation exp(-g t + i w0 t) (Lorentzian at'
+          ' w0), truncated at f(T)=0.5, with tail=geometric')
+    g, w0 = 0.05, 2.0
+    w = np.linspace( -5.0, 9.0, 1401 )
+    ex = g / ( math.pi * ( g*g + ( w - w0 )**2 ) )
+    for h in ( 0.1, 0.02 ):
+        T = math.log( 2.0 ) / g
+        t = np.arange( 0.0, T + 0.5 * h, h )
+        env = np.exp( -g * t )
+        fr, fi = env * np.cos( w0 * t ), env * np.sin( w0 * t )
+        for tail in ( 'none', 'geometric' ):
+            F, _ = fourierint( fr, w, h, 'trap', tail = tail, fi = fi )
+            print(f'  h={h:<5g} N={t.size:<5d} tail={tail:10s}'
+                  f' maxrel={relerr( F, ex ):.2e}', flush = True )
+        tl = np.arange( 0.0, 40.0 / g + 0.5 * h, h )
+        envl = np.exp( -g * tl )
+        F, _ = fourierint( envl * np.cos( w0 * tl ), w, h, 'trap',
+                           fi = envl * np.sin( w0 * tl ) )
+        print(f'  h={h:<5g} N={tl.size:<5d} long range (f(T)=e^-40)'
+              f' maxrel={relerr( F, ex ):.2e}  [kink at t=0: O(h^2)]',
+              flush = True )
+
+def main():
+    bench_nyquist()
+    bench_truncation()
+    bench_slowdecay()
+    bench_complextail()
+
+if __name__ == '__main__':
+    main()
