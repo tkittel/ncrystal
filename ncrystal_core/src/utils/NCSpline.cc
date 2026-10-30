@@ -437,3 +437,70 @@ double NC::HymanInterp::eval( double x ) const
   return ( ( 1.0 + 2.0 * t ) * u2 * m_y[i] + t * u2 * h * m_m[i]
            + t2 * ( 3.0 - 2.0 * t ) * m_y[i+1] + t2 * ( t - 1.0 ) * h * m_m[i+1] );
 }
+
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    void fitPCInterval( const std::function<double(double)>& f,
+                        double a, double fa, double b, double fb,
+                        double tol, unsigned depth, PiecewiseCubicFit& res )
+    {
+      //Fit the cubic in u=(x-a)/(b-a) through f at u=0,1/3,2/3,1 (the Lagrange
+      //interpolation of those 4 values, written below in monomial form with
+      //the lowest order first), and check it against f at u=1/6,1/2,5/6, the
+      //midpoints between those points, close to where its error is largest. If
+      //any check fails, bisect geometrically (at sqrt(a*b)), at most 60 levels
+      //deep:
+      nc_assert( a < b && res.x.back() == a );
+      const double h = b - a;
+      const double y1 = f( a + h / 3.0 ), y2 = f( a + 2.0 * h / 3.0 );
+      const double c[4] = { fa,
+                            0.5 * ( -11.0 * fa + 18.0 * y1 - 9.0 * y2 + 2.0 * fb ),
+                            0.5 * ( 18.0 * fa - 45.0 * y1 + 36.0 * y2 - 9.0 * fb ),
+                            0.5 * ( -9.0 * fa + 27.0 * y1 - 27.0 * y2 + 9.0 * fb ) };
+      bool ok = true;
+      for ( double u : { 1.0 / 6.0, 0.5, 5.0 / 6.0 } ) {
+        const double v = ncfma( u, ncfma( u, ncfma( u, c[3], c[2] ), c[1] ), c[0] );
+        const double ref = f( a + u * h );
+        if ( !( ncabs( v - ref ) <= 0.5 * tol * ncabs( ref ) ) )
+          ok = false;
+      }
+      if ( !ok && depth < 60 ) {
+        const double mid = std::sqrt( a * b );
+        if ( mid > a && mid < b ) {
+          const double fmid = f( mid );
+          fitPCInterval( f, a, fa, mid, fmid, tol, depth + 1, res );
+          fitPCInterval( f, mid, fmid, b, fb, tol, depth + 1, res );
+          return;
+        }
+      }
+      res.x.push_back( b );
+      res.c.insert( res.c.end(), c, c + 4 );
+    }
+  }
+}
+
+NC::PiecewiseCubicFit NC::fitPiecewiseCubic( const std::function<double(double)>& f,
+                                             double a, double b, double tol,
+                                             double maxratio )
+{
+  nc_assert( a > 0.0 && b > a && std::isfinite( b ) );
+  nc_assert( tol > 0.0 && maxratio > 1.0 );
+  //Initial intervals span at most a factor maxratio. Each gets the cubic
+  //through f at u=0,1/3,2/3,1, and is bisected (geometrically) until it agrees
+  //with f within tol/2 at u=1/6,1/2,5/6 (5 evaluations per interval). The
+  //check is not a strict bound, hence the factor 2.
+  const std::size_t n = 1 + static_cast<std::size_t>
+    ( std::ceil( std::log( b / a ) / std::log( maxratio ) ) );
+  VectD pts = geomspace( a, b, std::max<std::size_t>( n, 2 ) );
+  pts.front() = a;
+  pts.back() = b;
+  PiecewiseCubicFit res;
+  res.x.push_back( a );
+  double fa = f( a );
+  for ( auto i : ncrange( pts.size() - 1 ) ) {
+    const double fb = f( pts[i+1] );
+    fitPCInterval( f, pts[i], fa, pts[i+1], fb, tol, 0, res );
+    fa = fb;
+  }
+  return res;
+}
