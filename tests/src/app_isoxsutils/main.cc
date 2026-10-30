@@ -94,6 +94,16 @@ namespace {
     d.table = std::move(p);
     const NC::IsoXSEvaluator ev( std::move(d) );
     const auto& pp = ev.descr().table.value();
+    {
+      //cloneIsoXSDescr gives an identical description:
+      const auto cp = NC::cloneIsoXSDescr( ev.descr() );
+      const auto& ct = cp.table.value();
+      REQUIRE( cp.breakpts == ev.descr().breakpts );
+      REQUIRE( ct.E == pp.E && ct.p == pp.p && ct.q == pp.q && ct.r == pp.r );
+      for ( int k = 0; k < 5; ++k )
+        REQUIRE( dblBits( ct.tail[k] ) == dblBits( pp.tail[k] ) );
+      REQUIRE( !NC::cloneIsoXSDescr( NC::IsoXSDescr() ).table.has_value() );
+    }
     auto check = [&]( double e ) {
       if ( !( e >= 0.0 ) )
         return;

@@ -49,14 +49,15 @@ namespace NCRYSTAL_NAMESPACE {
   public:
     //Provides IsoXSDescr::table evaluations. Holds an IsoXSDescr with a cross
     //section table, and adds relevant cached data allowing for subsequent fast
-    //repeated evaluations, giving results bit-identical to evalIsoXS.
+    //repeated evaluations. Alternatively, the oneShotEval methods provides
+    //bit-identical results without initialisation, at the cost of a binary
+    //search.
+
     explicit IsoXSEvaluator( IsoXSDescr );
     const IsoXSDescr& descr() const noexcept { return m_descr; }
 
     //Evaluations accept ekin in eV and return xs in barn:
     double eval( double ekin ) const ncnoexceptndebug;
-
-    //One shot evaluations (no init but needs full binary search):
     static double oneShotEval( const IsoXSDescr::Tabulation&, double ekin );
     static double oneShotEval( const IsoXSDescr&, double ekin );
 
@@ -75,11 +76,13 @@ namespace NCRYSTAL_NAMESPACE {
   //ignored. An empty input gives an empty description:
   IsoXSDescr mergeIsoXSDescr( Span<const std::pair<double,const IsoXSDescr*>> );
 
-  //Evaluate the tabulated cross section at e (finding the interval with a
-  //binary search, so meant for occasional use):
+  //Explicit copy:
+  IsoXSDescr cloneIsoXSDescr( const IsoXSDescr& );
+
+  //Fixme: Remove this standalone evalIsoXS and use two functions above. Also
+  //       make all 3 evaluations methods in IsoXSEvaluator return CrossSect
+  //       type:
   double evalIsoXS( const IsoXSDescr::Tabulation&, double e );
-  //Fixme: Remove standalone evalIsoXS and use two functions above. Also: make
-  //       all 3 evaluations methods in IsoXSEvaluator return CrossSect type.
 
 }
 
