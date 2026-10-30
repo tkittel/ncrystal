@@ -33,15 +33,18 @@ import numpy as np
 from NCrystalDev.misc import evaluate_query
 from scipy.special import erfc
 
-SCHEMES = ('direct', 'directswap', 'exactlin', 'fft')
+#Scheme labels: SCHEME[/INTERP], INTERP lin (default), lagrange4 or spline:
+SCHEMES = ( 'direct', 'direct/lagrange4', 'direct/spline', 'directswap',
+            'directswap/spline', 'exactlin', 'fft', 'fft/spline' )
 
 def convolve( xf, f, xg, g, z, scheme, step = 0.0 ):
+    scheme, interp = ( scheme.split('/') + ['lin'] )[:2]
     #directswap: trapezoid over the xg nodes instead (f interpolated)
     if scheme == 'directswap':
-        return convolve( xg, g, xf, f, z, 'direct' )
+        return convolve( xg, g, xf, f, z, f'direct/{interp}' )
     r = evaluate_query( ['mathutils', 'convolve', xf, f, xg, g, z,
-                         f'scheme={scheme}', f'step={step}'],
-                        huge_arrays = True )
+                         f'scheme={scheme}', f'step={step}',
+                         f'interp={interp}'], huge_arrays = True )
     return r['h'], r['cpu_seconds']
 
 def gauss( x, s ):
@@ -111,7 +114,7 @@ def bench_accuracy( quick ):
                     h, cpu = convolve( xf, ff(xf), xg, gg(xg), z, scheme )
                     e, ec = errs( h, exact )
                     print(f'  d={d:<6g} {"nonuni" if nonuni else "uni   "}'
-                          f' Nf={xf.size:<6d} Ng={xg.size:<6d} {scheme:10s}'
+                          f' Nf={xf.size:<6d} Ng={xg.size:<6d} {scheme:17s}'
                           f' maxrel={e:.2e} core={ec:.2e} cpu={cpu*1e3:9.2f}ms',
                           flush = True )
         if 'Lorentz' in name:
@@ -126,7 +129,7 @@ def bench_accuracy( quick ):
                                        step = 0.25 * gam )
                     e, ec = errs( h, exact )
                     print(f'  d_f={d:<6g} Nf={xf.size:<6d} Ng={xg.size:<6d}'
-                          f' {scheme:10s} maxrel={e:.2e} core={ec:.2e}'
+                          f' {scheme:17s} maxrel={e:.2e} core={ec:.2e}'
                           f' cpu={cpu*1e3:9.2f}ms', flush = True )
 
 def bench_speed( quick ):
@@ -140,8 +143,9 @@ def bench_speed( quick ):
         f, g = gauss( xf, 1.0 ), gauss( xg, 0.5 )
         row = [ min( convolve( xf, f, xg, g, z, s )[1] for _ in range(3) )
                 for s in SCHEMES ]
-        print(f'  Nf={nf:<7d} Ng={ng:<7d} ' + ' '.join(
-            f'{s}={v*1e3:9.2f}' for s, v in zip( SCHEMES, row ) ), flush = True )
+        print(f'  Nf={nf:<7d} Ng={ng:<7d}\n    ' + '\n    '.join(
+            f'{s:17s} {v*1e3:9.2f}' for s, v in zip( SCHEMES, row ) ),
+              flush = True )
 
 def main():
     quick = ( sys.argv[1:] == ['quick'] )
