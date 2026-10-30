@@ -187,6 +187,10 @@ namespace NCRYSTAL_NAMESPACE {
 
     Temperature effectiveTemperature() const noexcept { return m_teff; }
 
+    //High energy form, where both the free-gas cross section at Teff and the
+    //upscatter correction (r-1)/r have reached their asymptotic forms:
+    IsoXSHighEForm highEForm() const;
+
     //The free-gas beta-kernel I(c,beta) in closed erf form (beta>=0 only;
     //value is independent of alpha convention). Exposed for testing:
     static double evalFGBetaKernel( double c, double beta, double invA );

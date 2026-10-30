@@ -581,6 +581,40 @@ namespace {
   }
 }
 
+namespace {
+  void test_highEForm()
+  {
+    //Above emin, crossSection(E) = B + A/E to within 1e-15 relative:
+    std::printf("test_highEForm:\n");
+    double worst = 0.0;
+    for ( double mass : { 1.008, 2.014, 12.011, 207.2 } ) {
+      for ( double T : { 20.0, 293.15, 1000.0 } ) {
+        for ( double r : { 1.0, 1.7, 4.12, 59.3 } ) {
+          const NC::Temperature temp{ T }, teff{ T * r };
+          NC::SAB::SABSCTExtender sct( temp, teff, NC::AtomMass{ mass }, NC::SigmaBound{ 20.0 } );
+          NC::SAB::SABFGExtender fg( temp, NC::AtomMass{ mass }, NC::SigmaBound{ 20.0 } );
+          for ( const NC::SAB::SABExtender* ext : { static_cast<const NC::SAB::SABExtender*>( &sct ),
+                                                    static_cast<const NC::SAB::SABExtender*>( &fg ) } ) {
+            const auto asym = ext->highEForm();
+            nc_assert_always( asym.emin.dbl() > 0.0 && asym.B > 0.0 );
+            for ( double f : NC::geomspace( 1.0, 1e9, 300 ) ) {
+              const NC::NeutronEnergy e{ asym.emin.dbl() * f };
+              const double xs = ext->crossSection( e ).dbl();
+              const double xsa = asym.B + asym.A / e.dbl();
+              worst = std::max( worst, std::fabs( xsa / xs - 1.0 ) );
+            }
+          }
+        }
+      }
+    }
+    nc_assert_always( worst < 1e-15 );
+    NC::SAB::SABNullExtender none;
+    const auto asym = none.highEForm();
+    nc_assert_always( asym.B == 0.0 && asym.A == 0.0 && asym.emin.dbl() == 0.0 );
+    std::printf("  B+A/E above emin within 1e-15 for free-gas and SCT: OK\n");
+  }
+}
+
 int main()
 {
   test_kernel_closedform();
@@ -592,6 +626,7 @@ int main()
   test_kernel_boundary();
   test_cryogenic();
   test_estimateTeffMSD();
+  test_highEForm();
   std::printf("All tests passed.\n");
   return 0;
 }
