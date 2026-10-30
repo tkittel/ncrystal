@@ -8,8 +8,8 @@ v4.4.7 (work in progress)
        trapezoid, piecewise-linear and cubic-spline Filon, evaluated
        directly or via FFT, optional geometric tail continuation) and
        for convolutions of tabulated functions (trapezoid, exact for
-       piecewise linear inputs, or FFT; linear, local cubic or spline
-       interpolation of the inputs), accessible via a new "mathutils"
+       piecewise linear inputs, or FFT; linear, local cubic, spline or
+       PCHIP interpolation of the inputs), accessible via a new "mathutils"
        JSON query for validation and benchmarking. Also new
        FastConvolve::fft(..).
      * New NCMAT v8 format (cf. docs/ncmat_doc.md): @DYNINFO sections

@@ -21,6 +21,7 @@
 #include "NCrystal/internal/math_utils/NCConvolve.hh"
 #include "NCrystal/internal/utils/NCFastConvolve.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCSpline.hh"
 
 namespace NC = NCrystal;
 
@@ -54,6 +55,8 @@ namespace NCRYSTAL_NAMESPACE {
             m_mode = ConvolveInterp::Linear;
           if ( m_mode == ConvolveInterp::Spline )
             initSpline();
+          if ( m_mode == ConvolveInterp::PCHIP )
+            m_pchip.emplace( m_x, m_y );
         }
 
         double operator()( double xv ) const
@@ -62,6 +65,8 @@ namespace NCRYSTAL_NAMESPACE {
             return 0.0;
           if ( m_mode == ConvolveInterp::Linear )
             return interpLin( m_x, m_y, xv );
+          if ( m_mode == ConvolveInterp::PCHIP )
+            return m_pchip.value().eval( xv );
           //Segment i with x_i <= xv <= x_{i+1}:
           const std::size_t n = m_x.size();
           auto it = std::upper_bound( m_x.begin(), m_x.end(), xv );
@@ -93,6 +98,7 @@ namespace NCRYSTAL_NAMESPACE {
         Span<const double> m_x, m_y;
         ConvolveInterp m_mode;
         VectD m_M;//spline second derivatives
+        Optional<PCHIPInterp> m_pchip;
 
         void initSpline()
         {
@@ -142,7 +148,7 @@ namespace NCRYSTAL_NAMESPACE {
           auto itE = std::upper_bound( itB, xf.end(), zz - xg.front() );
           StableSum sum;
           for ( auto it = itB; it != itE; ++it ) {
-            auto i = static_cast<std::size_t>( std::distance( xf.begin(), it ) );
+            auto i = static_cast<std::size_t>( it - xf.begin() );
             sum.add( wf[i] * gint( zz - *it ) );
           }
           res.push_back( sum.sum() );
@@ -175,7 +181,8 @@ namespace NCRYSTAL_NAMESPACE {
           const double d = xg[j+1] - xg[j];
           sg[j] = ( g[j+1] - g[j] ) / d;
           G1[j+1] = G1[j] + d * ( g[j] + 0.5 * d * sg[j] );
-          G2[j+1] = G2[j] + d * ( G1[j] + d * ( 0.5 * g[j] + d * sg[j] / 6.0 ) );
+          G2[j+1] = G2[j]
+            + d * ( G1[j] + d * ( 0.5 * g[j] + d * sg[j] / 6.0 ) );
         }
         const double G1tot = G1.back();
         const double G2M = G2.back();

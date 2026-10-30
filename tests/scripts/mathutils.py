@@ -117,7 +117,7 @@ def test_convolve():
     exact = gauss( z, math.sqrt(1.25) )
     print('Max relative errors for Gaussian convolution:')
     for scheme in ('direct','exactlin','fft'):
-        for interp in ('lin','lagrange4','spline'):
+        for interp in ('lin','lagrange4','spline','pchip'):
             if scheme == 'exactlin' and interp != 'lin':
                 continue
             h = convolve( x1, gauss(x1,1.0), x2, gauss(x2,0.5), z,
@@ -126,6 +126,25 @@ def test_convolve():
             print(f'  {scheme:8} {interp:9} : %s'%(
                 '<1e-6' if relerr < 1e-6 else '<1e-3' if relerr < 1e-3 else
                 '<1e-2' if relerr < 1e-2 else 'LARGE'))
+
+def test_overshoot():
+    #x^2 on [-1,1] with sharp cutoffs between the nodes of a coarse grid,
+    #convolved with a narrow Gaussian: spline interpolation rings into
+    #negative values, pchip (and lin) do not:
+    xf = np.linspace( -0.3, 0.3, 301 )
+    f = np.exp( -0.5 * ( xf / 0.03 )**2 )
+    xg = np.arange( -2.0, 2.05, 0.1 ) + 0.037
+    g = np.where( np.abs( xg ) <= 1.0, xg * xg, 0.0 )
+    z = np.linspace( -1.5, 1.5, 301 )
+    print('Most negative value relative to max for sharp cutoffs:')
+    for scheme in ('direct','fft'):
+        for interp in ('lin','spline','pchip'):
+            h = convolve( xf, f, xg, g, z, f'scheme={scheme}',
+                          f'interp={interp}', 'step=0.006' )
+            r = h.min() / h.max()
+            print(f'  {scheme:6} {interp:6} : %s'%( '>=-1e-15' if r >= -1e-15
+                                                    else '<-1e-3' if r < -1e-3
+                                                    else 'small' ))
 
 def test_errors():
     print('Errors:')
@@ -185,6 +204,7 @@ def main():
     test_gaussian()
     test_tail()
     test_convolve()
+    test_overshoot()
     test_errors()
     test_placeholders()
     print('All OK')

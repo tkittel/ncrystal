@@ -16,24 +16,33 @@ Max relative errors for Gaussian convolution:
   direct   lin       : <1e-2
   direct   lagrange4 : <1e-6
   direct   spline    : <1e-6
+  direct   pchip     : <1e-3
   exactlin lin       : <1e-2
   fft      lin       : <1e-2
   fft      lagrange4 : <1e-6
   fft      spline    : <1e-6
+  fft      pchip     : <1e-3
+Most negative value relative to max for sharp cutoffs:
+  direct lin    : >=-1e-15
+  direct spline : <-1e-3
+  direct pchip  : >=-1e-15
+  fft    lin    : >=-1e-15
+  fft    spline : <-1e-3
+  fft    pchip  : >=-1e-15
 Errors:
   Expected error: Invalid input array placeholder: "junk"
   Expected error: Invalid mathutils query: ["mathutils","fourierint"] (usage: ["mathutils","fourierint",FR,FI,W,OPTIONS...])
-  Expected error: Invalid mathutils query: ["mathutils","fourierint","__ncrystal__dblinarray::101::5","none","__ncrystal__dblinarray::102::3"] (missing option h)
-  Expected error: Invalid mathutils query: ["mathutils","fourierint","__ncrystal__dblinarray::103::5","none","__ncrystal__dblinarray::104::3","h=1","scheme=bla"] (invalid scheme)
-  Expected error: Invalid mathutils query: ["mathutils","fourierint","__ncrystal__dblinarray::105::5","__ncrystal__dblinarray::106::4","__ncrystal__dblinarray::107::3","h=1"] (FI and FR must have the same size)
+  Expected error: Invalid mathutils query: ["mathutils","fourierint","__ncrystal__dblinarray::141::5","none","__ncrystal__dblinarray::142::3"] (missing option h)
+  Expected error: Invalid mathutils query: ["mathutils","fourierint","__ncrystal__dblinarray::143::5","none","__ncrystal__dblinarray::144::3","h=1","scheme=bla"] (invalid scheme)
+  Expected error: Invalid mathutils query: ["mathutils","fourierint","__ncrystal__dblinarray::145::5","__ncrystal__dblinarray::146::4","__ncrystal__dblinarray::147::3","h=1"] (FI and FR must have the same size)
   Expected error: Invalid mathutils query: ["mathutils","bla"] (unknown subcommand (available: "fourierint", "convolve"))
   Expected error: fourierIntegral: geometric tail is only supported for the trapezoid scheme
   Expected error: fourierIntegral: geometric tail requires |q_{N-1}/q_{N-2}|<1 (decaying samples)
-  Expected error: Invalid mathutils query: ["mathutils","convolve","__ncrystal__dblinarray::112::5","__ncrystal__dblinarray::113::5","__ncrystal__dblinarray::114::3","__ncrystal__dblinarray::115::3","__ncrystal__dblinarray::116::3","scheme=bla"] (invalid scheme)
-  Expected error: Invalid mathutils query: ["mathutils","convolve","__ncrystal__dblinarray::117::3","__ncrystal__dblinarray::118::3","__ncrystal__dblinarray::119::3","__ncrystal__dblinarray::120::3","__ncrystal__dblinarray::121::3","interp=bla"] (invalid interp)
+  Expected error: Invalid mathutils query: ["mathutils","convolve","__ncrystal__dblinarray::152::5","__ncrystal__dblinarray::153::5","__ncrystal__dblinarray::154::3","__ncrystal__dblinarray::155::3","__ncrystal__dblinarray::156::3","scheme=bla"] (invalid scheme)
+  Expected error: Invalid mathutils query: ["mathutils","convolve","__ncrystal__dblinarray::157::3","__ncrystal__dblinarray::158::3","__ncrystal__dblinarray::159::3","__ncrystal__dblinarray::160::3","__ncrystal__dblinarray::161::3","interp=bla"] (invalid interp)
   Expected error: convolve: the exact scheme requires linear interpolation
-  Expected error: Invalid mathutils query: ["mathutils","convolve","__ncrystal__dblinarray::127::3","__ncrystal__dblinarray::128::3","__ncrystal__dblinarray::129::3","__ncrystal__dblinarray::130::2","__ncrystal__dblinarray::131::3"] (XG grid must have at least two points and the same size as its values)
-  Expected error: Invalid mathutils query: ["mathutils","convolve","__ncrystal__dblinarray::132::5","__ncrystal__dblinarray::133::5","__ncrystal__dblinarray::134::3","__ncrystal__dblinarray::135::3","__ncrystal__dblinarray::136::3"] (XF grid must be strictly increasing)
+  Expected error: Invalid mathutils query: ["mathutils","convolve","__ncrystal__dblinarray::167::3","__ncrystal__dblinarray::168::3","__ncrystal__dblinarray::169::3","__ncrystal__dblinarray::170::2","__ncrystal__dblinarray::171::3"] (XG grid must have at least two points and the same size as its values)
+  Expected error: Invalid mathutils query: ["mathutils","convolve","__ncrystal__dblinarray::172::5","__ncrystal__dblinarray::173::5","__ncrystal__dblinarray::174::3","__ncrystal__dblinarray::175::3","__ncrystal__dblinarray::176::3"] (XF grid must be strictly increasing)
   Expected error: Invalid query (array entries must be one-dimensional with dtype=float64, got dtype=float64 and ndim=2)
   Expected error: Invalid query (not all entries are strings): ['mathutils', 'fourierint', 117.0, 'none', array([0. , 0.5, 1. ]), 'h=1']
   Expected error: Invalid query (not all entries are strings): ['mathutils', 'fourierint', [1.0, 2.0], 'none', array([0. , 0.5, 1. ]), 'h=1']
@@ -41,9 +50,9 @@ Errors:
   Expected error: Invalid query (array entries must be one-dimensional with dtype=float64, got dtype=int32 and ndim=1)
   Expected error: Invalid query (array entries must be one-dimensional with dtype=float64, got dtype=float32 and ndim=1)
 Placeholders:
-  Expected error: Unknown or already used input array: "__ncrystal__dblinarray::137::5"
-  Expected error: Unknown or already used input array: "__ncrystal__dblinarray::138::3"
-  Expected error: Invalid mathutils query: ["mathutils","fourierint","__ncrystal__dblinarray::141::5","none","__ncrystal__dblinarray::142::3"] (missing option h)
-  Expected error: Unknown or already used input array: "__ncrystal__dblinarray::141::5"
-  Expected error: Size mismatch for input array: "__ncrystal__dblinarray::144::4"
+  Expected error: Unknown or already used input array: "__ncrystal__dblinarray::177::5"
+  Expected error: Unknown or already used input array: "__ncrystal__dblinarray::178::3"
+  Expected error: Invalid mathutils query: ["mathutils","fourierint","__ncrystal__dblinarray::181::5","none","__ncrystal__dblinarray::182::3"] (missing option h)
+  Expected error: Unknown or already used input array: "__ncrystal__dblinarray::181::5"
+  Expected error: Size mismatch for input array: "__ncrystal__dblinarray::184::4"
 All OK

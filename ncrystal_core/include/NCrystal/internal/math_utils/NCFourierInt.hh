@@ -40,8 +40,8 @@ namespace NCRYSTAL_NAMESPACE {
     // Candidate schemes (benchmarking stage, the losers will be removed):
     //
     //   Trapezoid       : trapezoidal rule on f(t)e^{iwt}.
-    //   TrapezoidEC     : as Trapezoid, plus the h^2/12 Euler-Maclaurin endpoint
-    //                     correction (fr'(0)=0, other derivatives from
+    //   TrapezoidEC     : as Trapezoid, plus the h^2/12 Euler-Maclaurin
+    //                     endpoint correction (fr'(0)=0, other derivatives from
     //                     one-sided differences). Only valid for w*h << 1.
     //   PiecewiseLinear : f linear between samples, integrated exactly against
     //                     e^{iwt} (Filon-type, as in GASKET).

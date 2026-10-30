@@ -46,15 +46,17 @@ namespace NCRYSTAL_NAMESPACE {
     //                     result interpolated at z.
     //
     // Interpolation (DirectTrapezoid: g at z-x; FFT: resampling of both
-    // inputs and evaluation of the result at z): Linear, Lagrange4 (local cubic through the 4 nearest nodes) or
-    // Spline (natural cubic spline). ExactLinear requires Linear.
+    // inputs and evaluation of the result at z): Linear, Lagrange4 (local
+    // cubic through the 4 nearest nodes), Spline (natural cubic spline) or
+    // PCHIP (shape preserving, no overshoot, cf. PCHIPInterp in NCSpline.hh).
+    // ExactLinear requires Linear.
     //
     // NB: Resolving a narrow input on a wide grid is costly for FFT (and its
     // accuracy is limited by the resampling), it is the caller's job to split
     // such inputs into analytic and smooth parts where needed.
 
     enum class ConvolveScheme { DirectTrapezoid, ExactLinear, FFT };
-    enum class ConvolveInterp { Linear, Lagrange4, Spline };
+    enum class ConvolveInterp { Linear, Lagrange4, Spline, PCHIP };
 
     VectD convolve( Span<const double> xf, Span<const double> f,
                     Span<const double> xg, Span<const double> g,

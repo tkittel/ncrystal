@@ -42,7 +42,7 @@ namespace NCRYSTAL_NAMESPACE {
     // ["mathutils","convolve",XF,F,XG,G,Z,OPTIONS...]: convolve(..) with
     // options "scheme=NAME" (direct, exactlin or fft; default exactlin),
     // "step=VAL" (FFT step, default 0 meaning auto) and "interp=NAME" (lin,
-    // lagrange4 or spline; default lin). Returns
+    // lagrange4, spline or pchip; default lin). Returns
     // {"h":[...],"cpu_seconds":VAL}.
     using Query = SmallVector<StrView,8>;
     void JSONQuery( std::ostream&, const Query& );

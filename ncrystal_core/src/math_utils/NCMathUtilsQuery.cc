@@ -80,7 +80,8 @@ namespace NCRYSTAL_NAMESPACE {
           const auto& val = kv.second;
           if ( key == "h" ) {
             h = val.toDbl();
-            if ( !h.has_value() || !(h.value()>0.0) || !std::isfinite(h.value()) )
+            if ( !h.has_value() || !( h.value() > 0.0 )
+                 || !std::isfinite( h.value() ) )
               invalid( query, "invalid value for h" );
           } else if ( key == "scheme" ) {
             if ( val == "trap" ) scheme = FourierScheme::Trapezoid;
@@ -116,7 +117,8 @@ namespace NCRYSTAL_NAMESPACE {
         auto t0 = std::chrono::steady_clock::now();
         VectD F = fourierIntegral( h.value(), fr, fi, w, scheme, evalmode,
                                    oversample, tail );
-        std::chrono::duration<double> dt = std::chrono::steady_clock::now() - t0;
+        const std::chrono::duration<double> dt
+          = std::chrono::steady_clock::now() - t0;
         os << "{\"F\":";
         streamJSONHugeDblVect( os, std::move(F) );
         os << ",\"cpu_seconds\":";
@@ -148,13 +150,15 @@ namespace NCRYSTAL_NAMESPACE {
             else invalid( query, "invalid scheme" );
           } else if ( key == "step" ) {
             auto v = val.toDbl();
-            if ( !v.has_value() || !(v.value()>=0.0) || !std::isfinite(v.value()) )
+            if ( !v.has_value() || !( v.value() >= 0.0 )
+                 || !std::isfinite( v.value() ) )
               invalid( query, "invalid value for step" );
             step = v.value();
           } else if ( key == "interp" ) {
             if ( val == "lin" ) interp = ConvolveInterp::Linear;
             else if ( val == "lagrange4" ) interp = ConvolveInterp::Lagrange4;
             else if ( val == "spline" ) interp = ConvolveInterp::Spline;
+            else if ( val == "pchip" ) interp = ConvolveInterp::PCHIP;
             else invalid( query, "invalid interp" );
           } else {
             invalid( query, "unknown option "+key );
@@ -176,7 +180,8 @@ namespace NCRYSTAL_NAMESPACE {
 
         auto t0 = std::chrono::steady_clock::now();
         VectD h = convolve( xf, f, xg, g, z, scheme, step, interp );
-        std::chrono::duration<double> dt = std::chrono::steady_clock::now() - t0;
+        const std::chrono::duration<double> dt
+          = std::chrono::steady_clock::now() - t0;
         os << "{\"h\":";
         streamJSONHugeDblVect( os, std::move(h) );
         os << ",\"cpu_seconds\":";
