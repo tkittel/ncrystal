@@ -67,6 +67,78 @@ NC::CrossSect NC::ElIncXS::evaluateMonoAtomic(NeutronEnergy ekin, double meanSqD
   return CrossSect{ bound_incoh_xs.dbl() * eval_1mexpmtdivt(kkk * meanSqDisp * ekin.dbl()) };
 }
 
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    //Piecewise cubic Hermite interpolation of f(t)=1-exp(-t), with nodes t
+    //from 2e-10 to beyond -log(1e-10), and coefficients p (in u, see
+    //NCIsoXSUtils.hh). On [a,a+h], |f-H| <= h^4*max|f^(4)|/384 =
+    //h^4*exp(-a)/384, and f >= f(a), so h=(192e-10*f(a)/exp(-a))^(1/4) gives a
+    //relative error below 0.5e-10. Below and above the nodes, f(t)=t and
+    //f(t)=1 are good to 0.5e-10 and 0.4e-10:
+    struct ElIncUnivTable {
+      VectD t, p;
+    };
+
+    const ElIncUnivTable& elIncUnivTable()
+    {
+      static const ElIncUnivTable tab = []()
+      {
+        constexpr double t_low = 1e-10;
+        constexpr double t_high = 24.0;//exp(-t_high)<0.4e-10
+        ElIncUnivTable res;
+        res.t.push_back( t_low );
+        while ( res.t.back() < t_high ) {
+          const double a = res.t.back();
+          const double fa = -stable_expm1( -a );
+          const double ea = stable_exp( -a );
+          const double h = std::sqrt( std::sqrt( 192e-10 * fa / ea ) );
+          const double b = a + h;
+          const double fb = -stable_expm1( -b );
+          const double d0 = h * ea;
+          const double d1 = h * stable_exp( -b );
+          res.p.insert( res.p.end(), { fa, d0,
+                                       3.0 * ( fb - fa ) - 2.0 * d0 - d1,
+                                       2.0 * ( fa - fb ) + d0 + d1 } );
+          res.t.push_back( b );
+        }
+        return res;
+      }();
+      return tab;
+    }
+  }
+}
+
+NC::IsoXSDescr::Tabulation NC::ElIncXS::tabulateMonoAtomic( double meanSqDisp,
+                                                            SigmaBound bound_incoh_xs )
+{
+  nc_assert( meanSqDisp >= 0.0 && meanSqDisp < 1e6 );
+  nc_assert( bound_incoh_xs.dbl() >= 0.0 && bound_incoh_xs.dbl() < 1e12 );
+  //e*xs = sigma/c * f(c*e), with f(t)=1-exp(-t) from the universal table:
+  constexpr double kkk = 16.0 * kPiSq * ekin2wlsqinv(1.0);
+  const double sigma = bound_incoh_xs.dbl();
+  const double c = kkk * meanSqDisp;
+  IsoXSDescr::Tabulation res;
+  if ( meanSqDisp < 1e-290 ) {
+    //Constant cross section (for msd<1e-290 good to 1e-10 below 1e277eV, and
+    //keeping E=t/c and the coefficients sigma/c*p, |p|<4, finite):
+    res.E = { 1.0, 2.0 };
+    res.p = { sigma, sigma, 0.0, 0.0 };
+    res.tail[1] = res.tail[3] = sigma;
+    return res;
+  }
+  const auto& ut = elIncUnivTable();
+  const double k = sigma / c;
+  res.E.reserve( ut.t.size() );
+  for ( auto t : ut.t )
+    res.E.push_back( t / c );
+  res.p.reserve( ut.p.size() );
+  for ( auto v : ut.p )
+    res.p.push_back( v * k );
+  res.tail[1] = sigma;
+  res.tail[2] = k;
+  return res;
+}
+
 NC::ElIncXS::~ElIncXS() = default;
 
 void NC::ElIncXS::set( const VectD& elm_msd,
