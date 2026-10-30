@@ -61,6 +61,14 @@ NC::FreeGasXSProvider::FreeGasXSProvider( Temperature temp_kelvin,
 
 NC::FreeGasXSProvider::~FreeGasXSProvider() = default;
 
+NC::IsoXSHighEForm NC::FreeGasXSProvider::highEForm() const
+{
+  //evalXSShapeASq is 1+0.5/a^2 above a^2=36 (neglecting terms of order
+  //exp(-36)/a), with a^2=m_ca*E:
+  nc_assert( m_ca > 0.0 );
+  return { m_sigmaFree, 0.5 * m_sigmaFree / m_ca, NeutronEnergy{ 36.0 / m_ca } };
+}
+
 double NC::FreeGasXSProvider::evalXSShapeASq(double a_squared)
 {
   //a^2 = A*E/kT.

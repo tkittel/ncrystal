@@ -67,6 +67,17 @@ namespace NCRYSTAL_NAMESPACE {
     LogGuideTable m_guide;
   };
 
+  //Form of a cross section at high energies: xs(E) = B + A/E for E >= emin.
+  //Note: emin must be large enough that the form is exact to double precision
+  //      (within a few ulp). It becomes the high-energy tail of an
+  //      IsoXSDescr::Tabulation (tail[3]=B, tail[2]=A), so only cross sections
+  //      with such a form for some finite emin can currently be tabulated
+  //      this way.
+  struct IsoXSHighEForm final {
+    double B, A;
+    NeutronEnergy emin;
+  };
+
   //Merge the descriptions of several components, each with a scale factor, into
   //a description of their summed cross section. The breakpts are the sorted
   //union of all breakpts. The table is the exact sum of the scaled tables
