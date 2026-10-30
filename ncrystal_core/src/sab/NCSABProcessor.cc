@@ -35,8 +35,6 @@
 namespace NC = NCrystal;
 namespace NCS = NCrystal::SABUtils;
 
-//#define NCRYSTAL_SABPROC_SMOOTH_INTERP_LOGLOG
-
 namespace NCRYSTAL_NAMESPACE {
 
   namespace SABUtils {
@@ -236,7 +234,7 @@ namespace NCRYSTAL_NAMESPACE {
         VectD m_sIntegral;
 
         //For smooth sIntegrals, we need:
-        Optional<PCHIPInterp> m_sIntegralSmooth;
+        Optional<HymanInterp> m_sIntegralSmooth;
 
         //Extra diagnostics data
         VectD m_diagnostics_fcAR; //Full cell AR at at each m_eGrid pt
@@ -660,17 +658,24 @@ namespace NCRYSTAL_NAMESPACE {
         return res;
       }
 
-      //fixme: clarify that this returns in E/kT, but requested_egrid is in eV
-      VectD determineEGrid( const SABCfg::Cfg& cfg,
+      //Energy grid (E/kT, while requested_egrid is in eV): either a fixed grid,
+      //or (grid empty) the range [tlo,thi] of an adaptive grid:
+      struct EGridSpec {
+        VectD grid;
+        double tlo = 0.0, thi = 0.0;
+      };
+
+      EGridSpec determineEGrid( const SABCfg::Cfg& cfg,
                             const SABData& sab,
                             const CellMgr& cellmgr,
                             const SABSurveyor& surv,
                             std::shared_ptr<const VectD> requested_egrid )
       {
         const auto scheme = cfg.integSchemeDetermineEGrid;
-        static_assert( std::is_same<decltype(cfg.egrid_npts),unsigned>
-                       ::value, "" );
-        auto npts = static_cast<std::size_t>( cfg.egrid_npts );
+        //Number of points of a fixed grid requested in the data (otherwise
+        //the grid is adaptive):
+        std::size_t npts = 0;
+        bool npts_requested = false;
 
         //fixme: major cleanup needed
         Optional<NeutronEnergy> suggestedEMax_by_egrid;
@@ -702,6 +707,7 @@ namespace NCRYSTAL_NAMESPACE {
                 NCRYSTAL_THROW2(BadInput,"Invalid egrid npts (must be"
                                 " integral value, at least 10): "<<re.at(2));
               npts = static_cast<std::size_t>(v);
+              npts_requested = true;
             }
           } else {
             //complete egrid given directly by request, so in this case we
@@ -710,16 +716,16 @@ namespace NCRYSTAL_NAMESPACE {
             if ( !( re.size() >= 10 ) )
               NCRYSTAL_THROW2(BadInput,"Invalid requested egrid (must have"
                               " length 1, 3, or >=10)");
-            VectD res;
-            res.reserve( re.size() );
+            EGridSpec res;
+            res.grid.reserve( re.size() );
             for ( auto e : re )
-              res.push_back( e * invkT );
+              res.grid.push_back( e * invkT );
             return res;
           }
         }
 
         {
-          nc_assert_always( npts >= 10 );
+          nc_assert_always( !npts_requested || npts >= 10 );
           if ( suggestedEMax_by_egrid.has_value() )
             suggestedEMax_by_egrid.value().validate();
           if ( suggestedEMin_by_egrid.has_value() )
@@ -778,6 +784,16 @@ namespace NCRYSTAL_NAMESPACE {
           E_min_max.first = NeutronEnergy( 1e-50 * E_min_max.second.get() );
         }
 
+        constexpr double lowE_factor = 1e-4;
+        const double invkT = 1.0/kT;
+        if ( !npts_requested ) {
+          //Adaptive grid over the same range as the fixed grid below:
+          EGridSpec res;
+          res.tlo = E_min_max.first.get() * lowE_factor * invkT;
+          res.thi = E_min_max.second.get() * invkT;
+          return res;
+        }
+
         VectD final_egrid;
         {
           //at lowE int(S)(E) = const*sqrt(E).
@@ -810,7 +826,6 @@ namespace NCRYSTAL_NAMESPACE {
             npts = 80;
           //+1 since the point at Emin is shared by both ranges:
           const std::size_t n = npts + 1 - n_lowe;
-          constexpr double lowE_factor = 1e-4;
           final_egrid.reserve(n+n_lowe);
           for ( auto ee : geomspace(E_min_max.first.get()*lowE_factor,
                                     E_min_max.first.get(), n_lowe) )
@@ -822,11 +837,191 @@ namespace NCRYSTAL_NAMESPACE {
           nc_assert_always( final_egrid.size() == npts );
         }
 
-        const double invkT = 1.0/kT;
         for ( auto& ee : final_egrid )
           ee *= invkT;
 
-        return final_egrid;
+        EGridSpec res;
+        res.grid = std::move( final_egrid );
+        return res;
+      }
+
+      //Phase-space integrals at (increasing) energy grid points:
+      struct EGridNode {
+        double t;//E/kT
+        double sint;//integral within kinematic boundary
+        double touched;//integral of touched cells
+        std::size_t ntouched;//number of touched cells
+      };
+
+      std::vector<EGridNode> integrateAtEGridPts( const VectD& tvals,
+                                                  const CellMgr& cellmgr,
+                                                  const SABSurveyor& surv,
+                                                  SABCfg::IntegrationScheme scheme )
+      {
+        std::vector<EGridNode> res;
+        res.reserve( tvals.size() );
+        sIntegralAtE_Result integAtE;
+        for ( auto t : tvals ) {
+          nc_assert( res.empty() || t > res.back().t );
+          sIntegralAtE( t, cellmgr, surv, scheme, integAtE );
+#ifndef NDEBUG
+          //The incremental touched-cells integral must equal a direct sum
+          //(checked at a few points only, to keep Debug builds fast):
+          if ( res.size() % 37 == 0 || res.size() + 1 == tvals.size() ) {
+            StableSumKahan touched;
+            auto cells = surv.data();
+            for ( auto i : ncrange( integAtE.nTouchedCells ) )
+              touched.add( cellmgr.getCellIntegral( cells[i].cellidx ) );
+            nc_assert_always( floateq( touched.sum(),
+                                       integAtE.integralTouchedCells ) );
+          }
+#endif
+          res.push_back( { t, integAtE.integralWithinKB,
+                           integAtE.integralTouchedCells,
+                           integAtE.nTouchedCells } );
+        }
+        return res;
+      }
+
+      //Intervals [t_i,t_{i+1}) where the interpolation of g(t)=Sint(t)/sqrt(t)
+      //disagrees by more than tol (relative) at the geometric midpoint with the
+      //cubic in log(t) through the 4 surrounding nodes. This is a cheap error
+      //estimate, needing no new integrals:
+      void addInterpDisagreementFlags( const VectD& x, const VectD& g,
+                                       const HymanInterp& interp, double tol,
+                                       std::vector<std::size_t>& flagged )
+      {
+        const std::size_t n = x.size();
+        if ( n < 4 )
+          return;
+        VectD lx;
+        lx.reserve( n );
+        for ( auto t : x )
+          lx.push_back( std::log( t ) );
+        for ( auto i : ncrange( n - 1 ) ) {
+          const double tm = std::sqrt( x[i] * x[i+1] );
+          if ( !( tm > x[i] && tm < x[i+1] ) )
+            continue;
+          const double sm = 0.5 * ( lx[i] + lx[i+1] );
+          const std::size_t j = ( i == 0 ? 0 : ncmin( i - 1, n - 4 ) );
+          double lag = 0.0;
+          for ( auto a : ncrange( j, j + 4 ) ) {
+            double w = g[a];
+            for ( auto b : ncrange( j, j + 4 ) )
+              if ( b != a )
+                w *= ( sm - lx[b] ) / ( lx[a] - lx[b] );
+            lag += w;
+          }
+          const double h = interp.eval( tm );
+          if ( ncabs( h - lag ) > tol * ncmax( ncabs( lag ), ncabs( h ) ) )
+            flagged.push_back( i );
+        }
+      }
+
+      //Adaptive energy grid over [tlo,thi], for interpolating
+      //g(t)=Sint(t)/sqrt(t) with HymanInterp (g is nearly constant at low t,
+      //where Sint~sqrt(t)). Starting from cfg.egrid_n0 geometric points, it is
+      //refined in passes, each computing its new integrals in one increasing
+      //sweep. Intervals are refined when:
+      //
+      //  * A check point added in the previous pass (the geometric midpoint, or
+      //    the points at 1/3 and 2/3 in log(t) with cfg.egrid_ncheck2)
+      //    deviates from the interpolation through the previous nodes. Both
+      //    intervals adjacent to the check point are then refined.
+      //  * The interpolation disagrees with a local cubic in log(t) (see
+      //    addInterpDisagreementFlags).
+      //  * Sint(t_i) < 0.8*Sint(t_{i+1}), since sampling between grid points
+      //    uses the sampler at t_{i+1}, so the acceptance rate is about
+      //    Sint(t_i)/Sint(t_{i+1}).
+      //
+      //The first two use a third of cfg.egrid_tolerance, as a margin for
+      //errors away from the points checked.
+      std::vector<EGridNode> adaptiveEGrid( const SABCfg::Cfg& cfg,
+                                            double tlo, double thi,
+                                            const CellMgr& cellmgr,
+                                            const SABSurveyor& surv )
+      {
+        nc_assert_always( tlo > 0.0 && thi > tlo && std::isfinite( thi ) );
+        nc_assert_always( cfg.egrid_n0 >= 4 );
+        constexpr double min_acceptance = 0.8;
+        const double tol = cfg.egrid_tolerance / 3.0;
+        const VectD check_fractions = ( cfg.egrid_ncheck2
+                                        ? VectD{ 1.0/3.0, 2.0/3.0 }
+                                        : VectD{ 0.5 } );
+
+        VectD t0 = geomspace( tlo, thi, cfg.egrid_n0 );
+        t0.front() = tlo;
+        t0.back() = thi;
+        auto nodes = integrateAtEGridPts( t0, cellmgr, surv,
+                                          cfg.integScheme );
+
+        //Intervals to refine, by the index of their left node (initially all):
+        std::vector<std::size_t> flagged;
+        for ( auto i : ncrange( nodes.size() - 1 ) )
+          flagged.push_back( i );
+
+        while ( true ) {
+          VectD x, g;
+          x.reserve( nodes.size() );
+          g.reserve( nodes.size() );
+          for ( auto& nd : nodes ) {
+            x.push_back( nd.t );
+            g.push_back( nd.sint / std::sqrt( nd.t ) );
+          }
+          HymanInterp interp( x, g );
+          addInterpDisagreementFlags( x, g, interp, tol, flagged );
+          for ( auto i : ncrange( nodes.size() - 1 ) )
+            if ( nodes[i].sint < min_acceptance * nodes[i+1].sint )
+              flagged.push_back( i );
+          std::sort( flagged.begin(), flagged.end() );
+          flagged.erase( std::unique( flagged.begin(), flagged.end() ),
+                         flagged.end() );
+
+          VectD tnew;
+          for ( auto i : flagged ) {
+            const double la = std::log( x[i] ), lb = std::log( x[i+1] );
+            for ( auto w : check_fractions ) {
+              const double tc = std::exp( la + w * ( lb - la ) );
+              if ( tc > x[i] && tc < x[i+1] )
+                tnew.push_back( tc );
+            }
+          }
+          flagged.clear();
+          if ( tnew.empty() )
+            break;
+          if ( nodes.size() + tnew.size() > cfg.egrid_npts_max )
+            NCRYSTAL_THROW2(CalcError,"SAB energy grid needs more than "
+                            <<cfg.egrid_npts_max<<" points to meet its"
+                            " precision target (please report it to "
+                            "the NCrystal developers for investigation).");
+          auto newnodes = integrateAtEGridPts( tnew, cellmgr, surv,
+                                               cfg.integScheme );
+          VectD failed;
+          for ( auto& nd : newnodes ) {
+            const double sint_interp = std::sqrt( nd.t ) * interp.eval( nd.t );
+            if ( ncabs( sint_interp - nd.sint ) > tol * ncabs( nd.sint ) )
+              failed.push_back( nd.t );
+          }
+          std::vector<EGridNode> merged;
+          merged.reserve( nodes.size() + newnodes.size() );
+          std::merge( nodes.begin(), nodes.end(),
+                      newnodes.begin(), newnodes.end(),
+                      std::back_inserter( merged ),
+                      []( const EGridNode& a, const EGridNode& b )
+                      { return a.t < b.t; } );
+          nodes = std::move( merged );
+          for ( auto t : failed ) {
+            auto it = std::lower_bound( nodes.begin(), nodes.end(), t,
+                                        []( const EGridNode& a, double tt )
+                                        { return a.t < tt; } );
+            nc_assert( it != nodes.begin() && it + 1 != nodes.end()
+                       && it->t == t );
+            const auto i = static_cast<std::size_t>( it - nodes.begin() );
+            flagged.push_back( i - 1 );
+            flagged.push_back( i );
+          }
+        }
+        return nodes;
       }
 
       SABProcImpl::SABProcImpl( const SABCfg::Cfg& cfg,
@@ -856,12 +1051,21 @@ namespace NCRYSTAL_NAMESPACE {
         }
         SABSurveyor surv(m_cellmgr.sabData());
 
-        m_eGrid = determineEGrid( cfg, m_cellmgr.sabData(), m_cellmgr,
-                                  surv, requested_egrid );
+        std::vector<EGridNode> egridNodes;
+        {
+          auto egspec = determineEGrid( cfg, m_cellmgr.sabData(), m_cellmgr,
+                                        surv, requested_egrid );
+          egridNodes = ( egspec.grid.empty()
+                         ? adaptiveEGrid( cfg, egspec.tlo, egspec.thi,
+                                          m_cellmgr, surv )
+                         : integrateAtEGridPts( egspec.grid, m_cellmgr, surv,
+                                                cfg.integScheme ) );
+        }
+        m_eGrid.reserve( egridNodes.size() );
+        for ( auto& nd : egridNodes )
+          m_eGrid.push_back( nd.t );
         nc_assert_always( !m_eGrid.empty() && m_eGrid.front() > 0.0 );
         m_eGridGuide = LogGuideTable( m_eGrid.data(), m_eGrid.size() );
-
-        const auto scheme = cfg.integScheme;
 
         std::size_t nTouchedCellsMax(0);
         VectD fcAR;//full-cell acceptance rate at each energy grid point
@@ -876,49 +1080,29 @@ namespace NCRYSTAL_NAMESPACE {
           if ( surv.data().size() > n_cellmax )
             NCRYSTAL_THROW2(BadInput,"Too many SAB cells (does not fit in int32)");
           m_sIntegral.reserve( m_eGrid.size() );
-          sIntegralAtE_Result integAtE;
           if ( do_sample ) {
             m_nTouchedCells.reserve( m_eGrid.size() );
             fcAR.reserve( m_eGrid.size() );
           }
           if ( do_diag )
             m_diagnostics_fcAR.reserve( m_eGrid.size() );
-          for ( auto& E_div_kT : m_eGrid ) {
-            sIntegralAtE( E_div_kT, m_cellmgr, surv, scheme, integAtE );
-            m_sIntegral.push_back( integAtE.integralWithinKB );
-#ifndef NDEBUG
-            //The incremental touched-cells integral must equal a direct sum
-            //(checked at a few energy grid points only, to keep Debug builds
-            //fast):
-            const std::size_t ie = m_sIntegral.size() - 1;
-            if ( ie % 37 == 0 || ie + 1 == m_eGrid.size() ) {
-              StableSumKahan touched;
-              auto cells = surv.data();
-              for ( auto i : ncrange( integAtE.nTouchedCells ) )
-                touched.add( m_cellmgr.getCellIntegral( cells[i].cellidx ) );
-              nc_assert_always( floateq( touched.sum(),
-                                         integAtE.integralTouchedCells ) );
-            }
-#endif
+          for ( auto& nd : egridNodes ) {
+            m_sIntegral.push_back( nd.sint );
             if ( do_diag )
-              m_diagnostics_fcAR.push_back( integAtE.integralTouchedCells
-                                            ? ( integAtE.integralWithinKB
-                                                /integAtE.integralTouchedCells )
+              m_diagnostics_fcAR.push_back( nd.touched
+                                            ? ( nd.sint / nd.touched )
                                             : 1.0 );
             if (!do_sample)
               continue;
 
-            fcAR.push_back( integAtE.integralTouchedCells > 0.0
-                            ? ( integAtE.integralWithinKB
-                                / integAtE.integralTouchedCells )
-                            : 0.0 );
+            fcAR.push_back( nd.touched > 0.0 ? ( nd.sint / nd.touched ) : 0.0 );
             //Full-cell sampling, unless initStripLadder picks a strip sampler:
-            nc_assert( integAtE.nTouchedCells < n_cellmax );
-            nc_assert( integAtE.nTouchedCells > 0 );
+            nc_assert( nd.ntouched < n_cellmax );
+            nc_assert( nd.ntouched > 0 );
             m_nTouchedCells.push_back( static_cast<std::uint32_t>
-                                       ( integAtE.nTouchedCells ) );
+                                       ( nd.ntouched ) );
             nTouchedCellsMax = std::max<std::size_t>( nTouchedCellsMax,
-                                                      integAtE.nTouchedCells );
+                                                      nd.ntouched );
           }
         }
 
@@ -961,57 +1145,49 @@ namespace NCRYSTAL_NAMESPACE {
           initStripBelowGrid();
 
         {
-          //We set up PCHIP interpolation. For more "proper" PCHIP behaviour, we
-          //let the PCHIP class determine endpoint slopes automatically, but do
-          //some slope sanity checks afterwards.
-          VectD xvals(m_eGrid);
-#ifdef NCRYSTAL_SABPROC_SMOOTH_INTERP_LOGLOG
-          for ( auto& e : xvals ) {
-            nc_assert( e > 0.0 && std::isfinite(e) );
-            e = std::log(e);
-          }
-#endif
-          VectD yvals(m_sIntegral);
-#ifdef NCRYSTAL_SABPROC_SMOOTH_INTERP_LOGLOG
-          for ( auto& e : yvals ) {
-            nc_assert( e > 0.0 && std::isfinite(e) );
-            e = std::log(e);
-          }
-#endif
-#ifdef NCRYSTAL_SABPROC_SMOOTH_INTERP_LOGLOG
-          //f(e)=k*sqrt(e) => log(f(e)) = log(k) + 0.5*log(e)
-          //               => d(logf)/d(loge) = 0.5
-          const double leftSlope = 0.5;
-#else
-          //f(e)=k*sqrt(e) => f'(e)=k/(2*sqrt(e))
-          //And with k= s(emin)/sqrt(emin) we get f'(emin)=s(emin)/(2emin)
-          const auto leftSlope = 0.5 * m_sIntegral.front() / m_eGrid.front();
-#endif
-          //Always autodetect slope at Emax, since we can not be sure to what
-          //degree the limiting behaviour has been reached.
-          m_sIntegralSmooth.emplace( xvals, yvals,
-                                     NullOpt, NullOpt,
-                                     PCHIPInterp::OptimiseForLogSpacedX::YES );
-          auto slopes = m_sIntegralSmooth.value().endPointSlopes();
-          constexpr double leftSlopeTol = 0.1;//not very tight, just a sanity
-                                              //check
-          if ( !floateq(leftSlope,slopes.first,leftSlopeTol,1e-10) ) {
-            NCRYSTAL_THROW2(CalcError,"Integral(S(alpha,beta)) over available"
-                            " phasespace does not appear to decrease"
-                            " as sqrt(E) at low E (actual slope was "
-                            <<fmtg(slopes.first)
-                            <<" while expected value was around "
-                            <<fmtg(leftSlope)<<".");
-          }
-          //No constraint on the slope at Emax (the grid ends where enough of
-          //the kernel is covered, and SABExtended takes over above), but the
-          //S integral can only increase with E, as KB(E) grows. With such
-          //values, the PCHIP interpolation never decreases either:
-          for ( auto i : ncrange( std::size_t(1), m_sIntegral.size() ) )
-            if ( vectAt( m_sIntegral, i ) < vectAt( m_sIntegral, i - 1 ) )
+          //Sint can only increase with E, as KB(E) grows. Closely spaced grid
+          //points can however show tiny decreases from the integration noise:
+          //clamp those (anything below the precision target), and treat larger
+          //decreases as errors:
+          for ( auto i : ncrange( std::size_t(1), m_sIntegral.size() ) ) {
+            const double prev = vectAt( m_sIntegral, i - 1 );
+            double& cur = m_sIntegral[i];
+            if ( !( cur < prev ) )
+              continue;
+            if ( prev - cur > cfg.egrid_tolerance * prev )
               NCRYSTAL_THROW2(CalcError,"Integral(S(alpha,beta)) over"
                               " available phasespace decreases with E at"
                               " E/kT=" << fmtg( vectAt( m_eGrid, i ) ) );
+            cur = prev;
+          }
+        }
+        {
+          //Interpolation of g(t)=Sint(t)/sqrt(t) with HymanInterp (cubic
+          //Hermite, fourth-order slopes, no overshoot where the data are
+          //monotone). g is nearly constant at low t where Sint~sqrt(t), which is
+          //checked at the first point:
+          VectD gvals;
+          gvals.reserve( m_eGrid.size() );
+          for ( auto i : ncrange( m_eGrid.size() ) )
+            gvals.push_back( m_sIntegral[i] / std::sqrt( m_eGrid[i] ) );
+          m_sIntegralSmooth.emplace( m_eGrid, gvals );
+          //The slope of Sint=sqrt(t)*g at the first point must be within 10% of
+          //that of sqrt(t)*g(t0), i.e. |2*t0*g'(t0)/g(t0)| <= 0.1 (not very
+          //tight, just a sanity check):
+          const double t0 = m_eGrid.front();
+          const double gslope = m_sIntegralSmooth.value().nodeSlopes().front();
+          if ( !( ncabs( 2.0 * t0 * gslope ) <= 0.1 * ncabs( gvals.front() ) ) ) {
+            const double expected = 0.5 * m_sIntegral.front() / t0;
+            const double actual = expected + std::sqrt( t0 ) * gslope;
+            NCRYSTAL_THROW2(CalcError,"Integral(S(alpha,beta)) over available"
+                            " phasespace does not appear to decrease"
+                            " as sqrt(E) at low E (actual slope was "
+                            <<fmtg(actual)
+                            <<" while expected value was around "
+                            <<fmtg(expected)<<".");
+          }
+          //No constraint on the slope at Emax (the grid ends where enough of
+          //the kernel is covered, and SABExtended takes over above).
         }
       }
 
@@ -1034,16 +1210,9 @@ namespace NCRYSTAL_NAMESPACE {
           return m_lowEExtrapolationConstant * std::sqrt(t);
         }
         nc_assert( m_sIntegralSmooth.has_value() );
-        if ( t == 0.0 )
-          return kInfinity;
-#ifdef NCRYSTAL_SABPROC_SMOOTH_INTERP_LOGLOG
-        return std::exp(m_sIntegralSmooth.value().eval(std::log(t)));
-#else
-        //Clip at 0.0 just in case the interpolation in some rare cases could
-        //give values below 0.0 (should hopefully almost never happen in
-        //practice).
-        return ncmax(0.0,m_sIntegralSmooth.value().eval(t));
-#endif
+        //Sint=sqrt(t)*g(t), clipped at 0.0 just in case (HymanInterp keeps the
+        //sign of the node values):
+        return ncmax( 0.0, std::sqrt( t ) * m_sIntegralSmooth.value().eval( t ) );
       }
 
       ScatterOutcomeIsotropic
