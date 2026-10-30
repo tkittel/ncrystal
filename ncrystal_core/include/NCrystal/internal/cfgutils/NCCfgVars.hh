@@ -262,16 +262,14 @@ namespace NCRYSTAL_NAMESPACE {
       static constexpr value_type default_value() { return -1; }
       static value_type value_validate( value_type value )
       {
-        //Special expert ranges on top of the base -6..6: 100..106 is
-        //"next-gen but with linear sigma(E) interpolation", 200..206 is
+        //Special expert range on top of the base -6..6: 200..206 is
         //"next-gen but with the free-gas extender" (rather than the
-        //default short-collision-time extender), both for comparisons:
+        //default short-collision-time extender), for comparisons:
         if ( ! ( ( value>=-6 && value <= 6 )
-                 || ( value >= 100 && value <= 106 )
                  || ( value >= 200 && value <= 206 ) ) )
           NCRYSTAL_THROW2(BadInput,name<<" is an expert-only parameter"
-                          " which must be an integral value (-6..6,"
-                          " 100..106, or 200..206)");
+                          " which must be an integral value (-6..6, or"
+                          " 200..206)");
         return value;
       }
     };

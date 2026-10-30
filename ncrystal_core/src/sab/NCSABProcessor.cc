@@ -960,7 +960,7 @@ namespace NCRYSTAL_NAMESPACE {
         if ( do_sample )
           initStripBelowGrid();
 
-        if ( cfg.sIntegralInterp == SABCfg::SIntegralInterpolation::Smooth ) {
+        {
           //We set up PCHIP interpolation. For more "proper" PCHIP behaviour, we
           //let the PCHIP class determine endpoint slopes automatically, but do
           //some slope sanity checks afterwards.
@@ -1033,26 +1033,17 @@ namespace NCRYSTAL_NAMESPACE {
         if (t <= x.front()) {
           return m_lowEExtrapolationConstant * std::sqrt(t);
         }
-        if ( m_sIntegralSmooth.has_value() ) {
-          if ( t == 0.0 )
-            return kInfinity;
+        nc_assert( m_sIntegralSmooth.has_value() );
+        if ( t == 0.0 )
+          return kInfinity;
 #ifdef NCRYSTAL_SABPROC_SMOOTH_INTERP_LOGLOG
-          return std::exp(m_sIntegralSmooth.value().eval(std::log(t)));
+        return std::exp(m_sIntegralSmooth.value().eval(std::log(t)));
 #else
-          //Clip at 0.0 just in case the interpolation in some rare cases could
-          //give values below 0.0 (should hopefully almost never happen in
-          //practice).
-          return ncmax(0.0,m_sIntegralSmooth.value().eval(t));
+        //Clip at 0.0 just in case the interpolation in some rare cases could
+        //give values below 0.0 (should hopefully almost never happen in
+        //practice).
+        return ncmax(0.0,m_sIntegralSmooth.value().eval(t));
 #endif
-        }
-        //linear interpolation:
-        std::size_t i = m_eGridGuide.lowerBoundIdx(x.data(), x.size(), t); // 1..n-1
-        nc_assert( i>0 );
-        nc_assert( i<x.size() );
-        double x0 = x[i-1], x1 = x[i];
-        double y0 = y[i-1], y1 = y[i];
-        double r = (t - x0) / (x1 - x0);//fixme: cache more! (if not in smooth mode)
-        return nclerp( y0, y1, r );
       }
 
       ScatterOutcomeIsotropic
@@ -1239,8 +1230,7 @@ namespace NCRYSTAL_NAMESPACE {
         streamJSONHugeDblVect(os, VectD( m_eGrid ));
         os <<",\"sintegral\":";
         streamJSONHugeDblVect(os, VectD( m_sIntegral ));
-        os <<",\"egrid_interpolation\":";
-        streamJSON(os,(m_sIntegralSmooth.has_value()?"smooth":"linear"));
+
         os <<",\"kT\":";
         streamJSON(os,m_kT);
 
@@ -1435,15 +1425,13 @@ void NCS::SABProcessor::toJSONProcessInfo( std::ostream& os,
     if ( sigma_scale.has_value() )
       tmp << ";sigma_free="
           <<sigma_scale.value().free(sab.elementMassAMU());
-    if ( !sp->m_sIntegralSmooth.has_value() )
-      tmp << ";Einterp=linear";
+
 
     streamJSONDictEntry( os, "summarystr", tmp.str(), JSONDictPos::FIRST );
   }
   streamJSONDictEntry( os, "Emax", emax.dbl()  );
   streamJSONDictEntry( os, "Emin", emin.dbl()  );
-  streamJSONDictEntry( os, "Einterp", (sp->m_sIntegralSmooth.has_value()
-                                       ?"smooth":"linear")  );
+
   streamJSONDictEntry( os, "negrid", negrid  );
   streamJSONDictEntry( os, "T", sab.temperature().dbl()  );
   streamJSONDictEntry( os, "M", sab.elementMassAMU().dbl()  );
