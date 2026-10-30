@@ -24,6 +24,7 @@
 #include "NCrystal/core/NCTypes.hh"
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
 #include "NCrystal/internal/utils/NCVector.hh"
+#include "NCrystal/internal/utils/NCIsoXSUtils.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -79,6 +80,9 @@ namespace NCRYSTAL_NAMESPACE {
     static double evalXSShapeASq(double a_squared);
 
     SigmaFree sigmaFree() const { return SigmaFree{ m_sigmaFree }; }
+
+    //High energy form, sigma_free*(1+kT/(2*A*E)) above A*E/kT=36:
+    IsoXSHighEForm highEForm() const;
   private:
     double m_sigmaFree, m_ca;
   };
