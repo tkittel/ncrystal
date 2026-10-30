@@ -20,6 +20,7 @@
 
 #include "NCrystal/internal/math_utils/NCMathUtilsQuery.hh"
 #include "NCrystal/internal/math_utils/NCFourierInt.hh"
+#include "NCrystal/internal/math_utils/NCConvolve.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include <chrono>
 
@@ -73,6 +74,7 @@ namespace NCRYSTAL_NAMESPACE {
         FourierScheme scheme = FourierScheme::PiecewiseLinear;
         FourierEval evalmode = FourierEval::Direct;
         unsigned oversample = 8;
+        FourierTail tail = FourierTail::None;
         for ( auto& kv : opts ) {
           const auto& key = kv.first;
           const auto& val = kv.second;
@@ -96,6 +98,10 @@ namespace NCRYSTAL_NAMESPACE {
             if ( !v.has_value() || v.value() < 1 || v.value() > 1024 )
               invalid( query, "invalid value for oversample" );
             oversample = static_cast<unsigned>( v.value() );
+          } else if ( key == "tail" ) {
+            if ( val == "none" ) tail = FourierTail::None;
+            else if ( val == "geometric" ) tail = FourierTail::Geometric;
+            else invalid( query, "invalid tail" );
           } else {
             invalid( query, "unknown option "+key );
           }
@@ -109,10 +115,64 @@ namespace NCRYSTAL_NAMESPACE {
 
         auto t0 = std::chrono::steady_clock::now();
         VectD F = fourierIntegral( h.value(), fr, fi, w, scheme, evalmode,
-                                   oversample );
+                                   oversample, tail );
         std::chrono::duration<double> dt = std::chrono::steady_clock::now() - t0;
         os << "{\"F\":";
         streamJSONHugeDblVect( os, std::move(F) );
+        os << ",\"cpu_seconds\":";
+        streamJSON( os, dt.count() );
+        os << '}';
+      }
+
+      void queryConvolve( std::ostream& os, const Query& query )
+      {
+        if ( query.size() < 7 )
+          invalid( query, "usage: [\"mathutils\",\"convolve\",XF,F,XG,G,Z,"
+                   "OPTIONS...]" );
+        VectD xf = takeJSONInputDblVect( query.at(2) );
+        VectD f = takeJSONInputDblVect( query.at(3) );
+        VectD xg = takeJSONInputDblVect( query.at(4) );
+        VectD g = takeJSONInputDblVect( query.at(5) );
+        VectD z = takeJSONInputDblVect( query.at(6) );
+        auto opts = parseOptions( query, 7 );
+        ConvolveScheme scheme = ConvolveScheme::ExactLinear;
+        double step = 0.0;
+        for ( auto& kv : opts ) {
+          const auto& key = kv.first;
+          const auto& val = kv.second;
+          if ( key == "scheme" ) {
+            if ( val == "direct" ) scheme = ConvolveScheme::DirectTrapezoid;
+            else if ( val == "exactlin" ) scheme = ConvolveScheme::ExactLinear;
+            else if ( val == "fft" ) scheme = ConvolveScheme::FFT;
+            else invalid( query, "invalid scheme" );
+          } else if ( key == "step" ) {
+            auto v = val.toDbl();
+            if ( !v.has_value() || !(v.value()>=0.0) || !std::isfinite(v.value()) )
+              invalid( query, "invalid value for step" );
+            step = v.value();
+          } else {
+            invalid( query, "unknown option "+key );
+          }
+        }
+        auto checkGrid = [&query]( const VectD& x, const VectD& y,
+                                   const char * name )
+        {
+          if ( x.size() < 2 || x.size() != y.size() )
+            invalid( query, std::string(name) + " grid must have at least two"
+                     " points and the same size as its values" );
+          for ( std::size_t i = 1; i < x.size(); ++i )
+            if ( !( x[i] > x[i-1] ) )
+              invalid( query, std::string(name) + " grid must be strictly"
+                       " increasing" );
+        };
+        checkGrid( xf, f, "XF" );
+        checkGrid( xg, g, "XG" );
+
+        auto t0 = std::chrono::steady_clock::now();
+        VectD h = convolve( xf, f, xg, g, z, scheme, step );
+        std::chrono::duration<double> dt = std::chrono::steady_clock::now() - t0;
+        os << "{\"h\":";
+        streamJSONHugeDblVect( os, std::move(h) );
         os << ",\"cpu_seconds\":";
         streamJSON( os, dt.count() );
         os << '}';
@@ -128,6 +188,9 @@ void NCMU::JSONQuery( std::ostream& os, const Query& query )
   const auto& sub = query.at(1);
   if ( sub == "fourierint" )
     queryFourierInt( os, query );
+  else if ( sub == "convolve" )
+    queryConvolve( os, query );
   else
-    invalid( query, "unknown subcommand (available: \"fourierint\")" );
+    invalid( query, "unknown subcommand (available: \"fourierint\","
+             " \"convolve\")" );
 }

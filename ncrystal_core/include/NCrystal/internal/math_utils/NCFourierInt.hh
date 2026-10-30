@@ -55,14 +55,22 @@ namespace NCRYSTAL_NAMESPACE {
     // exact piece integrals are still applied at w itself, so the piecewise
     // schemes remain valid beyond the Nyquist frequency pi/h in all modes.
 
+    //
+    // Optional tail (Trapezoid scheme only): Geometric continues the samples
+    // beyond T as q_{N-1+k} = q_{N-1} r^k, r = q_{N-1}/q_{N-2} (q = fr - i*fi,
+    // |r|<1 required), i.e. an exponential (or damped oscillating) decay, and
+    // adds the exact trapezoid sum of that continuation for each w.
+
     enum class FourierScheme { Trapezoid, TrapezoidEC,
                                PiecewiseLinear, CubicSpline };
     enum class FourierEval { Direct, FFTLinear, FFTCubic };
+    enum class FourierTail { None, Geometric };
 
     VectD fourierIntegral( double h, Span<const double> fr,
                            Span<const double> fi, Span<const double> w,
                            FourierScheme, FourierEval,
-                           unsigned oversample = 8 );
+                           unsigned oversample = 8,
+                           FourierTail = FourierTail::None );
 
   }
 }

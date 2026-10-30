@@ -71,6 +71,58 @@ def test_gaussian():
     b = fourierint( env, np.zeros_like(env), w, f'h={h}' )
     assert np.array_equal( a, b )
 
+def test_tail():
+    #Geometric tail on truncated exp(-g t + i w0 t) reproduces the long-range
+    #trapezoid result (identical up to rounding):
+    g, w0, h = 0.05, 2.0, 0.1
+    w = np.linspace( -5.0, 9.0, 141 )
+    def f( tmax ):
+        t = np.arange( 0.0, tmax + 0.5 * h, h )
+        env = np.exp( -g * t )
+        return env * np.cos( w0 * t ), env * np.sin( w0 * t )
+    a = fourierint( *f(14.0), w, f'h={h}', 'scheme=trap', 'tail=geometric' )
+    b = fourierint( *f(1000.0), w, f'h={h}', 'scheme=trap' )
+    assert np.abs( a - b ).max() < 1e-12 * np.abs( b ).max()
+    c = fourierint( *f(14.0), w, f'h={h}', 'scheme=trap' )
+    assert np.abs( c - b ).max() > 1e-2 * np.abs( b ).max()
+    print('Geometric tail OK')
+
+def convolve( xf, f, xg, g, z, *opts ):
+    return ncquery( ['mathutils','convolve',xf,f,xg,g,z] + list(opts),
+                    huge_arrays = True )['h']
+
+def test_convolve():
+    #Exact convolution of piecewise linear functions (with steps at the ends)
+    #vs. a fine brute-force trapezoid evaluation (error ~1e-5 from the steps):
+    xf = np.array([-1.0,0.0,0.5,2.0])
+    f = np.array([0.3,1.0,-0.2,0.7])
+    xg = np.array([-0.5,0.1,0.4])
+    g = np.array([0.5,2.0,0.1])
+    z = np.linspace( -3.0, 4.0, 71 )
+    h = convolve( xf, f, xg, g, z, 'scheme=exactlin' )
+    assert np.array_equal( h, convolve( xg, g, xf, f, z, 'scheme=exactlin' ) )
+    xx = np.linspace( -5.0, 5.0, 1000001 )
+    fi = np.interp( xx, xf, f, left = 0.0, right = 0.0 )
+    ref = np.array( [ np.trapezoid( fi * np.interp( v - xx, xg, g, left = 0.0,
+                                                    right = 0.0 ), xx )
+                      for v in z ] )
+    assert np.abs( h - ref ).max() < 3e-5
+    assert h[0] == 0.0 and h[-1] == 0.0
+    #Gaussians (sigma 1 and 0.5), all schemes close to the exact result:
+    x1 = np.linspace( -8.0, 8.0, 321 )
+    x2 = np.linspace( -4.0, 4.0, 161 )
+    def gauss( x, s ):
+        return np.exp( -0.5 * (x/s)**2 ) / ( s * math.sqrt( 2 * math.pi ) )
+    z = np.linspace( -3.0, 3.0, 61 )
+    exact = gauss( z, math.sqrt(1.25) )
+    print('Max relative errors for Gaussian convolution:')
+    for scheme in ('direct','exactlin','fft'):
+        h = convolve( x1, gauss(x1,1.0), x2, gauss(x2,0.5), z,
+                      f'scheme={scheme}' )
+        relerr = np.abs( h / exact - 1.0 ).max()
+        print(f'  {scheme:8} : %s'%('<1e-3' if relerr < 1e-3 else
+                                     '<1e-2' if relerr < 1e-2 else 'LARGE'))
+
 def test_errors():
     print('Errors:')
     arr = np.linspace( 1.0, 0.0, 5 )
@@ -82,6 +134,13 @@ def test_errors():
     expect_badinput( *q, arr, 'none', w, 'h=1', 'scheme=bla' )
     expect_badinput( *q, arr, arr[:-1], w, 'h=1' )
     expect_badinput( 'mathutils', 'bla' )
+    expect_badinput( *q, arr, 'none', w, 'h=1', 'scheme=lin', 'tail=geometric' )
+    expect_badinput( *q, arr[::-1].copy(), 'none', w, 'h=1', 'scheme=trap',
+                     'tail=geometric' )
+    q2 = ['mathutils','convolve']
+    expect_badinput( *q2, arr, arr, w, w, w, 'scheme=bla' )
+    expect_badinput( *q2, w, w, w, w[:-1], w )
+    expect_badinput( *q2, arr, arr, w, w, w )
     expect_badinput( *q, np.ones((2,2)), 'none', w, 'h=1' )
     expect_badinput( *q, 117.0, 'none', w, 'h=1' )
     expect_badinput( *q, [1.0,2.0], 'none', w, 'h=1' )
@@ -118,6 +177,8 @@ def test_placeholders():
 
 def main():
     test_gaussian()
+    test_tail()
+    test_convolve()
     test_errors()
     test_placeholders()
     print('All OK')

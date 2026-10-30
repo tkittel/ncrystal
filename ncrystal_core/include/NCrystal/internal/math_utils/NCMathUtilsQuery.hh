@@ -35,8 +35,14 @@ namespace NCRYSTAL_NAMESPACE {
     // ["mathutils","fourierint",FR,FI,W,OPTIONS...]: fourierIntegral(..) with
     // FI an array or "none", and options "h=VAL" (required), "scheme=NAME"
     // (trap, trapec, lin or cubic; default lin), "eval=NAME" (direct, fftlin
-    // or fftcubic; default direct) and "oversample=N" (default 8). Returns
+    // or fftcubic; default direct), "oversample=N" (default 8) and
+    // "tail=NAME" (none or geometric; default none). Returns
     // {"F":[...],"cpu_seconds":VAL}.
+    //
+    // ["mathutils","convolve",XF,F,XG,G,Z,OPTIONS...]: convolve(..) with
+    // options "scheme=NAME" (direct, exactlin or fft; default exactlin) and
+    // "step=VAL" (FFT step, default 0 meaning auto). Returns
+    // {"h":[...],"cpu_seconds":VAL}.
     using Query = SmallVector<StrView,8>;
     void JSONQuery( std::ostream&, const Query& );
 

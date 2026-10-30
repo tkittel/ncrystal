@@ -165,7 +165,8 @@ NC::VectD NC::MathUtils::fourierIntegral( double h, Span<const double> fr,
                                           Span<const double> w,
                                           FourierScheme scheme,
                                           FourierEval evalmode,
-                                          unsigned oversample )
+                                          unsigned oversample,
+                                          FourierTail tail )
 {
 #ifndef NDEBUG
   nc_assert_always( h > 0.0 && std::isfinite(h) );
@@ -175,6 +176,23 @@ NC::VectD NC::MathUtils::fourierIntegral( double h, Span<const double> fr,
 #endif
   const std::size_t N = fr.size();
   const bool has_im = !fi.empty();
+
+  //Geometric tail: ratio r and last value of q = fr - i*fi:
+  Cplx tail_r, tail_q;
+  if ( tail == FourierTail::Geometric ) {
+    if ( scheme != FourierScheme::Trapezoid )
+      NCRYSTAL_THROW(BadInput,"fourierIntegral: geometric tail is only"
+                     " supported for the trapezoid scheme");
+    tail_q = Cplx( fr[N-1], has_im ? -fi[N-1] : 0.0 );
+    const Cplx qprev( fr[N-2], has_im ? -fi[N-2] : 0.0 );
+    if ( !( std::norm(qprev) > 0.0 ) )
+      NCRYSTAL_THROW(BadInput,"fourierIntegral: geometric tail requires a"
+                     " non-zero second-to-last value");
+    tail_r = tail_q / qprev;
+    if ( !( std::norm(tail_r) < 1.0 ) )
+      NCRYSTAL_THROW(BadInput,"fourierIntegral: geometric tail requires"
+                     " |q_{N-1}/q_{N-2}|<1 (decaying samples)");
+  }
 
   //Terms: F(w) = (1/pi) Re sum_m G_m(w) sum_n c[m]_n e^{iw t_n}, where q =
   //fr - i*fi so Re[q e^{iwt}] = fr cos(wt) + fi sin(wt). G_m(w) is 1 for the
@@ -260,6 +278,12 @@ NC::VectD NC::MathUtils::fourierIntegral( double h, Span<const double> fr,
       const Cplx iw( 0.0, ww );
       const Cplx eT( std::cos(ww*T), std::sin(ww*T) );
       acc -= ( h * h / 12.0 ) * ( ( qTp + iw * qT ) * eT - ( q0p + iw * q0 ) );
+    }
+    if ( tail == FourierTail::Geometric ) {
+      //h q_{N-1} e^{iwT} [ 1/(1-r e^{iwh}) - 1/2 ]:
+      const Cplx eT( std::cos(ww*T), std::sin(ww*T) );
+      const Cplx eh( std::cos(ww*h), std::sin(ww*h) );
+      acc += h * tail_q * eT * ( 1.0 / ( 1.0 - tail_r * eh ) - 0.5 );
     }
     res.push_back( acc.real() * kInvPi );
   }
