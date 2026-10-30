@@ -153,6 +153,42 @@ def test_overshoot():
                                                     else '<-1e-3' if r < -1e-3
                                                     else 'small' ))
 
+def test_lines():
+    #Oscillator lines: exact sum rules and detailed balance, and weights vs.
+    #the closed form for small A (w_{+-1} ~ A e^{+-betaE/2}/(2 sinh)):
+    print('Oscillator lines:')
+    for A, bE in ( (1e-6,1.0), (0.3,2.0), (5.0,0.5), (50.0,30.0), (2.0,317.0) ):
+        r = ncquery( ['mathutils','osclines',f'A={A}',f'betaE={bE}'],
+                     huge_arrays = True )
+        s, w = r['shifts'], r['weights']
+        assert np.all( np.diff( s ) > 0 ) and np.all( w > 0 )
+        assert abs( w.sum() - 1.0 ) < 1e-12
+        assert abs( ( w * s ).sum() / ( -A * bE ) - 1.0 ) < 1e-10
+        k = np.rint( -s / bE ).astype( int )
+        d = dict( zip( k, w ) )
+        for kk in k:
+            if kk > 0 and -kk in d and d[kk] > 1e-12 * w.max():
+                assert abs( d[-kk] / d[kk] * math.exp( kk * bE ) - 1 ) < 1e-12
+        print(f'  A={A} betaE={bE}: lines k={k.min()}..{k.max()} OK')
+    r = ncquery( ['mathutils','osclines','A=1e-6','betaE=1'], huge_arrays = True )
+    d = dict( zip( np.rint( -r['shifts'] ).astype( int ), r['weights'] ) )
+    assert abs( d[1] / ( 1e-6 * math.exp( 0.5 ) / ( 2 * math.sinh( 0.5 ) ) )
+                - 1 ) < 1e-5
+    #Shift-and-add of a Gaussian: exact for shifted copies:
+    x = np.linspace( -10.0, 10.0, 2001 )
+    g = np.exp( -0.5 * x * x )
+    sh = np.array( [ -2.0, 0.5, 3.0 ] )
+    wt = np.array( [ 0.2, 0.5, 0.3 ] )
+    z = np.linspace( -4.0, 4.0, 81 ) + 0.0123
+    exact = sum( wk * np.exp( -0.5 * ( z - sk )**2 ) for sk, wk in zip( sh, wt ) )
+    for interp in ( 'lin', 'spline', 'pchip' ):
+        h = ncquery( ['mathutils','shiftadd',x,g,sh,wt,z,f'interp={interp}'],
+                     huge_arrays = True )['h']
+        relerr = np.abs( h / exact - 1 ).max()
+        print(f'  shiftadd {interp:6}: %s'%( '<1e-7' if relerr < 1e-7 else
+                                             '<1e-4' if relerr < 1e-4 else
+                                             'LARGE' ))
+
 def test_errors():
     print('Errors:')
     arr = np.linspace( 1.0, 0.0, 5 )
@@ -167,6 +203,9 @@ def test_errors():
     expect_badinput( *q, arr, 'none', w, 'h=1', 'scheme=lin', 'tail=geometric' )
     expect_badinput( *q, arr[::-1].copy(), 'none', w, 'h=1', 'scheme=trap',
                      'tail=geometric' )
+    expect_badinput( 'mathutils','osclines','A=1' )
+    expect_badinput( 'mathutils','osclines','A=-1','betaE=1' )
+    expect_badinput( 'mathutils','shiftadd',w,w,w,w[:-1],w )
     q2 = ['mathutils','convolve']
     expect_badinput( *q2, arr, arr, w, w, w, 'scheme=bla' )
     expect_badinput( *q2, w, w, w, w, w, 'interp=bla' )
@@ -212,6 +251,7 @@ def main():
     test_tail()
     test_convolve()
     test_overshoot()
+    test_lines()
     test_errors()
     test_placeholders()
     print('All OK')

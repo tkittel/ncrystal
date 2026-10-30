@@ -44,6 +44,14 @@ namespace NCRYSTAL_NAMESPACE {
     // "step=VAL" (FFT step, default 0 meaning auto) and "interp=NAME" (lin,
     // lagrange4, spline or pchip; default lin). Returns
     // {"h":[...],"cpu_seconds":VAL}.
+    //
+    // ["mathutils","shiftadd",XG,G,SHIFTS,WEIGHTS,Z,OPTIONS...]: shiftAndAdd(..)
+    // with option "interp=NAME" (as for convolve). Returns
+    // {"h":[...],"cpu_seconds":VAL}.
+    //
+    // ["mathutils","osclines","A=VAL","betaE=VAL","reltol=VAL"]:
+    // oscillatorLines(..) (reltol optional, default 1e-14). Returns
+    // {"shifts":[...],"weights":[...]}.
     using Query = SmallVector<StrView,8>;
     void JSONQuery( std::ostream&, const Query& );
 

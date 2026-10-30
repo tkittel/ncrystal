@@ -21,6 +21,7 @@
 #include "NCrystal/internal/math_utils/NCMathUtilsQuery.hh"
 #include "NCrystal/internal/math_utils/NCFourierInt.hh"
 #include "NCrystal/internal/math_utils/NCConvolve.hh"
+#include "NCrystal/internal/math_utils/NCLines.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include <chrono>
 
@@ -56,6 +57,24 @@ namespace NCRYSTAL_NAMESPACE {
           res[key] = parts.at(1).trimmed();
         }
         return res;
+      }
+
+      ConvolveInterp parseInterp( const Query& query, const StrView& val )
+      {
+        if ( val == "lin" ) return ConvolveInterp::Linear;
+        if ( val == "lagrange4" ) return ConvolveInterp::Lagrange4;
+        if ( val == "spline" ) return ConvolveInterp::Spline;
+        if ( val == "pchip" ) return ConvolveInterp::PCHIP;
+        invalid( query, "invalid interp" );
+      }
+
+      double parseDbl( const Query& query, const std::string& key,
+                       const StrView& val )
+      {
+        auto v = val.toDbl();
+        if ( !v.has_value() || !std::isfinite( v.value() ) )
+          invalid( query, "invalid value for "+key );
+        return v.value();
       }
 
       void queryFourierInt( std::ostream& os, const Query& query )
@@ -155,11 +174,7 @@ namespace NCRYSTAL_NAMESPACE {
               invalid( query, "invalid value for step" );
             step = v.value();
           } else if ( key == "interp" ) {
-            if ( val == "lin" ) interp = ConvolveInterp::Linear;
-            else if ( val == "lagrange4" ) interp = ConvolveInterp::Lagrange4;
-            else if ( val == "spline" ) interp = ConvolveInterp::Spline;
-            else if ( val == "pchip" ) interp = ConvolveInterp::PCHIP;
-            else invalid( query, "invalid interp" );
+            interp = parseInterp( query, val );
           } else {
             invalid( query, "unknown option "+key );
           }
@@ -188,6 +203,68 @@ namespace NCRYSTAL_NAMESPACE {
         streamJSON( os, dt.count() );
         os << '}';
       }
+
+      void queryShiftAdd( std::ostream& os, const Query& query )
+      {
+        if ( query.size() < 7 )
+          invalid( query, "usage: [\"mathutils\",\"shiftadd\",XG,G,SHIFTS,"
+                   "WEIGHTS,Z,OPTIONS...]" );
+        VectD xg = takeJSONInputDblVect( query.at(2) );
+        VectD g = takeJSONInputDblVect( query.at(3) );
+        VectD shifts = takeJSONInputDblVect( query.at(4) );
+        VectD weights = takeJSONInputDblVect( query.at(5) );
+        VectD z = takeJSONInputDblVect( query.at(6) );
+        ConvolveInterp interp = ConvolveInterp::Linear;
+        for ( auto& kv : parseOptions( query, 7 ) ) {
+          if ( kv.first == "interp" )
+            interp = parseInterp( query, kv.second );
+          else
+            invalid( query, "unknown option "+kv.first );
+        }
+        if ( xg.size() < 2 || xg.size() != g.size() )
+          invalid( query, "XG grid must have at least two points and the same"
+                   " size as G" );
+        for ( std::size_t i = 1; i < xg.size(); ++i )
+          if ( !( xg[i] > xg[i-1] ) )
+            invalid( query, "XG grid must be strictly increasing" );
+        if ( shifts.size() != weights.size() )
+          invalid( query, "SHIFTS and WEIGHTS must have the same size" );
+        auto t0 = std::chrono::steady_clock::now();
+        VectD h = shiftAndAdd( xg, g, shifts, weights, z, interp );
+        const std::chrono::duration<double> dt
+          = std::chrono::steady_clock::now() - t0;
+        os << "{\"h\":";
+        streamJSONHugeDblVect( os, std::move(h) );
+        os << ",\"cpu_seconds\":";
+        streamJSON( os, dt.count() );
+        os << '}';
+      }
+
+      void queryOscLines( std::ostream& os, const Query& query )
+      {
+        Optional<double> A, betaE;
+        double reltol = 1e-14;
+        for ( auto& kv : parseOptions( query, 2 ) ) {
+          const double v = parseDbl( query, kv.first, kv.second );
+          if ( kv.first == "A" && v >= 0.0 )
+            A = v;
+          else if ( kv.first == "betaE" && v > 0.0 )
+            betaE = v;
+          else if ( kv.first == "reltol" && v >= 0.0 && v < 1.0 )
+            reltol = v;
+          else
+            invalid( query, "unknown or invalid option "+kv.first );
+        }
+        if ( !A.has_value() || !betaE.has_value() )
+          invalid( query, "usage: [\"mathutils\",\"osclines\",\"A=VAL\","
+                   "\"betaE=VAL\",\"reltol=VAL\"] (reltol optional)" );
+        auto lines = oscillatorLines( A.value(), betaE.value(), reltol );
+        os << "{\"shifts\":";
+        streamJSONHugeDblVect( os, std::move(lines.shifts) );
+        os << ",\"weights\":";
+        streamJSONHugeDblVect( os, std::move(lines.weights) );
+        os << '}';
+      }
     }
   }
 }
@@ -201,7 +278,11 @@ void NCMU::JSONQuery( std::ostream& os, const Query& query )
     queryFourierInt( os, query );
   else if ( sub == "convolve" )
     queryConvolve( os, query );
+  else if ( sub == "shiftadd" )
+    queryShiftAdd( os, query );
+  else if ( sub == "osclines" )
+    queryOscLines( os, query );
   else
     invalid( query, "unknown subcommand (available: \"fourierint\","
-             " \"convolve\")" );
+             " \"convolve\", \"shiftadd\", \"osclines\")" );
 }
