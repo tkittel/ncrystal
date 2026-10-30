@@ -1,0 +1,194 @@
+#!/usr/bin/env python3
+
+################################################################################
+##                                                                            ##
+##  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   ##
+##                                                                            ##
+##  Copyright 2015-2026 NCrystal developers                                   ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+# FFTBENCH TEMPORARY: synthetic, physics-free input with the numerical
+# features of liquid H2/D2 DirectGA cases (narrow quasi-elastic diffusion
+# peak at small alpha, plus a ~0.5 eV vibration far out in beta), with an
+# exact reference. Dimensionless units (t in hbar/kT, beta = E/kT), kT of
+# H2 at 20K in mind (beta_max = 1160 ~ 2 eV, vibration at 0.546 eV):
+#
+#   I(t)   = I_D(t) I_v(t)
+#   I_D(t) = exp(-a (sqrt(t^2 + i t + C^2) - C)), a = 2 C W alpha:
+#            Egelstaff-Schofield diffusion incl. detailed balance, exact
+#            S_D(beta) = e^{-beta/2} a B K1(B r) e^{aC} / (pi r),
+#            r = sqrt(a^2 + beta^2), B^2 = C^2 + 1/4
+#   I_v(t) = exp(-L + L g(t)), L = alpha*lam_v, g(t) = exp(-i bv t - s^2 t^2/2):
+#            Gaussian vibration band at beta = -bv (energy loss side)
+#   S      = e^{-L} sum_n L^n/n! ( S_D * N(-n bv, n s^2) )(beta)
+#
+# Methods (all via the mathutils queries), output on DirectGA's 801-point
+# symmetric log beta grid:
+#   A "directga": trapezoid over t in [0,T] (T ~ 2ps, h = 1/8 of the period
+#     at beta_max, as DirectGA's defaults), direct evaluation, plus the
+#     geometric (exponential) tail with the local ratio of the last two
+#     samples (A) or, as DirectGA, the asymptotic diffusion rate a (A');
+#   B "split": exact e^{-L} S_D plus the transform of I_D (I_v - e^{-L}),
+#     which decays on the short vibration-band time scale (no tail needed);
+#   C "convolve": exact S_D on its own fine grid, convolved (trapezoid over
+#     the S_D grid, spline-interpolated lines) with the analytic sum of
+#     vibration lines.
+# Usage: h2like [quick].
+
+import math
+import sys
+
+import numpy as np
+from NCrystalDev.misc import evaluate_query
+from scipy.integrate import quad
+from scipy.special import k1e
+
+C, W = 1.0, 0.1
+B = math.sqrt( C * C + 0.25 )
+BV, SV, LAMV = 317.0, 5.8, 1e-3#vibration: position, width, alpha-weight
+BETAMAX = 1160.0
+
+def S_D( beta, a ):
+    r = np.sqrt( a * a + beta * beta )
+    return ( np.exp( -0.5 * beta ) * a * B * k1e( B * r )
+             * np.exp( a * C - B * r ) / ( r * math.pi ) )
+
+def I_D( t, a ):
+    return np.exp( -a * ( np.sqrt( t * t + 1j * t + C * C ) - C ) )
+
+def norm_pdf( x, mu, s ):
+    return np.exp( -0.5 * ( ( x - mu ) / s )**2 ) / ( s * math.sqrt( 2 * math.pi ) )
+
+def nmax_for( L ):
+    n, w, tot = 0, math.exp( -L ), 0.0
+    while True:
+        n += 1
+        w *= L / n
+        tot += w
+        if n > L and w < 1e-15:
+            return n
+
+def reference( beta, a, L ):
+    res = math.exp( -L ) * S_D( beta, a )
+    span = 60.0 + 3.0 * a#S_D support (beyond: < e^-30 relative)
+    w = math.exp( -L )
+    for n in range( 1, nmax_for( L ) + 1 ):
+        w *= L / n
+        mu, s = -n * BV, SV * math.sqrt( n )
+        for i, b in enumerate( beta ):
+            if abs( b - mu ) > span + 14 * s:
+                continue
+            lo, hi = max( -span, b - mu - 14 * s ), min( span, b - mu + 14 * s )
+            pts = [ p for p in ( -10 * a, 0.0, 10 * a ) if lo < p < hi ]
+            def integrand( v, b = b, mu = mu, s = s ):
+                return float( S_D( np.array( v ), a )
+                              * norm_pdf( b - v, mu, s ) )
+            val, _ = quad( integrand,
+                           lo, hi, points = pts or None, limit = 400,
+                           epsabs = 0.0, epsrel = 1e-11 )
+            res[i] += w * val
+    return res
+
+def fourierint( It, w, h, ev, tail = 'none', oversample = 8 ):
+    r = evaluate_query( ['mathutils', 'fourierint', It.real.copy(),
+                         It.imag.copy(), w, f'h={h}', 'scheme=trap',
+                         f'eval={ev}', f'oversample={oversample}',
+                         f'tail={tail}'], huge_arrays = True )
+    return r['F'], r['cpu_seconds']
+
+def method_directga( beta, a, L, T, h ):
+    t = np.arange( 0.0, T + 0.5 * h, h )
+    It = I_D( t, a ) * np.exp( -L + L * np.exp( -1j * BV * t
+                                                - 0.5 * SV * SV * t * t ) )
+    return fourierint( It, beta, h, 'direct', tail = 'geometric' )
+
+def method_directga_asym( beta, a, L, T, h ):
+    #As DirectGA: continuation with the asymptotic diffusion rate,
+    #I(T+u) = I(T) e^{-a u}, summed consistently with the trapezoid rule
+    #(geometric series with ratio r = e^{-a h}; q = conj(I)):
+    t = np.arange( 0.0, T + 0.5 * h, h )
+    It = I_D( t, a ) * np.exp( -L + L * np.exp( -1j * BV * t
+                                                - 0.5 * SV * SV * t * t ) )
+    S, cpu = fourierint( It, beta, h, 'direct' )
+    q, r = np.conj( It[-1] ), math.exp( -a * h )
+    tail = ( h * q * np.exp( 1j * beta * t[-1] )
+             * ( 1.0 / ( 1.0 - r * np.exp( 1j * beta * h ) ) - 0.5 ) ).real
+    return S + tail / math.pi, cpu
+
+def method_split( beta, a, L, T, h, ev ):
+    t = np.arange( 0.0, T + 0.5 * h, h )
+    gv = np.exp( -1j * BV * t - 0.5 * SV * SV * t * t )
+    It = I_D( t, a ) * math.exp( -L ) * np.expm1( L * gv )
+    S, cpu = fourierint( It, beta, h, ev, oversample = 64 )
+    return S + math.exp( -L ) * S_D( beta, a ), cpu
+
+def method_convolve( beta, a, L ):
+    #S_D on a grid fine near 0 (geometric) and uniform further out:
+    span = 60.0 + 3.0 * a
+    pos = np.unique( np.concatenate( [ np.geomspace( 1e-3 * a, span, 3000 ),
+                                       np.linspace( 0.0, span, 3000 )[1:] ] ) )
+    xd = np.concatenate( [ -pos[::-1], [0.0], pos ] )
+    nmax = nmax_for( L )
+    xv = np.arange( -nmax * BV - 14 * SV * math.sqrt( nmax ), -BV + 14 * SV,
+                    SV / 8 )
+    gv, w = np.zeros_like( xv ), math.exp( -L )
+    for n in range( 1, nmax + 1 ):
+        w *= L / n
+        gv += w * norm_pdf( xv, -n * BV, SV * math.sqrt( n ) )
+    r = evaluate_query( ['mathutils', 'convolve', xd, S_D( xd, a ), xv, gv,
+                         beta, 'scheme=direct', 'interp=spline'],
+                        huge_arrays = True )
+    return r['h'] + math.exp( -L ) * S_D( beta, a ), r['cpu_seconds']
+
+def main():
+    quick = ( sys.argv[1:] == ['quick'] )
+    pos = np.geomspace( 1e-5, BETAMAX, 400 )
+    beta = np.concatenate( [ -pos[::-1], [0.0], pos ] )
+    h = 2 * math.pi / BETAMAX / 8
+    T2ps = 5.2#2 ps in units of hbar/kT at 20K
+    print(f'H2-like synthetic case: vibration at -{BV} (width {SV}), weight'
+          f' alpha*{LAMV}, diffusion a=2CW*alpha (W={W}); {beta.size} output'
+          f' betas, h={h:.3g}. Max rel. errors: core (S>=1e-3 max) / mid'
+          ' (S>=1e-8 max) / vibration region (|beta|>100) with S>=1e-10 max'
+          ' / with S>=1e-14 max')
+    for alpha in ( (1e-3, 10.0) if quick else (1e-4, 1e-2, 1.0, 100.0,
+                                               1000.0) ):
+        a, L = 2 * C * W * alpha, alpha * LAMV
+        ref = reference( beta, a, L )
+        mx = ref.max()
+        vib = np.abs( beta ) > 100
+        regions = ( ref >= 1e-3 * mx, ref >= 1e-8 * mx,
+                    vib & ( ref >= 1e-10 * mx ), vib & ( ref >= 1e-14 * mx ) )
+        print(f'=== alpha={alpha:g}: a={a:.3g}, L=alpha*lam_v={L:.3g},'
+              f' {nmax_for(L)} vibration orders')
+        def report( name, S, cpu, ref = ref, regions = regions ):
+            errs = []
+            for sel in regions:
+                errs.append( np.abs( S[sel] / ref[sel] - 1 ).max()
+                             if sel.any() else float('nan') )
+            print(f'  {name:32s} ' + ' / '.join( f'{e:.1e}' for e in errs )
+                  + f'  cpu={cpu*1e3:8.1f}ms', flush = True )
+        for T in ( T2ps, 4 * T2ps ):
+            report( f'A directga T={T:g}', *method_directga( beta, a, L, T, h ) )
+            report( f'A\' directga asympt.tail T={T:g}',
+                    *method_directga_asym( beta, a, L, T, h ) )
+        for ev in ( 'direct', 'fftcubic' ):
+            report( f'B split T=1.7 {ev}',
+                    *method_split( beta, a, L, 1.7, h, ev ) )
+        report( 'C convolve', *method_convolve( beta, a, L ) )
+
+if __name__ == '__main__':
+    main()
