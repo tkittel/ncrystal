@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+
+################################################################################
+##                                                                            ##
+##  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   ##
+##                                                                            ##
+##  Copyright 2015-2026 NCrystal developers                                   ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+# FFTBENCH TEMPORARY: discrete lines (Einstein oscillators), which can not go
+# through Fourier integrals (periodic I(t)) but combine with a continuous
+# S(beta) by shifting and adding (["mathutils","osclines"/"shiftadd",...]):
+#
+#   1. Oscillator line weights (Miller recurrence / log-domain series) vs.
+#      scipy's ive, and the exact sum rules: sum w = 1, sum w s = -A betaE,
+#      detailed balance w_{-k} = e^{-k betaE} w_k.
+#   2. Oscillator lines * Egelstaff-Schofield diffusion S_D (analytic, exact
+#      reference sum_k w_k S_D(beta - s_k)), with S_D tabulated on uniform or
+#      geometric grids and shifted with linear (as Liquids/DirectGA
+#      Young-Koppel), spline or pchip interpolation. Reports max rel. errors
+#      (S >= 1e-3 / 1e-8 max) and detailed balance at exact +-beta pairs.
+#   3. Speed.
+#
+# Usage: lines
+
+import math
+import time
+
+import numpy as np
+from NCrystalDev.misc import evaluate_query
+from scipy.special import ive, k1e
+
+C = 1.0
+B = math.sqrt( C * C + 0.25 )
+
+def S_D( beta, a ):
+    r = np.sqrt( a * a + beta * beta )
+    return ( a * B * k1e( B * r ) * np.exp( a * C - B * r - 0.5 * beta )
+             / ( r * math.pi ) )
+
+def osclines( A, betaE ):
+    r = evaluate_query( ['mathutils', 'osclines', f'A={A}', f'betaE={betaE}'],
+                        huge_arrays = True )
+    return r['shifts'], r['weights']
+
+def shiftadd( xg, g, s, w, z, interp ):
+    r = evaluate_query( ['mathutils', 'shiftadd', xg, g, s, w, z,
+                         f'interp={interp}'], huge_arrays = True )
+    return r['h'], r['cpu_seconds']
+
+def weights_check():
+    print('=== 1. Oscillator line weights: max rel. deviation from scipy ive'
+          ' (w >= 1e-10 max; "-" where ive underflows), |sum w - 1|, recoil'
+          ' rel. error, detailed balance')
+    for A in ( 1e-6, 1e-2, 1.0, 30.0, 1e3, 1e5 ):
+        for bE in ( 0.01, 1.0, 30.0, 317.0 ):
+            t0 = time.perf_counter()
+            s, w = osclines( A, bE )
+            dt = time.perf_counter() - t0
+            k = np.rint( -s / bE ).astype( int )
+            y = A / math.sinh( 0.5 * bE )
+            with np.errstate( divide = 'ignore' ):
+                ref = np.exp( -A * math.tanh( 0.25 * bE ) + 0.5 * k * bE
+                              + np.log( ive( np.abs( k ), y ) ) )
+            sel = w >= 1e-10 * w.max()
+            dev = ( '-' if not np.all( ref[sel] > 0 )
+                    else f'{np.abs( w[sel] / ref[sel] - 1 ).max():.1e}' )
+            d = dict( zip( k, w ) )
+            db = max( [ abs( d[-kk] / d[kk] * math.exp( kk * bE ) - 1 )
+                        for kk in k if kk > 0 and -kk in d
+                        and d[kk] >= 1e-10 * w.max() ] or [0.0] )
+            print(f'  A={A:<7g} betaE={bE:<6g} {w.size:6d} lines: vs ive {dev:>7s}'
+                  f'  sum {abs( w.sum() - 1 ):.1e}'
+                  f'  recoil {abs( ( w * s ).sum() / ( -A * bE ) - 1 ):.1e}'
+                  f'  detbal {db:.1e}  ({dt*1e3:.1f} ms)', flush = True )
+
+def grid( kind, a, d ):
+    span = 60.0 + 3.0 * a
+    if kind == 'uniform':
+        return np.arange( -span, span + 0.5 * d, d )
+    #geometric around 0 (resolving the narrow quasi-elastic peak) + uniform:
+    pos = np.unique( np.concatenate( [ np.geomspace( 1e-3 * a, span, 2000 ),
+                                       np.arange( d, span + 0.5 * d, d ) ] ) )
+    return np.concatenate( [ -pos[::-1], [0.0], pos ] )
+
+def combined():
+    print('=== 2. Oscillator lines * ES diffusion: max rel. errors (S>=1e-3 /'
+          ' 1e-8 max) and detailed balance at exact +-beta pairs (S>=1e-3 /'
+          ' 1e-8 max)')
+    b = np.geomspace( 1e-3, 40.0, 1500 )
+    bfull = np.concatenate( [ -b[::-1], b ] )
+    for a, A, bE in ( ( 0.02, 0.05, 5.0 ), ( 2.0, 1.0, 5.0 ),
+                      ( 2.0, 3.0, 1.5 ), ( 20.0, 2.0, 12.0 ) ):
+        s, w = osclines( A, bE )
+        exact = sum( wk * S_D( bfull - sk, a ) for sk, wk in zip( s, w ) )
+        mx = exact.max()
+        print(f'  ES a={a}, oscillator A={A} betaE={bE} ({s.size} lines)')
+        for kind, d in ( ( 'uniform', 0.1 ), ( 'uniform', 0.02 ),
+                         ( 'geometric', 0.1 ) ):
+            xg = grid( kind, a, d )
+            g = S_D( xg, a )
+            for interp in ( 'lin', 'spline', 'pchip' ):
+                h, cpu = shiftadd( xg, g, s, w, bfull, interp )
+                e = np.abs( h / np.where( exact > 0, exact, 1.0 ) - 1 )
+                hp, hm = h[ b.size: ], h[ :b.size ][::-1]
+                sel_db = hp > 0
+                db = np.abs( hm[sel_db] * np.exp( -b[sel_db] ) / hp[sel_db]
+                             - 1 )
+                out = [ e[ exact >= thr * mx ].max() for thr in ( 1e-3, 1e-8 ) ]
+                dbo = [ db[ hp[sel_db] >= thr * mx ].max()
+                        for thr in ( 1e-3, 1e-8 ) ]
+                print(f'    {kind:9s} d={d:<5g} {xg.size:6d} pts {interp:6s}:'
+                      f' err {out[0]:.1e} / {out[1]:.1e}'
+                      f'  detbal {dbo[0]:.1e} / {dbo[1]:.1e}'
+                      f'  cpu={cpu*1e3:.1f}ms', flush = True )
+
+def speed():
+    print('=== 3. Speed: shiftadd, 801 outputs, cpu ms')
+    z = np.linspace( -40.0, 40.0, 801 )
+    for ng, nl in ( ( 1000, 10 ), ( 10000, 10 ), ( 10000, 100 ),
+                    ( 100000, 100 ) ):
+        xg = np.linspace( -60.0, 60.0, ng )
+        g = S_D( xg, 2.0 )
+        s = np.linspace( -30.0, 30.0, nl )
+        w = np.full( nl, 1.0 / nl )
+        row = [ min( shiftadd( xg, g, s, w, z, i )[1] for _ in range(3) )
+                for i in ( 'lin', 'spline', 'pchip' ) ]
+        print(f'  Ng={ng:<7d} lines={nl:<4d} lin={row[0]*1e3:8.2f}'
+              f' spline={row[1]*1e3:8.2f} pchip={row[2]*1e3:8.2f}',
+              flush = True )
+
+def main():
+    weights_check()
+    combined()
+    speed()
+
+if __name__ == '__main__':
+    main()
