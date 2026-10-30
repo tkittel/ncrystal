@@ -1,0 +1,180 @@
+#!/usr/bin/env python3
+
+################################################################################
+##                                                                            ##
+##  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   ##
+##                                                                            ##
+##  Copyright 2015-2026 NCrystal developers                                   ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+# FFTBENCH TEMPORARY: harmonic (incoherent Gaussian) S(alpha,beta) of Al at
+# 293.15K via Fourier integrals, cross-checked against NCrystal's phonon
+# expansion on exactly the same input:
+#
+#   G1(beta) from NCrystal (VDOSGn, unit normalised, piecewise linear),
+#   g1(t) = Int G1(beta) e^{i beta t} dbeta  (Filon "lin": exact for the
+#           piecewise linear G1, at any t),
+#   I(t)  = e^{-a} ( e^{a g1(t)} - 1 ),  a = alpha*lambda (lambda = gamma0),
+#   S(alpha,beta) = (1/2pi) Int e^{-i beta t} I(t) dt  (trapezoid),
+#
+# vs. the expansion e^{-a} sum_n a^n/n! G_n(beta) with NCrystal's G_n. As G1
+# jumps at the VDOS cutoff, g1(t) only decays like 1/t (oscillating), so
+# I(t) is truncated at T; variants subtract the first K orders from I(t)
+# (e^{a g1} - sum_{n<=K} (a g1)^n/n!) and add e^{-a} sum_{n<=K} a^n/n! G_n
+# back in beta space. Usage: harmonic [quick].
+
+import math
+import sys
+
+import NCrystalDev as NC
+import numpy as np
+from NCrystalDev.constants import constant_boltzmann
+from NCrystalDev.misc import evaluate_query
+from NCrystalDev.vdos import analyseVDOS, extractGn
+
+
+def fourierint( fr, fi, w, h, scheme, ev = 'direct' ):
+    r = evaluate_query( ['mathutils', 'fourierint', fr,
+                         'none' if fi is None else fi, w, f'h={h}',
+                         f'scheme={scheme}', f'eval={ev}', 'oversample=64'],
+                        huge_arrays = True )
+    return r['F'], r['cpu_seconds']
+
+class Gn:
+    #NCrystal's Gn(beta) (unit normalised in beta), linearly interpolated.
+    def __init__( self, di, kT ):
+        self.di, self.kT, self.cache = di, kT, {}
+        self.mass = di.atomData.averageMassAMU()
+    def get( self, n ):
+        if n not in self.cache:
+            e, g = extractGn( self.di, n, self.mass, self.di.temperature, 1.0 )
+            self.cache[n] = ( np.asarray(e) / self.kT,
+                              np.asarray(g) * self.kT )
+        return self.cache[n]
+    def eval( self, n, beta ):
+        b, g = self.get( n )
+        return np.interp( beta, b, g, left = 0.0, right = 0.0 )
+
+def g1_of_t( b1, g1, t ):
+    #g1(t) = 2 Int_0 Ge cos(bt) db + 2i Int_0 Go sin(bt) db, Ge/Go the even/odd
+    #parts of G1 (beta grid symmetric around 0, node at 0). The query gives
+    #(1/pi) Int_0 [fr cos(wt) + fi sin(wt)].
+    n = len( b1 )
+    assert n % 2 == 1 and abs( b1[n//2] ) < 1e-12 * b1[-1]
+    pos = g1[n//2:]
+    neg = g1[n//2::-1]
+    ge, go = 0.5 * ( pos + neg ), 0.5 * ( pos - neg )
+    h = b1[1] - b1[0]
+    re, c1 = fourierint( ge, None, t, h, 'lin' )
+    im, c2 = fourierint( np.zeros_like( go ), go, t, h, 'lin' )
+    return 2 * math.pi * ( re + 1j * im ), c1 + c2
+
+def gn_check( gn, b1, g1 ):
+    #Per-order check: G_n(beta) = (1/2pi) Int e^{-i beta t} g1(t)^n dt,
+    #evaluated at NCrystal's (thinned) G_n grid points:
+    print('=== Per-order check of NCrystal G_n at its own grid points vs'
+          ' Fourier (T=300, ht=0.02)')
+    ht = 0.02
+    t = np.arange( 0.0, 300.0 + 0.5 * ht, ht )
+    gt, _ = g1_of_t( b1, g1, t )
+    for n in ( 2, 3, 4, 6, 10, 20, 40 ):
+        bn, g = gn.get( n )
+        gtn = gt**n
+        F, _ = fourierint( gtn.real.copy(), gtn.imag.copy(), bn, ht, 'trap',
+                           'fftcubic' )
+        sel, core = g >= 1e-6 * g.max(), g >= 1e-2 * g.max()
+        rel = np.abs( F / np.where( sel, g, 1.0 ) - 1.0 )
+        print(f'  n={n:<3d} {bn.size:6d} points: maxrel={rel[sel].max():.2e}'
+              f' core={rel[core].max():.2e}', flush = True )
+
+def reference( gn, a, beta, interp ):
+    #e^{-a} sum_n a^n/n! G_n(beta), up to a Poisson tail < 1e-14, with G_n
+    #between its grid points interpolated linearly (as VDOSGn::eval does) or
+    #with a cubic spline:
+    from scipy.interpolate import CubicSpline
+    nmax, ref, w = 0, np.zeros_like( beta ), math.exp( -a )
+    while True:
+        nmax += 1
+        w *= a / nmax
+        if interp == 'lin':
+            ref += w * gn.eval( nmax, beta )
+        else:
+            bn, g = gn.get( nmax )
+            inside = ( beta >= bn[0] ) & ( beta <= bn[-1] )
+            ref += w * np.where( inside, CubicSpline( bn, g )(
+                np.clip( beta, bn[0], bn[-1] ) ), 0.0 )
+        if nmax > a and w < 1e-14 * math.exp( -a ) * max( 1.0, a ):
+            return ref, nmax
+
+def main():
+    quick = ( sys.argv[1:] == ['quick'] )
+    info = NC.createInfo( 'stdlib::Al_sg225.ncmat;temp=293.15K' )
+    di = info.dyninfos[0]
+    T = di.temperature
+    kT = constant_boltzmann * T
+    (emin, emax), dens = di.vdosData()
+    lam = analyseVDOS( emin, emax, dens, T,
+                       di.atomData.averageMassAMU() )['gamma0']
+    gn = Gn( di, kT )
+    b1, g1 = gn.get( 1 )
+    print(f'Al 293.15K: lambda={lam:.6g}, G1 on {b1.size} points,'
+          f' |beta|<={b1[-1]:.4g}')
+    gn_check( gn, b1, g1 )
+
+    beta = np.linspace( -40.0, 20.0, 1201 ) + 0.0123#off the G_n nodes
+    ht = 0.02#Nyquist pi/ht = 157 >> |beta|
+    for alpha in ( (0.2, 2.0) if quick else (0.02, 0.2, 1.0, 2.0, 4.0) ):
+        a = alpha * lam
+        refs = { k : reference( gn, a, beta, k ) for k in ( 'lin', 'spline' ) }
+        ref = refs['spline'][0]
+        sel = ref >= 1e-7 * ref.max()
+        core = ref >= 1e-3 * ref.max()
+        print(f'=== alpha={alpha} (a=alpha*lambda={a:.4g}, {refs["lin"][1]}'
+              ' orders): max rel. deviation from the expansion over'
+              ' S>=1e-7 max (core: >=1e-3 max), with the reference G_n'
+              ' interpolated linearly / with a spline')
+        for Tmax in ( (100.0, 1000.0) if quick else (30.0, 100.0, 300.0, 1000.0,
+                                                     3000.0) ):
+            t = np.arange( 0.0, Tmax + 0.5 * ht, ht )
+            gt, cg = g1_of_t( b1, g1, t )
+            for K in ( 0, 1, 2 ):
+                #e^{a g1} - sum_{n<=K} (a g1)^n/n!, computed stably:
+                x = a * gt
+                rem = np.expm1( x )
+                term = np.ones_like( x )
+                for n in range( 1, K + 1 ):
+                    term = term * x / n
+                    rem = rem - term
+                It = math.exp( -a ) * rem
+                S, cs = fourierint( It.real.copy(), It.imag.copy(), beta, ht,
+                                    'trap', 'fftcubic' )
+                w, S = math.exp( -a ), S.copy()
+                for n in range( 1, K + 1 ):
+                    w *= a / n
+                    S += w * gn.eval( n, beta )
+                out = []
+                for k in ( 'lin', 'spline' ):
+                    r = refs[k][0]
+                    rel = np.abs( S / np.where( sel, r, 1.0 ) - 1.0 )
+                    out.append( f'{rel[sel].max():.1e}/{rel[core].max():.1e}' )
+                print(f'  T={Tmax:<6g} N={t.size:<7d} K={K}'
+                      f' lin: {out[0]}  spline: {out[1]}'
+                      f'  |g1(T)|={abs(gt[-1]):.1e}'
+                      f' cpu: g1(t) {cg*1e3:.0f}ms, S {cs*1e3:.0f}ms',
+                      flush = True )
+
+if __name__ == '__main__':
+    main()
