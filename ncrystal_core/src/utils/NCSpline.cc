@@ -353,3 +353,87 @@ NC::PairDD NC::PCHIPInterp::endPointSlopes() const
   nc_assert_always(m_n >= 2);
   return { vectAt(m_data, 4 * m_n - 2), vectAt(m_data, 5 * m_n - 3 ) };
 }
+
+NC::HymanInterp::HymanInterp( Span<const double> x, Span<const double> y )
+  : m_x( x.begin(), x.end() ),
+    m_y( y.begin(), y.end() )
+{
+#ifndef NDEBUG
+  nc_assert_always( x.size() == y.size() && x.size() >= 4 );
+  nc_assert_always( nc_is_grid( x ) );
+  for ( auto e : y )
+    nc_assert_always( std::isfinite( e ) );
+#endif
+  //The slope at a node is the derivative there of the cubic through 4
+  //surrounding nodes (the average of the two such cubics with the node in
+  //their middle, where available). The Hyman filter then keeps its sign equal
+  //to that of the data where the data is monotone, limits it to 3 times the
+  //smaller adjacent secant slope (the Fritsch-Carlson bound), and zeroes it at
+  //local extrema of the data, which keeps each interval within its node values.
+  const std::size_t n = m_x.size();
+  //Derivative at x[i] of the cubic through nodes j..j+3 (Lagrange form):
+  auto derivCubic = [this]( std::size_t j, std::size_t i )
+  {
+    double res = 0.0;
+    for ( auto a : ncrange( j, j + 4 ) ) {
+      double da = 0.0;//derivative of the basis polynomial of node a at x[i]
+      for ( auto b : ncrange( j, j + 4 ) ) {
+        if ( b == a )
+          continue;
+        double prod = 1.0 / ( m_x[a] - m_x[b] );
+        for ( auto c : ncrange( j, j + 4 ) )
+          if ( c != a && c != b )
+            prod *= ( m_x[i] - m_x[c] ) / ( m_x[a] - m_x[c] );
+        da += prod;
+      }
+      res += m_y[a] * da;
+    }
+    return res;
+  };
+  m_m.resize( n );
+  for ( auto i : ncrange( n ) ) {
+    //Stencils i-1..i+2 and i-2..i+1, or the 4 nodes nearest the ends:
+    const bool s1 = ( i >= 1 && i + 2 < n );
+    const bool s2 = ( i >= 2 && i + 1 < n );
+    double m;
+    if ( s1 && s2 )
+      m = 0.5 * ( derivCubic( i - 1, i ) + derivCubic( i - 2, i ) );
+    else if ( s1 )
+      m = derivCubic( i - 1, i );
+    else if ( s2 )
+      m = derivCubic( i - 2, i );
+    else
+      m = derivCubic( i == 0 ? 0 : n - 4, i );
+    //Hyman filter (secant slopes on both sides, the one-sided one at ends):
+    const double dl = ( i > 0 ? ( m_y[i] - m_y[i-1] ) / ( m_x[i] - m_x[i-1] )
+                        : ( m_y[1] - m_y[0] ) / ( m_x[1] - m_x[0] ) );
+    const double dr = ( i + 1 < n ? ( m_y[i+1] - m_y[i] ) / ( m_x[i+1] - m_x[i] )
+                        : dl );
+    if ( dl * dr > 0.0 ) {
+      const double lim = 3.0 * ncmin( ncabs( dl ), ncabs( dr ) );
+      if ( m * dl < 0.0 )
+        m = 0.0;
+      else if ( ncabs( m ) > lim )
+        m = ( dl > 0.0 ? lim : -lim );
+    } else {
+      m = 0.0;
+    }
+    m_m[i] = m;
+  }
+}
+
+double NC::HymanInterp::eval( double x ) const
+{
+  const std::size_t n = m_x.size();
+  nc_assert( x >= m_x.front() && x <= m_x.back() );
+  if ( x == m_x.back() )
+    return m_y.back();
+  const std::size_t i = fastUpperBoundIdx( m_x.data(), n, x ) - 1;
+  const double h = m_x[i+1] - m_x[i];
+  const double t = ( x - m_x[i] ) / h;
+  const double t2 = t * t;
+  const double u = 1.0 - t;
+  const double u2 = u * u;
+  return ( ( 1.0 + 2.0 * t ) * u2 * m_y[i] + t * u2 * h * m_m[i]
+           + t2 * ( 3.0 - 2.0 * t ) * m_y[i+1] + t2 * ( t - 1.0 ) * h * m_m[i+1] );
+}
