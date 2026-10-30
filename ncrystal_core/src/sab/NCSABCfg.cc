@@ -122,10 +122,7 @@ NC::SABCfg::Cfg NC::SABCfg::createConfig( int sablux )
     c.extender_model = ExtenderModel::FreeGas;
     sablux -= 200;
   }
-  if ( sablux >= 100 && sablux <= 106 ) {
-    c.sIntegralInterp = SIntegralInterpolation::Linear;
-    sablux -= 100;
-  }
+
 
   //fixme: revisit all of these
   switch ( sablux ) {
