@@ -212,6 +212,67 @@ namespace {
       checkClose(slopes.second, 0.0);
     }
   }
+
+  void testHymanInterp()
+  {
+    using NC::HymanInterp;
+    //Cubic data with the filter inactive (monotone, slopes within bounds) are
+    //reproduced exactly, on an irregular grid:
+    {
+      auto f = []( double x ) { return 1.0 + x + 0.1 * x * x + 0.01 * x * x * x; };
+      NC::VectD x{ 0.0, 0.3, 0.35, 1.0, 1.8, 2.5, 4.0 }, y;
+      for ( auto v : x )
+        y.push_back( f( v ) );
+      HymanInterp interp( x, y );
+      for ( double v : NC::linspace( 0.0, 4.0, 401 ) )
+        nc_assert_always( NC::floateq( interp.eval( v ), f( v ), 1e-13, 1e-13 ) );
+    }
+    //O(h^4) convergence for smooth data (exp on a geometric grid):
+    {
+      double prev = 0.0;
+      for ( std::size_t n : { 20, 40, 80 } ) {
+        NC::VectD x = NC::geomspace( 0.1, 10.0, n ), y;
+        x.front() = 0.1;
+        x.back() = 10.0;
+        for ( auto v : x )
+          y.push_back( std::exp( -v ) );
+        HymanInterp interp( x, y );
+        double maxerr = 0.0;
+        for ( double v : NC::geomspace( 0.1, 9.999, 3001 ) )
+          maxerr = ncmax( maxerr, NC::ncabs( interp.eval( v ) / std::exp( -v ) - 1.0 ) );
+        if ( prev > 0.0 )
+          nc_assert_always( prev / maxerr > 10.0 );//2^4=16 ideally
+        prev = maxerr;
+      }
+    }
+    //Monotone data with a sharp step: monotone interpolation, no overshoot;
+    //zero slope at extrema of the data; nodeSlopes consistent with eval:
+    {
+      NC::VectD x{ 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0 };
+      NC::VectD y{ 0.0, 0.0, 0.01, 0.02, 5.0, 5.01, 5.02, 5.02 };
+      HymanInterp interp( x, y );
+      double last = -1.0;
+      for ( double v : NC::linspace( 0.0, 7.0, 7001 ) ) {
+        const double e = interp.eval( v );
+        nc_assert_always( e >= last - 1e-12 && e >= -1e-12 && e <= 5.02 + 1e-12 );
+        last = e;
+      }
+      NC::VectD xe{ 0.0, 1.0, 2.0, 3.0, 4.0 }, ye{ 1.0, 2.0, 3.0, 2.5, 1.0 };
+      HymanInterp ie( xe, ye );
+      nc_assert_always( ie.nodeSlopes()[2] == 0.0 );
+      for ( double v : NC::linspace( 0.0, 4.0, 401 ) )
+        nc_assert_always( ie.eval( v ) <= 3.0 + 1e-12 );
+      auto m = ie.nodeSlopes();
+      for ( auto i : NC::ncrange( xe.size() - 1 ) ) {
+        const double h = xe[i+1] - xe[i];
+        const double t = 0.3, t2 = t*t, u = 1.0 - t, u2 = u*u;
+        const double ref = ( ( 1.0 + 2.0*t ) * u2 * ye[i] + t * u2 * h * m[i]
+                             + t2 * ( 3.0 - 2.0*t ) * ye[i+1]
+                             + t2 * ( t - 1.0 ) * h * m[i+1] );
+        nc_assert_always( NC::floateq( ie.eval( xe[i] + t * h ), ref, 1e-14, 1e-14 ) );
+      }
+    }
+  }
 }
 
 int main() {
@@ -219,6 +280,7 @@ int main() {
   //Fixme: also test PCHIPInterp::OptimiseForLogSpacedX::YES
   testPCHIPInterp1();
   testPCHIPInterp2();
+  testHymanInterp();
   std::cout<<"All OK"<<std::endl;
   return 0;
 }
