@@ -202,6 +202,42 @@ namespace NCRYSTAL_NAMESPACE {
         }
         os << "]}}";
       }
+
+      //G_n for n=1..nmax as built by VDOSGn with the given Cfg (raw spectra
+      //on their own energy grids, as in the "expand" output):
+      void query_impl_gn( std::ostream& os,
+                          const std::string& cfgstr,
+                          const std::string& requested_lbl,
+                          unsigned nmax, VDOSGn::Cfg gncfg,
+                          const char * gncfg_name )
+      {
+        auto vdos = loadVDOS( cfgstr, requested_lbl );
+        VDOSEval vdoseval( *vdos.vdosData() );
+        VDOSGn Gn( vdoseval, gncfg );
+        Gn.growMaxOrder( VDOSGn::Order{ nmax } );
+        os << "{\"input\":{\"cfgstr\":";
+        streamJSON(os,vdos.cfgstr);
+        os << ",\"lbl\":";
+        streamJSON(os,vdos.atomlbl);
+        os << ",\"gncfg\":";
+        streamJSON(os,gncfg_name);
+        os << "},\"kT\":";
+        streamJSON(os,Gn.kT());
+        os << ",\"Gn\":[";
+        for ( auto nm1 : ncrange( nmax ) ) {
+          const auto n = VDOSGn::Order{ nm1 + 1 };
+          if ( nm1 )
+            os << ',';
+          os << "{\"n\":";
+          streamJSON(os,n.value());
+          os << ",\"energy_range\":";
+          streamJSON(os,Gn.eRange(n));
+          os << ",\"values\":";
+          streamJSONHugeDblVect(os,VectD(Gn.getRawSpectrum(n)));
+          os << '}';
+        }
+        os << "]}";
+      }
     }
   }
 }
@@ -229,6 +265,7 @@ void NC::VDOS::JSONQuery( std::ostream& os, const Query& query )
 
   constexpr auto sv_list = StrView::make("list");
   constexpr auto sv_expand = StrView::make("expand");
+  constexpr auto sv_gn = StrView::make("gn");
 
   if ( key == sv_expand ) {
     if ( nargs<1||nargs>3 )
@@ -241,10 +278,38 @@ void NC::VDOS::JSONQuery( std::ostream& os, const Query& query )
       lbl = arg(1).trimmed().to_string();
     query_impl_expand( os, argstr(0), lbl );
 
+  } else if ( key == sv_gn ) {
+    const char * usage = ( "correct usage: [\"vdos\",\"gn\",MATCFGSTR,"
+                           "ATOMDISPLAYLABEL,NMAX,\"cfg=NAME\"] (NAME is"
+                           " default, legacy or maxlux; the cfg entry can be"
+                           " left out for default, and ATOMDISPLAYLABEL can"
+                           " be an empty string for monoatomic materials)" );
+    if ( nargs < 3 || nargs > 4 )
+      invalid(usage);
+    auto nmax = arg(2).trimmed().toInt();
+    if ( !nmax.has_value() || nmax.value() < 1 || nmax.value() > 100000 )
+      invalid(usage);
+    VDOSGn::Cfg gncfg = VDOSGn::Cfg::Default;
+    const char * gncfg_name = "default";
+    if ( nargs == 4 ) {
+      auto c = arg(3).trimmed();
+      if ( c == "cfg=default" ) {
+      } else if ( c == "cfg=legacy" ) {
+        gncfg = VDOSGn::Cfg::Legacy;
+        gncfg_name = "legacy";
+      } else if ( c == "cfg=maxlux" ) {
+        gncfg = VDOSGn::Cfg::MaxLux;
+        gncfg_name = "maxlux";
+      } else {
+        invalid(usage);
+      }
+    }
+    query_impl_gn( os, argstr(0), arg(1).trimmed().to_string(),
+                   static_cast<unsigned>( nmax.value() ), gncfg, gncfg_name );
   } else if ( key == sv_list ) {
     if ( nargs != 0 )
-      invalid("no arguments should come after: [\"mmc\",\"list\"]");
-    streamJSON( os, std::array<StrView,2>{ sv_expand } );
+      invalid("no arguments should come after: [\"vdos\",\"list\"]");
+    streamJSON( os, std::array<StrView,2>{ sv_expand, sv_gn } );
   } else {
     invalid(nullptr);
   }
