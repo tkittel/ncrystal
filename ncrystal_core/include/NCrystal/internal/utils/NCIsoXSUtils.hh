@@ -58,6 +58,9 @@ namespace NCRYSTAL_NAMESPACE {
   //ignored. An empty input gives an empty description:
   IsoXSDescr mergeIsoXSDescr( Span<const std::pair<double,const IsoXSDescr*>> );
 
+  //Explicit copy:
+  IsoXSDescr cloneIsoXSDescr( const IsoXSDescr& );
+
   //Holds an IsoXSDescr (which must have a table) for fast evaluation of its
   //table, giving results bit-identical to evalIsoXS. The interval is found with
   //a LogGuideTable (8 buckets per point, scanning lookup), so evaluation costs

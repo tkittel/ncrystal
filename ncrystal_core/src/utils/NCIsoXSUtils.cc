@@ -75,6 +75,24 @@ double NC::evalIsoXS( const IsoXSDescr::Tabulation& t, double e )
   return ncfma( vectAt( t.r, i ), inv, exs ) * inv;
 }
 
+NC::IsoXSDescr NC::cloneIsoXSDescr( const IsoXSDescr& d )
+{
+  IsoXSDescr res;
+  res.breakpts = d.breakpts;
+  if ( d.table.has_value() ) {
+    const auto& t = d.table.value();
+    res.table.emplace();
+    auto& c = res.table.value();
+    c.E = t.E;
+    c.p = t.p;
+    c.q = t.q;
+    c.r = t.r;
+    for ( auto k : ncrange( 5 ) )
+      c.tail[k] = t.tail[k];
+  }
+  return res;
+}
+
 NC::IsoXSEvaluator::IsoXSEvaluator( IsoXSDescr d )
   : m_descr( std::move( d ) )
 {
