@@ -40,8 +40,10 @@ namespace {
   //NCIsoXSUtils.hh comments:
   double refXS( const NC::IsoXSDescr::Tabulation& p, double e )
   {
-    if ( e < p.E.front() )
-      return ( p.tail[0] ? p.tail[0] / std::sqrt( e ) : 0.0 ) + p.tail[1];
+    if ( e < p.E.front() ) {
+      const double ee = ( e == 0.0 ? std::numeric_limits<double>::denorm_min() : e );
+      return ( p.tail[0] ? p.tail[0] / std::sqrt( ee ) : 0.0 ) + p.tail[1];
+    }
     if ( !( e < p.E.back() ) )
       return p.tail[3] + ( p.tail[2] + p.tail[4] / e ) / e;
     std::size_t i = static_cast<std::size_t>( std::upper_bound( p.E.begin(), p.E.end(), e ) - p.E.begin() ) - 1;
@@ -466,6 +468,20 @@ int main()
       const double ref = refXS( b, e );
       REQUIRE( NC::evalIsoXS( ta, e ) == ref && NC::evalIsoXS( b, e ) == ref && ev.eval( e ) == ref );
     }
+  }
+  {
+    //At e=0, tail[0]/sqrt(e) uses the smallest positive double (finite):
+    NC::IsoXSDescr d;
+    d.table.emplace();
+    d.table.value().E = { 1.0, 2.0 };
+    d.table.value().p = { 1.0, 1.0, 0.0, 0.0 };
+    d.table.value().tail[0] = 3.0;
+    d.table.value().tail[1] = 0.5;
+    const NC::IsoXSEvaluator ev( std::move(d) );
+    const auto& t = ev.descr().table.value();
+    const double ref = 3.0 / std::sqrt( std::numeric_limits<double>::denorm_min() ) + 0.5;
+    REQUIRE( std::isfinite( ref ) );
+    REQUIRE( NC::evalIsoXS( t, 0.0 ) == ref && ev.eval( 0.0 ) == ref );
   }
   std::cout << "evalIsoXS and IsoXSEvaluator agree with the reference in " << g_nchecks << " checks" << std::endl;
   testMerge( rng );
