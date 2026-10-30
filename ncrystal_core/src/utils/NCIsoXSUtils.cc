@@ -52,8 +52,12 @@ double NC::evalIsoXS( const IsoXSDescr::Tabulation& t, double e )
   nc_assert( t.r.empty() || t.r.size() + 1 == E.size() );
   nc_assert( E.front() > 0.0 && std::isfinite( E.back() ) );
   nc_assert( e >= 0.0 );
-  if ( e < E.front() )
-    return ( t.tail[0] ? t.tail[0] / std::sqrt( e ) : 0.0 ) + t.tail[1];
+  if ( e < E.front() ) {
+    if ( !t.tail[0] )
+      return t.tail[1];
+    const double ee = std::max( e, std::numeric_limits<double>::denorm_min() );
+    return t.tail[0] / std::sqrt( ee ) + t.tail[1];
+  }
   if ( !( e < E.back() ) )
     return t.tail[3] + ( t.tail[2] + t.tail[4] / e ) / e;
   const std::size_t i = fastUpperBoundIdx( E.data(), E.size(), e ) - 1;
