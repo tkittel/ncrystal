@@ -137,6 +137,7 @@ namespace NCRYSTAL_NAMESPACE {
         auto opts = parseOptions( query, 7 );
         ConvolveScheme scheme = ConvolveScheme::ExactLinear;
         double step = 0.0;
+        ConvolveInterp interp = ConvolveInterp::Linear;
         for ( auto& kv : opts ) {
           const auto& key = kv.first;
           const auto& val = kv.second;
@@ -150,6 +151,11 @@ namespace NCRYSTAL_NAMESPACE {
             if ( !v.has_value() || !(v.value()>=0.0) || !std::isfinite(v.value()) )
               invalid( query, "invalid value for step" );
             step = v.value();
+          } else if ( key == "interp" ) {
+            if ( val == "lin" ) interp = ConvolveInterp::Linear;
+            else if ( val == "lagrange4" ) interp = ConvolveInterp::Lagrange4;
+            else if ( val == "spline" ) interp = ConvolveInterp::Spline;
+            else invalid( query, "invalid interp" );
           } else {
             invalid( query, "unknown option "+key );
           }
@@ -169,7 +175,7 @@ namespace NCRYSTAL_NAMESPACE {
         checkGrid( xg, g, "XG" );
 
         auto t0 = std::chrono::steady_clock::now();
-        VectD h = convolve( xf, f, xg, g, z, scheme, step );
+        VectD h = convolve( xf, f, xg, g, z, scheme, step, interp );
         std::chrono::duration<double> dt = std::chrono::steady_clock::now() - t0;
         os << "{\"h\":";
         streamJSONHugeDblVect( os, std::move(h) );

@@ -113,15 +113,19 @@ def test_convolve():
     x2 = np.linspace( -4.0, 4.0, 161 )
     def gauss( x, s ):
         return np.exp( -0.5 * (x/s)**2 ) / ( s * math.sqrt( 2 * math.pi ) )
-    z = np.linspace( -3.0, 3.0, 61 )
+    z = np.linspace( -3.0, 3.0, 61 ) + 0.0123#not aligned with input nodes
     exact = gauss( z, math.sqrt(1.25) )
     print('Max relative errors for Gaussian convolution:')
     for scheme in ('direct','exactlin','fft'):
-        h = convolve( x1, gauss(x1,1.0), x2, gauss(x2,0.5), z,
-                      f'scheme={scheme}' )
-        relerr = np.abs( h / exact - 1.0 ).max()
-        print(f'  {scheme:8} : %s'%('<1e-3' if relerr < 1e-3 else
-                                     '<1e-2' if relerr < 1e-2 else 'LARGE'))
+        for interp in ('lin','lagrange4','spline'):
+            if scheme == 'exactlin' and interp != 'lin':
+                continue
+            h = convolve( x1, gauss(x1,1.0), x2, gauss(x2,0.5), z,
+                          f'scheme={scheme}', f'interp={interp}' )
+            relerr = np.abs( h / exact - 1.0 ).max()
+            print(f'  {scheme:8} {interp:9} : %s'%(
+                '<1e-6' if relerr < 1e-6 else '<1e-3' if relerr < 1e-3 else
+                '<1e-2' if relerr < 1e-2 else 'LARGE'))
 
 def test_errors():
     print('Errors:')
@@ -139,6 +143,8 @@ def test_errors():
                      'tail=geometric' )
     q2 = ['mathutils','convolve']
     expect_badinput( *q2, arr, arr, w, w, w, 'scheme=bla' )
+    expect_badinput( *q2, w, w, w, w, w, 'interp=bla' )
+    expect_badinput( *q2, w, w, w, w, w, 'scheme=exactlin', 'interp=spline' )
     expect_badinput( *q2, w, w, w, w[:-1], w )
     expect_badinput( *q2, arr, arr, w, w, w )
     expect_badinput( *q, np.ones((2,2)), 'none', w, 'h=1' )
