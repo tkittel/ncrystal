@@ -45,6 +45,17 @@ namespace NCRYSTAL_NAMESPACE {
   //IsoXSDescr::breakpts holds the energies of known kinks and discontinuities
   //of the cross section, sorted.
 
+  //Form of a cross section at high energies: xs(E) = B + A/E for E >= emin.
+  //Note: emin must be large enough that the form is exact to double precision
+  //      (within a few ulp). It becomes the high-energy tail of an
+  //      IsoXSDescr::Tabulation (tail[3]=B, tail[2]=A), so only cross sections
+  //      with such a form for some finite emin can currently be tabulated
+  //      this way.
+  struct IsoXSHighEForm final {
+    double B, A;
+    NeutronEnergy emin;
+  };
+
   //Evaluate the tabulated cross section at e (finding the interval with a
   //binary search, so meant for occasional use):
   double evalIsoXS( const IsoXSDescr::Tabulation&, double e );

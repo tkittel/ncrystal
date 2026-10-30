@@ -229,6 +229,19 @@ double NC::SCTXSProvider::evalUpscatterCorr( double c ) const
   return evalUpscatterCorrIntegral( c );
 }
 
+NC::IsoXSHighEForm NC::SCTXSProvider::highEForm() const
+{
+  //Above c=E/kTeff=m_csat, corr=(r-1)/r, so the correction term in
+  //crossSection is m_sb*(r-1)/(4*r*m_invA*m_invkTeff*E):
+  auto res = m_xsprovider.highEForm();
+  if ( m_r == 1.0 )
+    return res;
+  nc_assert( m_invA > 0.0 && m_invkTeff > 0.0 );
+  res.A -= m_sb * ( ( m_r - 1.0 ) / m_r ) / ( 4.0 * m_invA * m_invkTeff );
+  res.emin = NeutronEnergy{ ncmax( res.emin.dbl(), m_csat / m_invkTeff ) };
+  return res;
+}
+
 NC::CrossSect NC::SCTXSProvider::crossSection( NeutronEnergy ekin ) const
 {
   //sigma_SCT(E) = sigma_FG(Teff)(E) - (sigma_b*A/(4c)) * corr(c), cf.
