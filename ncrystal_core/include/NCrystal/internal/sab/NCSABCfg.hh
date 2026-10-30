@@ -71,11 +71,7 @@ namespace NCRYSTAL_NAMESPACE {
     IntegrationScheme str2IntegScheme( StrView );
     const char * allIntegSchemesAsStr();//';' separated list
 
-    ///////////////////////////////////////
-    // How S_integral(E) is interpolated //
-    ///////////////////////////////////////
 
-    enum class SIntegralInterpolation { Linear, Smooth, Default = Smooth };
 
     //Which model extends kernels beyond their Emax: the default is the
     //short-collision-time model (SABSCTExtender, needs an effective
@@ -94,7 +90,7 @@ namespace NCRYSTAL_NAMESPACE {
       //fixme: consistent snake case vs. camel case here
       IntegrationScheme integScheme = IntegrationScheme::Flex9;
       IntegrationScheme integSchemeDetermineEGrid = IntegrationScheme::Flex5;
-      SIntegralInterpolation sIntegralInterp = SIntegralInterpolation::Default;
+
       ExtenderModel extender_model = ExtenderModel::Default;
 
       unsigned egrid_npts = 300;
