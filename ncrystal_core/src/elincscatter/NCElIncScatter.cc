@@ -23,12 +23,12 @@
 #include "NCrystal/internal/dyninfoutils/NCDynInfoUtils.hh"
 #include "NCrystal/interfaces/NCInfo.hh"
 #include "NCrystal/internal/phys_utils/NCElIncXS.hh"
-#include "NCrystal/internal/utils/NCRandUtils.hh"
 #include "NCrystal/internal/phys_utils/NCDebyeMSD.hh"
+#include "NCrystal/internal/utils/NCRandUtils.hh"
 #include "NCrystal/internal/utils/NCSpan.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
-#include "NCrystal/internal/phys_utils/NCDebyeMSD.hh"
 #include "NCrystal/internal/utils/NCString.hh"
+#include "NCrystal/internal/utils/NCMath.hh"
 #include <sstream>
 
 namespace NC = NCrystal;
@@ -136,7 +136,9 @@ namespace NCRYSTAL_NAMESPACE {
           if ( capOnly )
             return NullOpt;
           else
-            NCRYSTAL_THROW(MissingInfo,"Info object passed to ElIncScatter lacks information to create Debye-Waller factors.");
+            NCRYSTAL_THROW(MissingInfo,
+                           "Info object passed to ElIncScatter lacks"
+                           " information to create Debye-Waller factors.");
         }
       }
 
@@ -158,12 +160,57 @@ namespace NCRYSTAL_NAMESPACE {
       }
     }
 
-    class CacheElInc : public CacheBase {
-    public:
-      void invalidateCache() override { data.ekin.dbl() = -1.0; }
-      CacheElInc() { data.ekin.dbl() = -1.0; }
-      ElIncXS::EPointAnalysis data;
-    };
+    std::unique_ptr<ElIncXS> createElIncXS( const Info& info,
+                                            const ElIncScatterCfg& cfg )
+    {
+      auto res = extractInfo( info, cfg );
+      if (!res.has_value())
+        NCRYSTAL_THROW(MissingInfo,"Info object passed to ElIncScatter lacks information to create Debye-Waller factors.");
+      return ncmake_unique<ElIncXS>( std::move(res.value().msd),
+                                     std::move(res.value().bixs),
+                                     std::move(res.value().scale) );
+    }
+
+    IsoXSDescr describeMonoAtomic( double msd, SigmaBound sigma )
+    {
+      IsoXSDescr res;
+      res.table = ElIncXS::tabulateMonoAtomic( msd, sigma );
+      return res;
+    }
+
+    //Sum of the tabulations of the elements:
+    IsoXSDescr describeElInc( const ElIncXS& ei )
+    {
+      const auto elms = ei.elementData();
+      if ( elms.size() == 1 )
+        return describeMonoAtomic( elms[0].first,
+                                   SigmaBound{ elms[0].second } );
+      std::vector<IsoXSDescr> descrs( elms.size() );
+      std::vector<std::pair<double,const IsoXSDescr*>> inputs;
+      inputs.reserve( elms.size() );
+      for ( auto i : ncrange( elms.size() ) ) {
+        descrs[i] = describeMonoAtomic( elms[i].first,
+                                        SigmaBound{ elms[i].second } );
+        inputs.emplace_back( 1.0, &descrs[i] );
+      }
+      auto merged = mergeIsoXSDescr( inputs );
+      if ( !merged.table.has_value() )
+        return describeMonoAtomic( 0.0, SigmaBound{ 0.0 } );//no elements
+      return merged;
+    }
+
+    std::vector<IsoXSEvaluator> elementEvaluators( const ElIncXS& ei )
+    {
+      std::vector<IsoXSEvaluator> res;
+      const auto elms = ei.elementData();
+      if ( elms.size() < 2 )
+        return res;
+      res.reserve( elms.size() );
+      for ( auto& e : elms )
+        res.emplace_back( describeMonoAtomic( e.first,
+                                              SigmaBound{ e.second } ) );
+      return res;
+    }
 
   }
 }
@@ -176,43 +223,57 @@ bool NC::ElIncScatter::hasSufficientInfo( const Info& info, const ElIncScatterCf
 
 
 NC::ElIncScatter::ElIncScatter( const Info& info, const ElIncScatterCfg& cfg )
+  : ElIncScatter( createElIncXS( info, cfg ) )
 {
-  auto res = extractInfo( info, cfg );
-  if (!res.has_value())
-    NCRYSTAL_THROW(MissingInfo,"Info object passed to ElIncScatter lacks information to create Debye-Waller factors.");
-
-  m_elincxs = ncmake_unique<ElIncXS>( std::move(res.value().msd),
-                                      std::move(res.value().bixs),
-                                      std::move(res.value().scale) );
 }
 
 NC::ElIncScatter::ElIncScatter( const VectD& elements_meanSqDisp,
                                 const VectD& elements_boundincohxs,
                                 const VectD& elements_scale )
+  : ElIncScatter( ncmake_unique<ElIncXS>( elements_meanSqDisp,
+                                          elements_boundincohxs,
+                                          elements_scale ) )
 {
-  m_elincxs = ncmake_unique<ElIncXS>( elements_meanSqDisp,
-                                      elements_boundincohxs,
-                                      elements_scale );
 }
 
-NC::CrossSect NC::ElIncScatter::crossSectionIsotropic( CachePtr& cp, NeutronEnergy ekin ) const
+NC::CrossSect NC::ElIncScatter::crossSectionIsotropic( CachePtr&, NeutronEnergy ekin ) const
 {
-  auto& cache = accessCache<CacheElInc>(cp);
-  if ( cache.data.ekin != ekin )
-    m_elincxs->analyseEnergyPoint( ekin, cache.data );
-  return cache.data.getXS();
+  return CrossSect{ m_xs.eval( ekin.dbl() ) };
 }
 
-NC::ScatterOutcomeIsotropic NC::ElIncScatter::sampleScatterIsotropic( CachePtr& cp, RNG& rng, NeutronEnergy ekin ) const
+NC::CosineScatAngle NC::ElIncScatter::sampleMu( RNG& rng, NeutronEnergy ekin ) const
 {
-  auto& cache = accessCache<CacheElInc>(cp);
-  if ( cache.data.ekin != ekin )
-    m_elincxs->analyseEnergyPoint( ekin, cache.data );
-  return { ekin, cache.data.sampleMu( *m_elincxs, rng ) };
+  //Pick element by the values of their tabulations:
+  const auto elms = m_elincxs->elementData();
+  nc_assert( m_elmxs.size() == ( elms.size() > 1 ? elms.size() : 0 ) );
+  std::size_t idx = 0;
+  if ( m_elmxs.size() > 1 ) {
+    SmallVector<double,32> commul;
+    StableSumKahan sum;
+    for ( auto& ev : m_elmxs ) {
+      sum.add( ev.eval( ekin.dbl() ) );
+      commul.push_back( sum.sum() );
+    }
+    idx = RandIdxByWeightPicker::oneShotPick( rng, commul );
+  }
+  nc_assert( idx < elms.size() );
+  return ElIncXS::sampleMuMonoAtomic( rng, ekin, elms[idx].first );
+}
+
+NC::IsoXSDescr NC::ElIncScatter::isoXSDescr() const
+{
+  return cloneIsoXSDescr( m_xs.descr() );
+}
+
+NC::ScatterOutcomeIsotropic NC::ElIncScatter::sampleScatterIsotropic( CachePtr&, RNG& rng, NeutronEnergy ekin ) const
+{
+  return { ekin, sampleMu( rng, ekin ) };
 }
 
 NC::ElIncScatter::ElIncScatter( std::unique_ptr<ElIncXS> p )
-  : m_elincxs(std::move(p))
+  : m_elincxs( std::move(p) ),
+    m_xs( describeElInc( *m_elincxs ) ),
+    m_elmxs( elementEvaluators( *m_elincxs ) )
 {
 }
 
@@ -249,20 +310,14 @@ NC::Optional<std::string> NC::ElIncScatter::specificJSONDescription() const
 #ifdef NCRYSTAL_ALLOW_ABI_BREAKAGE
 void NC::ElIncScatter::evalManyXSIsotropic( CachePtr&, const double* ekin, std::size_t N, double* out_xs ) const
 {
-  m_elincxs->evaluateMany( Span<const double>( ekin, ekin + N ),
-                           Span<double>( out_xs, out_xs + N ) );
+  for ( auto i : ncrange( N ) )
+    out_xs[i] = m_xs.eval( ekin[i] );
 }
 
 std::pair<NC::CrossSect,NC::ScatterOutcomeIsotropic>
-NC::ElIncScatter::evalXSAndSampleScatterIsotropic( CachePtr& cp, RNG& rng, NeutronEnergy ekin ) const
+NC::ElIncScatter::evalXSAndSampleScatterIsotropic( CachePtr&, RNG& rng, NeutronEnergy ekin ) const
 {
-  auto& cache = accessCache<CacheElInc>(cp);
-  if ( cache.data.ekin != ekin )
-    m_elincxs->analyseEnergyPoint( ekin, cache.data );
-  return {
-    cache.data.getXS(),
-    { ekin, cache.data.sampleMu( *m_elincxs, rng ) }
-  };
+  return { CrossSect{ m_xs.eval( ekin.dbl() ) }, { ekin, sampleMu( rng, ekin ) } };
 }
 
 #endif
