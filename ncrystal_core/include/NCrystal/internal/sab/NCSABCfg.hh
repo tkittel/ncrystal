@@ -71,8 +71,6 @@ namespace NCRYSTAL_NAMESPACE {
     IntegrationScheme str2IntegScheme( StrView );
     const char * allIntegSchemesAsStr();//';' separated list
 
-
-
     //Which model extends kernels beyond their Emax: the default is the
     //short-collision-time model (SABSCTExtender, needs an effective
     //temperature), with the plain free-gas extender (SABFGExtender)
@@ -93,7 +91,11 @@ namespace NCRYSTAL_NAMESPACE {
 
       ExtenderModel extender_model = ExtenderModel::Default;
 
-      unsigned egrid_npts = 300;
+      //Adaptive energy grid:
+      unsigned egrid_n0 = 100;//initial geometric pts
+      double egrid_tolerance = 1e-4;//target relative error on S-integral
+      bool egrid_ncheck2 = false;//use 2 instead of 1 check pts per interval
+      unsigned egrid_npts_max = 2600;//safeguard limit, error if needs more
       unsigned sct_table_npts = 90;//SCT extender lookup table npts
       double egrid_emin_accuracy = 1e-8;//fixme: just use 1e-11 for all levels? To improve reproducibility! Also, increase trunc level in vdosgn to 1e-12-ish ?
     };

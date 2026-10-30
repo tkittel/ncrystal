@@ -129,21 +129,27 @@ NC::SABCfg::Cfg NC::SABCfg::createConfig( int sablux )
   case 0:
     c.integScheme = IntegrationScheme::Simpson3;
     c.integSchemeDetermineEGrid = IntegrationScheme::Simpson3;
-    c.egrid_npts = 100;//fixme: too low for sampling speed?
+    c.egrid_n0 = 30;
+    c.egrid_tolerance = 3e-2;
+    c.egrid_npts_max = 700;
     c.egrid_emin_accuracy = 1e-5;
     c.sct_table_npts = 40;
     break;
   case 1:
     c.integScheme = IntegrationScheme::Romberg5;
     c.integSchemeDetermineEGrid = IntegrationScheme::Romberg5;
-    c.egrid_npts = 140;
+    c.egrid_n0 = 50;
+    c.egrid_tolerance = 1e-2;
+    c.egrid_npts_max = 800;
     c.egrid_emin_accuracy = 1e-6;
     c.sct_table_npts = 50;
     break;
   case 2:
     c.integScheme = IntegrationScheme::Flex5;
     c.integSchemeDetermineEGrid = IntegrationScheme::Flex5;
-    c.egrid_npts = 200;
+    c.egrid_n0 = 80;
+    c.egrid_tolerance = 1e-3;
+    c.egrid_npts_max = 1500;
     c.egrid_emin_accuracy = 1e-7;
     c.sct_table_npts = 70;
     break;
@@ -155,32 +161,40 @@ NC::SABCfg::Cfg NC::SABCfg::createConfig( int sablux )
     static_assert( sablux_default_luxury == 3, "" );
     nc_assert( c.integScheme == IntegrationScheme::Flex9);
     nc_assert( c.integSchemeDetermineEGrid == IntegrationScheme::Flex5);
-    nc_assert( c.egrid_npts == 300 );
+    nc_assert( c.egrid_n0 == 100 );
+    nc_assert( c.egrid_tolerance == 1e-4 );
+    nc_assert( !c.egrid_ncheck2 );
+    nc_assert( c.egrid_npts_max == 2600 );
     nc_assert( c.egrid_emin_accuracy == 1e-8 );
     nc_assert( c.sct_table_npts == 90 );
     break;
   case 4:
     c.integScheme = IntegrationScheme::Flex17;
     c.integSchemeDetermineEGrid = IntegrationScheme::Flex9;
-    c.egrid_npts = 450;
+    c.egrid_n0 = 150;
+    c.egrid_tolerance = 1e-5;
+    c.egrid_npts_max = 4700;
     c.egrid_emin_accuracy = 1e-9;
     c.sct_table_npts = 150;
     break;
   case 5:
-    c.integScheme = IntegrationScheme::Flex33;
+    c.integScheme = IntegrationScheme::Flex17;
     c.integSchemeDetermineEGrid = IntegrationScheme::Flex9;
-    c.egrid_npts = 600;
+    c.egrid_n0 = 300;
+    c.egrid_tolerance = 1e-6;
+    c.egrid_npts_max = 9800;
     c.egrid_emin_accuracy = 1e-9;
     c.sct_table_npts = 200;
     break;
   case 6:
     static_assert( IntegrationScheme::MaxPrec
                    == IntegrationScheme::Flex65, "" );
-    c.integScheme = IntegrationScheme::MaxPrec;
+    c.integScheme = IntegrationScheme::Flex33;
     c.integSchemeDetermineEGrid = IntegrationScheme::MaxPrec;
-    //It would be great to have e.g. npts=100000, but it simply takes
-    //forever. So we use 4 times as many pts as for knllux=5.
-    c.egrid_npts = 2400;
+    c.egrid_n0 = 2000;
+    c.egrid_tolerance = 1e-8;
+    c.egrid_ncheck2 = true;
+    c.egrid_npts_max = 72000;
     c.egrid_emin_accuracy = 1e-10;
     c.sct_table_npts = 1000;
     break;
