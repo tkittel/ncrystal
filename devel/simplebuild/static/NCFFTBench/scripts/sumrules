@@ -1,0 +1,242 @@
+#!/usr/bin/env python3
+
+################################################################################
+##                                                                            ##
+##  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   ##
+##                                                                            ##
+##  Copyright 2015-2026 NCrystal developers                                   ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+# FFTBENCH TEMPORARY: sum-rule and detailed-balance metrics. With the
+# convention Int S(beta) e^{i beta tau} dbeta = I(tau), the moments follow from
+# I(t) at t=0: M0 = I(0) (inelastic harmonic: 1 - e^{-a}), M1 = k1, M2 = k2 +
+# k1^2 with k1 = -i (ln I)'(0), k2 = -(ln I)''(0). Detailed balance (NCrystal's
+# convention): S(-beta) = e^{beta} S(beta). Applied to:
+#
+#   1. Harmonic Al 293.15K (cf. harmonic), parametrised by the Debye-Waller
+#      exponent a (S = e^{-a} sum_n a^n/n! G_n; a = alpha*(m_n/M)/|m1| with
+#      NCrystal's alpha, as recoil M1 = -alpha*m_n/M requires a*m1 =
+#      -alpha*m_n/M; m_k = moments of G1): exact M1 = a m1, M2 = a m2 +
+#      a^2 m1^2, for the Fourier route (K=2 subtraction), the phonon
+#      expansion with linearly or spline-interpolated G_n, and NCrystal's
+#      actual kernels (extractKnl, vdoslux 3 = legacy and 2003 = next-gen)
+#      integrated on their own beta grids at their own alpha values, also
+#      cross-checked against SABAnalyser's per-row moments (["sab",
+#      "analyse",...,"diag"] query).
+#   2. The synthetic H2-like case (cf. h2like): exact closed-form moments
+#      (ES diffusion and Gaussian band), for methods A (DirectGA-like, T=2ps),
+#      B (split) and C (convolution route).
+#
+# Moments of computed S are integrated with the trapezoid rule on a dense
+# composite beta grid. Reported: relative deviations dM0, dM1, dM2 and the
+# max detailed-balance deviation over beta>0 with S(beta) >= 1e-8 max(S).
+# Usage: sumrules
+
+import math
+
+import NCrystalDev as NC
+import numpy as np
+from NCrystalDev.constants import const_neutron_mass_amu, constant_boltzmann
+from NCrystalDev.misc import evaluate_query
+from NCrystalDev.vdos import analyseVDOS, extractGn, extractKnl
+from scipy.interpolate import CubicSpline
+from scipy.special import k1e
+
+
+def fourierint( fr, fi, w, h, scheme, ev = 'direct', tail = 'none' ):
+    r = evaluate_query( ['mathutils', 'fourierint', fr,
+                         'none' if fi is None else fi, w, f'h={h}',
+                         f'scheme={scheme}', f'eval={ev}', 'oversample=64',
+                         f'tail={tail}'], huge_arrays = True )
+    return r['F']
+
+def moments( beta, S ):
+    return [ np.trapezoid( S * beta**k, beta ) for k in ( 0, 1, 2 ) ]
+
+def detbal( beta, S ):
+    #max |S(-b) e^{-b}/S(b) - 1| over grid points b>0 with S(b) >= 1e-8 max,
+    #with S(-b) interpolated log-linearly (exact for exponential behaviour
+    #between nodes, so coarse or asymmetric grids do not bias the metric):
+    mx = S.max()
+    ok = S > 1e-300
+    lb, lS = beta[ok], np.log( S[ok] )
+    b = beta[ ( beta > 0 ) & ( S >= 1e-8 * mx ) ]
+    b = b[ ( -b >= lb[0] ) ]
+    sp = np.interp( b, beta, S )
+    sm = np.exp( np.interp( -b, lb, lS ) )
+    return np.abs( sm * np.exp( -b ) / sp - 1.0 ).max()
+
+def report( name, beta, S, exact ):
+    M = moments( beta, S )
+    d = [ ( m - e ) / abs( e ) for m, e in zip( M, exact ) ]
+    print(f'    {name:34s} dM0={d[0]:+.1e} dM1={d[1]:+.1e} dM2={d[2]:+.1e}'
+          f' detbal={detbal( beta, S ):.1e}', flush = True )
+
+def composite_grid( lo, hi, fine, step ):
+    #symmetric geometric spacing near 0 (from fine) plus uniform step:
+    pos = np.geomspace( fine, max( abs( lo ), hi ), 4000 )
+    g = np.concatenate( [ -pos[::-1], [0.0], pos,
+                          np.arange( lo, hi + 0.5 * step, step ) ] )
+    g = np.unique( g[ ( g >= lo ) & ( g <= hi ) ] )
+    return g
+
+############################ 1. Harmonic Al ##################################
+
+def harmonic():
+    info = NC.createInfo( 'stdlib::Al_sg225.ncmat;temp=293.15K' )
+    di = info.dyninfos[0]
+    T, mass = di.temperature, di.atomData.averageMassAMU()
+    kT = constant_boltzmann * T
+    (emin, emax), dens = di.vdosData()
+    gamma0 = analyseVDOS( emin, emax, dens, T, mass )['gamma0']
+    gncache = {}
+    def Gn( n ):
+        if n not in gncache:
+            e, g = extractGn( di, n, mass, T, 1.0 )
+            gncache[n] = ( np.asarray( e ) / kT, np.asarray( g ) * kT )
+        return gncache[n]
+    b1, g1 = Gn( 1 )
+    m1, m2 = np.trapezoid( g1 * b1, b1 ), np.trapezoid( g1 * b1 * b1, b1 )
+    mratio = const_neutron_mass_amu / mass
+    print(f'=== 1. Harmonic Al 293.15K: G1 moments m1={m1:.6g}, m2={m2:.6g};'
+          f' a = alpha*(m_n/M)/|m1| = {mratio/abs(m1):.6g}*alpha (NB:'
+          f' analyseVDOS gamma0={gamma0:.6g} is not that factor)')
+    #g1(t) (exact for the piecewise linear G1), T=1000, h=0.02:
+    ht = 0.02
+    t = np.arange( 0.0, 1000.0 + 0.5 * ht, ht )
+    n = b1.size
+    pos, neg = g1[n//2:], g1[n//2::-1]
+    hb = b1[1] - b1[0]
+    gt = 2 * math.pi * ( fourierint( 0.5 * ( pos + neg ), None, t, hb, 'lin' )
+                         + 1j * fourierint( np.zeros( n//2 + 1 ),
+                                            0.5 * ( pos - neg ), t, hb,
+                                            'lin' ) )
+    beta = np.arange( -60.0, 30.0 + 1e-9, 0.005 )
+    def gnval( k, interp ):
+        bk, g = Gn( k )
+        if interp == 'lin':
+            return np.interp( beta, bk, g, left = 0.0, right = 0.0 )
+        inside = ( beta >= bk[0] ) & ( beta <= bk[-1] )
+        return np.where( inside, CubicSpline( bk, g )(
+            np.clip( beta, bk[0], bk[-1] ) ), 0.0 )
+    for a in ( 1.0, 5.0, 20.0 ):
+        exact = [ 1.0 - math.exp( -a ), a * m1, a * m2 + a * a * m1 * m1 ]
+        print(f'  a={a:g} (NCrystal alpha={a*abs(m1)/mratio:.4g}):'
+              f' exact M0={exact[0]:.6g} M1={exact[1]:.6g} M2={exact[2]:.6g}')
+        x = a * gt
+        It = math.exp( -a ) * ( np.expm1( x ) - x - 0.5 * x * x )
+        S = fourierint( It.real.copy(), It.imag.copy(), beta, ht, 'trap',
+                        'fftcubic' )
+        S += math.exp( -a ) * ( a * gnval( 1, 'lin' )
+                                + 0.5 * a * a * gnval( 2, 'lin' ) )
+        report( 'Fourier route (K=2)', beta, S, exact )
+        for interp in ( 'lin', 'spline' ):
+            S, w, k = np.zeros_like( beta ), math.exp( -a ), 0
+            while True:
+                k += 1
+                w *= a / k
+                S += w * gnval( k, interp )
+                if k > a and w < 1e-14:
+                    break
+            report( f'expansion, G_n {interp}', beta, S, exact )
+    print('  NCrystal kernels (own grids; a from the row alpha), and'
+          ' SABAnalyser per-row moments for comparison:')
+    for lux in ( 3, 2003 ):
+        knl = extractKnl( di, mass, T, vdoslux = lux, scatxs = 1.0 )
+        ka, kb = np.asarray( knl['alpha'] ), np.asarray( knl['beta'] )
+        ks = np.asarray( knl['sab'] ).reshape( kb.size, ka.size )
+        cfg = f'stdlib::Al_sg225.ncmat;temp=293.15K;vdoslux={lux}'
+        diag = evaluate_query( ['sab', 'analyse', cfg, '', 'diag'] )
+        dg = diag['sabanalyse']['diagnostics']
+        for a in ( 1.0, 5.0, 20.0 ):
+            i = int( np.argmin( np.abs( ka * mratio / abs( m1 ) - a ) ) )
+            ak = ka[i] * mratio / abs( m1 )
+            exk = [ 1.0 - math.exp( -ak ), ak * m1,
+                    ak * m2 + ak * ak * m1 * m1 ]
+            report( f'vdoslux={lux} row a={ak:.4g}', kb, ks[:, i], exk )
+            j = int( np.argmin( np.abs( np.asarray( dg['alpha'] ) - ka[i] ) ) )
+            sm0, smean, svar = dg['m0'][j], dg['mean'][j], dg['variance'][j]
+            if sm0 > 0:
+                print(f'      SABAnalyser row alpha={dg["alpha"][j]:.4g}:'
+                      f' dM0={(sm0-exk[0])/exk[0]:+.1e}'
+                      f' dM1={(sm0*smean-exk[1])/abs(exk[1]):+.1e}'
+                      f' dM2={(sm0*(svar+smean**2)-exk[2])/exk[2]:+.1e}'
+                      ' (mean/variance as normalised row moments)')
+
+########################## 2. Synthetic H2-like ##############################
+
+C, W = 1.0, 0.1
+B = math.sqrt( C * C + 0.25 )
+BV, SV, LAMV = 317.0, 5.8, 1e-3
+
+def S_D( beta, a ):
+    r = np.sqrt( a * a + beta * beta )
+    return ( a * B * k1e( B * r ) * np.exp( a * C - B * r - 0.5 * beta )
+             / ( r * math.pi ) )
+
+def I_D( t, a ):
+    return np.exp( -a * ( np.sqrt( t * t + 1j * t + C * C ) - C ) )
+
+def I_v( t, L ):
+    return np.exp( -L + L * np.exp( -1j * BV * t - 0.5 * SV * SV * t * t ) )
+
+def h2like():
+    print('=== 2. Synthetic H2-like case (exact closed-form moments)')
+    hstep = 2 * math.pi / 1160.0 / 8
+    for alpha in ( 1e-2, 1.0, 100.0 ):
+        a, L = 2 * C * W * alpha, alpha * LAMV
+        k1 = -a / ( 2 * C ) - L * BV
+        k2 = a * ( 1 / C + 1 / ( 4 * C**3 ) ) + L * ( BV * BV + SV * SV )
+        exact = [ 1.0, k1, k2 + k1 * k1 ]
+        nmax = int( L + 12 * math.sqrt( L ) + 12 )
+        lo = -( nmax * BV + 12 * SV * math.sqrt( nmax ) + 60 + 3 * a )
+        beta = composite_grid( lo, 60 + 3 * a, 1e-3 * a, 0.02 )
+        print(f'  alpha={alpha:g} (a={a:.3g}, L={L:.3g}): exact M1={k1:.6g}'
+              f' M2={exact[2]:.6g}; {beta.size} beta points')
+        t = np.arange( 0.0, 5.2 + 0.5 * hstep, hstep )
+        It = I_D( t, a ) * I_v( t, L )
+        S = fourierint( It.real.copy(), It.imag.copy(), beta, hstep, 'trap',
+                        tail = 'geometric' )
+        report( 'A directga-like T=2ps', beta, S, exact )
+        t = np.arange( 0.0, 1.7 + 0.5 * hstep, hstep )
+        gv = np.exp( -1j * BV * t - 0.5 * SV * SV * t * t )
+        It = I_D( t, a ) * math.exp( -L ) * np.expm1( L * gv )
+        S = fourierint( It.real.copy(), It.imag.copy(), beta, hstep, 'trap' )
+        S += math.exp( -L ) * S_D( beta, a )
+        report( 'B split', beta, S, exact )
+        span = 60.0 + 3.0 * a
+        pos = np.unique( np.concatenate( [ np.geomspace( 1e-3 * a, span, 3000 ),
+                                           np.linspace( 0.0, span, 3000 )[1:] ] ) )
+        xd = np.concatenate( [ -pos[::-1], [0.0], pos ] )
+        xv = np.arange( -nmax * BV - 14 * SV * math.sqrt( nmax ),
+                        -BV + 14 * SV, SV / 8 )
+        gvl, w = np.zeros_like( xv ), math.exp( -L )
+        for n in range( 1, nmax + 1 ):
+            w *= L / n
+            gvl += w * ( np.exp( -0.5 * ( ( xv + n * BV ) / SV )**2 / n )
+                         / ( SV * math.sqrt( 2 * math.pi * n ) ) )
+        S = evaluate_query( ['mathutils', 'convolve', xd, S_D( xd, a ), xv, gvl,
+                             beta, 'scheme=direct', 'interp=spline'],
+                            huge_arrays = True )['h']
+        S += math.exp( -L ) * S_D( beta, a )
+        report( 'C convolve', beta, S, exact )
+
+def main():
+    harmonic()
+    h2like()
+
+if __name__ == '__main__':
+    main()
