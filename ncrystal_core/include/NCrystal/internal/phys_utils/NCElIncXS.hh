@@ -63,6 +63,13 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Evaluate the incoherent elastic cross section:
     static CrossSect evaluateMonoAtomic( NeutronEnergy, double meanSqDisp, SigmaBound bound_incoh_xs);
+
+    //Tabulation (see NCIsoXSUtils.hh) of the mono-atomic cross section, with a
+    //relative deviation from evaluateMonoAtomic below 1e-10:
+    static IsoXSDescr::Tabulation tabulateMonoAtomic( double meanSqDisp, SigmaBound bound_incoh_xs );
+
+    //Element data, (msd,boundincohxs*scale):
+    Span<const PairDD> elementData() const { return m_elm_data; }
     CrossSect evaluate(NeutronEnergy ekin) const;
 
     void evaluateMany( Span<const double> ekin, Span<double> tgt) const;

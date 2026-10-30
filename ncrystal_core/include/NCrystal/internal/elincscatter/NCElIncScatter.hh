@@ -22,6 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/interfaces/NCProcImpl.hh"
+#include "NCrystal/internal/utils/NCIsoXSUtils.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -68,6 +69,10 @@ namespace NCRYSTAL_NAMESPACE {
     CrossSect crossSectionIsotropic(CachePtr&, NeutronEnergy ) const override;
     ScatterOutcomeIsotropic sampleScatterIsotropic(CachePtr&, RNG&, NeutronEnergy ) const override;
 
+    //The cross section is defined by the sum of the elements' tabulations
+    //(ElIncXS::tabulateMonoAtomic):
+    IsoXSDescr isoXSDescr() const override;
+
     //Simple additive merge:
     std::shared_ptr<Process> createMerged( const Process& other,
                                            double scale_self,
@@ -92,6 +97,9 @@ namespace NCRYSTAL_NAMESPACE {
     Optional<std::string> specificJSONDescription() const override;
   private:
     std::unique_ptr<ElIncXS> m_elincxs;
+    IsoXSEvaluator m_xs;
+    std::vector<IsoXSEvaluator> m_elmxs;//per element, if more than one
+    CosineScatAngle sampleMu( RNG&, NeutronEnergy ) const;
   };
 }
 
