@@ -329,6 +329,11 @@ def evaluate_query( query, unpack=True, readonly = False,
     to be transferred via a more efficient code path directly into numpy arrays.
     This is only supported with unpack=True and readonly=False.
 
+    Entries in the query which are not strings must be one-dimensional numpy
+    arrays with dtype=float64 (non-contiguous ones are copied), which are then
+    passed efficiently to the C++ layer (for queries accepting such input
+    arrays).
+
     The actual queries and the data returned is unless otherwise noted
     considered an implementation detail of NCrystal, and the format is NOT
     guaranteed to remain stable when new versions of NCrystal are released.

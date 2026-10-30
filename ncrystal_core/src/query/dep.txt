@@ -6,6 +6,7 @@ extd_utils
 fact_utils
 factories
 filter
+math_utils
 minimc
 misc
 phys_utils

@@ -421,9 +421,26 @@ def evalquery( query, unpack, readonly, huge_arrays ):
                                  huge_arrays=False )
             return _eqnp(_rawfct['getjsonarr'],res)
     if not all( isinstance(a,str) for a in query ):
+        #Non-string entries must be one-dimensional numpy arrays of float64
+        #values, which are passed via placeholder strings:
+        from ._numpy import _np
         from .exceptions import NCBadInput
-        raise NCBadInput('Invalid query (not all entries are strings):'
-                         f' {query!r}')
+        for a in query:
+            if isinstance(a,str):
+                continue
+            if _np is None or not isinstance(a,_np.ndarray):
+                raise NCBadInput('Invalid query (not all entries are strings):'
+                                 f' {query!r}')
+            if a.dtype != _np.float64 or a.ndim != 1:
+                raise NCBadInput('Invalid query (array entries must be'
+                                 ' one-dimensional with dtype=float64, got'
+                                 f' dtype={a.dtype} and ndim={a.ndim})')
+        idx = [ i for i,a in enumerate(query) if not isinstance(a,str) ]
+        placeholders = _rawfct['jsonquery_inputarrays']( [ query[i]
+                                                           for i in idx ] )
+        query = list(query)
+        for i, p in zip( idx, placeholders ):
+            query[i] = p
     res = _rawfct['jsonquery']( query )
     if unpack:
         import json

@@ -948,6 +948,18 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
         ckey = _str2cstr("on" if f else "off")
         _raw_filljsonarr( ckey, None )
 
+    _raw_jsonqueryinarr = _wrap('ncrystal_jsonquery_inputarray',_charptr,
+                                (_dblp,_uint),hide=True)
+    def jsonquery_inputarrays( arrays ):
+        #Validate all before registering any (since registered arrays are
+        #only discarded when used in a query):
+        arrays = [ as_contiguous_double_array(a,'query input array')
+                   for a in arrays ]
+        return [ decode_query_result( _raw_jsonqueryinarr( ndarray_to_dblp(a),
+                                                           a.size ) )
+                 for a in arrays ]
+    functions['jsonquery_inputarrays'] = jsonquery_inputarrays
+
     functions['getjsonarr'] = getjsonarr
     functions['enablejsonarr'] = enablejsonarr
 

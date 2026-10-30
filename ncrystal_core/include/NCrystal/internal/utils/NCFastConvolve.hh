@@ -22,6 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/core/NCDefs.hh"
+#include <complex>
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -62,6 +63,15 @@ namespace NCRYSTAL_NAMESPACE {
     //problem, rather than raw speed -- see VDOSGn::Cfg::MaxLux and
     //docs/claude_session_vdos_fma_reprod.md.
     void convolveDirect( const VectD& a1, const VectD& a2, VectD& y, double dt );
+
+    //Plain in-place complex FFT with the same radix-2 algorithm and cached
+    //tables as convolve(..). The data is first zero-padded to size N, the
+    //smallest power of two >= max(data.size(),min_size). Forward computes
+    //X_k = sum_n x_n exp(+2pi i nk/N) (NB: opposite of the usual sign
+    //convention), backward uses exp(-2pi i nk/N). No normalisation is applied
+    //in either direction:
+    void fft( std::vector<std::complex<double>>& data, bool forward,
+              std::size_t min_size = 0 );
 
     //Internal function for calculating exp(i*2pi*k/2^n), exposed for unit
     //testing:

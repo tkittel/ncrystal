@@ -769,3 +769,99 @@ void NC::streamJSONHugeDblVect( std::ostream& os, VectD&& v )
   os << ss.str();
   os<<']';
 }
+
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    namespace InputVectDB {
+      constexpr auto prefix = StrView::make("__ncrystal__dblinarray::");
+      struct DB {
+        std::mutex mtx;
+        std::map<std::uint64_t,VectD> data;
+        std::uint64_t count = 0;
+      };
+      DB& getDB()
+      {
+        static DB db;
+        static const bool dummy = []()
+        {
+          registerCacheCleanupFunction([]()
+          {
+            auto& thedb = getDB();
+            NCRYSTAL_LOCK_GUARD(thedb.mtx);
+            thedb.data.clear();
+          });
+          return false;
+        }();
+        (void) dummy;
+        return db;
+      }
+      //Key and size from placeholder, or NullOpt if invalid syntax:
+      Optional<std::pair<std::uint64_t,std::uint64_t>> decode( StrView s )
+      {
+        if ( !s.startswith(prefix) )
+          return NullOpt;
+        auto r = s.substr(prefix.size());
+        auto i = r.find(StrView::make("::"));
+        if ( i == StrView::npos )
+          return NullOpt;
+        std::int64_t k, n;
+        if ( !safe_str2int(r.substr(0,i),k) || !safe_str2int(r.substr(i+2),n)
+             || k < 1 || n < 0 )
+          return NullOpt;
+        return std::make_pair( static_cast<std::uint64_t>(k),
+                               static_cast<std::uint64_t>(n) );
+      }
+    }
+  }
+}
+
+std::string NC::registerJSONInputDblVect( VectD&& v )
+{
+  auto& db = InputVectDB::getDB();
+  const std::size_t n = v.size();
+  std::uint64_t key;
+  {
+    NCRYSTAL_LOCK_GUARD(db.mtx);
+    key = ++db.count;
+    db.data.emplace(key,std::move(v));
+  }
+  std::ostringstream ss;
+  ss << InputVectDB::prefix << key << "::" << n;
+  return ss.str();
+}
+
+bool NC::isJSONInputDblVect( StrView s )
+{
+  return InputVectDB::decode(s).has_value();
+}
+
+NC::VectD NC::takeJSONInputDblVect( StrView s )
+{
+  auto kn = InputVectDB::decode(s);
+  if ( !kn.has_value() )
+    NCRYSTAL_THROW2(BadInput,"Invalid input array placeholder: \""<<s<<'"');
+  auto& db = InputVectDB::getDB();
+  VectD res;
+  {
+    NCRYSTAL_LOCK_GUARD(db.mtx);
+    auto it = db.data.find(kn.value().first);
+    if ( it == db.data.end() )
+      NCRYSTAL_THROW2(BadInput,"Unknown or already used input array: \""
+                      <<s<<'"');
+    res = std::move(it->second);
+    db.data.erase(it);
+  }
+  if ( res.size() != kn.value().second )
+    NCRYSTAL_THROW2(BadInput,"Size mismatch for input array: \""<<s<<'"');
+  return res;
+}
+
+void NC::discardJSONInputDblVect( StrView s )
+{
+  auto kn = InputVectDB::decode(s);
+  if ( !kn.has_value() )
+    return;
+  auto& db = InputVectDB::getDB();
+  NCRYSTAL_LOCK_GUARD(db.mtx);
+  db.data.erase(kn.value().first);
+}

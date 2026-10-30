@@ -1,0 +1,33 @@
+Max relative errors for Gaussian test:
+  trap   direct   : <1e-5
+  trap   fftlin   : <0.01
+  trap   fftcubic : <1e-5
+  trapec direct   : <1e-5
+  trapec fftlin   : <0.01
+  trapec fftcubic : <1e-5
+  lin    direct   : <0.01
+  lin    fftlin   : LARGE
+  lin    fftcubic : <0.01
+  cubic  direct   : <0.01
+  cubic  fftlin   : LARGE
+  cubic  fftcubic : <0.01
+Errors:
+  Expected error: Invalid input array placeholder: "junk"
+  Expected error: Invalid mathutils query: ["mathutils","fourierint"] (usage: ["mathutils","fourierint",FR,FI,W,OPTIONS...])
+  Expected error: Invalid mathutils query: ["mathutils","fourierint","__ncrystal__dblinarray::47::5","none","__ncrystal__dblinarray::48::3"] (missing option h)
+  Expected error: Invalid mathutils query: ["mathutils","fourierint","__ncrystal__dblinarray::49::5","none","__ncrystal__dblinarray::50::3","h=1","scheme=bla"] (invalid scheme)
+  Expected error: Invalid mathutils query: ["mathutils","fourierint","__ncrystal__dblinarray::51::5","__ncrystal__dblinarray::52::4","__ncrystal__dblinarray::53::3","h=1"] (FI and FR must have the same size)
+  Expected error: Invalid mathutils query: ["mathutils","bla"] (unknown subcommand (available: "fourierint"))
+  Expected error: Invalid query (array entries must be one-dimensional with dtype=float64, got dtype=float64 and ndim=2)
+  Expected error: Invalid query (not all entries are strings): ['mathutils', 'fourierint', 117.0, 'none', array([0. , 0.5, 1. ]), 'h=1']
+  Expected error: Invalid query (not all entries are strings): ['mathutils', 'fourierint', [1.0, 2.0], 'none', array([0. , 0.5, 1. ]), 'h=1']
+  Expected error: Invalid query (not all entries are strings): ['mathutils', 'fourierint', (1.0, 2.0), 'none', array([0. , 0.5, 1. ]), 'h=1']
+  Expected error: Invalid query (array entries must be one-dimensional with dtype=float64, got dtype=int32 and ndim=1)
+  Expected error: Invalid query (array entries must be one-dimensional with dtype=float64, got dtype=float32 and ndim=1)
+Placeholders:
+  Expected error: Unknown or already used input array: "__ncrystal__dblinarray::54::5"
+  Expected error: Unknown or already used input array: "__ncrystal__dblinarray::55::3"
+  Expected error: Invalid mathutils query: ["mathutils","fourierint","__ncrystal__dblinarray::58::5","none","__ncrystal__dblinarray::59::3"] (missing option h)
+  Expected error: Unknown or already used input array: "__ncrystal__dblinarray::58::5"
+  Expected error: Size mismatch for input array: "__ncrystal__dblinarray::61::4"
+All OK

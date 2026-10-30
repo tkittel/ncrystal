@@ -1,4 +1,13 @@
 v4.4.7 (work in progress)
+     * New C API function ncrystal_jsonquery_inputarray for passing
+       large arrays of input data to ncrystal_jsonquery (with the same
+       stability caveats), used automatically by the Python function
+       NCrystal.misc.evaluate_query for numpy array (float64) entries.
+     * New core component math_utils, with candidate schemes for finite
+       Fourier integrals of sampled data (trapezoid, endpoint-corrected
+       trapezoid, piecewise-linear and cubic-spline Filon, evaluated
+       directly or via FFT), accessible via a new "mathutils" JSON query
+       for validation and benchmarking. Also new FastConvolve::fft(..).
      * New NCMAT v8 format (cf. docs/ncmat_doc.md): @DYNINFO sections
        gain the msd (with optional at_temperature part), debye_temp
        (now also for scatknl) and effective_temperature keywords; the

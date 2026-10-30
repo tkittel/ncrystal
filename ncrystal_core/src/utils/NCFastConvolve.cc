@@ -296,6 +296,18 @@ void NC::FastConvolve::convolveLegacy( const VectD& a1, const VectD& a2,
   m_impl->convolve(a1,a2,y,dt,true);
 }
 
+void NC::FastConvolve::fft( std::vector<std::complex<double>>& data,
+                            bool forward, std::size_t min_size )
+{
+  const std::size_t n = ncmax( ncmax( data.size(), min_size ),
+                               std::size_t(1) );
+  nc_assert_always( n <= (1ul<<31) );
+  if ( forward )
+    m_impl->fft<true>( data, static_cast<unsigned long>(n) );
+  else
+    m_impl->fft<false>( data, static_cast<unsigned long>(n) );
+}
+
 void NC::FastConvolve::convolveDirect( const VectD& a1, const VectD& a2,
                                        VectD& y, double dt )
 {

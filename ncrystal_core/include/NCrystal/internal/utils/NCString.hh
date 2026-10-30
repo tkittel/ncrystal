@@ -210,6 +210,17 @@ namespace NCRYSTAL_NAMESPACE {
   //arrays of double data:
   void streamJSONHugeDblVect( std::ostream&, VectD&& );
 
+  //Input arrays for JSON queries: registerJSONInputDblVect stores the data and
+  //returns a placeholder "__ncrystal__dblinarray::<key>::<size>" for use as a
+  //query entry. Query implementations retrieve the data (once only) with
+  //takeJSONInputDblVect, which throws BadInput for invalid or already taken
+  //placeholders. isJSONInputDblVect only checks the placeholder syntax, and
+  //discardJSONInputDblVect removes any data (no-op if already taken).
+  std::string registerJSONInputDblVect( VectD&& );
+  VectD takeJSONInputDblVect( StrView placeholder );
+  bool isJSONInputDblVect( StrView );
+  void discardJSONInputDblVect( StrView placeholder );
+
   //Entries in dictionary "\"key\":<value>":
   enum class JSONDictPos { FIRST, LAST, OTHER };
   template<class T>

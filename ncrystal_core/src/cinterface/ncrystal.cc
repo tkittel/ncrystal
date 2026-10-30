@@ -2588,6 +2588,21 @@ void ncrystal_fill_jsonarray( const char* key_raw, double* dst )
   } NCCATCH;
 }
 
+char* ncrystal_jsonquery_inputarray( const double* data, unsigned n )
+{
+  char * result = nullptr;
+  try {
+    NC::VectD v;
+    if ( n > 0 ) {
+      if ( !data )
+        NCRYSTAL_THROW(BadInput,"ncrystal_jsonquery_inputarray: data is null");
+      v.assign( data, data + n );
+    }
+    result = ncc::createString(NC::registerJSONInputDblVect(std::move(v)));
+  } NCCATCH;
+  return result;
+}
+
 
 void ncrystal_runmmcsim_stdengine( unsigned, unsigned, const char *,
                                    const char *, const char *, char ** a,

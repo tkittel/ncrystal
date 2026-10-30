@@ -19,8 +19,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/query/NCQuery.hh"
+#include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/minimc/NCMMC_Query.hh"
 #include "NCrystal/internal/filter/NCFilterTable.hh"
+#include "NCrystal/internal/math_utils/NCMathUtilsQuery.hh"
 #include "NCrystal/internal/cfgutils/NCCfgTypes.hh"
 #include "NCSABQuery.hh"
 #include "NCVDOSQuery.hh"
@@ -30,6 +32,13 @@ namespace NC = NCrystal;
 
 void NC::JSONQuery( std::ostream& os, const Query& query )
 {
+  //Input arrays referenced by the query are always discarded afterwards, even
+  //if not used or in case of errors:
+  struct InputArrayGuard {
+    const Query& q;
+    ~InputArrayGuard() { for ( auto& e : q ) discardJSONInputDblVect(e); }
+  } input_array_guard{query};
+
   if ( query.empty() )
     NCRYSTAL_THROW2(BadInput,
                     "Invalid JSON query (query is empty)");
@@ -56,6 +65,7 @@ void NC::JSONQuery( std::ostream& os, const Query& query )
   constexpr auto sv_sab = StrView::make("sab");
   constexpr auto sv_vdos = StrView::make("vdos");
   constexpr auto sv_filtertable = StrView::make("filtertable");
+  constexpr auto sv_mathutils = StrView::make("mathutils");
 
   if ( key == sv_mmc ) {
     MiniMC::Query::JSONQuery( os, query );
@@ -64,7 +74,7 @@ void NC::JSONQuery( std::ostream& os, const Query& query )
       NCRYSTAL_THROW2(BadInput, "Invalid JSON query (no arguments"
                       " should follow key \"list\")");
     os << "[\"version\", \"util\", \"mmc\", \"sab\", \"vdos\","
-          " \"filtertable\"]";
+          " \"filtertable\", \"mathutils\"]";
   } else if ( key == sv_version ) {
     queryimpl_version( os, query );
   } else if ( key == sv_util ) {
@@ -75,6 +85,8 @@ void NC::JSONQuery( std::ostream& os, const Query& query )
     VDOS::JSONQuery( os, query );
   } else if ( key == sv_filtertable ) {
     Filter::JSONQuery( os, query );
+  } else if ( key == sv_mathutils ) {
+    MathUtils::JSONQuery( os, query );
   } else {
     NCRYSTAL_THROW2(BadInput, "Invalid JSON query key: \""<<key<<'"');
   }
