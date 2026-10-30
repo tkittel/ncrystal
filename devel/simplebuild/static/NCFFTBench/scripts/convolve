@@ -33,9 +33,11 @@ import numpy as np
 from NCrystalDev.misc import evaluate_query
 from scipy.special import erfc
 
-#Scheme labels: SCHEME[/INTERP], INTERP lin (default), lagrange4 or spline:
-SCHEMES = ( 'direct', 'direct/lagrange4', 'direct/spline', 'directswap',
-            'directswap/spline', 'exactlin', 'fft', 'fft/spline' )
+#Scheme labels: SCHEME[/INTERP], INTERP lin (default), lagrange4, spline or
+#pchip:
+SCHEMES = ( 'direct', 'direct/lagrange4', 'direct/spline', 'direct/pchip',
+            'directswap', 'directswap/spline', 'directswap/pchip',
+            'exactlin', 'fft', 'fft/spline', 'fft/pchip' )
 
 def convolve( xf, f, xg, g, z, scheme, step = 0.0 ):
     scheme, interp = ( scheme.split('/') + ['lin'] )[:2]
@@ -114,7 +116,7 @@ def bench_accuracy( quick ):
                     h, cpu = convolve( xf, ff(xf), xg, gg(xg), z, scheme )
                     e, ec = errs( h, exact )
                     print(f'  d={d:<6g} {"nonuni" if nonuni else "uni   "}'
-                          f' Nf={xf.size:<6d} Ng={xg.size:<6d} {scheme:17s}'
+                          f' Nf={xf.size:<6d} Ng={xg.size:<6d} {scheme:16s}'
                           f' maxrel={e:.2e} core={ec:.2e} cpu={cpu*1e3:9.2f}ms',
                           flush = True )
         if 'Lorentz' in name:
@@ -129,8 +131,39 @@ def bench_accuracy( quick ):
                                        step = 0.25 * gam )
                     e, ec = errs( h, exact )
                     print(f'  d_f={d:<6g} Nf={xf.size:<6d} Ng={xg.size:<6d}'
-                          f' {scheme:17s} maxrel={e:.2e} core={ec:.2e}'
+                          f' {scheme:16s} maxrel={e:.2e} core={ec:.2e}'
                           f' cpu={cpu*1e3:9.2f}ms', flush = True )
+
+def debye_gauss( z, s ):
+    #Int_{-1}^{1} u^2 N(u; z, s^2) du (exact, non-negative):
+    from scipy.special import ndtr
+    a, b = ( -1.0 - z ) / s, ( 1.0 - z ) / s
+    pa = np.exp( -0.5 * a * a ) / math.sqrt( 2 * math.pi )
+    pb = np.exp( -0.5 * b * b ) / math.sqrt( 2 * math.pi )
+    return ( ( z*z + s*s ) * ( ndtr( b ) - ndtr( a ) )
+             + 2 * z * s * ( pa - pb ) + s * s * ( a * pa - b * pb ) )
+
+def bench_overshoot():
+    #Debye-like x^2 on [-1,1] with sharp cutoffs (between grid nodes),
+    #convolved with a narrow Gaussian (s=0.03, finely sampled). Reports the
+    #most negative output (exact result >= 0) and the max abs error relative
+    #to max(h), both near and away from the cutoffs.
+    print('=== Overshoot: x^2 on [-1,1] (sharp cutoffs) * Gauss(0.03)')
+    s = 0.03
+    xf = np.linspace( -0.3, 0.3, 301 )
+    f = gauss( xf, s )
+    z = np.linspace( -1.5, 1.5, 1201 ) + 1e-3 * math.pi
+    exact = debye_gauss( z, s )
+    for d in ( 0.1, 0.05, 0.02 ):
+        xg = np.arange( -2.0, 2.0 + 0.5*d, d ) + 0.37 * d#cutoffs off-node
+        g = np.where( np.abs( xg ) <= 1.0, xg * xg, 0.0 )
+        far = np.abs( np.abs( z ) - 1.0 ) > 2*d + 5*s
+        for scheme in SCHEMES:
+            h, cpu = convolve( xf, f, xg, g, z, scheme, step = s / 5 )
+            err = np.abs( h - exact ) / exact.max()
+            print(f'  d={d:<5g} {scheme:16s} min(h)/max={h.min()/h.max():+.1e}'
+                  f' err near={err[~far].max():.1e} far={err[far].max():.1e}'
+                  f' cpu={cpu*1e3:7.2f}ms', flush = True )
 
 def bench_speed( quick ):
     print('=== Speed: 801 output points, uniform grids, cpu ms')
@@ -144,12 +177,13 @@ def bench_speed( quick ):
         row = [ min( convolve( xf, f, xg, g, z, s )[1] for _ in range(3) )
                 for s in SCHEMES ]
         print(f'  Nf={nf:<7d} Ng={ng:<7d}\n    ' + '\n    '.join(
-            f'{s:17s} {v*1e3:9.2f}' for s, v in zip( SCHEMES, row ) ),
+            f'{s:16s} {v*1e3:9.2f}' for s, v in zip( SCHEMES, row ) ),
               flush = True )
 
 def main():
     quick = ( sys.argv[1:] == ['quick'] )
     bench_accuracy( quick )
+    bench_overshoot()
     bench_speed( quick )
 
 if __name__ == '__main__':
