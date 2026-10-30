@@ -185,11 +185,11 @@ NC::VectD NC::MathUtils::fourierIntegral( double h, Span<const double> fr,
                      " supported for the trapezoid scheme");
     tail_q = Cplx( fr[N-1], has_im ? -fi[N-1] : 0.0 );
     const Cplx qprev( fr[N-2], has_im ? -fi[N-2] : 0.0 );
-    if ( !( std::norm(qprev) > 0.0 ) )
-      NCRYSTAL_THROW(BadInput,"fourierIntegral: geometric tail requires a"
-                     " non-zero second-to-last value");
-    tail_r = tail_q / qprev;
-    if ( !( std::norm(tail_r) < 1.0 ) )
+    if ( tail_q == Cplx(0.0,0.0) || qprev == Cplx(0.0,0.0) )
+      tail = FourierTail::None;//fully decayed (e.g. underflow), no tail
+    else
+      tail_r = tail_q / qprev;
+    if ( tail == FourierTail::Geometric && !( std::norm(tail_r) < 1.0 ) )
       NCRYSTAL_THROW(BadInput,"fourierIntegral: geometric tail requires"
                      " |q_{N-1}/q_{N-2}|<1 (decaying samples)");
   }

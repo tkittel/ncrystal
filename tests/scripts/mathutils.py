@@ -83,6 +83,13 @@ def test_tail():
     a = fourierint( *f(14.0), w, f'h={h}', 'scheme=trap', 'tail=geometric' )
     b = fourierint( *f(1000.0), w, f'h={h}', 'scheme=trap' )
     assert np.abs( a - b ).max() < 1e-12 * np.abs( b ).max()
+    #Fully decayed (zero last value) means no tail:
+    z = np.zeros(3)
+    fr0, fi0 = f(14.0)
+    fr0, fi0 = np.concatenate([fr0,z]), np.concatenate([fi0,z])
+    assert np.array_equal( fourierint( fr0, fi0, w, f'h={h}', 'scheme=trap',
+                                       'tail=geometric' ),
+                           fourierint( fr0, fi0, w, f'h={h}', 'scheme=trap' ) )
     c = fourierint( *f(14.0), w, f'h={h}', 'scheme=trap' )
     assert np.abs( c - b ).max() > 1e-2 * np.abs( b ).max()
     print('Geometric tail OK')

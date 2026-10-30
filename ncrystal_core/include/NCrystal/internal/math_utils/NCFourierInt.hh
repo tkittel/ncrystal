@@ -59,7 +59,8 @@ namespace NCRYSTAL_NAMESPACE {
     // Optional tail (Trapezoid scheme only): Geometric continues the samples
     // beyond T as q_{N-1+k} = q_{N-1} r^k, r = q_{N-1}/q_{N-2} (q = fr - i*fi,
     // |r|<1 required), i.e. an exponential (or damped oscillating) decay, and
-    // adds the exact trapezoid sum of that continuation for each w.
+    // adds the exact trapezoid sum of that continuation for each w (nothing
+    // if q_{N-1} or q_{N-2} is zero, e.g. after underflow).
 
     enum class FourierScheme { Trapezoid, TrapezoidEC,
                                PiecewiseLinear, CubicSpline };
