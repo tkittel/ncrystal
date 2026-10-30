@@ -156,6 +156,36 @@ namespace NCRYSTAL_NAMESPACE {
     std::size_t m_n = 0;
     Optional<LogGuideTable> m_guide;//if all x>0
   };
+
+  class HymanInterp final : private MoveOnly {
+    // Cubic Hermite interpolation of finite y(x) values (at least 4 points),
+    // for smooth data that is expensive to compute, so the fewest nodes should
+    // give the most precision, while overshoot must be excluded (e.g.
+    // non-negative cross sections or integrals). Compared to PCHIP
+    // interpolation it is an order more precise (O(h^4) instead of O(h^3)) and
+    // copes better with uneven or adaptively refined grids, with the same
+    // safeguards. For data on uniform grids where overshoot is not a concern,
+    // CubicSpline is simpler and faster.
+    //
+    // Downsides: it is only C1, flattens smooth extrema of the data (the slope
+    // is zeroed there), and its slopes use 4-5 nodes, so kinks and noisy
+    // values affect more neighbouring intervals than with PCHIP.
+    //
+    // Method: J. M. Hyman 1983, DOI: 10.1137/0904045 (fourth-order slopes with
+    // a monotonicity filter). The interpolation never leaves the range of the
+    // two node values of an interval, and is monotone where the data is.
+  public:
+    HymanInterp( Span<const double> x, Span<const double> y );
+
+    // Evaluate the interpolation for x in [x.front(),x.back()]:
+    double eval( double x ) const;
+
+    // The derivatives at all nodes, as used by eval():
+    Span<const double> nodeSlopes() const { return m_m; }
+
+  private:
+    VectD m_x, m_y, m_m;
+  };
 }
 
 ////////////////////////////
