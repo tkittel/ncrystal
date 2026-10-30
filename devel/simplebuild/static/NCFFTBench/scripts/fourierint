@@ -1,0 +1,138 @@
+#!/usr/bin/env python3
+
+################################################################################
+##                                                                            ##
+##  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   ##
+##                                                                            ##
+##  Copyright 2015-2026 NCrystal developers                                   ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+# FFTBENCH TEMPORARY: accuracy and speed of the candidate finite Fourier
+# integral schemes in math_utils (["mathutils","fourierint",...] query) vs.
+# exact transforms: symmetric Egelstaff-Schofield diffusion (real even I(t))
+# and free gas (complex I(t)). Error metric: max |F/F_exact-1| over
+# F_exact >= 1e-8 max (and "core": >= 1e-3 max). Usage: fourierint [quick].
+
+import math
+import sys
+import time
+
+import numpy as np
+from NCrystalDev.misc import evaluate_query
+from scipy.special import k1e
+
+SCHEMES = ('trap', 'trapec', 'lin', 'cubic')
+EVALS = ('direct', 'fftlin', 'fftcubic')
+
+def fourierint( fr, fi, w, h, scheme, ev, oversample = 8 ):
+    t0 = time.perf_counter()
+    r = evaluate_query( ['mathutils', 'fourierint', fr,
+                         'none' if fi is None else fi, w, f'h={h}',
+                         f'scheme={scheme}', f'eval={ev}',
+                         f'oversample={oversample}'], huge_arrays = True )
+    return r['F'], r['cpu_seconds'], time.perf_counter() - t0
+
+def errs( F, exact ):
+    sel = exact >= 1e-8 * exact.max()
+    core = exact >= 1e-3 * exact.max()
+    rel = np.abs( F / np.where( sel, exact, 1.0 ) - 1.0 )
+    return rel[sel].max(), rel[core].max()
+
+class ESDiffusion:
+    #chi(t) = exp(-a(sqrt(t^2+b^2)-c)), exact transform via K1 (sec. 15.1)
+    c, wt = 1.0, 0.1
+    def __init__( self, alpha ):
+        self.a = 2 * self.c * self.wt * alpha
+        self.b = math.sqrt( self.c**2 + 0.25 )
+        self.name = f'ES(alpha={alpha:g})'
+        #time scale of curvature at t=0, and t where chi=exp(-35):
+        self.tscale = min( 1.0, math.sqrt( self.b / self.a ) )
+        self.tmax = math.sqrt( ( self.c + 35.0 / self.a )**2 - self.b**2 )
+    def f( self, t ):
+        return np.exp( -self.a * ( np.sqrt( t*t + self.b**2 ) - self.c ) ), None
+    def exact( self, w ):
+        r = np.sqrt( self.a**2 + w*w )
+        return ( self.a * self.b * k1e( self.b * r )
+                 * np.exp( self.a * self.c - self.b * r ) / ( r * math.pi ) )
+    def wgrid( self ):
+        return np.concatenate( [ [0.0], np.geomspace( 1e-5, 60.0, 400 ) ] )
+
+class FreeGas:
+    #I(t) = exp(-alpha t^2 + i alpha t) -> exp(-(w-alpha)^2/(4 alpha))/sqrt(4 pi alpha)
+    def __init__( self, alpha ):
+        self.alpha = alpha
+        self.name = f'FreeGas(alpha={alpha:g})'
+        self.tscale = 1.0 / math.sqrt( 2 * alpha )
+        self.tmax = math.sqrt( 40.0 / alpha )
+    def f( self, t ):
+        env = np.exp( -self.alpha * t * t )
+        return env * np.cos( self.alpha * t ), env * np.sin( self.alpha * t )
+    def exact( self, w ):
+        return ( np.exp( -( w - self.alpha )**2 / ( 4 * self.alpha ) )
+                 / math.sqrt( 4 * math.pi * self.alpha ) )
+    def wgrid( self ):
+        s = math.sqrt( 2 * self.alpha )
+        return np.linspace( self.alpha - 12 * s, self.alpha + 12 * s, 801 )
+
+def bench_accuracy( quick ):
+    cases = [ ESDiffusion(a) for a in ( (0.1, 10.0) if quick
+                                        else (1e-3, 0.1, 10.0, 300.0) ) ]
+    cases += [ FreeGas(a) for a in ( (1.0,) if quick else (0.01, 1.0, 50.0) ) ]
+    for case in cases:
+        w = case.wgrid()
+        exact = case.exact( w )
+        print(f'=== {case.name}: {w.size} output points in'
+              f' [{w[0]:.3g},{w[-1]:.3g}], Nyquist at h/tscale=pi/(wmax*tscale)'
+              f'={math.pi/(np.abs(w).max()*case.tscale):.3g}')
+        for hfac in ( 0.25, 0.05 ):
+            h = hfac * case.tscale
+            t = np.arange( 0.0, case.tmax + 0.5 * h, h )
+            fr, fi = case.f( t )
+            for scheme in SCHEMES:
+                for ev in EVALS:
+                    F, cpu, _ = fourierint( fr, fi, w, h, scheme, ev )
+                    e, ec = errs( F, exact )
+                    print(f'  h/tscale={hfac:<5g} N={t.size:<7d} {scheme:6s}'
+                          f' {ev:8s} maxrel={e:.2e} core={ec:.2e}'
+                          f' cpu={cpu*1e3:8.2f}ms', flush = True )
+
+def bench_speed( quick ):
+    #Cost per transform for realistic sizes (cf. DirectGA: 801 betas/alpha):
+    w = np.linspace( -40.0, 40.0, 801 )
+    print('=== Speed: 801 output points, cpu time per transform (ms)')
+    print(f'  {"N":>8s} ' + ' '.join( f'{s+"/"+e:>15s}' for s in SCHEMES
+                                       for e in EVALS ) )
+    for logn in ( (10, 14) if quick else (10, 12, 14, 16, 18) ):
+        n = 1 << logn
+        h = 0.01
+        t = h * np.arange( n )
+        fr, fi = np.exp( -t ) * np.cos( t ), np.exp( -t ) * np.sin( t )
+        row = []
+        for scheme in SCHEMES:
+            for ev in EVALS:
+                best = min( fourierint( fr, fi, w, h, scheme, ev )[1]
+                            for _ in range(3) )
+                row.append( best * 1e3 )
+        print(f'  {n:8d} ' + ' '.join( f'{v:15.3f}' for v in row ),
+              flush = True )
+
+def main():
+    quick = ( sys.argv[1:] == ['quick'] )
+    bench_accuracy( quick )
+    bench_speed( quick )
+
+if __name__ == '__main__':
+    main()
