@@ -186,6 +186,28 @@ namespace NCRYSTAL_NAMESPACE {
   private:
     VectD m_x, m_y, m_m;
   };
+
+  //Utility for fitting piecewise cubics to a smooth, non-zero f(x) on [a,b]
+  //(0<a<b, finite) to a relative precision of about tol, with adaptively placed
+  //nodes. The initial nodes are spaced geometrically, with consecutive nodes
+  //differing by at most a factor maxratio. Thus, smaller values are safer (for
+  //functions with narrow features), and larger ones are cheaper (for slowly
+  //varying functions).
+  //
+  //The results are the nodes x (always including endpoints a and b), and
+  //coefficients in c, 4 per interval (so c.size()==4*(x.size()-1)), such that
+  //for x[i]<=v<=x[i+1]:
+  //
+  //      f_fit(v)=c[4*i]+c[4*i+1]*u+c[4*i+2]*u^2+c[4*i+3]*u^3
+  //
+  //with u=(v-x[i])/(x[i+1]-x[i]). Node values are exact (c[4*i]=f(x[i])), so
+  //the result is continuous.
+  struct PiecewiseCubicFit final {
+    VectD x, c;
+  };
+  PiecewiseCubicFit fitPiecewiseCubic( const std::function<double(double)>& f,
+                                       double a, double b, double tol,
+                                       double maxratio = 1.25 );
 }
 
 ////////////////////////////

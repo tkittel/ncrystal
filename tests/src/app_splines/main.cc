@@ -273,6 +273,36 @@ namespace {
       }
     }
   }
+
+  void testFitPiecewiseCubic()
+  {
+    //fitPiecewiseCubic: within tol of smooth functions (checked densely),
+    //exact at the nodes, and exact for cubics:
+    auto check = []( const std::function<double(double)>& f, double a, double b, double tol )
+    {
+      auto fit = NC::fitPiecewiseCubic( f, a, b, tol );
+      nc_assert_always( fit.x.front() == a && fit.x.back() == b );
+      nc_assert_always( fit.c.size() == 4 * ( fit.x.size() - 1 ) );
+      double worst = 0.0;
+      for ( auto i : NC::ncrange( fit.x.size() - 1 ) ) {
+        const double lo = fit.x[i], hi = fit.x[i+1];
+        nc_assert_always( lo < hi );
+        const double * c = &fit.c[4*i];
+        nc_assert_always( c[0] == f( lo ) );
+        for ( double u : NC::linspace( 0.0, 1.0, 41 ) ) {
+          const double v = c[0] + u * ( c[1] + u * ( c[2] + u * c[3] ) );
+          worst = std::max( worst, std::fabs( v / f( lo + u * ( hi - lo ) ) - 1.0 ) );
+        }
+      }
+      nc_assert_always( worst < tol );
+      return fit.x.size() - 1;
+    };
+    check( []( double x ) { return std::exp( -x ) * ( 1.0 + x ); }, 1e-3, 30.0, 1e-10 );
+    check( []( double x ) { return std::sqrt( x ) + 1.0; }, 1e-6, 1e3, 1e-8 );
+    check( []( double x ) { return 1.0 / ( 1.0 + x * x ); }, 0.1, 10.0, 1e-12 );
+    const auto ncubic = check( []( double x ) { return 1.0 + x * ( 2.0 + x * ( 0.5 + x ) ); }, 1.0, 2.0, 1e-14 );
+    nc_assert_always( ncubic == 4 );//no bisection needed
+  }
 }
 
 int main() {
@@ -281,6 +311,7 @@ int main() {
   testPCHIPInterp1();
   testPCHIPInterp2();
   testHymanInterp();
+  testFitPiecewiseCubic();
   std::cout<<"All OK"<<std::endl;
   return 0;
 }
