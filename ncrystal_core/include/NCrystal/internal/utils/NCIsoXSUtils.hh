@@ -40,7 +40,8 @@ namespace NCRYSTAL_NAMESPACE {
   //or r means zero. E must be positive and strictly increasing, with at least 2
   //entries, and e*xs must be finite within [E[0],E.back()] (no problem at
   //physical energies). The r[i] terms allow a sum of tabulations to be a
-  //tabulation.
+  //tabulation. At e=0 the first form uses the smallest positive double
+  //instead (keeping xs finite).
   //
   //IsoXSDescr::breakpts holds the energies of known kinks and discontinuities
   //of the cross section, sorted.
@@ -107,8 +108,12 @@ inline double NCrystal::IsoXSEvaluator::eval( double e ) const ncnoexceptndebug
   nc_assert( e >= 0.0 );
   const auto& t = m_descr.table.value();
   const VectD& E = t.E;
-  if ( e < E.front() )
-    return ( t.tail[0] ? t.tail[0] / std::sqrt( e ) : 0.0 ) + t.tail[1];
+  if ( e < E.front() ) {
+    if ( !t.tail[0] )
+      return t.tail[1];
+    const double ee = std::max( e, std::numeric_limits<double>::denorm_min() );
+    return t.tail[0] / std::sqrt( ee ) + t.tail[1];
+  }
   if ( !( e < E.back() ) )
     return t.tail[3] + ( t.tail[2] + t.tail[4] / e ) / e;
   const std::size_t i = m_guide.upperBoundIdxScan( E.data(), E.size(), e ) - 1;
