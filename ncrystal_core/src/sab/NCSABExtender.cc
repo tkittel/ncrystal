@@ -44,6 +44,11 @@ NC::CrossSect NC::SAB::SABFGExtender::crossSection(NeutronEnergy ekin) const
   return m_xsprovider.crossSection(ekin);
 }
 
+NC::IsoXSHighEForm NC::SAB::SABFGExtender::highEForm() const
+{
+  return m_xsprovider.highEForm();
+}
+
 NC::PairDD NC::SAB::SABFGExtender::sampleAlphaBeta( RNG& rng, NeutronEnergy ekin ) const
 {
   return FreeGasSampler(ekin, m_t, m_m).sampleAlphaBeta(rng);
@@ -66,6 +71,11 @@ NC::SAB::SABSCTExtender::~SABSCTExtender() = default;
 NC::CrossSect NC::SAB::SABSCTExtender::crossSection(NeutronEnergy ekin) const
 {
   return m_xsprovider.crossSection(ekin);
+}
+
+NC::IsoXSHighEForm NC::SAB::SABSCTExtender::highEForm() const
+{
+  return m_xsprovider.highEForm();
 }
 
 NC::PairDD NC::SAB::SABSCTExtender::sampleAlphaBeta( RNG& rng,
