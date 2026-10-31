@@ -60,6 +60,11 @@ namespace NCRYSTAL_NAMESPACE {
     ScatterOutcomeIsotropic
     sampleScatterIsotropic(CachePtr&, RNG&, NeutronEnergy ) const override;
 
+    //The SABExtended description, scaled (computed on each call):
+    IsoXSDescr isoXSDescr() const override;
+
+    const SABExtended& sabExtended() const noexcept { return *m_sh; }
+
     std::shared_ptr<Process> createMerged( const Process& other,
                                            double scale_self,
                                            double scale_other ) const override;

@@ -65,6 +65,10 @@ namespace NCRYSTAL_NAMESPACE {
       //Assuming SigmaBound=1barn, get the corresponding cross section:
       CrossSect crossSectionUnitSigmaBound( NeutronEnergy ) const;
 
+      //The same cross section as an IsoXSDescr::Tabulation (see
+      //NCIsoXSUtils.hh), agreeing to within rounding:
+      IsoXSDescr::Tabulation createXSTabulation() const;
+
       //Sample a scattering event in (dE,mu) or (alpha,beta) space, with or
       //without diagnostics (fixme: needed?):
       ScatterOutcomeIsotropic sampleScatter( RNG&, NeutronEnergy ) const;
