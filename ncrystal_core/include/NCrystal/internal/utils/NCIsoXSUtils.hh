@@ -23,6 +23,7 @@
 
 #include "NCrystal/core/NCTypes.hh"
 #include "NCrystal/internal/utils/NCFastSearch.hh"
+#include "NCrystal/internal/utils/NCSpan.hh"
 #include "NCrystal/internal/utils/NCFMA.hh"
 
 namespace NCRYSTAL_NAMESPACE {
@@ -37,7 +38,9 @@ namespace NCRYSTAL_NAMESPACE {
   //with u=(e-E[i])/(E[i+1]-E[i]), and P_i and Q_i cubics in u with
   //coefficients p[4i..4i+3] and q[4i..4i+3] (lowest order first). Empty p, q
   //or r means zero. E must be positive and strictly increasing, with at least 2
-  //entries. The r[i] terms allow a sum of tabulations to be a tabulation.
+  //entries, and e*xs must be finite within [E[0],E.back()] (no problem at
+  //physical energies). The r[i] terms allow a sum of tabulations to be a
+  //tabulation.
   //
   //IsoXSDescr::breakpts holds the energies of known kinks and discontinuities
   //of the cross section, sorted.
@@ -62,6 +65,15 @@ namespace NCRYSTAL_NAMESPACE {
     VectD m_invw;
     LogGuideTable m_guide;
   };
+
+  //Merge the descriptions of several components, each with a scale factor, into
+  //a description of their summed cross section. The breakpts are the sorted
+  //union of all breakpts. The table is the exact sum of the scaled tables
+  //(agreeing with the sum of the scaled inputs to within a few ulp), with E the
+  //sorted union of all E, and present only if all inputs have a table. Scale
+  //factors must be non-negative and finite, and inputs with scale factor 0 are
+  //ignored. An empty input gives an empty description:
+  IsoXSDescr mergeIsoXSDescr( Span<const std::pair<double,const IsoXSDescr*>> );
 
   //Evaluate the tabulated cross section at e (finding the interval with a
   //binary search, so meant for occasional use):

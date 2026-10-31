@@ -149,7 +149,8 @@ namespace {
 
   NC::VectD randomGrid( NC::RandXRSRImpl& rng )
   {
-    //2..3000 points, each gap a random factor between 1 ulp and 1e6:
+    //2..3000 points, each gap a random factor between 1 ulp and 1e6, below
+    //1e100 (e*xs must stay finite, see NCIsoXSUtils.hh):
     const std::size_t n = 2 + static_cast<std::size_t>( rng.generate() * 2999 );
     NC::VectD x{ std::pow( 10.0, -12.0 + 14.0 * rng.generate() ) };
     while ( x.size() < n ) {
@@ -161,12 +162,229 @@ namespace {
         v = x.back() * ( 1.0 + std::pow( 10.0, -15.0 + 21.0 * rng.generate() ) );
       if ( !( v > x.back() ) || !std::isfinite( v ) )
         v = std::nextafter( x.back(), NC::kInfinity );
-      if ( !std::isfinite( v ) )
+      if ( !std::isfinite( v ) || v > 1e100 )
         break;
       x.push_back( v );
     }
     return x;
   }
+  //Random tabulation on grid E (styles as in checkPieces):
+  NC::IsoXSDescr makeDescr( NC::VectD E, bool withq, bool withr, int coefstyle,
+                            NC::RandXRSRImpl& rng )
+  {
+    auto coef = [&rng,coefstyle]() {
+      if ( coefstyle != 1 )
+        return rng.generate();
+      const double sign = ( rng.generate() < 0.5 ? -1.0 : 1.0 );
+      return sign * std::pow( 10.0, -30.0 + 60.0 * rng.generate() );
+    };
+    NC::IsoXSDescr d;
+    d.breakpts = { E.front(), E.back() };
+    NC::IsoXSDescr::Tabulation p;
+    p.E = std::move(E);
+    for ( std::size_t i = 0; i + 1 < p.E.size(); ++i ) {
+      for ( int k = 0; k < 4; ++k ) {
+        p.p.push_back( coef() );
+        if ( withq )
+          p.q.push_back( coef() );
+      }
+      if ( withr )
+        p.r.push_back( coef() * p.E[i] );
+    }
+    for ( auto& c : p.tail )
+      c = coef();
+    d.table = std::move(p);
+    return d;
+  }
+
+  std::uint64_t g_nmergechecks = 0;
+  double g_maxmergeulp = 0.0;
+
+  //Merge the inputs and check the merged cross section against the scaled sum
+  //of the inputs' own cross sections everywhere. Coefficients can have mixed
+  //signs and cancel within a cubic, so deviations are measured relative to the
+  //same sum evaluated with the absolute values of all coefficients (the
+  //condition of the evaluation):
+  void checkMerge( const char * label,
+                   const std::vector<std::pair<double,const NC::IsoXSDescr*>>& in,
+                   double tolulps, NC::RandXRSRImpl& rng )
+  {
+    NC::IsoXSDescr m = NC::mergeIsoXSDescr( in );
+    REQUIRE( m.table.has_value() );
+    REQUIRE( std::is_sorted( m.breakpts.begin(), m.breakpts.end() ) );
+    for ( auto& e : in )
+      for ( double b : e.second->breakpts )
+        if ( e.first > 0.0 )
+          REQUIRE( std::binary_search( m.breakpts.begin(), m.breakpts.end(), b ) );
+    const NC::IsoXSEvaluator ev( std::move(m) );
+    const auto& t = ev.descr().table.value();
+    std::vector<NC::IsoXSDescr::Tabulation> absin;
+    for ( auto& c : in ) {
+      const auto& ti = c.second->table.value();
+      NC::IsoXSDescr::Tabulation a;
+      a.E = ti.E; a.p = ti.p; a.q = ti.q; a.r = ti.r;
+      for ( auto* v : { &a.p, &a.q, &a.r } )
+        for ( auto& x : *v )
+          x = std::fabs( x );
+      for ( int k = 0; k < 5; ++k )
+        a.tail[k] = std::fabs( ti.tail[k] );
+      absin.push_back( std::move(a) );
+    }
+    double maxulp = 0.0;
+    auto check = [&]( double e ) {
+      if ( !( e > 0.0 ) || !std::isfinite( e ) )
+        return;
+      double sum = 0.0, abssum = 0.0;
+      for ( std::size_t ic = 0; ic < in.size(); ++ic ) {
+        const auto& c = in[ic];
+        if ( c.first == 0.0 )
+          continue;
+        sum += c.first * NC::evalIsoXS( c.second->table.value(), e );
+        abssum += c.first * NC::evalIsoXS( absin[ic], e );
+      }
+      const double v = ev.eval( e );
+      REQUIRE( v == NC::evalIsoXS( t, e ) );
+      if ( !std::isfinite( abssum ) || abssum == 0.0 ) {
+        if ( abssum == 0.0 )
+          REQUIRE( v == 0.0 );
+        return;
+      }
+      //(e*xs) itself is what the table holds, so also allow for cancellation
+      //between the sqrt and 1/e terms by using the absolute evaluation above.
+      const double ulps = std::fabs( v - sum ) / ( abssum * std::numeric_limits<double>::epsilon() );
+      maxulp = std::max( maxulp, ulps );
+      if ( !( ulps <= tolulps ) ) {
+        std::cout << "MISMATCH " << label << " e=" << e << " merged=" << v
+                  << " sum=" << sum << " (" << ulps << " ulp of the absolute evaluation)" << std::endl;
+        REQUIRE( false );
+      }
+      ++g_nmergechecks;
+    };
+    const NC::VectD& E = t.E;
+    for ( auto e : E ) {
+      check( e );
+      check( std::nextafter( e, 0.0 ) );
+      check( std::nextafter( e, NC::kInfinity ) );
+    }
+    for ( std::size_t i = 0; i + 1 < E.size(); ++i )
+      for ( double u : { 0.1, 0.5, 0.9 } )
+        check( E[i] + u * ( E[i+1] - E[i] ) );
+    for ( double e : { std::numeric_limits<double>::denorm_min(), E.front() * 1e-3, E.back() * 1e3 } )
+      check( e );
+    for ( int k = 0; k < 3000; ++k )
+      check( E.front() * 1e-2 * std::pow( 1e4 * E.back() / E.front(), rng.generate() ) );
+    g_maxmergeulp = std::max( g_maxmergeulp, maxulp );
+    (void)label;
+  }
+
+  void testMerge( NC::RandXRSRImpl& rng )
+  {
+    //Structural cases:
+    {
+      const std::vector<std::pair<double,const NC::IsoXSDescr*>> none;
+      NC::IsoXSDescr m = NC::mergeIsoXSDescr( none );
+      REQUIRE( m.breakpts.empty() && !m.table.has_value() );
+    }
+    {
+      //A single input with scale 1 merges to itself, bit for bit:
+      for ( int mode : { 0, 1, 2, 3 } ) {
+        NC::IsoXSDescr d = makeDescr( randomGrid( rng ), mode & 1, mode & 2, 1, rng );
+        const std::vector<std::pair<double,const NC::IsoXSDescr*>> in{ { 1.0, &d } };
+        NC::IsoXSDescr m = NC::mergeIsoXSDescr( in );
+        const auto& a = d.table.value();
+        const auto& b = m.table.value();
+        REQUIRE( a.E == b.E && a.p == b.p && a.q == b.q && a.r == b.r );
+        for ( int k = 0; k < 5; ++k )
+          REQUIRE( a.tail[k] == b.tail[k] );
+        REQUIRE( m.breakpts == d.breakpts );
+      }
+    }
+    {
+      //No table if any (non-zero scale) input lacks one; scale 0 inputs ignored:
+      NC::IsoXSDescr a = makeDescr( { 1.0, 2.0 }, false, false, 0, rng );
+      NC::IsoXSDescr b;
+      b.breakpts = { 0.5, 3.0 };
+      std::vector<std::pair<double,const NC::IsoXSDescr*>> in{ { 1.0, &a }, { 2.0, &b } };
+      NC::IsoXSDescr m = NC::mergeIsoXSDescr( in );
+      REQUIRE( !m.table.has_value() );
+      REQUIRE( ( m.breakpts == NC::VectD{ 0.5, 1.0, 2.0, 3.0 } ) );
+      in[1].first = 0.0;
+      m = NC::mergeIsoXSDescr( in );
+      REQUIRE( m.table.has_value() && ( m.breakpts == NC::VectD{ 1.0, 2.0 } ) );
+    }
+    {
+      //Zero coefficients merge to zero (with empty p, q and r):
+      NC::IsoXSDescr a = makeDescr( { 1.0, 2.0 }, false, false, 0, rng );
+      NC::IsoXSDescr b = makeDescr( { 1.5, 3.0 }, false, false, 0, rng );
+      for ( auto* d : { &a, &b } ) {
+        auto& t = d->table.value();
+        for ( auto& c : t.p ) c = 0.0;
+        for ( auto& c : t.tail ) c = 0.0;
+      }
+      const std::vector<std::pair<double,const NC::IsoXSDescr*>> in{ { 1.0, &a }, { 3.0, &b } };
+      NC::IsoXSDescr m = NC::mergeIsoXSDescr( in );
+      REQUIRE( m.table.value().p.empty() && m.table.value().q.empty() && m.table.value().r.empty() );
+      for ( double e : { 0.0, 0.5, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 10.0 } )
+        REQUIRE( NC::evalIsoXS( m.table.value(), e ) == 0.0 );
+    }
+    {
+      //Inputs with only a Q part (empty p, tails giving no P terms) merge to a
+      //table with empty p, agreeing with the scaled sum:
+      NC::RandXRSRImpl rng2( 4242 );
+      NC::IsoXSDescr a = makeDescr( randomGrid( rng2 ), true, false, 0, rng2 );
+      NC::IsoXSDescr b = makeDescr( randomGrid( rng2 ), true, false, 0, rng2 );
+      for ( auto* d : { &a, &b } ) {
+        auto& t = d->table.value();
+        t.p.clear();
+        for ( int k : { 1, 2, 3, 4 } )
+          t.tail[k] = 0.0;
+      }
+      const std::vector<std::pair<double,const NC::IsoXSDescr*>> in{ { 0.7, &a }, { 1.3, &b } };
+      NC::IsoXSDescr m = NC::mergeIsoXSDescr( in );
+      REQUIRE( m.table.value().p.empty() );
+      for ( int k = 0; k < 2000; ++k ) {
+        const double e = 1e-12 * std::pow( 1e14, rng2.generate() );
+        const double ref = 0.7 * NC::evalIsoXS( a.table.value(), e ) + 1.3 * NC::evalIsoXS( b.table.value(), e );
+        REQUIRE( NC::floateq( NC::evalIsoXS( m.table.value(), e ), ref, 1e-12, 0.0 ) );
+      }
+    }
+    //Numerical cases: 2..8 inputs on random grids (overlapping, disjoint,
+    //sharing breakpoints, or offset by 1 ulp), random scales:
+    for ( int trial = 0; trial < 60; ++trial ) {
+      const int coefstyle = trial % 2 ? 1 : 0;
+      const std::size_t K = 2 + static_cast<std::size_t>( rng.generate() * 7 );
+      std::vector<NC::IsoXSDescr> ds;
+      NC::VectD shared = randomGrid( rng );
+      for ( std::size_t k = 0; k < K; ++k ) {
+        NC::VectD E;
+        const double r = rng.generate();
+        if ( r < 0.25 ) {
+          E = shared;//identical breakpoints
+        } else if ( r < 0.5 ) {
+          E = shared;//breakpoints offset by 1 ulp
+          for ( auto& e : E )
+            e = std::nextafter( e, NC::kInfinity );
+          for ( std::size_t i = 1; i < E.size(); ++i )
+            if ( !( E[i] > E[i-1] ) )
+              E[i] = std::nextafter( E[i-1], NC::kInfinity );
+        } else {
+          E = randomGrid( rng );
+        }
+        const int mode = static_cast<int>( rng.generate() * 4 );
+        ds.push_back( makeDescr( E, mode & 1, mode & 2, coefstyle, rng ) );
+      }
+      std::vector<std::pair<double,const NC::IsoXSDescr*>> in;
+      for ( auto& d : ds ) {
+        const double r = rng.generate();
+        const double scale = ( r < 0.1 ? 0.0 : ( r < 0.3 ? 1.0 : std::pow( 10.0, -3.0 + 6.0 * rng.generate() ) ) );
+        in.emplace_back( scale, &d );
+      }
+      if ( in.front().first == 0.0 )
+        in.front().first = 1.0;
+      checkMerge( "random inputs", in, 64.0, rng );
+    }
+  }
+
 }
 
 int main()
@@ -240,5 +458,9 @@ int main()
     }
   }
   std::cout << "evalIsoXS and IsoXSEvaluator agree with the reference in " << g_nchecks << " checks" << std::endl;
+  testMerge( rng );
+  std::cout << "mergeIsoXSDescr agrees with the sum of its inputs in " << g_nmergechecks
+            << " checks (max deviation " << ( g_maxmergeulp < 8 ? "below 8" : "8 or more" )
+            << " ulp of the absolute evaluation)" << std::endl;
   return 0;
 }
