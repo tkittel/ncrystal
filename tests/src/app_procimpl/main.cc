@@ -114,7 +114,12 @@ int main() {
   (void)std::make_shared<MyIsoScat>();
   (void)std::make_shared<MyAnisoScat>();
   (void)std::make_shared<MyIsoAbs>();
-  (void)std::make_shared<NC::ProcImpl::ProcComposition>();
+  {
+    NC::ProcImpl::ProcComposition::ComponentList cl;
+    cl.emplace_back( 0.5, NC::makeSO<MyIsoScat>() );
+    cl.emplace_back( 2.0, NC::makeSO<MyIsoScat>() );
+    (void)std::make_shared<NC::ProcImpl::ProcComposition>( std::move(cl) );
+  }
   (void)std::make_shared<NC::ProcImpl::NullScatter>();
   (void)std::make_shared<NC::ProcImpl::NullAbsorption>();
 

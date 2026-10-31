@@ -123,7 +123,6 @@ namespace NCRYSTAL_NAMESPACE {
     public:
       void invalidateCache() override { key_ekin = NeutronEnergy{-1.0}; }
 
-      unsigned nHistory = 0;
       NeutronEnergy key_ekin = NeutronEnergy{-1.0};
       NeutronDirection key_dir = NeutronDirection{0.,0.,0.};//only used for anisotropic materials
       double tot_xs = -1.0;
@@ -134,8 +133,7 @@ namespace NCRYSTAL_NAMESPACE {
       SmallVector<ComponentCache,6> componentCache;
       SmallVector<double,6> componentXSectCommul;
 
-      void reset(unsigned nhist,const ProcComposition::ComponentList& comps) {
-        nHistory = nhist;
+      void reset(const ProcComposition::ComponentList& comps) {
         key_ekin = NeutronEnergy{-1.0};
         key_dir = NeutronDirection{0.,0.,0.};
         tot_xs = -1.0;
@@ -146,7 +144,7 @@ namespace NCRYSTAL_NAMESPACE {
         componentXSectCommul.clear();
         componentXSectCommul.resize(comps.size(),0.0);
       }
-      CacheProcComp() { reset(nHistory,{}); }
+      CacheProcComp() { reset({}); }
     };
 
     class ProcComposition::Impl {
@@ -159,17 +157,64 @@ namespace NCRYSTAL_NAMESPACE {
         return r;
       }
 
+      //Add a component to res as described for the ProcComposition
+      //constructor:
+      static void addNormalised( ComponentList& res, ProcPtr process,
+                                 double scale, ProcessType processType )
+      {
+        if ( !process )
+          NCRYSTAL_THROW(BadInput,"Trying to add nullptr component!");
+        if ( process->processType() != processType )
+          NCRYSTAL_THROW2(BadInput,"Trying to add "<<process->processType()
+                          <<" process to ProcComposition of "<<processType<<" processes");
+        if ( scale<0.0 || !std::isfinite(scale) )
+          NCRYSTAL_THROW2(BadInput,"Trying to add component with invalid scale: "<<scale);
+        if ( scale == 0.0 || process->isNull() )
+          return;
+        if ( auto pc = dynamic_cast<const ProcComposition*>(process.get()) ) {
+          for ( auto& c : pc->components() )
+            addNormalised( res, c.process, c.scale * scale, processType );
+          return;
+        }
+        for ( auto& e : res ) {
+          if ( e.process->getUniqueID() == process->getUniqueID() ) {
+            //We already have this process (same unique ID), simply increase the
+            //corresponding scale:
+            e.scale += scale;
+            return;
+          }
+          //Check for processes which can be merged for efficiency (absorbing
+          //non-unit scales in the process). This can for example be used to
+          //combine multiple PowderBragg instances into one more efficient one
+          //which has just one internal hkl list to search - this is
+          //potentially quite useful for multiphase materials:
+          auto merged_process = e.process->createMerged( *process, e.scale, scale );
+          if ( merged_process != nullptr ) {
+            e.process = std::move(merged_process);
+            e.scale = 1.0;
+            return;
+          }
+        }
+        res.push_back(Component{scale,std::move(process)});
+      }
+
+      static ComponentList normalise( ComponentList&& components,
+                                      ProcessType processType )
+      {
+        ComponentList res;
+        res.reserve_hint( components.size() );
+        for ( auto& e : components )
+          addNormalised( res, std::move(e.process), e.scale, processType );
+        return res;
+      }
+
       static CacheProcComp& initAndAccessCache( const ProcComposition* THIS,
                                                 CachePtr& cacheptr )
       {
         auto& cache = THIS->accessCache<CacheProcComp>(cacheptr);
-        if ( cache.nHistory != THIS->m_nHistory ) {
-          //m_components was modified since cache object was created.
-          if ( THIS->m_components.empty() )
-            NCRYSTAL_THROW(CalcError,"Attempting to use ProcComposition which has no components (if"
-                           " intended to be vanishing use a NullProcess component instead).");
-          cache.reset(THIS->m_nHistory,THIS->m_components);
-        }
+        nc_assert( !THIS->m_components.empty() );
+        if ( cache.componentCache.size() != THIS->m_components.size() )
+          cache.reset(THIS->m_components);//new cache object
         nc_assert(cache.componentCache.size()==THIS->m_components.size());
         nc_assert(cache.componentXSectCommul.size()==THIS->m_components.size());
         return cache;
@@ -266,87 +311,29 @@ namespace NCRYSTAL_NAMESPACE {
 
 NCPI::ProcComposition::ProcComposition( ComponentList components,
                                         ProcessType processType )
-  : m_processType(processType),
+  : m_components( Impl::normalise( std::move(components), processType ) ),
+    m_processType(processType),
     m_materialType(MaterialType::Isotropic)
 {
-  addComponents(std::move(components));
-}
-
-void NCPI::ProcComposition::addComponent( NCPI::ProcPtr process, double scale )
-{
-  if ( !process ) {
-    NCRYSTAL_THROW(BadInput,"Trying to add nullptr component!");
-  }
-  if ( process->processType() != m_processType ) {
-    NCRYSTAL_THROW2(BadInput,"Trying to add "<<process->processType()
-                    <<" process to ProcComposition of "<<m_processType<<" processes");
-  }
-  if ( scale<0.0 || !std::isfinite(scale) )
-    NCRYSTAL_THROW2(BadInput,"Trying to add component with invalid scale: "<<scale);
-
-  if ( scale == 0.0 || process->isNull() )
-    return;
-  auto asproccomp = dynamic_cast<const ProcComposition*>(process.get());
-  if (asproccomp) {
-    if ( asproccomp == this )
-      NCRYSTAL_THROW(BadInput,"It is not allowed to add a ProcComposition object as a component of itself");
-    addComponents( Impl::compListClone(asproccomp->components()), scale );
-    return;
-  }
-  ++m_nHistory;//record changes to m_components.
-  auto expandDomain = [this]( EnergyDomain d )
-  {
-    if ( d.elow>=d.ehigh )
-      return;//d is null range
-    if ( m_domain.elow>=m_domain.ehigh ) {
+  if ( m_components.empty() )
+    NCRYSTAL_THROW(BadInput,"ProcComposition needs at least one non-null"
+                   " component (if intended to be vanishing use a NullProcess"
+                   " instead).");
+  bool first = true;
+  for ( auto& e : m_components ) {
+    if ( e.process->materialType() == MaterialType::Anisotropic )
+      m_materialType = MaterialType::Anisotropic;
+    const EnergyDomain d = e.process->domain();
+    if ( d.elow >= d.ehigh )
+      continue;//null range
+    if ( first ) {
       m_domain = d;
+      first = false;
     } else {
-      //m_domain and d are both non-null ranges:
       m_domain.elow = NeutronEnergy{ std::min<double>(m_domain.elow.get(),d.elow.get()) };
       m_domain.ehigh = NeutronEnergy{ std::max<double>(m_domain.ehigh.get(),d.ehigh.get()) };
     }
-  };
-
-  //Check if the process can be combined with existing components:
-  for ( auto& e : m_components ) {
-    if ( e.process.get() == process.get() ) {
-      //We already have this process, simply increase the corresponding
-      //scale (does not affect the domain!):
-      e.scale += scale;
-      return;
-    }
-    if ( true ) {
-      //Check for processes which can be merged for efficiency (absorbing
-      //non-unit scales in the process). This can for example be used to combine
-      //multiple PowderBragg instances into one more efficient one which has
-      //just one internal hkl list to search - this is potentially quite useful
-      //for multiphase materials:
-      auto merged_process = e.process->createMerged( *process, e.scale, scale );
-      if ( merged_process != nullptr ) {
-        e.process = std::move(merged_process);
-        e.scale = 1.0;
-        if (e.process->materialType()==MaterialType::Anisotropic)
-          m_materialType = MaterialType::Anisotropic;
-        //Update domain (assume the merging will only have expanded the domain!):
-        expandDomain(e.process->domain());
-        return;
-      }
-    }
   }
-  //Add new component:
-  if (process->materialType()==MaterialType::Anisotropic)
-    m_materialType = MaterialType::Anisotropic;
-  //Update domain (assume the merging will only have expanded the domain!):
-  expandDomain(process->domain());
-  //Add to list:
-  m_components.push_back(Component{scale,std::move(process)});
-}
-
-void NCPI::ProcComposition::addComponents( NCPI::ProcComposition::ComponentList components, double scale )
-{
-  m_components.reserve_hint( m_components.size() + components.size() );
-  for ( auto&& e : components )
-    addComponent(std::move(e.process),e.scale*scale);
 }
 
 NC::CrossSect NCPI::ProcComposition::crossSection( CachePtr& cacheptr,
@@ -426,23 +413,10 @@ NCPI::ProcPtr NCPI::ProcComposition::consumeAndCombine( ComponentList&& componen
 {
   auto isNullComponent = [](Component& c) { return c.process==nullptr || c.process->isNull() || c.scale<=0.0; };
   ComponentList components;
-  for ( auto& e : components_raw ) {
-    if ( isNullComponent(e) )
-      continue;
-    //Check if more than one identical component:
-    auto uid = e.process->getUniqueID();
-    bool merged(false);
-    for ( auto& e0 : components ) {
-      if ( e0.process->getUniqueID() == uid ) {
-        merged = true;
-        e0.scale += e.scale;
-        break;
-      }
-    }
-    if ( merged )
-      continue;
-    components.emplace_back( std::move( e ) );
-  }
+  for ( auto& e : components_raw )
+    if ( !isNullComponent(e) )
+      components.emplace_back( std::move( e ) );
+  components = Impl::normalise( std::move(components), processType );
 
   if ( components.empty() ) {
     if ( processType == ProcessType::Scatter )
@@ -451,20 +425,11 @@ NCPI::ProcPtr NCPI::ProcComposition::consumeAndCombine( ComponentList&& componen
       return getGlobalNullAbsorption();
   }
 
-  //Next, simple cheap check for a single unscaled component:
+  //A single unscaled component needs no ProcComposition:
   if ( components.size() == 1 && components.back().scale == 1.0 )
     return std::move(components.back().process);
 
-  //Non-trivial case, add on ProcComposition:
-  auto pc = makeSO<ProcImpl::ProcComposition>( std::move(components), processType );
-
-  //The ProcComposition logic might have merged multiple components into one, so
-  //we might again have ended up with just a single component:
-  if ( pc->components().size() == 1 && pc->components().back().scale == 1.0 )
-    return pc->components().back().process;
-
-  //Alright, return ProcComposition object:
-  return pc;
+  return makeSO<ProcImpl::ProcComposition>( std::move(components), processType );
 }
 
 void NCPI::Process::initCachePtr(CachePtr& cp) const
