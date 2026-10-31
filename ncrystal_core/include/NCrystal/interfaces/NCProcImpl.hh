@@ -310,9 +310,10 @@ namespace NCRYSTAL_NAMESPACE {
     // has 10 times as many atoms inside then the resulting per-atom cross
     // section should of course reflect that).
     //
-    // All processes added to a particular ProcComposition instance must all
-    // have same processType, but might mix materialType (the material becomes
-    // anisotropic when at least one component is anisotropic).
+    // All components of a particular ProcComposition instance must have the
+    // same processType, but might mix materialType (the material becomes
+    // anisotropic when at least one component is anisotropic). The components
+    // are fixed at construction.
     //
 
     class NCRYSTAL_API ProcComposition final : public Process {
@@ -331,11 +332,13 @@ namespace NCRYSTAL_NAMESPACE {
       };
       using ComponentList = SmallVector<Component,6>;
 
-      ProcComposition( ComponentList components = ComponentList(),
+      //Components with scale 0 or null processes are dropped, nested
+      //ProcComposition's are flattened, and identical or mergeable processes
+      //(see Process::createMerged) are combined. At least one component must
+      //remain:
+      ProcComposition( ComponentList components,
                        ProcessType processType = ProcessType::Scatter );
       const ComponentList& components() const noexcept;
-      void addComponent( ProcPtr process, double scale = 1.0 );
-      void addComponents( ComponentList components, double scale = 1.0 );
 
       EnergyDomain domain() const noexcept final { return m_domain; }
       CrossSect crossSection(CachePtr& cacheptr, NeutronEnergy ekin, const NeutronDirection& dir ) const final;
@@ -371,7 +374,6 @@ namespace NCRYSTAL_NAMESPACE {
     protected:
       Optional<std::string> specificJSONDescription() const override;
     private:
-      unsigned m_nHistory = 1;//increment whenever m_components change.
       ComponentList m_components;
       ProcessType m_processType;
       MaterialType m_materialType;
