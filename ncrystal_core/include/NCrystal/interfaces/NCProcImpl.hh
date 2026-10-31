@@ -24,6 +24,13 @@
 #include "NCrystal/core/NCTypes.hh"
 #include "NCrystal/interfaces/NCRNG.hh"
 
+namespace NCRYSTAL_NAMESPACE {
+  //fixme: consider pimpl for ProcComposition to avoid this (if we then keep
+  //IsoXSEvaluator by value on the pimpl, we don't even have to add more layers
+  //of indirection).
+  class IsoXSEvaluator;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////
 //                                                                               //
 // Interfaces used for the implementation of physics processes. Implementations  //
@@ -383,6 +390,9 @@ namespace NCRYSTAL_NAMESPACE {
       ProcessType m_processType;
       MaterialType m_materialType;
       EnergyDomain m_domain = { NeutronEnergy{0.0}, NeutronEnergy{0.0} };
+      std::shared_ptr<const IsoXSEvaluator> m_tabulatedXS;//merged table
+      SmallVector<std::size_t,6> m_untabulated;//indices of other components
+      SmallVector<std::size_t,6> m_tabulatedBySize;//indices, largest first
       class Impl;
       friend class Impl;
     };
