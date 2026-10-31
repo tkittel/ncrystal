@@ -1,0 +1,5 @@
+Al_sg225.ncmat;knllux=3: 3 components, 3 with tables, composition has a table: OK
+Polyethylene_CH2.ncmat;knllux=3: 3 components, 3 with tables, composition has a table: OK
+Al_sg225.ncmat: 3 components, 2 with tables: OK
+Y2O3_sg206_Yttrium_Oxide.ncmat;dcutoff=0.3: 4 components, 2 with tables: OK
+phases<0.3*Al_sg225.ncmat;knllux=3&0.7*Polyethylene_CH2.ncmat;knllux=3>: 5 components, 5 with tables, composition has a table: OK
