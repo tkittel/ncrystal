@@ -399,6 +399,61 @@ namespace {
 
 }
 
+namespace {
+  std::uint64_t g_nscalechecks = 0;
+
+  //scaleIsoXSDescr against IsoXSEvaluator::evalScaled, on random tables
+  //(positive coefficients) and scales. The random tables jump at their nodes,
+  //where E/escale and escale*e might round to opposite sides, so the
+  //neighbours of the nodes are not checked:
+  void testScale( NC::RandXRSRImpl& rng )
+  {
+    for ( int trial = 0; trial < 40; ++trial ) {
+      const std::size_t n = 2 + static_cast<std::size_t>( rng.generate() * 200 );
+      NC::VectD E = NC::geomspace( 1e-6 * std::pow( 10.0, rng.generate() ),
+                                   10.0 * std::pow( 10.0, rng.generate() ), n );
+      const int mode = trial % 4;
+      NC::IsoXSDescr d = makeDescr( std::move(E), mode & 1, mode & 2, 0, rng );
+      if ( trial % 5 == 0 )
+        d.table.value().p.clear();
+      const double escale = ( trial % 7 == 0 ? 1.0 : std::pow( 10.0, -3.0 + 8.0 * rng.generate() ) );
+      const double xsscale = ( trial % 9 == 0 ? 0.0 : std::pow( 10.0, -3.0 + 6.0 * rng.generate() ) );
+      const NC::IsoXSDescr sd = NC::scaleIsoXSDescr( d, escale, xsscale );
+      const NC::IsoXSEvaluator ev( std::move(d) );
+      const auto& st = sd.table.value();
+      REQUIRE( sd.breakpts.size() == ev.descr().breakpts.size() );
+      auto check = [&]( double e ) {
+        if ( !( e >= 0.0 ) )
+          return;
+        const double a = ev.evalScaled( e, escale, xsscale );
+        const double b = NC::evalIsoXS( st, e );
+        REQUIRE( std::isfinite( a ) && std::isfinite( b ) );
+        //Allowed: 8 ulp, plus the change of the cross section when moving the
+        //energy by up to 4 ulp (the energy transformation rounds):
+        double elo = e, ehi = e;
+        for ( int k = 0; k < 4; ++k ) {
+          elo = std::nextafter( elo, 0.0 );
+          ehi = std::nextafter( ehi, NC::kInfinity );
+        }
+        const double slope = std::fabs( ev.evalScaled( ehi, escale, xsscale )
+                                        - ev.evalScaled( elo, escale, xsscale ) );
+        const double tol = 8.0 * std::numeric_limits<double>::epsilon() * std::fabs( a ) + slope;
+        const double dev = std::fabs( a - b );
+        REQUIRE( dev <= tol );
+        ++g_nscalechecks;
+      };
+      for ( std::size_t i = 0; i + 1 < st.E.size(); ++i )
+        for ( double u : { 0.001, 0.25, 0.5, 0.75, 0.999 } )
+          check( st.E[i] + u * ( st.E[i+1] - st.E[i] ) );
+      for ( double e : { 0.0, std::numeric_limits<double>::denorm_min(), 1e-320, 1e-310,
+                         std::numeric_limits<double>::min(), st.E.front() * 1e-3, st.E.back() * 1e3 } )
+        check( e );
+      for ( int k = 0; k < 2000; ++k )
+        check( st.E.front() * 1e-2 * std::pow( 1e4 * st.E.back() / st.E.front(), rng.generate() ) );
+    }
+  }
+}
+
 int main()
 {
   NC::RandXRSRImpl rng( 54321 );
@@ -488,5 +543,11 @@ int main()
   std::cout << "mergeIsoXSDescr agrees with the sum of its inputs in " << g_nmergechecks
             << " checks (max deviation " << ( g_maxmergeulp < 8 ? "below 8" : "8 or more" )
             << " ulp of the absolute evaluation)" << std::endl;
+  {
+    NC::RandXRSRImpl rng3( 777 );
+    testScale( rng3 );
+  }
+  std::cout << "scaleIsoXSDescr agrees with IsoXSEvaluator::evalScaled in " << g_nscalechecks
+            << " checks (within rounding of the energy)" << std::endl;
   return 0;
 }
