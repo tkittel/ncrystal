@@ -340,6 +340,11 @@ namespace NCRYSTAL_NAMESPACE {
                        ProcessType processType = ProcessType::Scatter );
       const ComponentList& components() const noexcept;
 
+      //Merged description of the components (see NCIsoXSUtils.hh), with a
+      //table if all components are ScatterIsotropicMat processes with tables:
+      //Fixme: revisit this interface
+      IsoXSDescr isoXSDescr() const;
+
       EnergyDomain domain() const noexcept final { return m_domain; }
       CrossSect crossSection(CachePtr& cacheptr, NeutronEnergy ekin, const NeutronDirection& dir ) const final;
       CrossSect crossSectionIsotropic(CachePtr& cacheptr, NeutronEnergy ekin ) const final;

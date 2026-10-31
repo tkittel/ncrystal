@@ -22,6 +22,7 @@
 #include "NCrystal/internal/utils/NCRandUtils.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCIsoXSUtils.hh"
 
 namespace NC = NCrystal;
 namespace NCPI = NCrystal::ProcImpl;
@@ -334,6 +335,32 @@ NCPI::ProcComposition::ProcComposition( ComponentList components,
       m_domain.ehigh = NeutronEnergy{ std::max<double>(m_domain.ehigh.get(),d.ehigh.get()) };
     }
   }
+}
+
+NC::IsoXSDescr NCPI::ProcComposition::isoXSDescr() const
+{
+  std::vector<IsoXSDescr> descrs;
+  descrs.reserve( m_components.size() );
+  for ( auto& comp : m_components ) {
+    auto p = dynamic_cast<const ScatterIsotropicMat*>( comp.process.get() );
+    if ( p ) {
+      descrs.push_back( p->isoXSDescr() );
+    } else {
+      //No table, breakpts at the finite, non-zero domain bounds:
+      IsoXSDescr d;
+      const auto dom = comp.process->domain();
+      if ( !dom.isNull() )
+        for ( auto e : { dom.elow.dbl(), dom.ehigh.dbl() } )
+          if ( e > 0.0 && std::isfinite( e ) )
+            d.breakpts.push_back( e );
+      descrs.push_back( std::move( d ) );
+    }
+  }
+  std::vector<std::pair<double,const IsoXSDescr*>> inputs;
+  inputs.reserve( descrs.size() );
+  for ( auto k : ncrange( descrs.size() ) )
+    inputs.emplace_back( m_components[k].scale, &descrs[k] );
+  return mergeIsoXSDescr( inputs );
 }
 
 NC::CrossSect NCPI::ProcComposition::crossSection( CachePtr& cacheptr,
