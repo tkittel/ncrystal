@@ -64,7 +64,14 @@ NC::FreeGas::~FreeGas() = default;
 
 NC::CrossSect NC::FreeGas::crossSectionIsotropic(CachePtr&, NeutronEnergy ekin ) const
 {
-  return CrossSect{ m_impl->m_xsprovider.crossSection(ekin) };
+  return m_impl->m_xsprovider.crossSectionTabulated( ekin );
+}
+
+NC::IsoXSDescr NC::FreeGas::isoXSDescr() const
+{
+  IsoXSDescr res;
+  res.table = m_impl->m_xsprovider.createXSTabulation();
+  return res;
 }
 
 NC::ScatterOutcomeIsotropic NC::FreeGas::sampleScatterIsotropic(CachePtr&, RNG& rng, NeutronEnergy ekin ) const

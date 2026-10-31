@@ -41,7 +41,7 @@ NC::SAB::SABFGExtender::~SABFGExtender() = default;
 
 NC::CrossSect NC::SAB::SABFGExtender::crossSection(NeutronEnergy ekin) const
 {
-  return m_xsprovider.crossSection(ekin);
+  return m_xsprovider.crossSectionUntabulated(ekin);
 }
 
 NC::IsoXSHighEForm NC::SAB::SABFGExtender::highEForm() const

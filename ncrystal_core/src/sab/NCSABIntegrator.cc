@@ -189,7 +189,7 @@ double NS::SABIntegrator::Impl::determineEMax(const double eUpperLimit) const
   const double stepsize = 0.95;//NB: changing this to e.g. 0.999 might actually give less precise results! Not so simple to just change it.
   auto xs_dist_to_freeXS = [this,&freeXS](double ekin)
                            {
-                             return ncabs( this->analyseEnergyPointForXS(ekin) - freeXS.crossSection(NeutronEnergy{ekin}).dbl() );
+                             return ncabs( this->analyseEnergyPointForXS(ekin) - freeXS.crossSectionUntabulated(NeutronEnergy{ekin}).dbl() );
                            };
   double prevDist = kInfinity;
   double ekin = eUpperLimit;

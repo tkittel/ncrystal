@@ -256,7 +256,7 @@ namespace {
           = ( integrateShape( c, A, cs.r, true, w1 )
               / integrateShape( c, A, cs.r, false, w1 ) );
         const double ratio_impl = ( sct.crossSection(ekin).dbl()
-                                    / fgteff.crossSection(ekin).dbl() );
+                                    / fgteff.crossSectionUntabulated(ekin).dbl() );
         std::printf("  A=%.3f r=%5.2f E=%5.2feV : sigma_SCT/sigma_FG(Teff)"
                     " = %.6f (ref %.6f)\n", A, cs.r, e,
                     ratio_impl, ratio_ref );

@@ -72,8 +72,8 @@ namespace NCRYSTAL_NAMESPACE {
     FreeGasXSProvider( Temperature, AtomMass, SigmaBound );
     ~FreeGasXSProvider();
 
-    //Get the cross-section:
-    CrossSect crossSection( NeutronEnergy ekin ) const;
+    //The cross section from the formula:
+    CrossSect crossSectionUntabulated( NeutronEnergy ekin ) const;
 
     //Evaluate (1+1/(2a^2))*erf(a)+exp(-a^2)/(sqrt(pi)*a) (used internally, but
     //exposed here for testing):
@@ -83,6 +83,14 @@ namespace NCRYSTAL_NAMESPACE {
 
     //High energy form, sigma_free*(1+kT/(2*A*E)) above A*E/kT=36:
     IsoXSHighEForm highEForm() const;
+
+    //The cross section from a universal table (built once and shared), with a
+    //relative deviation below 1e-10 from crossSectionUntabulated:
+    CrossSect crossSectionTabulated( NeutronEnergy ) const;
+
+    //The same as an IsoXSDescr::Tabulation (see NCIsoXSUtils.hh), agreeing
+    //with crossSectionTabulated to within rounding:
+    IsoXSDescr::Tabulation createXSTabulation() const;
   private:
     double m_sigmaFree, m_ca;
   };
@@ -123,7 +131,7 @@ namespace NCRYSTAL_NAMESPACE {
 
 namespace NCRYSTAL_NAMESPACE {
 
-  inline CrossSect FreeGasXSProvider::crossSection( NeutronEnergy ekin ) const
+  inline CrossSect FreeGasXSProvider::crossSectionUntabulated( NeutronEnergy ekin ) const
   {
     return CrossSect{ m_sigmaFree * evalXSShapeASq( m_ca * ekin.dbl() ) };
   }
