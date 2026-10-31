@@ -1,0 +1,5 @@
+Al_sg225.ncmat: 171 edges, cross sections as described, and as from the HKL list: OK
+Na4Si3Al3O12Cl_sg218_Sodalite.ncmat: 1625 edges, cross sections as described, and as from the HKL list: OK
+Al2O3_sg167_Corundum.ncmat;dcutoff=0.3: 909 edges, cross sections as described, and as from the HKL list: OK
+single plane: 1 edges, cross sections as described: OK
+Al+Cu merged: 394 edges, cross sections as described: OK

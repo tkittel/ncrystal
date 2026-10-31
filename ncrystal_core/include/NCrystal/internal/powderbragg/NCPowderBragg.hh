@@ -56,6 +56,11 @@ namespace NCRYSTAL_NAMESPACE {
                                                    RNG&,
                                                    NeutronEnergy ) const override;
 
+    //The cross section is C_i/E between consecutive Bragg edges E_i (zero
+    //below the first), so it can be described exactly, with the edges as
+    //breakpts (computed on each call):
+    IsoXSDescr isoXSDescr() const override;
+
     //Two PowderBragg instances can be merged by merging the plane lists:
     std::shared_ptr<Process> createMerged( const Process& other,
                                            double scale_self,
