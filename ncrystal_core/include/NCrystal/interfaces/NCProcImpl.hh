@@ -24,6 +24,10 @@
 #include "NCrystal/core/NCTypes.hh"
 #include "NCrystal/interfaces/NCRNG.hh"
 
+namespace NCRYSTAL_NAMESPACE {
+  class IsoXSEvaluator;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////
 //                                                                               //
 // Interfaces used for the implementation of physics processes. Implementations  //
@@ -333,7 +337,9 @@ namespace NCRYSTAL_NAMESPACE {
       //Components with scale 0 or null processes are dropped, nested
       //ProcComposition's are flattened, and identical or mergeable processes
       //(see Process::createMerged) are combined. At least one component must
-      //remain:
+      //remain. If at least two components are ScatterIsotropicMat processes
+      //with tables in their isoXSDescr(), their cross sections are evaluated
+      //from the merged table (the samplings use the components):
       ProcComposition( ComponentList components,
                        ProcessType processType = ProcessType::Scatter );
       const ComponentList& components() const noexcept;
@@ -380,6 +386,9 @@ namespace NCRYSTAL_NAMESPACE {
       ProcessType m_processType;
       MaterialType m_materialType;
       EnergyDomain m_domain = { NeutronEnergy{0.0}, NeutronEnergy{0.0} };
+      std::shared_ptr<const IsoXSEvaluator> m_tabulatedXS;//merged table
+      SmallVector<std::size_t,6> m_untabulated;//indices of other components
+      SmallVector<std::size_t,6> m_tabulatedBySize;//indices, largest first
       class Impl;
       friend class Impl;
     };
