@@ -174,11 +174,11 @@ namespace NCRYSTAL_NAMESPACE {
   public:
     //Cross sections in the SCT model described above. Teff>=T is required
     //(a tiny numerical dip below T is clamped), and Teff==T gives results
-    //identical to FreeGasXSProvider at T. table_npts is the node count
-    //of the correction lookup table (worst-case relative accuracy of
-    //the correction scales as npts^-4, 90 nodes giving ~1e-5;
-    //normally provided via SABCfg::Cfg::sct_table_npts, i.e. tied to
-    //the knllux/sablux luxury setting):
+    //identical to FreeGasXSProvider::crossSectionUntabulated at T. table_npts
+    //is the node count of the correction lookup table (worst-case relative
+    //accuracy of the correction scales as npts^-4, 90 nodes giving ~1e-5;
+    //normally provided via SABCfg::Cfg::sct_table_npts, i.e. tied to the
+    //knllux/sablux luxury setting):
     SCTXSProvider( Temperature, Temperature teff, AtomMass, SigmaBound,
                    unsigned table_npts = 90 );
     ~SCTXSProvider();
