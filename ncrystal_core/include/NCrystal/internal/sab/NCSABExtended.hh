@@ -23,6 +23,7 @@
 
 #include "NCrystal/internal/sab/NCSABProcessor.hh"
 #include "NCrystal/internal/sab/NCSABExtender.hh"
+#include "NCrystal/internal/utils/NCIsoXSUtils.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -71,6 +72,11 @@ namespace NCRYSTAL_NAMESPACE {
       //Access cross sections, always assuming SigmaBound=1barn.
       CrossSect crossSectionUnitSigmaBound( NeutronEnergy ekin ) const;
 
+      //The evaluator of the description defining crossSectionUnitSigmaBound
+      //(see NCIsoXSUtils.hh). Its breakpts are the ends of the processor's
+      //energy grid:
+      const IsoXSEvaluator& xsEvaluator() const noexcept { return m_xs; }
+
       //Sample scatterings:
       ScatterOutcomeIsotropic sampleScatter( RNG&, NeutronEnergy ) const;
       PairDD sampleScatterAlphaBeta( RNG& rng, NeutronEnergy ekin ) const;
@@ -86,8 +92,7 @@ namespace NCRYSTAL_NAMESPACE {
       double m_invkT;
       double m_extSAtEmax;
       double m_tableSAtEmax;
-      double m_kExtension;
-      CrossSect xsHighE( NeutronEnergy ) const;
+      IsoXSEvaluator m_xs;
       PairDD scatABHighE( RNG&, NeutronEnergy ) const;
     };
   }
@@ -100,9 +105,7 @@ namespace NCRYSTAL_NAMESPACE {
 inline NCrystal::CrossSect NCrystal::SABUtils::
 SABExtended::crossSectionUnitSigmaBound( NeutronEnergy ekin ) const
 {
-  if ( ekin <= m_emax )
-    return m_p->crossSectionUnitSigmaBound(ekin);
-  return xsHighE(ekin);
+  return CrossSect{ m_xs.eval( ekin.dbl() ) };
 }
 
 inline NCrystal::PairDD NCrystal::SABUtils::

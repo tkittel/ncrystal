@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/sab/NCSABExtended.hh"
+#include "NCrystal/internal/utils/NCSpline.hh"
 namespace NC = NCrystal;
 namespace NCS = NCrystal::SABUtils;
 
@@ -32,6 +33,49 @@ namespace NCRYSTAL_NAMESPACE {
         return xs.dbl() * ekin.dbl() * 4.0 * invkT;
       }
 
+      //The processor's cross section up to Emax, and above it k/E plus the
+      //extender's cross section, where k matches the two at Emax:
+      //
+      //  Sint(E) = Sint_table(Emax) - Sint_extender(Emax) + Sint_extender(E)
+      //
+      //which with xs=[kT/(4E)]*Sint gives xs(E) = k/E + xs_extender(E), with
+      //k = Emax*(xs_table(Emax)-xs_extender(Emax)). Above Emax, e*xs is fitted
+      //with cubics (to 1e-10) up to where the extender reaches its high-energy
+      //form B+A/E, giving the tail B+(A+k)/E:
+      IsoXSDescr describeSABExtended( const SABProcessor& p,
+                                      const SAB::SABExtender& ext )
+      {
+        auto t = p.createXSTabulation();
+        const auto emaxInfo = p.getEMaxInfo();
+        const double emax = emaxInfo.ekin.dbl();
+        nc_assert_always( t.E.back() == emax );
+        const double k = emax * ( emaxInfo.crossSectionUnitSigmaBound.dbl()
+                                  - ext.crossSection( emaxInfo.ekin ).dbl() );
+        const auto highE = ext.highEForm();
+        const double ehigh = highE.emin.dbl();
+        if ( ehigh > emax ) {
+          auto f = [&ext,k]( double e )
+          {
+            return k + e * ext.crossSection( NeutronEnergy{ e } ).dbl();
+          };
+          constexpr double tol = 1e-10;
+          const auto fit = fitPiecewiseCubic( f, emax, ehigh, tol );
+          nc_assert_always( fit.x.front() == emax && fit.x.size() >= 2 );
+          //The processor part has no P part (empty p), the extender part no
+          //Q part:
+          t.E.insert( t.E.end(), std::next( fit.x.begin() ), fit.x.end() );
+          t.p.assign( t.q.size(), 0.0 );
+          t.p.insert( t.p.end(), fit.c.begin(), fit.c.end() );
+          t.q.resize( t.p.size(), 0.0 );
+        }
+        t.tail[2] = highE.A + k;
+        t.tail[3] = highE.B;
+        IsoXSDescr res;
+        res.breakpts = { t.E.front(), emax };
+        res.table = std::move( t );
+        return res;
+      }
+
     }
   }
 }
@@ -42,37 +86,17 @@ NCS::SABExtended::SABExtended( shared_obj<const SABProcessor> p,
   : m_p( std::move(p) ),
     m_e( std::move(e) ),
     m_kT( m_p->kT() ),
-    m_invkT( 1.0 / m_kT )
+    m_invkT( 1.0 / m_kT ),
+    m_xs( describeSABExtended( *m_p, *m_e ) )
 {
   nc_assert(!m_p->getEDivKTGrid().empty());
   nc_assert(!m_p->getPhaseSpaceIntegralAtGrid().empty());
   auto emaxInfo = m_p->getEMaxInfo();
   m_emax = emaxInfo.ekin;
-  //Initialise constants needed for high-E extrapolation (see comments below
-  //where they are being used):
+  //Initialise constants needed for high-E sampling (see scatABHighE):
   const auto extenderXS_emax = m_e->crossSection(m_emax);
-  const auto tableXS_emax = emaxInfo.crossSectionUnitSigmaBound;
-  m_kExtension = ( tableXS_emax.dbl() - extenderXS_emax.dbl() ) * m_emax.dbl();
   m_extSAtEmax = sIntegralFromXS( extenderXS_emax, m_emax, m_invkT );
   m_tableSAtEmax = emaxInfo.phaseSpaceIntegral;
-}
-
-NC::CrossSect
-NCS::SABExtended::xsHighE( NeutronEnergy ekin ) const
-{
-  nc_assert( ekin > m_emax );
-  //  integral_E(S) = ( tableintegral_Emax(S)
-  //                    - extenderintegral_Emax(S) )
-  //                  + extenderintegral_E(S)
-  //  Now, in general XS(E) = [C/E] * integral_E(S),   C=sigmaB*kT/4. So:
-  //    XS_E = [C/E] * integral_E(S)
-  //            = [Emax/E]*( [C/Emax]*tableintegral_Emax(S)
-  //                         - [C/Emax]*extenderintegral_Emax(S) )
-  //               + [C/E]*extenderintegral_E(S)
-  //            = [Emax/E] *(tableXS_Emax-extenderXS_Emax) + extenderXS_E
-  //            = k / E + extenderXS_E
-  return CrossSect{ m_kExtension / ekin.dbl()
-                    + m_e->crossSection( ekin ).dbl() };
 }
 
 NC::PairDD NCS::SABExtended::scatABHighE( RNG& rng, NeutronEnergy ekin ) const

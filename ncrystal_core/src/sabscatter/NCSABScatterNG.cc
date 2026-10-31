@@ -20,6 +20,7 @@
 
 #include "NCrystal/internal/sabscatter/NCSABScatterNG.hh"
 #include "NCrystal/internal/sab/NCSABExtended.hh"
+#include "NCrystal/internal/utils/NCIsoXSUtils.hh"
 namespace NC = NCrystal;
 
 NC::SABScatterNG::~SABScatterNG() = default;
@@ -28,8 +29,9 @@ NC::SABScatterNG::SABScatterNG( shared_obj<const SABExtended> sh, double scale )
   : m_sh(std::move(sh)), m_scale(scale)
 {
   nc_assert( m_sh!=nullptr);
-  nc_assert( m_scale >= 0.0 );
-  nc_assert( std::isfinite(m_scale) );
+  if ( !( m_scale > 0.0 && std::isfinite( m_scale ) ) )
+    NCRYSTAL_THROW2(BadInput,"SABScatterNG: invalid scale (must be positive"
+                    " and finite): "<<m_scale);
 }
 
 NC::SABScatterNG::SABScatterNG( shared_obj<const SABExtended> sh,
@@ -41,7 +43,12 @@ NC::SABScatterNG::SABScatterNG( shared_obj<const SABExtended> sh,
 NC::CrossSect
 NC::SABScatterNG::crossSectionIsotropic( CachePtr&, NeutronEnergy ekin ) const
 {
-  return CrossSect{ m_sh->crossSectionUnitSigmaBound( ekin ).dbl() * m_scale };
+  return CrossSect{ m_sh->xsEvaluator().evalScaled( ekin.dbl(), 1.0, m_scale ) };
+}
+
+NC::IsoXSDescr NC::SABScatterNG::isoXSDescr() const
+{
+  return scaleIsoXSDescr( m_sh->xsEvaluator().descr(), 1.0, m_scale );
 }
 
 NC::ScatterOutcomeIsotropic
