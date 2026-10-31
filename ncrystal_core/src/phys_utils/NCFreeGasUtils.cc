@@ -21,6 +21,7 @@
 #include "NCrystal/internal/phys_utils/NCFreeGasUtils.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
+#include "NCrystal/internal/utils/NCSpline.hh"
 namespace NC=NCrystal;
 
 #define NCRYSTAL_FREEGASUTILS_ENABLEEXTRADEBUGGING 0
@@ -60,6 +61,60 @@ NC::FreeGasXSProvider::FreeGasXSProvider( Temperature temp_kelvin,
 }
 
 NC::FreeGasXSProvider::~FreeGasXSProvider() = default;
+
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    //With x=a^2=ca*E, xs=sigma_free*G(x)/x, where
+    //G(x)=(x+1/2)*erf(sqrt(x))+sqrt(x)*exp(-x)/sqrt(pi)=sqrt(x)*H(x), with H
+    //smooth in x. So xs=sigma_free*U(ca*E), where U is the cross section for
+    //sigma_free=1 and ca=1, i.e. with E=x:
+    //
+    //  x*U(x) = sqrt(x) * H(x)
+    //
+    //The universal table of U tabulates H in x (the Q part), for x in
+    //[1.5e-10,36]: below it U=2/sqrt(pi*x) is good to x/3<0.5e-10, and above it
+    //the highEForm U=1+1/(2x) applies.
+    double freeGasH( double x )
+    {
+      const double s = std::sqrt( x );
+      return stable_exp( -x ) * kInvSqrtPi + ( s + 0.5 / s ) * ncerf( s );
+    }
+
+    IsoXSDescr describeFreeGasUniversal()
+    {
+      constexpr double xmax = 36.0;//must match highEForm
+      auto fit = fitPiecewiseCubic( freeGasH, 1.5e-10, xmax, 1e-10, 4.0 );
+      nc_assert_always( fit.x.back() == xmax );
+      IsoXSDescr res;
+      res.table.emplace();
+      auto& t = res.table.value();
+      t.E = std::move( fit.x );
+      t.q = std::move( fit.c );
+      t.tail[0] = 2.0 * kInvSqrtPi;
+      t.tail[2] = 0.5;
+      t.tail[3] = 1.0;
+      return res;
+    }
+
+    const IsoXSEvaluator& freeGasUniversal()
+    {
+      static const IsoXSEvaluator ev( describeFreeGasUniversal() );
+      return ev;
+    }
+  }
+}
+
+NC::CrossSect NC::FreeGasXSProvider::crossSectionTabulated( NeutronEnergy ekin ) const
+{
+  return CrossSect{ freeGasUniversal().evalScaled( ekin.dbl(), m_ca, m_sigmaFree ) };
+}
+
+NC::IsoXSDescr::Tabulation NC::FreeGasXSProvider::createXSTabulation() const
+{
+  nc_assert( m_ca > 0.0 );
+  auto d = scaleIsoXSDescr( freeGasUniversal().descr(), m_ca, m_sigmaFree );
+  return std::move( d.table.value() );
+}
 
 NC::IsoXSHighEForm NC::FreeGasXSProvider::highEForm() const
 {
