@@ -79,6 +79,51 @@ double NC::evalIsoXS( const IsoXSDescr::Tabulation& t, double e )
   return ncfma( vectAt( t.r, i ), inv, exs ) * inv;
 }
 
+NC::IsoXSDescr NC::scaleIsoXSDescr( const IsoXSDescr& d, double escale,
+                                    double xsscale )
+{
+  //With x=escale*e: e*xs'(e) = (xsscale/escale)*x*xs(x), so in each interval
+  //P, Q and r scale with xsscale/escale, xsscale/sqrt(escale) and
+  //xsscale/escale^2, and similarly the tails:
+  nc_assert_always( escale > 0.0 && std::isfinite( escale ) );
+  nc_assert_always( xsscale >= 0.0 && std::isfinite( xsscale ) );
+  const double kp = xsscale / escale;
+  const double kq = xsscale / std::sqrt( escale );
+  const double kr = kp / escale;
+  IsoXSDescr res;
+  res.breakpts.reserve( d.breakpts.size() );
+  for ( auto b : d.breakpts )
+    res.breakpts.push_back( b / escale );
+  if ( !d.table.has_value() )
+    return res;
+  const auto& t = d.table.value();
+  res.table.emplace();
+  auto& c = res.table.value();
+  c.E.reserve( t.E.size() );
+  for ( auto e : t.E )
+    c.E.push_back( e / escale );
+  for ( auto i : ncrange( std::size_t(1), c.E.size() ) )
+    if ( !( vectAt( c.E, i - 1 ) < vectAt( c.E, i ) ) )
+      NCRYSTAL_THROW(CalcError,"scaleIsoXSDescr: energy scale collapses grid points");
+  auto scaled = []( const VectD& v, double k )
+  {
+    VectD r;
+    r.reserve( v.size() );
+    for ( auto x : v )
+      r.push_back( x * k );
+    return r;
+  };
+  c.p = scaled( t.p, kp );
+  c.q = scaled( t.q, kq );
+  c.r = scaled( t.r, kr );
+  c.tail[0] = t.tail[0] * kq;
+  c.tail[1] = t.tail[1] * xsscale;
+  c.tail[2] = t.tail[2] * kp;
+  c.tail[3] = t.tail[3] * xsscale;
+  c.tail[4] = t.tail[4] * kr;
+  return res;
+}
+
 NC::IsoXSDescr NC::cloneIsoXSDescr( const IsoXSDescr& d )
 {
   IsoXSDescr res;
