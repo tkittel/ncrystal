@@ -1487,6 +1487,40 @@ NCS::SABProcessor::crossSectionUnitSigmaBound( NeutronEnergy ekin ) const
   return CrossSect{ Sint * kTdiv4 / ekin.dbl() };
 }
 
+NC::IsoXSDescr::Tabulation NCS::SABProcessor::createXSTabulation() const
+{
+  //On the grid, e*xs = (kT/4)*Sint(t) = sqrt(e)*(sqrt(kT)/4)*g(t), with g the
+  //HymanInterp interpolation (a cubic Hermite in u, the same u in t and e):
+  auto sp = sp_cimpl(m_impl);
+  const auto& x = sp->m_eGrid;
+  const auto& y = sp->m_sIntegral;
+  nc_assert_always( x.size() >= 2 && x.size() == y.size() );
+  nc_assert_always( sp->m_sIntegralSmooth.has_value() );
+  const auto m = sp->m_sIntegralSmooth.value().nodeSlopes();
+  nc_assert_always( m.size() == x.size() );
+  const double kT = sp->m_kT;
+  const double c = 0.25 * std::sqrt( kT );
+  IsoXSDescr::Tabulation res;
+  res.E.reserve( x.size() );
+  for ( auto t : x )
+    res.E.push_back( t * kT );
+  res.q.reserve( 4 * ( x.size() - 1 ) );
+  for ( auto i : ncrange( x.size() - 1 ) ) {
+    const double g0 = y[i] / std::sqrt( x[i] );
+    const double g1 = y[i+1] / std::sqrt( x[i+1] );
+    const double h = x[i+1] - x[i];
+    const double d0 = h * m[i], d1 = h * m[i+1];
+    res.q.insert( res.q.end(), { c * g0, c * d0,
+                                 c * ( 3.0 * ( g1 - g0 ) - 2.0 * d0 - d1 ),
+                                 c * ( 2.0 * ( g0 - g1 ) + d0 + d1 ) } );
+  }
+  //Below the grid xs=K*sqrt(kT)/(4*sqrt(e)), above it xs=(kT/4)*Sint(Emax)/e
+  //(cf. crossSectionUnitSigmaBound):
+  res.tail[0] = sp->m_lowEExtrapolationConstant * c;
+  res.tail[2] = 0.25 * kT * y.back();
+  return res;
+}
+
 NCS::SABProcessor::EPtInfo NCS::SABProcessor::getEMaxInfo() const
 {
   auto sp = sp_cimpl(m_impl);
