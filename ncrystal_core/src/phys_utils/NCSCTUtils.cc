@@ -247,7 +247,7 @@ NC::CrossSect NC::SCTXSProvider::crossSection( NeutronEnergy ekin ) const
   //sigma_SCT(E) = sigma_FG(Teff)(E) - (sigma_b*A/(4c)) * corr(c), cf.
   //the header (c=E/kTeff, and the S-integral is carried out in the
   //mass-scaled alpha convention, hence the factor of A):
-  const auto xsfg = m_xsprovider.crossSection(ekin);
+  const auto xsfg = m_xsprovider.crossSectionUntabulated(ekin);
   if ( m_r == 1.0 )
     return xsfg;
   const double c = ekin.dbl() * m_invkTeff;
