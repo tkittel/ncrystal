@@ -27,13 +27,16 @@
 namespace NC = NCrystal;
 namespace NCPI = NCrystal::ProcImpl;
 
-NC::ScatterOutcome NCPI::ScatterIsotropicMat::sampleScatter( CachePtr& cp,
-                                                             RNG& rng,
-                                                             NeutronEnergy ekin,
-                                                             const NeutronDirection& indir ) const
+NC::ScatterOutcome
+NCPI::ScatterIsotropicMat::sampleScatter( CachePtr& cp,
+                                          RNG& rng,
+                                          NeutronEnergy ekin,
+                                          const NeutronDirection& indir ) const
 {
   auto outcome_isotropic = sampleScatterIsotropic(cp,rng,ekin);
-  auto outdir = randNeutronDirectionGivenScatterMu( rng, outcome_isotropic.mu.get(), indir.as<Vector>() );
+  auto outdir = randNeutronDirectionGivenScatterMu( rng,
+                                                    outcome_isotropic.mu.get(),
+                                                    indir.as<Vector>() );
   return { outcome_isotropic.ekin, outdir };
 }
 
@@ -49,70 +52,89 @@ NC::IsoXSDescr NCPI::ScatterIsotropicMat::isoXSDescr() const
   return res;
 }
 
-NC::CrossSect NCPI::ScatterAnisotropicMat::crossSectionIsotropic( CachePtr&, NeutronEnergy ) const
+NC::CrossSect
+NCPI::ScatterAnisotropicMat::crossSectionIsotropic( CachePtr&,
+                                                    NeutronEnergy ) const
 {
-  NCRYSTAL_THROW(LogicError,"Process::crossSectionIsotropic can only be called for isotropic materials.");
+  NCRYSTAL_THROW(LogicError,
+                 "Process::crossSectionIsotropic can only"
+                 " be called for isotropic materials.");
   return CrossSect{0.0};
 }
 
-NC::ScatterOutcomeIsotropic NCPI::ScatterAnisotropicMat::sampleScatterIsotropic( CachePtr&,
-                                                                                 RNG&,
-                                                                                 NeutronEnergy ) const
+NC::ScatterOutcomeIsotropic
+NCPI::ScatterAnisotropicMat::sampleScatterIsotropic( CachePtr&,
+                                                     RNG&,
+                                                     NeutronEnergy ) const
 {
-  NCRYSTAL_THROW(LogicError,"Process::sampleScatterIsotropic can only be called for isotropic materials.");
+  NCRYSTAL_THROW(LogicError,"Process::sampleScatterIsotropic can only"
+                 " be called for isotropic materials.");
   return { NeutronEnergy{0.0}, CosineScatAngle{0.0} };
 }
 
-NC::ScatterOutcome NCPI::AbsorptionIsotropicMat::sampleScatter( CachePtr&,
-                                                                RNG&,
-                                                                NeutronEnergy,
-                                                                const NeutronDirection& ) const
+NC::ScatterOutcome
+NCPI::AbsorptionIsotropicMat::sampleScatter( CachePtr&,
+                                             RNG&,
+                                             NeutronEnergy,
+                                             const NeutronDirection& ) const
 {
-  NCRYSTAL_THROW(LogicError,"Process::sampleScatter can not be called for an absorption process.");
+  NCRYSTAL_THROW(LogicError,"Process::sampleScatter can not be"
+                 " called for an absorption process.");
   return { NeutronEnergy{0.0}, NeutronDirection{0,0,1} };
 }
 
-NC::ScatterOutcomeIsotropic NCPI::AbsorptionIsotropicMat::sampleScatterIsotropic( CachePtr&,
-                                                                                  RNG&,
-                                                                                  NeutronEnergy ) const
+NC::ScatterOutcomeIsotropic
+NCPI::AbsorptionIsotropicMat::sampleScatterIsotropic( CachePtr&,
+                                                      RNG&,
+                                                      NeutronEnergy ) const
 {
-  NCRYSTAL_THROW(LogicError,"Process::sampleScatterIsotropic can not be called for an absorption process.");
+  NCRYSTAL_THROW(LogicError,"Process::sampleScatterIsotropic can not be"
+                 " called for an absorption process.");
   return { NeutronEnergy{0.0}, CosineScatAngle{0.0} };
 }
 
 #ifdef NCRYSTAL_ALLOW_ABI_BREAKAGE
 bool NCPI::AbsorptionIsotropicMat::isPureElasticScatter() const
 {
-  NCRYSTAL_THROW(LogicError,"Process::isPureElasticScatter can not be called for an absorption process.");
+  NCRYSTAL_THROW(LogicError,"Process::isPureElasticScatter can not be"
+                 " called for an absorption process.");
   return false;
 }
 
 std::pair<NC::CrossSect,NC::ScatterOutcome>
-NCPI::AbsorptionIsotropicMat::evalXSAndSampleScatter( CachePtr&, RNG&, NeutronEnergy ekin, const NeutronDirection& ndir ) const
+NCPI::AbsorptionIsotropicMat::evalXSAndSampleScatter( CachePtr&, RNG&,
+                                                      NeutronEnergy ekin,
+                                                      const NeutronDirection& ndir ) const
 {
-  NCRYSTAL_THROW(LogicError,"Process::evalXSAndSampleScatter can not be called for an absorption process.");
+  NCRYSTAL_THROW(LogicError,"Process::evalXSAndSampleScatter can not be"
+                 " called for an absorption process.");
   return { CrossSect{0.0}, ScatterOutcome{ ekin, ndir } };
 }
 
 std::pair<NC::CrossSect,NC::ScatterOutcomeIsotropic>
-NCPI::AbsorptionIsotropicMat::evalXSAndSampleScatterIsotropic(CachePtr&, RNG&, NeutronEnergy ekin ) const
+NCPI::AbsorptionIsotropicMat::evalXSAndSampleScatterIsotropic(CachePtr&,
+                                                              RNG&,
+                                                              NeutronEnergy ekin ) const
 {
-  NCRYSTAL_THROW(LogicError,"Process::evalXSAndSampleScatterIsotropic can not be called for an absorption process.");
+  NCRYSTAL_THROW(LogicError,"Process::evalXSAndSampleScatterIsotropic can not"
+                 " be called for an absorption process.");
   return { CrossSect{0.0}, ScatterOutcomeIsotropic::noScat(ekin) };
 }
 #endif
 
-NC::ScatterOutcomeIsotropic NCPI::NullProcess::sampleScatterIsotropic( CachePtr&,
-                                                                       RNG&,
-                                                                       NeutronEnergy ekin ) const
+NC::ScatterOutcomeIsotropic
+NCPI::NullProcess::sampleScatterIsotropic( CachePtr&,
+                                           RNG&,
+                                           NeutronEnergy ekin ) const
 {
   return { ekin, CosineScatAngle{1.0} };
 }
 
-NC::ScatterOutcome NCPI::NullProcess::sampleScatter( CachePtr&,
-                                                     RNG&,
-                                                     NeutronEnergy ekin,
-                                                     const NeutronDirection& dir ) const
+NC::ScatterOutcome
+NCPI::NullProcess::sampleScatter( CachePtr&,
+                                  RNG&,
+                                  NeutronEnergy ekin,
+                                  const NeutronDirection& dir ) const
 {
   return { ekin, dir };
 }
@@ -122,10 +144,21 @@ namespace NCRYSTAL_NAMESPACE {
 
     class CacheProcComp final : public CacheBase {
     public:
-      void invalidateCache() override { key_ekin = NeutronEnergy{-1.0}; }
+      void invalidateCache() override
+      {
+        key_ekin = NeutronEnergy{-1.0};
+        tab_key_ekin = NeutronEnergy{-1.0};
+      }
+
+      //Total cross section with the merged table (see crossSectionWithTable):
+      NeutronEnergy tab_key_ekin = NeutronEnergy{-1.0};
+      NeutronDirection tab_key_dir = NeutronDirection{0.,0.,0.};
+      double tab_tot_xs = -1.0;
+      SmallVector<double,6> tab_untab_xs;//scaled xs of untabulated components
 
       NeutronEnergy key_ekin = NeutronEnergy{-1.0};
-      NeutronDirection key_dir = NeutronDirection{0.,0.,0.};//only used for anisotropic materials
+      NeutronDirection key_dir = NeutronDirection{0.,0.,0.};//only used for
+                                                            //anisotropic mats.
       double tot_xs = -1.0;
       struct ComponentCache {
         CachePtr cachePtr;
@@ -138,12 +171,15 @@ namespace NCRYSTAL_NAMESPACE {
         key_ekin = NeutronEnergy{-1.0};
         key_dir = NeutronDirection{0.,0.,0.};
         tot_xs = -1.0;
+        tab_key_ekin = NeutronEnergy{-1.0};
         componentCache.clear();
         componentCache.reserve_hint(comps.size());
         for ( const auto& e : comps )
           componentCache.push_back({{nullptr},e.process->domain()});
         componentXSectCommul.clear();
         componentXSectCommul.resize(comps.size(),0.0);
+        tab_untab_xs.clear();
+        tab_untab_xs.resize(comps.size(),0.0);
       }
       CacheProcComp() { reset({}); }
     };
@@ -167,9 +203,11 @@ namespace NCRYSTAL_NAMESPACE {
           NCRYSTAL_THROW(BadInput,"Trying to add nullptr component!");
         if ( process->processType() != processType )
           NCRYSTAL_THROW2(BadInput,"Trying to add "<<process->processType()
-                          <<" process to ProcComposition of "<<processType<<" processes");
+                          <<" process to ProcComposition of "<<processType
+                          <<" processes");
         if ( scale<0.0 || !std::isfinite(scale) )
-          NCRYSTAL_THROW2(BadInput,"Trying to add component with invalid scale: "<<scale);
+          NCRYSTAL_THROW2(BadInput,
+                          "Trying to add component with invalid scale: "<<scale);
         if ( scale == 0.0 || process->isNull() )
           return;
         if ( auto pc = dynamic_cast<const ProcComposition*>(process.get()) ) {
@@ -189,7 +227,9 @@ namespace NCRYSTAL_NAMESPACE {
           //combine multiple PowderBragg instances into one more efficient one
           //which has just one internal hkl list to search - this is
           //potentially quite useful for multiphase materials:
-          auto merged_process = e.process->createMerged( *process, e.scale, scale );
+          auto merged_process = e.process->createMerged( *process,
+                                                         e.scale,
+                                                         scale );
           if ( merged_process != nullptr ) {
             e.process = std::move(merged_process);
             e.scale = 1.0;
@@ -208,6 +248,32 @@ namespace NCRYSTAL_NAMESPACE {
           addNormalised( res, std::move(e.process), e.scale, processType );
         return res;
       }
+
+      //Total cross section from the merged table plus the remaining components
+      //(dir==nullptr for isotropic evaluation):
+      static double crossSectionWithTable( const ProcComposition* THIS,
+                                           CachePtr& cacheptr,
+                                           NeutronEnergy ekin,
+                                           const NeutronDirection* dir );
+
+      //With the merged table: pick a component for sampling, evaluating the
+      //components one at a time until their summed cross section exceeds a
+      //random fraction of the total:
+      static std::size_t pickWithTable( const ProcComposition* THIS,
+                                        CachePtr& cacheptr, RNG& rng,
+                                        NeutronEnergy ekin,
+                                        const NeutronDirection* dir,
+                                        double& tot_xs );
+
+#ifdef NCRYSTAL_ALLOW_ABI_BREAKAGE
+      //Add the scaled cross sections of the remaining components to out_xs
+      //(ux==nullptr for isotropic evaluation):
+      static void addUntabulatedMany( const ProcComposition* THIS,
+                                      CachePtr& cacheptr, const double* ekin,
+                                      const double* ux, const double* uy,
+                                      const double* uz, std::size_t N,
+                                      double* out_xs );
+#endif
 
       static CacheProcComp& initAndAccessCache( const ProcComposition* THIS,
                                                 CachePtr& cacheptr )
@@ -229,7 +295,8 @@ namespace NCRYSTAL_NAMESPACE {
         nc_assert(ekin.dbl()>=0.0);
         nc_assert(THIS->m_domain.contains(ekin) );
         auto& cache = initAndAccessCache(THIS,cacheptr);
-        nc_assert(cache.key_dir.as<Vector>().isStrictNullVector());//no mixing between anisotropic and isotropic cache.
+        //no mixing between anisotropic and isotropic cache:
+        nc_assert(cache.key_dir.as<Vector>().isStrictNullVector());
 
         //Compare cached ekin to provided value.
         if ( cache.key_ekin == ekin )
@@ -335,7 +402,172 @@ NCPI::ProcComposition::ProcComposition( ComponentList components,
       m_domain.ehigh = NeutronEnergy{ std::max<double>(m_domain.ehigh.get(),d.ehigh.get()) };
     }
   }
+
+  //Merge the tables of the ScatterIsotropicMat components which have one:
+  std::vector<IsoXSDescr> descrs;
+  SmallVector<std::size_t,6> tabulated;
+  for ( auto i : ncrange( m_components.size() ) ) {
+    auto p = dynamic_cast<const ScatterIsotropicMat*>( m_components[i].process.get() );
+    if ( p ) {
+      IsoXSDescr d = p->isoXSDescr();
+      if ( d.table.has_value() ) {
+        descrs.push_back( std::move( d ) );
+        tabulated.push_back( i );
+        continue;
+      }
+    }
+    m_untabulated.push_back( i );
+  }
+  if ( tabulated.size() < 2 ) {
+    for ( auto i : tabulated )
+      m_untabulated.push_back( i );
+    std::sort( m_untabulated.begin(), m_untabulated.end() );
+    return;
+  }
+  std::vector<std::pair<double,const IsoXSDescr*>> inputs;
+  inputs.reserve( descrs.size() );
+  for ( auto k : ncrange( descrs.size() ) )
+    inputs.emplace_back( m_components[tabulated[k]].scale, &descrs[k] );
+  //Order for picking components when sampling: by typical size (mean over a
+  //logarithmic energy grid), largest first:
+  {
+    std::vector<std::pair<double,std::size_t>> sizes;
+    const auto egrid = geomspace( 1e-5, 10.0, 64 );
+    for ( auto k : ncrange( descrs.size() ) ) {
+      double s = 0.0;
+      for ( auto e : egrid )
+        s += evalIsoXS( descrs[k].table.value(), e );
+      sizes.emplace_back( -s * m_components[tabulated[k]].scale, tabulated[k] );
+    }
+    std::sort( sizes.begin(), sizes.end() );
+    for ( auto& e : sizes )
+      m_tabulatedBySize.push_back( e.second );
+  }
+  auto merged = mergeIsoXSDescr( inputs );
+  nc_assert_always( merged.table.has_value() );
+  m_tabulatedXS = std::make_shared<const IsoXSEvaluator>( std::move( merged ) );
 }
+
+double NCPI::ProcComposition::Impl::crossSectionWithTable( const ProcComposition* THIS,
+                                                           CachePtr& cacheptr,
+                                                           NeutronEnergy ekin,
+                                                           const NeutronDirection* dir )
+{
+  nc_assert( THIS->m_tabulatedXS != nullptr );
+  auto& cache = initAndAccessCache( THIS, cacheptr );
+  if ( cache.tab_key_ekin == ekin && ( !dir || cache.tab_key_dir == *dir ) )
+    return cache.tab_tot_xs;
+  double xs = THIS->m_tabulatedXS->eval( ekin.dbl() );
+  for ( auto i : THIS->m_untabulated ) {
+    auto& comp = THIS->m_components[i];
+    auto& compCache = cache.componentCache[i];
+    double cxs = 0.0;
+    if ( compCache.domain.contains( ekin ) )
+      cxs = comp.scale * ( dir
+                           ? comp.process->crossSection( compCache.cachePtr, ekin, *dir )
+                           : comp.process->crossSectionIsotropic( compCache.cachePtr, ekin ) ).dbl();
+    cache.tab_untab_xs[i] = cxs;
+    xs += cxs;
+  }
+  cache.tab_key_ekin = ekin;
+  if ( dir )
+    cache.tab_key_dir = *dir;
+  cache.tab_tot_xs = xs;
+  return xs;
+}
+
+std::size_t NCPI::ProcComposition::Impl::pickWithTable( const ProcComposition* THIS,
+                                                        CachePtr& cacheptr,
+                                                        RNG& rng,
+                                                        NeutronEnergy ekin,
+                                                        const NeutronDirection* dir,
+                                                        double& tot_xs )
+{
+  tot_xs = crossSectionWithTable( THIS, cacheptr, ekin, dir );
+  auto& cache = initAndAccessCache( THIS, cacheptr );
+  const double target = rng.generate() * tot_xs;
+  double sum = 0.0;
+  std::size_t last = 0;
+  //First the untabulated components (their cross sections are known from
+  //crossSectionWithTable), then the tabulated ones by typical size, largest
+  //first. The last one is chosen without evaluating it, unless the remainder
+  //is just rounding:
+  bool haveLast = false;
+  for ( auto i : THIS->m_untabulated ) {
+    const double xs = cache.tab_untab_xs[i];
+    if ( !( xs > 0.0 ) )
+      continue;
+    sum += xs;
+    last = i;
+    haveLast = true;
+    if ( target < sum )
+      return i;
+  }
+  const auto& tab = THIS->m_tabulatedBySize;
+  nc_assert( !tab.empty() );
+  for ( auto k : ncrange( tab.size() - 1 ) ) {
+    const auto i = tab[k];
+    auto& comp = THIS->m_components[i];
+    auto& compCache = cache.componentCache[i];
+    if ( !compCache.domain.contains( ekin ) )
+      continue;
+    const double xs
+      = comp.scale * ( dir
+                       ? comp.process->crossSection( compCache.cachePtr, ekin, *dir )
+                       : comp.process->crossSectionIsotropic( compCache.cachePtr, ekin ) ).dbl();
+    if ( !( xs > 0.0 ) )
+      continue;
+    sum += xs;
+    last = i;
+    haveLast = true;
+    if ( target < sum )
+      return i;
+  }
+  if ( haveLast && !( tot_xs - sum > 1e-12 * tot_xs ) )
+    return last;//remainder is rounding
+  return tab.back();
+}
+
+#ifdef NCRYSTAL_ALLOW_ABI_BREAKAGE
+void NCPI::ProcComposition::Impl::addUntabulatedMany( const ProcComposition* THIS,
+                                                      CachePtr& cacheptr,
+                                                      const double* ekin,
+                                                      const double* ux,
+                                                      const double* uy,
+                                                      const double* uz,
+                                                      std::size_t N,
+                                                      double* out_xs )
+{
+  if ( THIS->m_untabulated.empty() )
+    return;
+  auto& cache = initAndAccessCache( THIS, cacheptr );
+  constexpr std::size_t nbuf = 4096;
+  double buf[nbuf];
+  while ( N > 0 ) {
+    const std::size_t nstep = std::min<std::size_t>( N, nbuf );
+    for ( auto icomp : THIS->m_untabulated ) {
+      const auto& comp = THIS->m_components[icomp];
+      if ( ux )
+        comp.process->evalManyXS( cache.componentCache[icomp].cachePtr,
+                                  ekin, ux, uy, uz, nstep, buf );
+      else
+        comp.process->evalManyXSIsotropic( cache.componentCache[icomp].cachePtr,
+                                           ekin, nstep, buf );
+      const double scale = comp.scale;
+      for ( std::size_t j = 0; j < nstep; ++j )
+        out_xs[j] += scale * buf[j];
+    }
+    ekin += nstep;
+    if ( ux ) {
+      ux += nstep;
+      uy += nstep;
+      uz += nstep;
+    }
+    out_xs += nstep;
+    N -= nstep;
+  }
+}
+#endif
 
 NC::IsoXSDescr NCPI::ProcComposition::isoXSDescr() const
 {
@@ -369,6 +601,10 @@ NC::CrossSect NCPI::ProcComposition::crossSection( CachePtr& cacheptr,
 {
   if ( ! m_domain.contains(ekin) )
     return CrossSect{ 0.0 };
+  if ( m_tabulatedXS )
+    return CrossSect{ Impl::crossSectionWithTable( this, cacheptr, ekin,
+                                                   ( m_materialType == MaterialType::Anisotropic
+                                                     ? &dir : nullptr ) ) };
   auto& cache = ( m_materialType == MaterialType::Anisotropic
                   ? Impl::updateCacheAnisotropic( this, cacheptr, ekin, dir )
                   : Impl::updateCacheIsotropic( this, cacheptr, ekin ) );
@@ -382,6 +618,8 @@ NC::CrossSect NCPI::ProcComposition::crossSectionIsotropic( CachePtr& cacheptr,
   if (!m_domain.contains(ekin))
     return CrossSect{ 0.0 };
   nc_assert( m_materialType == MaterialType::Isotropic );
+  if ( m_tabulatedXS )
+    return CrossSect{ Impl::crossSectionWithTable( this, cacheptr, ekin, nullptr ) };
   auto& cache = Impl::updateCacheIsotropic( this, cacheptr, ekin );
   nc_assert( cache.tot_xs >= 0.0 );
   return CrossSect{cache.tot_xs};
@@ -394,6 +632,13 @@ NC::ScatterOutcome NCPI::ProcComposition::sampleScatter( CachePtr& cacheptr,
 {
   if (!m_domain.contains(ekin))
     return { ekin, dir };//no effect when xs=0
+  if ( m_tabulatedXS ) {
+    double tot;
+    const auto i = Impl::pickWithTable( this, cacheptr, rng, ekin,
+                                        ( m_materialType == MaterialType::Anisotropic ? &dir : nullptr ), tot );
+    auto& cache = Impl::initAndAccessCache( this, cacheptr );
+    return m_components[i].process->sampleScatter( cache.componentCache[i].cachePtr, rng, ekin, dir );
+  }
 
   auto& cache = ( m_materialType == MaterialType::Anisotropic
                   ? Impl::updateCacheAnisotropic( this, cacheptr, ekin, dir )
@@ -410,6 +655,12 @@ NC::ScatterOutcomeIsotropic NCPI::ProcComposition::sampleScatterIsotropic( Cache
   if (!m_domain.contains(ekin))
     return { ekin, CosineScatAngle{1.0} };//no effect when xs=0
   nc_assert( m_materialType == MaterialType::Isotropic );
+  if ( m_tabulatedXS ) {
+    double tot;
+    const auto i = Impl::pickWithTable( this, cacheptr, rng, ekin, nullptr, tot );
+    auto& cache = Impl::initAndAccessCache( this, cacheptr );
+    return m_components[i].process->sampleScatterIsotropic( cache.componentCache[i].cachePtr, rng, ekin );
+  }
   auto& cache = Impl::updateCacheIsotropic( this, cacheptr, ekin );
   auto ichoice
     = RandIdxByWeightPicker::oneShotPick( rng, cache.componentXSectCommul );
@@ -647,6 +898,13 @@ NCPI::ProcComposition::evalXSAndSampleScatter( CachePtr& cachePtr,
 {
   if (!m_domain.contains(ekin))
     return { CrossSect{0.0}, { ekin, dir } };
+  if ( m_tabulatedXS ) {
+    double tot;
+    const auto i = Impl::pickWithTable( this, cachePtr, rng, ekin,
+                                        ( m_materialType == MaterialType::Anisotropic ? &dir : nullptr ), tot );
+    auto& cache = Impl::initAndAccessCache( this, cachePtr );
+    return { CrossSect{tot}, m_components[i].process->sampleScatter( cache.componentCache[i].cachePtr, rng, ekin, dir ) };
+  }
   auto& cache = ( m_materialType == MaterialType::Anisotropic
                   ? Impl::updateCacheAnisotropic( this, cachePtr, ekin, dir )
                   : Impl::updateCacheIsotropic( this, cachePtr, ekin ) );
@@ -664,6 +922,12 @@ NCPI::ProcComposition::evalXSAndSampleScatterIsotropic( CachePtr& cachePtr,
   if (!m_domain.contains(ekin))
     return { CrossSect{0.0}, { ekin, CosineScatAngle{1.0} } };
   nc_assert( m_materialType == MaterialType::Isotropic );
+  if ( m_tabulatedXS ) {
+    double tot;
+    const auto i = Impl::pickWithTable( this, cachePtr, rng, ekin, nullptr, tot );
+    auto& cache = Impl::initAndAccessCache( this, cachePtr );
+    return { CrossSect{tot}, m_components[i].process->sampleScatterIsotropic( cache.componentCache[i].cachePtr, rng, ekin ) };
+  }
   auto& cache = Impl::updateCacheIsotropic( this, cachePtr, ekin );
   auto ichoice
     = RandIdxByWeightPicker::oneShotPick( rng, cache.componentXSectCommul );
@@ -675,6 +939,12 @@ void NCPI::ProcComposition::evalManyXS( CachePtr& cachePtr, const double* ekin,
                                         const double* ux, const double* uy, const double* uz,
                                         std::size_t N, double* out_xs ) const
 {
+  if ( m_tabulatedXS ) {
+    for ( auto i : ncrange(N) )
+      out_xs[i] = m_tabulatedXS->eval( ekin[i] );
+    Impl::addUntabulatedMany( this, cachePtr, ekin, ux, uy, uz, N, out_xs );
+    return;
+  }
   auto& cache = Impl::initAndAccessCache(this,cachePtr);
   if ( m_components.size() == 1 ) {
     m_components.front().process->evalManyXS( cache.componentCache[0].cachePtr,
@@ -716,6 +986,12 @@ void NCPI::ProcComposition::evalManyXSIsotropic( CachePtr& cachePtr,
                                                  std::size_t N,
                                                  double* out_xs ) const
 {
+  if ( m_tabulatedXS ) {
+    for ( auto i : ncrange(N) )
+      out_xs[i] = m_tabulatedXS->eval( ekin[i] );
+    Impl::addUntabulatedMany( this, cachePtr, ekin, nullptr, nullptr, nullptr, N, out_xs );
+    return;
+  }
   auto& cache = Impl::initAndAccessCache(this,cachePtr);
   if ( m_components.size() == 1 ) {
     m_components.front().process->evalManyXSIsotropic( cache.componentCache[0].cachePtr,
