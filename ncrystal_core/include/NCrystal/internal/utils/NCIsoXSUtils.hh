@@ -22,6 +22,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/core/NCTypes.hh"
+#include "NCrystal/internal/utils/NCFastSearch.hh"
+#include "NCrystal/internal/utils/NCFMA.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -40,10 +42,79 @@ namespace NCRYSTAL_NAMESPACE {
   //IsoXSDescr::breakpts holds the energies of known kinks and discontinuities
   //of the cross section, sorted.
 
+  class IsoXSEvaluator final : private MoveOnly {
+  public:
+    //Provides IsoXSDescr::table evaluations. Holds an IsoXSDescr with a cross
+    //section table, and adds relevant cached data allowing for subsequent fast
+    //repeated evaluations, giving results bit-identical to evalIsoXS.
+    explicit IsoXSEvaluator( IsoXSDescr );
+    const IsoXSDescr& descr() const noexcept { return m_descr; }
+
+    //Evaluations accept ekin in eV and return xs in barn:
+    double eval( double ekin ) const ncnoexceptndebug;
+
+    //One shot evaluations (no init but needs full binary search):
+    static double oneShotEval( const IsoXSDescr::Tabulation&, double ekin );
+    static double oneShotEval( const IsoXSDescr&, double ekin );
+
+  private:
+    IsoXSDescr m_descr;
+    VectD m_invw;
+    LogGuideTable m_guide;
+  };
+
   //Evaluate the tabulated cross section at e (finding the interval with a
   //binary search, so meant for occasional use):
   double evalIsoXS( const IsoXSDescr::Tabulation&, double e );
+  //Fixme: Remove standalone evalIsoXS and use two functions above. Also: make
+  //       all 3 evaluations methods in IsoXSEvaluator return CrossSect type.
 
 }
+
+
+////////////////////////////
+// Inline implementations //
+////////////////////////////
+
+inline double NCrystal::IsoXSEvaluator::eval( double e ) const ncnoexceptndebug
+{
+  nc_assert( e >= 0.0 );
+  const auto& t = m_descr.table.value();
+  const VectD& E = t.E;
+  if ( e < E.front() )
+    return ( t.tail[0] ? t.tail[0] / std::sqrt( e ) : 0.0 ) + t.tail[1];
+  if ( !( e < E.back() ) )
+    return t.tail[3] + ( t.tail[2] + t.tail[4] / e ) / e;
+  const std::size_t i = m_guide.upperBoundIdxScan( E.data(), E.size(), e ) - 1;
+  const double u = ( e - E[i] ) * m_invw[i];
+  double exs = 0.0;
+  if ( !t.p.empty() ) {
+    const double * c = t.p.data() + 4 * i;
+    exs = ncfma( u, ncfma( u, ncfma( u, c[3], c[2] ), c[1] ), c[0] );
+  }
+  if ( !t.q.empty() ) {
+    const double * d = t.q.data() + 4 * i;
+    exs = ncfma( std::sqrt( e ),
+                 ncfma( u, ncfma( u, ncfma( u, d[3], d[2] ), d[1] ), d[0] ),
+                 exs );
+  }
+  if ( t.r.empty() )
+    return exs / e;
+  const double inv = 1.0 / e;
+  return ncfma( t.r[i], inv, exs ) * inv;
+}
+
+inline double NCrystal::IsoXSEvaluator::
+oneShotEval( const IsoXSDescr::Tabulation& tbl, double ekin )
+{
+  return evalIsoXS( tbl, ekin );
+}
+inline double NCrystal::IsoXSEvaluator::
+oneShotEval( const IsoXSDescr& descr, double ekin )
+{
+  nc_assert( descr.table.has_value() );
+  return evalIsoXS( descr.table.value(), ekin );
+}
+
 
 #endif
