@@ -62,6 +62,12 @@ namespace NCRYSTAL_NAMESPACE {
     static double oneShotEval( const IsoXSDescr::Tabulation&, double ekin );
     static double oneShotEval( const IsoXSDescr&, double ekin );
 
+    //Scaled evaluation (cf. scaleIsoXSDescr):
+    double evalScaled( double ekin,
+                       double escale,
+                       double xsscale ) const ncnoexceptndebug;
+
+
   private:
     IsoXSDescr m_descr;
     VectD m_invw;
@@ -95,6 +101,14 @@ namespace NCRYSTAL_NAMESPACE {
   //       make all 3 evaluations methods in IsoXSEvaluator return CrossSect
   //       type:
   double evalIsoXS( const IsoXSDescr::Tabulation&, double e );
+
+  //The description of xs'(e) = xsscale*xs(escale*e), where xs is the cross
+  //section of the given description (escale>0 and xsscale>=0, both finite).
+  //For instance, all free-gas cross sections are such scaled versions of a
+  //single universal one. It agrees with IsoXSEvaluator::evalScaled to within
+  //rounding (at discontinuities, energies within rounding of the jump might
+  //evaluate on either side):
+  IsoXSDescr scaleIsoXSDescr( const IsoXSDescr&, double escale, double xsscale );
 
 }
 
@@ -140,6 +154,7 @@ oneShotEval( const IsoXSDescr::Tabulation& tbl, double ekin )
 {
   return evalIsoXS( tbl, ekin );
 }
+
 inline double NCrystal::IsoXSEvaluator::
 oneShotEval( const IsoXSDescr& descr, double ekin )
 {
@@ -147,5 +162,23 @@ oneShotEval( const IsoXSDescr& descr, double ekin )
   return evalIsoXS( descr.table.value(), ekin );
 }
 
+inline double NCrystal::IsoXSEvaluator::
+evalScaled( double e, double escale, double xsscale ) const ncnoexceptndebug
+{
+  //Below the table, the 1/sqrt form is evaluated in e (as for the scaled
+  //description), since the clamping of e=0 and underflows of escale*e would
+  //otherwise differ:
+  nc_assert( e >= 0.0 && escale > 0.0 && xsscale >= 0.0 );
+  const auto& t = m_descr.table.value();
+  const double x = escale * e;
+  if ( x < t.E.front() ) {
+    if ( !t.tail[0] )
+      return xsscale * t.tail[1];
+    const double ee = std::max( e, std::numeric_limits<double>::denorm_min() );
+    return ( t.tail[0] * ( xsscale / std::sqrt( escale ) ) ) / std::sqrt( ee )
+      + xsscale * t.tail[1];
+  }
+  return xsscale * eval( x );
+}
 
 #endif
