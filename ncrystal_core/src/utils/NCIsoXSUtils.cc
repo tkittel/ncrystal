@@ -24,9 +24,28 @@
 
 namespace NC = NCrystal;
 
+#ifndef NDEBUG
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    void validateTabulation( const IsoXSDescr::Tabulation& t )
+    {
+      const VectD& E = t.E;
+      nc_assert_always( E.size() >= 2 );
+      nc_assert_always( t.p.empty() || t.p.size() == 4 * ( E.size() - 1 ) );
+      nc_assert_always( t.q.empty() || t.q.size() == 4 * ( E.size() - 1 ) );
+      nc_assert_always( t.r.empty() || t.r.size() + 1 == E.size() );
+      nc_assert_always( E.front() > 0.0 && std::isfinite( E.back() ) );
+      for ( auto i : ncrange( std::size_t(1), E.size() ) )
+        nc_assert_always( vectAt( E, i - 1 ) < vectAt( E, i ) );
+    }
+  }
+}
+#endif
+
 double NC::evalIsoXS( const IsoXSDescr::Tabulation& t, double e )
 {
   const VectD& E = t.E;
+  //Cheap checks only (validateTabulation is O(n), done once in IsoXSEvaluator):
   nc_assert( E.size() >= 2 );
   nc_assert( t.p.empty() || t.p.size() == 4 * ( E.size() - 1 ) );
   nc_assert( t.q.empty() || t.q.size() == 4 * ( E.size() - 1 ) );
@@ -54,4 +73,19 @@ double NC::evalIsoXS( const IsoXSDescr::Tabulation& t, double e )
     return exs / e;
   const double inv = 1.0 / e;
   return ncfma( vectAt( t.r, i ), inv, exs ) * inv;
+}
+
+NC::IsoXSEvaluator::IsoXSEvaluator( IsoXSDescr d )
+  : m_descr( std::move( d ) )
+{
+  if ( !m_descr.table.has_value() )
+    NCRYSTAL_THROW(BadInput,"IsoXSEvaluator needs an IsoXSDescr with a table");
+  const VectD& E = m_descr.table.value().E;
+#ifndef NDEBUG
+  validateTabulation( m_descr.table.value() );
+#endif
+  m_invw.reserve( E.size() - 1 );
+  for ( auto i : ncrange( std::size_t(1), E.size() ) )
+    m_invw.push_back( 1.0 / ( vectAt( E, i ) - vectAt( E, i - 1 ) ) );
+  m_guide = LogGuideTable( E.data(), E.size(), 8 );
 }
