@@ -81,7 +81,7 @@ namespace {
     NCX::IsoMacroXSTableParams params;
     params.tol = tol;
     params.wlmax = wlmax;
-    auto t = NCX::createIsoMacroXSTable( f, df, discont, params );
+    auto t = NCX::createIsoMacroXSTable( f, df, discont, {}, params );
     const double worst = worstRelErr( t, f, discont, wlmax );
     nc_assert_always( worst <= tol );
     std::cout << descr << ": npts=" << t.n()
@@ -94,7 +94,7 @@ namespace {
                   NC::VectD discont = {}, NCX::IsoMacroXSTableParams params = {} )
   {
     try {
-      NCX::createIsoMacroXSTable( f, df, discont, params );
+      NCX::createIsoMacroXSTable( f, df, discont, {}, params );
     } catch ( TError& e ) {
       std::cout << descr << ": got expected exception: " << e.what() << std::endl;
       return;

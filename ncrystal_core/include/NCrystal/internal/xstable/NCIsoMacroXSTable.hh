@@ -122,11 +122,13 @@ namespace NCRYSTAL_NAMESPACE {
     //d(xs)/d(wl) and the discontinuities given explicitly (processes in the
     //diagnostics will be empty). The functions are only evaluated at
     //wavelengths away from the discontinuities, where the derivative is
-    //well-defined:
+    //well-defined. The cross section is sampled at the given sample points in
+    //addition to the log-spaced ones (e.g. where its form changes):
     IsoMacroXSTable
     createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
                            const std::function<double(double)>& dxs_of_wl,
                            VectD discontinuities,
+                           const VectD& samplePoints,
                            const IsoMacroXSTableParams&,
                            IsoMacroXSTableDiagnostics* = nullptr );
 
@@ -160,7 +162,7 @@ namespace NCRYSTAL_NAMESPACE {
       friend IsoMacroXSTable
       createIsoMacroXSTable( const std::function<double(double)>&,
                              const std::function<double(double)>&, VectD,
-                             const IsoMacroXSTableParams&,
+                             const VectD&, const IsoMacroXSTableParams&,
                              IsoMacroXSTableDiagnostics* );
       std::unique_ptr<double[]> m_data;
     };
