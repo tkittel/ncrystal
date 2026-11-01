@@ -29,6 +29,8 @@ from NCrystalDev.constants import constant_boltzmann, wl2ekin
 # kernel integration (vdoslux=2000..2006), on explicit lists of cfg-strings
 # chosen to cover the physics (VDOS shape, mass, Debye temperature,
 # temperature) and the numerical settings, as well as known troublemakers.
+# The sabxs_legacy test instead covers the legacy algorithms (vdoslux=1000..1005
+# and knllux=-1).
 #
 # Each test is a short script calling run(testname); the lists below define
 # the tests. Reference data lives in tests/data/sabxs/<testname>.txt.
@@ -256,7 +258,28 @@ def _list_maxlux():
     #materials, ~30s for diamond):
     yield f'{_sl("C_sg227_Diamond")};temp=293.15;vdoslux=2006;knllux=6'
 
+def _list_legacy():
+    #All legacy vdoslux levels with VDOS input (vdoslux=1005 only for Al, the
+    #cheapest material at that level), with the legacy kernel sampling:
+    for mat, t, v in [ ( _sl('Polyethylene_CH2'), 20, 1000 ),
+                       ( _sl('Polyethylene_CH2'), 293.15, 1001 ),
+                       ( _sl('Polyethylene_CH2'), 1000, 1002 ),
+                       ( _sl('CaH2_sg62_CalciumHydride'), 20, 1003 ),
+                       ( _sl('CaH2_sg62_CalciumHydride'), 293.15, 1004 ),
+                       ( _sl('Al_sg225'), 293.15, 1005 ) ]:
+        yield f'{mat};temp={t:g};vdoslux={v};knllux=-1'
+    #Debye model, where the legacy expansion uses a vdoslux level reduced by 3
+    #(levels 0..2):
+    for v in ( 1003, 1004, 1005 ):
+        yield f'{_sl("Ca_sg229_Calcium-gamma")};temp=293.15;vdoslux={v};knllux=-1'
+    #Direct kernel:
+    yield f'{_sl("LiquidWaterH2O_T293.6K")};knllux=-1'
+    #Legacy VDOS expansion with next-gen kernel integration, and vice versa:
+    yield f'{_sl("Al_sg225")};temp=293.15;vdoslux=1002;knllux=3'
+    yield f'{_sl("Al_sg225")};temp=293.15;vdoslux=2002;knllux=-1'
+
 _tests = {
+    'sabxs_legacy' : lambda : list(_list_legacy()),
     'sabxs_trouble' : lambda : list(_list_trouble()),
     'sabxs_testdata' : lambda : list(_list_testdata()),
     'long_sabxs_light' : lambda : list(_list_light()),
