@@ -22,12 +22,12 @@
 
 # NEEDS: numpy
 
-# Test the Python API for filter tables (NCrystal.filter.NCrystalFilter), which
-# uses the C API (ncrystal_filtertable).
+# Test the Python API for IsoMacroXSTable (NCrystal.xstable.IsoMacroXSTable),
+# which uses the C API (ncrystal_isomacroxstable).
 
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
-from NCrystalDev.filter import NCrystalFilter
+from NCrystalDev.xstable import IsoMacroXSTable
 from NCrystalDev.misc import evaluate_query as ncquery
 from NCrystalDev.constants import wl2ekin
 from NCrystalDev.exceptions import NCBadInput
@@ -51,11 +51,11 @@ def lookup( wl, xs, sl, w ):
              + u * u * ( ( 3.0 - 2.0 * u ) * xs[i+1] - v * h * sl[i+1] ) )
 
 def test( cfg ):
-    f = NCrystalFilter( cfg )
+    f = IsoMacroXSTable( cfg )
     assert f.cfgstr == cfg
     wl, macroxs, slope = f.table
     #Same as the table of the JSON query, converted to 1/cm:
-    r = ncquery( ['filtertable', cfg] )
+    r = ncquery( ['isomacroxstable', cfg] )
     tol = r['tol']
     assert np.array_equal( wl, np.asarray(r['wl']) )
     np.testing.assert_allclose( macroxs, np.asarray(r['xs']) * r['numberdensity'],
@@ -93,7 +93,7 @@ def main():
     test( 'stdlib::Be_sg194.ncmat;temp=80K' )
     test( 'stdlib::Polyethylene_CH2.ncmat' )
     test( 'stdlib::void.ncmat' )
-    f = NCrystalFilter( 'stdlib::Al_sg225.ncmat' )
+    f = IsoMacroXSTable( 'stdlib::Al_sg225.ncmat' )
     for arr in f.table:
         with ensure_error(ValueError,'assignment destination is read-only'):
             arr[0] = 1.0
@@ -103,9 +103,9 @@ def main():
     with ensure_error(NCBadInput,'Please provide exactly one of the "ekin" or'
                       ' "wl" parameters.'):
         f.xsect( ekin = 1.0, wl = 1.0 )
-    with ensure_error(NCBadInput,'Filter table: only isotropic materials are'
+    with ensure_error(NCBadInput,'IsoMacroXSTable: only isotropic materials are'
                       ' supported'):
-        NCrystalFilter( 'stdlib::Al_sg225.ncmat;mos=0.3deg'
+        IsoMacroXSTable( 'stdlib::Al_sg225.ncmat;mos=0.3deg'
                         ';dir1=@crys_hkl:0,0,1@lab:0,0,1'
                         ';dir2=@crys_hkl:0,1,0@lab:0,1,0' )
 
