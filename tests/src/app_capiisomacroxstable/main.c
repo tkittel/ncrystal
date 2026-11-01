@@ -42,14 +42,19 @@ int main(int argc, char** argv) {
   ncrystal_sethaltonerror( 0 );
   ncrystal_setquietonerror( 1 );
 
-  unsigned n = 0, i, iedge;
-  double * wl = NULL;
-  double * macroxs = NULL;
-  double * slope = NULL;
-  ncrystal_isomacroxstable( "stdlib::Be_sg194.ncmat;temp=80K", &n, &wl,
-                            &macroxs, &slope, NULL );
-  require( !ncrystal_error(), "no error" );
-  require( n > 10 && wl && macroxs && slope, "table returned" );
+  unsigned n, i, iedge;
+  const double * wl;
+  const double * macroxs;
+  double * table = ncrystal_isomacroxstable( "stdlib::Be_sg194.ncmat;temp=80K",
+                                             NULL );
+  require( !ncrystal_error() && table, "no error" );
+  require( table[0] == 4631638934963022.0 && table[1] == 1.0,
+           "magic and version" );
+  n = (unsigned)table[2];
+  require( n > 10 && table[3+3*n] == 4631638934963022.0,
+           "n and trailing magic" );
+  wl = table + 3;
+  macroxs = wl + n;
   require( wl[0] == 0.0 && wl[n-1] > 20.0, "range from 0 to long wavelengths" );
   for ( i = 1; i < n; ++i )
     require( wl[i] >= wl[i-1] && macroxs[i] >= 0.0, "sorted and non-negative" );
@@ -57,7 +62,7 @@ int main(int argc, char** argv) {
 
   /* The Be filter cut-off: the last Bragg edge (a pair of points with the  */
   /* same wavelength and different values) is at 3.96 Aa, with a large drop */
-  /* of the cross section:                                                   */
+  /* of the cross section:                                                  */
   iedge = n;
   for ( i = 0; i + 1 < n; ++i )
     if ( wl[i] == wl[i+1] && macroxs[i] != macroxs[i+1] )
@@ -67,21 +72,18 @@ int main(int argc, char** argv) {
   require( macroxs[iedge] > 20.0 * macroxs[iedge+1], "Bragg cut-off" );
   printf( "  last Bragg edge at %.4f Aa: %.4g/cm -> %.4g/cm\n",
           wl[iedge], macroxs[iedge], macroxs[iedge+1] );
-  ncrystal_dealloc_doubleptr( wl );
-  ncrystal_dealloc_doubleptr( macroxs );
-  ncrystal_dealloc_doubleptr( slope );
+  ncrystal_dealloc_doubleptr( table );
 
-  /* Errors: unsupported options, and an oriented material. No arrays are    */
-  /* returned. */
+  /* Errors: unsupported options, and an oriented material. NULL is         */
+  /* returned.                                                              */
   const char * cfgs[] = { "stdlib::Al_sg225.ncmat",
                           "stdlib::Al_sg225.ncmat;mos=0.3deg"
                           ";dir1=@crys_hkl:0,0,1@lab:0,0,1"
                           ";dir2=@crys_hkl:0,1,0@lab:0,1,0" };
   const char * opts[] = { "foo=1", NULL };
   for ( i = 0; i < 2; ++i ) {
-    ncrystal_isomacroxstable( cfgs[i], &n, &wl, &macroxs, &slope, opts[i] );
-    require( ncrystal_error() && n == 0 && !wl && !macroxs && !slope,
-             "error expected" );
+    table = ncrystal_isomacroxstable( cfgs[i], opts[i] );
+    require( ncrystal_error() && !table, "error expected" );
     printf( "Expected error: %s\n", ncrystal_lasterror() );
     ncrystal_clearerror();
   }

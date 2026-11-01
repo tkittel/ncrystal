@@ -28,21 +28,43 @@
 #include "NCrystal/internal/utils/NCRandUtils.hh"
 #include "NCrystal/factories/NCMatCfg.hh"
 #include <iostream>
+#include <cstring>
 
 namespace NC = NCrystal;
 namespace NCX = NCrystal::XSTable;
 
+/* Reference implementation for a function which checks the format of a       */
+/* table, to protect against corrupted or truncated copies. It returns 1 if   */
+/* the table is valid, and 0 otherwise. It should be called once, after the   */
+/* table is obtained or copied (not for each evaluation).                     */
+int filter_check_table( const double * table )
+{
+  const double magic = 4631638934963022.0;
+  unsigned n;
+  if ( !( table[0] == magic && table[1] == 1.0 ) )
+    return 0;
+  if ( !( table[2] >= 2.0 && table[2] <= 1e9 ) )
+    return 0;
+  n = (unsigned)table[2];
+  if ( !( table[2] == (double)n ) )
+    return 0;
+  return table[3+3*n] == magic ? 1 : 0;
+}
+
 /* Reference implementation for a function which evaluates the table at the   */
-/* given wavelength. The function only reads the arrays, and calls no other   */
+/* given wavelength. The function only reads the table, and calls no other    */
 /* functions, so it can also be used in code running on a GPU (for instance   */
 /* with "#pragma acc routine seq" for OpenACC).                               */
-double filter_macroxs( unsigned n, const double * wl, const double * macroxs,
-                       const double * slope, double wavelength )
+double filter_macroxs( const double * table, double wavelength )
 {
   /* Implements a cubic Hermite interpolation of the values and slopes at the */
   /* two neighbouring points, where at a discontinuity (two points with the   */
   /* same wavelength) the point above it is used. Beyond the last point, its  */
   /* value and slope are extrapolated linearly (clamped at 0).                */
+  const unsigned n = (unsigned)table[2];
+  const double * wl = table + 3;
+  const double * macroxs = wl + n;
+  const double * slope = macroxs + n;
   unsigned lo, hi, mid;
   double h, u, v, value;
   if ( !( wavelength > wl[0] ) )
@@ -72,16 +94,31 @@ double filter_macroxs( unsigned n, const double * wl, const double * macroxs,
 
 namespace {
 
+  //A synthetic block in the format of NCX::IsoMacroXSTable::raw():
+  NC::VectD makeBlock( const NC::VectD& wl, const NC::VectD& xs,
+                       const NC::VectD& slope )
+  {
+    const double magic = NCX::IsoMacroXSTable::magic();
+    const auto version = NCX::IsoMacroXSTable::formatVersion();
+    NC::VectD res = { magic, static_cast<double>( version ),
+                      static_cast<double>( wl.size() ) };
+    for ( auto v : { &wl, &xs, &slope } )
+      res.insert( res.end(), v->begin(), v->end() );
+    res.push_back( magic );
+    return res;
+  }
+
   //Compare with the internal evaluation at the given wavelengths:
-  void compare( const NC::VectD& wl, const NC::VectD& xs,
-                const NC::VectD& slope, const NC::VectD& wls,
+  void compare( NC::Span<const double> block, const NC::VectD& wls,
                 const char * descr )
   {
-    const auto n = static_cast<unsigned>( wl.size() );
+    nc_assert_always( filter_check_table( block.data() ) == 1 );
+    const auto n = static_cast<std::size_t>( block[2] );
+    nc_assert_always( block.size() == 3 * n + 4 );
+    const double * wl = block.data() + 3;
     for ( auto w : wls ) {
-      const double a = filter_macroxs( n, wl.data(), xs.data(), slope.data(), w );
-      const double b = NCX::evalIsoMacroXSTable( wl.data(), xs.data(),
-                                                 slope.data(), wl.size(), w );
+      const double a = filter_macroxs( block.data(), w );
+      const double b = NCX::evalIsoMacroXSTable( wl, wl + n, wl + 2 * n, n, w );
       if ( !( a == b || NC::ncabs( a - b ) <= 1e-14 * NC::ncmax( NC::ncabs( b ), 1e-300 ) ) ) {
         std::cout << descr << ": FAILED at wavelength " << w << ": " << a
                   << " vs. " << b << std::endl;
@@ -101,9 +138,36 @@ int main()
   const NC::VectD xs = { 1.0, 2.0, 3.0, 1.0, 2.0 };
   const NC::VectD wls = { -1.0, 0.0, 0.5, 1.0, 1.5, 1.999, 2.0, 2.5, 3.0, 3.5, 4.0, 100.0,
                           std::numeric_limits<double>::infinity() };
-  compare( wl, xs, { 1.0, 0.5, 2.0, -1.0, 1.0 }, wls, "synthetic, rising" );
-  compare( wl, xs, { 1.0, 0.5, 2.0, -1.0, -0.5 }, wls, "synthetic, falling" );
-  compare( wl, xs, { 1.0, 0.5, 2.0, -1.0, 0.0 }, wls, "synthetic, flat" );
+  compare( makeBlock( wl, xs, { 1.0, 0.5, 2.0, -1.0, 1.0 } ), wls,
+           "synthetic, rising" );
+  compare( makeBlock( wl, xs, { 1.0, 0.5, 2.0, -1.0, -0.5 } ), wls,
+           "synthetic, falling" );
+  compare( makeBlock( wl, xs, { 1.0, 0.5, 2.0, -1.0, 0.0 } ), wls,
+           "synthetic, flat" );
+
+  //The format check rejects other blocks:
+  {
+    const NC::VectD good = makeBlock( wl, xs, { 1.0, 0.5, 2.0, -1.0, 1.0 } );
+    nc_assert_always( filter_check_table( good.data() ) == 1 );
+    nc_assert_always( good.front() == 4631638934963022.0 );
+    nc_assert_always( good.back() == 4631638934963022.0 );
+    const char magic_bytes[] = "NCryst0C";
+    nc_assert_always( std::memcmp( &good.front(), magic_bytes, 8 ) == 0
+                      || std::memcmp( &good.front(), "C0tsyrCN", 8 ) == 0 );
+    auto modified = [&good]( std::size_t i, double v )
+    {
+      NC::VectD b = good;
+      b.at(i) = v;
+      return filter_check_table( b.data() );
+    };
+    nc_assert_always( modified( 0, 0.0 ) == 0 );//magic
+    nc_assert_always( modified( 1, 2.0 ) == 0 );//version
+    nc_assert_always( modified( 2, 4.0 ) == 0 );//n (trailing magic not found)
+    nc_assert_always( modified( 2, 5.5 ) == 0 );//n not an integer
+    nc_assert_always( modified( 2, 1.0 ) == 0 );//n too small
+    nc_assert_always( modified( good.size() - 1, 0.0 ) == 0 );//trailing magic
+    std::cout << "filter_check_table: OK" << std::endl;
+  }
 
   //Tables of materials, at random wavelengths (also beyond the table), at
   //all table points, and next to them:
@@ -117,10 +181,10 @@ int main()
     NC::VectD w;
     for ( unsigned i = 0; i < 100000; ++i )
       w.push_back( std::pow( 10.0, -8.0 + 12.0 * rng.generate() ) );
-    for ( auto x : t.wl )
+    for ( auto x : t.wavelengths() )
       for ( auto f : { 1.0, 1.0 - 1e-12, 1.0 + 1e-12 } )
         w.push_back( x * f );
-    compare( t.wl, t.xs, t.slope, w, cfg );
+    compare( t.raw(), w, cfg );
   }
   return 0;
 }
