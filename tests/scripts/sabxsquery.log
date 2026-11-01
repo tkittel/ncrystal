@@ -11,7 +11,7 @@ stdlib::Al_sg225.ncmat;knllux=3 (sct): extension_method=sct
   E=1000       xs=1.3966 barn
 stdlib::Al_sg225.ncmat;temp=20K;knllux=1 (sct): extension_method=sct
   E=1e-06      xs=0.0020751 barn
-  E=1e-05      xs=0.00066001 barn
+  E=1e-05      xs=0.00066 barn
   E=0.0001     xs=0.00022102 barn
   E=0.001      xs=0.00011984 barn
   E=0.01       xs=0.0013823 barn
