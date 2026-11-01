@@ -92,7 +92,7 @@ namespace NCRYSTAL_NAMESPACE {
     struct IsoMacroXSTableParams {
       //NB: The defaults here are what will be used by the C API
       double wlmax = 500.0;//Angstrom
-      double tol = 1e-3;//Max relative error of the cross section (see above)
+      double tol = 1e-4;//Max relative error of the cross section (see above)
       unsigned ndense = 0;//Log-spaced dense sample points (plus
                           //discontinuities). 0 means auto (see autoNDense)
       bool discontinuities = true;//Include points at the known discontinuities
