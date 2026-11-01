@@ -84,9 +84,10 @@ def main():
     check_same( 'examples/downstream_cmake/CMakeLists.txt',
                 'ncrystal_verify/extra/data/downstream_cmake_CMakeLists.txt' )
 
-    check_same_c_function( 'filter_macroxs',
-                           'examples/ncrystal_example_filter.c',
-                           'tests/src/app_filterexample/main.cc' )
+    for fct in ( 'filter_check_table', 'filter_macroxs' ):
+        check_same_c_function( fct,
+                               'examples/ncrystal_example_filter.c',
+                               'tests/src/app_filterexample/main.cc' )
 
 if __name__=='__main__':
     main()

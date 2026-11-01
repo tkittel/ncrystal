@@ -33,8 +33,10 @@ from NCTestUtils.common import ensure_error
 import numpy as np
 
 def exact_xs( cfg, wl ):
-    return ( NC.createScatter(cfg).xsect(wl=wl)
-             + NC.createAbsorption(cfg).xsect(wl=wl) )
+    #Macroscopic cross section (1/cm):
+    return ( ( NC.createScatter(cfg).xsect(wl=wl)
+               + NC.createAbsorption(cfg).xsect(wl=wl) )
+             * NC.createInfo(cfg).numberdensity )
 
 def bragg_edges( cfg ):
     res = []
@@ -58,11 +60,19 @@ def table_eval( wl_t, xs_t, s_t, wl ):
     return ( v*v*( (1.0+2.0*u)*xs_t[i] + u*h*s_t[i] )
              + u*u*( (3.0-2.0*u)*xs_t[i+1] - v*h*s_t[i+1] ) )
 
+def decode( r ):
+    #Wavelengths, macroscopic cross sections and slopes, from the table in
+    #r['raw_result'] (see examples/ncrystal_example_filter.c for the format):
+    raw = r['raw_result']
+    n = int( raw[2] )
+    assert raw[0] == raw[-1] == 4631638934963022.0 and raw[1] == 1.0
+    assert len(raw) == 3 * n + 4 and n >= 2
+    return raw[3:3+n], raw[3+n:3+2*n], raw[3+2*n:3+3*n]
+
 def test( cfg, *opts ):
-    r = ncquery( ['isomacroxstable',cfg] + list(opts) )
-    wl, xs, sl = np.asarray(r['wl']), np.asarray(r['xs']), np.asarray(r['slope'])
+    r = ncquery( ['isomacroxstable',cfg] + list(opts), huge_arrays = True )
+    wl, xs, sl = decode( r )
     tol, wlmax = r['tol'], r['wlmax']
-    assert len(wl) == r['npts'] == len(xs) == len(sl) and len(wl) >= 2
     assert wl[0] == 0.0 and wl[-1] == wlmax
     assert np.all( np.diff(wl) >= 0.0 )
     assert np.all( xs >= 0.0 )
@@ -75,9 +85,10 @@ def test( cfg, *opts ):
     edges = bragg_edges( cfg )
     for e in wl[idup]:
         assert np.abs(edges-e).min() <= 1e-9 * e
-    #The first point is the limit for wavelength -> 0 (which might be ~0):
-    assert np.isclose( xs[0], exact_xs( cfg, np.asarray([1e-14]) )[0],
-                       rtol = 1e-6, atol = 1e-12 )
+    #The first point is the limit for wavelength -> 0 (which might be 0),
+    #compared on the scale of the cross section at 1e-5 Aa:
+    xs_lim, xs_scale = exact_xs( cfg, np.asarray([1e-14,1e-5]) )
+    assert abs( xs[0] - xs_lim ) <= 1e-6 * max( xs_lim, xs_scale )
     #The other table points (except at edges, which have the values just
     #below or above the edge) are exact cross sections:
     if len(edges):
@@ -89,29 +100,33 @@ def test( cfg, *opts ):
     iexact = iexact[ iexact > 0 ]
     xsx = exact_xs( cfg, wl[iexact] )
     assert np.allclose( xs[iexact], xsx, rtol = 1e-12, atol = 0.0 )
-    #Interpolated values are within the tolerance, at random wavelengths
-    #(log-uniform, and uniform at the shortest wavelengths) and close to the
-    #Bragg edges:
+    #Interpolated values are within the tolerance (which is not required below
+    #1e-5 Aa), at random wavelengths (log-uniform, and uniform at the shortest
+    #wavelengths) and close to the Bragg edges:
     rng = np.random.default_rng( 12345 )
-    wlt = np.concatenate( [ np.exp( rng.uniform( np.log(1e-9), np.log(wlmax), 20000 ) ),
-                            rng.uniform( 0.0, 1e-5, 2000 ),
-                            rng.uniform( 0.0, 1e-7, 2000 ),
-                            rng.uniform( 0.0, 1e-9, 2000 ) ] )
-    e = edges[ (edges > 1e-6) & (edges < wlmax/1.001) ]
+    wlmin = 1e-5
+    wlt = np.concatenate( [ np.exp( rng.uniform( np.log(wlmin), np.log(wlmax),
+                                                 20000 ) ),
+                            rng.uniform( wlmin, 1e-3, 2000 ),
+                            rng.uniform( wlmin, 1e-4, 2000 ) ] )
+    e = edges[ (edges > 2*wlmin) & (edges < wlmax/1.001) ]
     wlt = np.concatenate( [wlt] + [ e*f for f in (1-1e-8,1+1e-8,1-1e-5,1+1e-5) ] )
     xst = exact_xs( cfg, wlt )
     xsi = table_eval( wl, xs, sl, wlt )
     assert np.all( xsi >= 0.0 )
-    #The tolerance is relative to max(xs,1e-12 barn):
-    maxrelerr = ( np.abs( xsi-xst ) / np.maximum( xst, 1e-12 ) ).max()
+    #Where the cross section is 0, the table must be exactly 0:
+    assert np.all( xsi[xst == 0.0] == 0.0 )
+    pos = xst > 0.0
+    maxrelerr = ( ( np.abs( xsi[pos]-xst[pos] ) / xst[pos] ).max()
+                  if pos.any() else 0.0 )
     assert maxrelerr <= tol, f'max relative error {maxrelerr} > tol={tol}'
     print(f'{cfg} {" ".join(opts)}'.strip())
     print(f'   ndiscontinuities={r["ndiscontinuities"]}'
           f' tol={tol:g} wlmax={wlmax:g}'
           f' maxrelerr<tol: OK')
     print(f'   processes: {" ".join(r["processes"])}')
-    print(f'   first: ({wl[0]:.6g} Aa, {xs[0]:.6g} b)'
-          f' last: ({wl[-1]:.6g} Aa, {xs[-1]:.6g} b)')
+    print(f'   first: ({wl[0]:.6g} Aa, {xs[0]:.6g}/cm)'
+          f' last: ({wl[-1]:.6g} Aa, {xs[-1]:.6g}/cm)')
 
 def main():
     test('stdlib::Al_sg225.ncmat')
@@ -146,9 +161,9 @@ def main():
     with ensure_error(NCBadInput,'IsoMacroXSTable: invalid tolerance 0 (must be'
                       ' in the range (0,1))'):
         ncquery(base+['tol=0'])
-    with ensure_error(NCBadInput,'IsoMacroXSTable: invalid wlmax 1e-09 (must be'
-                      ' larger than 1e-08 Aa)'):
-        ncquery(base+['wlmax=1e-9'])
+    with ensure_error(NCBadInput,'IsoMacroXSTable: invalid wlmax 1e-05 (must be'
+                      ' larger than 0.0001 Aa)'):
+        ncquery(base+['wlmax=1e-5'])
     with ensure_error(NCBadInput,'Invalid isomacroxstable query:'
                       ' ["isomacroxstable","stdlib::Al_sg225.ncmat","wlmin=1"]'
                       ' (unknown option wlmin)'):
