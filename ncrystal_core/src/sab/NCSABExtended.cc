@@ -20,6 +20,7 @@
 
 #include "NCrystal/internal/sab/NCSABExtended.hh"
 #include "NCrystal/internal/utils/NCSpline.hh"
+#include "NCrystal/internal/phys_utils/NCKinUtils.hh"
 namespace NC = NCrystal;
 namespace NCS = NCrystal::SABUtils;
 
