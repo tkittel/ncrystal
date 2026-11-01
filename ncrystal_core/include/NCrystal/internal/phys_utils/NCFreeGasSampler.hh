@@ -54,8 +54,6 @@ namespace NCRYSTAL_NAMESPACE {
     PairDD sampleDeltaEMu( RNG&, NeutronEnergy ) const;//(E'-E,mu)
 
   private:
-    struct Coll { double alpha, beta, mu; };
-    Coll sampleColl( RNG&, double c ) const;//c=E/kT
     double m_kT, m_invkT, m_A, m_k;//k=1/(1+A)
   };
 
