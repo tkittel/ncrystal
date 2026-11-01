@@ -109,9 +109,6 @@ namespace NCRYSTAL_NAMESPACE {
       bool isLayeredCrystal() const;
       SCOrientation createSCOrientation() const;
 
-      std::string get_ucnmode_str() const;
-      Optional<UCNMode> get_ucnmode() const;
-
       //Info object:
       UniqueIDValue infoUID() const { return m_data.infoUID(); }
       const Info& info() const { return m_data.info(); }

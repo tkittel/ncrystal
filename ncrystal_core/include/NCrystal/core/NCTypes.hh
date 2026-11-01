@@ -545,19 +545,6 @@ namespace NCRYSTAL_NAMESPACE {
 
   NCRYSTAL_API std::ostream& operator<<( std::ostream&, const DataSourceName& );
 
-  struct NCRYSTAL_API UCNMode {
-    static constexpr NeutronEnergy default_threshold() noexcept { return NeutronEnergy{ 300e-9 }; }
-    enum class Mode { Refine, Remove, Only };
-    Mode mode = Mode::Refine;
-    NeutronEnergy threshold = default_threshold();
-    bool operator==( const UCNMode& ) const;
-    UCNMode( Mode mde = Mode::Refine,
-             NeutronEnergy thr = default_threshold() )
-    : mode(mde), threshold(thr) {}//constructor needed by clang
-  };
-
-  NCRYSTAL_API std::ostream& operator<<( std::ostream&, const UCNMode& );
-
   //For message passing and output control:
   enum class MsgType : unsigned { Info = 0, Warning = 1, RawOutput = 2 };
 
@@ -1055,11 +1042,6 @@ namespace NCRYSTAL_NAMESPACE {
   {
     if ( !(value>0.0) || !( value <= 1.0e200) )
       NCRYSTAL_THROW2(BadInput,"Density value invalid or out of bounds: "<<*this);
-  }
-
-  inline bool UCNMode::operator==( const UCNMode& o ) const
-  {
-    return this->mode == o.mode && this->threshold == o.threshold;
   }
 
   inline bool ThreadCount::indicatesAutoDetect() const noexcept

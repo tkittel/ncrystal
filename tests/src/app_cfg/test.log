@@ -27,19 +27,6 @@ Dump: MatCfg("Al_fake.ncmat")
 toStrCfg(false) : ""
 Dump: MatCfg("Al_fake.ncmat;dir1=@crys_hkl:5,1,1@lab:1,0,0;dir2=@crys:0,0,0.33333333333333331@lab:0,1,1;mos=0.001")
 toStrCfg(false) : "dir1=@crys_hkl:5,1,1@lab:1,0,0;dir2=@crys:0,0,0.33333333333333331@lab:0,1,1;mos=0.001"
-refine:2meV
-only:20meV
-remove:200neV
-remove:200neV
-only:200neV
-remove:2.12meV
-remove:2.12meV
-refine:2.12meV
-remove:2.12meV
-remove:2.12meV
-only:123meV
-remove:123meV
-remove:1
 ======= COW =====================================
 ===  1 new, 3 copies:
 ===  trigger cow:
@@ -430,6 +417,9 @@ NCrystal::BadInput: Syntax error in parameter string: The "ignorefilecfg" keywor
 
 => Trying to load cfg "Al_sg225.ncmat;ignorefilecfg":
 => Got expected MatCfg ERROR: NC::BadInput: Usage of the "ignorefilecfg" keyword in cfg strings is obsolete and no longer supported.
+
+=> Trying to load cfg "Al_sg225.ncmat;ucnmode=refine":
+=> Got expected MatCfg ERROR: NC::BadInput: Syntax error in parameter string: The "ucnmode" parameter was removed in NCrystal 5.0.0.
 
 => Trying to load cfg "Al_sg225.ncmat;sccutoff = 1e-5;density=1.2gcm3":
 => Went OK! Resulting toStrCfg(): "Al_sg225.ncmat;sccutoff=1e-5;density=1.2gcm3"
