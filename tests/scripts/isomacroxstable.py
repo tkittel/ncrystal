@@ -22,8 +22,8 @@
 
 # NEEDS: numpy
 
-# Test the "filtertable" query, which provides piecewise cubic tables of total
-# cross sections vs. wavelength.
+# Test the "isomacroxstable" query, which provides piecewise cubic tables of
+# total cross sections vs. wavelength.
 
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
@@ -59,7 +59,7 @@ def table_eval( wl_t, xs_t, s_t, wl ):
              + u*u*( (3.0-2.0*u)*xs_t[i+1] - v*h*s_t[i+1] ) )
 
 def test( cfg, *opts ):
-    r = ncquery( ['filtertable',cfg] + list(opts) )
+    r = ncquery( ['isomacroxstable',cfg] + list(opts) )
     wl, xs, sl = np.asarray(r['wl']), np.asarray(r['xs']), np.asarray(r['slope'])
     tol, wlmax = r['tol'], r['wlmax']
     assert len(wl) == r['npts'] == len(xs) == len(sl) and len(wl) >= 2
@@ -106,8 +106,8 @@ def test( cfg, *opts ):
     maxrelerr = ( np.abs( xsi-xst ) / np.maximum( xst, 1e-12 ) ).max()
     assert maxrelerr <= tol, f'max relative error {maxrelerr} > tol={tol}'
     print(f'{cfg} {" ".join(opts)}'.strip())
-    print(f'   npts={r["npts"]} ndiscontinuities={r["ndiscontinuities"]}'
-          f' ({len(idup)} in table) tol={tol:g} wlmax={wlmax:g}'
+    print(f'   ndiscontinuities={r["ndiscontinuities"]}'
+          f' tol={tol:g} wlmax={wlmax:g}'
           f' maxrelerr<tol: OK')
     print(f'   processes: {" ".join(r["processes"])}')
     print(f'   first: ({wl[0]:.6g} Aa, {xs[0]:.6g} b)'
@@ -129,32 +129,33 @@ def main():
     test('phases<0.3*stdlib::Al_sg225.ncmat&0.7*stdlib::Cu_sg225.ncmat>')
     test('stdlib::void.ncmat')
 
-    base = ['filtertable','stdlib::Al_sg225.ncmat']
+    base = ['isomacroxstable','stdlib::Al_sg225.ncmat']
     oriented = ('stdlib::Al_sg225.ncmat;mos=0.3deg;dir1=@crys_hkl:0,0,1@lab:0,0,1'
                 ';dir2=@crys_hkl:0,1,0@lab:0,1,0')
-    with ensure_error(NCBadInput,'Filter table: only isotropic materials are'
+    with ensure_error(NCBadInput,'IsoMacroXSTable: only isotropic materials are'
                       ' supported'):
-        ncquery(['filtertable',oriented])
-    #Processes which have not been validated for filter tables give a warning:
+        ncquery(['isomacroxstable',oriented])
+    #Processes which have not been validated for IsoMacroXSTable give a warning:
     test('stdlib::Polyethylene_CH2.ncmat;ucnmode=remove')
     #Discontinuities which are not known in advance are detected (here by
     #disabling the known ones):
-    with ensure_error(NCCalcError,'Filter table: the cross section has an'
+    with ensure_error(NCCalcError,'IsoMacroXSTable: the cross section has an'
                       ' unexpected discontinuity (or an extremely sharp'
                       ' feature) at wavelength 0.707627 Aa'):
         ncquery(base+['discontinuities=0'])
-    with ensure_error(NCBadInput,'Filter table: invalid tolerance 0 (must be'
+    with ensure_error(NCBadInput,'IsoMacroXSTable: invalid tolerance 0 (must be'
                       ' in the range (0,1))'):
         ncquery(base+['tol=0'])
-    with ensure_error(NCBadInput,'Filter table: invalid wlmax 1e-09 (must be'
+    with ensure_error(NCBadInput,'IsoMacroXSTable: invalid wlmax 1e-09 (must be'
                       ' larger than 1e-08 Aa)'):
         ncquery(base+['wlmax=1e-9'])
-    with ensure_error(NCBadInput,'Invalid filtertable query: ["filtertable",'
-                      '"stdlib::Al_sg225.ncmat","wlmin=1"] (unknown option wlmin)'):
+    with ensure_error(NCBadInput,'Invalid isomacroxstable query:'
+                      ' ["isomacroxstable","stdlib::Al_sg225.ncmat","wlmin=1"]'
+                      ' (unknown option wlmin)'):
         ncquery(base+['wlmin=1'])
-    with ensure_error(NCBadInput,'Invalid filtertable query: ["filtertable",'
-                      '"stdlib::Al_sg225.ncmat","tol"] (options must have the'
-                      ' form KEY=VALUE)'):
+    with ensure_error(NCBadInput,'Invalid isomacroxstable query:'
+                      ' ["isomacroxstable","stdlib::Al_sg225.ncmat","tol"]'
+                      ' (options must have the form KEY=VALUE)'):
         ncquery(base+['tol'])
 
 if __name__ == '__main__':

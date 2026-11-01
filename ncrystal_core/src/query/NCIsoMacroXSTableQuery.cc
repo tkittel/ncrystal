@@ -18,29 +18,29 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCFilterQuery.hh"
-#include "NCrystal/internal/filter/NCFilterTable.hh"
+#include "NCIsoMacroXSTableQuery.hh"
+#include "NCrystal/internal/xstable/NCIsoMacroXSTable.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 
 namespace NC = NCrystal;
-namespace NCF = NCrystal::Filter;
+namespace NCX = NCrystal::XSTable;
 
-void NCF::JSONQuery( std::ostream& os, const Query& query )
+void NCX::JSONQuery( std::ostream& os, const Query& query )
 {
   auto invalid = [&query](const std::string& reason){
     std::ostringstream ss;
-    ss << "Invalid filtertable query: ";
+    ss << "Invalid isomacroxstable query: ";
     streamJSON( ss, query );
     ss << " (" << reason << ")";
     NCRYSTAL_THROW( BadInput, ss.str() );
   };
-  if ( query.size() < 2 || query.front() != "filtertable" )
-    invalid("usage: [\"filtertable\",CFGSTR,OPTIONS...] with options like"
+  if ( query.size() < 2 || query.front() != "isomacroxstable" )
+    invalid("usage: [\"isomacroxstable\",CFGSTR,OPTIONS...] with options like"
             " \"tol=1e-3\", \"wlmax=500\", \"ndense=0\" (auto),"
             " \"discontinuities=1\"");
   const std::string cfgstr = query.at(1).to_string();
 
-  TableParams params;
+  IsoMacroXSTableParams params;
   for ( std::size_t i = 2; i < query.size(); ++i ) {
     auto opt = query.at(i).trimmed();
     auto parts = opt.split<2>('=');
@@ -73,7 +73,7 @@ void NCF::JSONQuery( std::ostream& os, const Query& query )
     }
   }
 
-  auto table = createTable( MatCfg( cfgstr ), params );
+  auto table = createIsoMacroXSTable( MatCfg( cfgstr ), params );
 
   streamJSONDictEntry( os, "cfgstr", cfgstr, JSONDictPos::FIRST );
   streamJSONDictEntry( os, "tol", params.tol );

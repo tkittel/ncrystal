@@ -25,9 +25,9 @@ Utilities for tabulating macroscopic cross section of isotropic materials.
 
 """
 
-__all__ = [ 'NCrystalFilter' ]
+__all__ = [ 'IsoMacroXSTable' ]
 
-class NCrystalFilter:
+class IsoMacroXSTable:
 
     """Macroscopic total cross section (scattering plus absorption) of an
     isotropic material, based on an automated tabulation of the normal physics
@@ -48,7 +48,7 @@ class NCrystalFilter:
     def __init__( self, cfgstr ):
         from ._chooks import _get_raw_cfcts
         self.__cfgstr = str(cfgstr)
-        wl, macroxs, slope = _get_raw_cfcts()['filtertable']( self.__cfgstr)
+        wl, macroxs, slope = _get_raw_cfcts()['isomacroxstable']( self.__cfgstr)
         for a in ( wl, macroxs, slope ):
             a.setflags( write = False )
         self.__wl, self.__macroxs, self.__slope = wl, macroxs, slope

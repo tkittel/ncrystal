@@ -19,8 +19,8 @@
 /*                                                                            */
 /******************************************************************************/
 
-/* Test of the C API for filter tables (ncrystal_filtertable), for a Be      */
-/* filter at 80 K.                                                           */
+/* Test of the C API for IsoMacroXSTable (ncrystal_isomacroxstable), for a    */
+/* Be filter at 80 K.                                                         */
 
 #include "NCrystal/ncrystal.h"
 #include <math.h>
@@ -46,8 +46,8 @@ int main(int argc, char** argv) {
   double * wl = NULL;
   double * macroxs = NULL;
   double * slope = NULL;
-  ncrystal_filtertable( "stdlib::Be_sg194.ncmat;temp=80K", &n, &wl,
-                        &macroxs, &slope, NULL );
+  ncrystal_isomacroxstable( "stdlib::Be_sg194.ncmat;temp=80K", &n, &wl,
+                            &macroxs, &slope, NULL );
   require( !ncrystal_error(), "no error" );
   require( n > 10 && wl && macroxs && slope, "table returned" );
   require( wl[0] == 0.0 && wl[n-1] > 20.0, "range from 0 to long wavelengths" );
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
                           ";dir2=@crys_hkl:0,1,0@lab:0,1,0" };
   const char * opts[] = { "foo=1", NULL };
   for ( i = 0; i < 2; ++i ) {
-    ncrystal_filtertable( cfgs[i], &n, &wl, &macroxs, &slope, opts[i] );
+    ncrystal_isomacroxstable( cfgs[i], &n, &wl, &macroxs, &slope, opts[i] );
     require( ncrystal_error() && n == 0 && !wl && !macroxs && !slope,
              "error expected" );
     printf( "Expected error: %s\n", ncrystal_lasterror() );
