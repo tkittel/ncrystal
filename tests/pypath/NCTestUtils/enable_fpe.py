@@ -43,6 +43,14 @@ def _enable_fpe():
     if '--plot' in sys.argv[1:]:
         print('Not enabling FPE due to "--plot" seen in sys.argv')
         return
+    import platform
+    if ( 'clang' in sys.version.lower()
+         and platform.machine().lower() in ('x86_64','amd64') ):
+        #Clang-built CPython on x86_64 (e.g. python-build-standalone as used by
+        #uv) can raise spurious FE_INVALID in its own code, as packed SSE ops
+        #(e.g. cvttpd2dq in _Py_dg_dtoa) also process unused (garbage) lanes.
+        #Silently skip (no output, to keep test reference logs unchanged):
+        return
     from .loadlib import Lib
     lib = Lib('fpe')
     lib.nctest_catch_fpe()
