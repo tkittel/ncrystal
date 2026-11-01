@@ -61,6 +61,11 @@ namespace NCRYSTAL_NAMESPACE {
   //binary search, so meant for occasional use):
   double evalIsoXS( const IsoXSDescr::Tabulation&, double e );
 
+  //The derivative d(xs)/de of the tabulated cross section at e > 0, in the
+  //same piece of the table as evalIsoXS (so at the energies E[i] it is the
+  //derivative from above):
+  double evalIsoXSDerivative( const IsoXSDescr::Tabulation&, double e );
+
   //Merge the descriptions of several components, each with a scale factor, into
   //a description of their summed cross section. The breakpts are the sorted
   //union of all breakpts. The table is the exact sum of the scaled tables
