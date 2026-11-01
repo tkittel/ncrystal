@@ -42,6 +42,10 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
+  namespace ProcImpl {
+    class Process;
+  }
+
   //Base class used for MT-safe caching. Client code can provide polymorphic
   //CachePtr objects and pass them into various interfaces. This allows client
   //code to control the lifetime and number of caches (usually one per thread),
@@ -57,6 +61,12 @@ namespace NCRYSTAL_NAMESPACE {
     //malloc on next usage. This function should ideally be called through the
     //free-standing invalidateCache function:
     virtual void invalidateCache() = 0;
+
+  private:
+    //Unique ID of the process which created the cache, checked on each use
+    //(see ProcImpl::Process::accessCache):
+    UniqueIDValue m_owner = { 0 };
+    friend class ProcImpl::Process;
   };
   using CachePtr = std::unique_ptr<CacheBase>;
 
