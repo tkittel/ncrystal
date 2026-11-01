@@ -120,8 +120,8 @@ NC::SABCfg::Cfg NC::SABCfg::createConfig( int sablux )
   //fixme: revisit all of these
   switch ( sablux ) {
   case 0:
-    c.integScheme = IntegrationScheme::Simpson3;
-    c.integSchemeDetermineEGrid = IntegrationScheme::Simpson3;
+    c.integScheme = IntegrationScheme::Flex5;
+    c.integSchemeDetermineEGrid = IntegrationScheme::Flex5;
     c.egrid_n0 = 30;
     c.egrid_tolerance = 3e-2;
     c.egrid_npts_max = 700;
@@ -129,8 +129,8 @@ NC::SABCfg::Cfg NC::SABCfg::createConfig( int sablux )
     c.sct_table_npts = 40;
     break;
   case 1:
-    c.integScheme = IntegrationScheme::Romberg5;
-    c.integSchemeDetermineEGrid = IntegrationScheme::Romberg5;
+    c.integScheme = IntegrationScheme::Flex5;
+    c.integSchemeDetermineEGrid = IntegrationScheme::Flex5;
     c.egrid_n0 = 50;
     c.egrid_tolerance = 1e-2;
     c.egrid_npts_max = 800;
