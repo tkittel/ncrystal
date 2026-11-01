@@ -48,6 +48,9 @@ namespace NCRYSTAL_NAMESPACE {
       //dense sample) has a margin:
       constexpr double tol_build_factor = 0.98;
 
+      //Relative jump below which a known discontinuity is treated as a kink:
+      constexpr double kink_tol = 1e-6;
+
       //Neighbouring dense sample points closer than this (relative) are not
       //refined further. If the tolerance is not met between such points, the
       //cross section has a discontinuity (or an extremely sharp feature) which
@@ -63,53 +66,60 @@ namespace NCRYSTAL_NAMESPACE {
       //the spacing of the points where the tolerance is not met):
       constexpr unsigned max_refine_iterations = 100;
 
-      //Leaf physics processes whose cross sections are known to have no
-      //features which the table creation could miss: they are smooth, apart
-      //from the Bragg edges (PowderBragg) and the boundaries of their energy
-      //domains, which are both included explicitly. Any other process (e.g. a
-      //process with absorption resonances, or the UCN processes) gives a
-      //warning, and must be studied before being added here.
-      bool isSupportedProcess( const std::string& name )
+      //Leaf processes without a table in their isoXSDescr(), whose cross
+      //sections are known to have no features which the table creation could
+      //miss: they are smooth, apart from the boundaries of their energy domains
+      //(which are included explicitly). Null processes and processes with
+      //tables (smooth between their breakpts) need no such validation. Any
+      //other process (e.g. a process with absorption resonances, or the UCN
+      //processes) gives a warning, and must be studied before being added here.
+      bool isValidatedUntabulated( const std::string& name )
       {
-        static const std::set<std::string> supported
-          = { "NullScatter", "NullAbsorption", "FreeGas", "ElIncScatter",
-              "SABScatter", "PowderBragg", "AbsOOV" };
-        return supported.count( name ) > 0;
+        static const std::set<std::string> validated = { "SABScatter", "AbsOOV" };
+        return validated.count( name ) > 0;
       }
 
-      //Collect the leaf processes (of ProcComposition trees), and the
-      //wavelengths corresponding to the boundaries of their energy domains:
+      //Collect the names of the leaf processes (of ProcComposition trees), and
+      //of those among them which need a warning (see isValidatedUntabulated):
       void inspectProcess( const ProcImpl::Process& proc,
-                           std::set<std::string>& names, VectD& domain_wl )
+                           std::set<std::string>& names,
+                           std::set<std::string>& unvalidated )
       {
         auto comp = dynamic_cast<const ProcImpl::ProcComposition*>( &proc );
         if ( comp ) {
           for ( auto& c : comp->components() )
-            inspectProcess( *c.process, names, domain_wl );
+            inspectProcess( *c.process, names, unvalidated );
           return;
         }
         names.insert( proc.name() );
-        const auto domain = proc.domain();
-        if ( domain.isNull() )
+        if ( proc.isNull() )
           return;
-        for ( auto e : { domain.elow.dbl(), domain.ehigh.dbl() } )
-          if ( e > 0.0 && std::isfinite( e ) )
-            domain_wl.push_back( ekin2wl( e ) );
+        auto iso = dynamic_cast<const ProcImpl::ScatterIsotropicMat*>( &proc );
+        if ( iso && iso->isoXSDescr().table.has_value() )
+          return;
+        if ( !isValidatedUntabulated( proc.name() ) )
+          unvalidated.insert( proc.name() );
       }
 
-      void collectBraggEdges( const Info& info, VectD& edges )
+      //The wavelengths of the known discontinuities and kinks of the cross
+      //section of a process: the breakpts of its isoXSDescr() (e.g. the Bragg
+      //edges), or otherwise the boundaries of its energy domain:
+      void collectBreakpoints( const ProcImpl::Process& proc, VectD& wl )
       {
-        if ( info.isMultiPhase() ) {
-          for ( auto& ph : info.getPhases() )
-            collectBraggEdges( *ph.second, edges );
-          return;
+        IsoXSDescr d;
+        if ( auto comp = dynamic_cast<const ProcImpl::ProcComposition*>( &proc ) ) {
+          d = comp->isoXSDescr();
+        } else if ( auto iso = dynamic_cast<const ProcImpl::ScatterIsotropicMat*>( &proc ) ) {
+          d = iso->isoXSDescr();
+        } else {
+          const auto domain = proc.domain();
+          if ( !domain.isNull() )
+            d.breakpts = { domain.elow.dbl(), domain.ehigh.dbl() };
         }
-        if ( !info.hasHKLInfo() )
-          return;
-        const auto& hkllist = info.hklList();
-        edges.reserve( edges.size() + hkllist.size() );
-        for ( auto& hkl : hkllist )
-          edges.push_back( 2.0 * hkl.dspacing );
+        wl.reserve( wl.size() + d.breakpts.size() );
+        for ( auto e : d.breakpts )
+          if ( e > 0.0 && std::isfinite( e ) )
+            wl.push_back( ekin2wl( e ) );
       }
 
       //Sorted discontinuities within (0,wlmax), with clusters of nearby ones
@@ -392,6 +402,27 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
   wl_eval.clear();
   const double abs_floor = xs_abs_floor;
 
+  //Known points where the cross section turns out to be continuous (kinks,
+  //where the values just below and above agree to 1e-6, far below any
+  //tolerance) are kept as a single sample point:
+  std::size_t ndisc = 0;
+  {
+    std::size_t j = 0;
+    for ( std::size_t i = 0; i < x.size(); ++i, ++j ) {
+      x[j] = x[i];
+      y[j] = y[i];
+      if ( i + 1 < x.size() && x[i+1] == x[i] ) {
+        if ( ncabs( y[i+1] - y[i] ) <= kink_tol * ncmax( ncmax( y[i], y[i+1] ), abs_floor ) ) {
+          ++i;//kink: drop the value above
+        } else {
+          ++ndisc;
+        }
+      }
+    }
+    x.resize( j );
+    y.resize( j );
+  }
+
   //The limit for wavelength -> 0, from linear extrapolation to 0 from very
   //short wavelengths (which is exact for any cross section of the form a+b*wl
   //there), at three scales. When the limit exists, the differences between
@@ -508,7 +539,7 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
   }
 
   res.numberDensity = 0.0;
-  res.nDiscontinuities = discontinuities.size();
+  res.nDiscontinuities = ndisc;
   res.nDense = x.size();
   res.nRefine = nrefine;
   return res;
@@ -523,17 +554,16 @@ NCF::Table NCF::createTable( const MatCfg& cfg, const TableParams& params )
     NCRYSTAL_THROW( BadInput, "Filter table: only isotropic materials are"
                     " supported" );
 
-  std::set<std::string> names;
+  std::set<std::string> names, unvalidated;
+  inspectProcess( *scat, names, unvalidated );
+  inspectProcess( *absn, names, unvalidated );
+  for ( auto& n : unvalidated )
+    NCRYSTAL_WARN( "Filter table: the physics process \"" << n << "\" has"
+                   " not been validated for filter tables (features of its"
+                   " cross section might be missed)" );
   VectD discontinuities;
-  discontinuities.reserve( 64 );//Bragg edges reserve more below
-  inspectProcess( *scat, names, discontinuities );
-  inspectProcess( *absn, names, discontinuities );
-  for ( auto& n : names )
-    if ( !isSupportedProcess( n ) )
-      NCRYSTAL_WARN( "Filter table: the physics process \"" << n << "\" has"
-                     " not been validated for filter tables (features of its"
-                     " cross section might be missed)" );
-  collectBraggEdges( *info, discontinuities );
+  collectBreakpoints( *scat, discontinuities );
+  collectBreakpoints( *absn, discontinuities );
 
   CachePtr cp_scat, cp_abs;
   auto xs_of_wl = [&scat,&absn,&cp_scat,&cp_abs]( double wl )
