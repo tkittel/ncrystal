@@ -24,6 +24,7 @@
 #include "NCrystal/interfaces/NCProcImpl.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCIsoXSUtils.hh"
+#include "NCrystal/internal/absoov/NCAbsOOV.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 
@@ -103,7 +104,8 @@ namespace NCRYSTAL_NAMESPACE {
       }
 
       //Collect the leaf processes (of ProcComposition trees, with their scale
-      //factors), separating those with a table in their isoXSDescr():
+      //factors), separating those with a table in their isoXSDescr() (for
+      //absorption, only AbsOOV has one):
       struct UntabulatedLeaf {
         double scale;
         const ProcImpl::Process* process;
@@ -126,6 +128,10 @@ namespace NCRYSTAL_NAMESPACE {
             tabulated.emplace_back( scale, std::move( d ) );
             return;
           }
+        }
+        if ( auto oov = dynamic_cast<const AbsOOV*>( &proc ) ) {
+          tabulated.emplace_back( scale, oov->isoXSDescr() );
+          return;
         }
         untabulated.push_back( UntabulatedLeaf{ scale, &proc, nullptr } );
       }

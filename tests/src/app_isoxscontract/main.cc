@@ -24,6 +24,7 @@
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/factories/NCMatCfg.hh"
+#include "NCrystal/internal/absoov/NCAbsOOV.hh"
 #include <iostream>
 
 namespace NC = NCrystal;
@@ -76,6 +77,29 @@ namespace {
     }
     std::cout << std::endl;
   }
+
+  void testAbsOOV()
+  {
+    //The table of AbsOOV::isoXSDescr() agrees with crossSectionIsotropic (to
+    //within rounding) at all energies from 1e-10 eV to below 1e300 eV:
+    for ( double sigabs : { 0.0, 0.231, 3835.0 } ) {
+      const NC::AbsOOV p{ NC::SigmaAbsorption{ sigabs } };
+      const auto d = p.isoXSDescr();
+      nc_assert_always( d.table.has_value() && d.breakpts.empty() );
+      NC::VectD energies = NC::geomspace( 1e-10, 1e300, 20001 );
+      for ( double e : { 1.0, 1e300 } ) {
+        energies.push_back( std::nextafter( e, 0.0 ) );
+        energies.push_back( std::nextafter( e, NC::kInfinity ) );
+      }
+      NC::CachePtr cp;
+      for ( auto e : energies ) {
+        const double xs = p.crossSectionIsotropic( cp, NC::NeutronEnergy{ e } ).dbl();
+        const double v = NC::evalIsoXS( d.table.value(), e );
+        nc_assert_always( e >= 1e300 || NC::floateq( xs, v, 1e-14, 0.0 ) );
+      }
+    }
+    std::cout << "AbsOOV: OK" << std::endl;
+  }
 }
 
 int main()
@@ -87,5 +111,6 @@ int main()
   testMaterial( "He_Gas_STP.ncmat" );
   testMaterial( "Y2O3_sg206_Yttrium_Oxide.ncmat;dcutoff=0.3" );
   testMaterial( "Al_sg225.ncmat;temp=20K;comp=coh_elas" );
+  testAbsOOV();
   return 0;
 }
