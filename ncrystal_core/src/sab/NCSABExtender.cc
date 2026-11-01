@@ -26,14 +26,16 @@ NC::SAB::SABExtender::~SABExtender() = default;
 NC::SAB::SABFGExtender::SABFGExtender( Temperature temp_k, AtomMass mass, SigmaFree sigma )
   : m_xsprovider(temp_k,mass,sigma),
     m_t(DoValidate,temp_k),
-    m_m(DoValidate,mass)
+    m_m(DoValidate,mass),
+    m_sampler(m_t,m_m)
 {
 }
 
 NC::SAB::SABFGExtender::SABFGExtender( Temperature temp_k, AtomMass mass, SigmaBound sigma )
   : m_xsprovider(temp_k,mass,sigma),
     m_t(DoValidate,temp_k),
-    m_m(DoValidate,mass)
+    m_m(DoValidate,mass),
+    m_sampler(m_t,m_m)
 {
 }
 
@@ -51,7 +53,7 @@ NC::IsoXSHighEForm NC::SAB::SABFGExtender::highEForm() const
 
 NC::PairDD NC::SAB::SABFGExtender::sampleAlphaBeta( RNG& rng, NeutronEnergy ekin ) const
 {
-  return FreeGasSampler(ekin, m_t, m_m).sampleAlphaBeta(rng);
+  return m_sampler.sampleAlphaBeta(rng,ekin);
 }
 
 NC::SAB::SABSCTExtender::SABSCTExtender( Temperature temp_k,
