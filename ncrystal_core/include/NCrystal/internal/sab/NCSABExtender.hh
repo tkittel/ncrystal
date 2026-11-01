@@ -24,6 +24,7 @@
 #include "NCrystal/core/NCDefs.hh"
 #include "NCrystal/internal/phys_utils/NCFreeGasUtils.hh"
 #include "NCrystal/internal/phys_utils/NCSCTUtils.hh"
+#include "NCrystal/internal/phys_utils/NCFreeGasSampler.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -69,6 +70,7 @@ namespace NCRYSTAL_NAMESPACE {
       FreeGasXSProvider m_xsprovider;
       Temperature m_t;
       AtomMass m_m;
+      FreeGasSampler m_sampler;
     };
 
     class SABSCTExtender : public SABExtender {

@@ -20,6 +20,7 @@
 
 #include "NCrystal/internal/phys_utils/NCSCTUtils.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/phys_utils/NCKinUtils.hh"
 
 namespace NC = NCrystal;
 
@@ -262,7 +263,8 @@ NC::SCTSampler::SCTSampler( NeutronEnergy ekin,
                             Temperature temp_k,
                             Temperature teff,
                             AtomMass mass )
-  : m_fgs( ekin, sct_checkedTeff(temp_k,teff), mass ),
+  : m_fgs( sct_checkedTeff(temp_k,teff), mass ),
+    m_ekin( ekin ),
     m_r( sct_checkedTeff(temp_k,teff).dbl() == temp_k.dbl()
          ? 1.0 : teff.dbl() / temp_k.dbl() )
 {
@@ -277,14 +279,14 @@ NC::PairDD NC::SCTSampler::sampleAlphaBeta( RNG& rng ) const
   //to actual-kT units, with upscatter candidates additionally accepted with the
   //detailed-balance-at-T probability exp(-beta*(r-1)) - cf. the header:
   if ( m_r == 1.0 )
-    return m_fgs.sampleAlphaBeta( rng );
+    return m_fgs.sampleAlphaBeta( rng, m_ekin );
   const double rm1 = m_r - 1.0;
 #ifndef NDEBUG
   int nloop = 0;
 #endif
   while ( true ) {
     nc_assert( nloop++ < 10000 );
-    auto ab = m_fgs.sampleAlphaBeta( rng );
+    auto ab = m_fgs.sampleAlphaBeta( rng, m_ekin );
     if ( ab.second <= 0.0
          || rng.generate() < std::exp( -ab.second * rm1 ) )
       return { ab.first * m_r, ab.second * m_r };

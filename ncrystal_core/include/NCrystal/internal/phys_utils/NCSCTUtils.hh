@@ -22,6 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/phys_utils/NCFreeGasUtils.hh"
+#include "NCrystal/internal/phys_utils/NCFreeGasSampler.hh"
 #include "NCrystal/internal/utils/NCSpline.hh"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -98,7 +99,7 @@
 // kinematic domain maps onto itself under this scaling. The upscatter        //
 // side differs only by the alpha-independent detailed-balance factor         //
 // exp(-beta*(1-1/r)) = exp(-beta**(r-1)) <= 1. SCTSampler therefore          //
-// simply runs a FreeGasSampler at Teff, multiplies the result by r, and      //
+// simply runs a free-gas sampler at Teff, multiplies the result by r, and    //
 // accepts upscatter candidates with the above probability (rejection         //
 // sampling; the acceptance rate is >=sigma_SCT/sigma_FG(Teff), which is      //
 // never small at the energies where the model is used).                      //
@@ -229,6 +230,7 @@ namespace NCRYSTAL_NAMESPACE {
 
   private:
     FreeGasSampler m_fgs;//at Teff
+    NeutronEnergy m_ekin;
     double m_r;//Teff/T
   };
 

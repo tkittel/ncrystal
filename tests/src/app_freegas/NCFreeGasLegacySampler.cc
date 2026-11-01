@@ -18,132 +18,14 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/internal/phys_utils/NCFreeGasUtils.hh"
-#include "NCrystal/internal/utils/NCMath.hh"
+#include "NCFreeGasLegacySampler.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
-#include "NCrystal/internal/utils/NCSpline.hh"
 namespace NC=NCrystal;
 
 #define NCRYSTAL_FREEGASUTILS_ENABLEEXTRADEBUGGING 0
 
-NC::FreeGasXSProvider::FreeGasXSProvider( Temperature temp_kelvin,
-                                          AtomMass target_mass_amu,
-                                          SigmaFree sigma )
-{
-  //Evaluate cross-sections via sampling paper (10.1016/j.jcp.2018.11.043)
-  //eq. 20, with explicit prefactor of sigma_free=sigma_bound*(A/(1+A))^2" (see
-  //also discussion after eq. 20 in
-  //https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4927245/). And discussion on
-  //DGSW-399.
-  //
-  //Sampling paper eq. 20 does not include A=M/mn in "a", but here we scale a by
-  //sqrt(A). Not sure where we got this from, but it was heavily validated using
-  //numerical integration of sampling paper eq. 19.
-  temp_kelvin.validate();
-  target_mass_amu.validate();
-  sigma.validate();
-
-  double A = target_mass_amu.relativeToNeutronMass();//mass_nuclide / mass_neutron
-  m_sigmaFree = sigma.get();
-  nc_assert_always( temp_kelvin.get() > 0.0);
-  nc_assert_always( target_mass_amu.get() > 0.0);
-  nc_assert_always( m_sigmaFree > 0.0);
-
-  nc_assert( temp_kelvin.kT() > 0.0 );
-  m_ca = A / temp_kelvin.kT();//a^2 = A*E/kT = ca*E with ca = A/kT [units 1/eV]:
-}
-
-NC::FreeGasXSProvider::FreeGasXSProvider( Temperature temp_kelvin,
-                                          AtomMass target_mass_amu,
-                                          SigmaBound sb )
-  : FreeGasXSProvider( temp_kelvin, target_mass_amu, sb.free(target_mass_amu) )
-{
-}
-
-NC::FreeGasXSProvider::~FreeGasXSProvider() = default;
-
 namespace NCRYSTAL_NAMESPACE {
   namespace {
-    //With x=a^2=ca*E, xs=sigma_free*G(x)/x, where
-    //G(x)=(x+1/2)*erf(sqrt(x))+sqrt(x)*exp(-x)/sqrt(pi)=sqrt(x)*H(x), with H
-    //smooth in x. So xs=sigma_free*U(ca*E), where U is the cross section for
-    //sigma_free=1 and ca=1, i.e. with E=x:
-    //
-    //  x*U(x) = sqrt(x) * H(x)
-    //
-    //The universal table of U tabulates H in x (the Q part), for x in
-    //[1.5e-10,36]: below it U=2/sqrt(pi*x) is good to x/3<0.5e-10, and above it
-    //the highEForm U=1+1/(2x) applies.
-    double freeGasH( double x )
-    {
-      const double s = std::sqrt( x );
-      return stable_exp( -x ) * kInvSqrtPi + ( s + 0.5 / s ) * ncerf( s );
-    }
-
-    IsoXSTable tabulateFreeGasUniversal()
-    {
-      constexpr double xmax = 36.0;//must match highEForm
-      auto fit = fitPiecewiseCubic( freeGasH, 1.5e-10, xmax, 1e-10, 4.0 );
-      nc_assert_always( fit.x.back() == xmax );
-      IsoXSTable t;
-      t.E = std::move( fit.x );
-      t.q = std::move( fit.c );
-      t.tail[0] = 2.0 * kInvSqrtPi;
-      t.tail[2] = 0.5;
-      t.tail[3] = 1.0;
-      return t;
-    }
-
-    const IsoXSEvaluator& freeGasUniversal()
-    {
-      static const IsoXSEvaluator ev( tabulateFreeGasUniversal() );
-      return ev;
-    }
-  }
-}
-
-NC::CrossSect NC::FreeGasXSProvider::crossSectionTabulated( NeutronEnergy ekin ) const
-{
-  return CrossSect{ freeGasUniversal().evalScaled( ekin.dbl(), m_ca, m_sigmaFree ) };
-}
-
-NC::IsoXSTable NC::FreeGasXSProvider::createXSTabulation() const
-{
-  nc_assert( m_ca > 0.0 );
-  return scaleIsoXSTable( freeGasUniversal().table(), m_ca, m_sigmaFree );
-}
-
-NC::IsoXSHighEForm NC::FreeGasXSProvider::highEForm() const
-{
-  //evalXSShapeASq is 1+0.5/a^2 above a^2=36 (neglecting terms of order
-  //exp(-36)/a), with a^2=m_ca*E:
-  nc_assert( m_ca > 0.0 );
-  return { m_sigmaFree, 0.5 * m_sigmaFree / m_ca, NeutronEnergy{ 36.0 / m_ca } };
-}
-
-double NC::FreeGasXSProvider::evalXSShapeASq(double a_squared)
-{
-  //a^2 = A*E/kT.
-  if (a_squared>36.0)
-    return 1.0 + 0.5 / a_squared;
-  const double a = std::sqrt(a_squared);
-  if (a<0.1) {
-    if (a==0.0)
-      return kInfinity;
-    constexpr double c1 = 2.0/3.0;
-    constexpr double c2 = 1.0/15.0;
-    constexpr double c3 = 1.0/105.0;
-    constexpr double c4 = 1.0/756.0;
-    constexpr double c5 = 1.0/5940.0;
-    const double a2 = a_squared;
-    return kInvSqrtPi * ( 2.0 / a +  a *( c1- a2*(c2-a2*(c3-a2*(c4-a2*c5)))));
-  };
-  //intermediate region, fall-back to full formula (slow):
-  const double inva = 1.0 / a;
-  return ( 1.0 + 0.5*inva*inva ) * ncerf(a) + kInvSqrtPi * std::exp(-a_squared)*inva;
-}
-
-namespace NCRYSTAL_NAMESPACE {
 
   //////////////////////////////
   // Private helper utilities //
@@ -503,9 +385,9 @@ namespace NCRYSTAL_NAMESPACE {
 
           //low fval, record this knowledge for cheap rejection of future values:
           if (xgen < xmax)
-            xthr_low = xgen;//postponed_fixme: Never read, modifying a local loop varibale which was not intended! (same for xthr_up)
+            xthr_low = xgen;//Note: Never read, modifying a local loop varibale which was not intended! (same for xthr_up)
           else
-            xthr_up = xgen;//F i x m e: Never read, modifying a local loop varibale which was not intended!
+            xthr_up = xgen;//Note: Never read, modifying a local loop varibale which was not intended!
 
           if (fval < fcutoff_limit) {
             //generated value is in negligible region. Make sure we don't generate here again.
@@ -547,9 +429,11 @@ namespace NCRYSTAL_NAMESPACE {
     }
   }
 
+  }
 }
 
-NC::FreeGasSampler::FreeGasSampler(NeutronEnergy ekin, Temperature temp_kelvin, AtomMass target_mass_amu)
+
+NC::FreeGasLegacySampler::FreeGasLegacySampler(NeutronEnergy ekin, Temperature temp_kelvin, AtomMass target_mass_amu)
   : m_c(ncmin(1e14,ncmax(1e-10,ekin.get()/(temp_kelvin.kT())))),
     //nb: we constrain m_c for numerical safety (1.16e13 is 1GeV neutron on 1Kelvin material)
     m_kT(temp_kelvin.kT()),
@@ -574,9 +458,9 @@ NC::FreeGasSampler::FreeGasSampler(NeutronEnergy ekin, Temperature temp_kelvin, 
 #endif
 }
 
-NC::FreeGasSampler::~FreeGasSampler() = default;
+NC::FreeGasLegacySampler::~FreeGasLegacySampler() = default;
 
-void NC::FreeGasSampler::testBetaDistEval (double beta, double & f_exact, double & f_lb, double& f_ub )
+void NC::FreeGasLegacySampler::testBetaDistEval (double beta, double & f_exact, double & f_lb, double& f_ub )
 {
   if ( beta <= -m_c ) {
     f_lb = f_ub = f_exact = 0.0;
@@ -587,7 +471,7 @@ void NC::FreeGasSampler::testBetaDistEval (double beta, double & f_exact, double
   f_exact = eval_helper.evalExact();
 }
 
-double NC::FreeGasSampler::sampleBeta( RNG& rng ) const
+double NC::FreeGasLegacySampler::sampleBeta( RNG& rng ) const
 {
   if (m_c_real>1e4) {
     //At extremely high energy the neutron will to a very good approximation
@@ -908,7 +792,7 @@ double NC::FreeGasSampler::sampleBeta( RNG& rng ) const
   }
 }
 
-double NC::FreeGasSampler::sampleAlpha( double beta, RNG& rng ) const
+double NC::FreeGasLegacySampler::sampleAlpha( double beta, RNG& rng ) const
 {
   // We must sample alpha in [alpha-,alpha+] from the free-gas S(alpha,beta),
   // which is proportional to (A=M/m_neutron):

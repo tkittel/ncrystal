@@ -1,5 +1,5 @@
-#ifndef NCrystal_FreeGasUtils_hh
-#define NCrystal_FreeGasUtils_hh
+#ifndef NCrystal_FreeGasLegacySampler_hh
+#define NCrystal_FreeGasLegacySampler_hh
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -24,14 +24,16 @@
 #include "NCrystal/core/NCTypes.hh"
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
 #include "NCrystal/internal/utils/NCVector.hh"
-#include "NCrystal/internal/utils/NCIsoXSUtils.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+
+//The S(alpha,beta)-based free-gas sampler of NCrystal 4.4 and earlier (from
+//NCFreeGasUtils.hh), kept here (renamed) as a reference for FreeGasSampler.
 
 ////////////////////////////////////////////////////////////////////////////////////
 //                                                                                //
-// Helper classes for getting scattering cross-sections (FreeGasXSProvider) or    //
-// sampling scatterings (FreeGasSampler) in the free-gas model, where a neutron   //
-// scatters on targets for which all internal energy states are ignored and which //
+// Helper class for sampling scatterings (FreeGasLegacySampler) in the free-gas   //
+// model (cross-sections: FreeGasXSProvider in NCFreeGasUtils.hh), where neutrons //
+// scatter on targets for which all internal energy states are ignored and which  //
 // are not interacting among themselves - except as required to maintain an       //
 // overall thermal velocity balance of the system. The results are based on the   //
 // free-gas scattering kernel, which has a close-form expression for              //
@@ -66,42 +68,13 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  class FreeGasXSProvider final {
-  public:
-    FreeGasXSProvider( Temperature, AtomMass, SigmaFree );
-    FreeGasXSProvider( Temperature, AtomMass, SigmaBound );
-    ~FreeGasXSProvider();
-
-    //The cross section from the formula:
-    CrossSect crossSectionUntabulated( NeutronEnergy ekin ) const;
-
-    //Evaluate (1+1/(2a^2))*erf(a)+exp(-a^2)/(sqrt(pi)*a) (used internally, but
-    //exposed here for testing):
-    static double evalXSShapeASq(double a_squared);
-
-    SigmaFree sigmaFree() const { return SigmaFree{ m_sigmaFree }; }
-
-    //High energy form, sigma_free*(1+kT/(2*A*E)) above A*E/kT=36:
-    IsoXSHighEForm highEForm() const;
-
-    //The cross section from a universal table (built once and shared), with a
-    //relative deviation below 1e-10 from crossSectionUntabulated:
-    CrossSect crossSectionTabulated( NeutronEnergy ) const;
-
-    //The same as an IsoXSTable (see NCIsoXSUtils.hh), agreeing
-    //with crossSectionTabulated to within rounding:
-    IsoXSTable createXSTabulation() const;
-  private:
-    double m_sigmaFree, m_ca;
-  };
-
-  class FreeGasSampler final {
+  class FreeGasLegacySampler final {
   public:
 
     //Evaluate quantum mechanical Free Gas model.
 
-    FreeGasSampler(NeutronEnergy, Temperature, AtomMass );
-    ~FreeGasSampler();
+    FreeGasLegacySampler(NeutronEnergy, Temperature, AtomMass );
+    ~FreeGasLegacySampler();
 
     //Beta/energy-transfer sampling:
     double sampleDeltaE(RNG&) const;
@@ -123,25 +96,18 @@ namespace NCRYSTAL_NAMESPACE {
 
 }
 
-
 ////////////////////////////
 // Inline implementations //
 ////////////////////////////
 
-
 namespace NCRYSTAL_NAMESPACE {
 
-  inline CrossSect FreeGasXSProvider::crossSectionUntabulated( NeutronEnergy ekin ) const
-  {
-    return CrossSect{ m_sigmaFree * evalXSShapeASq( m_ca * ekin.dbl() ) };
-  }
-
-  inline double FreeGasSampler::sampleDeltaE( RNG& rng ) const
+  inline double FreeGasLegacySampler::sampleDeltaE( RNG& rng ) const
   {
     return sampleBeta(rng)*m_kT;
   }
 
-  inline PairDD FreeGasSampler::sampleAlphaBeta( RNG& rng ) const
+  inline PairDD FreeGasLegacySampler::sampleAlphaBeta( RNG& rng ) const
   {
     double beta = sampleBeta(rng);
     if ( beta < -m_c || muIsotropicAtBeta(beta,EDivKT{m_c}) ) {
@@ -155,7 +121,7 @@ namespace NCRYSTAL_NAMESPACE {
     return std::make_pair(sampleAlpha(beta,rng),beta);
   }
 
-  inline PairDD FreeGasSampler::sampleDeltaEMu( RNG& rng ) const
+  inline PairDD FreeGasLegacySampler::sampleDeltaEMu( RNG& rng ) const
   {
     double beta = sampleBeta(rng);
     if ( beta <= -m_c || muIsotropicAtBeta(beta,EDivKT{m_c}) ) {

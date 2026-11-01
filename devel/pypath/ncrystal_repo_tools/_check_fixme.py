@@ -28,7 +28,6 @@ def main():
     whitelist = {
         'tests/scripts/vdos2ncmat.log' : 2,
         '.github/workflows/fix'+'me.yml' : 1,
-        'ncrystal_core/src/phys_utils/NCFreeGasUtils.cc' : 1,
     }
     actually_ignored = []
     for f in all_files_iter():
