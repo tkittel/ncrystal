@@ -2662,14 +2662,8 @@ namespace NCRYSTAL_NAMESPACE {
 }
 #include "NCrystal/internal/xstable/NCIsoMacroXSTable.hh"
 
-void ncrystal_isomacroxstable( const char * cfgstr, unsigned * n, double ** wl,
-                               double ** macroxs, double ** slope,
-                               const char * options )
+double * ncrystal_isomacroxstable( const char * cfgstr, const char * options )
 {
-  *n = 0;
-  *wl = nullptr;
-  *macroxs = nullptr;
-  *slope = nullptr;
   try {
     if ( options && options[0] != '\0' )
       NCRYSTAL_THROW2( BadInput,
@@ -2677,24 +2671,11 @@ void ncrystal_isomacroxstable( const char * cfgstr, unsigned * n, double ** wl,
                          " by this NCrystal installation (got \"" )
                        << options << "\")" );
     namespace NCX = NC::XSTable;
-    auto table = NCX::createIsoMacroXSTable( NC::MatCfg( cfgstr ),
-                                             NCX::IsoMacroXSTableParams() );
-    //barn/atom * atoms/Aa^3 = 1/cm:
-    const double factor = table.numberDensity;
-    const auto npts = static_cast<unsigned>( table.wl.size() );
-    double * arr_wl = new double[npts];
-    double * arr_xs = new double[npts];
-    double * arr_slope = new double[npts];
-    for ( unsigned i = 0; i < npts; ++i ) {
-      arr_wl[i] = table.wl[i];
-      arr_xs[i] = table.xs[i] * factor;
-      arr_slope[i] = table.slope[i] * factor;
-    }
-    *n = npts;
-    *wl = arr_wl;
-    *macroxs = arr_xs;
-    *slope = arr_slope;
+    return NCX::createIsoMacroXSTable( NC::MatCfg( cfgstr ),
+                                       NCX::IsoMacroXSTableParams() )
+      .release().release();
   } NCCATCH;
+  return nullptr;
 }
 
 char* ncrystal_jsonquery( const char * raw )
