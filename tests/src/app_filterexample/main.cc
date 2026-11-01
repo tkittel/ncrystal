@@ -23,14 +23,14 @@
 //is copied here verbatim (the copy is checked by "ncdevtool check copies"). It
 //must give the same results as NCrystal's internal evaluation of the tables.
 
-#include "NCrystal/internal/filter/NCFilterTable.hh"
+#include "NCrystal/internal/xstable/NCIsoMacroXSTable.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
 #include "NCrystal/factories/NCMatCfg.hh"
 #include <iostream>
 
 namespace NC = NCrystal;
-namespace NCF = NCrystal::Filter;
+namespace NCX = NCrystal::XSTable;
 
 /* Reference implementation for a function which evaluates the table at the   */
 /* given wavelength. The function only reads the arrays, and calls no other   */
@@ -80,8 +80,8 @@ namespace {
     const auto n = static_cast<unsigned>( wl.size() );
     for ( auto w : wls ) {
       const double a = filter_macroxs( n, wl.data(), xs.data(), slope.data(), w );
-      const double b = NCF::evalTable( wl.data(), xs.data(), slope.data(),
-                                       wl.size(), w );
+      const double b = NCX::evalIsoMacroXSTable( wl.data(), xs.data(),
+                                                 slope.data(), wl.size(), w );
       if ( !( a == b || NC::ncabs( a - b ) <= 1e-14 * NC::ncmax( NC::ncabs( b ), 1e-300 ) ) ) {
         std::cout << descr << ": FAILED at wavelength " << w << ": " << a
                   << " vs. " << b << std::endl;
@@ -112,7 +112,8 @@ int main()
                      "stdlib::Be_sg194.ncmat;temp=80K",
                      "stdlib::Polyethylene_CH2.ncmat",
                      "phases<0.3*stdlib::Al_sg225.ncmat&0.7*stdlib::Cu_sg225.ncmat>" } ) {
-    auto t = NCF::createTable( NC::MatCfg( cfg ), NCF::TableParams() );
+    auto t = NCX::createIsoMacroXSTable( NC::MatCfg( cfg ),
+                                         NCX::IsoMacroXSTableParams() );
     NC::VectD w;
     for ( unsigned i = 0; i < 100000; ++i )
       w.push_back( std::pow( 10.0, -8.0 + 12.0 * rng.generate() ) );

@@ -2660,11 +2660,11 @@ namespace NCRYSTAL_NAMESPACE {
     }
   }
 }
-#include "NCrystal/internal/filter/NCFilterTable.hh"
+#include "NCrystal/internal/xstable/NCIsoMacroXSTable.hh"
 
-void ncrystal_filtertable( const char * cfgstr, unsigned * n, double ** wl,
-                           double ** macroxs, double ** slope,
-                           const char * options )
+void ncrystal_isomacroxstable( const char * cfgstr, unsigned * n, double ** wl,
+                               double ** macroxs, double ** slope,
+                               const char * options )
 {
   *n = 0;
   *wl = nullptr;
@@ -2673,11 +2673,12 @@ void ncrystal_filtertable( const char * cfgstr, unsigned * n, double ** wl,
   try {
     if ( options && options[0] != '\0' )
       NCRYSTAL_THROW2( BadInput,
-                       ( "ncrystal_filtertable: no options are supported"
+                       ( "ncrystal_isomacroxstable: no options are supported"
                          " by this NCrystal installation (got \"" )
                        << options << "\")" );
-    auto table = NC::Filter::createTable( NC::MatCfg( cfgstr ),
-                                          NC::Filter::TableParams() );
+    namespace NCX = NC::XSTable;
+    auto table = NCX::createIsoMacroXSTable( NC::MatCfg( cfgstr ),
+                                             NCX::IsoMacroXSTableParams() );
     //barn/atom * atoms/Aa^3 = 1/cm:
     const double factor = table.numberDensity;
     const auto npts = static_cast<unsigned>( table.wl.size() );

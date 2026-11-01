@@ -20,11 +20,12 @@
 /******************************************************************************/
 
 /* Example showing how to use NCrystal for a filter or a window, where a      */
-/* neutron beam is simply attenuated by a material: ncrystal_filtertable      */
-/* provides a table of the macroscopic cross section, and filter_macroxs      */
-/* below evaluates it. A neutron travelling a distance L (in cm) through the  */
-/* material is transmitted with probability exp(-macroxs*L), so in a Monte    */
-/* Carlo simulation, its weight can be multiplied by that factor.             */
+/* neutron beam is simply attenuated by a material:                           */
+/* ncrystal_isomacroxstable provides a table of the macroscopic cross         */
+/* section, and filter_macroxs below evaluates it. A neutron travelling a     */
+/* distance L (in cm) through the material is transmitted with probability    */
+/* exp(-macroxs*L), so in a Monte Carlo simulation, its weight can be         */
+/* multiplied by that factor.                                                 */
 /*                                                                            */
 /* NOTE: Such usage is mainly intended for specialised use-cases who needs a  */
 /* quick tabulated macroscopic cross section rather than the more detailed    */
@@ -88,8 +89,8 @@ int main(void) {
   const double wavelengths[] = { 1.0, 3.0, 3.9, 4.0, 6.0, 20.0 };
 
   /* A beryllium filter cooled to 80 K: */
-  ncrystal_filtertable( "stdlib::Be_sg194.ncmat;temp=80K",
-                        &n, &nc_wl, &nc_macroxs, &nc_slope, NULL );
+  ncrystal_isomacroxstable( "stdlib::Be_sg194.ncmat;temp=80K",
+                            &n, &nc_wl, &nc_macroxs, &nc_slope, NULL );
 
   /* Copy the table to arrays owned by the application (e.g. allocated such   */
   /* that they are accessible on a GPU), and free the arrays from NCrystal:   */

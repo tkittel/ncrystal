@@ -18,7 +18,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/internal/filter/NCFilterTable.hh"
+#include "NCrystal/internal/xstable/NCIsoMacroXSTable.hh"
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/interfaces/NCInfo.hh"
 #include "NCrystal/interfaces/NCProcImpl.hh"
@@ -27,15 +27,16 @@
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 
-//FIXME: Get back to reproducibility for the filter tables: the selected table
-//points depend on floating point details, which might differ between platforms
-//and compilers (e.g. due to FMA contractions or auto-vectorisation).
+//FIXME: Get back to reproducibility for the IsoMacroXSTable tables: the
+//selected table points depend on floating point details, which might differ
+//between platforms and compilers (e.g. due to FMA contractions or
+//auto-vectorisation).
 
 namespace NC = NCrystal;
-namespace NCF = NCrystal::Filter;
+namespace NCX = NCrystal::XSTable;
 
 namespace NCRYSTAL_NAMESPACE {
-  namespace Filter {
+  namespace XSTable {
     namespace {
 
       //Relative distance from a discontinuity, at which the cross sections
@@ -209,8 +210,10 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-NCF::ReducedPoints NCF::reducePoints( const VectD& x, const VectD& y,
-                                      double tol, double abs_floor )
+NCX::ReducedHermitePoints NCX::reduceHermitePoints( const VectD& x,
+                                                    const VectD& y,
+                                                    double tol,
+                                                    double abs_floor )
 {
   //From the current point (with its slope fixed), find the most distant point
   //which can be reached with an interval satisfying the tolerance. An
@@ -230,7 +233,7 @@ NCF::ReducedPoints NCF::reducePoints( const VectD& x, const VectD& y,
              ? ( y[i+1] - y[i] ) / ( x[i+1] - x[i] )
              : 0.0 );
   };
-  ReducedPoints res;
+  ReducedHermitePoints res;
   res.idx.push_back( 0 );
   res.slope.push_back( startSlope( 0 ) );
   std::size_t i = 0;
@@ -298,7 +301,7 @@ NCF::ReducedPoints NCF::reducePoints( const VectD& x, const VectD& y,
   return res;
 }
 
-unsigned NCF::autoNDense( double tol, double wlmax )
+unsigned NCX::autoNDense( double tol, double wlmax )
 {
   //10000 points per decade for tol=1e-3. The segments of the table get
   //shorter for smaller tolerances (roughly as sqrt(tol) in smooth regions), so
@@ -309,8 +312,9 @@ unsigned NCF::autoNDense( double tol, double wlmax )
   return static_cast<unsigned>( ncclamp( n, 1000.0, 1e7 ) );
 }
 
-double NCF::evalTable( const double* wl, const double* xs, const double* slope,
-                       std::size_t n, double wavelength )
+double NCX::evalIsoMacroXSTable( const double* wl, const double* xs,
+                                 const double* slope, std::size_t n,
+                                 double wavelength )
 {
   //Evaluate the table. This is both used by NCrystal itself, but it is also a
   //reference implementation for people using our tables elsewhere.
@@ -341,19 +345,20 @@ double NCF::evalTable( const double* wl, const double* xs, const double* slope,
                   wavelength );
 }
 
-NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
-                             VectD discontinuities_in,
-                             const TableParams& params )
+NCX::IsoMacroXSTable
+NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
+                            VectD discontinuities_in,
+                            const IsoMacroXSTableParams& params )
 {
   if ( !( params.wlmax > 10.0 * denseWavelengthMin() && std::isfinite( params.wlmax ) ) )
-    NCRYSTAL_THROW2( BadInput, "Filter table: invalid wlmax " << params.wlmax
+    NCRYSTAL_THROW2( BadInput, "IsoMacroXSTable: invalid wlmax " << params.wlmax
                      << " (must be larger than " << 10.0 * denseWavelengthMin()
                      << " Aa)" );
   if ( !( params.tol > 0.0 && params.tol < 1.0 ) )
-    NCRYSTAL_THROW2( BadInput, "Filter table: invalid tolerance "
+    NCRYSTAL_THROW2( BadInput, "IsoMacroXSTable: invalid tolerance "
                      << params.tol << " (must be in the range (0,1))" );
   if ( params.ndense == 1 )
-    NCRYSTAL_THROW( BadInput, "Filter table: ndense must be at least 2" );
+    NCRYSTAL_THROW( BadInput, "IsoMacroXSTable: ndense must be at least 2" );
   const unsigned ndense = ( params.ndense
                             ? params.ndense
                             : autoNDense( params.tol, params.wlmax ) );
@@ -364,7 +369,7 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
   {
     const double v = xs_of_wl( wl );
     if ( !( std::isfinite( v ) && v >= 0.0 ) )
-      NCRYSTAL_THROW2( CalcError, "Filter table: invalid cross section " << v
+      NCRYSTAL_THROW2( CalcError, "IsoMacroXSTable: invalid cross section " << v
                        << " at wavelength " << wl << " Aa" );
     return v;
   };
@@ -444,11 +449,11 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
     const bool converges = ( d_bc <= 1e-3 * lim_tol
                              || ( d_bc <= 0.05 * d_ab && 0.06 * d_bc <= lim_tol ) );
     if ( !converges )
-      NCRYSTAL_THROW2( CalcError, "Filter table: the cross section does not"
+      NCRYSTAL_THROW2( CalcError, "IsoMacroXSTable: the cross section does not"
                        " converge for wavelength -> 0 (estimated limits "
                        << lim_a << ", " << lim_b << " and " << lim_c << " barn)" );
     if ( lim_c < -abs_floor )
-      NCRYSTAL_THROW2( CalcError, "Filter table: invalid limit " << lim_c
+      NCRYSTAL_THROW2( CalcError, "IsoMacroXSTable: invalid limit " << lim_c
                        << " of the cross section for wavelength -> 0" );
     y.front() = ( lim_c > 0.0 ? lim_c : 0.0 );
   }
@@ -456,10 +461,10 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
   //Reduce the dense sample, and verify the result at the midpoints between
   //all neighbouring sample points. Midpoints where the tolerance is not met
   //are added to the sample, and the procedure is repeated.
-  ReducedPoints red;
+  ReducedHermitePoints red;
   std::size_t nrefine = 0;
   while ( true ) {
-    red = reducePoints( x, y, tol_build, abs_floor );
+    red = reduceHermitePoints( x, y, tol_build, abs_floor );
     const auto& idx = red.idx;
     VectD add_x, add_y;
     add_x.reserve( x.size() );//at most one point per interval
@@ -479,7 +484,7 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
       if ( ncabs( yc - ym ) <= tol_build * ncmax( ym, abs_floor ) )
         continue;
       if ( !( x[k+1] - x[k] > min_rel_spacing * x[k+1] ) )
-        NCRYSTAL_THROW2( CalcError, "Filter table: the cross section has an"
+        NCRYSTAL_THROW2( CalcError, "IsoMacroXSTable: the cross section has an"
                          " unexpected discontinuity (or an extremely sharp"
                          " feature) at wavelength " << xm << " Aa" );
       add_x.push_back( xm );
@@ -488,7 +493,7 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
     if ( add_x.empty() )
       break;
     if ( ++nrefine > max_refine_iterations )
-      NCRYSTAL_THROW( CalcError, "Filter table: the refinement of the table"
+      NCRYSTAL_THROW( CalcError, "IsoMacroXSTable: the refinement of the table"
                       " did not converge" );
     //Merge the new points into the (sorted) sample:
     VectD new_x, new_y;
@@ -508,7 +513,7 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
     y.swap( new_y );
   }
 
-  Table res;
+  IsoMacroXSTable res;
   res.wl.reserve( red.idx.size() );
   res.xs.reserve( red.idx.size() );
   for ( auto i : red.idx ) {
@@ -533,10 +538,11 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
       for ( unsigned k = 0; k < npts_per_segment; ++k ) {
         const double xv = x0 + ( 0.01 + 0.98 * rng.generate() ) * ( x1 - x0 );
         const double yv = evalXS( xv );
-        const double yt = evalTable( res.wl.data(), res.xs.data(),
-                                     res.slope.data(), res.wl.size(), xv );
+        const double yt = evalIsoMacroXSTable( res.wl.data(), res.xs.data(),
+                                               res.slope.data(), res.wl.size(),
+                                               xv );
         if ( !( ncabs( yt - yv ) <= tol * ncmax( yv, abs_floor ) ) )
-          NCRYSTAL_THROW2( CalcError, "Filter table: verification failed at"
+          NCRYSTAL_THROW2( CalcError, "IsoMacroXSTable: verification failed at"
                            " wavelength " << xv << " Aa (table: " << yt
                            << " barn, exact: " << yv << " barn)" );
       }
@@ -550,21 +556,23 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
   return res;
 }
 
-NCF::Table NCF::createTable( const MatCfg& cfg, const TableParams& params )
+NCX::IsoMacroXSTable
+NCX::createIsoMacroXSTable( const MatCfg& cfg,
+                            const IsoMacroXSTableParams& params )
 {
   auto info = FactImpl::createInfo( cfg );
   auto scat = FactImpl::createScatter( cfg );
   auto absn = FactImpl::createAbsorption( cfg );
   if ( scat->isOriented() || absn->isOriented() )
-    NCRYSTAL_THROW( BadInput, "Filter table: only isotropic materials are"
+    NCRYSTAL_THROW( BadInput, "IsoMacroXSTable: only isotropic materials are"
                     " supported" );
 
   std::set<std::string> names, unvalidated;
   inspectProcess( *scat, names, unvalidated );
   inspectProcess( *absn, names, unvalidated );
   for ( auto& n : unvalidated )
-    NCRYSTAL_WARN( "Filter table: the physics process \"" << n << "\" has"
-                   " not been validated for filter tables (features of its"
+    NCRYSTAL_WARN( "IsoMacroXSTable: the physics process \"" << n << "\" has"
+                   " not been validated for IsoMacroXSTable (features of its"
                    " cross section might be missed)" );
   VectD discontinuities;
   collectBreakpoints( *scat, discontinuities );
@@ -578,7 +586,9 @@ NCF::Table NCF::createTable( const MatCfg& cfg, const TableParams& params )
              + absn->crossSectionIsotropic( cp_abs, ekin ).dbl() );
   };
 
-  Table res = createTable( xs_of_wl, std::move( discontinuities ), params );
+  IsoMacroXSTable res = createIsoMacroXSTable( xs_of_wl,
+                                               std::move( discontinuities ),
+                                               params );
   res.numberDensity = info->getNumberDensity().dbl();
   res.processes.assign( names.begin(), names.end() );
   return res;

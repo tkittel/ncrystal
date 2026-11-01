@@ -678,10 +678,10 @@ extern "C" {
 #  undef ncrystal_fill_jsonarray
 #endif
 #define ncrystal_fill_jsonarray NCRYSTAL_APPLY_C_NAMESPACE(fill_jsonarray)
-#ifdef ncrystal_filtertable
-#  undef ncrystal_filtertable
+#ifdef ncrystal_isomacroxstable
+#  undef ncrystal_isomacroxstable
 #endif
-#define ncrystal_filtertable NCRYSTAL_APPLY_C_NAMESPACE(filtertable)
+#define ncrystal_isomacroxstable NCRYSTAL_APPLY_C_NAMESPACE(isomacroxstable)
 #ifdef ncrystal_flexmmcrun
 #  undef ncrystal_flexmmcrun
 #endif
@@ -1310,10 +1310,10 @@ extern "C" {
   /* sections with a precision of 0.1%. The wl, macroxs and slope arrays     */
   /* must be freed with ncrystal_dealloc_doubleptr. The options string is    */
   /* reserved for future use, and must for now be NULL or empty.             */
-  NCRYSTAL_API void ncrystal_filtertable( const char * cfgstr,
-                                          unsigned * n, double ** wl,
-                                          double ** macroxs, double ** slope,
-                                          const char * options );
+  NCRYSTAL_API void ncrystal_isomacroxstable( const char * cfgstr,
+                                              unsigned * n, double ** wl,
+                                              double ** macroxs, double ** slope,
+                                              const char * options );
 
   /* Generic query for information which will be returned as a JSON encoded  */
   /* string. The query is essentially a string list, encoded into a single   */
