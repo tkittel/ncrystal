@@ -22,7 +22,7 @@
 import re
 
 import NCrystalDev.core as nccore
-from NCrystalDev._numpy import _np_geomspace, _np_linspace
+from NCrystalDev._numpy import _np, _np_geomspace, _np_linspace
 from NCrystalDev.constants import constant_boltzmann, wl2ekin
 
 # Monitoring of inelastic cross sections from the next-gen VDOS expansion and
@@ -65,8 +65,32 @@ def _rdtol_for_cfgstr( cfgstr ):
     return 1e-5
 
 def _load_fct( cfgstr ):
+    if cfgstr.endswith( _freegas_marker ):
+        return _FreeGasExtenderMaterial( cfgstr[:-len(_freegas_marker)] )
     #only inelastic scattering is monitored:
     return nccore.load( cfgstr + ';comp=inelas' )
+
+#Entries with this suffix use the free-gas extender instead of the default SCT
+#extender:
+_freegas_marker = '<<FREEGASEXTENDER>>'
+
+class _FreeGasExtenderMaterial:
+
+    #Provides what XSMonitor needs of a loaded monoatomic material, with the
+    #cross sections from the ["sab","xs",...] query:
+
+    def __init__( self, cfgstr ):
+        self.__cfgstr = cfgstr
+        self.info = nccore.createInfo( cfgstr )
+        assert len( self.info.dyninfos ) == 1
+        self.scatter = self
+
+    def xsect( self, ekin ):
+        from NCrystalDev.misc import evaluate_query
+        r = evaluate_query( [ 'sab', 'xs', self.__cfgstr, '', 'freegas',
+                              *[ str(float(e)) for e in ekin ] ] )
+        assert r['extension_method'] == 'freegas'
+        return _np.asarray( r['xs'], dtype = float )
 
 def _egrid_fct( mat ):
     kT = mat.info.getTemperature()*constant_boltzmann
@@ -150,7 +174,8 @@ def _list_trouble():
     #The 1e-15 -> 1e-5 amplification case behind the reducer noise fix:
     yield 'Li_from_Li2O.ncmat;temp=10;vdoslux=2004;knllux=4'
     #Next-gen kernel but with the free-gas extender:
-    yield 'O_from_Li2O.ncmat;temp=293.15;vdoslux=2001;knllux=203'
+    yield ( 'O_from_Li2O.ncmat;temp=293.15;vdoslux=2001;knllux=3'
+            + _freegas_marker )
     #Direct kernels (fixed temperature), incl. trimmed JENDL-5 solids with
     #per-element teff/msd outcomes resp. zero-row teff refusal:
     yield from _rotate( [ ( _sl('LiquidWaterH2O_T293.6K'), ( None, None ) ),
