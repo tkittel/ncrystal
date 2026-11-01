@@ -47,7 +47,8 @@ namespace {
     double worst = 0.0;
     for ( auto wl : wls ) {
       const double exact = f( wl );
-      const double tab = NCF::evalTable( t.wl.data(), t.xs.data(), t.wl.size(), wl );
+      const double tab = NCF::evalTable( t.wl.data(), t.xs.data(), t.slope.data(),
+                                         t.wl.size(), wl );
       const double yref = std::max( exact, abs_floor );
       const double err = ( yref > 0.0
                            ? NC::ncabs( tab - exact ) / yref
@@ -140,19 +141,49 @@ int main()
     testError<NC::Error::BadInput>( "tiny wlmax", []( double ) { return 1.0; }, {}, p );
   }
 
-  //evalTable: pairs at discontinuities, and clamped extrapolation:
+  //evalTable: pairs at discontinuities, cubic interpolation, and clamped
+  //extrapolation:
   {
     const NC::VectD wl = { 0.0, 1.0, 2.0, 2.0, 3.0 };
     const NC::VectD xs = { 1.0, 2.0, 3.0, 1.0, 0.5 };
-    auto ev = [&]( double w ) { return NCF::evalTable( wl.data(), xs.data(), wl.size(), w ); };
+    const NC::VectD sl = { 1.0, 1.0, 1.0, -0.5, -0.5 };
+    auto ev = [&]( double w ) { return NCF::evalTable( wl.data(), xs.data(), sl.data(), wl.size(), w ); };
     nc_assert_always( ev( -1.0 ) == 1.0 );
-    nc_assert_always( ev( 0.5 ) == 1.5 );
+    nc_assert_always( ev( 0.5 ) == 1.5 );//cubic reduces to linear
     nc_assert_always( ev( 1.999 ) > 2.99 );
     nc_assert_always( ev( 2.0 ) == 1.0 );
     nc_assert_always( ev( 2.5 ) == 0.75 );
-    nc_assert_always( ev( 4.0 ) == 0.0 );//extrapolated: -0.0, clamped
     nc_assert_always( ev( 3.5 ) == 0.25 );
+    nc_assert_always( ev( 4.0 ) == 0.0 );//extrapolated: -0.0, clamped
+    const NC::VectD sl2 = { 0.0, 0.0, 0.0, 0.0, 0.0 };
+    auto ev2 = [&]( double w ) { return NCF::evalTable( wl.data(), xs.data(), sl2.data(), wl.size(), w ); };
+    nc_assert_always( ev2( 0.5 ) == 1.5 );//symmetric smoothstep
+    nc_assert_always( ev2( 0.25 ) == 1.0 + 0.15625 );
+    nc_assert_always( ev2( NC::kInfinity ) == 0.5 );
     std::cout << "evalTable: OK" << std::endl;
+  }
+  //reducePoints: the interpolation is never negative, even for a sample
+  //with zeroes and sharp peaks:
+  {
+    NC::VectD x, y;
+    for ( unsigned i = 0; i <= 2000; ++i ) {
+      const double xi = 0.01 * i;
+      x.push_back( xi );
+      const double d = std::fmod( xi, 2.0 ) - 1.0;
+      y.push_back( d > 0.0 && d < 0.2 ? std::sin( 5.0 * NC::kPi * d ) * 10.0 : 0.0 );
+    }
+    auto r = NCF::reducePoints( x, y, 1e-3, 1e-12 );
+    NC::VectD tx, ty;
+    for ( auto i : r.idx ) {
+      tx.push_back( x[i] );
+      ty.push_back( y[i] );
+    }
+    double ymin = 0.0;
+    for ( auto w : NC::linspace( 0.0, 20.0, 200001 ) )
+      ymin = std::min( ymin, NCF::evalTable( tx.data(), ty.data(), r.slope.data(), tx.size(), w ) );
+    nc_assert_always( ymin >= 0.0 );
+    std::cout << "reducePoints: " << r.idx.size() << " of " << x.size()
+              << " points, never negative: OK" << std::endl;
   }
   return 0;
 }
