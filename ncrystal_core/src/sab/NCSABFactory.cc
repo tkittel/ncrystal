@@ -44,45 +44,10 @@ namespace NCRYSTAL_NAMESPACE {
 
       struct LegacyOptsDecoded final {
         EGridMargin egridMargin = { EGridMargin::default_value };
-        bool disable_betafix = false;
-        LegacyOptsDecoded( int knllux )
-          : LegacyOptsDecoded([knllux]()
-          {
-            nc_assert_always ( knllux
-                               >= static_cast<int>(LegacySABAlgOpts::MIN)
-                               && knllux
-                               <= static_cast<int>(LegacySABAlgOpts::MAX) );
-            return static_cast<LegacySABAlgOpts>(knllux);
-          }())
-        {
-        }
-
         LegacyOptsDecoded( LegacySABAlgOpts opts )
         {
-          static_assert( static_cast<int>(LegacySABAlgOpts::MAX) == -1, "" );
-          static_assert( static_cast<int>(LegacySABAlgOpts::MIN) == -6, "" );
-          switch( opts ) {
-          case LegacySABAlgOpts::OVERSAMPLE10:
+          if ( opts == LegacySABAlgOpts::OVERSAMPLE10 )
             egridMargin = EGridMargin{ 10.0 };
-            break;
-          case LegacySABAlgOpts::OVERSAMPLE50:
-            egridMargin = EGridMargin{ 50.0 };
-            break;
-          case LegacySABAlgOpts::NOBETAFIX:
-            disable_betafix = true;
-            break;
-          case LegacySABAlgOpts::NOBETAFIX_OVERSAMPLE10:
-            egridMargin = EGridMargin{ 10.0 };
-            disable_betafix = true;
-            break;
-          case LegacySABAlgOpts::NOBETAFIX_OVERSAMPLE50:
-            egridMargin = EGridMargin{ 50.0 };
-            disable_betafix = true;
-            break;
-          default:
-          case LegacySABAlgOpts::DEFAULT:
-            break;
-          }
         }
       };
 
@@ -128,8 +93,6 @@ namespace NCRYSTAL_NAMESPACE {
             LegacyOptsDecoded odef(LegacySABAlgOpts::DEFAULT);
             if ( o.egridMargin.value != odef.egridMargin.value )
               ss << ";egridmargin=" << o.egridMargin.value;
-            if ( o.disable_betafix != odef.disable_betafix )
-              ss << ";disablebetafix=" << int(o.disable_betafix);
           }
           ss<<")";
           return ss.str();
@@ -285,8 +248,7 @@ NC::SAB::createScatterHelper( shared_obj<const SABData> data,
   SABIntegrator si( data,
                     energyGrid.get(),
                     nullptr/*default extender*/,
-                    opts.egridMargin,
-                    opts.disable_betafix );
+                    opts.egridMargin );
   auto sh = si.createScatterHelper();
   return ncmake_unique<SABScatterHelper>(std::move(sh));
 }
