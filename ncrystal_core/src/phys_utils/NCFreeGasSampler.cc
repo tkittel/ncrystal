@@ -22,6 +22,7 @@
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCFreeGasSampler_FMA.hh"
 
 namespace NC = NCrystal;
 
@@ -36,71 +37,37 @@ NC::FreeGasSampler::FreeGasSampler( Temperature t, AtomMass m )
   nc_assert_always( m_kT > 0.0 && m_A > 0.0 );
 }
 
-NC::FreeGasSampler::Coll
-NC::FreeGasSampler::sampleColl( RNG& rng, double c ) const
-{
-  //Work with velocities in units of sqrt(2kT/M): neutron n=(0,0,y), target
-  //T=x*(sT,0,muT) (azimuth irrelevant). Sample (x,muT) with density
-  //~|n-T|*x^2*exp(-x^2), then rotate the relative velocity r=n-T isotropically
-  //(CM frame). The neutron velocity change is then A*k*g with g=|r|*Om-r,
-  //giving alpha=A*k^2*g^2, beta=2*y*k*g_z+alpha (no large cancellations).
-  //
-  //Contraction safety: every a*b+c is an explicit ncfma (or exact, like
-  //1-2*u), so results do not depend on compiler FP-contraction settings.
-  nc_assert( c >= 0.0 );
-  constexpr double halfsqrtpi = 0.5 * kSqrtPi;
-  const double y = std::sqrt( m_A * c );
-  const double p_gamma2 = 1.0 / ncfma( halfsqrtpi, y, 1.0 );
-  const double fourY = 4.0 * y;
-  double x, u, r2;
-  while ( true ) {
-    double x2;
-    if ( rng.generate() < p_gamma2 ) {
-      x2 = -std::log( rng.generate() * rng.generate() );//Gamma(2)
-    } else {
-      const double g = randNorm( rng );
-      x2 = ncfma( 0.5 * g, g, randExp( rng ) );//Gamma(3/2)
-    }
-    x = std::sqrt( x2 );
-    u = rng.generate();//muT = 1-2u
-    const double ymx = y - x;
-    r2 = ncfma( ymx, ymx, ( fourY * x ) * u );//|n-T|^2 (stable form)
-    if ( ncsquare( rng.generate() * ( y + x ) ) <= r2 )
-      break;
-  }
-  const double muT = 1.0 - 2.0 * u;//exact
-  const double sT = 2.0 * std::sqrt( u * ( 1.0 - u ) );
-  const double r = std::sqrt( r2 );
-  const Vector om = randIsotropicDirection( rng );
-  const double gx = ncfma( r, om.x(), x * sT );
-  const double gy = r * om.y();
-  const double gz = ncfma( r, om.z(), -ncfma( -x, muT, y ) );
-  const double gxy2 = ncfma( gx, gx, gy * gy );
-  const double Ak = m_A * m_k;
-  Coll res;
-  res.alpha = ( Ak * m_k ) * ncfma( gz, gz, gxy2 );
-  res.beta = ncmax( -c, ncfma( ( 2.0 * y ) * m_k, gz, res.alpha ) );
-  const double nz = ncfma( Ak, gz, y );//final n velocity: (Ak*gx,Ak*gy,nz)
-  const double nmag2 = ncfma( nz, nz, ncsquare( Ak ) * gxy2 );
-  res.mu = ( nmag2 > 0.0
-             ? ncclamp( nz / std::sqrt( nmag2 ), -1.0, 1.0 )
-             : 2.0 * rng.generate() - 1.0 );//exact
-  return res;
-}
-
 NC::PairDD NC::FreeGasSampler::sampleAlphaBeta( RNG& rng,
                                                 NeutronEnergy ekin ) const
 {
+  //Sampling in NCFreeGasSampler_FMA.hh (for FMA dispatch):
   const EDivKT e{ ekin.dbl() * m_invkT };
-  auto s = sampleColl( rng, e.dbl() );
-  //Guard against rounding outside kinematic limits:
-  auto alim = getAlphaLimits( e, s.beta );
-  return { ncclamp( s.alpha, alim.first, alim.second ), s.beta };
+  double res[2];
+  freeGasSampleColl( rng, m_A, m_k, e.dbl(), false, res );
+  const double alpha = res[0], beta = res[1];
+  //Guard against rounding outside the kinematic limits [a-,a+], with
+  //(a-2c-beta)^2=4*c*cp (c=E/kT, cp=c+beta) at a=a+-. Skip the costly (sqrt)
+  //clamp if alpha is clearly inside (margin far above rounding errors,
+  //cp>=1e-6*c keeps them small), as the clamp is then a no-op:
+  const double cp = e.dbl() + beta;
+  if ( cp >= 1e-6 * e.dbl() ) {
+    const double d = alpha - ( 2.0 * e.dbl() + beta );//no fma (2*c exact)
+    if ( d * d < ( 4.0 * e.dbl() ) * cp * ( 1.0 - 1e-9 ) ) {
+#ifndef NDEBUG
+      auto alim = getAlphaLimits( e, beta );
+      nc_assert_always( alpha > alim.first && alpha < alim.second );
+#endif
+      return { alpha, beta };
+    }
+  }
+  auto alim = getAlphaLimits( e, beta );
+  return { ncclamp( alpha, alim.first, alim.second ), beta };
 }
 
 NC::PairDD NC::FreeGasSampler::sampleDeltaEMu( RNG& rng,
                                                NeutronEnergy ekin ) const
 {
-  auto s = sampleColl( rng, ekin.dbl() * m_invkT );
-  return { s.beta * m_kT, s.mu };
+  double res[3];
+  freeGasSampleColl( rng, m_A, m_k, ekin.dbl() * m_invkT, true, res );
+  return { res[1] * m_kT, res[2] };
 }
