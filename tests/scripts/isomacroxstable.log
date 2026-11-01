@@ -72,7 +72,7 @@ stdlib::Polyethylene_CH2.ncmat;ucnmode=remove
    ndiscontinuities=0 tol=0.0001 wlmax=500 maxrelerr<tol: OK
    processes: AbsOOV ElIncScatter ExcludeUCNScatter
    first: (0 Aa, 1.80525/cm) last: (500 Aa, 129.783/cm)
-Caught expected NCCalcError('IsoMacroXSTable: the cross section has an unexpected discontinuity (or an extremely sharp feature) at wavelength 0.56845 Aa')
+Caught expected NCCalcError('IsoMacroXSTable: the cross section has an unexpected discontinuity (or an extremely sharp feature) at wavelength 1.65323 Aa')
 Caught expected NCBadInput('IsoMacroXSTable: invalid tolerance 0 (must be in the range (0,1))')
 Caught expected NCBadInput('IsoMacroXSTable: invalid wlmax 1e-05 (must be larger than 0.0001 Aa)')
 Caught expected NCBadInput('Invalid isomacroxstable query: ["isomacroxstable","stdlib::Al_sg225.ncmat","wlmin=1"] (unknown option wlmin)')

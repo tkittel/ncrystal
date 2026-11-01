@@ -716,6 +716,7 @@ NCX::IsoMacroXSTable
 NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
                             const std::function<double(double)>& dxs_of_wl,
                             VectD discontinuities_in,
+                            const VectD& samplePoints,
                             const IsoMacroXSTableParams& params,
                             IsoMacroXSTableDiagnostics* diagnostics )
 {
@@ -762,7 +763,12 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
   wl_eval.push_back( 0.0 );//NB: the limit is calculated below
   x.push_back( 0.0 );
   {
-    const VectD grid = geomspace( denseWavelengthMin(), params.wlmax, ndense );
+    VectD grid = geomspace( denseWavelengthMin(), params.wlmax, ndense );
+    for ( auto wl : samplePoints )
+      if ( wl > denseWavelengthMin() && wl < params.wlmax )
+        grid.push_back( wl );
+    std::sort( grid.begin(), grid.end() );
+    grid.erase( std::unique( grid.begin(), grid.end() ), grid.end() );
     auto itD = discontinuities.begin();
     for ( auto wl : grid ) {
       for ( ; itD != discontinuities.end() && *itD <= wl*(1.0+2*edge_eps); ++itD ) {
@@ -1004,8 +1010,14 @@ NCX::createIsoMacroXSTable( const MatCfg& cfg,
     return IsoMacroXSTable::fromPoints( pts.wl, pts.xs, pts.slope );
   }
 
+  //Processes with tables are smooth between the energies of their tables,
+  //so these are sampled too:
+  VectD samplePoints;
+  if ( merged.table.has_value() )
+    for ( auto e : merged.table.value().E )
+      samplePoints.push_back( ekin2wl( e ) );
   auto res = createIsoMacroXSTable( xs_of_wl, dxs_of_wl,
-                                    std::move( discontinuities ),
+                                    std::move( discontinuities ), samplePoints,
                                     params, diagnostics );
   if ( diagnostics )
     diagnostics->processes.assign( names.begin(), names.end() );
