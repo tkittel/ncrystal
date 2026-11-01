@@ -5,7 +5,6 @@ dyninfoutils
 extd_utils
 fact_utils
 factories
-filter
 interfaces
 minimc
 misc
@@ -15,3 +14,4 @@ sgsym
 threads
 utils
 vdos
+xstable
