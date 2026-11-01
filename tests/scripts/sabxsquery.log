@@ -1,0 +1,59 @@
+stdlib::Al_sg225.ncmat;knllux=3 (sct): extension_method=sct
+  E=1e-06      xs=5.452 barn
+  E=1e-05      xs=1.7259 barn
+  E=0.0001     xs=0.55163 barn
+  E=0.001      xs=0.19339 barn
+  E=0.01       xs=0.13589 barn
+  E=0.1        xs=0.73 barn
+  E=1          xs=1.318 barn
+  E=10         xs=1.3887 barn
+  E=100        xs=1.3959 barn
+  E=1000       xs=1.3966 barn
+stdlib::Al_sg225.ncmat;temp=20K;knllux=1 (sct): extension_method=sct
+  E=1e-06      xs=0.0020751 barn
+  E=1e-05      xs=0.00066001 barn
+  E=0.0001     xs=0.00022102 barn
+  E=0.001      xs=0.00011984 barn
+  E=0.01       xs=0.0013823 barn
+  E=0.1        xs=0.30054 barn
+  E=1          xs=1.1696 barn
+  E=10         xs=1.3739 barn
+  E=100        xs=1.3944 barn
+  E=1000       xs=1.3964 barn
+stdlib::Al_sg225.ncmat;knllux=3 (freegas): extension_method=freegas
+  E=1e-06      xs=5.452 barn
+  E=1e-05      xs=1.7259 barn
+  E=0.0001     xs=0.55163 barn
+  E=0.001      xs=0.19339 barn
+  E=0.01       xs=0.13589 barn
+  E=0.1        xs=0.73 barn
+  E=1          xs=1.318 barn
+  E=10         xs=1.3887 barn
+  E=100        xs=1.3959 barn
+  E=1000       xs=1.3966 barn
+stdlib::Polyethylene_CH2.ncmat;knllux=2 (sct, atoms C,H): extension_method=sct
+  E=1e-06      xs=554.98 barn
+  E=1e-05      xs=175.67 barn
+  E=0.0001     xs=56.09 barn
+  E=0.001      xs=19.462 barn
+  E=0.01       xs=12.385 barn
+  E=0.1        xs=17.812 barn
+  E=1          xs=15.33 barn
+  E=10         xs=15.24 barn
+  E=100        xs=15.236 barn
+  E=1000       xs=15.235 barn
+stdlib::Polyethylene_CH2.ncmat;knllux=2 (freegas, atoms C,H): extension_method=freegas
+  E=1e-06      xs=554.98 barn
+  E=1e-05      xs=175.67 barn
+  E=0.0001     xs=56.09 barn
+  E=0.001      xs=19.462 barn
+  E=0.01       xs=12.385 barn
+  E=0.1        xs=17.812 barn
+  E=1          xs=15.33 barn
+  E=10         xs=15.24 barn
+  E=100        xs=15.236 barn
+  E=1000       xs=15.235 barn
+Expected error: Invalid SAB JSON query: ["sab","xs","stdlib::Al_sg225.ncmat","","foo","0.025"] (correct usage: ["sab","xs",MATCFGSTR,ATOMDISPLAYLABEL,EXTENDER,E0,..,EN] where EXTENDER is "sct" or "freegas" and the E values are neutron energies in eV (the ATOMDISPLAYLABEL can be left as an empty string for monoatomic materials))
+Expected error: Invalid SAB JSON query: ["sab","xs","stdlib::Al_sg225.ncmat","","sct","x"] (correct usage: ["sab","xs",MATCFGSTR,ATOMDISPLAYLABEL,EXTENDER,E0,..,EN] where EXTENDER is "sct" or "freegas" and the E values are neutron energies in eV (the ATOMDISPLAYLABEL can be left as an empty string for monoatomic materials))
+Expected error: Invalid SAB JSON query: ["sab","xs","stdlib::Al_sg225.ncmat","","sct"] (correct usage: ["sab","xs",MATCFGSTR,ATOMDISPLAYLABEL,EXTENDER,E0,..,EN] where EXTENDER is "sct" or "freegas" and the E values are neutron energies in eV (the ATOMDISPLAYLABEL can be left as an empty string for monoatomic materials))
+Expected error: ATOMDISPLAYLABEL required for polyatomic materials
