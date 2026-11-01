@@ -27,7 +27,7 @@ Probability edge@b1 (FullCell)   : 50%
 =============> Launching test 4
 =============>
 
-Predicted FullCell AR: 6.1e-05%
+Predicted FullCell AR: 6.2e-05%
 
 =============>
 =============> Launching test 5
@@ -301,7 +301,7 @@ Probability edge@b1 (FullCell)   : 50%
 =============> Launching test 40
 =============>
 
-Predicted FullCell AR: 73%
+Predicted FullCell AR: 71%
 Actual FullCell AR   : 71%
 Probability edge@b1 (FullCell)   : 0.022%
 

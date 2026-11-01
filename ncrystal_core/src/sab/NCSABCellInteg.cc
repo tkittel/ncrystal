@@ -427,7 +427,11 @@ namespace NCRYSTAL_NAMESPACE {
                                               ? SOfAlphaGrid::Method::LOG
                                               : SOfAlphaGrid::Method::LIN );
 
-        //Guard against enourmous log-scale differences along alpha.
+        //Guard against enourmous log-scale differences along alpha. This is
+        //decided from the entire cell, not the subcell (whose alpha range
+        //depends on the energy), so the method does not change with the energy
+        //(switching it makes the integral jump by the difference between the
+        //two methods):
         bool use_romberg_adaptive(false);
         bool use_romberg_fixed(scheme.is_romberg);
         if ( scheme.is_flex ) {
@@ -442,9 +446,9 @@ namespace NCRYSTAL_NAMESPACE {
             constexpr double recthr = 1/thr;
             use_romberg_adaptive
               = ( ( method_b1==SOfAlphaGrid::Method::LOG &&
-                    !valueInInterval(cs.S[0]*recthr,cs.S[0]*thr,cs.S[1]) )
+                    !valueInInterval(ce.S[0]*recthr,ce.S[0]*thr,ce.S[1]) )
                   || ( method_b2==SOfAlphaGrid::Method::LOG &&
-                       !valueInInterval(cs.S[2]*recthr,cs.S[2]*thr,cs.S[3]) ) );
+                       !valueInInterval(ce.S[2]*recthr,ce.S[2]*thr,ce.S[3]) ) );
             use_romberg_fixed = !use_romberg_adaptive;
           }
         }
