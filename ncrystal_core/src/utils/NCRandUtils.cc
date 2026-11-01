@@ -39,6 +39,12 @@ NC::Vector NC::randIsotropicDirection( RNG& rng )
   // NOTE2: This algorithm code is replicated in randDirectionGivenScatterMu,
   //        since it is such a hotspot.
 
+  //Compilers may fuse x0*x0+x1*x1 into an FMA (also in
+  //randDirectionGivenScatterMu), giving ulp-level differences between
+  //platforms, and very rarely (~1e-16 per call) a flipped rejection test which
+  //changes the random stream. Explicit ncfma would avoid this, but costs up to
+  //3x in wasm (no hardware FMA). We might reconsider this decision at some
+  //point.
   double x0,x1,s;
   do {
     x0 = 2.0*rng.generate()-1.0;
@@ -121,6 +127,9 @@ double NC::randNorm( NC::RNG& rng )
   //The loop runs on average ~1.37 times, and log(..) is invoked on average
   //0.167 times per call (hence the speedup).
 
+  //Fusing 5.0-5.136*u into an FMA is harmless: this quick-accept bound lies
+  //inside the exact acceptance region (touching it only at u=exp(-1/4)), so
+  //the exact test below accepts the same g.
   double g, g2(0),u,v,invu;
   do {
     u = rng.generate();
