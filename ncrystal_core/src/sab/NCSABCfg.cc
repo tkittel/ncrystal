@@ -116,13 +116,6 @@ const char * NC::SABCfg::integSchemeToStr( IntegrationScheme v )
 NC::SABCfg::Cfg NC::SABCfg::createConfig( int sablux )
 {
   Cfg c;
-  if ( sablux >= 200 && sablux <= 206 ) {
-    //"Next-gen but with the free-gas extender", for comparisons with
-    //the default SCT extension model:
-    c.extender_model = ExtenderModel::FreeGas;
-    sablux -= 200;
-  }
-
 
   //fixme: revisit all of these
   switch ( sablux ) {

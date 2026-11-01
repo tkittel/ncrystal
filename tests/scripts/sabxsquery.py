@@ -23,7 +23,8 @@
 # NEEDS: numpy
 
 # Test of the ["sab","xs",...] query, against the cross sections of the
-# materials.
+# materials (which always use the SCT extender when an effective temperature is
+# available, so the free-gas extender results are only monitored via the log).
 
 import NCrystalDev as NC
 from NCrystalDev._numpy import _np_geomspace
@@ -41,32 +42,29 @@ def material_xs( cfgstr ):
     sc = NC.createScatter( cfgstr + ';comp=inelas' )
     return [ sc.xsect( ekin = e ) for e in energies ]
 
-def test( cfgstr, extender, ref_cfgstr, lbls = ( '', ) ):
+def test( cfgstr, extender, lbls = ( '', ) ):
     rs = [ query( cfgstr, lbl, extender ) for lbl in lbls ]
     xs = [ sum( r['xs'][i] for r in rs ) for i in range(len(energies)) ]
-    ref = material_xs( ref_cfgstr )
     atoms = '' if lbls == ( '', ) else f', atoms {",".join(lbls)}'
     print(f'{cfgstr} ({extender}{atoms}):'
           f' extension_method={rs[0]["extension_method"]}')
-    for e, x, xref in zip( energies, xs, ref ):
+    for e, x in zip( energies, xs ):
         print(f'  E={e:<10.4g} xs={x:.5g} barn')
-        if len(lbls) == 1:
-            assert x == xref, (e, x, xref)
-        else:
-            assert abs( x - xref ) <= 1e-14 * xref, (e, x, xref)
+    if extender == 'sct':
+        for e, x, xref in zip( energies, xs, material_xs( cfgstr ) ):
+            if len(lbls) == 1:
+                assert x == xref, (e, x, xref)
+            else:
+                assert abs( x - xref ) <= 1e-14 * xref, (e, x, xref)
     assert all( r['extension_method'] == extender for r in rs )
 
 def main():
-    test( 'stdlib::Al_sg225.ncmat;knllux=3', 'sct',
-          'stdlib::Al_sg225.ncmat;knllux=3' )
-    test( 'stdlib::Al_sg225.ncmat;temp=20K;knllux=1', 'sct',
-          'stdlib::Al_sg225.ncmat;temp=20K;knllux=1' )
-    test( 'stdlib::Al_sg225.ncmat;knllux=3', 'freegas',
-          'stdlib::Al_sg225.ncmat;knllux=203' )
-    test( 'stdlib::Polyethylene_CH2.ncmat;knllux=2', 'sct',
-          'stdlib::Polyethylene_CH2.ncmat;knllux=2', lbls = ( 'C', 'H' ) )
+    test( 'stdlib::Al_sg225.ncmat;knllux=3', 'sct' )
+    test( 'stdlib::Al_sg225.ncmat;temp=20K;knllux=1', 'sct' )
+    test( 'stdlib::Al_sg225.ncmat;knllux=3', 'freegas' )
+    test( 'stdlib::Polyethylene_CH2.ncmat;knllux=2', 'sct', lbls = ( 'C', 'H' ) )
     test( 'stdlib::Polyethylene_CH2.ncmat;knllux=2', 'freegas',
-          'stdlib::Polyethylene_CH2.ncmat;knllux=202', lbls = ( 'C', 'H' ) )
+          lbls = ( 'C', 'H' ) )
     for bad in ( [ 'stdlib::Al_sg225.ncmat', '', 'foo', '0.025' ],
                  [ 'stdlib::Al_sg225.ncmat', '', 'sct', 'x' ],
                  [ 'stdlib::Al_sg225.ncmat', '', 'sct' ],
