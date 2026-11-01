@@ -269,57 +269,6 @@ void test()
   REQUIRE( NC::MatCfg( "Al_sg225.ncmat;atomdb= @ @ X :  :::: is Al  @  @@ @ Al is 0.99 Al 0.0100000000000000000000000000000000001  ::Cr"
                        "@Be10:0.1e-15u:1fm:1b:1e+5b").get_atomdb()
            == "X:is:Al@Al:is:0.99:Al:0.0100000000000000000000000000000000001:Cr@Be10:0.1e-15u:1fm:1b:1e+5b" );
-
-  //Need UCNModeConstruct since REQUIRE macro gets confused otherwise!
-  auto UCNModeConstruct = []( NC::UCNMode::Mode mode , double eucn = NC::UCNMode::default_threshold().dbl() )
-  {
-    return NC::UCNMode{ mode, NC::NeutronEnergy{eucn} };
-  };
-
-  std::cout << NC::MatCfg( "Al_sg225.ncmat;ucnmode=refine:2meV" ).get_ucnmode().value() <<std::endl;
-  std::cout << NC::MatCfg( "Al_sg225.ncmat;ucnmode=only:0.02eV" ).get_ucnmode().value() <<std::endl;
-  std::cout << NC::MatCfg( "Al_sg225.ncmat;ucnmode=remove:2e-7" ).get_ucnmode().value() <<std::endl;
-  std::cout << NC::MatCfg( "Al_sg225.ncmat;ucnmode=remove:200e-9" ).get_ucnmode().value() <<std::endl;
-  std::cout << NC::MatCfg( "Al_sg225.ncmat;ucnmode=only:200neV" ).get_ucnmode().value() <<std::endl;
-  std::cout << NC::MatCfg( "Al_sg225.ncmat;ucnmode=remove:2.12e-3" ).get_ucnmode().value() <<std::endl;
-  std::cout << NC::MatCfg( "Al_sg225.ncmat;ucnmode=remove:212.0e-5" ).get_ucnmode().value() <<std::endl;
-  std::cout << NC::MatCfg( "Al_sg225.ncmat;ucnmode=refine:2.12meV" ).get_ucnmode().value() <<std::endl;
-  std::cout << NC::MatCfg( "Al_sg225.ncmat;ucnmode=remove:2.12e-3eV" ).get_ucnmode().value() <<std::endl;
-  std::cout << NC::MatCfg( "Al_sg225.ncmat;ucnmode=remove:212.0e-5eV" ).get_ucnmode().value() <<std::endl;
-  std::cout << NC::MatCfg( "Al_sg225.ncmat;ucnmode=only:0.123eV" ).get_ucnmode().value() <<std::endl;
-  std::cout << NC::MatCfg( "Al_sg225.ncmat;ucnmode=remove:123e-3eV" ).get_ucnmode().value() <<std::endl;
-  std::cout << NC::MatCfg( "Al_sg225.ncmat;ucnmode=remove:1.0" ).get_ucnmode().value() <<std::endl;
-  //This gives ugly result "200.00000000000003neV" :   std::cout << NC::MatCfg( "Al_sg225.ncmat;ucnmode=refine:2e-4meV" ).get_ucnmode().value() <<std::endl;
-
-  {
-    auto cfg2 = NC::MatCfg( "Al_sg225.ncmat" );
-    REQUIRE( !cfg2.get_ucnmode().has_value() );
-  }
-  {
-    auto cfg2 = NC::MatCfg( "Al_sg225.ncmat;ucnmode=refine" );
-    REQUIRE( cfg2.get_ucnmode() == UCNModeConstruct( NC::UCNMode::Mode::Refine ) );
-    REQUIRE( cfg2.get_ucnmode().has_value() );
-  }
-  {
-    auto cfg2 = NC::MatCfg( "Al_sg225.ncmat;ucnmode=remove" );
-    REQUIRE( cfg2.get_ucnmode() == UCNModeConstruct( NC::UCNMode::Mode::Remove ) );
-  }
-  {
-    auto cfg2 = NC::MatCfg( "Al_sg225.ncmat;ucnmode=only" );
-    REQUIRE( cfg2.get_ucnmode() == UCNModeConstruct( NC::UCNMode::Mode::Only ) );
-  }
-  {
-    auto cfg2 = NC::MatCfg( "Al_sg225.ncmat;ucnmode=refine:1e-4" );
-    REQUIRE( cfg2.get_ucnmode() == UCNModeConstruct( NC::UCNMode::Mode::Refine, 1e-4 ) );
-  }
-  {
-    auto cfg2 = NC::MatCfg( "Al_sg225.ncmat;ucnmode=remove:2meV" );
-    REQUIRE( cfg2.get_ucnmode() == UCNModeConstruct( NC::UCNMode::Mode::Remove, 2e-3 ) );
-  }
-  {
-    auto cfg2 = NC::MatCfg( "Al_sg225.ncmat;ucnmode=only:4neV" );
-    REQUIRE( cfg2.get_ucnmode() == UCNModeConstruct( NC::UCNMode::Mode::Only, 4e-9 ) );
-  }
 }
 
 void test_copyonwrite() {
@@ -874,6 +823,7 @@ void test_density_multiphase()
   testcfg("phases<0.3*Al_sg225.ncmat;density=2gcm3&0.7*Ge_sg227.ncmat>;density=1.4x");
 
   testcfg_bad( "Al_sg225.ncmat;ignorefilecfg");//ignorefilecfg obsolete
+  testcfg_bad( "Al_sg225.ncmat;ucnmode=refine");//ucnmode removed
 
   testcfg( "Al_sg225.ncmat;sccutoff = 1e-5;density=1.2gcm3" );
   testcfg_bad( "phases<0.2*Al_sg225.ncmat;sccutoff = 1e-5;density=1.2gcm3&0.8*freegas::CO2" );

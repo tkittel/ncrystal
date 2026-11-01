@@ -33,7 +33,6 @@
 #include "NCrystal/internal/sabscatter/NCSABScatter.hh"
 #include "NCrystal/internal/sabscatter/NCSABScatterNG.hh"
 #include "NCrystal/internal/sab/NCSABFactory.hh"
-#include "NCrystal/internal/sab/NCSABUCN.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/extd_utils/NCProcCompBldr.hh"
 
@@ -112,7 +111,6 @@ namespace NCRYSTAL_NAMESPACE {
 
       const Info& info = cfg.info();
       const auto& inelas = ana.inelas;
-      const auto ucnmode = cfg.get_ucnmode();
       const VDOS::VDOSLux vdoslux( cfg.get_vdoslux() );
 
       nc_assert_always(isOneOf(inelas,"0","external","dyninfo","vdosdebye","freegas"));
@@ -215,9 +213,6 @@ namespace NCRYSTAL_NAMESPACE {
 
       } else if ( inelas == "external" ) {
 
-        if ( ucnmode.has_value() )
-          NCRYSTAL_THROW2(BadInput,"inelas="<<inelas<<" mode is not compatible with any ucnmode)");
-
         if ( !info.providesNonBraggXSects() )
           NCRYSTAL_THROW2(BadInput,"inelas="<<inelas<<" mode requires input source which provides direct"
                           " parameterisation of (non-Bragg) scattering cross sections (try e.g. inelas=auto instead)");
@@ -235,9 +230,6 @@ namespace NCRYSTAL_NAMESPACE {
         if ( inelas != "freegas" ) {
           nc_assert_always( isOneOf(inelas,"dyninfo","vdosdebye" ) );
           nc_assert_always( knllux >= -1 && knllux <= 6 );
-          if ( ucnmode.has_value() && knllux != -1)
-            NCRYSTAL_THROW(BadInput,
-                           "ucnmode only supported with legacy kernel processing");
         }
 
         if ( inelas == "dyninfo" ) {
@@ -274,7 +266,7 @@ namespace NCRYSTAL_NAMESPACE {
             if (di_scatknl) {
               if ( knllux == -1 ) {
                 //legacy:
-                components.addfct_cl([di_scatknl,vdoslux,vdos2sabExcludeFlag,ucnmode,knllux]()
+                components.addfct_cl([di_scatknl,vdoslux,vdos2sabExcludeFlag]()
                 {
                   ProcImpl::ProcComposition::ComponentList complist;
                   const double scale = di_scatknl->fraction();
@@ -288,30 +280,12 @@ namespace NCRYSTAL_NAMESPACE {
                   auto sabhelper
                     = SAB::createScatterHelperWithCache( sabdata,
                                                          di_scatknl->energyGrid() );
-                  auto sab_scatter = makeSO<SABScatter>( std::move(sabhelper) );
-                  if ( !ucnmode.has_value() ) {
-                    complist.emplace_back(scale,std::move(sab_scatter));
-                    return complist;
-                  }
-                  nc_assert_always( knllux == -1 );
-                  auto scUCN = UCN::UCNScatter::createWithCache( sabdata, ucnmode.value().threshold );
-                  nc_assert(isOneOf(ucnmode.value().mode,UCNMode::Mode::Refine,UCNMode::Mode::Remove,UCNMode::Mode::Only));
-                  if ( scUCN->isNull() ) {
-                    //Just the normal process, the UCN process is apparently null.
-                    if ( isOneOf( ucnmode.value().mode, UCNMode::Mode::Refine,  UCNMode::Mode::Remove ) )
-                      complist.emplace_back(scale,std::move(sab_scatter));
-                    return complist;
-                  }
-                  if ( isOneOf( ucnmode.value().mode, UCNMode::Mode::Refine,  UCNMode::Mode::Remove ) )
-                    complist.emplace_back(scale,makeSO<UCN::ExcludeUCNScatter>( sab_scatter, scUCN ));
-                  if ( isOneOf( ucnmode.value().mode, UCNMode::Mode::Refine,  UCNMode::Mode::Only ) )
-                    complist.emplace_back(scale,scUCN);
+                  complist.emplace_back(scale,makeSO<SABScatter>( std::move(sabhelper) ));
                   return complist;
                 });
               } else {
-                nc_assert_always( !ucnmode.has_value() );
                 components.addfct_cl([di_scatknl,vdoslux,knllux,
-                                      vdos2sabExcludeFlag,ucnmode]()
+                                      vdos2sabExcludeFlag]()
                 {
                   ProcImpl::ProcComposition::ComponentList complist;
                   const double scale = di_scatknl->fraction();
@@ -341,16 +315,12 @@ namespace NCRYSTAL_NAMESPACE {
               continue;//just skip past sterile components
             } else if (dynamic_cast<const DI_FreeGas*>(di.get())) {
               components.add(makeSO<FreeGas>(info.getTemperature(), di->atomData()),di->fraction());
-              if ( ucnmode.has_value() )
-                NCRYSTAL_THROW2(BadInput,"components with freegas dynamics are currently not supported when using any ucnmode)");
             } else {
               NCRYSTAL_THROW(LogicError,"Unsupported DynamicInfo entry encountered.");
             }
           }
 
         } else if ( inelas=="freegas" ) {
-          if ( ucnmode.has_value() )
-            NCRYSTAL_THROW2(BadInput,"inelas="<<inelas<<" mode is not compatible with any ucnmode)");
           for ( auto& e : info.getComposition() ) {
             components.add(makeSO<FreeGas>(info.getTemperature(), e.atom.data()),e.fraction);
           }
@@ -361,9 +331,6 @@ namespace NCRYSTAL_NAMESPACE {
             NCRYSTAL_THROW2(BadInput,
                             "Only legacy (knllux=-1) is supported with"
                             " inelas="<<inelas<<" mode for now.");//fixme
-          if ( ucnmode.has_value() )
-            NCRYSTAL_THROW2(BadInput,"inelas="<<inelas
-                            <<" mode is not compatible with any ucnmode)");
           if ( !info.hasDebyeTemperature() )
             NCRYSTAL_THROW2(BadInput,"inelas="<<inelas
                             <<" mode requires specification of Debye"

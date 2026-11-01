@@ -37,6 +37,8 @@ namespace NCRYSTAL_NAMESPACE {
           " \"packfact=0.8\" is now \"density=0.8x\" (but note that the density scaling"
           " of multiple such statements is now commulative!). Alternatively, it is"
           " now also possible to set an absolute density, e.g. \"density=2.3gcm3\"." },
+        { StrView::make("ucnmode"),
+          "The \"ucnmode\" parameter was removed in NCrystal 5.0.0." },
       };
     }
   }

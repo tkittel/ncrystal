@@ -161,8 +161,6 @@ double NCF::ScatterRequest::get_sccutoff() const { return CfgManip::get_sccutoff
 double NCF::ScatterRequest::get_dirtol() const { return CfgManip::get_dirtol(rawCfgData()); }
 const NC::LCAxis& NCF::ScatterRequest::get_lcaxis() const { return CfgManip::get_lcaxis(rawCfgData()); }
 std::int_least32_t NCF::ScatterRequest::get_lcmode() const { return CfgManip::get_lcmode(rawCfgData()); }
-std::string NCF::ScatterRequest::get_ucnmode_str() const { return CfgManip::get_ucnmode_str(rawCfgData()).to_string(); }
-NC::Optional<NC::UCNMode> NCF::ScatterRequest::get_ucnmode() const { return CfgManip::get_ucnmode(rawCfgData()); }
 
 bool NCF::ScatterRequest::isSingleCrystal() const
 {

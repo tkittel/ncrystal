@@ -154,8 +154,26 @@ def main():
     with ensure_error(NCBadInput,'IsoMacroXSTable: only isotropic materials are'
                       ' supported'):
         ncquery(['isomacroxstable',oriented])
-    #Processes which have not been validated for IsoMacroXSTable give a warning:
-    test('stdlib::Polyethylene_CH2.ncmat;ucnmode=remove')
+    #Processes which have not been validated for IsoMacroXSTable give a warning
+    #(here the SANS of Al with spherical voids):
+    NC.registerInMemoryFileData( 'Al_sans.ncmat', """NCMAT v8
+@CELL
+  cubic 4.04958
+@SPACEGROUP
+  225
+@ATOMSITES
+  Al 0 0 0
+@OTHERPHASES
+  0.1 void.ncmat
+@CUSTOM_HARDSPHERESANS
+  10.0
+@DYNINFO
+  element Al
+  fraction 1
+  type vdosdebye
+  debye_temp 410
+""" )
+    test('Al_sans.ncmat')
     #Discontinuities which are not known in advance are detected (here by
     #disabling the known ones):
     with ensure_error(NCCalcError,'IsoMacroXSTable: the cross section has an'

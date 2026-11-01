@@ -221,7 +221,6 @@ namespace NCRYSTAL_NAMESPACE {
     void set_scatfactory( const std::string& );
     void set_absnfactory( const std::string& );
     void set_lcmode( std::int_least32_t );
-    void set_ucnmode( const Optional<UCNMode>& );
     void set_vdoslux( int );
     void set_knllux( int );
     void set_atomdb( const std::string& );
@@ -274,8 +273,6 @@ namespace NCRYSTAL_NAMESPACE {
     std::string get_scatfactory() const;
     std::string get_absnfactory() const;
     std::int_least32_t get_lcmode() const;
-    std::string get_ucnmode_str() const;
-    Optional<UCNMode> get_ucnmode() const;
     int get_vdoslux() const;
     int get_knllux() const;
     std::string get_atomdb() const;
