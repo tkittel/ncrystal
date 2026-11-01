@@ -38,7 +38,7 @@ class NCrystalFilter:
     transmitted with probability exp(-xsect*L). This completely ignores multiple
     scattering effects.
 
-    The cross sections are evaluated from a piecewise linear table vs. the
+    The cross sections are evaluated from a piecewise cubic table vs. the
     neutron wavelength, reproducing the cross section of the material to a
     relative precision of 0.1%. An exception is raised if the cross section can
     not be tabulated reliably.
@@ -48,10 +48,10 @@ class NCrystalFilter:
     def __init__( self, cfgstr ):
         from ._chooks import _get_raw_cfcts
         self.__cfgstr = str(cfgstr)
-        wl, macroxs = _get_raw_cfcts()['filtertable']( self.__cfgstr)
-        wl.setflags( write = False )
-        macroxs.setflags( write = False )
-        self.__wl, self.__macroxs = wl, macroxs
+        wl, macroxs, slope = _get_raw_cfcts()['filtertable']( self.__cfgstr)
+        for a in ( wl, macroxs, slope ):
+            a.setflags( write = False )
+        self.__wl, self.__macroxs, self.__slope = wl, macroxs, slope
 
     @property
     def cfgstr( self ):
@@ -60,13 +60,14 @@ class NCrystalFilter:
 
     @property
     def table( self ):
-        """The table, as two read-only numpy arrays: the wavelengths (in Aa)
-        and the macroscopic cross sections (in 1/cm). The first point is the
-        limit for wavelength -> 0. Discontinuities (e.g. Bragg edges) are
-        represented by two points with the same wavelength, where the first has
-        the value just below the discontinuity, and the second the value just
-        above it."""
-        return self.__wl, self.__macroxs
+        """The table, as three read-only numpy arrays: the wavelengths (in
+        Aa), the macroscopic cross sections (in 1/cm) and their slopes (in
+        1/(cm*Aa)). Between neighbouring points, the cross section is the cubic
+        Hermite interpolation of these. The first point is the limit for
+        wavelength -> 0. Discontinuities (e.g. Bragg edges) are represented by
+        two points with the same wavelength, where the first has the value just
+        below the discontinuity, and the second the value just above it."""
+        return self.__wl, self.__macroxs, self.__slope
 
     def xsect( self, ekin = None, wl = None ):
         """Macroscopic cross section (in 1/cm) at the given neutron kinetic
@@ -80,21 +81,22 @@ class NCrystalFilter:
                              ' "wl" parameters.')
         _ensure_numpy()
         w = _np.asarray( ekin2wl( ekin ) if wl is None else wl, dtype = float )
-        x, y = self.__wl, self.__macroxs
-        #Linear interpolation in the segment with x[i] <= w < x[i+1] (at a
-        #discontinuity, this is the segment above it):
+        x, y, s = self.__wl, self.__macroxs, self.__slope
+        #Cubic Hermite interpolation in the interval with x[i] <= w < x[i+1]
+        #(at a discontinuity, this is the interval above it):
         wi = _np.clip( w, x[0], x[-1] )
         i = _np.clip( _np.searchsorted( x, wi, side = 'right' ) - 1,
                       0, len(x) - 2 )
-        x0, x1, y0, y1 = x[i], x[i+1], y[i], y[i+1]
-        dx = _np.where( x1 > x0, x1 - x0, 1.0 )
-        res = _np.where( x1 > x0, y0 + ( ( wi - x0 ) / dx ) * ( y1 - y0 ), y1 )
-        #Linear extrapolation of the last segment beyond the table (clamped at
-        #0):
-        dxl = x[-1] - x[-2]
-        slope = ( y[-1] - y[-2] ) / dxl if dxl > 0.0 else 0.0
-        if slope != 0.0:
-            extrap = _np.maximum( y[-1] + ( w - x[-1] ) * slope, 0.0 )
+        x0, x1 = x[i], x[i+1]
+        h = _np.where( x1 > x0, x1 - x0, 1.0 )
+        u = ( wi - x0 ) / h
+        v = 1.0 - u
+        res = ( v * v * ( ( 1.0 + 2.0 * u ) * y[i] + u * h * s[i] )
+                + u * u * ( ( 3.0 - 2.0 * u ) * y[i+1] - v * h * s[i+1] ) )
+        #Linear extrapolation of the value and slope of the last point beyond
+        #the table (clamped at 0):
+        if s[-1] != 0.0:
+            extrap = _np.maximum( y[-1] + ( w - x[-1] ) * s[-1], 0.0 )
         else:
             extrap = _np.full_like( w, y[-1] )
         res = _np.where( w >= x[-1], extrap, res )

@@ -42,25 +42,23 @@
 /* functions, so it can also be used in code running on a GPU (for instance   */
 /* with "#pragma acc routine seq" for OpenACC).                               */
 double filter_macroxs( unsigned n, const double * wl, const double * macroxs,
-                       double wavelength )
+                       const double * slope, double wavelength )
 {
-  /* Implements a linear interpolation, where at a discontinuity (two points  */
-  /* with the same wavelength) the value above it is used. Beyond the last    */
-  /* point, the last segment is extrapolated linearly (clamped at 0).         */
+  /* Implements a cubic Hermite interpolation of the values and slopes at the */
+  /* two neighbouring points, where at a discontinuity (two points with the   */
+  /* same wavelength) the point above it is used. Beyond the last point, its  */
+  /* value and slope are extrapolated linearly (clamped at 0).                */
   unsigned lo, hi, mid;
-  double slope, value;
+  double h, u, v, value;
   if ( !( wavelength > wl[0] ) )
     return macroxs[0];
   if ( wavelength >= wl[n-1] ) {
-    if ( !( wl[n-1] > wl[n-2] ) )
+    if ( slope[n-1] == 0.0 )
       return macroxs[n-1];
-    slope = ( macroxs[n-1] - macroxs[n-2] ) / ( wl[n-1] - wl[n-2] );
-    if ( slope == 0.0 )
-      return macroxs[n-1];
-    value = macroxs[n-1] + ( wavelength - wl[n-1] ) * slope;
+    value = macroxs[n-1] + ( wavelength - wl[n-1] ) * slope[n-1];
     return value > 0.0 ? value : 0.0;
   }
-  /* Binary search for the segment with wl[lo] <= wavelength < wl[hi]: */
+  /* Binary search for the interval with wl[lo] <= wavelength < wl[hi]: */
   lo = 0;
   hi = n - 1;
   while ( hi - lo > 1 ) {
@@ -70,8 +68,11 @@ double filter_macroxs( unsigned n, const double * wl, const double * macroxs,
     else
       hi = mid;
   }
-  return macroxs[lo] + ( ( wavelength - wl[lo] ) / ( wl[hi] - wl[lo] )
-                         * ( macroxs[hi] - macroxs[lo] ) );
+  h = wl[hi] - wl[lo];
+  u = ( wavelength - wl[lo] ) / h;
+  v = 1.0 - u;
+  return ( v * v * ( ( 1.0 + 2.0 * u ) * macroxs[lo] + u * h * slope[lo] )
+           + u * u * ( ( 3.0 - 2.0 * u ) * macroxs[hi] - v * h * slope[hi] ) );
 }
 
 int main(void) {
@@ -79,36 +80,42 @@ int main(void) {
   unsigned n, i;
   double * nc_wl;
   double * nc_macroxs;
+  double * nc_slope;
   double * wl;
   double * macroxs;
+  double * slope;
   double xs;
   const double wavelengths[] = { 1.0, 3.0, 3.9, 4.0, 6.0, 20.0 };
 
   /* A beryllium filter cooled to 80 K: */
   ncrystal_filtertable( "stdlib::Be_sg194.ncmat;temp=80K",
-                        &n, &nc_wl, &nc_macroxs, NULL );
+                        &n, &nc_wl, &nc_macroxs, &nc_slope, NULL );
 
   /* Copy the table to arrays owned by the application (e.g. allocated such   */
   /* that they are accessible on a GPU), and free the arrays from NCrystal:   */
   wl = (double*)malloc( n * sizeof(double) );
   macroxs = (double*)malloc( n * sizeof(double) );
-  if ( !wl || !macroxs ) {
+  slope = (double*)malloc( n * sizeof(double) );
+  if ( !wl || !macroxs || !slope ) {
     printf( "Memory allocation failed\n" );
     return 1;
   }
   memcpy( wl, nc_wl, n * sizeof(double) );
   memcpy( macroxs, nc_macroxs, n * sizeof(double) );
+  memcpy( slope, nc_slope, n * sizeof(double) );
   ncrystal_dealloc_doubleptr( nc_wl );
   ncrystal_dealloc_doubleptr( nc_macroxs );
+  ncrystal_dealloc_doubleptr( nc_slope );
 
   printf( "Be filter at 80K (table with %u points):\n", n );
   for ( i = 0; i < sizeof(wavelengths) / sizeof(wavelengths[0]); ++i ) {
-    xs = filter_macroxs( n, wl, macroxs, wavelengths[i] );
+    xs = filter_macroxs( n, wl, macroxs, slope, wavelengths[i] );
     printf( "  wavelength %g Aa: macroscopic cross section %g /cm"
             " (mean free path %g cm)\n", wavelengths[i], xs, 1.0 / xs );
   }
 
   free( wl );
   free( macroxs );
+  free( slope );
   return 0;
 }
