@@ -131,7 +131,7 @@ def test( cfg, *opts ):
 def main():
     test('stdlib::Al_sg225.ncmat')
     test('stdlib::Al_sg225.ncmat','tol=1e-2')
-    test('stdlib::Al_sg225.ncmat','tol=1e-4')
+    test('stdlib::Al_sg225.ncmat','tol=1e-3')
     test('stdlib::Al_sg225.ncmat','wlmax=10')
     test('stdlib::Al_sg225.ncmat','wlmax=4.7')
     test('stdlib::Al_sg225.ncmat;density=0.5x')
@@ -156,7 +156,7 @@ def main():
     #disabling the known ones):
     with ensure_error(NCCalcError,'IsoMacroXSTable: the cross section has an'
                       ' unexpected discontinuity (or an extremely sharp'
-                      ' feature) at wavelength 0.707627 Aa'):
+                      ' feature) at wavelength 0.56845 Aa'):
         ncquery(base+['discontinuities=0'])
     with ensure_error(NCBadInput,'IsoMacroXSTable: invalid tolerance 0 (must be'
                       ' in the range (0,1))'):

@@ -28,7 +28,7 @@ namespace NCRYSTAL_NAMESPACE {
   namespace XSTable {
 
     //JSON query: ["isomacroxstable",CFGSTR,OPTION1,OPTION2,...] where the
-    //options are strings like "tol=1e-3", "wlmax=500", "ndense=0" (auto) and
+    //options are strings like "tol=1e-4", "wlmax=500", "ndense=0" (auto) and
     //"discontinuities=1".
     using Query = SmallVector<StrView,8>;
     void JSONQuery( std::ostream&, const Query& );
