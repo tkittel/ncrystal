@@ -37,7 +37,8 @@ print = ncprint
 
 #Materials with other processes than the following must be validated by experts
 #before conversion to ENDF can be supported:
-allowed_scat_proc_names = {'ElIncScatter', 'PowderBragg', 'SABScatter'}
+allowed_scat_proc_names = {'ElIncScatter', 'PowderBragg', 'SABScatter',
+                           'SABScatterNG'}
 
 mass_neutron = ( nc_constants.const_neutron_mass_amu*
                  nc_constants.constant_dalton2eVc2/
