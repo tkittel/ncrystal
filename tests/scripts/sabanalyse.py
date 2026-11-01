@@ -154,21 +154,22 @@ def main():
 
     #Consumer-level check: the auto-detected Teff must reach the factory
     #layer, i.e. next-gen direct-kernel materials get the SCT extension
-    #by default (free-gas only in the knllux 20x comparison mode; NB the
-    #total xs above Emax is continuity-anchored and hence insensitive to
-    #the extender model -- only sampling differs -- so we check the
-    #chosen model instead of xs values):
-    base = 'stdlib::LiquidWaterH2O_T293.6K.ncmat;comp=inelas;vdoslux=2001'
-    def extmethod( cfgstr ):
-        s = NC.load( cfgstr ).scatter.getSummary()
-        #NB: only H has a kernel (the O component is plain free gas):
-        c = [ c for _,c in s['specific']['components']
-              if c['name'] == 'SABScatterNG' ]
-        assert len(c) == 1
-        return c[0]['specific']['extension_method']
-    m_sct, m_fg = extmethod( base+';knllux=1' ), extmethod( base+';knllux=201' )
+    #by default (free-gas only when explicitly selected with the
+    #["sab","xs",...] query; NB the total xs above Emax is
+    #continuity-anchored and hence insensitive to the extender model --
+    #only sampling differs -- so we check the chosen model instead of xs
+    #values):
+    cfgstr = ( 'stdlib::LiquidWaterH2O_T293.6K.ncmat;comp=inelas;vdoslux=2001'
+               ';knllux=1' )
+    s = NC.load( cfgstr ).scatter.getSummary()
+    #NB: only H has a kernel (the O component is plain free gas):
+    c = [ c for _,c in s['specific']['components']
+          if c['name'] == 'SABScatterNG' ]
+    assert len(c) == 1
+    m_sct = c[0]['specific']['extension_method']
+    m_fg = q( [ 'sab', 'xs', cfgstr, 'H', 'freegas', '1.0' ] )['extension_method']
     print(f'==> direct-kernel extension methods: knllux=1 -> {m_sct},'
-          f' knllux=201 -> {m_fg}')
+          f' freegas query -> {m_fg}')
     assert ( m_sct, m_fg ) == ( 'sct', 'freegas' )
 
 if __name__ == '__main__':
