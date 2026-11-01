@@ -22,6 +22,26 @@
 
 namespace NC = NCrystal;
 
+namespace NCRYSTAL_NAMESPACE {
+  namespace Cfg {
+    namespace {
+      //Parameters which were removed, with the error message explaining
+      //what to do instead:
+      struct RemovedParameter {
+        StrView name;
+        const char * msg;
+      };
+      constexpr RemovedParameter removedParameters[] = {
+        { StrView::make("packfact"),
+          "The \"packfact\" parameter is obsolete. Previous"
+          " \"packfact=0.8\" is now \"density=0.8x\" (but note that the density scaling"
+          " of multiple such statements is now commulative!). Alternatively, it is"
+          " now also possible to set an absolute density, e.g. \"density=2.3gcm3\"." },
+      };
+    }
+  }
+}
+
 NC::Cfg::CfgData NC::Cfg::CfgManip::filter( const CfgData& data, VarIdFilter filter )
 {
   CfgData filtered;
@@ -244,12 +264,9 @@ NC::Cfg::TopLvlVarList NC::Cfg::CfgManip::applyStrCfg( CfgData& data, StrView st
         NCRYSTAL_THROW2(BadInput,errintro<<"syntax error around the part \""<<par_str<<"\".");
       }
     }
-    static constexpr auto sv_packfact = StrView::make("packfact");
-    if ( par_str == sv_packfact )
-      NCRYSTAL_THROW2(BadInput,errintro<<"The \"packfact\" parameter is obsolete. Previous"
-                      " \"packfact=0.8\" is now \"density=0.8x\" (but note that the density scaling"
-                      " of multiple such statements is now commulative!). Alternatively, it is"
-                      " now also possible to set an absolute density, e.g. \"density=2.3gcm3\".");
+    for ( auto& rp : removedParameters )
+      if ( par_str == rp.name )
+        NCRYSTAL_THROW2(BadInput,errintro<<rp.msg);
     NCRYSTAL_THROW2(BadInput,errintro<<"unknown parameter \""<<par_str<<"\".");
   }
   return toplvlVars;
