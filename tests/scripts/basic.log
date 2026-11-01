@@ -536,38 +536,7 @@ Test loading of :>>>phases<0.1*unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.nc
                                  'disables this approximation entirely.',
                   'name': 'sccutoff',
                   'type': 'floating point number',
-                  'unit': 'Aa'},
-                 {'allowed_input_units': None,
-                  'default_value': '',
-                  'default_value_str': '',
-                  'description': 'Modify how UCN (ultra cold neutron) '
-                                 'production is handled in inelastic models. '
-                                 'The value "refine" simply improves the '
-                                 'modelling by replacing the usual scattering '
-                                 'kernel treatment near the kinematic '
-                                 'endpoint, where the neutron ends with less '
-                                 'than 300neV, with a different model. The '
-                                 'values "only" and "remove" performs the same '
-                                 'split of the modelling, but then leaves out '
-                                 'either all non-UCN or all UCN processes, '
-                                 'respectively, from the inelastic cross '
-                                 'sections. Finally, the threshold value of '
-                                 '300neV can be modified by appending the '
-                                 'desired value to the first keyword, '
-                                 'separated by a ":" character. The default '
-                                 'unit is eV, but meV and neV are supported as '
-                                 'well, so "ucnmode=refine:200neV", '
-                                 '"ucnmode=remove:2e-7eV", '
-                                 '"ucnmode=remove:2e-7", and '
-                                 '"ucnmode=only:0.0002meV" all specify the '
-                                 'same threshold. In addition to simply '
-                                 'refining the UCN model, the primary intended '
-                                 'purpose of the ucnmode parameter is to allow '
-                                 'one to split out the UCN process from the '
-                                 'rest, in order to perform biased Monte Carlo '
-                                 'simulations of UCN production in moderators.',
-                  'name': 'ucnmode',
-                  'type': 'string'}]},
+                  'unit': 'Aa'}]},
  {'group_description': 'Parameters related to absorption processes',
   'parameters': [{'allowed_input_units': None,
                   'default_value': '',

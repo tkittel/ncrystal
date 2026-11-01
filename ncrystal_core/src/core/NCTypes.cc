@@ -87,30 +87,3 @@ std::ostream& NC::operator<< (std::ostream& os, const DensityState& ds)
   return os;
 }
 
-std::ostream& NC::operator<<(std::ostream& os, const UCNMode& ucn )
-{
-  switch( ucn.mode ) {
-  case UCNMode::Mode::Refine:
-    os << "refine";
-    break;
-  case UCNMode::Mode::Remove:
-    os << "remove";
-    break;
-  case UCNMode::Mode::Only:
-    os << "only";
-    break;
-  };
-  if ( ucn.threshold != UCNMode::default_threshold() ) {
-    //encode in best unit (same logic as in NCCfgVars.hh):
-    const double val = ucn.threshold.dbl();
-    os << ':';
-    if ( val >= 1e-9 && val < 1000e-9 ) {
-      os << fmt(val * 1e9) << "neV";
-    } else if ( val >= 1e-3 && val < 1.0 ) {
-      os << fmt(val * 1e3) << "meV";
-    } else {
-      os << fmt(val);
-    }
-  }
-  return os;
-}
