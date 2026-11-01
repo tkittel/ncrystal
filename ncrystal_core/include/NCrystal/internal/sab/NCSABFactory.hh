@@ -67,23 +67,12 @@ namespace NCRYSTAL_NAMESPACE {
     // Legacy algorithms //
     ///////////////////////
 
-    //For reference and validation work, it is possible to disable the
-    //beta-endpoint fix (introduced in NCrystal 3.1.0), and we can reduce
-    //sampling artifacts by sampling at higher energies (increasing
-    //SABSampler::EGridMargin). The numerical value of the enum option is the
-    //knllux value needed to select the legacy algorithm:
+    //The legacy algorithm is selected with knllux=-1. For reference and
+    //validation work (the "legacy_oversample" type of the ["sab","refsample",...]
+    //query), sampling artifacts can be reduced by sampling at higher energies
+    //(increasing SABSampler::EGridMargin):
 
-    enum class LegacySABAlgOpts : int {
-      DEFAULT = -1,
-      OVERSAMPLE10 = -2,
-      OVERSAMPLE50 = -3,
-      NOBETAFIX = -4,
-      NOBETAFIX_OVERSAMPLE10 = -5,
-      NOBETAFIX_OVERSAMPLE50 = -6,
-      //For reference, provide access to the range of values covered:
-      MIN = -6,
-      MAX = -1
-    };
+    enum class LegacySABAlgOpts { DEFAULT, OVERSAMPLE10 };
 
     //Direct factory function with no caching:
     std::unique_ptr<const SABScatterHelper>
