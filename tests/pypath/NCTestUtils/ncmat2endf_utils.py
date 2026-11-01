@@ -26,7 +26,7 @@ import NCrystalDev.core as nc_core
 import NCrystalDev.ncmat as nc_ncmat
 import NCrystalDev.vdos as nc_vdos
 from NCrystalDev._common import fixed_fake_datetime_now
-from NCrystalDev._ncmat2endf_impl import _endf_clean
+from NCrystalDev._ncmat2endf_impl import _endf_clean, create_endfparserpy_parser
 from NCrystalDev._numpy import _np
 from NCrystalDev.exceptions import NCBadInput
 from NCrystalDev.ncmat2endf import ncmat2endf
@@ -85,15 +85,8 @@ def test_cfg( cfg, check_teff=False,
         parser, endf_dic = None, None
         list_parsed_sections = None
         if check_teff or ref_parsed or check_edge_positions:
-            import endf_parserpy
             from endf_parserpy import list_parsed_sections
-            if hasattr(endf_parserpy,'EndfParserPy'):
-                EndfParserPy = endf_parserpy.EndfParserPy
-            else:
-                #legacy endf-parserpy 0.13.x support
-                EndfParserPy = endf_parserpy.EndfParser
-
-            parser = EndfParserPy(cache_dir=False)
+            parser = create_endfparserpy_parser()
             endf_dic = parser.parsefile(endf_fn)
 
         if check_teff:
@@ -175,12 +168,7 @@ def get_scatxs_from_endf(endf_fn, *, E ):
     """
     Computes scattering XS from first temperature in ENDF-6 TSL file
     """
-    import endf_parserpy
-    if hasattr(endf_parserpy,'EndfParserPy'):
-        EndfParserPy = endf_parserpy.EndfParserPy
-    else:
-        EndfParserPy = endf_parserpy.EndfParser
-    parser = EndfParserPy(cache_dir=False)
+    parser = create_endfparserpy_parser()
     endf_dic = parser.parsefile(endf_fn)
     T0 = 293.6
     if E is None:
