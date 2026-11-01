@@ -31,6 +31,27 @@
 /* quick tabulated macroscopic cross section rather than the more detailed    */
 /* cross sections and scattering sampling available in the usual NCrystal     */
 /* interfaces.                                                                */
+/*                                                                            */
+/* The table returned by ncrystal_isomacroxstable is a single array of 3*n+4  */
+/* doubles:                                                                   */
+/*                                                                            */
+/*   table[0]                 : magic number 4631638934963022.0               */
+/*   table[1]                 : format version (1)                            */
+/*   table[2]                 : number of points, n (at least 2)              */
+/*   table[3] ... table[2+n]  : wavelengths (Aa), sorted, the first is 0      */
+/*   table[3+n] ...           : macroscopic cross sections (1/cm)             */
+/*   table[3+2*n] ...         : their slopes d(macroxs)/d(wavelength), in     */
+/*                              1/(cm*Aa)                                     */
+/*   table[3+3*n]             : magic number again                            */
+/*                                                                            */
+/* The magic number is an integer, whose bytes in memory read "NCryst0C" (on  */
+/* little-endian machines). Between neighbouring points, the cross section is */
+/* the cubic Hermite interpolation of their values and slopes, and it is      */
+/* never negative. Two points with the same wavelength represent a            */
+/* discontinuity (e.g. a Bragg edge) or a change of slope, and the second of  */
+/* them is used at that wavelength. The first point is the limit for          */
+/* wavelength -> 0, and beyond the last point its value and slope are         */
+/* extrapolated linearly (clamped at 0).                                      */
 
 #include "NCrystal/cinterface/ncrystal.h"
 
@@ -38,17 +59,38 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Reference implementation for a function which checks the format of a       */
+/* table, to protect against corrupted or truncated copies. It returns 1 if   */
+/* the table is valid, and 0 otherwise. It should be called once, after the   */
+/* table is obtained or copied (not for each evaluation).                     */
+int filter_check_table( const double * table )
+{
+  const double magic = 4631638934963022.0;
+  unsigned n;
+  if ( !( table[0] == magic && table[1] == 1.0 ) )
+    return 0;
+  if ( !( table[2] >= 2.0 && table[2] <= 1e9 ) )
+    return 0;
+  n = (unsigned)table[2];
+  if ( !( table[2] == (double)n ) )
+    return 0;
+  return table[3+3*n] == magic ? 1 : 0;
+}
+
 /* Reference implementation for a function which evaluates the table at the   */
-/* given wavelength. The function only reads the arrays, and calls no other   */
+/* given wavelength. The function only reads the table, and calls no other    */
 /* functions, so it can also be used in code running on a GPU (for instance   */
 /* with "#pragma acc routine seq" for OpenACC).                               */
-double filter_macroxs( unsigned n, const double * wl, const double * macroxs,
-                       const double * slope, double wavelength )
+double filter_macroxs( const double * table, double wavelength )
 {
   /* Implements a cubic Hermite interpolation of the values and slopes at the */
   /* two neighbouring points, where at a discontinuity (two points with the   */
   /* same wavelength) the point above it is used. Beyond the last point, its  */
   /* value and slope are extrapolated linearly (clamped at 0).                */
+  const unsigned n = (unsigned)table[2];
+  const double * wl = table + 3;
+  const double * macroxs = wl + n;
+  const double * slope = macroxs + n;
   unsigned lo, hi, mid;
   double h, u, v, value;
   if ( !( wavelength > wl[0] ) )
@@ -78,45 +120,39 @@ double filter_macroxs( unsigned n, const double * wl, const double * macroxs,
 
 int main(void) {
   /* declarations first (to support ancient pedantic C compilers) */
-  unsigned n, i;
-  double * nc_wl;
-  double * nc_macroxs;
-  double * nc_slope;
-  double * wl;
-  double * macroxs;
-  double * slope;
+  unsigned i;
+  size_t nbytes;
+  double * nc_table;
+  double * table;
   double xs;
   const double wavelengths[] = { 1.0, 3.0, 3.9, 4.0, 6.0, 20.0 };
 
   /* A beryllium filter cooled to 80 K: */
-  ncrystal_isomacroxstable( "stdlib::Be_sg194.ncmat;temp=80K",
-                            &n, &nc_wl, &nc_macroxs, &nc_slope, NULL );
+  nc_table = ncrystal_isomacroxstable( "stdlib::Be_sg194.ncmat;temp=80K",
+                                       NULL );
 
-  /* Copy the table to arrays owned by the application (e.g. allocated such   */
-  /* that they are accessible on a GPU), and free the arrays from NCrystal:   */
-  wl = (double*)malloc( n * sizeof(double) );
-  macroxs = (double*)malloc( n * sizeof(double) );
-  slope = (double*)malloc( n * sizeof(double) );
-  if ( !wl || !macroxs || !slope ) {
+  /* Copy the table to an array owned by the application (e.g. allocated such */
+  /* that it is accessible on a GPU), and free the array from NCrystal:       */
+  nbytes = ( 3 * (size_t)nc_table[2] + 4 ) * sizeof(double);
+  table = (double*)malloc( nbytes );
+  if ( !table ) {
     printf( "Memory allocation failed\n" );
     return 1;
   }
-  memcpy( wl, nc_wl, n * sizeof(double) );
-  memcpy( macroxs, nc_macroxs, n * sizeof(double) );
-  memcpy( slope, nc_slope, n * sizeof(double) );
-  ncrystal_dealloc_doubleptr( nc_wl );
-  ncrystal_dealloc_doubleptr( nc_macroxs );
-  ncrystal_dealloc_doubleptr( nc_slope );
+  memcpy( table, nc_table, nbytes );
+  ncrystal_dealloc_doubleptr( nc_table );
+  if ( !filter_check_table( table ) ) {
+    printf( "Invalid table\n" );
+    return 1;
+  }
 
-  printf( "Be filter at 80K (table with %u points):\n", n );
+  printf( "Be filter at 80K (table with %u points):\n", (unsigned)table[2] );
   for ( i = 0; i < sizeof(wavelengths) / sizeof(wavelengths[0]); ++i ) {
-    xs = filter_macroxs( n, wl, macroxs, slope, wavelengths[i] );
+    xs = filter_macroxs( table, wavelengths[i] );
     printf( "  wavelength %g Aa: macroscopic cross section %g /cm"
             " (mean free path %g cm)\n", wavelengths[i], xs, 1.0 / xs );
   }
 
-  free( wl );
-  free( macroxs );
-  free( slope );
+  free( table );
   return 0;
 }
