@@ -45,20 +45,22 @@ int main(int argc, char** argv) {
   unsigned n = 0, i, iedge;
   double * wl = NULL;
   double * macroxs = NULL;
+  double * slope = NULL;
   ncrystal_filtertable( "stdlib::Be_sg194.ncmat;temp=80K", &n, &wl,
-                        &macroxs, NULL );
+                        &macroxs, &slope, NULL );
   require( !ncrystal_error(), "no error" );
-  require( n > 10 && wl && macroxs, "table returned" );
+  require( n > 10 && wl && macroxs && slope, "table returned" );
   require( wl[0] == 0.0 && wl[n-1] > 20.0, "range from 0 to long wavelengths" );
   for ( i = 1; i < n; ++i )
     require( wl[i] >= wl[i-1] && macroxs[i] >= 0.0, "sorted and non-negative" );
   printf( "Be 80K: %u points, macroxs(0) = %.4g/cm\n", n, macroxs[0] );
 
   /* The Be filter cut-off: the last Bragg edge (a pair of points with the  */
-  /* same wavelength) is at 3.96 Aa, with a large drop of the cross section: */
+  /* same wavelength and different values) is at 3.96 Aa, with a large drop */
+  /* of the cross section:                                                   */
   iedge = n;
   for ( i = 0; i + 1 < n; ++i )
-    if ( wl[i] == wl[i+1] )
+    if ( wl[i] == wl[i+1] && macroxs[i] != macroxs[i+1] )
       iedge = i;
   require( iedge < n, "Bragg edges in table" );
   require( fabs( wl[iedge] - 3.96 ) < 0.01, "last Bragg edge at 3.96 Aa" );
@@ -67,6 +69,7 @@ int main(int argc, char** argv) {
           wl[iedge], macroxs[iedge], macroxs[iedge+1] );
   ncrystal_dealloc_doubleptr( wl );
   ncrystal_dealloc_doubleptr( macroxs );
+  ncrystal_dealloc_doubleptr( slope );
 
   /* Errors: unsupported options, and an oriented material. No arrays are    */
   /* returned. */
@@ -76,8 +79,9 @@ int main(int argc, char** argv) {
                           ";dir2=@crys_hkl:0,1,0@lab:0,1,0" };
   const char * opts[] = { "foo=1", NULL };
   for ( i = 0; i < 2; ++i ) {
-    ncrystal_filtertable( cfgs[i], &n, &wl, &macroxs, opts[i] );
-    require( ncrystal_error() && n == 0 && !wl && !macroxs, "error expected" );
+    ncrystal_filtertable( cfgs[i], &n, &wl, &macroxs, &slope, opts[i] );
+    require( ncrystal_error() && n == 0 && !wl && !macroxs && !slope,
+             "error expected" );
     printf( "Expected error: %s\n", ncrystal_lasterror() );
     ncrystal_clearerror();
   }
