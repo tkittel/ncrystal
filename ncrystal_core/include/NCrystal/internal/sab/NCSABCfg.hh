@@ -73,10 +73,9 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Which model extends kernels beyond their Emax: the default is the
     //short-collision-time model (SABSCTExtender, needs an effective
-    //temperature), with the plain free-gas extender (SABFGExtender)
-    //selectable for comparisons via sablux 200-206 (and used as
-    //fall-back where no effective temperature is available, e.g. for
-    //direct kernels):
+    //temperature), with the plain free-gas extender (SABFGExtender) used as
+    //fall-back where no effective temperature is available, e.g. for direct
+    //kernels:
     enum class ExtenderModel { SCT, FreeGas, Default = SCT };
 
     ////////////////
