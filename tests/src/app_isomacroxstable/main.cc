@@ -59,13 +59,29 @@ namespace {
     return worst;
   }
 
-  void testOK( const char* descr, const Fct& f, NC::VectD discont = {},
-               double tol = 1e-3, double wlmax = 500.0 )
+  //Numerical derivative, for smooth functions:
+  Fct numSlope( const Fct& f )
+  {
+    return [f]( double wl )
+    {
+      const double w1 = wl * ( 1.0 - 1e-6 );
+      const double w2 = wl * ( 1.0 + 1e-6 );
+      return ( f( w2 ) - f( w1 ) ) / ( w2 - w1 );
+    };
+  }
+
+  Fct constSlope( double s )
+  {
+    return [s]( double ) { return s; };
+  }
+
+  void testOK( const char* descr, const Fct& f, const Fct& df,
+               NC::VectD discont = {}, double tol = 1e-3, double wlmax = 500.0 )
   {
     NCX::IsoMacroXSTableParams params;
     params.tol = tol;
     params.wlmax = wlmax;
-    auto t = NCX::createIsoMacroXSTable( f, discont, params );
+    auto t = NCX::createIsoMacroXSTable( f, df, discont, params );
     const double worst = worstRelErr( t, f, discont, wlmax );
     nc_assert_always( worst <= tol );
     std::cout << descr << ": npts=" << t.n()
@@ -74,11 +90,11 @@ namespace {
   }
 
   template <class TError>
-  void testError( const char* descr, const Fct& f, NC::VectD discont = {},
-                  NCX::IsoMacroXSTableParams params = {} )
+  void testError( const char* descr, const Fct& f, const Fct& df,
+                  NC::VectD discont = {}, NCX::IsoMacroXSTableParams params = {} )
   {
     try {
-      NCX::createIsoMacroXSTable( f, discont, params );
+      NCX::createIsoMacroXSTable( f, df, discont, params );
     } catch ( TError& e ) {
       std::cout << descr << ": got expected exception: " << e.what() << std::endl;
       return;
@@ -96,27 +112,49 @@ namespace {
 
 int main()
 {
-  //Shapes which must be handled:
-  testOK( "constant", []( double ) { return 5.0; } );
-  testOK( "zero", []( double ) { return 0.0; } );
-  testOK( "a+b*wl", []( double wl ) { return 3.0 + 0.5 * wl; } );
-  testOK( "a/wl^0.1 at long wavelengths", []( double wl ) { return 1.0 + wl / std::pow( 1.0 + wl, 0.1 ); } );
-  testOK( "vanishing at wl=0", []( double wl ) { return wl * wl / ( 1.0 + wl ); } );
-  testOK( "vanishing at wl=0 with large curvature", []( double wl ) { return 10.0 * wl * wl / ( 1.0 + wl * wl ); } );
+  //Shapes which must be handled (with exact derivatives where simple):
+  testOK( "constant", []( double ) { return 5.0; }, constSlope( 0.0 ) );
+  testOK( "zero", []( double ) { return 0.0; }, constSlope( 0.0 ) );
+  testOK( "a+b*wl", []( double wl ) { return 3.0 + 0.5 * wl; }, constSlope( 0.5 ) );
+  testOK( "a/wl^0.1 at long wavelengths",
+          []( double wl ) { return 1.0 + wl / std::pow( 1.0 + wl, 0.1 ); },
+          []( double wl )
+          {
+            return ( std::pow( 1.0 + wl, -0.1 )
+                     - 0.1 * wl * std::pow( 1.0 + wl, -1.1 ) );
+          } );
+  testOK( "vanishing at wl=0",
+          []( double wl ) { return wl * wl / ( 1.0 + wl ); },
+          []( double wl ) { return wl * ( wl + 2.0 ) / ( ( 1.0 + wl ) * ( 1.0 + wl ) ); } );
+  testOK( "vanishing at wl=0 with large curvature",
+          []( double wl ) { return 10.0 * wl * wl / ( 1.0 + wl * wl ); },
+          []( double wl )
+          {
+            const double d = 1.0 + wl * wl;
+            return 20.0 * wl / ( d * d );
+          } );
   //No absolute scale is involved:
-  testOK( "vanishing at wl=0, tiny", []( double wl )
-  {
-    return 1e-30 * wl * wl / ( 1.0 + wl );
-  } );
-  testOK( "vanishing at wl=0 like wl^4", []( double wl )
-  {
-    const double q = wl * wl;
-    return q * q / ( 1.0 + q * q );
-  } );
-  testOK( "oscillating", []( double wl ) { return 2.0 + std::sin( 20.0 * wl ); }, {}, 1e-3, 20.0 );
+  testOK( "vanishing at wl=0, tiny",
+          []( double wl ) { return 1e-30 * wl * wl / ( 1.0 + wl ); },
+          []( double wl ) { return 1e-30 * wl * ( wl + 2.0 ) / ( ( 1.0 + wl ) * ( 1.0 + wl ) ); } );
+  testOK( "vanishing at wl=0 like wl^4",
+          []( double wl )
+          {
+            const double q = wl * wl;
+            return q * q / ( 1.0 + q * q );
+          },
+          []( double wl )
+          {
+            const double d = 1.0 + wl * wl * wl * wl;
+            return 4.0 * wl * wl * wl / ( d * d );
+          } );
+  testOK( "oscillating",
+          []( double wl ) { return 2.0 + std::sin( 20.0 * wl ); },
+          []( double wl ) { return 20.0 * std::cos( 20.0 * wl ); },
+          {}, 1e-3, 20.0 );
   //Resonance-like peaks (Lorentzians in energy), as long as they are wider
   //than the dense sampling:
-  testOK( "peaks", []( double wl )
+  Fct peaks = []( double wl )
   {
     const double e = NC::wl2ekin( wl );
     double v = 1.0 + 0.3 * wl;
@@ -125,31 +163,50 @@ int main()
       v += 50.0 * g * g / ( ( e - e0 ) * ( e - e0 ) + g * g );
     }
     return v;
-  } );
+  };
+  testOK( "peaks", peaks, numSlope( peaks ) );
   //Declared discontinuities (up and down), also with kinks:
-  testOK( "steps", []( double wl )
-  {
-    return ( 1.0 + 0.1 * wl + step( wl, 2.0, 0.0, 3.0 )
-             + step( wl, 4.0, 5.0, 0.0 ) + step( wl, 7.0, 0.0, 0.2 * ( wl - 7.0 ) ) );
-  }, { 2.0, 4.0, 7.0 } );
-  testOK( "drop to zero", []( double wl ) { return step( wl, 5.0, 2.0 + wl, 0.0 ); }, { 5.0 } );
+  testOK( "steps",
+          []( double wl )
+          {
+            return ( 1.0 + 0.1 * wl + step( wl, 2.0, 0.0, 3.0 )
+                     + step( wl, 4.0, 5.0, 0.0 ) + step( wl, 7.0, 0.0, 0.2 * ( wl - 7.0 ) ) );
+          },
+          []( double wl ) { return 0.1 + step( wl, 7.0, 0.0, 0.2 ); },
+          { 2.0, 4.0, 7.0 } );
+  testOK( "drop to zero",
+          []( double wl ) { return step( wl, 5.0, 2.0 + wl, 0.0 ); },
+          []( double wl ) { return step( wl, 5.0, 1.0, 0.0 ); },
+          { 5.0 } );
 
   //Problems which must result in exceptions:
-  testError<NC::Error::CalcError>( "unexpected step", []( double wl )
-  {
-    return 1.0 + step( wl, 2.0, 0.0, 3.0 );
-  } );
-  testError<NC::Error::CalcError>( "no limit for wl->0", []( double wl ) { return 1.0 / wl; } );
-  testError<NC::Error::CalcError>( "negative", []( double wl ) { return 1.0 - wl; } );
-  testError<NC::Error::CalcError>( "NaN", []( double wl ) { return wl > 3.0 ? std::numeric_limits<double>::quiet_NaN() : 1.0; } );
-  testError<NC::Error::CalcError>( "infinite", []( double wl ) { return wl > 3.0 ? NC::kInfinity : 1.0; } );
+  testError<NC::Error::CalcError>( "unexpected step",
+                                   []( double wl ) { return 1.0 + step( wl, 2.0, 0.0, 3.0 ); },
+                                   constSlope( 0.0 ) );
+  testError<NC::Error::CalcError>( "no limit for wl->0",
+                                   []( double wl ) { return 1.0 / wl; },
+                                   []( double wl ) { return -1.0 / ( wl * wl ); } );
+  testError<NC::Error::CalcError>( "negative",
+                                   []( double wl ) { return 1.0 - wl; },
+                                   constSlope( -1.0 ) );
+  testError<NC::Error::CalcError>( "NaN",
+                                   []( double wl ) { return wl > 3.0 ? std::numeric_limits<double>::quiet_NaN() : 1.0; },
+                                   constSlope( 0.0 ) );
+  testError<NC::Error::CalcError>( "infinite",
+                                   []( double wl ) { return wl > 3.0 ? NC::kInfinity : 1.0; },
+                                   constSlope( 0.0 ) );
+  testError<NC::Error::CalcError>( "infinite slope",
+                                   []( double ) { return 1.0; },
+                                   []( double wl ) { return wl > 3.0 ? NC::kInfinity : 0.0; } );
   {
     NCX::IsoMacroXSTableParams p;
     p.tol = 0.0;
-    testError<NC::Error::BadInput>( "tol=0", []( double ) { return 1.0; }, {}, p );
+    testError<NC::Error::BadInput>( "tol=0", []( double ) { return 1.0; },
+                                    constSlope( 0.0 ), {}, p );
     p = NCX::IsoMacroXSTableParams();
     p.wlmax = 1e-9;
-    testError<NC::Error::BadInput>( "tiny wlmax", []( double ) { return 1.0; }, {}, p );
+    testError<NC::Error::BadInput>( "tiny wlmax", []( double ) { return 1.0; },
+                                    constSlope( 0.0 ), {}, p );
   }
 
   //evalIsoMacroXSTable: pairs at discontinuities, cubic interpolation, and
@@ -184,14 +241,16 @@ int main()
   //reduceHermitePoints: the interpolation is never negative, even for a sample
   //with zeroes and sharp peaks:
   {
-    NC::VectD x, y;
+    NC::VectD x, y, slopes;
     for ( unsigned i = 0; i <= 2000; ++i ) {
       const double xi = 0.01 * i;
       x.push_back( xi );
       const double d = std::fmod( xi, 2.0 ) - 1.0;
-      y.push_back( d > 0.0 && d < 0.2 ? std::sin( 5.0 * NC::kPi * d ) * 10.0 : 0.0 );
+      const bool peak = ( d > 0.0 && d < 0.2 );
+      y.push_back( peak ? std::sin( 5.0 * NC::kPi * d ) * 10.0 : 0.0 );
+      slopes.push_back( peak ? 50.0 * NC::kPi * std::cos( 5.0 * NC::kPi * d ) : 0.0 );
     }
-    auto r = NCX::reduceHermitePoints( x, y, 1e-3 );
+    auto r = NCX::reduceHermitePoints( x, y, slopes, 1e-3 );
     NC::VectD tx, ty;
     for ( auto i : r.idx ) {
       tx.push_back( x[i] );
