@@ -108,6 +108,29 @@ namespace {
 
 }
 
+namespace {
+  class MyCache final : public NC::CacheBase {
+  public:
+    double value = 0.0;
+    void invalidateCache() override {}
+  };
+
+  class MyCachedScat final : public NC::ProcImpl::ScatterIsotropicMat {
+  public:
+    const char * name() const noexcept final { return "MyCachedScat"; }
+    NC::CrossSect crossSectionIsotropic(NC::CachePtr& cp, NC::NeutronEnergy ekin ) const final
+    {
+      auto& cache = accessCache<MyCache>( cp );
+      cache.value = ekin.dbl();
+      return NC::CrossSect{ 1.0 };
+    }
+    NC::ScatterOutcomeIsotropic sampleScatterIsotropic(NC::CachePtr&, NC::RNG&, NC::NeutronEnergy ekin ) const final
+    {
+      return { ekin, NC::CosineScatAngle{1.0} };
+    }
+  };
+}
+
 int main() {
 
   //The testing is really just compile-time at this point.
@@ -140,6 +163,20 @@ int main() {
     check( { NeutronEnergy{1e-3}, NeutronEnergy{NC::kInfinity} }, { 1e-3 } );
     check( NC::EnergyDomain::null(), {} );
     nc_assert_always( MyIsoScat().isoXSDescr().breakpts.empty() );
+  }
+  //A CachePtr can only be used with the process which created it:
+  {
+    MyCachedScat a, b;
+    NC::CachePtr cp;
+    (void)a.crossSectionIsotropic( cp, NC::NeutronEnergy{ 1.0 } );
+    (void)a.crossSectionIsotropic( cp, NC::NeutronEnergy{ 2.0 } );
+    bool threw = false;
+    try {
+      (void)b.crossSectionIsotropic( cp, NC::NeutronEnergy{ 1.0 } );
+    } catch ( NC::Error::LogicError& ) {
+      threw = true;
+    }
+    nc_assert_always( threw );
   }
   //An override is returned intact through the base class:
   {
