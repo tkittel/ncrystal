@@ -58,17 +58,13 @@ namespace NCRYSTAL_NAMESPACE {
     // 0). The value at 0 is the limit of the cross section for wavelength ->
     // 0.
     //
-    // The table is created by evaluating the cross section at a dense set of
-    // wavelengths (log-spaced, plus points just below and above each known
-    // discontinuity), and then selecting a subset of these points and their
-    // slopes such that the interpolation reproduces the cross section at all
-    // the dense points within the tolerance. The slopes are constrained such
-    // that the interpolation can not become negative (J. W. Schmidt and
-    // W. Hess 1988, DOI: 10.1007/BF01934097). The result is verified at the
-    // midpoints between all neighbouring dense points, and points are added to
-    // the dense sample where needed, until the tolerance is met
-    // everywhere. Finally, the table is verified at random points in each
-    // segment.
+    // The table points are a subset of points where the cross section is
+    // evaluated, and the slopes at the table points are those of the cross
+    // section, limited where needed such that the interpolation can not
+    // become negative (J. W. Schmidt and W. Hess 1988, DOI:
+    // 10.1007/BF01934097). The table reproduces the cross section within the
+    // tolerance at all wavelengths (relative to the cross section, except
+    // below denseWavelengthMin(), see below).
     //
     // The tolerance is relative to the cross section, except at wavelengths
     // below denseWavelengthMin(), where the table is simply the interpolation
@@ -118,10 +114,14 @@ namespace NCRYSTAL_NAMESPACE {
                            IsoMacroXSTableDiagnostics* = nullptr );
 
     //The same, for a general function of the wavelength, whose values are
-    //taken to be macroscopic cross sections (1/cm), with the discontinuities
-    //given explicitly (processes in the diagnostics will be empty):
+    //taken to be macroscopic cross sections (1/cm), with its derivative
+    //d(xs)/d(wl) and the discontinuities given explicitly (processes in the
+    //diagnostics will be empty). The functions are only evaluated at
+    //wavelengths away from the discontinuities, where the derivative is
+    //well-defined:
     IsoMacroXSTable
     createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
+                           const std::function<double(double)>& dxs_of_wl,
                            VectD discontinuities,
                            const IsoMacroXSTableParams&,
                            IsoMacroXSTableDiagnostics* = nullptr );
@@ -149,7 +149,8 @@ namespace NCRYSTAL_NAMESPACE {
     private:
       explicit IsoMacroXSTable( std::unique_ptr<double[]> );
       friend IsoMacroXSTable
-      createIsoMacroXSTable( const std::function<double(double)>&, VectD,
+      createIsoMacroXSTable( const std::function<double(double)>&,
+                             const std::function<double(double)>&, VectD,
                              const IsoMacroXSTableParams&,
                              IsoMacroXSTableDiagnostics* );
       std::unique_ptr<double[]> m_data;
@@ -167,15 +168,17 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Reduce a dense sample (x must be sorted, but may contain pairs of
     //identical values to represent discontinuities, and y must be
-    //non-negative) to a subset of points with slopes, such that the cubic
-    //Hermite interpolation reproduces all y values within the tolerance tol
-    //(relative to y), and is never negative:
+    //non-negative), with the slopes of the cross section at the sample points,
+    //to a subset of points, such that the cubic Hermite interpolation with
+    //these slopes reproduces all y values within the tolerance tol (relative
+    //to y). The slopes are only modified where needed to ensure that the
+    //interpolation is never negative:
     struct ReducedHermitePoints {
       std::vector<std::size_t> idx;//indices of the selected points
       VectD slope;//slopes at the selected points
     };
     ReducedHermitePoints reduceHermitePoints( const VectD& x, const VectD& y,
-                                              double tol );
+                                              const VectD& slopes, double tol );
 
     //Evaluate a table at a given wavelength: cubic Hermite interpolation,
     //where a pair of identical wavelengths (a discontinuity) uses the second
