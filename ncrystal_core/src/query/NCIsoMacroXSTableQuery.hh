@@ -1,5 +1,5 @@
-#ifndef NCrystal_FilterQuery_hh
-#define NCrystal_FilterQuery_hh
+#ifndef NCrystal_IsoMacroXSTableQuery_hh
+#define NCrystal_IsoMacroXSTableQuery_hh
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -25,10 +25,10 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace Filter {
+  namespace XSTable {
 
-    //JSON query: ["filtertable",CFGSTR,OPTION1,OPTION2,...] where the options
-    //are strings like "tol=1e-3", "wlmax=500", "ndense=0" (auto) and
+    //JSON query: ["isomacroxstable",CFGSTR,OPTION1,OPTION2,...] where the
+    //options are strings like "tol=1e-3", "wlmax=500", "ndense=0" (auto) and
     //"discontinuities=1".
     //FIXME: Use streamJSONHugeArray for the arrays when it becomes available.
     using Query = SmallVector<StrView,8>;

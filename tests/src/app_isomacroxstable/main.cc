@@ -18,16 +18,16 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-//Tests of the filter table creation with synthetic cross section curves: the
+//Tests of the IsoMacroXSTable creation with synthetic cross section curves: the
 //tolerance must be met for complicated shapes, and problems which could lead
 //to wrong tables must result in exceptions.
 
-#include "NCrystal/internal/filter/NCFilterTable.hh"
+#include "NCrystal/internal/xstable/NCIsoMacroXSTable.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include <iostream>
 
 namespace NC = NCrystal;
-namespace NCF = NCrystal::Filter;
+namespace NCX = NCrystal::XSTable;
 
 namespace {
 
@@ -35,8 +35,8 @@ namespace {
 
   //Worst relative error of the table vs. the function, at log-spaced points
   //and at points close to the given discontinuities:
-  double worstRelErr( const NCF::Table& t, const Fct& f, const NC::VectD& discont,
-                      double wlmax )
+  double worstRelErr( const NCX::IsoMacroXSTable& t, const Fct& f,
+                      const NC::VectD& discont, double wlmax )
   {
     NC::VectD wls = NC::geomspace( 1e-7, wlmax, 200000 );
     for ( auto e : discont )
@@ -47,8 +47,9 @@ namespace {
     double worst = 0.0;
     for ( auto wl : wls ) {
       const double exact = f( wl );
-      const double tab = NCF::evalTable( t.wl.data(), t.xs.data(), t.slope.data(),
-                                         t.wl.size(), wl );
+      const double tab = NCX::evalIsoMacroXSTable( t.wl.data(), t.xs.data(),
+                                                   t.slope.data(), t.wl.size(),
+                                                   wl );
       const double yref = std::max( exact, abs_floor );
       const double err = ( yref > 0.0
                            ? NC::ncabs( tab - exact ) / yref
@@ -61,10 +62,10 @@ namespace {
   void testOK( const char* descr, const Fct& f, NC::VectD discont = {},
                double tol = 1e-3, double wlmax = 500.0 )
   {
-    NCF::TableParams params;
+    NCX::IsoMacroXSTableParams params;
     params.tol = tol;
     params.wlmax = wlmax;
-    auto t = NCF::createTable( f, discont, params );
+    auto t = NCX::createIsoMacroXSTable( f, discont, params );
     const double worst = worstRelErr( t, f, discont, wlmax );
     nc_assert_always( worst <= tol );
     std::cout << descr << ": npts=" << t.wl.size()
@@ -74,10 +75,10 @@ namespace {
 
   template <class TError>
   void testError( const char* descr, const Fct& f, NC::VectD discont = {},
-                  NCF::TableParams params = {} )
+                  NCX::IsoMacroXSTableParams params = {} )
   {
     try {
-      NCF::createTable( f, discont, params );
+      NCX::createIsoMacroXSTable( f, discont, params );
     } catch ( TError& e ) {
       std::cout << descr << ": got expected exception: " << e.what() << std::endl;
       return;
@@ -133,21 +134,25 @@ int main()
   testError<NC::Error::CalcError>( "NaN", []( double wl ) { return wl > 3.0 ? std::numeric_limits<double>::quiet_NaN() : 1.0; } );
   testError<NC::Error::CalcError>( "infinite", []( double wl ) { return wl > 3.0 ? NC::kInfinity : 1.0; } );
   {
-    NCF::TableParams p;
+    NCX::IsoMacroXSTableParams p;
     p.tol = 0.0;
     testError<NC::Error::BadInput>( "tol=0", []( double ) { return 1.0; }, {}, p );
-    p = NCF::TableParams();
+    p = NCX::IsoMacroXSTableParams();
     p.wlmax = 1e-9;
     testError<NC::Error::BadInput>( "tiny wlmax", []( double ) { return 1.0; }, {}, p );
   }
 
-  //evalTable: pairs at discontinuities, cubic interpolation, and clamped
-  //extrapolation:
+  //evalIsoMacroXSTable: pairs at discontinuities, cubic interpolation, and
+  //clamped extrapolation:
   {
     const NC::VectD wl = { 0.0, 1.0, 2.0, 2.0, 3.0 };
     const NC::VectD xs = { 1.0, 2.0, 3.0, 1.0, 0.5 };
     const NC::VectD sl = { 1.0, 1.0, 1.0, -0.5, -0.5 };
-    auto ev = [&]( double w ) { return NCF::evalTable( wl.data(), xs.data(), sl.data(), wl.size(), w ); };
+    auto ev = [&]( double w )
+    {
+      return NCX::evalIsoMacroXSTable( wl.data(), xs.data(), sl.data(),
+                                       wl.size(), w );
+    };
     nc_assert_always( ev( -1.0 ) == 1.0 );
     nc_assert_always( ev( 0.5 ) == 1.5 );//cubic reduces to linear
     nc_assert_always( ev( 1.999 ) > 2.99 );
@@ -156,13 +161,17 @@ int main()
     nc_assert_always( ev( 3.5 ) == 0.25 );
     nc_assert_always( ev( 4.0 ) == 0.0 );//extrapolated: -0.0, clamped
     const NC::VectD sl2 = { 0.0, 0.0, 0.0, 0.0, 0.0 };
-    auto ev2 = [&]( double w ) { return NCF::evalTable( wl.data(), xs.data(), sl2.data(), wl.size(), w ); };
+    auto ev2 = [&]( double w )
+    {
+      return NCX::evalIsoMacroXSTable( wl.data(), xs.data(), sl2.data(),
+                                       wl.size(), w );
+    };
     nc_assert_always( ev2( 0.5 ) == 1.5 );//symmetric smoothstep
     nc_assert_always( ev2( 0.25 ) == 1.0 + 0.15625 );
     nc_assert_always( ev2( NC::kInfinity ) == 0.5 );
-    std::cout << "evalTable: OK" << std::endl;
+    std::cout << "evalIsoMacroXSTable: OK" << std::endl;
   }
-  //reducePoints: the interpolation is never negative, even for a sample
+  //reduceHermitePoints: the interpolation is never negative, even for a sample
   //with zeroes and sharp peaks:
   {
     NC::VectD x, y;
@@ -172,7 +181,7 @@ int main()
       const double d = std::fmod( xi, 2.0 ) - 1.0;
       y.push_back( d > 0.0 && d < 0.2 ? std::sin( 5.0 * NC::kPi * d ) * 10.0 : 0.0 );
     }
-    auto r = NCF::reducePoints( x, y, 1e-3, 1e-12 );
+    auto r = NCX::reduceHermitePoints( x, y, 1e-3, 1e-12 );
     NC::VectD tx, ty;
     for ( auto i : r.idx ) {
       tx.push_back( x[i] );
@@ -180,9 +189,11 @@ int main()
     }
     double ymin = 0.0;
     for ( auto w : NC::linspace( 0.0, 20.0, 200001 ) )
-      ymin = std::min( ymin, NCF::evalTable( tx.data(), ty.data(), r.slope.data(), tx.size(), w ) );
+      ymin = std::min( ymin, NCX::evalIsoMacroXSTable( tx.data(), ty.data(),
+                                                       r.slope.data(),
+                                                       tx.size(), w ) );
     nc_assert_always( ymin >= 0.0 );
-    std::cout << "reducePoints: " << r.idx.size() << " of " << x.size()
+    std::cout << "reduceHermitePoints: " << r.idx.size() << " of " << x.size()
               << " points, never negative: OK" << std::endl;
   }
   return 0;

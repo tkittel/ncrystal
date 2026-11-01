@@ -1,5 +1,5 @@
-#ifndef NCrystal_FilterTable_hh
-#define NCrystal_FilterTable_hh
+#ifndef NCrystal_IsoMacroXSTable_hh
+#define NCrystal_IsoMacroXSTable_hh
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -23,14 +23,9 @@
 
 #include "NCrystal/factories/NCMatCfg.hh"
 
-//FIXME: Check whether some of the utilities here (e.g. reducePoints and
-//evalTable) duplicate functionality available elsewhere in NCrystal. We should
-//also revisit the name "filter" before the release. CrossSectionTable might be
-//more appropriate.
-
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace Filter {
+  namespace XSTable {
 
     ////////////////////////////////////////////////////////////////////////////
     //
@@ -39,19 +34,19 @@ namespace NCRYSTAL_NAMESPACE {
     // wavelength. This allows generic production of "just the cross section
     // curve as a table", decoupled from our object instances. One intended
     // use-case is for simple attenuation-only GPU-compatible filter components
-    // in McStas, hence the name "filter".
+    // in McStas.
     //
     // Each table point has a wavelength, a cross section and its slope, and
     // between neighbouring points the cross section is the cubic Hermite
     // interpolation of these. To support discontinuities like Bragg edges, the
     // tables can contain two entries at the same point. It is therefore
     // important that consumers evaluating the code use an algorithm supporting
-    // that, and the implementation of the evalTable function below serve as a
-    // reference implementation.
+    // that, and the implementation of the evalIsoMacroXSTable function below
+    // serve as a reference implementation.
     //
     // It is also very much the intention that this should be a non-fiddly
-    // turn-key feature, so the TableParams options are only intended for expert
-    // investigations, and should normally be left at default values.
+    // turn-key feature, so the IsoMacroXSTableParams options are only intended
+    // for expert investigations, and should normally be left at default values.
     //
     ////////////////////////////////////////////////////////////////////////////
 
@@ -93,7 +88,7 @@ namespace NCRYSTAL_NAMESPACE {
     // if the cross section is not finite or negative, if it does not converge
     // for wavelength -> 0, or if an unexpected discontinuity is found.
 
-    struct TableParams {
+    struct IsoMacroXSTableParams {
       //NB: The defaults here are what will be used by the C API
       double wlmax = 500.0;//Angstrom
       double tol = 1e-3;//Max relative error of the cross section (see below)
@@ -102,7 +97,7 @@ namespace NCRYSTAL_NAMESPACE {
       bool discontinuities = true;//Include points at the known discontinuities
     };
 
-    struct Table {
+    struct IsoMacroXSTable {
       VectD wl;//Angstrom
       VectD xs;//barn/atom
       VectD slope;//d(xs)/d(wl), barn/(atom*Angstrom)
@@ -114,20 +109,23 @@ namespace NCRYSTAL_NAMESPACE {
       std::vector<std::string> processes;//Names of the (leaf) physics processes
     };
 
-    Table createTable( const MatCfg&, const TableParams& );
+    IsoMacroXSTable createIsoMacroXSTable( const MatCfg&,
+                                           const IsoMacroXSTableParams& );
 
     //The same, for a general function (e.g. for testing), with the
     //discontinuities given explicitly (numberDensity will be 0 and processes
     //empty):
-    Table createTable( const std::function<double(double)>& xs_of_wl,
-                       VectD discontinuities, const TableParams& );
+    IsoMacroXSTable
+    createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
+                           VectD discontinuities,
+                           const IsoMacroXSTableParams& );
 
     //The lowest wavelength of the log-spaced dense sample (Angstrom). Below
     //it, the table is based on the limit at wavelength 0 and refinement:
     constexpr double denseWavelengthMin() { return 1e-9; }
 
     //The number of log-spaced dense sample points used for a given tolerance
-    //and wlmax, when TableParams::ndense is 0:
+    //and wlmax, when IsoMacroXSTableParams::ndense is 0:
     unsigned autoNDense( double tol, double wlmax );
 
     //Reduce a dense sample (x must be sorted, but may contain pairs of
@@ -135,19 +133,21 @@ namespace NCRYSTAL_NAMESPACE {
     //non-negative) to a subset of points with slopes, such that the cubic
     //Hermite interpolation reproduces all y values within the tolerance tol,
     //relative to max(y,abs_floor), and is never negative:
-    struct ReducedPoints {
+    struct ReducedHermitePoints {
       std::vector<std::size_t> idx;//indices of the selected points
       VectD slope;//slopes at the selected points
     };
-    ReducedPoints reducePoints( const VectD& x, const VectD& y,
-                                double tol, double abs_floor = 0.0 );
+    ReducedHermitePoints reduceHermitePoints( const VectD& x, const VectD& y,
+                                              double tol,
+                                              double abs_floor = 0.0 );
 
     //Evaluate a table at a given wavelength: cubic Hermite interpolation,
     //where a pair of identical wavelengths (a discontinuity) uses the second
     //point for wavelengths >= the discontinuity, and linear extrapolation of
     //the value and slope of the last point (clamped at 0) beyond the table:
-    double evalTable( const double* wl, const double* xs, const double* slope,
-                      std::size_t n, double wavelength );
+    double evalIsoMacroXSTable( const double* wl, const double* xs,
+                                const double* slope, std::size_t n,
+                                double wavelength );
 
 
   }
