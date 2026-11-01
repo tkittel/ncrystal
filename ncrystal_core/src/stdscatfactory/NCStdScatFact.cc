@@ -232,12 +232,9 @@ namespace NCRYSTAL_NAMESPACE {
 
         const auto knllux = cfg.get_knllux();
 
-        static_assert( static_cast<int>(SAB::LegacySABAlgOpts::MIN) == -6, "");
-        static_assert( static_cast<int>(SAB::LegacySABAlgOpts::MAX) == -1, "");
-
         if ( inelas != "freegas" ) {
           nc_assert_always( isOneOf(inelas,"dyninfo","vdosdebye" ) );
-          nc_assert_always( knllux >= -6 && knllux <= 6 );
+          nc_assert_always( knllux >= -1 && knllux <= 6 );
           if ( ucnmode.has_value() && knllux != -1)
             NCRYSTAL_THROW(BadInput,
                            "ucnmode only supported with legacy kernel processing");
@@ -275,7 +272,7 @@ namespace NCRYSTAL_NAMESPACE {
             if ( di->atomData().scatteringXS().dbl() == 0.0 )
               continue;//just ignore components with no scattering cross section
             if (di_scatknl) {
-              if ( ( knllux >=-6 && knllux <=-1 ) ) {
+              if ( knllux == -1 ) {
                 //legacy:
                 components.addfct_cl([di_scatknl,vdoslux,vdos2sabExcludeFlag,ucnmode,knllux]()
                 {
@@ -288,13 +285,9 @@ namespace NCRYSTAL_NAMESPACE {
                   if ( !sabdata->boundXS() )
                     return complist;
 
-                  nc_assert(knllux>=static_cast<int>(SAB::LegacySABAlgOpts::MIN));
-                  nc_assert(knllux<=static_cast<int>(SAB::LegacySABAlgOpts::MAX));
-                  auto legacyopts = static_cast<SAB::LegacySABAlgOpts>(knllux);
                   auto sabhelper
                     = SAB::createScatterHelperWithCache( sabdata,
-                                                         di_scatknl->energyGrid(),
-                                                         legacyopts );
+                                                         di_scatknl->energyGrid() );
                   auto sab_scatter = makeSO<SABScatter>( std::move(sabhelper) );
                   if ( !ucnmode.has_value() ) {
                     complist.emplace_back(scale,std::move(sab_scatter));

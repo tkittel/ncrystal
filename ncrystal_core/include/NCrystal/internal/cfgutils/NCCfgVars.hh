@@ -262,9 +262,9 @@ namespace NCRYSTAL_NAMESPACE {
       static constexpr value_type default_value() { return -1; }
       static value_type value_validate( value_type value )
       {
-        if ( ! ( value>=-6 && value <= 6 ) )
+        if ( ! ( value>=-1 && value <= 6 ) )
           NCRYSTAL_THROW2(BadInput,name<<" is an expert-only parameter"
-                          " which must be an integral value (-6..6)");
+                          " which must be an integral value (-1..6)");
         return value;
       }
     };
