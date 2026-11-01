@@ -12,10 +12,10 @@ steps: npts=8 xs(0)=6 worst/tol<1: OK
 drop to zero: npts=4 xs(0)=2 worst/tol<1: OK
 unexpected step: got expected exception: IsoMacroXSTable: the cross section has an unexpected discontinuity (or an extremely sharp feature) at wavelength 2 Aa
 no limit for wl->0: got expected exception: IsoMacroXSTable: the cross section does not converge for wavelength -> 0 (estimated limits 1.5e+07, 1.5e+08 and 1.5e+09 /cm)
-negative: got expected exception: IsoMacroXSTable: invalid cross section -2.39643e-05 at wavelength 1.00002 Aa
-NaN: got expected exception: IsoMacroXSTable: invalid cross section nan at wavelength 3.00069 Aa
-infinite: got expected exception: IsoMacroXSTable: invalid cross section inf at wavelength 3.00069 Aa
-infinite slope: got expected exception: IsoMacroXSTable: invalid slope inf of the cross section at wavelength 3.00069 Aa
+negative: got expected exception: IsoMacroXSTable: invalid cross section -2.12261e-05 at wavelength 1.00002 Aa
+NaN: got expected exception: IsoMacroXSTable: invalid cross section nan at wavelength 3.00011 Aa
+infinite: got expected exception: IsoMacroXSTable: invalid cross section inf at wavelength 3.00011 Aa
+infinite slope: got expected exception: IsoMacroXSTable: invalid slope inf of the cross section at wavelength 3.00011 Aa
 tol=0: got expected exception: IsoMacroXSTable: invalid tolerance 0 (must be in the range (0,1))
 tiny wlmax: got expected exception: IsoMacroXSTable: invalid wlmax 1e-09 (must be larger than 0.0001 Aa)
 evalIsoMacroXSTable: OK
