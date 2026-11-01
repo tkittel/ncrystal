@@ -1,6 +1,6 @@
-stdlib::Al_sg225.ncmat: npts=94 xsect(0)=0.0841247/cm xsect(4 Aa)=0.137481/cm xsect(1000 Aa, extrapolated)=8.88781/cm: OK
-stdlib::Be_sg194.ncmat;temp=80K: npts=286 xsect(0)=0.760456/cm xsect(4 Aa)=0.00299654/cm xsect(1000 Aa, extrapolated)=0.612971/cm: OK
-stdlib::Polyethylene_CH2.ncmat: npts=21 xsect(0)=1.80525/cm xsect(4 Aa)=6.88752/cm xsect(1000 Aa, extrapolated)=252.868/cm: OK
+stdlib::Al_sg225.ncmat: npts=102 xsect(0)=0.0841247/cm xsect(4 Aa)=0.137481/cm xsect(1000 Aa, extrapolated)=8.88781/cm: OK
+stdlib::Be_sg194.ncmat;temp=80K: npts=330 xsect(0)=0.760456/cm xsect(4 Aa)=0.00299655/cm xsect(1000 Aa, extrapolated)=0.612971/cm: OK
+stdlib::Polyethylene_CH2.ncmat: npts=30 xsect(0)=1.80525/cm xsect(4 Aa)=6.88546/cm xsect(1000 Aa, extrapolated)=252.868/cm: OK
 stdlib::void.ncmat: npts=2 xsect(0)=0/cm xsect(4 Aa)=0/cm xsect(1000 Aa, extrapolated)=0/cm: OK
 Caught expected ValueError('assignment destination is read-only')
 Caught expected ValueError('assignment destination is read-only')

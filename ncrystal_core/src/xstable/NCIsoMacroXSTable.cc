@@ -23,7 +23,7 @@
 #include "NCrystal/interfaces/NCInfo.hh"
 #include "NCrystal/interfaces/NCProcImpl.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
-#include "NCrystal/internal/utils/NCRandUtils.hh"
+#include "NCrystal/internal/utils/NCIsoXSUtils.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 
@@ -44,10 +44,15 @@ namespace NCRYSTAL_NAMESPACE {
       //twice this are treated as a single one.
       constexpr double edge_eps = 1e-10;
 
-      //The table is built with a slightly smaller tolerance than requested,
-      //so the final verification at random points (which are not part of the
-      //dense sample) has a margin:
-      constexpr double tol_build_factor = 0.98;
+      //The table is built such that it meets a smaller tolerance than
+      //requested at all dense sample points and at the midpoints between
+      //neighbouring ones. Between neighbouring dense sample points there are no
+      //discontinuities, so the error of the table is smooth there and (at the
+      //dense spacing) close to a quadratic. A quadratic within a tolerance T at
+      //both ends and the midpoint of an interval is within 1.25*T in all of
+      //it, so a factor below 0.8 ensures the requested tolerance everywhere
+      //(0.7 leaves a margin):
+      constexpr double tol_build_factor = 0.7;
 
       //Relative jump below which a known discontinuity is treated as a kink:
       constexpr double kink_tol = 1e-6;
@@ -95,6 +100,58 @@ namespace NCRYSTAL_NAMESPACE {
           return;
         if ( !isValidatedUntabulated( proc.name() ) )
           unvalidated.insert( proc.name() );
+      }
+
+      //Collect the leaf processes (of ProcComposition trees, with their scale
+      //factors), separating those with a table in their isoXSDescr():
+      struct UntabulatedLeaf {
+        double scale;
+        const ProcImpl::Process* process;
+        CachePtr cache;
+      };
+      void collectLeaves( const ProcImpl::Process& proc, double scale,
+                          std::vector<std::pair<double,IsoXSDescr>>& tabulated,
+                          std::vector<UntabulatedLeaf>& untabulated )
+      {
+        if ( auto comp = dynamic_cast<const ProcImpl::ProcComposition*>( &proc ) ) {
+          for ( auto& c : comp->components() )
+            collectLeaves( *c.process, scale * c.scale, tabulated, untabulated );
+          return;
+        }
+        if ( proc.isNull() )
+          return;
+        if ( auto iso = dynamic_cast<const ProcImpl::ScatterIsotropicMat*>( &proc ) ) {
+          auto d = iso->isoXSDescr();
+          if ( d.table.has_value() ) {
+            tabulated.emplace_back( scale, std::move( d ) );
+            return;
+          }
+        }
+        untabulated.push_back( UntabulatedLeaf{ scale, &proc, nullptr } );
+      }
+
+      //Numerical derivative of a function which is smooth between the given
+      //(sorted) discontinuities, at a wavelength which is not exactly at one
+      //of them. The differences do not cross the nearest discontinuities:
+      template<class TFct>
+      double numericalSlope( const TFct& f, double wl, const VectD& disc )
+      {
+        auto it = std::upper_bound( disc.begin(), disc.end(), wl );
+        const double lo = ( it == disc.begin() ? 0.0 : *std::prev( it ) );
+        const double hi = ( it == disc.end() ? kInfinity : *it );
+        double h = 1e-7 * wl;
+        if ( wl - 2.0 * h > lo && wl + 2.0 * h < hi ) {
+          const double w1 = wl - h;
+          const double w2 = wl + h;
+          return ( f( w2 ) - f( w1 ) ) / ( w2 - w1 );
+        }
+        //Second order one-sided differences, on the side with most room:
+        const bool above = ( hi - wl > wl - lo );
+        h = ncmin( h, 0.25 * ( above ? hi - wl : wl - lo ) );
+        if ( !above )
+          h = -h;
+        return ( ( -3.0 * f( wl ) + 4.0 * f( wl + h ) - f( wl + 2.0 * h ) )
+                 / ( 2.0 * h ) );
       }
 
       //The wavelengths of the known discontinuities and kinks of the cross
@@ -150,46 +207,19 @@ namespace NCRYSTAL_NAMESPACE {
       }
 
       //Try to cover the sample points from i to j with one interval, given the
-      //slope s0 at i. The slope s1 at j is chosen by a weighted least squares
-      //fit to the interior points, and limited (see below) such that the
-      //interval and the following one (at least up to the next sample point)
-      //can not become negative: h*s0 >= -3*y0 and h*s1 <= 3*y1 for an interval
-      //of width h are sufficient for that (Schmidt and Hess 1988). Returns
-      //whether all interior points are reproduced within tol:
-      bool fitInterval( const VectD& x, const VectD& y, std::size_t i,
-                        std::size_t j, double s0, double tol, double& s1 )
+      //slope s0 at i. The slope s1 at j is the slope of the cross section
+      //there, limited such that the interval and the following one (at least
+      //up to the next sample point) can not become negative: h*s0 >= -3*y0 and
+      //h*s1 <= 3*y1 for an interval of width h are sufficient for that
+      //(Schmidt and Hess 1988). Returns whether all interior points are
+      //reproduced within tol:
+      bool fitInterval( const VectD& x, const VectD& y, const VectD& slopes,
+                        std::size_t i, std::size_t j, double s0, double tol,
+                        double& s1 )
       {
         nc_assert( j > i && x[j] > x[i] );
         const double h = x[j] - x[i];
-        //The interpolation is A(u)+s1*B(u), with B(u)=-u^2*(1-u)*h:
-        double num = 0.0, den = 0.0;
-        for ( std::size_t k = i + 1; k < j; ++k ) {
-          const double u = ( x[k] - x[i] ) / h;
-          const double v = 1.0 - u;
-          const double A = ( v * v * ( ( 1.0 + 2.0 * u ) * y[i] + u * h * s0 )
-                             + u * u * ( 3.0 - 2.0 * u ) * y[j] );
-          const double B = -u * u * v * h;
-          //Points with y=0 must be reproduced exactly, and are not used in
-          //the fit:
-          const double w = ( y[k] > 0.0 ? 1.0 / y[k] : 0.0 );
-          num += w * w * B * ( y[k] - A );
-          den += w * w * B * B;
-        }
-        s1 = ( den > 0.0 ? num / den : ( y[j] - y[i] ) / h );
-        //Keep s1 within the slopes of the sample chords next to j (where the
-        //slope of a smooth curve is, unless it has an inflection point there),
-        //so the slopes of consecutive intervals can not run away:
-        if ( x[j-1] < x[j] ) {
-          double clo = ( y[j] - y[j-1] ) / ( x[j] - x[j-1] );
-          double chi = clo;
-          if ( j + 1 < x.size() && x[j+1] > x[j] ) {
-            const double c = ( y[j+1] - y[j] ) / ( x[j+1] - x[j] );
-            clo = ncmin( clo, c );
-            chi = ncmax( chi, c );
-          }
-          s1 = ncclamp( s1, clo, chi );
-        }
-        s1 = ncmin( s1, 3.0 * y[j] / h );
+        s1 = ncmin( slopes[j], 3.0 * y[j] / h );
         if ( j + 1 < x.size() && x[j+1] > x[j] )
           s1 = ncmax( s1, -3.0 * y[j] / ( x[j+1] - x[j] ) );
         if ( h * s0 < -3.0 * y[i] * ( 1.0 + 1e-12 ) )
@@ -208,6 +238,7 @@ namespace NCRYSTAL_NAMESPACE {
 
 NCX::ReducedHermitePoints NCX::reduceHermitePoints( const VectD& x,
                                                     const VectD& y,
+                                                    const VectD& slopes,
                                                     double tol )
 {
   //From the current point (with its slope fixed), find the most distant point
@@ -219,14 +250,14 @@ NCX::ReducedHermitePoints NCX::reduceHermitePoints( const VectD& x,
   //must then be within the tolerance), otherwise a new point is started at
   //the discontinuity, with a fresh slope.
   const std::size_t n = x.size();
-  nc_assert_always( n >= 2 );
-  auto startSlope = [&x,&y,n]( std::size_t i )
+  nc_assert_always( n >= 2 && y.size() == n && slopes.size() == n );
+  auto startSlope = [&x,&y,&slopes,n]( std::size_t i )
   {
-    //Slope towards the next sample point (never violating the constraint,
-    //since y is non-negative):
+    //The slope of the cross section, limited such that the interval up to
+    //the next sample point can not become negative:
     return ( i + 1 < n && x[i+1] > x[i]
-             ? ( y[i+1] - y[i] ) / ( x[i+1] - x[i] )
-             : 0.0 );
+             ? ncmax( slopes[i], -3.0 * y[i] / ( x[i+1] - x[i] ) )
+             : slopes[i] );
   };
   ReducedHermitePoints res;
   res.idx.push_back( 0 );
@@ -243,7 +274,7 @@ NCX::ReducedHermitePoints NCX::reduceHermitePoints( const VectD& x,
     auto reach = [&]( double s0, double& s_good )
     {
       std::size_t good = i + 1;
-      (void)fitInterval( x, y, i, good, s0, tol, s_good );
+      (void)fitInterval( x, y, slopes, i, good, s0, tol, s_good );
       std::size_t bad = n;//first known infeasible end point (n: none)
       std::size_t step = 2;
       double s;
@@ -251,7 +282,7 @@ NCX::ReducedHermitePoints NCX::reduceHermitePoints( const VectD& x,
         std::size_t j = ncmin( i + step, n - 1 );
         if ( j <= good )
           break;
-        if ( x[j] > x[i] && fitInterval( x, y, i, j, s0, tol, s ) ) {
+        if ( x[j] > x[i] && fitInterval( x, y, slopes, i, j, s0, tol, s ) ) {
           good = j;
           s_good = s;
           if ( j == n - 1 )
@@ -265,7 +296,7 @@ NCX::ReducedHermitePoints NCX::reduceHermitePoints( const VectD& x,
       if ( bad < n ) {
         while ( bad - good > 1 ) {
           std::size_t mid = good + ( bad - good ) / 2;
-          if ( fitInterval( x, y, i, mid, s0, tol, s ) ) {
+          if ( fitInterval( x, y, slopes, i, mid, s0, tol, s ) ) {
             good = mid;
             s_good = s;
           } else {
@@ -278,10 +309,10 @@ NCX::ReducedHermitePoints NCX::reduceHermitePoints( const VectD& x,
     double s_good;
     std::size_t good = reach( res.slope.back(), s_good );
     if ( good == i + 1 ) {
-      //The slope inherited from the previous interval does not reach beyond
-      //the next sample point, and could make the interpolation between them
-      //poor. Restart with a fresh slope instead, by repeating the point (with
-      //the same value):
+      //The slope inherited from the previous interval (where it might have
+      //been limited to avoid negative values) does not reach beyond the next
+      //sample point. Restart with the slope of the cross section instead, by
+      //repeating the point (with the same value):
       const double s0 = startSlope( i );
       if ( s0 != res.slope.back() ) {
         res.idx.push_back( i );
@@ -342,6 +373,7 @@ double NCX::evalIsoMacroXSTable( const double* wl, const double* xs,
 
 NCX::IsoMacroXSTable
 NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
+                            const std::function<double(double)>& dxs_of_wl,
                             VectD discontinuities_in,
                             const IsoMacroXSTableParams& params,
                             IsoMacroXSTableDiagnostics* diagnostics )
@@ -367,6 +399,15 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
     if ( !( std::isfinite( v ) && v >= 0.0 ) )
       NCRYSTAL_THROW2( CalcError, "IsoMacroXSTable: invalid cross section " << v
                        << " at wavelength " << wl << " Aa" );
+    return v;
+  };
+  auto evalSlope = [&dxs_of_wl]( double wl )
+  {
+    const double v = dxs_of_wl( wl );
+    if ( !std::isfinite( v ) )
+      NCRYSTAL_THROW2( CalcError, "IsoMacroXSTable: invalid slope " << v
+                       << " of the cross section at wavelength " << wl
+                       << " Aa" );
     return v;
   };
 
@@ -409,11 +450,17 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
     nc_assert_always( itD == discontinuities.end() );
   }
 
-  VectD y;
+  //The cross sections and their slopes (the slope at wavelength 0 is set
+  //below):
+  VectD y, slopes;
   y.reserve( wl_eval.size() );
+  slopes.reserve( wl_eval.size() );
   y.push_back( 0.0 );
-  for ( std::size_t i = 1; i < wl_eval.size(); ++i )
+  slopes.push_back( 0.0 );
+  for ( std::size_t i = 1; i < wl_eval.size(); ++i ) {
     y.push_back( evalXS( wl_eval[i] ) );
+    slopes.push_back( evalSlope( wl_eval[i] ) );
+  }
   wl_eval.clear();
 
   //Known discontinuities where the cross section turns out to be continuous
@@ -452,6 +499,9 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
                        << lim_a << ", " << lim_b << " and " << lim_c
                        << " /cm)" );
     y.front() = ( lim_c > 0.0 ? lim_c : 0.0 );
+    //Wavelength 0 is a limit, without a slope of its own. The chord towards
+    //the next sample point is used:
+    slopes.front() = ( y[1] - y[0] ) / ( x[1] - x[0] );
   }
 
   //Reduce the dense sample, and verify the result at the midpoints between
@@ -460,11 +510,12 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
   ReducedHermitePoints red;
   std::size_t nrefine = 0;
   while ( true ) {
-    red = reduceHermitePoints( x, y, tol_build );
+    red = reduceHermitePoints( x, y, slopes, tol_build );
     const auto& idx = red.idx;
-    VectD add_x, add_y;
+    VectD add_x, add_y, add_slopes;
     add_x.reserve( x.size() );//at most one point per interval
     add_y.reserve( x.size() );
+    add_slopes.reserve( x.size() );
     std::size_t seg = 0;//table segment is from x[idx[seg]] to x[idx[seg+1]]
     for ( std::size_t k = 0; k + 1 < x.size(); ++k ) {
       while ( idx[seg+1] <= k )
@@ -486,6 +537,7 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
                          " feature) at wavelength " << xm << " Aa" );
       add_x.push_back( xm );
       add_y.push_back( ym );
+      add_slopes.push_back( evalSlope( xm ) );
     }
     if ( add_x.empty() )
       break;
@@ -493,21 +545,25 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
       NCRYSTAL_THROW( CalcError, "IsoMacroXSTable: the refinement of the table"
                       " did not converge" );
     //Merge the new points into the (sorted) sample:
-    VectD new_x, new_y;
+    VectD new_x, new_y, new_slopes;
     new_x.reserve( x.size() + add_x.size() );
     new_y.reserve( x.size() + add_x.size() );
+    new_slopes.reserve( x.size() + add_x.size() );
     std::size_t ia = 0;
     for ( std::size_t k = 0; k < x.size(); ++k ) {
       for ( ; ia < add_x.size() && add_x[ia] < x[k]; ++ia ) {
         new_x.push_back( add_x[ia] );
         new_y.push_back( add_y[ia] );
+        new_slopes.push_back( add_slopes[ia] );
       }
       new_x.push_back( x[k] );
       new_y.push_back( y[k] );
+      new_slopes.push_back( slopes[k] );
     }
     nc_assert_always( ia == add_x.size() );
     x.swap( new_x );
     y.swap( new_y );
+    slopes.swap( new_slopes );
   }
 
   //The table, as a block in the format documented in
@@ -527,34 +583,6 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
   }
   data[3 + 3 * n] = IsoMacroXSTable::magic();
   IsoMacroXSTable res( std::move( data ) );
-
-  //Final verification at random points in each interval (in addition to the
-  //sample points, which are verified by construction):
-  {
-    const auto wl = res.wavelengths();
-    const auto xs = res.macroXS();
-    const auto slope = res.slopes();
-    RandXRSRImpl rng;//(fixed default seed, for reproducible verification)
-    constexpr unsigned npts_per_interval = 4;
-    for ( std::size_t i = 0; i + 1 < n; ++i ) {
-      const double x0 = wl[i];
-      const double x1 = wl[i+1];
-      if ( !( x1 > x0 ) )
-        continue;
-      for ( unsigned k = 0; k < npts_per_interval; ++k ) {
-        const double xv = x0 + ( 0.01 + 0.98 * rng.generate() ) * ( x1 - x0 );
-        if ( xv < denseWavelengthMin() )
-          continue;
-        const double yv = evalXS( xv );
-        const double yt = evalIsoMacroXSTable( wl.data(), xs.data(),
-                                               slope.data(), n, xv );
-        if ( !( ncabs( yt - yv ) <= tol * yv ) )
-          NCRYSTAL_THROW2( CalcError, "IsoMacroXSTable: verification failed at"
-                           " wavelength " << xv << " Aa (table: " << yt
-                           << " /cm, exact: " << yv << " /cm)" );
-      }
-    }
-  }
 
   if ( diagnostics ) {
     diagnostics->nDiscontinuities = ndisc;
@@ -599,7 +627,46 @@ NCX::createIsoMacroXSTable( const MatCfg& cfg,
           + absn->crossSectionIsotropic( cp_abs, ekin ).dbl() );
   };
 
-  auto res = createIsoMacroXSTable( xs_of_wl, std::move( discontinuities ),
+  //The slope of the cross section: from the merged tables of the processes
+  //which have a table in their isoXSDescr(), and from numerical differences
+  //for the other processes (whose cross sections are smooth between the known
+  //discontinuities):
+  std::vector<std::pair<double,IsoXSDescr>> tabulated;
+  std::vector<UntabulatedLeaf> untabulated;
+  collectLeaves( *scat, 1.0, tabulated, untabulated );
+  collectLeaves( *absn, 1.0, tabulated, untabulated );
+  IsoXSDescr merged;
+  {
+    std::vector<std::pair<double,const IsoXSDescr*>> inputs;
+    for ( auto& t : tabulated )
+      inputs.emplace_back( t.first, &t.second );
+    if ( !inputs.empty() )
+      merged = mergeIsoXSDescr( inputs );
+  }
+  VectD sorted_disc = discontinuities;
+  std::sort( sorted_disc.begin(), sorted_disc.end() );
+  auto dxs_of_wl = [&merged,&untabulated,&sorted_disc,
+                    numberDensity]( double wl )
+  {
+    const double e = wl2ekin( wl );
+    //de/dwl = -2e/wl:
+    double res = 0.0;
+    if ( merged.table.has_value() )
+      res = ( evalIsoXSDerivative( merged.table.value(), e )
+              * ( -2.0 * e / wl ) );
+    for ( auto& u : untabulated ) {
+      auto f = [&u]( double w )
+      {
+        const NeutronEnergy ekin{ wl2ekin( w ) };
+        return u.process->crossSectionIsotropic( u.cache, ekin ).dbl();
+      };
+      res += u.scale * numericalSlope( f, wl, sorted_disc );
+    }
+    return numberDensity * res;
+  };
+
+  auto res = createIsoMacroXSTable( xs_of_wl, dxs_of_wl,
+                                    std::move( discontinuities ),
                                     params, diagnostics );
   if ( diagnostics )
     diagnostics->processes.assign( names.begin(), names.end() );
