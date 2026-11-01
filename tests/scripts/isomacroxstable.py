@@ -160,7 +160,7 @@ def main():
     #disabling the known ones):
     with ensure_error(NCCalcError,'IsoMacroXSTable: the cross section has an'
                       ' unexpected discontinuity (or an extremely sharp'
-                      ' feature) at wavelength 0.56845 Aa'):
+                      ' feature) at wavelength 1.65323 Aa'):
         ncquery(base+['discontinuities=0'])
     with ensure_error(NCBadInput,'IsoMacroXSTable: invalid tolerance 0 (must be'
                       ' in the range (0,1))'):
