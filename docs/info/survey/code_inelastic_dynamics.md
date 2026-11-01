@@ -221,10 +221,8 @@ Draft changelog text exists in /workspace/docs/changes_for_changelog.txt (lines 
 ### 3.2 NCFreeGasUtils and freegas
 - **Files:** inc/phys_utils/NCFreeGasUtils.hh, src/phys_utils/NCFreeGasUtils.cc; inc/freegas/NCFreeGas.hh, src/freegas/NCFreeGas.cc (unchanged).
 - **XS:** sigma_free*[(1 + 1/(2a^2))*erf(a) + exp(-a^2)/(sqrt(pi)*a)], with a^2 = A*E/kT and sigma_free = sigma_b*(A/(1+A))^2 (sampling paper eq. 20).
-- **Sampling (`FreeGasSampler`):** quantum free gas.
-  - beta is sampled with bounds via an erfc lookup table (lower/upper bounds).
-  - alpha given beta samples f(x) = exp(-1/x - c*x)/sqrt(x), choosing between two methods.
-  - Near the kinematic endpoint, alpha is sampled uniformly (`muIsotropicAtBeta`).
+- **Sampling (`FreeGasSampler`, inc/phys_utils/NCFreeGasSampler.hh):** explicit elastic collision with a Maxwellian target weighted by relative speed (Coveyou, Bate & Osborn 1956), exactly equivalent to sampling the free-gas S(alpha,beta).
+  - The previous S(alpha,beta)-based implementation (erfc-bounded beta sampling, then alpha given beta) is kept only as a test reference (`FreeGasLegacySampler`) in tests/src/app_freegas.
 - **`FreeGas` Process:** used for `@DYNINFO freegas` and `inelas=freegas`.
 
 ### 3.3 NCKinUtils (changed)
