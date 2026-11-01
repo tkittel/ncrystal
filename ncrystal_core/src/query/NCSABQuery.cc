@@ -55,6 +55,9 @@ namespace NCRYSTAL_NAMESPACE {
         //Strictly VDOS-derived reference values:
         Optional<Temperature> teff_vdos;
         Optional<double> msd_vdos;//[Aa^2]
+        //Energy grid and fraction of the atom in the material:
+        DI_ScatKnl::EGridShPtr egrid;
+        double fraction;
       };
 
       ExtractedSabData
@@ -88,7 +91,9 @@ namespace NCRYSTAL_NAMESPACE {
                                             VDOS::VDOSLux(cfg.get_vdoslux()) ),
                  extractTeffFromDynInfo( di_knl ),
                  teff_vdos,
-                 msd_vdos };
+                 msd_vdos,
+                 di_knl->energyGrid(),
+                 di_knl->fraction() };
       }
 
       struct SampleResult {
@@ -241,6 +246,36 @@ namespace NCRYSTAL_NAMESPACE {
           os << '}';
         }
         os << "}}";
+      }
+
+      void query_impl_xs( std::ostream& os,
+                          ExtractedSabData xd,
+                          SABCfg::ExtenderModel extender,
+                          const VectD& energies,
+                          int knllux )
+      {
+        //The cross section contributed to the material, like the factories
+        //would provide it, but with the given extender:
+        if ( knllux < 0 )
+          knllux = SABCfg::sablux_default_luxury;
+        auto cfg = SABCfg::createConfig(knllux);
+        cfg.extender_model = extender;
+        if ( extender == SABCfg::ExtenderModel::SCT && !xd.teff.has_value() )
+          NCRYSTAL_THROW(BadInput,"The SCT extender requires an effective"
+                         " temperature, which is not available.");
+        const double sb = xd.sab->boundXS().dbl();
+        auto sabext = SABExtended::create( cfg, xd.sab, xd.teff,
+                                           std::move( xd.egrid ) );
+        VectD xs;
+        xs.reserve( energies.size() );
+        for ( auto e : energies )
+          xs.push_back( xd.fraction
+                        * sabext->xsEvaluator().evalScaled( e, 1.0, sb ) );
+        os << "{\"extension_method\":";
+        streamJSON( os, sabext->extender().shortName().value_or("custom") );
+        os << ",\"xs\":";
+        streamJSON( os, xs );
+        os << '}';
       }
 
       void query_impl_proc( std::ostream& os,
@@ -717,6 +752,7 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
   constexpr auto sv_proctries = StrView::make("proctries");
   constexpr auto sv_refsample = StrView::make("refsample");
   constexpr auto sv_analyse = StrView::make("analyse");
+  constexpr auto sv_xs = StrView::make("xs");
 
   if ( key == sv_refeval ) {
     //query like: ncrystal_query sab refeval 0.025 'bla.ncmat' 1000 ['Al']
@@ -955,18 +991,47 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
       invalid(usage);
     query_impl_proctries( os, std::move( extracted.sab ), optn.value(),
                           optsd.value(), MatCfg(argstr(0)).get_knllux() );
+  } else if ( key == sv_xs ) {
+    const char * usage
+      = ( "correct usage: [\"sab\",\"xs\",MATCFGSTR,ATOMDISPLAYLABEL,"
+          "EXTENDER,E0,..,EN] where EXTENDER is \"sct\" or \"freegas\""
+          " and the E values are neutron energies in eV (the ATOMDISPLAYLABEL"
+          " can be left as an empty string for monoatomic materials)" );
+    if ( nargs < 4 )
+      invalid(usage);
+    SABCfg::ExtenderModel extender;
+    if ( arg(2) == "sct" )
+      extender = SABCfg::ExtenderModel::SCT;
+    else if ( arg(2) == "freegas" )
+      extender = SABCfg::ExtenderModel::FreeGas;
+    else
+      invalid(usage);
+    VectD energies;
+    energies.reserve( static_cast<std::size_t>( nargs - 3 ) );
+    for ( std::size_t i = 3; i < nargs; ++i ) {
+      auto val = arg(i).toDbl();
+      if ( !val.has_value() || !( val.value() >= 0.0 ) )
+        invalid(usage);
+      energies.push_back( val.value() );
+    }
+    Optional<std::string> atomdsplbl;
+    if ( !arg(1).empty() )
+      atomdsplbl = argstr(1);
+    query_impl_xs( os, query_impl_extractSabData( argstr(0), atomdsplbl ),
+                   extender, energies, MatCfg(argstr(0)).get_knllux() );
   } else if ( key == sv_list ) {
     if ( nargs != 0 )
       invalid("no arguments should come after: [\"sab\",\"list\"]");
-    streamJSON( os, std::array<StrView,9>{ sv_analyse,
-                                           sv_integschemes,
-                                           sv_proc,
-                                           sv_proctries,
-                                           sv_refeval,
-                                           sv_refsample,
-                                           sv_samplepb,
-                                           sv_sglcell,
-                                           sv_surveyor } );
+    streamJSON( os, std::array<StrView,10>{ sv_analyse,
+                                            sv_integschemes,
+                                            sv_proc,
+                                            sv_proctries,
+                                            sv_refeval,
+                                            sv_refsample,
+                                            sv_samplepb,
+                                            sv_sglcell,
+                                            sv_surveyor,
+                                            sv_xs } );
   } else {
     invalid(nullptr);
   }

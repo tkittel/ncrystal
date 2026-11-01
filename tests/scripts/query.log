@@ -113,7 +113,8 @@ Caught expected NCBadInput('Invalid JSON query key: "foo"')
  'refsample',
  'samplepb',
  'sglcell',
- 'surveyor']
+ 'surveyor',
+ 'xs']
 ===========================================
 ============= CLI >>vdos list<< ====================
 ['expand']
