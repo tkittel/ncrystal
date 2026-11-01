@@ -390,6 +390,9 @@ NC::extractSABDataFromDynInfo( const NC::DI_ScatKnl* di,
 NC::Optional<NC::Temperature>
 NC::extractTeffFromDynInfo( const DI_ScatKnl* di )
 {
+  if ( auto di_vdebye = dynamic_cast<const DI_VDOSDebye*>( di ) )
+    return debyeEffectiveTemperature( di_vdebye->debyeTemperature(),
+                                      di->temperature() );
   if ( auto di_vdos = dynamic_cast<const DI_VDOS*>( di ) ) {
     //NB: both VDOSEval and the DoValidate constructor here guard the
     //sanity of the value (as does the SCT code itself later):
@@ -432,6 +435,15 @@ NC::extractMSDFromDynInfo( const DI_ScatKnl* di )
 }
 
 //Idealised VDOS based only on Debye temperature:
+NC::Temperature NC::debyeEffectiveTemperature( DebyeTemperature debyeTemperature,
+                                               Temperature temperature )
+{
+  //The scale of the VDOS and the atom mass do not affect the result:
+  auto vdos = createVDOSDebye( debyeTemperature, temperature,
+                               SigmaBound{ 1.0 }, AtomMass{ 1.0 } );
+  return Temperature{ DoValidate, VDOSEval( vdos ).calcEffectiveTemperature() };
+}
+
 NC::VDOSData NC::createVDOSDebye( DebyeTemperature debyeTemperature,
                                   Temperature temperature,
                                   SigmaBound boundXS,
