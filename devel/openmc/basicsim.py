@@ -104,8 +104,9 @@ def check_results(sp_file):
     errors = df['std. dev.'].values/(bin_high - bin_low)
     if np.shape(REF_VALUES) != np.shape(values):
         raise SystemExit('Wrong number of Debye-Scherrer cones')
-    test_result = ( np.all(values > REF_VALUES-REF_ERRORS)
-                    and np.all(values < REF_VALUES+REF_ERRORS) )
+    #Compatible within 3 sigma of the combined statistical errors:
+    test_result = np.all( np.abs( values - REF_VALUES )
+                          < 3.0 * np.sqrt( errors**2 + REF_ERRORS**2 ) )
     if test_result:
         print('OpenMC run succesful.')
     else:
@@ -156,7 +157,7 @@ def main():
 
     n_particles = 1000000
     E0 = 0.0045  # eV
-    cfg = 'Al_sg225.ncmat'
+    cfg = 'Al_sg225.ncmat;vdoslux=2003;knllux=3'
     model = pencil_beam_model(cfg, E0, n_particles)
     sp_file = model.run()
 
