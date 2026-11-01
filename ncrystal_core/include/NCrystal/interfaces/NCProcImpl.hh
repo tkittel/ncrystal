@@ -474,8 +474,14 @@ namespace NCRYSTAL_NAMESPACE {
 
     template<class CacheClass>
     inline CacheClass& Process::accessCache(CachePtr& cpbase) const {
-      if (!cpbase)
+      if (!cpbase) {
         cpbase = ncmake_unique<CacheClass>();
+        cpbase->m_owner = getUniqueID();
+      } else if ( cpbase->m_owner != getUniqueID() ) {
+        NCRYSTAL_THROW2( LogicError, "accessCache: CachePtr used with process \""
+                         << name() << "\" was created by a different process"
+                         " (each CachePtr must only be used with one process)" );
+      }
 #ifndef NDEBUG
       if ( !dynamic_cast<CacheClass*>(cpbase.get()) ) {
         NCRYSTAL_THROW2( LogicError, "accessCache: type mismatch in class \"" << name()
