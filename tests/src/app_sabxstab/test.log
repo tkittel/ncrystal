@@ -12,5 +12,5 @@ NCrystal WARNING: Discarding 120 edges of provided kernel data due to missing S 
 LiquidHeavyWaterD2O_T293.6K.ncmat;knllux=3;comp=inelas:
   up to Emax within 1e-13, above within 1e-9 (SAB element with 283 egrid points)
   up to Emax within 1e-13, above within 1e-9 (SAB element with 334 egrid points)
-Al_sg225.ncmat;knllux=203;comp=inelas:
+Al_sg225.ncmat (free-gas extender):
   up to Emax within 1e-13, above within 1e-9 (SAB element with 242 egrid points)
