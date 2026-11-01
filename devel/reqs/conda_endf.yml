@@ -9,4 +9,4 @@ dependencies:
   - make
   - pip
   - python
-  - endf-parserpy >=0.14.3
+  - endf-parserpy >=0.17.0

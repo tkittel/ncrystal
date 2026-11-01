@@ -28,10 +28,15 @@ def convert_endf_tsl_to_ace(endf_tsl, material_name=None, ace_name=None,
                             emax=None, zaids=None, njoy_exec='njoy'):
     import os
     import pathlib
+    import re
     import shutil
     import subprocess
 
     import endf_parserpy
+    _epv = re.match(r'(\d+)\.(\d+)', endf_parserpy.__version__)
+    #endf-parserpy 0.18+ never caches recipes, and warns if given cache args:
+    _epkw = ( {} if _epv and ( int(_epv.group(1)), int(_epv.group(2)) ) >= (0,18)
+              else { 'print_cache_info' : False, 'cache_dir' : False } )
 
     natural_isotopes={
     1000: "1000 1001 1002",
@@ -119,8 +124,7 @@ def convert_endf_tsl_to_ace(endf_tsl, material_name=None, ace_name=None,
     92000: "92000 92234 92235 92238"}
 
     def create_dummy_endf_file(filename):
-        parser = endf_parserpy.EndfParserPy( print_cache_info=False,
-                                             cache_dir=False )
+        parser = endf_parserpy.EndfParserPy( **_epkw )
         endf_dict = endf_parserpy.EndfDict()
         endf_dict['1/451'] = {}
         p = endf_dict['1/451']
@@ -196,7 +200,7 @@ def convert_endf_tsl_to_ace(endf_tsl, material_name=None, ace_name=None,
             except OSError:
                 pass
 
-    parser = endf_parserpy.EndfParserPy(print_cache_info=False, cache_dir=False)
+    parser = endf_parserpy.EndfParserPy( **_epkw )
     endf_dic = parser.parsefile(endf_tsl)
     temperatures = endf_dic[7][4]['teff0_table']['Tint']
     assert ( (len(suffix) == 3
