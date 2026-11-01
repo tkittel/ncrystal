@@ -39,6 +39,9 @@ NC::Vector NC::randIsotropicDirection( RNG& rng )
   // NOTE2: This algorithm code is replicated in randDirectionGivenScatterMu,
   //        since it is such a hotspot.
 
+  //FIXME: Not contraction safe (x0*x0+x1*x1 may be fused, affecting results;
+  //also in randDirectionGivenScatterMu). Use ncfma, noting that this changes
+  //random streams across NCrystal.
   double x0,x1,s;
   do {
     x0 = 2.0*rng.generate()-1.0;
@@ -121,6 +124,9 @@ double NC::randNorm( NC::RNG& rng )
   //The loop runs on average ~1.37 times, and log(..) is invoked on average
   //0.167 times per call (hence the speedup).
 
+  //FIXME: Not contraction safe (5.0-5.136*u may be fused, affecting results
+  //near the squeeze boundary). Use ncfma, noting that this changes random
+  //streams across NCrystal.
   double g, g2(0),u,v,invu;
   do {
     u = rng.generate();
