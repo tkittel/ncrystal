@@ -21,6 +21,7 @@
 #include "NCrystal/internal/freegas/NCFreeGas.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
 #include "NCrystal/internal/phys_utils/NCFreeGasUtils.hh"
+#include "NCrystal/internal/phys_utils/NCFreeGasSampler.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 
 namespace NC = NCrystal;
@@ -32,13 +33,15 @@ struct NC::FreeGas::Impl {
         SigmaFree sigma )
     : m_xsprovider(t, target_mass_amu, sigma),
       m_temperature(DoValidate,t),
-      m_target_mass_amu(DoValidate,target_mass_amu)
+      m_target_mass_amu(DoValidate,target_mass_amu),
+      m_sampler(m_temperature,m_target_mass_amu)
   {
   }
 
   FreeGasXSProvider m_xsprovider;
   Temperature m_temperature;
   AtomMass m_target_mass_amu;
+  FreeGasSampler m_sampler;
 };
 
 NC::FreeGas::FreeGas( Temperature t,
@@ -75,7 +78,7 @@ NC::Optional<NC::IsoXSTable> NC::FreeGas::createIsoXSTable() const
 NC::ScatterOutcomeIsotropic NC::FreeGas::sampleScatterIsotropic(CachePtr&, RNG& rng, NeutronEnergy ekin ) const
 {
   double delta_ekin, mu;
-  std::tie(delta_ekin,mu) = FreeGasSampler(ekin,m_impl->m_temperature,m_impl->m_target_mass_amu).sampleDeltaEMu(rng);
+  std::tie(delta_ekin,mu) = m_impl->m_sampler.sampleDeltaEMu(rng,ekin);
   return { NeutronEnergy{ncmax(0.0,ekin.get()+delta_ekin)}, CosineScatAngle{mu} };
 }
 
