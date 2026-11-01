@@ -30,7 +30,6 @@ namespace NCRYSTAL_NAMESPACE {
     //JSON query: ["isomacroxstable",CFGSTR,OPTION1,OPTION2,...] where the
     //options are strings like "tol=1e-3", "wlmax=500", "ndense=0" (auto) and
     //"discontinuities=1".
-    //FIXME: Use streamJSONHugeArray for the arrays when it becomes available.
     using Query = SmallVector<StrView,8>;
     void JSONQuery( std::ostream&, const Query& );
 

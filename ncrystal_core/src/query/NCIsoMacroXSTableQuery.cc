@@ -73,7 +73,8 @@ void NCX::JSONQuery( std::ostream& os, const Query& query )
     }
   }
 
-  auto table = createIsoMacroXSTable( MatCfg( cfgstr ), params );
+  IsoMacroXSTableDiagnostics diag;
+  auto table = createIsoMacroXSTable( MatCfg( cfgstr ), params, &diag );
 
   streamJSONDictEntry( os, "cfgstr", cfgstr, JSONDictPos::FIRST );
   streamJSONDictEntry( os, "tol", params.tol );
@@ -82,13 +83,13 @@ void NCX::JSONQuery( std::ostream& os, const Query& query )
                                        ? params.ndense
                                        : autoNDense( params.tol, params.wlmax ) ) );
   streamJSONDictEntry( os, "discontinuities", params.discontinuities );
-  streamJSONDictEntry( os, "processes", table.processes );
-  streamJSONDictEntry( os, "numberdensity", table.numberDensity );
-  streamJSONDictEntry( os, "ndiscontinuities", table.nDiscontinuities );
-  streamJSONDictEntry( os, "ndense_total", table.nDense );
-  streamJSONDictEntry( os, "nrefine", table.nRefine );
-  streamJSONDictEntry( os, "npts", table.wl.size() );
-  streamJSONDictEntry( os, "wl", table.wl );
-  streamJSONDictEntry( os, "xs", table.xs );
-  streamJSONDictEntry( os, "slope", table.slope, JSONDictPos::LAST );
+  streamJSONDictEntry( os, "processes", diag.processes );
+  streamJSONDictEntry( os, "ndiscontinuities", diag.nDiscontinuities );
+  streamJSONDictEntry( os, "ndense_total", diag.nDense );
+  streamJSONDictEntry( os, "nrefine", diag.nRefine );
+  //The table, in the format of IsoMacroXSTable::raw():
+  const auto raw = table.raw();
+  os << ",\"raw_result\":";
+  streamJSONHugeDblVect( os, VectD( raw.begin(), raw.end() ) );
+  os << '}';
 }

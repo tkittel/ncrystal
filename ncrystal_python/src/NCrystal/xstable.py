@@ -48,10 +48,13 @@ class IsoMacroXSTable:
     def __init__( self, cfgstr ):
         from ._chooks import _get_raw_cfcts
         self.__cfgstr = str(cfgstr)
-        wl, macroxs, slope = _get_raw_cfcts()['isomacroxstable']( self.__cfgstr)
-        for a in ( wl, macroxs, slope ):
-            a.setflags( write = False )
-        self.__wl, self.__macroxs, self.__slope = wl, macroxs, slope
+        block = _get_raw_cfcts()['isomacroxstable']( self.__cfgstr )
+        block.setflags( write = False )
+        n = int( block[2] )
+        self.__block = block
+        self.__wl = block[3:3+n]
+        self.__macroxs = block[3+n:3+2*n]
+        self.__slope = block[3+2*n:3+3*n]
 
     @property
     def cfgstr( self ):
@@ -59,14 +62,22 @@ class IsoMacroXSTable:
         return self.__cfgstr
 
     @property
+    def block( self ):
+        """The table as a single read-only numpy array, exactly as returned by
+        the C API function ncrystal_isomacroxstable (see the format description
+        in the ncrystal_example_filter.c file in the NCrystal repository)."""
+        return self.__block
+
+    @property
     def table( self ):
-        """The table, as three read-only numpy arrays: the wavelengths (in
-        Aa), the macroscopic cross sections (in 1/cm) and their slopes (in
-        1/(cm*Aa)). Between neighbouring points, the cross section is the cubic
-        Hermite interpolation of these. The first point is the limit for
-        wavelength -> 0. Discontinuities (e.g. Bragg edges) are represented by
-        two points with the same wavelength, where the first has the value just
-        below the discontinuity, and the second the value just above it."""
+        """The table, as three read-only numpy arrays (views into the block):
+        the wavelengths (in Aa), the macroscopic cross sections (in 1/cm) and
+        their slopes (in 1/(cm*Aa)). Between neighbouring points, the cross
+        section is the cubic Hermite interpolation of these. The first point is
+        the limit for wavelength -> 0. Discontinuities (e.g. Bragg edges) are
+        represented by two points with the same wavelength, where the first has
+        the value just below the discontinuity, and the second the value just
+        above it."""
         return self.__wl, self.__macroxs, self.__slope
 
     def xsect( self, ekin = None, wl = None ):
