@@ -36,7 +36,7 @@ void NCX::JSONQuery( std::ostream& os, const Query& query )
   };
   if ( query.size() < 2 || query.front() != "isomacroxstable" )
     invalid("usage: [\"isomacroxstable\",CFGSTR,OPTIONS...] with options like"
-            " \"tol=1e-3\", \"wlmax=500\", \"ndense=0\" (auto),"
+            " \"tol=1e-4\", \"wlmax=500\", \"ndense=0\" (auto),"
             " \"discontinuities=1\"");
   const std::string cfgstr = query.at(1).to_string();
 
