@@ -79,6 +79,48 @@ double NC::evalIsoXS( const IsoXSDescr::Tabulation& t, double e )
   return ncfma( vectAt( t.r, i ), inv, exs ) * inv;
 }
 
+double NC::evalIsoXSDerivative( const IsoXSDescr::Tabulation& t, double e )
+{
+  const VectD& E = t.E;
+  nc_assert( E.size() >= 2 );
+  nc_assert( e > 0.0 );
+  if ( e < E.front() )
+    return t.tail[0] ? -0.5 * t.tail[0] / ( e * std::sqrt( e ) ) : 0.0;
+  if ( !( e < E.back() ) )
+    return -( t.tail[2] + 2.0 * t.tail[4] / e ) / ( e * e );
+  //With F(e) = e*xs = P(u) + sqrt(e)*Q(u) + r/e: xs' = ( F' - xs ) / e
+  const std::size_t i = fastUpperBoundIdx( E.data(), E.size(), e ) - 1;
+  const double invw = 1.0 / ( vectAt( E, i + 1 ) - vectAt( E, i ) );
+  const double u = ( e - vectAt( E, i ) ) * invw;
+  auto poly = [u]( const double * c )
+  {
+    return ncfma( u, ncfma( u, ncfma( u, c[3], c[2] ), c[1] ), c[0] );
+  };
+  auto dpoly = [u,invw]( const double * c )
+  {
+    return ncfma( u, ncfma( u, 3.0 * c[3], 2.0 * c[2] ), c[1] ) * invw;
+  };
+  double F = 0.0, dF = 0.0;
+  if ( !t.p.empty() ) {
+    const double * c = t.p.data() + 4 * i;
+    F = poly( c );
+    dF = dpoly( c );
+  }
+  if ( !t.q.empty() ) {
+    const double * d = t.q.data() + 4 * i;
+    const double se = std::sqrt( e );
+    const double Q = poly( d );
+    F = ncfma( se, Q, F );
+    dF += 0.5 * Q / se + se * dpoly( d );
+  }
+  if ( !t.r.empty() ) {
+    const double ri = vectAt( t.r, i ) / e;
+    F += ri;
+    dF -= ri / e;
+  }
+  return ( dF - F / e ) / e;
+}
+
 NC::IsoXSDescr NC::scaleIsoXSDescr( const IsoXSDescr& d, double escale,
                                     double xsscale )
 {

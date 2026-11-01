@@ -97,6 +97,11 @@ namespace NCRYSTAL_NAMESPACE {
   //Explicit copy:
   IsoXSDescr cloneIsoXSDescr( const IsoXSDescr& );
 
+  //The derivative d(xs)/de of the tabulated cross section at e > 0, in the
+  //same piece of the table as evalIsoXS (so at the energies E[i] it is the
+  //derivative from above):
+  double evalIsoXSDerivative( const IsoXSDescr::Tabulation&, double e );
+
   //Fixme: Remove this standalone evalIsoXS and use two functions above. Also
   //       make all 3 evaluations methods in IsoXSEvaluator return CrossSect
   //       type:
