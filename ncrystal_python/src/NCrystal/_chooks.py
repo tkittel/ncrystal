@@ -393,13 +393,15 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
     functions['raw_vdos2gn'] = raw_vdos2gn
 
     _raw_filtertable = _wrap('ncrystal_filtertable',None,
-                             (_cstr,_uintp,_dblpp,_dblpp,_cstr),hide=True)
+                             (_cstr,_uintp,_dblpp,_dblpp,_dblpp,_cstr),
+                             hide=True)
     def filtertable( cfgstr ):
         _ensure_numpy()
         n = _uint()
-        wl, macroxs = _dblp(), _dblp()
-        _raw_filtertable( _str2cstr(cfgstr), n, wl, macroxs, None )
-        return _cptr_to_nparray( wl, n ), _cptr_to_nparray( macroxs, n )
+        wl, macroxs, slope = _dblp(), _dblp(), _dblp()
+        _raw_filtertable( _str2cstr(cfgstr), n, wl, macroxs, slope, None )
+        return ( _cptr_to_nparray( wl, n ), _cptr_to_nparray( macroxs, n ),
+                 _cptr_to_nparray( slope, n ) )
     functions['filtertable'] = filtertable
 
 

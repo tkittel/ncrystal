@@ -35,27 +35,32 @@ from NCTestUtils.common import ensure_error
 import bisect
 import numpy as np
 
-def lookup( wl, xs, w ):
+def lookup( wl, xs, sl, w ):
     #Independent (point-by-point) implementation of the evaluation:
     if not w > wl[0]:
         return xs[0]
     n = len(wl)
     if w >= wl[-1]:
-        slope = ( xs[-1] - xs[-2] ) / ( wl[-1] - wl[-2] )
-        return xs[-1] if slope == 0.0 else max( 0.0, xs[-1] + ( w - wl[-1] ) * slope )
+        return xs[-1] if sl[-1] == 0.0 else max( 0.0, xs[-1] + ( w - wl[-1] ) * sl[-1] )
     i = bisect.bisect_right( wl, w ) - 1
     assert 0 <= i < n - 1 and wl[i+1] > wl[i]
-    return xs[i] + ( w - wl[i] ) / ( wl[i+1] - wl[i] ) * ( xs[i+1] - xs[i] )
+    h = wl[i+1] - wl[i]
+    u = ( w - wl[i] ) / h
+    v = 1.0 - u
+    return ( v * v * ( ( 1.0 + 2.0 * u ) * xs[i] + u * h * sl[i] )
+             + u * u * ( ( 3.0 - 2.0 * u ) * xs[i+1] - v * h * sl[i+1] ) )
 
 def test( cfg ):
     f = NCrystalFilter( cfg )
     assert f.cfgstr == cfg
-    wl, macroxs = f.table
+    wl, macroxs, slope = f.table
     #Same as the table of the JSON query, converted to 1/cm:
     r = ncquery( ['filtertable', cfg] )
     tol = r['tol']
     assert np.array_equal( wl, np.asarray(r['wl']) )
     np.testing.assert_allclose( macroxs, np.asarray(r['xs']) * r['numberdensity'],
+                                rtol = 1e-15, atol = 0.0 )
+    np.testing.assert_allclose( slope, np.asarray(r['slope']) * r['numberdensity'],
                                 rtol = 1e-15, atol = 0.0 )
     #Within the tolerance of the exact macroscopic cross section:
     rng = np.random.default_rng( 1234 )
@@ -70,7 +75,7 @@ def test( cfg ):
     w = np.concatenate( [ w[:500], wl, [ -1.0, 0.0, wl[-1], 1.2*wl[-1], 1e6, np.inf ] ] )
     tab = f.xsect( wl = w )
     for v, t in zip( w, tab ):
-        ref = lookup( wl, macroxs, float(v) )
+        ref = lookup( wl, macroxs, slope, float(v) )
         assert t == ref or abs( t - ref ) <= 1e-14 * max( abs(ref), floor ), (v, t, ref)
         assert f.xsect( wl = float(v) ) == t
     #Energies instead of wavelengths, and scalars:

@@ -37,25 +37,23 @@ namespace NCF = NCrystal::Filter;
 /* functions, so it can also be used in code running on a GPU (for instance   */
 /* with "#pragma acc routine seq" for OpenACC).                               */
 double filter_macroxs( unsigned n, const double * wl, const double * macroxs,
-                       double wavelength )
+                       const double * slope, double wavelength )
 {
-  /* Implements a linear interpolation, where at a discontinuity (two points  */
-  /* with the same wavelength) the value above it is used. Beyond the last    */
-  /* point, the last segment is extrapolated linearly (clamped at 0).         */
+  /* Implements a cubic Hermite interpolation of the values and slopes at the */
+  /* two neighbouring points, where at a discontinuity (two points with the   */
+  /* same wavelength) the point above it is used. Beyond the last point, its  */
+  /* value and slope are extrapolated linearly (clamped at 0).                */
   unsigned lo, hi, mid;
-  double slope, value;
+  double h, u, v, value;
   if ( !( wavelength > wl[0] ) )
     return macroxs[0];
   if ( wavelength >= wl[n-1] ) {
-    if ( !( wl[n-1] > wl[n-2] ) )
+    if ( slope[n-1] == 0.0 )
       return macroxs[n-1];
-    slope = ( macroxs[n-1] - macroxs[n-2] ) / ( wl[n-1] - wl[n-2] );
-    if ( slope == 0.0 )
-      return macroxs[n-1];
-    value = macroxs[n-1] + ( wavelength - wl[n-1] ) * slope;
+    value = macroxs[n-1] + ( wavelength - wl[n-1] ) * slope[n-1];
     return value > 0.0 ? value : 0.0;
   }
-  /* Binary search for the segment with wl[lo] <= wavelength < wl[hi]: */
+  /* Binary search for the interval with wl[lo] <= wavelength < wl[hi]: */
   lo = 0;
   hi = n - 1;
   while ( hi - lo > 1 ) {
@@ -65,20 +63,25 @@ double filter_macroxs( unsigned n, const double * wl, const double * macroxs,
     else
       hi = mid;
   }
-  return macroxs[lo] + ( ( wavelength - wl[lo] ) / ( wl[hi] - wl[lo] )
-                         * ( macroxs[hi] - macroxs[lo] ) );
+  h = wl[hi] - wl[lo];
+  u = ( wavelength - wl[lo] ) / h;
+  v = 1.0 - u;
+  return ( v * v * ( ( 1.0 + 2.0 * u ) * macroxs[lo] + u * h * slope[lo] )
+           + u * u * ( ( 3.0 - 2.0 * u ) * macroxs[hi] - v * h * slope[hi] ) );
 }
 
 namespace {
 
   //Compare with the internal evaluation at the given wavelengths:
-  void compare( const NC::VectD& wl, const NC::VectD& xs, const NC::VectD& wls,
+  void compare( const NC::VectD& wl, const NC::VectD& xs,
+                const NC::VectD& slope, const NC::VectD& wls,
                 const char * descr )
   {
     const auto n = static_cast<unsigned>( wl.size() );
     for ( auto w : wls ) {
-      const double a = filter_macroxs( n, wl.data(), xs.data(), w );
-      const double b = NCF::evalTable( wl.data(), xs.data(), wl.size(), w );
+      const double a = filter_macroxs( n, wl.data(), xs.data(), slope.data(), w );
+      const double b = NCF::evalTable( wl.data(), xs.data(), slope.data(),
+                                       wl.size(), w );
       if ( !( a == b || NC::ncabs( a - b ) <= 1e-14 * NC::ncmax( NC::ncabs( b ), 1e-300 ) ) ) {
         std::cout << descr << ": FAILED at wavelength " << w << ": " << a
                   << " vs. " << b << std::endl;
@@ -93,13 +96,14 @@ namespace {
 int main()
 {
   //Synthetic tables, with a discontinuity, and different slopes of the last
-  //segment (positive, negative and zero):
+  //point (positive, negative and zero):
   const NC::VectD wl = { 0.0, 1.0, 2.0, 2.0, 3.0 };
+  const NC::VectD xs = { 1.0, 2.0, 3.0, 1.0, 2.0 };
   const NC::VectD wls = { -1.0, 0.0, 0.5, 1.0, 1.5, 1.999, 2.0, 2.5, 3.0, 3.5, 4.0, 100.0,
                           std::numeric_limits<double>::infinity() };
-  compare( wl, { 1.0, 2.0, 3.0, 1.0, 2.0 }, wls, "synthetic, rising" );
-  compare( wl, { 1.0, 2.0, 3.0, 1.0, 0.5 }, wls, "synthetic, falling" );
-  compare( wl, { 1.0, 2.0, 3.0, 1.0, 1.0 }, wls, "synthetic, flat" );
+  compare( wl, xs, { 1.0, 0.5, 2.0, -1.0, 1.0 }, wls, "synthetic, rising" );
+  compare( wl, xs, { 1.0, 0.5, 2.0, -1.0, -0.5 }, wls, "synthetic, falling" );
+  compare( wl, xs, { 1.0, 0.5, 2.0, -1.0, 0.0 }, wls, "synthetic, flat" );
 
   //Tables of materials, at random wavelengths (also beyond the table), at
   //all table points, and next to them:
@@ -115,7 +119,7 @@ int main()
     for ( auto x : t.wl )
       for ( auto f : { 1.0, 1.0 - 1e-12, 1.0 + 1e-12 } )
         w.push_back( x * f );
-    compare( t.wl, t.xs, w, cfg );
+    compare( t.wl, t.xs, t.slope, w, cfg );
   }
   return 0;
 }

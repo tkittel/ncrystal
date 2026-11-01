@@ -22,7 +22,7 @@
 
 # NEEDS: numpy
 
-# Test the "filtertable" query, which provides piecewise linear tables of total
+# Test the "filtertable" query, which provides piecewise cubic tables of total
 # cross sections vs. wavelength.
 
 import NCTestUtils.enable_fpe # noqa F401
@@ -47,26 +47,31 @@ def bragg_edges( cfg ):
     collect( NC.createInfo(cfg) )
     return np.unique(res)
 
-def table_eval( wl_t, xs_t, wl ):
-    #Linear interpolation, where a pair of identical wavelengths (a Bragg edge)
-    #uses the second value (above the edge) for wl >= edge:
+def table_eval( wl_t, xs_t, s_t, wl ):
+    #Cubic Hermite interpolation, where a pair of identical wavelengths (a
+    #Bragg edge) uses the second point (above the edge) for wl >= edge:
     i = np.clip( np.searchsorted(wl_t, wl, side='right') - 1, 0, len(wl_t)-2 )
-    x0, x1, y0, y1 = wl_t[i], wl_t[i+1], xs_t[i], xs_t[i+1]
-    t = np.where( x1 > x0, (wl-x0)/np.where(x1>x0,x1-x0,1.0), 0.0 )
-    return y0 + t*(y1-y0)
+    x0, x1 = wl_t[i], wl_t[i+1]
+    h = np.where( x1 > x0, x1 - x0, 1.0 )
+    u = np.where( x1 > x0, (wl-x0)/h, 1.0 )
+    v = 1.0 - u
+    return ( v*v*( (1.0+2.0*u)*xs_t[i] + u*h*s_t[i] )
+             + u*u*( (3.0-2.0*u)*xs_t[i+1] - v*h*s_t[i+1] ) )
 
 def test( cfg, *opts ):
     r = ncquery( ['filtertable',cfg] + list(opts) )
-    wl, xs = np.asarray(r['wl']), np.asarray(r['xs'])
+    wl, xs, sl = np.asarray(r['wl']), np.asarray(r['xs']), np.asarray(r['slope'])
     tol, wlmax = r['tol'], r['wlmax']
-    assert len(wl) == r['npts'] == len(xs) and len(wl) >= 2
+    assert len(wl) == r['npts'] == len(xs) == len(sl) and len(wl) >= 2
     assert wl[0] == 0.0 and wl[-1] == wlmax
     assert np.all( np.diff(wl) >= 0.0 )
     assert np.all( xs >= 0.0 )
-    #Identical wavelengths only come in pairs, at discontinuities (for the
-    #supported processes, these are the Bragg edges):
+    #Identical wavelengths only come in pairs. Pairs with different values are
+    #discontinuities (for the supported processes, these are the Bragg edges),
+    #while pairs with identical values only change the slope:
     idup = np.where( np.diff(wl) == 0.0 )[0]
     assert np.all( np.diff(idup) > 1 )
+    idup = idup[ xs[idup] != xs[idup+1] ]
     edges = bragg_edges( cfg )
     for e in wl[idup]:
         assert np.abs(edges-e).min() <= 1e-9 * e
@@ -95,13 +100,14 @@ def test( cfg, *opts ):
     e = edges[ (edges > 1e-6) & (edges < wlmax/1.001) ]
     wlt = np.concatenate( [wlt] + [ e*f for f in (1-1e-8,1+1e-8,1-1e-5,1+1e-5) ] )
     xst = exact_xs( cfg, wlt )
-    xsi = table_eval( wl, xs, wlt )
+    xsi = table_eval( wl, xs, sl, wlt )
+    assert np.all( xsi >= 0.0 )
     #The tolerance is relative to max(xs,1e-12 barn):
     maxrelerr = ( np.abs( xsi-xst ) / np.maximum( xst, 1e-12 ) ).max()
     assert maxrelerr <= tol, f'max relative error {maxrelerr} > tol={tol}'
     print(f'{cfg} {" ".join(opts)}'.strip())
     print(f'   npts={r["npts"]} ndiscontinuities={r["ndiscontinuities"]}'
-          f' ({len(idup)} in table) tol={tol:g} wlmax={wlmax:g} algo={r["algo"]}'
+          f' ({len(idup)} in table) tol={tol:g} wlmax={wlmax:g}'
           f' maxrelerr<tol: OK')
     print(f'   processes: {" ".join(r["processes"])}')
     print(f'   first: ({wl[0]:.6g} Aa, {xs[0]:.6g} b)'
@@ -111,7 +117,6 @@ def main():
     test('stdlib::Al_sg225.ncmat')
     test('stdlib::Al_sg225.ncmat','tol=1e-2')
     test('stdlib::Al_sg225.ncmat','tol=1e-4')
-    test('stdlib::Al_sg225.ncmat','algo=dp')
     test('stdlib::Al_sg225.ncmat','wlmax=10')
     test('stdlib::Al_sg225.ncmat','wlmax=4.7')
     test('stdlib::Al_sg225.ncmat;density=0.5x')

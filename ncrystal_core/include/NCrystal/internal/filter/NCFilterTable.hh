@@ -34,18 +34,20 @@ namespace NCRYSTAL_NAMESPACE {
 
     ////////////////////////////////////////////////////////////////////////////
     //
-    // Piecewise linear tables of the total cross section (scattering +
+    // Piecewise cubic tables of the total cross section (scattering +
     // absorption) of an isotropic material, as a function of the neutron
     // wavelength. This allows generic production of "just the cross section
     // curve as a table", decoupled from our object instances. One intended
     // use-case is for simple attenuation-only GPU-compatible filter components
     // in McStas, hence the name "filter".
     //
-    // To support discontinuities like Bragg edges, the piecewise linear tables
-    // can contain two entries at the same point. It is therefore important that
-    // consumers evaluating the code use an algorithm supporting that, and the
-    // implementation of the evalTable function below serve as a reference
-    // implementation.
+    // Each table point has a wavelength, a cross section and its slope, and
+    // between neighbouring points the cross section is the cubic Hermite
+    // interpolation of these. To support discontinuities like Bragg edges, the
+    // tables can contain two entries at the same point. It is therefore
+    // important that consumers evaluating the code use an algorithm supporting
+    // that, and the implementation of the evalTable function below serve as a
+    // reference implementation.
     //
     // It is also very much the intention that this should be a non-fiddly
     // turn-key feature, so the TableParams options are only intended for expert
@@ -55,18 +57,22 @@ namespace NCRYSTAL_NAMESPACE {
 
     // Technical details about the tables:
     //
-    // The table covers wavelengths from 0 to wlmax. Beyond wlmax, the last
-    // segment can be extrapolated linearly (clamped at 0). The value at 0 is
-    // the limit of the cross section for wavelength -> 0.
+    // The table covers wavelengths from 0 to wlmax. Beyond wlmax, the value
+    // and slope of the last point can be extrapolated linearly (clamped at
+    // 0). The value at 0 is the limit of the cross section for wavelength ->
+    // 0.
     //
     // The table is created by evaluating the cross section at a dense set of
     // wavelengths (log-spaced, plus points just below and above each known
-    // discontinuity), and then selecting a subset of these points such that
-    // linear interpolation reproduces the cross section at all the dense points
-    // within the tolerance. The result is verified at the midpoints between all
-    // neighbouring dense points, and points are added to the dense sample where
-    // needed, until the tolerance is met everywhere. Finally, the table is
-    // verified at random points in each segment.
+    // discontinuity), and then selecting a subset of these points and their
+    // slopes such that the interpolation reproduces the cross section at all
+    // the dense points within the tolerance. The slopes are constrained such
+    // that the interpolation can not become negative (J. W. Schmidt and
+    // W. Hess 1988, DOI: 10.1007/BF01934097). The result is verified at the
+    // midpoints between all neighbouring dense points, and points are added to
+    // the dense sample where needed, until the tolerance is met
+    // everywhere. Finally, the table is verified at random points in each
+    // segment.
     //
     // The tolerance is relative to max(xs,1e-12 barn per atom). Without such a
     // (negligible) absolute floor, cross sections vanishing at wavelength 0
@@ -77,8 +83,8 @@ namespace NCRYSTAL_NAMESPACE {
     // processes, e.g. Bragg edges, or the boundaries of their energy domains)
     // are represented by two table points with the same wavelength: the first
     // with the cross section just below the discontinuity, the second with the
-    // cross section just above it. Where the cross section turns out to be
-    // continuous (a kink), a single point is used.
+    // cross section just above it. A pair can also have the same cross section
+    // and different slopes (e.g. at a kink).
     //
     // Features narrower than the dense sampling, which are not known in
     // advance, can not be found reliably by sampling. Therefore a warning is
@@ -87,8 +93,6 @@ namespace NCRYSTAL_NAMESPACE {
     // if the cross section is not finite or negative, if it does not converge
     // for wavelength -> 0, or if an unexpected discontinuity is found.
 
-    enum class ReductionAlgo { Greedy, DouglasPeucker };
-
     struct TableParams {
       //NB: The defaults here are what will be used by the C API
       double wlmax = 500.0;//Angstrom
@@ -96,12 +100,12 @@ namespace NCRYSTAL_NAMESPACE {
       unsigned ndense = 0;//Log-spaced dense sample points (plus
                           //discontinuities). 0 means auto (see autoNDense)
       bool discontinuities = true;//Include points at the known discontinuities
-      ReductionAlgo algo = ReductionAlgo::Greedy;
     };
 
     struct Table {
       VectD wl;//Angstrom
       VectD xs;//barn/atom
+      VectD slope;//d(xs)/d(wl), barn/(atom*Angstrom)
       double numberDensity;//atoms/Angstrom^3
       std::size_t nDiscontinuities;//Known discontinuities (clusters) in range,
                                    //excluding kinks
@@ -127,20 +131,23 @@ namespace NCRYSTAL_NAMESPACE {
     unsigned autoNDense( double tol, double wlmax );
 
     //Reduce a dense sample (x must be sorted, but may contain pairs of
-    //identical values to represent discontinuities) to a subset of points,
-    //such that linear interpolation reproduces all y values within the
-    //tolerance tol, relative to max(|y|,abs_floor). The indices of the
-    //selected points are returned.
-    std::vector<std::size_t> reducePoints( const VectD& x, const VectD& y,
-                                           double tol, ReductionAlgo,
-                                           double abs_floor = 0.0 );
+    //identical values to represent discontinuities, and y must be
+    //non-negative) to a subset of points with slopes, such that the cubic
+    //Hermite interpolation reproduces all y values within the tolerance tol,
+    //relative to max(y,abs_floor), and is never negative:
+    struct ReducedPoints {
+      std::vector<std::size_t> idx;//indices of the selected points
+      VectD slope;//slopes at the selected points
+    };
+    ReducedPoints reducePoints( const VectD& x, const VectD& y,
+                                double tol, double abs_floor = 0.0 );
 
-    //Evaluate a table at a given wavelength: linear interpolation, where a
-    //pair of identical wavelengths (a discontinuity) uses the second value for
-    //wavelengths >= the discontinuity, and linear extrapolation of the last
-    //segment (clamped at 0) beyond the table:
-    double evalTable( const double* wl, const double* xs, std::size_t n,
-                      double wavelength );
+    //Evaluate a table at a given wavelength: cubic Hermite interpolation,
+    //where a pair of identical wavelengths (a discontinuity) uses the second
+    //point for wavelengths >= the discontinuity, and linear extrapolation of
+    //the value and slope of the last point (clamped at 0) beyond the table:
+    double evalTable( const double* wl, const double* xs, const double* slope,
+                      std::size_t n, double wavelength );
 
 
   }

@@ -37,7 +37,7 @@ void NCF::JSONQuery( std::ostream& os, const Query& query )
   if ( query.size() < 2 || query.front() != "filtertable" )
     invalid("usage: [\"filtertable\",CFGSTR,OPTIONS...] with options like"
             " \"tol=1e-3\", \"wlmax=500\", \"ndense=0\" (auto),"
-            " \"discontinuities=1\" and \"algo=greedy\" (or \"algo=dp\")");
+            " \"discontinuities=1\"");
   const std::string cfgstr = query.at(1).to_string();
 
   TableParams params;
@@ -68,13 +68,6 @@ void NCF::JSONQuery( std::ostream& os, const Query& query )
       params.ndense = getuint();
     } else if ( key == "discontinuities" ) {
       params.discontinuities = ( getuint() != 0 );
-    } else if ( key == "algo" ) {
-      if ( val == "greedy" )
-        params.algo = ReductionAlgo::Greedy;
-      else if ( val == "dp" )
-        params.algo = ReductionAlgo::DouglasPeucker;
-      else
-        invalid("algo must be \"greedy\" or \"dp\"");
     } else {
       invalid("unknown option "+key.to_string());
     }
@@ -89,8 +82,6 @@ void NCF::JSONQuery( std::ostream& os, const Query& query )
                                        ? params.ndense
                                        : autoNDense( params.tol, params.wlmax ) ) );
   streamJSONDictEntry( os, "discontinuities", params.discontinuities );
-  streamJSONDictEntry( os, "algo", ( params.algo == ReductionAlgo::Greedy
-                                     ? "greedy" : "dp" ) );
   streamJSONDictEntry( os, "processes", table.processes );
   streamJSONDictEntry( os, "numberdensity", table.numberDensity );
   streamJSONDictEntry( os, "ndiscontinuities", table.nDiscontinuities );
@@ -98,5 +89,6 @@ void NCF::JSONQuery( std::ostream& os, const Query& query )
   streamJSONDictEntry( os, "nrefine", table.nRefine );
   streamJSONDictEntry( os, "npts", table.wl.size() );
   streamJSONDictEntry( os, "wl", table.wl );
-  streamJSONDictEntry( os, "xs", table.xs, JSONDictPos::LAST );
+  streamJSONDictEntry( os, "xs", table.xs );
+  streamJSONDictEntry( os, "slope", table.slope, JSONDictPos::LAST );
 }

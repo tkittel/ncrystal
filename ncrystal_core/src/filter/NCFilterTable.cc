@@ -141,144 +141,161 @@ namespace NCRYSTAL_NAMESPACE {
         return res;
       }
 
-      //Deviation of the chord from point i to point j, at point k:
-      inline bool withinTol( const VectD& x, const VectD& y,
-                             std::size_t i, std::size_t j, std::size_t k,
-                             double tol, double abs_floor )
+      //The cubic Hermite interpolation between (x0,y0) and (x1,y1), with the
+      //slopes s0 and s1 there:
+      inline double hermite( double x0, double x1, double y0, double y1,
+                             double s0, double s1, double x )
       {
-        //NB: x[i]<x[j] is guaranteed by the callers when there are interior points.
-        const double t = ( x[k] - x[i] ) / ( x[j] - x[i] );
-        const double yc = y[i] + t * ( y[j] - y[i] );
-        return ncabs( yc - y[k] ) <= tol * ncmax( ncabs( y[k] ), abs_floor );
+        const double h = x1 - x0;
+        const double u = ( x - x0 ) / h;
+        const double v = 1.0 - u;
+        return ( v * v * ( ( 1.0 + 2.0 * u ) * y0 + u * h * s0 )
+                 + u * u * ( ( 3.0 - 2.0 * u ) * y1 - v * h * s1 ) );
       }
 
-      //Check if chord i->j reproduces all interior points within tol:
-      bool chordOK( const VectD& x, const VectD& y,
-                    std::size_t i, std::size_t j, double tol, double abs_floor )
+      //Try to cover the sample points from i to j with one interval, given the
+      //slope s0 at i. The slope s1 at j is chosen by a weighted least squares
+      //fit to the interior points, and limited (see below) such that the
+      //interval and the following one (at least up to the next sample point)
+      //can not become negative: h*s0 >= -3*y0 and h*s1 <= 3*y1 for an interval
+      //of width h are sufficient for that (Schmidt and Hess 1988). Returns
+      //whether all interior points are reproduced within tol:
+      bool fitInterval( const VectD& x, const VectD& y, std::size_t i,
+                        std::size_t j, double s0, double tol, double abs_floor,
+                        double& s1 )
       {
-        nc_assert( j > i );
-        if ( j == i + 1 )
-          return true;
-        if ( !( x[j] > x[i] ) )
-          return false;//vertical chord with interior points (never happens
-                       //for valid input, where only pairs are identical).
-        for ( std::size_t k = i + 1; k < j; ++k )
-          if ( !withinTol( x, y, i, j, k, tol, abs_floor ) )
+        nc_assert( j > i && x[j] > x[i] );
+        const double h = x[j] - x[i];
+        //The interpolation is A(u)+s1*B(u), with B(u)=-u^2*(1-u)*h:
+        double num = 0.0, den = 0.0;
+        for ( std::size_t k = i + 1; k < j; ++k ) {
+          const double u = ( x[k] - x[i] ) / h;
+          const double v = 1.0 - u;
+          const double A = ( v * v * ( ( 1.0 + 2.0 * u ) * y[i] + u * h * s0 )
+                             + u * u * ( 3.0 - 2.0 * u ) * y[j] );
+          const double B = -u * u * v * h;
+          const double w = 1.0 / ncmax( y[k], abs_floor );
+          num += w * w * B * ( y[k] - A );
+          den += w * w * B * B;
+        }
+        s1 = ( den > 0.0 ? num / den : ( y[j] - y[i] ) / h );
+        //Keep s1 within the slopes of the sample chords next to j (where the
+        //slope of a smooth curve is, unless it has an inflection point there),
+        //so the slopes of consecutive intervals can not run away:
+        if ( x[j-1] < x[j] ) {
+          double clo = ( y[j] - y[j-1] ) / ( x[j] - x[j-1] );
+          double chi = clo;
+          if ( j + 1 < x.size() && x[j+1] > x[j] ) {
+            const double c = ( y[j+1] - y[j] ) / ( x[j+1] - x[j] );
+            clo = ncmin( clo, c );
+            chi = ncmax( chi, c );
+          }
+          s1 = ncclamp( s1, clo, chi );
+        }
+        s1 = ncmin( s1, 3.0 * y[j] / h );
+        if ( j + 1 < x.size() && x[j+1] > x[j] )
+          s1 = ncmax( s1, -3.0 * y[j] / ( x[j+1] - x[j] ) );
+        if ( h * s0 < -3.0 * y[i] * ( 1.0 + 1e-12 ) )
+          return false;
+        for ( std::size_t k = i + 1; k < j; ++k ) {
+          const double yk = hermite( x[i], x[j], y[i], y[j], s0, s1, x[k] );
+          if ( !( ncabs( yk - y[k] ) <= tol * ncmax( y[k], abs_floor ) ) )
             return false;
+        }
         return true;
-      }
-
-      std::vector<std::size_t> reduceGreedy( const VectD& x, const VectD& y,
-                                             double tol, double abs_floor )
-      {
-        //From the current point, find the most distant point which can be
-        //reached with a chord satisfying the tolerance. An exponential search
-        //followed by a binary search is used, which assumes that feasibility
-        //is (approximately) monotonic in the end point. Every selected chord
-        //is explicitly verified, so the tolerance is always respected at all
-        //the sample points.
-        const std::size_t n = x.size();
-        std::vector<std::size_t> res;
-        res.push_back( 0 );
-        std::size_t i = 0;
-        while ( i + 1 < n ) {
-          std::size_t good = i + 1;
-          std::size_t bad = n;//first known infeasible end point (n: none)
-          std::size_t step = 2;
-          while ( true ) {
-            std::size_t j = std::min<std::size_t>( i + step, n - 1 );
-            if ( j <= good )
-              break;
-            if ( chordOK( x, y, i, j, tol, abs_floor ) ) {
-              good = j;
-              if ( j == n - 1 )
-                break;
-              step *= 2;
-            } else {
-              bad = j;
-              break;
-            }
-          }
-          if ( bad < n ) {
-            while ( bad - good > 1 ) {
-              std::size_t mid = good + ( bad - good ) / 2;
-              if ( chordOK( x, y, i, mid, tol, abs_floor ) )
-                good = mid;
-              else
-                bad = mid;
-            }
-          }
-          res.push_back( good );
-          i = good;
-        }
-        return res;
-      }
-
-      std::vector<std::size_t> reduceDP( const VectD& x, const VectD& y,
-                                         double tol, double abs_floor )
-      {
-        //Douglas-Peucker style: recursively split at the point with the
-        //largest relative deviation from the chord.
-        const std::size_t n = x.size();
-        std::vector<char> keep( n, 0 );
-        keep.front() = keep.back() = 1;
-        std::vector<std::pair<std::size_t,std::size_t>> stack;
-        stack.reserve( 64 );
-        stack.emplace_back( 0, n - 1 );
-        while ( !stack.empty() ) {
-          auto ij = stack.back();
-          stack.pop_back();
-          const std::size_t i = ij.first;
-          const std::size_t j = ij.second;
-          if ( j <= i + 1 )
-            continue;
-          std::size_t kworst = i + 1;
-          double worst = -1.0;
-          if ( !( x[j] > x[i] ) ) {
-            worst = kInfinity;
-          } else {
-            for ( std::size_t k = i + 1; k < j; ++k ) {
-              const double t = ( x[k] - x[i] ) / ( x[j] - x[i] );
-              const double yc = y[i] + t * ( y[j] - y[i] );
-              const double d = ncabs( yc - y[k] );
-              const double yref = ncmax( ncabs( y[k] ), abs_floor );
-              const double rel = ( yref > 0.0
-                                   ? d / yref
-                                   : ( d > 0.0 ? kInfinity : 0.0 ) );
-              if ( rel > worst ) {
-                worst = rel;
-                kworst = k;
-              }
-            }
-          }
-          if ( worst > tol ) {
-            keep[kworst] = 1;
-            stack.emplace_back( i, kworst );
-            stack.emplace_back( kworst, j );
-          }
-        }
-        std::vector<std::size_t> res;
-        res.reserve( static_cast<std::size_t>
-                     ( std::count( keep.begin(), keep.end(), 1 ) ) );
-        for ( std::size_t k = 0; k < n; ++k )
-          if ( keep[k] )
-            res.push_back( k );
-        return res;
       }
 
     }
   }
 }
 
-std::vector<std::size_t> NCF::reducePoints( const VectD& x, const VectD& y,
-                                            double tol, ReductionAlgo algo,
-                                            double abs_floor )
+NCF::ReducedPoints NCF::reducePoints( const VectD& x, const VectD& y,
+                                      double tol, double abs_floor )
 {
-  nc_assert_always( x.size() == y.size() );
-  nc_assert_always( x.size() >= 2 );
-  return ( algo == ReductionAlgo::Greedy
-           ? reduceGreedy( x, y, tol, abs_floor )
-           : reduceDP( x, y, tol, abs_floor ) );
+  //From the current point (with its slope fixed), find the most distant point
+  //which can be reached with an interval satisfying the tolerance. An
+  //exponential search followed by a binary search is used, which assumes that
+  //feasibility is (approximately) monotonic in the end point. Every selected
+  //interval is explicitly verified, so the tolerance is always respected at all
+  //the sample points. An interval can span small discontinuities (both values
+  //must then be within the tolerance), otherwise a new point is started at
+  //the discontinuity, with a fresh slope.
+  const std::size_t n = x.size();
+  nc_assert_always( n >= 2 );
+  auto startSlope = [&x,&y,n]( std::size_t i )
+  {
+    //Slope towards the next sample point (never violating the constraint,
+    //since y is non-negative):
+    return ( i + 1 < n && x[i+1] > x[i]
+             ? ( y[i+1] - y[i] ) / ( x[i+1] - x[i] )
+             : 0.0 );
+  };
+  ReducedPoints res;
+  res.idx.push_back( 0 );
+  res.slope.push_back( startSlope( 0 ) );
+  std::size_t i = 0;
+  while ( i + 1 < n ) {
+    if ( !( x[i+1] > x[i] ) ) {
+      //Discontinuity:
+      ++i;
+      res.idx.push_back( i );
+      res.slope.push_back( startSlope( i ) );
+      continue;
+    }
+    auto reach = [&]( double s0, double& s_good )
+    {
+      std::size_t good = i + 1;
+      (void)fitInterval( x, y, i, good, s0, tol, abs_floor, s_good );
+      std::size_t bad = n;//first known infeasible end point (n: none)
+      std::size_t step = 2;
+      double s;
+      while ( true ) {
+        std::size_t j = ncmin( i + step, n - 1 );
+        if ( j <= good )
+          break;
+        if ( x[j] > x[i] && fitInterval( x, y, i, j, s0, tol, abs_floor, s ) ) {
+          good = j;
+          s_good = s;
+          if ( j == n - 1 )
+            break;
+          step *= 2;
+        } else {
+          bad = j;
+          break;
+        }
+      }
+      if ( bad < n ) {
+        while ( bad - good > 1 ) {
+          std::size_t mid = good + ( bad - good ) / 2;
+          if ( fitInterval( x, y, i, mid, s0, tol, abs_floor, s ) ) {
+            good = mid;
+            s_good = s;
+          } else {
+            bad = mid;
+          }
+        }
+      }
+      return good;
+    };
+    double s_good;
+    std::size_t good = reach( res.slope.back(), s_good );
+    if ( good == i + 1 ) {
+      //The slope inherited from the previous interval does not reach beyond
+      //the next sample point, and could make the interpolation between them
+      //poor. Restart with a fresh slope instead, by repeating the point (with
+      //the same value):
+      const double s0 = startSlope( i );
+      if ( s0 != res.slope.back() ) {
+        res.idx.push_back( i );
+        res.slope.push_back( s0 );
+        good = reach( s0, s_good );
+      }
+    }
+    res.idx.push_back( good );
+    res.slope.push_back( s_good );
+    i = good;
+  }
+  return res;
 }
 
 unsigned NCF::autoNDense( double tol, double wlmax )
@@ -292,8 +309,8 @@ unsigned NCF::autoNDense( double tol, double wlmax )
   return static_cast<unsigned>( ncclamp( n, 1000.0, 1e7 ) );
 }
 
-double NCF::evalTable( const double* wl, const double* xs, std::size_t n,
-                       double wavelength )
+double NCF::evalTable( const double* wl, const double* xs, const double* slope,
+                       std::size_t n, double wavelength )
 {
   //Evaluate the table. This is both used by NCrystal itself, but it is also a
   //reference implementation for people using our tables elsewhere.
@@ -304,17 +321,14 @@ double NCF::evalTable( const double* wl, const double* xs, std::size_t n,
   //                              code-base!
   if ( n == 0 )
     return 0.0;
-  if ( n == 1 || !( wavelength > wl[0] ) )
+  if ( !( wavelength > wl[0] ) || n == 1 )
     return xs[0];
   if ( wavelength >= wl[n-1] ) {
-    //Linear extrapolation of the last segment, clamped at 0:
-    const double dx = wl[n-1] - wl[n-2];
-    if ( !( dx > 0.0 ) )
+    //Linear extrapolation of the value and slope of the last point, clamped
+    //at 0:
+    if ( slope[n-1] == 0.0 )
       return xs[n-1];
-    const double slope = ( xs[n-1] - xs[n-2] ) / dx;
-    if ( slope == 0.0 )
-      return xs[n-1];
-    const double v = xs[n-1] + ( wavelength - wl[n-1] ) * slope;
+    const double v = xs[n-1] + ( wavelength - wl[n-1] ) * slope[n-1];
     return v > 0.0 ? v : 0.0;
   }
   //Last point with wl[i] <= wavelength (the second of a pair at a
@@ -323,8 +337,8 @@ double NCF::evalTable( const double* wl, const double* xs, std::size_t n,
     = static_cast<std::size_t>( std::upper_bound( wl, wl + n,
                                                   wavelength ) - wl ) - 1;
   nc_assert( i + 1 < n && wl[i+1] > wl[i] );
-  const double t = ( wavelength - wl[i] ) / ( wl[i+1] - wl[i] );
-  return xs[i] + t * ( xs[i+1] - xs[i] );
+  return hermite( wl[i], wl[i+1], xs[i], xs[i+1], slope[i], slope[i+1],
+                  wavelength );
 }
 
 NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
@@ -402,26 +416,14 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
   wl_eval.clear();
   const double abs_floor = xs_abs_floor;
 
-  //Known points where the cross section turns out to be continuous (kinks,
-  //where the values just below and above agree to 1e-6, far below any
-  //tolerance) are kept as a single sample point:
+  //Known discontinuities where the cross section turns out to be continuous
+  //(kinks, where the values just below and above agree to 1e-6) are not
+  //counted:
   std::size_t ndisc = 0;
-  {
-    std::size_t j = 0;
-    for ( std::size_t i = 0; i < x.size(); ++i, ++j ) {
-      x[j] = x[i];
-      y[j] = y[i];
-      if ( i + 1 < x.size() && x[i+1] == x[i] ) {
-        if ( ncabs( y[i+1] - y[i] ) <= kink_tol * ncmax( ncmax( y[i], y[i+1] ), abs_floor ) ) {
-          ++i;//kink: drop the value above
-        } else {
-          ++ndisc;
-        }
-      }
-    }
-    x.resize( j );
-    y.resize( j );
-  }
+  for ( std::size_t i = 0; i + 1 < x.size(); ++i )
+    if ( x[i+1] == x[i]
+         && ncabs( y[i+1] - y[i] ) > kink_tol * ncmax( ncmax( y[i], y[i+1] ), abs_floor ) )
+      ++ndisc;
 
   //The limit for wavelength -> 0, from linear extrapolation to 0 from very
   //short wavelengths (which is exact for any cross section of the form a+b*wl
@@ -454,10 +456,11 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
   //Reduce the dense sample, and verify the result at the midpoints between
   //all neighbouring sample points. Midpoints where the tolerance is not met
   //are added to the sample, and the procedure is repeated.
-  std::vector<std::size_t> idx;
+  ReducedPoints red;
   std::size_t nrefine = 0;
   while ( true ) {
-    idx = reducePoints( x, y, tol_build, params.algo, abs_floor );
+    red = reducePoints( x, y, tol_build, abs_floor );
+    const auto& idx = red.idx;
     VectD add_x, add_y;
     add_x.reserve( x.size() );//at most one point per interval
     add_y.reserve( x.size() );
@@ -471,8 +474,8 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
       const std::size_t j = idx[seg+1];
       const double xm = 0.5 * ( x[k] + x[k+1] );
       const double ym = evalXS( xm );
-      const double t = ( xm - x[i] ) / ( x[j] - x[i] );
-      const double yc = y[i] + t * ( y[j] - y[i] );
+      const double yc = hermite( x[i], x[j], y[i], y[j],
+                                 red.slope[seg], red.slope[seg+1], xm );
       if ( ncabs( yc - ym ) <= tol_build * ncmax( ym, abs_floor ) )
         continue;
       if ( !( x[k+1] - x[k] > min_rel_spacing * x[k+1] ) )
@@ -506,12 +509,13 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
   }
 
   Table res;
-  res.wl.reserve( idx.size() );
-  res.xs.reserve( idx.size() );
-  for ( auto i : idx ) {
+  res.wl.reserve( red.idx.size() );
+  res.xs.reserve( red.idx.size() );
+  for ( auto i : red.idx ) {
     res.wl.push_back( x[i] );
     res.xs.push_back( y[i] );
   }
+  res.slope = std::move( red.slope );
   nc_assert_always( res.wl.size() >= 2 && res.wl.front() == 0.0
                     && res.wl.back() == params.wlmax
                     && res.wl[res.wl.size()-2] < params.wlmax );
@@ -529,7 +533,8 @@ NCF::Table NCF::createTable( const std::function<double(double)>& xs_of_wl,
       for ( unsigned k = 0; k < npts_per_segment; ++k ) {
         const double xv = x0 + ( 0.01 + 0.98 * rng.generate() ) * ( x1 - x0 );
         const double yv = evalXS( xv );
-        const double yt = evalTable( res.wl.data(), res.xs.data(), res.wl.size(), xv );
+        const double yt = evalTable( res.wl.data(), res.xs.data(),
+                                     res.slope.data(), res.wl.size(), xv );
         if ( !( ncabs( yt - yv ) <= tol * ncmax( yv, abs_floor ) ) )
           NCRYSTAL_THROW2( CalcError, "Filter table: verification failed at"
                            " wavelength " << xv << " Aa (table: " << yt

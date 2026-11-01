@@ -1296,20 +1296,23 @@ extern "C" {
   /* create Info objects). Caches are cleared as a side effect: */
   NCRYSTAL_API double ncrystal_benchloadcfg( const char * cfgstr, int do_scat, int repeat );
 
-  /* Get piecewise linear table of the macroscopic total cross section       */
+  /* Get piecewise cubic table of the macroscopic total cross section        */
   /* (scattering+absorption, in 1/cm) of an isotropic material as a function */
-  /* function of neutron wavelength (in Aa). The first point is always at    */
-  /* wavelength=0, and beyond the last point, the last segment must be       */
-  /* extrapolated linearly. For a reference implementation showing how to    */
-  /* evaluate such a table, see the ncrystal_example_filter.c file in the    */
-  /* ncrystal repository. An error is raised if the cross section can not be */
+  /* of neutron wavelength (in Aa). Each point has a wavelength, a cross     */
+  /* section and its slope (in 1/(cm*Aa)), and between neighbouring points   */
+  /* the cross section is the cubic Hermite interpolation of these, which is */
+  /* never negative. The first point is always at wavelength=0, and beyond   */
+  /* the last point, its value and slope must be extrapolated linearly       */
+  /* (clamped at 0). For a reference implementation showing how to evaluate  */
+  /* such a table, see the ncrystal_example_filter.c file in the ncrystal    */
+  /* repository. An error is raised if the cross section can not be          */
   /* tabulated reliably, and otherwise the table generally reproduces cross  */
-  /* sections with a precision of 0.1%. The wl and macroxs arrays must be    */
-  /* freed with ncrystal_dealloc_doubleptr. The options string is reserved   */
-  /* for future use, and must for now be NULL or empty.                      */
+  /* sections with a precision of 0.1%. The wl, macroxs and slope arrays     */
+  /* must be freed with ncrystal_dealloc_doubleptr. The options string is    */
+  /* reserved for future use, and must for now be NULL or empty.             */
   NCRYSTAL_API void ncrystal_filtertable( const char * cfgstr,
                                           unsigned * n, double ** wl,
-                                          double ** macroxs,
+                                          double ** macroxs, double ** slope,
                                           const char * options );
 
   /* Generic query for information which will be returned as a JSON encoded  */
