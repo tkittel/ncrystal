@@ -83,6 +83,17 @@ def import_endfparserpy():
     _cacheimport[0] = ( endf_parserpy,read_fort_floats,write_fort_floats)
     return _cacheimport[0]
 
+def create_endfparserpy_parser( **kwargs ):
+    """Create endf_parserpy.EndfParserPy(**kwargs). Versions before 0.18
+    cache compiled recipes in the user's cache dir unless cache_dir=False,
+    while 0.18+ never caches and warns if cache_dir is given at all."""
+    import re
+    endf_parserpy,_,_ = import_endfparserpy()
+    m = re.match(r'(\d+)\.(\d+)', endf_parserpy.__version__)
+    if not m or ( int(m.group(1)), int(m.group(2)) ) < ( 0, 18 ):
+        kwargs['cache_dir'] = False
+    return endf_parserpy.EndfParserPy( **kwargs )
+
 def _endf_roundoff(x):
     #
     # Limit the precision of a float to what can be represented
@@ -1068,14 +1079,8 @@ class EndfFile:
 
         if self._parser is None:
             endf_parserpy,_,_ = import_endfparserpy()
-            if hasattr(endf_parserpy,'EndfParserPy'):
-                EndfParserPy = endf_parserpy.EndfParserPy
-            else:
-                #legacy endf-parserpy 0.13.x support
-                EndfParserPy = endf_parserpy.EndfParser
-            self._parser = EndfParserPy(
-                explain_missing_variable=True,
-                cache_dir=False
+            self._parser = create_endfparserpy_parser(
+                explain_missing_variable=True
             )
             endf_parserpy.update_directory(self._endf_dict, self._parser)
 
