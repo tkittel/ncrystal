@@ -404,6 +404,45 @@ namespace {
 
   //scaleIsoXSDescr against IsoXSEvaluator::evalScaled, on random tables
   //(positive coefficients) and scales. The random tables jump at their nodes,
+  //evalIsoXSDerivative agrees with central differences of evalIsoXS, at
+  //random energies inside the pieces of random tables (away from the nodes,
+  //so the differences stay within a piece), and in the tails:
+  std::uint64_t g_nderivchecks = 0;
+  void testDerivative( NC::RandXRSRImpl& rng )
+  {
+    for ( int k = 0; k < 40; ++k ) {
+      const int mode = k % 4;
+      NC::IsoXSDescr d = makeDescr( randomGrid( rng ), mode & 1, mode & 2, 0, rng );
+      auto& t = d.table.value();
+      const double tails[5] = { 0.3, 0.2, 0.5, 0.7, 0.11 };
+      std::copy( tails, tails + 5, t.tail );
+      const NC::VectD& E = t.E;
+      auto check = [&t]( double e, double h )
+      {
+        //(dividing by the difference of the rounded energies):
+        const double e1 = e - h;
+        const double e2 = e + h;
+        const double num = ( ( NC::evalIsoXS( t, e2 ) - NC::evalIsoXS( t, e1 ) )
+                             / ( e2 - e1 ) );
+        const double ana = NC::evalIsoXSDerivative( t, e );
+        //Scale of the derivative, for the comparison:
+        const double scale = std::max( NC::ncabs( ana ),
+                                       NC::ncabs( NC::evalIsoXS( t, e ) ) / e );
+        REQUIRE( NC::ncabs( ana - num ) <= 1e-6 * scale );
+        ++g_nderivchecks;
+      };
+      for ( std::size_t i = 0; i + 1 < E.size(); ++i ) {
+        const double w = E[i+1] - E[i];
+        if ( !( w > 1e-8 * E[i+1] ) )
+          continue;//interval too narrow for central differences
+        for ( int j = 0; j < 3; ++j )
+          check( E[i] + ( 0.1 + 0.8 * rng.generate() ) * w, 1e-5 * w );
+      }
+      check( 0.5 * E.front(), 1e-5 * E.front() );
+      check( 2.0 * E.back(), 1e-5 * E.back() );
+    }
+  }
+
   //where E/escale and escale*e might round to opposite sides, so the
   //neighbours of the nodes are not checked:
   void testScale( NC::RandXRSRImpl& rng )
@@ -549,5 +588,11 @@ int main()
   }
   std::cout << "scaleIsoXSDescr agrees with IsoXSEvaluator::evalScaled in " << g_nscalechecks
             << " checks (within rounding of the energy)" << std::endl;
+  {
+    NC::RandXRSRImpl rng4( 4242 );
+    testDerivative( rng4 );
+  }
+  std::cout << "evalIsoXSDerivative agrees with differences of evalIsoXS in "
+            << g_nderivchecks << " checks" << std::endl;
   return 0;
 }
