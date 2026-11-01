@@ -69,6 +69,9 @@ namespace NCRYSTAL_NAMESPACE {
   //Idealised VDOS based only on Debye temperature:
   VDOSData createVDOSDebye( DebyeTemperature, Temperature,
                             SigmaBound, AtomMass);
+
+  //Effective temperature of the idealised Debye VDOS:
+  Temperature debyeEffectiveTemperature( DebyeTemperature, Temperature );
 }
 
 
