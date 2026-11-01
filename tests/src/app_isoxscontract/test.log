@@ -5,3 +5,4 @@ Polyethylene_CH2.ncmat;knllux=3: ElIncScatter=OK SABScatterNG=OK SABScatterNG=OK
 He_Gas_STP.ncmat: FreeGas=OK
 Y2O3_sg206_Yttrium_Oxide.ncmat;dcutoff=0.3: ElIncScatter=OK PowderBragg=OK
 Al_sg225.ncmat;temp=20K;comp=coh_elas: PowderBragg=OK
+AbsOOV: OK
