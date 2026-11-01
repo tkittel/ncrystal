@@ -427,25 +427,446 @@ Created (or not) file tsl_Al_in_Al.endf with fraction 1
 --------------------------------------------------------------------------------
 {'elastic_mode': 'scaled',
  'force': True,
+ 'material_name': 'Al',
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001;knllux=3',
+ 'othertemps': 350}
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#5]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it. [warn#6]
+Initialise nuclear data...
+Write ENDF file tsl_Al_in_Al.endf ...
+DUMPING endf dict begin
+  0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
+  1 ->
+      451 ->
+          'MAT' -> 999
+          'ZA' -> 13000
+          'AWR' -> 26.74975403943758
+          'LRP' -> -1
+          'LFI' -> 0
+          'NLIB' -> 0
+          'NMOD' -> 0
+          'ELIS' -> 0
+          'LIS' -> 0
+          'LISO' -> 0
+          'STA' -> 0
+          'NFOR' -> 6
+          'AWI' -> 1.0
+          'EMAX' -> 5.0
+          'LREL' -> 0
+          'NSUB' -> 12
+          'NVER' -> 1
+          'TEMP' -> 0.0
+          'LDRV' -> 0
+          'HSUB' ->
+              1 -> '----MyLib             MATERIAL  999'
+              2 -> '-----THERMAL NEUTRON SCATTERING DATA                              '
+              3 -> '------ENDF-6 FORMAT                                               '
+          'NXC' -> 1
+          'ZSYMAM' -> ' 13-Al     '
+          'ALAB' -> 'MyLAB      '
+          'AUTH' -> 'NCrystal                         '
+          'REF' -> 'REFERENCE            '
+          'EDATE' -> 'EVAL-MMMYY'
+          'DDATE' -> 'DIST-MMMYY'
+          'RDATE' -> 'REV0-MMMYY'
+          'ENDATE' -> '        '
+          'DESCRIPTION' ->
+              1 -> '******************************************************************'
+              2 -> '                                                                  '
+              3 -> ' This file was converted from the following NCrystal [1,2]        '
+              4 -> ' cfg-string:                                                      '
+              5 -> '                                                                  '
+              6 -> '        "Al_sg225.ncmat;knllux=3;vdoslux=2001;temp=293.15"        '
+              7 -> '                                                                  '
+              8 -> ' using NCrystal NCVERSION                                         '
+              9 -> ' and endf-parserpy [3] EPVERSION                                  '
+              10 -> ' with the following options:                                      '
+              11 -> '                                                                  '
+              12 -> '  smin:1e-100                                                     '
+              13 -> '  emax:5.0                                                        '
+              14 -> '  lasym:0                                                         '
+              15 -> '  include_gif:False                                               '
+              16 -> '  isotopic_expansion:False                                        '
+              17 -> '  elastic_mode:scaled                                             '
+              18 -> '                                                                  '
+              19 -> ' Temperatures:                                                    '
+              20 -> '       293.15 K                                                   '
+              21 -> '       350.00 K                                                   '
+              22 -> '                                                                  '
+              23 -> 'References:                                                       '
+              24 -> '[1] https://github.com/mctools/ncrystal                           '
+              25 -> '[2] https://doi.org/10.1016/j.cpc.2019.07.015                     '
+              26 -> '[3] https://endf-parserpy.readthedocs.io/en/latest/               '
+              27 -> '                                                                  '
+              28 -> '******************************************************************'
+              29 -> '                                                                  '
+              30 -> 'Comments from NCMAT file:                                         '
+              31 -> '                                                                  '
+              32 -> 'Aluminium (Al, fcc, cubic, SG-225 / Fm-3m)                        '
+              33 -> '                                                                  '
+              34 -> 'Under usual conditions this phase exists from 0 to 933K.          '
+              35 -> '                                                                  '
+              36 -> 'Structure converted with ncrystal_onlinedb2ncmat from:            '
+              37 -> '                                                                  '
+              38 -> '"Second edition. Interscience Publishers, New York, Cubic closest '
+              39 -> 'packed, ccp, structure" Wyckoff R W G (1963) Crystallography Open '
+              40 -> 'Database entry 9008460                                            '
+              41 -> 'https://www.crystallography.net/cod/9008460.html                  '
+              42 -> '                                                                  '
+              43 -> 'This crystal structure is also compatible with structure obtained '
+              44 -> 'from:                                                             '
+              45 -> '                                                                  '
+              46 -> 'https://www.crystallography.net/cod/9012428.html                  '
+              47 -> 'https://www.crystallography.net/cod/9011602.html                  '
+              48 -> 'https://www.crystallography.net/cod/9012002.html                  '
+              49 -> '                                                                  '
+              50 -> 'The VDOS curve was extracted by T. Kittelmann using the engauge   '
+              51 -> 'digitizer software from Figure 1 of:                              '
+              52 -> '                                                                  '
+              53 -> '"First principles phonon calculations in materials science" A.    '
+              54 -> 'Togo and I. Tanaka, Scripta Materialia 108 (2015) 1-5             '
+              55 -> 'https://doi.org/10.1016/j.scriptamat.2015.07.021                  '
+              56 -> '******************************************************************'
+          'NWD' -> 61
+          'MFx' -> {1: 1}
+          'MTx' -> {1: 451}
+          'NCx' -> {1: 5}
+          'MOD' -> {1: 0}
+  7 ->
+      2 ->
+          'MAT' -> 999
+          'ZA' -> 13000
+          'AWR' -> 26.74975403943758
+          'T0' -> 293.15
+          'LT' -> 1
+          'S_T0_table' ->
+              'NBT' -> [171]
+              'INT' -> [1]
+              'Eint' ->
+                  [0.003741252, 0.004988336, 0.009976<<SNIP>>42, 0.6285303, 0.6322716, 0.638507]
+              'S' ->
+                  [0.005134741045472235, 0.0083920395<<SNIP>>23702358724203, 0.0772370336420972]
+          'T' -> {1: 350}
+          'S' ->
+              1 -> {1: 0.005071159168777327}
+              2 -> {1: 0.008274789866604683}
+              3 -> {1: 0.012329233250204278}
+              4 -> {1: 0.01869189533024771}
+              5 -> {1: 0.02066690014815615}
+              6 -> {1: 0.021814873018265173}
+              <..SNIP..>
+              167 -> {1: 0.06536070123351051}
+              168 -> {1: 0.06536070123351051}
+              169 -> {1: 0.06536070123351051}
+              170 -> {1: 0.06536070123351051}
+              171 -> {1: 0.06536070123351051}
+          'LI' -> 2
+          'NP' -> 171
+          'LTHR' -> 1
+      4 ->
+          'MAT' -> 999
+          'ZA' -> 13000
+          'AWR' -> 26.74975403943758
+          'LAT' -> 1
+          'LASYM' -> 0
+          'LLN' -> 0
+          'NI' -> 6
+          'NS' -> 0
+          'B' -> {1: 1.3966686415676142, 2: 5.0, 3: 26.74975403943758, 4: 5.0, 5: 0, 6: 1}
+          'NB' -> 139
+          'beta_interp' -> {'NBT': [139], 'INT': [4]}
+          'T0' -> 293.15
+          'beta' ->
+              1 -> 0.0
+              2 -> 0.016
+              3 -> 0.032
+              4 -> 0.192
+              5 -> 0.215
+              6 -> 0.234
+              <..SNIP..>
+              135 -> 80.0
+              136 -> 81.0
+              137 -> 84.0
+              138 -> 85.0
+              139 -> 87.0
+          'LT' ->
+              1 -> 1
+              2 -> 1
+              3 -> 1
+              4 -> 1
+              5 -> 1
+              6 -> 1
+              <..SNIP..>
+              135 -> 1
+              136 -> 1
+              137 -> 1
+              138 -> 1
+              139 -> 1
+          'T' -> {1: 350}
+          'LI' -> {1: 4}
+          'NP' -> 110
+          'S_table' ->
+              1 ->
+                  'NBT' -> [110]
+                  'INT' -> [4]
+                  'alpha' ->
+                      [0.0, 5e-06, 1e-05, 2e-05, 4e-05, 0<<SNIP>>30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+                  'S' ->
+                      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,<<SNIP>> 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+              2 ->
+                  'NBT' -> [110]
+                  'INT' -> [4]
+                  'alpha' ->
+                      [0.0, 5e-06, 1e-05, 2e-05, 4e-05, 0<<SNIP>>30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+                  'S' ->
+                      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,<<SNIP>> 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+              3 ->
+                  'NBT' -> [110]
+                  'INT' -> [4]
+                  'alpha' ->
+                      [0.0, 5e-06, 1e-05, 2e-05, 4e-05, 0<<SNIP>>30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+                  'S' ->
+                      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,<<SNIP>> 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+              4 ->
+                  'NBT' -> [110]
+                  'INT' -> [4]
+                  'alpha' ->
+                      [0.0, 5e-06, 1e-05, 2e-05, 4e-05, 0<<SNIP>>30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+                  'S' ->
+                      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,<<SNIP>> 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+              5 ->
+                  'NBT' -> [110]
+                  'INT' -> [4]
+                  'alpha' ->
+                      [0.0, 5e-06, 1e-05, 2e-05, 4e-05, 0<<SNIP>>30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+                  'S' ->
+                      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,<<SNIP>> 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+              6 ->
+                  'NBT' -> [110]
+                  'INT' -> [4]
+                  'alpha' ->
+                      [0.0, 5e-06, 1e-05, 2e-05, 4e-05, 0<<SNIP>>30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+                  'S' ->
+                      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,<<SNIP>> 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+              <..SNIP..>
+              135 ->
+                  'NBT' -> [110]
+                  'INT' -> [4]
+                  'alpha' ->
+                      [0.0, 5e-06, 1e-05, 2e-05, 4e-05, 0<<SNIP>>30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+                  'S' ->
+                      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,<<SNIP>> 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+              136 ->
+                  'NBT' -> [110]
+                  'INT' -> [4]
+                  'alpha' ->
+                      [0.0, 5e-06, 1e-05, 2e-05, 4e-05, 0<<SNIP>>30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+                  'S' ->
+                      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,<<SNIP>> 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+              137 ->
+                  'NBT' -> [110]
+                  'INT' -> [4]
+                  'alpha' ->
+                      [0.0, 5e-06, 1e-05, 2e-05, 4e-05, 0<<SNIP>>30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+                  'S' ->
+                      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,<<SNIP>> 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+              138 ->
+                  'NBT' -> [110]
+                  'INT' -> [4]
+                  'alpha' ->
+                      [0.0, 5e-06, 1e-05, 2e-05, 4e-05, 0<<SNIP>>30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+                  'S' ->
+                      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,<<SNIP>> 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+              139 ->
+                  'NBT' -> [110]
+                  'INT' -> [4]
+                  'alpha' ->
+                      [0.0, 5e-06, 1e-05, 2e-05, 4e-05, 0<<SNIP>>30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+                  'S' ->
+                      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,<<SNIP>> 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+          'S' ->
+              1 ->
+                  1 -> {1: 0.0}
+                  2 -> {1: 0.0}
+                  3 -> {1: 0.0}
+                  4 -> {1: 0.0}
+                  5 -> {1: 0.0}
+                  6 -> {1: 0.0}
+                  <..SNIP..>
+                  135 -> {1: 0.0}
+                  136 -> {1: 0.0}
+                  137 -> {1: 0.0}
+                  138 -> {1: 0.0}
+                  139 -> {1: 0.0}
+              2 ->
+                  1 -> {1: 0.0}
+                  2 -> {1: 0.0}
+                  3 -> {1: 0.0}
+                  4 -> {1: 0.0}
+                  5 -> {1: 0.0}
+                  6 -> {1: 0.0}
+                  <..SNIP..>
+                  135 -> {1: 0.0}
+                  136 -> {1: 0.0}
+                  137 -> {1: 0.0}
+                  138 -> {1: 0.0}
+                  139 -> {1: 0.0}
+              3 ->
+                  1 -> {1: 0.0}
+                  2 -> {1: 0.0}
+                  3 -> {1: 0.0}
+                  4 -> {1: 0.0}
+                  5 -> {1: 0.0}
+                  6 -> {1: 0.0}
+                  <..SNIP..>
+                  135 -> {1: 0.0}
+                  136 -> {1: 0.0}
+                  137 -> {1: 0.0}
+                  138 -> {1: 0.0}
+                  139 -> {1: 0.0}
+              4 ->
+                  1 -> {1: 0.0}
+                  2 -> {1: 0.0}
+                  3 -> {1: 0.0}
+                  4 -> {1: 0.0}
+                  5 -> {1: 0.0}
+                  6 -> {1: 0.0}
+                  <..SNIP..>
+                  135 -> {1: 0.0}
+                  136 -> {1: 0.0}
+                  137 -> {1: 0.0}
+                  138 -> {1: 0.0}
+                  139 -> {1: 0.0}
+              5 ->
+                  1 -> {1: 0.0}
+                  2 -> {1: 0.0}
+                  3 -> {1: 0.0}
+                  4 -> {1: 0.0}
+                  5 -> {1: 0.0}
+                  6 -> {1: 0.0}
+                  <..SNIP..>
+                  135 -> {1: 0.0}
+                  136 -> {1: 0.0}
+                  137 -> {1: 0.0}
+                  138 -> {1: 0.0}
+                  139 -> {1: 0.0}
+              6 ->
+                  1 -> {1: 0.0}
+                  2 -> {1: 0.0}
+                  3 -> {1: 0.0}
+                  4 -> {1: 0.0}
+                  5 -> {1: 0.0}
+                  6 -> {1: 0.0}
+                  <..SNIP..>
+                  135 -> {1: 0.0}
+                  136 -> {1: 0.0}
+                  137 -> {1: 0.0}
+                  138 -> {1: 0.0}
+                  139 -> {1: 0.0}
+              <..SNIP..>
+              106 ->
+                  1 -> {1: 0.0}
+                  2 -> {1: 0.0}
+                  3 -> {1: 0.0}
+                  4 -> {1: 0.0}
+                  5 -> {1: 0.0}
+                  6 -> {1: 0.0}
+                  <..SNIP..>
+                  135 -> {1: 0.0}
+                  136 -> {1: 0.0}
+                  137 -> {1: 0.0}
+                  138 -> {1: 0.0}
+                  139 -> {1: 0.0}
+              107 ->
+                  1 -> {1: 0.0}
+                  2 -> {1: 0.0}
+                  3 -> {1: 0.0}
+                  4 -> {1: 0.0}
+                  5 -> {1: 0.0}
+                  6 -> {1: 0.0}
+                  <..SNIP..>
+                  135 -> {1: 0.0}
+                  136 -> {1: 0.0}
+                  137 -> {1: 0.0}
+                  138 -> {1: 0.0}
+                  139 -> {1: 0.0}
+              108 ->
+                  1 -> {1: 0.0}
+                  2 -> {1: 0.0}
+                  3 -> {1: 0.0}
+                  4 -> {1: 0.0}
+                  5 -> {1: 0.0}
+                  6 -> {1: 0.0}
+                  <..SNIP..>
+                  135 -> {1: 0.0}
+                  136 -> {1: 0.0}
+                  137 -> {1: 0.0}
+                  138 -> {1: 0.0}
+                  139 -> {1: 0.0}
+              109 ->
+                  1 -> {1: 0.0}
+                  2 -> {1: 0.0}
+                  3 -> {1: 0.0}
+                  4 -> {1: 0.0}
+                  5 -> {1: 0.0}
+                  6 -> {1: 0.0}
+                  <..SNIP..>
+                  135 -> {1: 0.0}
+                  136 -> {1: 0.0}
+                  137 -> {1: 0.0}
+                  138 -> {1: 0.0}
+                  139 -> {1: 0.0}
+              110 ->
+                  1 -> {1: 0.0}
+                  2 -> {1: 0.0}
+                  3 -> {1: 0.0}
+                  4 -> {1: 0.0}
+                  5 -> {1: 0.0}
+                  6 -> {1: 0.0}
+                  <..SNIP..>
+                  135 -> {1: 0.0}
+                  136 -> {1: 0.0}
+                  137 -> {1: 0.0}
+                  138 -> {1: 0.0}
+                  139 -> {1: 0.0}
+          'teff0_table' ->
+              'Teff0' -> [320.225846345, 372.8391507594]
+              'Tint' -> [293.15, 350]
+              'NBT' -> [2]
+              'INT' -> [2]
+DUMPING endf dict end
+Files created:
+  tsl_Al_in_Al.endf : Al with fraction 1
+ncmat2endf fct returned:
+{'density': 2.698645517692,
+ 'files': [{'component': 'Al', 'file': 'tsl_Al_in_Al.endf', 'fraction': 1.0}],
+ 'temperature': [293.15, 350]}
+Created (or not) file tsl_Al_in_Al.endf with fraction 1
+
+
+
+--------------------------------------------------------------------------------
+{'elastic_mode': 'scaled',
+ 'force': True,
  'material_name': 'AlN',
  'ncmat_cfg': 'AlN_sg186_AluminumNitride.ncmat;vdoslux=1',
  'othertemps': 350,
  'verbosity': 3}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#5]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it. [warn#6]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#7]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it. [warn#8]
 Initialise nuclear data...
 Designated incoherent: Al
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "N" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#7]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#8]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "N" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#9]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#10]
 >>> alpha points: 100, alpha range: (2.19e-49, 821)
 >>> beta points: 150, beta range: (0, 1.3e+02)
 >>> alpha points: 100, alpha range: (2.33e-49, 823)
 >>> beta points: 142, beta range: (0, 90)
 >>> Interpolating T=293.15K for N
 >>> Interpolating T=293.15K for Al
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "N" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#9]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "N" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#11]
 >>> Interpolating T=350K for N
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#10]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#12]
 >>> Interpolating T=350K for Al
 >> Prepare elastic approximations
 >> Scaled elastic mode for N in compound: incoherent
@@ -1263,10 +1684,10 @@ Created (or not) file tsl_Al_in_AlN.endf with fraction 0.5
  'material_name': 'Al2O3',
  'ncmat_cfg': 'Al2O3_sg167_Corundum.ncmat;vdoslux=1',
  'verbosity': 3}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#11]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#13]
 Initialise nuclear data...
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "O" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#12]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#13]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "O" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#14]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#15]
 >>> alpha points: 100, alpha range: (2.36e-49, 821)
 >>> beta points: 148, beta range: (0, 1.2e+02)
 >>> alpha points: 100, alpha range: (2.45e-49, 823)
@@ -1819,20 +2240,20 @@ Created (or not) file tsl_Al_in_Al2O3.endf with fraction 0.4
  'ncmat_cfg': 'Al4C3_sg166_AluminiumCarbide.ncmat;vdoslux=1',
  'othertemps': 350,
  'verbosity': 3}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#14]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it. [warn#15]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#16]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it. [warn#17]
 Initialise nuclear data...
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "C" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#16]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#17]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "C" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#18]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#19]
 >>> alpha points: 100, alpha range: (1.69e-49, 816)
 >>> beta points: 151, beta range: (0, 1.4e+02)
 >>> alpha points: 100, alpha range: (1.59e-49, 823)
 >>> beta points: 141, beta range: (0, 86)
 >>> Interpolating T=293.15K for C
 >>> Interpolating T=293.15K for Al
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "C" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#18]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "C" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#20]
 >>> Interpolating T=350K for C
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#19]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#21]
 >>> Interpolating T=350K for Al
 >> Prepare elastic approximations
 >> Principal elastic mode for C: coherent
@@ -2670,7 +3091,7 @@ Created (or not) file tsl_Al_in_Al4C3.endf with fraction 0.571429
  'material_name': 'Al',
  'ncmat_cfg': 'Al_sg225.ncmat;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;vdoslux=1'}
 Initialise nuclear data...
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#20]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#22]
 Write ENDF file tsl_Al_in_Al.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
@@ -2940,9 +3361,9 @@ Created (or not) file tsl_Al_in_Al.endf with fraction 1
  'force': True,
  'material_name': 'Al',
  'ncmat_cfg': 'Al_with_a_Very_Very_Ver_Very_Very_Very_Very_Ver_Very_Very_Very_Very_Ver_Very_Very_Long_Name.ncmat;vdoslux=1'}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#21]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#23]
 Initialise nuclear data...
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#22]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#24]
 Write ENDF file tsl_Al_in_Al.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}

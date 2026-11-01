@@ -463,7 +463,7 @@ def convert_openmc_ncrystal_to_ace(cfg, matname, elastic_mode):
 def main():
     n_particles = 10000000
     E0 = 0.0045  # eV
-    cfg = 'Al_sg225.ncmat'
+    cfg = 'Al_sg225.ncmat;vdoslux=2003;knllux=3'
     matname = 'Al-metal'
     import os
     spfile1, spfile2 = 'results_ncrystal.h5', 'results_ncmat2endf.h5'
