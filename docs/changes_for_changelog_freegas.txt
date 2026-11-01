@@ -1,0 +1,15 @@
+Input for the CHANGELOG from the tk_freegas work (free-gas sampling), in the
+same spirit as changes_for_changelog.txt (to be curated into the real
+CHANGELOG at release time, after which this file is dropped).
+
+### Performance
+
+     * Free-gas scattering (FreeGas processes, and free-gas/SCT extensions
+       of S(alpha,beta) kernels above their Emax) is now sampled ~4-14x
+       faster, as an explicit elastic collision with a Maxwellian target
+       weighted by relative speed (Coveyou, Bate & Osborn 1956), by a
+       new implementation of FreeGasSampler (NCFreeGasSampler.hh,
+       previously in NCFreeGasUtils.hh). This is exactly equivalent to
+       the previous S(alpha,beta)-based implementation (now only kept, as
+       FreeGasLegacySampler, as a test reference in
+       tests/src/app_freegas), but gives different random streams.
