@@ -8,16 +8,17 @@ targets and their interactions are ignored, apart from maintaining the
 Maxwellian velocity distribution. Its scattering function has a closed form,
 and NCrystal implements it as a fully quantum-mechanical
 $S(\alpha,\beta)$ model: the cross section follows from an analytic integral
-over the kinematic region, and scattering outcomes are sampled from the exact
-joint distribution at any energy with a dedicated rejection scheme, valid to
-at least 1 GeV and running at about a million samples per second. It serves
+over the kinematic region, and scattering outcomes are sampled exactly, at
+any energy, as elastic collisions with Maxwellian target atoms (equivalent to
+sampling $S$), at roughly ten million samples per second. It serves
 three purposes: the inelastic model for gases and for atoms declared as
 `freegas` (e.g. the oxygen of water), the extension model of tabulated
 kernels above their range in the legacy processing and as the
 $T_{eff} = T$ special case of the SCT model (chapter 33), and the building
 block of the SCT sampler.
 
-Code: `ncrystal_core/src/phys_utils/NCFreeGasUtils.cc`,
+Code: `ncrystal_core/src/phys_utils/NCFreeGasUtils.cc` (cross section),
+`ncrystal_core/src/phys_utils/NCFreeGasSampler.cc` (sampling),
 `ncrystal_core/src/freegas/NCFreeGas.cc`.
 
 ## Physics
@@ -80,20 +81,22 @@ and no usable closed-form inverse.
 ## Implementation
 
 The cross section uses asymptotic expansions of the Doppler factor at small
-and large $a$ and the full formula in between. Sampling proceeds in two
-steps, both by rejection with overlays adapted on the fly, since every call
-comes with a different energy and nothing can be precomputed: $\beta$ is
-drawn from its marginal distribution with an overlay that is flat on the
-downscatter side and exponential on the upscatter side, with the sampling
-interval narrowed as rejected points reveal where the density is negligible,
-and with cheap bounds on the density (from a lookup table of the error
-function) deciding most candidates without an exact evaluation; $\alpha$ is
-then drawn from $f(x)$ on $[\alpha_-,\alpha_+]$ with a flat overlay, an
-$e^{-cx}/\sqrt{x}$ overlay for the tail, or a combination of the two,
-depending on where the interval lies relative to the peak. At extremely high
-energies the energy loss is drawn uniformly up to the kinematic maximum,
-which is the correct limit. Near the kinematic end point the angle is
-isotropic (chapter 32). The `FreeGas` process wraps provider and sampler
+and large $a$ and the full formula in between. For a constant
+$\sigma_{free}$, sampling $S$ is exactly equivalent to sampling an elastic
+collision with a target atom whose velocity is drawn from the Maxwellian
+weighted by the relative speed, which is how scatterings are sampled
+(`FreeGasSampler`): the target speed is drawn from a mixture of
+$x^2e^{-x^2}$ and $x^3e^{-x^2}$ (in units of $\sqrt{2kT/M}$) and its
+direction cosine uniformly, accepted with probability $|v-V|/(v+V)$, and the
+outgoing direction is then isotropic in the centre-of-mass frame (Coveyou,
+Bate and Osborn 1956). The energy and momentum transfers are computed from
+the velocity change, avoiding cancellations, so the scheme is accurate at
+any energy and needs no energy-dependent setup. All products and sums are
+explicit fused multiply-adds, so results are independent of compiler
+contraction settings. The previous sampler of $S(\alpha,\beta)$ itself
+(first $\beta$ from its marginal distribution, then $\alpha$, by rejection
+with overlays adapted on the fly) is kept as a test reference. The
+`FreeGas` process wraps provider and sampler
 with the element's mass, temperature and $\sigma_{free}$; the SCT sampler of
 chapter 33 reuses the same sampler at $T_{eff}$.
 
@@ -104,6 +107,10 @@ chapter 33 reuses the same sampler at $T_{eff}$.
   against the closed form and quadrature of $S$, sampled distributions
   against the analytic densities over a range of $A$ and $E/kT$; the
   `sabxs` tests cover the free gas as a kernel extender.
+- `tests/src/app_freegas` compares the sampled $(\alpha,\beta)$ and
+  $(\Delta E,\mu)$ distributions with those of the previous $S(\alpha,\beta)$
+  sampler (two-sample $\chi^2$ tests for $A$ from 1 to 207 and $E/kT$ from
+  $10^{-3}$ to $10^7$), and checks extreme inputs ($E/kT$ up to $10^{14}$).
 - The sampling paper used the free-gas kernel as the analytic benchmark of
   the kernel sampling (section 3): kernel-sampled results reproduce the
   analytic $\sigma(E)$ to 0.05% below 0.1 eV, and a free-gas water sphere
@@ -117,10 +124,7 @@ chapter 33 reuses the same sampler at $T_{eff}$.
   molecular gases at thermal energies (NCrystal has no dedicated molecular
   gas model; such kernels can be supplied as `scatknl`).
 - Single target mass per element (the average isotope mass); no
-  resonances.
-- Classical transport codes sample the target velocity instead (Gelbard's
-  scheme as implemented in OpenMC); whether to revisit NCrystal's
-  $(\alpha,\beta)$-space sampler against those is an open item.
+  resonances (constant $\sigma_{free}$).
 
 ## New or changed in 5.0.0
 
@@ -128,7 +132,8 @@ The free-gas model has been in NCrystal since 2.0.0 and is unchanged in
 physics. In 5.0.0 it became the special case of the SCT extension (chapter
 33) and its sampler the engine of the SCT sampler, and it gained
 bit-reproducibility across platforms with the rest of the physics utilities
-(chapter 70).
+(chapter 70). The sampling was reimplemented as target-velocity sampling
+(above), exactly equivalent but several times faster.
 
 ## References
 
@@ -137,3 +142,7 @@ bit-reproducibility across platforms with the rest of the physics utilities
 - G. L. Squires, "Introduction to the theory of thermal neutron
   scattering", chapter 4.5.
 - NCrystal 2.0.0 release announcement (noble-gas data files).
+- R. R. Coveyou, R. R. Bate, R. K. Osborn, J. Nucl. Energy 2 (1956) 153,
+  eqs. 5-7 (target-velocity sampling; credited there to H. Kahn).
+- P. K. Romano, J. A. Walsh, Ann. Nucl. Energy 114 (2018) 318, section 2.1
+  (the same scheme, as an algorithm).
