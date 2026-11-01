@@ -33,6 +33,9 @@ ncmat2endf_impl.unit_test_abort_write[0] = 'dump'
 
 test_cfg('Al_sg225.ncmat;vdoslux=1', material_name='Al',
          othertemps=350, elastic_mode='scaled')
+#Next-gen kernel processing:
+test_cfg('Al_sg225.ncmat;vdoslux=2001;knllux=3', material_name='Al',
+         othertemps=350, elastic_mode='scaled')
 
 test_cfg('AlN_sg186_AluminumNitride.ncmat;vdoslux=1', material_name='AlN',
          othertemps=350, elastic_mode='scaled', compare_xsec=False,
