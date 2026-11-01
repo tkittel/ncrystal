@@ -1279,10 +1279,6 @@ void NC::MatCfg::genDoc( std::ostream& os, GenDocMode gdm )
   Cfg::dumpCfgVarList( os, cfgdumpmode );
 }
 
-void NC::MatCfg::set_ucnmode( const Optional<UCNMode>& v ) { m_impl.modify()->setVar( v, &CfgManip::set_ucnmode ); }
-std::string NC::MatCfg::get_ucnmode_str() const { return CfgManip::get_ucnmode_str( m_impl->readVar(Cfg::VarId::ucnmode) ).to_string(); }
-NC::Optional<NC::UCNMode> NC::MatCfg::get_ucnmode() const { return CfgManip::get_ucnmode( m_impl->readVar(Cfg::VarId::ucnmode) ); }
-
 namespace {
   static_assert(std::is_move_constructible<NC::MatCfg>::value, "");
   static_assert(std::is_move_assignable<NC::MatCfg>::value, "");

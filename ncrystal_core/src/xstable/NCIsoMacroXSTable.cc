@@ -74,8 +74,8 @@ namespace NCRYSTAL_NAMESPACE {
       //miss: they are smooth, apart from the boundaries of their energy domains
       //(which are included explicitly). Null processes and processes with
       //tables (smooth between their breakpts) need no such validation. Any
-      //other process (e.g. a process with absorption resonances, or the UCN
-      //processes) gives a warning, and must be studied before being added here.
+      //other process (e.g. a process with absorption resonances) gives a
+      //warning, and must be studied before being added here.
       bool isValidatedUntabulated( const std::string& name )
       {
         static const std::set<std::string> validated = { "SABScatter", "AbsOOV" };
