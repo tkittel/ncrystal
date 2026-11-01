@@ -203,6 +203,35 @@ namespace NCRYSTAL_NAMESPACE {
         std::size_t m_nalpham1;
       };
 
+      //Copy of the data with S scaled by a power of two, such that the largest
+      //value is in [0.5,1). Results are linear in S, so the scale is exactly
+      //undone on the results, while the integrations never approach the limits
+      //of the floating point range (e.g. with subnormal products for kernels
+      //with S values near 1e-300):
+      shared_obj<const SABData> scaleSToUnitMax( const shared_obj<const SABData>& sd,
+                                                 double& invScale )
+      {
+        double smax = 0.0;
+        for ( auto v : sd->sab() )
+          smax = ncmax( smax, v );
+        int exponent = 0;
+        if ( smax > 0.0 )
+          std::frexp( smax, &exponent );
+        invScale = std::ldexp( 1.0, exponent );
+        if ( exponent == 0 )
+          return sd;
+        const double scale = std::ldexp( 1.0, -exponent );
+        VectD sab( sd->sab() );
+        for ( auto& v : sab )
+          v *= scale;
+        return makeSO<const SABData>( VectD( sd->alphaGrid() ),
+                                      VectD( sd->betaGrid() ),
+                                      std::move( sab ),
+                                      sd->temperature(), sd->boundXS(),
+                                      sd->elementMassAMU(),
+                                      sd->suggestedEmax() );
+      }
+
       struct SABProcImpl final : private NoCopyMove {
         using SampleSupport = SABProcessor::SampleSupport;
         using StoreExtraDiagnostics = SABProcessor::StoreExtraDiagnostics;
@@ -255,7 +284,13 @@ namespace NCRYSTAL_NAMESPACE {
         //The corresponding packed cell indices:
         std::vector<SABIdx::PackedIndex> m_cumulFCInt_cellidx;
 
+        //The original data, and the factor undoing the scaling of the S values
+        //in m_cellmgr (see scaleSToUnitMax) on results linear in S:
+        shared_obj<const SABData> m_origSABData;
+        double m_invSScale = 1.0;
         CellMgr m_cellmgr;
+        //Phase-space integrals at the grid points, with the scaling undone:
+        VectD m_sIntegralUnscaled;
 
         //Beta-strip samplers with increasing emax, and the one to use at each
         //energy grid point (-1 for none):
@@ -1031,7 +1066,8 @@ namespace NCRYSTAL_NAMESPACE {
                                 StoreExtraDiagnostics extraDiag )
         : m_kT( sd->temperature().kT() ),
           m_invkT( 1.0 / m_kT ),
-          m_cellmgr(sd)
+          m_origSABData( sd ),
+          m_cellmgr( scaleSToUnitMax( sd, m_invSScale ) )
       {
         //Fixme (before 5.0.0): init is ~5-10x slower than legacy (radix sort in
         //SABSurveyor, integration of partially covered cells).
@@ -1191,6 +1227,9 @@ namespace NCRYSTAL_NAMESPACE {
           //No constraint on the slope at Emax (the grid ends where enough of
           //the kernel is covered, and SABExtended takes over above).
         }
+        m_sIntegralUnscaled.reserve( m_sIntegral.size() );
+        for ( auto v : m_sIntegral )
+          m_sIntegralUnscaled.push_back( v * m_invSScale );
       }
 
       double SABProcImpl::phaseSpaceIntegral( NeutronEnergy ekin ) const
@@ -1400,7 +1439,7 @@ namespace NCRYSTAL_NAMESPACE {
         os <<"{\"egrid\":";
         streamJSONHugeDblVect(os, VectD( m_eGrid ));
         os <<",\"sintegral\":";
-        streamJSONHugeDblVect(os, VectD( m_sIntegral ));
+        streamJSONHugeDblVect(os, VectD( m_sIntegralUnscaled ));
 
         os <<",\"kT\":";
         streamJSON(os,m_kT);
@@ -1465,7 +1504,8 @@ NCS::SABProcessor::~SABProcessor()
 
 double NCS::SABProcessor::phaseSpaceIntegral( NeutronEnergy ekin ) const
 {
-  return sp_cimpl(m_impl)->phaseSpaceIntegral(ekin);
+  auto sp = sp_cimpl(m_impl);
+  return sp->phaseSpaceIntegral(ekin) * sp->m_invSScale;
 }
 
 NC::CrossSect
@@ -1480,11 +1520,11 @@ NCS::SABProcessor::crossSectionUnitSigmaBound( NeutronEnergy ekin ) const
     //computed in a way which avoid zero division and infinities in the result.
     const double e = ncmax( ekin.dbl(),
                             std::numeric_limits<double>::denorm_min() );
-    return CrossSect{ ncmin( sp->m_lowEExtrapolationConstant * 0.25
-                             * std::sqrt( sp->m_kT ) / std::sqrt( e ),
+    return CrossSect{ ncmin( sp->m_lowEExtrapolationConstant * sp->m_invSScale
+                             * 0.25 * std::sqrt( sp->m_kT ) / std::sqrt( e ),
                              std::numeric_limits<double>::max() ) };
   }
-  const double Sint = sp->phaseSpaceIntegral(ekin);
+  const double Sint = sp->phaseSpaceIntegral(ekin) * sp->m_invSScale;
   const double kTdiv4 = sp->m_kT * 0.25;//fixme: cache?
   return CrossSect{ Sint * kTdiv4 / ekin.dbl() };
 }
@@ -1501,7 +1541,8 @@ NC::IsoXSDescr::Tabulation NCS::SABProcessor::createXSTabulation() const
   const auto m = sp->m_sIntegralSmooth.value().nodeSlopes();
   nc_assert_always( m.size() == x.size() );
   const double kT = sp->m_kT;
-  const double c = 0.25 * std::sqrt( kT );
+  //Also undoing the scaling of the S values (see scaleSToUnitMax):
+  const double c = 0.25 * std::sqrt( kT ) * sp->m_invSScale;
   IsoXSDescr::Tabulation res;
   res.E.reserve( x.size() );
   for ( auto t : x )
@@ -1519,7 +1560,7 @@ NC::IsoXSDescr::Tabulation NCS::SABProcessor::createXSTabulation() const
   //Below the grid xs=K*sqrt(kT)/(4*sqrt(e)), above it xs=(kT/4)*Sint(Emax)/e
   //(cf. crossSectionUnitSigmaBound):
   res.tail[0] = sp->m_lowEExtrapolationConstant * c;
-  res.tail[2] = 0.25 * kT * y.back();
+  res.tail[2] = 0.25 * kT * y.back() * sp->m_invSScale;
   return res;
 }
 
@@ -1528,7 +1569,7 @@ NCS::SABProcessor::EPtInfo NCS::SABProcessor::getEMaxInfo() const
   auto sp = sp_cimpl(m_impl);
   EPtInfo res;
   res.E_div_kT = sp->m_eGrid.back();
-  res.phaseSpaceIntegral = sp_cimpl(m_impl)->m_sIntegral.back();
+  res.phaseSpaceIntegral = sp->m_sIntegralUnscaled.back();
   res.ekin = NeutronEnergy{ res.E_div_kT * sp->m_kT };
   res.crossSectionUnitSigmaBound
     = CrossSect{ res.phaseSpaceIntegral * 0.25 / res.E_div_kT };
@@ -1601,12 +1642,12 @@ const NC::VectD& NCS::SABProcessor::getEDivKTGrid() const
 
 const NC::VectD& NCS::SABProcessor::getPhaseSpaceIntegralAtGrid() const
 {
-  return sp_cimpl(m_impl)->m_sIntegral;
+  return sp_cimpl(m_impl)->m_sIntegralUnscaled;
 }
 
 NC::shared_obj<const NC::SABData> NCS::SABProcessor::sabDataPtr() const
 {
-  return sp_cimpl(m_impl)->m_cellmgr.sabDataPtr();
+  return sp_cimpl(m_impl)->m_origSABData;
 }
 
 void NCS::SABProcessor::toJSONProcessInfo( std::ostream& os,
