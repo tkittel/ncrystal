@@ -88,9 +88,6 @@ ClathrateHydrateData:
 
 MagScat:
   github_repo_key: "highness-eu/ncplugin-MagScat"
-  disable_tests: true # todo: remove once NCrystal supports site occupancies
-                      # and/or MagScat is fixed in another way
-                      # see https://github.com/highness-eu/ncmat-clathrates/issues/4
   description: |
     A plugin providing paramagnetic scattering in O2-clathrates, based on
     formulas by O. Zimmer (https://doi.org/10.1103/PhysRevC.93.035503).
@@ -110,3 +107,17 @@ Liquids:
     presented at ICANS XXV (13-17 April 2026)
     https://indico.ess.eu/event/3811/contributions/24554/ and proceedings with
     more details have been submitted.
+
+SuperfluidHe:
+  github_repo_key: "dddijulio/ncrystal-plugin-SuperfluidHe"
+  description: |
+    A plugin providing scattering in superfluid helium-4 at 0.1-1.3K, based on
+    https://doi.org/10.1016/j.nima.2023.168284 (a single-phonon line on the
+    measured dispersion relation, plus multiphonon scattering).
+
+DirectGA:
+  github_repo_key: "dddijulio/ncrystal-plugin-DirectGA"
+  description: |
+    A plugin constructing the self-scattering kernel directly from a frequency
+    spectrum, using the Gaussian approximation in the time domain (for liquids
+    and solids).
