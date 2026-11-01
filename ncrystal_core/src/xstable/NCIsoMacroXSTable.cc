@@ -58,11 +58,6 @@ namespace NCRYSTAL_NAMESPACE {
       //was not known in advance, and an exception is thrown:
       constexpr double min_rel_spacing = 1e-9;
 
-      //The tolerance is relative to max(xs,abs_floor), with xs in barn per
-      //atom (an absolute floor is needed for cross sections vanishing at
-      //wavelength 0):
-      constexpr double xs_abs_floor = 1e-12;
-
       //Max number of refinement iterations (each iteration at least halves
       //the spacing of the points where the tolerance is not met):
       constexpr unsigned max_refine_iterations = 100;
@@ -162,8 +157,7 @@ namespace NCRYSTAL_NAMESPACE {
       //of width h are sufficient for that (Schmidt and Hess 1988). Returns
       //whether all interior points are reproduced within tol:
       bool fitInterval( const VectD& x, const VectD& y, std::size_t i,
-                        std::size_t j, double s0, double tol, double abs_floor,
-                        double& s1 )
+                        std::size_t j, double s0, double tol, double& s1 )
       {
         nc_assert( j > i && x[j] > x[i] );
         const double h = x[j] - x[i];
@@ -175,7 +169,9 @@ namespace NCRYSTAL_NAMESPACE {
           const double A = ( v * v * ( ( 1.0 + 2.0 * u ) * y[i] + u * h * s0 )
                              + u * u * ( 3.0 - 2.0 * u ) * y[j] );
           const double B = -u * u * v * h;
-          const double w = 1.0 / ncmax( y[k], abs_floor );
+          //Points with y=0 must be reproduced exactly, and are not used in
+          //the fit:
+          const double w = ( y[k] > 0.0 ? 1.0 / y[k] : 0.0 );
           num += w * w * B * ( y[k] - A );
           den += w * w * B * B;
         }
@@ -200,7 +196,7 @@ namespace NCRYSTAL_NAMESPACE {
           return false;
         for ( std::size_t k = i + 1; k < j; ++k ) {
           const double yk = hermite( x[i], x[j], y[i], y[j], s0, s1, x[k] );
-          if ( !( ncabs( yk - y[k] ) <= tol * ncmax( y[k], abs_floor ) ) )
+          if ( !( ncabs( yk - y[k] ) <= tol * y[k] ) )
             return false;
         }
         return true;
@@ -212,8 +208,7 @@ namespace NCRYSTAL_NAMESPACE {
 
 NCX::ReducedHermitePoints NCX::reduceHermitePoints( const VectD& x,
                                                     const VectD& y,
-                                                    double tol,
-                                                    double abs_floor )
+                                                    double tol )
 {
   //From the current point (with its slope fixed), find the most distant point
   //which can be reached with an interval satisfying the tolerance. An
@@ -248,7 +243,7 @@ NCX::ReducedHermitePoints NCX::reduceHermitePoints( const VectD& x,
     auto reach = [&]( double s0, double& s_good )
     {
       std::size_t good = i + 1;
-      (void)fitInterval( x, y, i, good, s0, tol, abs_floor, s_good );
+      (void)fitInterval( x, y, i, good, s0, tol, s_good );
       std::size_t bad = n;//first known infeasible end point (n: none)
       std::size_t step = 2;
       double s;
@@ -256,7 +251,7 @@ NCX::ReducedHermitePoints NCX::reduceHermitePoints( const VectD& x,
         std::size_t j = ncmin( i + step, n - 1 );
         if ( j <= good )
           break;
-        if ( x[j] > x[i] && fitInterval( x, y, i, j, s0, tol, abs_floor, s ) ) {
+        if ( x[j] > x[i] && fitInterval( x, y, i, j, s0, tol, s ) ) {
           good = j;
           s_good = s;
           if ( j == n - 1 )
@@ -270,7 +265,7 @@ NCX::ReducedHermitePoints NCX::reduceHermitePoints( const VectD& x,
       if ( bad < n ) {
         while ( bad - good > 1 ) {
           std::size_t mid = good + ( bad - good ) / 2;
-          if ( fitInterval( x, y, i, mid, s0, tol, abs_floor, s ) ) {
+          if ( fitInterval( x, y, i, mid, s0, tol, s ) ) {
             good = mid;
             s_good = s;
           } else {
@@ -348,7 +343,8 @@ double NCX::evalIsoMacroXSTable( const double* wl, const double* xs,
 NCX::IsoMacroXSTable
 NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
                             VectD discontinuities_in,
-                            const IsoMacroXSTableParams& params )
+                            const IsoMacroXSTableParams& params,
+                            IsoMacroXSTableDiagnostics* diagnostics )
 {
   if ( !( params.wlmax > 10.0 * denseWavelengthMin() && std::isfinite( params.wlmax ) ) )
     NCRYSTAL_THROW2( BadInput, "IsoMacroXSTable: invalid wlmax " << params.wlmax
@@ -419,7 +415,6 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
   for ( std::size_t i = 1; i < wl_eval.size(); ++i )
     y.push_back( evalXS( wl_eval[i] ) );
   wl_eval.clear();
-  const double abs_floor = xs_abs_floor;
 
   //Known discontinuities where the cross section turns out to be continuous
   //(kinks, where the values just below and above agree to 1e-6) are not
@@ -427,7 +422,7 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
   std::size_t ndisc = 0;
   for ( std::size_t i = 0; i + 1 < x.size(); ++i )
     if ( x[i+1] == x[i]
-         && ncabs( y[i+1] - y[i] ) > kink_tol * ncmax( ncmax( y[i], y[i+1] ), abs_floor ) )
+         && ncabs( y[i+1] - y[i] ) > kink_tol * ncmax( y[i], y[i+1] ) )
       ++ndisc;
 
   //The limit for wavelength -> 0, from linear extrapolation to 0 from very
@@ -443,18 +438,19 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
     const double lim_c = extrapTo0( 1e-9 );
     const double d_ab = ncabs( lim_a - lim_b );
     const double d_bc = ncabs( lim_b - lim_c );
-    const double lim_tol = tol * ncmax( ncabs( lim_c ), abs_floor );
-    //Either the estimates agree, or they converge (geometrically, with a
-    //remaining error of at most d_bc*0.05/0.95 in lim_c):
-    const bool converges = ( d_bc <= 1e-3 * lim_tol
-                             || ( d_bc <= 0.05 * d_ab && 0.06 * d_bc <= lim_tol ) );
+    //Either the estimates agree, or they converge (geometrically). The limit
+    //is only used below denseWavelengthMin(), where the tolerance is not
+    //required, so a small negative estimate (e.g. -2*c*h^2 for a cross
+    //section c*wl^2) simply means a limit of 0:
+    const double scale = ncmax( ncabs( lim_c ),
+                                evalXS( denseWavelengthMin() ) );
+    const bool converges = ( d_bc <= 1e-3 * tol * scale
+                             || d_bc <= 0.05 * d_ab );
     if ( !converges )
       NCRYSTAL_THROW2( CalcError, "IsoMacroXSTable: the cross section does not"
                        " converge for wavelength -> 0 (estimated limits "
-                       << lim_a << ", " << lim_b << " and " << lim_c << " barn)" );
-    if ( lim_c < -abs_floor )
-      NCRYSTAL_THROW2( CalcError, "IsoMacroXSTable: invalid limit " << lim_c
-                       << " of the cross section for wavelength -> 0" );
+                       << lim_a << ", " << lim_b << " and " << lim_c
+                       << " /cm)" );
     y.front() = ( lim_c > 0.0 ? lim_c : 0.0 );
   }
 
@@ -464,7 +460,7 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
   ReducedHermitePoints red;
   std::size_t nrefine = 0;
   while ( true ) {
-    red = reduceHermitePoints( x, y, tol_build, abs_floor );
+    red = reduceHermitePoints( x, y, tol_build );
     const auto& idx = red.idx;
     VectD add_x, add_y;
     add_x.reserve( x.size() );//at most one point per interval
@@ -481,7 +477,8 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
       const double ym = evalXS( xm );
       const double yc = hermite( x[i], x[j], y[i], y[j],
                                  red.slope[seg], red.slope[seg+1], xm );
-      if ( ncabs( yc - ym ) <= tol_build * ncmax( ym, abs_floor ) )
+      if ( xm < denseWavelengthMin()
+           || ncabs( yc - ym ) <= tol_build * ym )
         continue;
       if ( !( x[k+1] - x[k] > min_rel_spacing * x[k+1] ) )
         NCRYSTAL_THROW2( CalcError, "IsoMacroXSTable: the cross section has an"
@@ -513,52 +510,65 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
     y.swap( new_y );
   }
 
-  IsoMacroXSTable res;
-  res.wl.reserve( red.idx.size() );
-  res.xs.reserve( red.idx.size() );
-  for ( auto i : red.idx ) {
-    res.wl.push_back( x[i] );
-    res.xs.push_back( y[i] );
+  //The table, as a block in the format documented in
+  //examples/ncrystal_example_filter.c:
+  const std::size_t n = red.idx.size();
+  nc_assert_always( n >= 2 && x[red.idx.front()] == 0.0
+                    && x[red.idx.back()] == params.wlmax
+                    && x[red.idx[n-2]] < params.wlmax );
+  auto data = ncmake_unique_array<double>( 3 * n + 4 );
+  data[0] = IsoMacroXSTable::magic();
+  data[1] = IsoMacroXSTable::formatVersion();
+  data[2] = static_cast<double>( n );
+  for ( std::size_t k = 0; k < n; ++k ) {
+    data[3 + k] = x[red.idx[k]];
+    data[3 + n + k] = y[red.idx[k]];
+    data[3 + 2 * n + k] = red.slope[k];
   }
-  res.slope = std::move( red.slope );
-  nc_assert_always( res.wl.size() >= 2 && res.wl.front() == 0.0
-                    && res.wl.back() == params.wlmax
-                    && res.wl[res.wl.size()-2] < params.wlmax );
+  data[3 + 3 * n] = IsoMacroXSTable::magic();
+  IsoMacroXSTable res( std::move( data ) );
 
-  //Final verification at random points in each segment (in addition to the
+  //Final verification at random points in each interval (in addition to the
   //sample points, which are verified by construction):
   {
+    const auto wl = res.wavelengths();
+    const auto xs = res.macroXS();
+    const auto slope = res.slopes();
     RandXRSRImpl rng;//(fixed default seed, for reproducible verification)
-    constexpr unsigned npts_per_segment = 4;
-    for ( std::size_t i = 0; i + 1 < res.wl.size(); ++i ) {
-      const double x0 = res.wl[i];
-      const double x1 = res.wl[i+1];
+    constexpr unsigned npts_per_interval = 4;
+    for ( std::size_t i = 0; i + 1 < n; ++i ) {
+      const double x0 = wl[i];
+      const double x1 = wl[i+1];
       if ( !( x1 > x0 ) )
         continue;
-      for ( unsigned k = 0; k < npts_per_segment; ++k ) {
+      for ( unsigned k = 0; k < npts_per_interval; ++k ) {
         const double xv = x0 + ( 0.01 + 0.98 * rng.generate() ) * ( x1 - x0 );
+        if ( xv < denseWavelengthMin() )
+          continue;
         const double yv = evalXS( xv );
-        const double yt = evalIsoMacroXSTable( res.wl.data(), res.xs.data(),
-                                               res.slope.data(), res.wl.size(),
-                                               xv );
-        if ( !( ncabs( yt - yv ) <= tol * ncmax( yv, abs_floor ) ) )
+        const double yt = evalIsoMacroXSTable( wl.data(), xs.data(),
+                                               slope.data(), n, xv );
+        if ( !( ncabs( yt - yv ) <= tol * yv ) )
           NCRYSTAL_THROW2( CalcError, "IsoMacroXSTable: verification failed at"
                            " wavelength " << xv << " Aa (table: " << yt
-                           << " barn, exact: " << yv << " barn)" );
+                           << " /cm, exact: " << yv << " /cm)" );
       }
     }
   }
 
-  res.numberDensity = 0.0;
-  res.nDiscontinuities = ndisc;
-  res.nDense = x.size();
-  res.nRefine = nrefine;
+  if ( diagnostics ) {
+    diagnostics->nDiscontinuities = ndisc;
+    diagnostics->nDense = x.size();
+    diagnostics->nRefine = nrefine;
+    diagnostics->processes.clear();
+  }
   return res;
 }
 
 NCX::IsoMacroXSTable
 NCX::createIsoMacroXSTable( const MatCfg& cfg,
-                            const IsoMacroXSTableParams& params )
+                            const IsoMacroXSTableParams& params,
+                            IsoMacroXSTableDiagnostics* diagnostics )
 {
   auto info = FactImpl::createInfo( cfg );
   auto scat = FactImpl::createScatter( cfg );
@@ -578,18 +588,25 @@ NCX::createIsoMacroXSTable( const MatCfg& cfg,
   collectBreakpoints( *scat, discontinuities );
   collectBreakpoints( *absn, discontinuities );
 
+  //barn/atom * atoms/Aa^3 = 1/cm:
+  const double numberDensity = info->getNumberDensity().dbl();
   CachePtr cp_scat, cp_abs;
-  auto xs_of_wl = [&scat,&absn,&cp_scat,&cp_abs]( double wl )
+  auto xs_of_wl = [&scat,&absn,&cp_scat,&cp_abs,numberDensity]( double wl )
   {
     const NeutronEnergy ekin{ wl2ekin( wl ) };
-    return ( scat->crossSectionIsotropic( cp_scat, ekin ).dbl()
-             + absn->crossSectionIsotropic( cp_abs, ekin ).dbl() );
+    return numberDensity
+      * ( scat->crossSectionIsotropic( cp_scat, ekin ).dbl()
+          + absn->crossSectionIsotropic( cp_abs, ekin ).dbl() );
   };
 
-  IsoMacroXSTable res = createIsoMacroXSTable( xs_of_wl,
-                                               std::move( discontinuities ),
-                                               params );
-  res.numberDensity = info->getNumberDensity().dbl();
-  res.processes.assign( names.begin(), names.end() );
+  auto res = createIsoMacroXSTable( xs_of_wl, std::move( discontinuities ),
+                                    params, diagnostics );
+  if ( diagnostics )
+    diagnostics->processes.assign( names.begin(), names.end() );
   return res;
+}
+
+NCX::IsoMacroXSTable::IsoMacroXSTable( std::unique_ptr<double[]> data )
+  : m_data( std::move( data ) )
+{
 }

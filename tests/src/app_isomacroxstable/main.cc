@@ -34,26 +34,26 @@ namespace {
   using Fct = std::function<double(double)>;
 
   //Worst relative error of the table vs. the function, at log-spaced points
-  //and at points close to the given discontinuities:
+  //(from NCX::denseWavelengthMin(), below which the tolerance is not
+  //required) and at points close to the given discontinuities. Where the
+  //function is 0, the table must be exactly 0:
   double worstRelErr( const NCX::IsoMacroXSTable& t, const Fct& f,
                       const NC::VectD& discont, double wlmax )
   {
-    NC::VectD wls = NC::geomspace( 1e-7, wlmax, 200000 );
+    NC::VectD wls = NC::geomspace( NCX::denseWavelengthMin(), wlmax, 200000 );
     for ( auto e : discont )
       for ( auto r : { 1-1e-8, 1+1e-8, 1-1e-5, 1+1e-5 } )
         wls.push_back( e * r );
-    //The tolerance is relative to max(xs,1e-12):
-    const double abs_floor = 1e-12;
     double worst = 0.0;
     for ( auto wl : wls ) {
       const double exact = f( wl );
-      const double tab = NCX::evalIsoMacroXSTable( t.wl.data(), t.xs.data(),
-                                                   t.slope.data(), t.wl.size(),
+      const double tab = NCX::evalIsoMacroXSTable( t.wavelengths().data(),
+                                                   t.macroXS().data(),
+                                                   t.slopes().data(), t.n(),
                                                    wl );
-      const double yref = std::max( exact, abs_floor );
-      const double err = ( yref > 0.0
-                           ? NC::ncabs( tab - exact ) / yref
-                           : NC::ncabs( tab - exact ) );
+      const double err = ( exact > 0.0
+                           ? NC::ncabs( tab - exact ) / exact
+                           : ( tab == exact ? 0.0 : NC::kInfinity ) );
       worst = std::max( worst, err );
     }
     return worst;
@@ -68,8 +68,8 @@ namespace {
     auto t = NCX::createIsoMacroXSTable( f, discont, params );
     const double worst = worstRelErr( t, f, discont, wlmax );
     nc_assert_always( worst <= tol );
-    std::cout << descr << ": npts=" << t.wl.size()
-              << " xs(0)=" << std::round( t.xs.front() * 1e6 ) / 1e6
+    std::cout << descr << ": npts=" << t.n()
+              << " xs(0)=" << std::round( t.macroXS().front() * 1e6 ) / 1e6
               << " worst/tol<1: OK" << std::endl;
   }
 
@@ -103,6 +103,16 @@ int main()
   testOK( "a/wl^0.1 at long wavelengths", []( double wl ) { return 1.0 + wl / std::pow( 1.0 + wl, 0.1 ); } );
   testOK( "vanishing at wl=0", []( double wl ) { return wl * wl / ( 1.0 + wl ); } );
   testOK( "vanishing at wl=0 with large curvature", []( double wl ) { return 10.0 * wl * wl / ( 1.0 + wl * wl ); } );
+  //No absolute scale is involved:
+  testOK( "vanishing at wl=0, tiny", []( double wl )
+  {
+    return 1e-30 * wl * wl / ( 1.0 + wl );
+  } );
+  testOK( "vanishing at wl=0 like wl^4", []( double wl )
+  {
+    const double q = wl * wl;
+    return q * q / ( 1.0 + q * q );
+  } );
   testOK( "oscillating", []( double wl ) { return 2.0 + std::sin( 20.0 * wl ); }, {}, 1e-3, 20.0 );
   //Resonance-like peaks (Lorentzians in energy), as long as they are wider
   //than the dense sampling:
@@ -181,7 +191,7 @@ int main()
       const double d = std::fmod( xi, 2.0 ) - 1.0;
       y.push_back( d > 0.0 && d < 0.2 ? std::sin( 5.0 * NC::kPi * d ) * 10.0 : 0.0 );
     }
-    auto r = NCX::reduceHermitePoints( x, y, 1e-3, 1e-12 );
+    auto r = NCX::reduceHermitePoints( x, y, 1e-3 );
     NC::VectD tx, ty;
     for ( auto i : r.idx ) {
       tx.push_back( x[i] );

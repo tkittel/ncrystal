@@ -392,16 +392,12 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
         return float(xmin.value), float(xmax.value), _cptr_to_nparray( yraw, ny )
     functions['raw_vdos2gn'] = raw_vdos2gn
 
-    _raw_isomacroxstable = _wrap('ncrystal_isomacroxstable',None,
-                             (_cstr,_uintp,_dblpp,_dblpp,_dblpp,_cstr),
-                             hide=True)
+    _raw_isomacroxstable = _wrap('ncrystal_isomacroxstable',_dblp,
+                                 (_cstr,_cstr),hide=True)
     def isomacroxstable( cfgstr ):
         _ensure_numpy()
-        n = _uint()
-        wl, macroxs, slope = _dblp(), _dblp(), _dblp()
-        _raw_isomacroxstable( _str2cstr(cfgstr), n, wl, macroxs, slope, None )
-        return ( _cptr_to_nparray( wl, n ), _cptr_to_nparray( macroxs, n ),
-                 _cptr_to_nparray( slope, n ) )
+        block = _raw_isomacroxstable( _str2cstr(cfgstr), None )
+        return _cptr_to_nparray( block, 3 * int( block[2] ) + 4 )
     functions['isomacroxstable'] = isomacroxstable
 
 
