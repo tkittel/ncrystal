@@ -73,10 +73,12 @@ namespace NCRYSTAL_NAMESPACE {
     // (e.g. without absorption and inelastic scattering) could not be
     // tabulated.
     //
-    // Known discontinuities (Bragg edges, and the boundaries of the energy
-    // domains of the processes) are represented by two table points with the
-    // same wavelength: the first with the cross section just below the
-    // discontinuity, the second with the cross section just above it.
+    // Known discontinuities (the breakpts of the isoXSDescr() of the
+    // processes, e.g. Bragg edges, or the boundaries of their energy domains)
+    // are represented by two table points with the same wavelength: the first
+    // with the cross section just below the discontinuity, the second with the
+    // cross section just above it. Where the cross section turns out to be
+    // continuous (a kink), a single point is used.
     //
     // Features narrower than the dense sampling, which are not known in
     // advance, can not be found reliably by sampling. Therefore a warning is
@@ -101,7 +103,8 @@ namespace NCRYSTAL_NAMESPACE {
       VectD wl;//Angstrom
       VectD xs;//barn/atom
       double numberDensity;//atoms/Angstrom^3
-      std::size_t nDiscontinuities;//Known discontinuities (clusters) in range
+      std::size_t nDiscontinuities;//Known discontinuities (clusters) in range,
+                                   //excluding kinks
       std::size_t nDense;//Number of dense sample points (after refinement)
       std::size_t nRefine;//Number of refinement iterations
       std::vector<std::string> processes;//Names of the (leaf) physics processes
