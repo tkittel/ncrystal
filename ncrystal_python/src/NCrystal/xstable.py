@@ -40,7 +40,7 @@ class IsoMacroXSTable:
 
     The cross sections are evaluated from a piecewise cubic table vs. the
     neutron wavelength, reproducing the cross section of the material to a
-    relative precision of 0.1%. An exception is raised if the cross section can
+    relative precision of 0.01%. An exception is raised if the cross section can
     not be tabulated reliably.
 
     """
