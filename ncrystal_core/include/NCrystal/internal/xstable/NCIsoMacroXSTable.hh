@@ -82,10 +82,11 @@ namespace NCRYSTAL_NAMESPACE {
     // cross section just above it. A pair can also have the same cross section
     // and different slopes (e.g. at a kink).
     //
-    // Features narrower than the dense sampling, which are not known in
-    // advance, can not be found reliably by sampling. Therefore a warning is
-    // emitted for physics processes not known to be free of such features
-    // (e.g. a future process with absorption resonances). Exceptions are thrown
+    // The cross sections of processes without a table in their isoXSDescr()
+    // are sampled, and features narrower than the sampling, which are not known
+    // in advance, can not be found reliably. Therefore a warning is emitted for
+    // such physics processes not known to be free of such features (e.g. a
+    // future process with absorption resonances). Exceptions are thrown
     // if the cross section is not finite or negative, if it does not converge
     // for wavelength -> 0, or if an unexpected discontinuity is found.
 
@@ -96,13 +97,16 @@ namespace NCRYSTAL_NAMESPACE {
       unsigned ndense = 0;//Log-spaced dense sample points (plus
                           //discontinuities). 0 means auto (see autoNDense)
       bool discontinuities = true;//Include points at the known discontinuities
+      //NB: ndense and discontinuities are only used for materials with
+      //processes without a table in their isoXSDescr() (see below).
     };
 
     //Information about the creation of a table, for diagnostics:
     struct IsoMacroXSTableDiagnostics {
       std::size_t nDiscontinuities = 0;//Known discontinuities (clusters) in
                                        //range, excluding kinks
-      std::size_t nDense = 0;//Number of dense sample points (after refinement)
+      std::size_t nDense = 0;//Number of dense sample points (after
+                             //refinement), or of candidate table points
       std::size_t nRefine = 0;//Number of refinement iterations
       std::vector<std::string> processes;//Names of the (leaf) physics processes
     };
@@ -148,6 +152,11 @@ namespace NCRYSTAL_NAMESPACE {
 
     private:
       explicit IsoMacroXSTable( std::unique_ptr<double[]> );
+      static IsoMacroXSTable fromPoints( const VectD& wl, const VectD& xs,
+                                         const VectD& slope );
+      friend IsoMacroXSTable
+      createIsoMacroXSTable( const MatCfg&, const IsoMacroXSTableParams&,
+                             IsoMacroXSTableDiagnostics* );
       friend IsoMacroXSTable
       createIsoMacroXSTable( const std::function<double(double)>&,
                              const std::function<double(double)>&, VectD,

@@ -34,6 +34,18 @@ stdlib::Polyethylene_CH2.ncmat
    ndiscontinuities=0 tol=0.0001 wlmax=500 maxrelerr<tol: OK
    processes: AbsOOV ElIncScatter SABScatter
    first: (0 Aa, 1.80525/cm) last: (500 Aa, 129.783/cm)
+stdlib::Al_sg225.ncmat;knllux=3
+   ndiscontinuities=126 tol=0.0001 wlmax=500 maxrelerr<tol: OK
+   processes: AbsOOV ElIncScatter PowderBragg SABScatterNG
+   first: (0 Aa, 0.0841247/cm) last: (500 Aa, 4.44331/cm)
+stdlib::Be_sg194.ncmat;temp=80K;knllux=3
+   ndiscontinuities=770 tol=0.0001 wlmax=500 maxrelerr<tol: OK
+   processes: AbsOOV ElIncScatter PowderBragg SABScatterNG
+   first: (0 Aa, 0.760456/cm) last: (500 Aa, 0.306641/cm)
+stdlib::Polyethylene_CH2.ncmat;knllux=3
+   ndiscontinuities=0 tol=0.0001 wlmax=500 maxrelerr<tol: OK
+   processes: AbsOOV ElIncScatter SABScatterNG
+   first: (0 Aa, 1.80525/cm) last: (500 Aa, 128.997/cm)
 stdlib::Y2SiO5_sg15_YSO.ncmat
    ndiscontinuities=12111 tol=0.0001 wlmax=500 maxrelerr<tol: OK
    processes: AbsOOV ElIncScatter PowderBragg SABScatter

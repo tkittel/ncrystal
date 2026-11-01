@@ -24,6 +24,8 @@
 #include "NCrystal/interfaces/NCProcImpl.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCIsoXSUtils.hh"
+#include "NCPolyBoundHelper.hh"
+#include <array>
 #include "NCrystal/internal/absoov/NCAbsOOV.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/utils/NCString.hh"
@@ -158,6 +160,339 @@ namespace NCRYSTAL_NAMESPACE {
           h = -h;
         return ( ( -3.0 * f( wl ) + 4.0 * f( wl + h ) - f( wl + 2.0 * h ) )
                  / ( 2.0 * h ) );
+      }
+
+      void validateParams( const IsoMacroXSTableParams& params )
+      {
+        if ( !( params.wlmax > 10.0 * denseWavelengthMin()
+                && std::isfinite( params.wlmax ) ) )
+          NCRYSTAL_THROW2( BadInput, "IsoMacroXSTable: invalid wlmax "
+                           << params.wlmax << " (must be larger than "
+                           << 10.0 * denseWavelengthMin() << " Aa)" );
+        if ( !( params.tol > 0.0 && params.tol < 1.0 ) )
+          NCRYSTAL_THROW2( BadInput, "IsoMacroXSTable: invalid tolerance "
+                           << params.tol << " (must be in the range (0,1))" );
+      }
+
+      //For materials where all processes have a table in their isoXSDescr(),
+      //the table is built directly from the merged table of the processes,
+      //with the exact errors of the interpolation (see tabulateExact). Even so,
+      //a smaller tolerance than requested is used, as a margin against rounding
+      //errors:
+      constexpr double tol_exact_factor = 0.9;
+
+      struct TablePoints {
+        VectD wl, xs, slope;
+        std::size_t ncandidates = 0;
+        std::size_t ndiscontinuities = 0;
+      };
+
+      //The cross section (scaled) of a tabulation and its derivative in a
+      //given region: -1 below the table, i for the interval [E[i],E[i+1]] and
+      //n-1 above the table (n=E.size()), also at the boundaries of the region:
+      class TabulationRegions final {
+      public:
+        TabulationRegions( const IsoXSDescr::Tabulation& t, double scale )
+          : m_t( t ), m_scale( scale ), m_n( static_cast<long>( t.E.size() ) ) {}
+        long n() const { return m_n; }
+        const IsoXSDescr::Tabulation& tab() const { return m_t; }
+        double scale() const { return m_scale; }
+        long region( double e ) const
+        {
+          if ( e < m_t.E.front() )
+            return -1;
+          if ( !( e < m_t.E.back() ) )
+            return m_n - 1;
+          return static_cast<long>( std::upper_bound( m_t.E.begin(), m_t.E.end(), e )
+                                    - m_t.E.begin() ) - 1;
+        }
+        //Value and slope (per wavelength) at a wavelength:
+        void eval( long k, double wl, double& y, double& s ) const
+        {
+          const double e = wl2ekin( wl );
+          const auto& t = m_t;
+          double xs, dxs;
+          if ( k < 0 ) {
+            const double se = std::sqrt( e );
+            xs = t.tail[0] / se + t.tail[1];
+            dxs = -0.5 * t.tail[0] / ( e * se );
+          } else if ( k >= m_n - 1 ) {
+            xs = t.tail[3] + ( t.tail[2] + t.tail[4] / e ) / e;
+            dxs = -( t.tail[2] + 2.0 * t.tail[4] / e ) / ( e * e );
+          } else {
+            //e*xs = F = P(u) + sqrt(e)*Q(u) + r/e:
+            const double w = t.E[k+1] - t.E[k];
+            const double u = ( e - t.E[k] ) / w;
+            double F = 0.0, dF = 0.0;
+            if ( !t.p.empty() ) {
+              const double * c = t.p.data() + 4 * k;
+              F = c[0] + u * ( c[1] + u * ( c[2] + u * c[3] ) );
+              dF = ( c[1] + u * ( 2.0 * c[2] + 3.0 * u * c[3] ) ) / w;
+            }
+            if ( !t.q.empty() ) {
+              const double * d = t.q.data() + 4 * k;
+              const double se = std::sqrt( e );
+              const double Q = d[0] + u * ( d[1] + u * ( d[2] + u * d[3] ) );
+              F += se * Q;
+              dF += 0.5 * Q / se + se * ( d[1] + u * ( 2.0 * d[2] + 3.0 * u * d[3] ) ) / w;
+            }
+            if ( !t.r.empty() ) {
+              F += t.r[k] / e;
+              dF -= t.r[k] / ( e * e );
+            }
+            xs = F / e;
+            dxs = ( dF - xs ) / e;
+          }
+          y = m_scale * xs;
+          s = m_scale * dxs * ( -2.0 * e / wl );//de/dwl = -2e/wl
+        }
+      private:
+        const IsoXSDescr::Tabulation& m_t;
+        double m_scale;
+        long m_n;
+      };
+
+      //The table built directly from a tabulation (scaled by scale). The
+      //candidate table points are the energies of the tabulation in the range,
+      //where the cross section can be discontinuous or have kinks. An interval
+      //between candidate points is accepted if the interpolation is within the
+      //tolerance everywhere, which is decided exactly on each segment between
+      //neighbouring candidate points: with t=1/wl=ta+D*z (z in [0,1]) and
+      //e=K*t^2, both e^2*xs and e^2*H (H the interpolation) are polynomials
+      //in z of degree at most 9, and so are the conditions
+      //tol*e^2*xs -/+ e^2*(H-xs) >= 0, which are checked with their Bernstein
+      //coefficients. Segments which can not be covered by a single interval
+      //are split:
+      TablePoints tabulateExact( const IsoXSDescr::Tabulation& t, double scale,
+                                 double wlmax, double tol )
+      {
+        const TabulationRegions tab( t, scale );
+        const double wlmin = denseWavelengthMin();
+        const double K = wl2ekin( 1.0 );
+        const double sqrtK = std::sqrt( K );
+        constexpr int nb = Poly9::maxDegree + 1;
+        using BArr = std::array<double,nb>;
+
+        //Candidate points, and the region of the segments between them:
+        VectD lam = { wlmin, wlmax };
+        const double ehi = wl2ekin( wlmin ), elo = wl2ekin( wlmax );
+        for ( auto e : t.E )
+          if ( e > elo && e < ehi )
+            lam.push_back( ekin2wl( e ) );
+        std::sort( lam.begin(), lam.end() );
+        lam.erase( std::unique( lam.begin(), lam.end() ), lam.end() );
+        std::vector<long> reg;
+        for ( std::size_t m = 0; m + 1 < lam.size(); ++m )
+          reg.push_back( tab.region( wl2ekin( 0.5 * ( lam[m] + lam[m+1] ) ) ) );
+
+        //Bernstein coefficients of e^2*xs on segment m (z=0 at the long
+        //wavelength end):
+        auto computeBG = [&]( std::size_t m )
+        {
+          const double x0 = lam[m], x1 = lam[m+1];
+          const long k = reg[m];
+          const double ta = 1.0 / x1;
+          const double D = ( x1 - x0 ) / ( x0 * x1 );
+          const Poly9 tz( ta, D );
+          const Poly9 ez = tz * tz * K;
+          const Poly9 e15z = ez * tz * sqrtK;//e^(3/2)
+          //e^2*xs = P*e + Q*e^(3/2) + R:
+          Poly9 G;
+          if ( k < 0 ) {
+            G = ez * ez * t.tail[1] + e15z * t.tail[0];
+          } else if ( k >= tab.n() - 1 ) {
+            G = ez * ez * t.tail[3] + ez * t.tail[2] + Poly9( t.tail[4] );
+          } else {
+            const double Ek = t.E[k], w = t.E[k+1] - Ek;
+            //u=(e-Ek)/w, with the constant term computed directly (not as a
+            //difference of the coefficients):
+            const Poly9 uz = ( ( ez - Poly9( ez.coeff( 0 ) ) ) * ( 1.0 / w )
+                                   + Poly9( ( K * ta * ta - Ek ) / w ) );
+            if ( !t.p.empty() )
+              G += composeCubic( t.p.data() + 4 * k, uz ) * ez;
+            if ( !t.q.empty() )
+              G += composeCubic( t.q.data() + 4 * k, uz ) * e15z;
+            if ( !t.r.empty() )
+              G += Poly9( t.r[k] );
+          }
+          BArr r;
+          bernsteinCoefficients( G * scale, r.data() );
+          return r;
+        };
+        std::vector<BArr> BG;
+        BG.reserve( lam.size() );
+        for ( std::size_t m = 0; m + 1 < lam.size(); ++m )
+          BG.push_back( computeBG( m ) );
+
+        //Bernstein coefficients of K^2*(1-xa*t)^j*t^(4-j) (j=0..3) on segment
+        //m, so e^2*H is their combination with the coefficients of H in powers
+        //of wl-xa (cached for the current start point xa):
+        struct Basis { BArr b[4]; };
+        std::vector<Basis> basisCache;
+        std::size_t basisStart = lam.size();
+        auto basis = [&]( std::size_t a, std::size_t m ) -> const Basis&
+        {
+          if ( basisStart != a ) {
+            basisCache.clear();
+            basisStart = a;
+          }
+          while ( basisCache.size() <= m - a ) {
+            const std::size_t mm = a + basisCache.size();
+            const double x0 = lam[mm], x1 = lam[mm+1], xa = lam[a];
+            const double ta = 1.0 / x1;
+            const double D = ( x1 - x0 ) / ( x0 * x1 );
+            const Poly9 tz( ta, D );
+            const Poly9 oneminus( ( x1 - xa ) / x1, -xa * D );//1-xa*t
+            Poly9 tpow[5];
+            tpow[0] = Poly9( 1.0 );
+            for ( int i = 1; i <= 4; ++i )
+              tpow[i] = tpow[i-1] * tz;
+            Poly9 ompow( 1.0 );
+            Basis bs;
+            for ( int j = 0; j <= 3; ++j ) {
+              bernsteinCoefficients( ompow * tpow[4-j] * ( K * K ), bs.b[j].data() );
+              ompow = ompow * oneminus;
+            }
+            basisCache.push_back( bs );
+          }
+          return basisCache[m - a];
+        };
+
+        //Whether the interpolation of the interval [lam[a],xb] is within the
+        //tolerance on segment m:
+        auto segmentOK = [&]( std::size_t a, std::size_t m, double xb,
+                              double ya, double yb, double sa, double sb )
+        {
+          const double h = xb - lam[a];
+          const double dy = ( yb - ya ) / h;
+          const double A[4] = { ya, sa, ( 3.0 * dy - 2.0 * sa - sb ) / h,
+                                ( sa + sb - 2.0 * dy ) / ( h * h ) };
+          const Basis& bs = basis( a, m );
+          const BArr& bg = BG[m];
+          BArr bplus, bminus;
+          bool plusOK = true, minusOK = true;
+          for ( int i = 0; i < nb; ++i ) {
+            const double eh = ( A[0] * bs.b[0][i] + A[1] * bs.b[1][i]
+                                + A[2] * bs.b[2][i] + A[3] * bs.b[3][i] );
+            bplus[i] = ( 1.0 + tol ) * bg[i] - eh;
+            bminus[i] = ( tol - 1.0 ) * bg[i] + eh;
+            plusOK = plusOK && bplus[i] >= 0.0;
+            minusOK = minusOK && bminus[i] >= 0.0;
+          }
+          return ( ( plusOK || bernsteinNonNegative( bplus.data() ) )
+                   && ( minusOK || bernsteinNonNegative( bminus.data() ) ) );
+        };
+
+        //Values and slopes on each side of candidate point m. Differences of
+        //the values at the level of rounding errors (e.g. where the tables of
+        //the processes are continuous) are not treated as discontinuities:
+        auto below = [&]( std::size_t m, double& y, double& s ) { tab.eval( reg[m-1], lam[m], y, s ); };
+        auto above = [&]( std::size_t m, double& y, double& s )
+        {
+          tab.eval( reg[m], lam[m], y, s );
+          if ( m > 0 ) {
+            double yb, sb;
+            below( m, yb, sb );
+            if ( ncabs( y - yb ) <= 1e-12 * ncmax( y, yb ) )
+              y = yb;
+          }
+        };
+
+        //Check the interval from a to b, with the slopes limited such that the
+        //interpolation can not become negative:
+        auto check = [&]( std::size_t a, std::size_t b, double& s0, double& s1 )
+        {
+          double ya, sa, yb, sb;
+          above( a, ya, sa );
+          below( b, yb, sb );
+          const double h = lam[b] - lam[a];
+          s0 = ncmax( sa, -3.0 * ya / h );
+          s1 = ncmin( sb, 3.0 * yb / h );
+          for ( std::size_t m = a; m < b; ++m )
+            if ( !segmentOK( a, m, lam[b], ya, yb, s0, s1 ) )
+              return false;
+          return true;
+        };
+
+        TablePoints res;
+        auto addPoint = [&res]( double x, double y, double s )
+        {
+          res.wl.push_back( x );
+          res.xs.push_back( y );
+          res.slope.push_back( s );
+        };
+        //Wavelength 0 is the limit at high energies (from the tail above the
+        //table), with the chord towards wlmin as the slope:
+        double y0 = scale * t.tail[3], ymin, smin;
+        above( 0, ymin, smin );
+        const double chord = ( ymin - y0 ) / wlmin;
+        addPoint( 0.0, y0, chord );
+        addPoint( wlmin, ymin, chord );
+
+        //Greedy selection of the intervals, with an exponential and then a
+        //binary search for the furthest end point:
+        std::size_t a = 0;
+        while ( a + 1 < lam.size() ) {
+          double s0, s1;
+          while ( !check( a, a + 1, s0, s1 ) ) {
+            const double xm = 0.5 * ( lam[a] + lam[a+1] );
+            if ( !( xm > lam[a] && xm < lam[a+1] ) )
+              NCRYSTAL_THROW2( CalcError, "IsoMacroXSTable: the tolerance can"
+                               " not be met at wavelength " << xm << " Aa" );
+            lam.insert( lam.begin() + a + 1, xm );
+            reg.insert( reg.begin() + a + 1, reg[a] );
+            BG[a] = computeBG( a );
+            BG.insert( BG.begin() + a + 1, computeBG( a + 1 ) );
+            basisStart = lam.size();
+          }
+          std::size_t good = a + 1, bad = lam.size();
+          double good_s0 = s0, good_s1 = s1;
+          std::size_t step = 2;
+          while ( true ) {
+            const std::size_t j = std::min( a + step, lam.size() - 1 );
+            if ( j <= good )
+              break;
+            if ( check( a, j, s0, s1 ) ) {
+              good = j;
+              good_s0 = s0;
+              good_s1 = s1;
+              if ( j == lam.size() - 1 )
+                break;
+              step *= 2;
+            } else {
+              bad = j;
+              break;
+            }
+          }
+          while ( bad < lam.size() && bad - good > 1 ) {
+            const std::size_t mid = good + ( bad - good ) / 2;
+            if ( check( a, mid, s0, s1 ) ) {
+              good = mid;
+              good_s0 = s0;
+              good_s1 = s1;
+            } else {
+              bad = mid;
+            }
+          }
+          double ya, sa, yb, sb;
+          above( a, ya, sa );
+          if ( !( res.wl.back() == lam[a] && res.xs.back() == ya
+                  && res.slope.back() == good_s0 ) )
+            addPoint( lam[a], ya, good_s0 );
+          below( good, yb, sb );
+          addPoint( lam[good], yb, good_s1 );
+          a = good;
+        }
+        //Known discontinuities (jumps, not kinks) at the candidate points:
+        for ( std::size_t m = 1; m + 1 < lam.size(); ++m ) {
+          double yl, sl, yr, sr;
+          below( m, yl, sl );
+          above( m, yr, sr );
+          if ( ncabs( yr - yl ) > kink_tol * ncmax( yl, yr ) )
+            ++res.ndiscontinuities;
+        }
+        res.ncandidates = lam.size();
+        return res;
       }
 
       //The wavelengths of the known discontinuities and kinks of the cross
@@ -384,13 +719,7 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
                             const IsoMacroXSTableParams& params,
                             IsoMacroXSTableDiagnostics* diagnostics )
 {
-  if ( !( params.wlmax > 10.0 * denseWavelengthMin() && std::isfinite( params.wlmax ) ) )
-    NCRYSTAL_THROW2( BadInput, "IsoMacroXSTable: invalid wlmax " << params.wlmax
-                     << " (must be larger than " << 10.0 * denseWavelengthMin()
-                     << " Aa)" );
-  if ( !( params.tol > 0.0 && params.tol < 1.0 ) )
-    NCRYSTAL_THROW2( BadInput, "IsoMacroXSTable: invalid tolerance "
-                     << params.tol << " (must be in the range (0,1))" );
+  validateParams( params );
   if ( params.ndense == 1 )
     NCRYSTAL_THROW( BadInput, "IsoMacroXSTable: ndense must be at least 2" );
   const unsigned ndense = ( params.ndense
@@ -572,23 +901,14 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
     slopes.swap( new_slopes );
   }
 
-  //The table, as a block in the format documented in
-  //examples/ncrystal_example_filter.c:
-  const std::size_t n = red.idx.size();
-  nc_assert_always( n >= 2 && x[red.idx.front()] == 0.0
-                    && x[red.idx.back()] == params.wlmax
-                    && x[red.idx[n-2]] < params.wlmax );
-  auto data = ncmake_unique_array<double>( 3 * n + 4 );
-  data[0] = IsoMacroXSTable::magic();
-  data[1] = IsoMacroXSTable::formatVersion();
-  data[2] = static_cast<double>( n );
-  for ( std::size_t k = 0; k < n; ++k ) {
-    data[3 + k] = x[red.idx[k]];
-    data[3 + n + k] = y[red.idx[k]];
-    data[3 + 2 * n + k] = red.slope[k];
+  VectD res_wl, res_xs;
+  res_wl.reserve( red.idx.size() );
+  res_xs.reserve( red.idx.size() );
+  for ( auto i : red.idx ) {
+    res_wl.push_back( x[i] );
+    res_xs.push_back( y[i] );
   }
-  data[3 + 3 * n] = IsoMacroXSTable::magic();
-  IsoMacroXSTable res( std::move( data ) );
+  auto res = IsoMacroXSTable::fromPoints( res_wl, res_xs, red.slope );
 
   if ( diagnostics ) {
     diagnostics->nDiscontinuities = ndisc;
@@ -671,6 +991,19 @@ NCX::createIsoMacroXSTable( const MatCfg& cfg,
     return numberDensity * res;
   };
 
+  if ( untabulated.empty() && merged.table.has_value() ) {
+    validateParams( params );
+    auto pts = tabulateExact( merged.table.value(), numberDensity, params.wlmax,
+                              tol_exact_factor * params.tol );
+    if ( diagnostics ) {
+      diagnostics->nDiscontinuities = pts.ndiscontinuities;
+      diagnostics->nDense = pts.ncandidates;
+      diagnostics->nRefine = 0;
+      diagnostics->processes.assign( names.begin(), names.end() );
+    }
+    return IsoMacroXSTable::fromPoints( pts.wl, pts.xs, pts.slope );
+  }
+
   auto res = createIsoMacroXSTable( xs_of_wl, dxs_of_wl,
                                     std::move( discontinuities ),
                                     params, diagnostics );
@@ -682,4 +1015,23 @@ NCX::createIsoMacroXSTable( const MatCfg& cfg,
 NCX::IsoMacroXSTable::IsoMacroXSTable( std::unique_ptr<double[]> data )
   : m_data( std::move( data ) )
 {
+}
+
+NCX::IsoMacroXSTable NCX::IsoMacroXSTable::fromPoints( const VectD& wl,
+                                                       const VectD& xs,
+                                                       const VectD& slope )
+{
+  //The block in the format documented in examples/ncrystal_example_filter.c:
+  const std::size_t n = wl.size();
+  nc_assert_always( n >= 2 && xs.size() == n && slope.size() == n
+                    && wl.front() == 0.0 && wl[n-2] < wl[n-1] );
+  auto data = ncmake_unique_array<double>( 3 * n + 4 );
+  data[0] = magic();
+  data[1] = formatVersion();
+  data[2] = static_cast<double>( n );
+  std::copy( wl.begin(), wl.end(), data.get() + 3 );
+  std::copy( xs.begin(), xs.end(), data.get() + 3 + n );
+  std::copy( slope.begin(), slope.end(), data.get() + 3 + 2 * n );
+  data[3 + 3 * n] = magic();
+  return IsoMacroXSTable( std::move( data ) );
 }
