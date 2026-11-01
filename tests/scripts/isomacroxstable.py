@@ -138,6 +138,10 @@ def main():
     test('stdlib::Al_sg225.ncmat;inelas=0')
     test('stdlib::Be_sg194.ncmat;temp=80K')
     test('stdlib::Polyethylene_CH2.ncmat')
+    #Next-gen kernels, so all processes have tables:
+    test('stdlib::Al_sg225.ncmat;knllux=3')
+    test('stdlib::Be_sg194.ncmat;temp=80K;knllux=3')
+    test('stdlib::Polyethylene_CH2.ncmat;knllux=3')
     test('stdlib::Y2SiO5_sg15_YSO.ncmat')
     test('stdlib::B4C_sg166_BoronCarbide.ncmat')
     test('gasmix::air')
