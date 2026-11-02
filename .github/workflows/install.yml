@@ -89,7 +89,6 @@ jobs:
         python3 -m NCrystal nctool --test
         python3 -m NCrystal config -s
         ncrystal_hfg2ncmat --help
-        ncrystal_verifyatompos --help
         export NCRYSTAL_ONLINEDB_CACHEDIR="$PWD/codidcache"
         mkdir -p "${NCRYSTAL_ONLINEDB_CACHEDIR}"
         cp ./src/tests/data/fake_cod_9005777.cif "${NCRYSTAL_ONLINEDB_CACHEDIR}/cod_9005777.cif"

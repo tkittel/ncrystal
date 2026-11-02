@@ -19,30 +19,29 @@ The full list of available modules are:
   Most important modules:
   =======================
 
-     nctool        : Main tool for investigating materials, files, plugins, etc.
-     browse        : Browse and search available data.
-     config        : Access technical info about NCrystal installation.
-     minimc        : Investigate multiple scattering and geometry effects via
-                     NCrystal's own Monte Carlo simulation framework.
+     nctool      : Main tool for investigating materials, files, plugins, etc.
+     browse      : Browse and search available data.
+     config      : Access technical info about NCrystal installation.
+     minimc      : Investigate multiple scattering and geometry effects via
+                   NCrystal's own Monte Carlo simulation framework.
 
   Modules related to material data conversions:
   =============================================
 
-     cif2ncmat     : Create NCMAT data based on CIF input.
-     hfg2ncmat     : Create NCMAT data for amorphous hydrogen-rich materials.
-     ncmat2hkl     : Export crystal reflection lists to .laz/.lau formats.
-     ncmat2endf    : Export ENDF data (based on endf-parserpy).
-     endf2ncmat    : Import ENDF data to NCMAT format (based on PyNE).
+     cif2ncmat   : Create NCMAT data based on CIF input.
+     hfg2ncmat   : Create NCMAT data for amorphous hydrogen-rich materials.
+     ncmat2hkl   : Export crystal reflection lists to .laz/.lau formats.
+     ncmat2endf  : Export ENDF data (based on endf-parserpy).
+     endf2ncmat  : Import ENDF data to NCMAT format (based on PyNE).
 
   Miscellaneous modules:
   ======================
 
-     atomdb        : Browse the database of isotopes and natural elements.
-     vdos2ncmat    : Prepare phonon VDOS data for inclusion in NCMAT data.
-     query         : Send low-level queries for JSON data to NCrystal.
-     verifyatompos : Verify consistency of atom positions in NCMAT data.
-     ncmat2cpp     : Produce C++ code with inline NCMAT data.
-     mcstasunion   : Generate McStas-Union code for using NCrystal materials.
+     atomdb      : Browse the database of isotopes and natural elements.
+     vdos2ncmat  : Prepare phonon VDOS data for inclusion in NCMAT data.
+     query       : Send low-level queries for JSON data to NCrystal.
+     ncmat2cpp   : Produce C++ code with inline NCMAT data.
+     mcstasunion : Generate McStas-Union code for using NCrystal materials.
 
 ================================================================================
 ==> Ended with no error
@@ -51,7 +50,7 @@ The full list of available modules are:
 ================================================================================
 ==> Invoking: /some/where/ncrystal -l
 ================================================================================
-atomdb browse cif2ncmat config endf2ncmat hfg2ncmat mcstasunion minimc ncmat2cpp ncmat2endf ncmat2hkl nctool query vdos2ncmat verifyatompos
+atomdb browse cif2ncmat config endf2ncmat hfg2ncmat mcstasunion minimc ncmat2cpp ncmat2endf ncmat2hkl nctool query vdos2ncmat
 ================================================================================
 ==> Ended with no error
 ================================================================================
@@ -59,7 +58,7 @@ atomdb browse cif2ncmat config endf2ncmat hfg2ncmat mcstasunion minimc ncmat2cpp
 ================================================================================
 ==> Invoking: /some/where/ncrystal --list
 ================================================================================
-atomdb browse cif2ncmat config endf2ncmat hfg2ncmat mcstasunion minimc ncmat2cpp ncmat2endf ncmat2hkl nctool query vdos2ncmat verifyatompos
+atomdb browse cif2ncmat config endf2ncmat hfg2ncmat mcstasunion minimc ncmat2cpp ncmat2endf ncmat2hkl nctool query vdos2ncmat
 ================================================================================
 ==> Ended with no error
 ================================================================================
@@ -84,30 +83,29 @@ The full list of available modules are:
   Most important modules:
   =======================
 
-     nctool        : Main tool for investigating materials, files, plugins, etc.
-     browse        : Browse and search available data.
-     config        : Access technical info about NCrystal installation.
-     minimc        : Investigate multiple scattering and geometry effects via
-                     NCrystal's own Monte Carlo simulation framework.
+     nctool      : Main tool for investigating materials, files, plugins, etc.
+     browse      : Browse and search available data.
+     config      : Access technical info about NCrystal installation.
+     minimc      : Investigate multiple scattering and geometry effects via
+                   NCrystal's own Monte Carlo simulation framework.
 
   Modules related to material data conversions:
   =============================================
 
-     cif2ncmat     : Create NCMAT data based on CIF input.
-     hfg2ncmat     : Create NCMAT data for amorphous hydrogen-rich materials.
-     ncmat2hkl     : Export crystal reflection lists to .laz/.lau formats.
-     ncmat2endf    : Export ENDF data (based on endf-parserpy).
-     endf2ncmat    : Import ENDF data to NCMAT format (based on PyNE).
+     cif2ncmat   : Create NCMAT data based on CIF input.
+     hfg2ncmat   : Create NCMAT data for amorphous hydrogen-rich materials.
+     ncmat2hkl   : Export crystal reflection lists to .laz/.lau formats.
+     ncmat2endf  : Export ENDF data (based on endf-parserpy).
+     endf2ncmat  : Import ENDF data to NCMAT format (based on PyNE).
 
   Miscellaneous modules:
   ======================
 
-     atomdb        : Browse the database of isotopes and natural elements.
-     vdos2ncmat    : Prepare phonon VDOS data for inclusion in NCMAT data.
-     query         : Send low-level queries for JSON data to NCrystal.
-     verifyatompos : Verify consistency of atom positions in NCMAT data.
-     ncmat2cpp     : Produce C++ code with inline NCMAT data.
-     mcstasunion   : Generate McStas-Union code for using NCrystal materials.
+     atomdb      : Browse the database of isotopes and natural elements.
+     vdos2ncmat  : Prepare phonon VDOS data for inclusion in NCMAT data.
+     query       : Send low-level queries for JSON data to NCrystal.
+     ncmat2cpp   : Produce C++ code with inline NCMAT data.
+     mcstasunion : Generate McStas-Union code for using NCrystal materials.
 
 ================================================================================
 ==> Ended with no error
@@ -133,30 +131,29 @@ The full list of available modules are:
   Most important modules:
   =======================
 
-     nctool        : Main tool for investigating materials, files, plugins, etc.
-     browse        : Browse and search available data.
-     config        : Access technical info about NCrystal installation.
-     minimc        : Investigate multiple scattering and geometry effects via
-                     NCrystal's own Monte Carlo simulation framework.
+     nctool      : Main tool for investigating materials, files, plugins, etc.
+     browse      : Browse and search available data.
+     config      : Access technical info about NCrystal installation.
+     minimc      : Investigate multiple scattering and geometry effects via
+                   NCrystal's own Monte Carlo simulation framework.
 
   Modules related to material data conversions:
   =============================================
 
-     cif2ncmat     : Create NCMAT data based on CIF input.
-     hfg2ncmat     : Create NCMAT data for amorphous hydrogen-rich materials.
-     ncmat2hkl     : Export crystal reflection lists to .laz/.lau formats.
-     ncmat2endf    : Export ENDF data (based on endf-parserpy).
-     endf2ncmat    : Import ENDF data to NCMAT format (based on PyNE).
+     cif2ncmat   : Create NCMAT data based on CIF input.
+     hfg2ncmat   : Create NCMAT data for amorphous hydrogen-rich materials.
+     ncmat2hkl   : Export crystal reflection lists to .laz/.lau formats.
+     ncmat2endf  : Export ENDF data (based on endf-parserpy).
+     endf2ncmat  : Import ENDF data to NCMAT format (based on PyNE).
 
   Miscellaneous modules:
   ======================
 
-     atomdb        : Browse the database of isotopes and natural elements.
-     vdos2ncmat    : Prepare phonon VDOS data for inclusion in NCMAT data.
-     query         : Send low-level queries for JSON data to NCrystal.
-     verifyatompos : Verify consistency of atom positions in NCMAT data.
-     ncmat2cpp     : Produce C++ code with inline NCMAT data.
-     mcstasunion   : Generate McStas-Union code for using NCrystal materials.
+     atomdb      : Browse the database of isotopes and natural elements.
+     vdos2ncmat  : Prepare phonon VDOS data for inclusion in NCMAT data.
+     query       : Send low-level queries for JSON data to NCrystal.
+     ncmat2cpp   : Produce C++ code with inline NCMAT data.
+     mcstasunion : Generate McStas-Union code for using NCrystal materials.
 
 ================================================================================
 ==> Ended with no error
@@ -234,7 +231,3 @@ The full list of available modules are:
 {'displaygroup': 'misc',
  'displayorder': 10,
  'descr': 'Prepare phonon VDOS data for inclusion in NCMAT data.'}
-==> Metadata for mode "verifyatompos":
-{'displaygroup': 'misc',
- 'displayorder': 20,
- 'descr': 'Verify consistency of atom positions in NCMAT data.'}

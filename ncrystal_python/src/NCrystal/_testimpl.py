@@ -443,7 +443,6 @@ def _actual_test_cmdline( verbose ):
             'ncrystal_ncmat2hkl --help',
             'ncrystal_cif2ncmat --help',
             'ncrystal_vdos2ncmat --help',
-            'ncrystal_verifyatompos --help',
             'ncrystal-config --show cmakedir']
     for cmd in cmds:
         cmd = shlex.split(cmd)
