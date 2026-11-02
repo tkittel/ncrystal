@@ -41,6 +41,10 @@ classifiers = [
 [project.scripts]
 ncrystal-config = "_ncrystal_core.info:_ncrystal_config_cli_wrapper"
 
+#Lets scikit-build-core builds find NCrystal with find_package(NCrystal):
+[project.entry-points."cmake.prefix"]
+NCrystal = "_ncrystal_core"
+
 [build-system]
 requires = ["scikit-build-core>=0.12"]
 build-backend = "scikit_build_core.build"

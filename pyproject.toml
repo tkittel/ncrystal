@@ -77,3 +77,7 @@ ncrystal_ncmat2hkl = "NCrystal._cli_ncmat2hkl:main"
 ncrystal_vdos2ncmat = "NCrystal._cli_vdos2ncmat:main"
 ncrystal_verifyatompos = "NCrystal._cli_verifyatompos:main"
 ncrystal_query = "NCrystal._cli_query:main"
+
+#Lets scikit-build-core builds find NCrystal with find_package(NCrystal):
+[project.entry-points."cmake.prefix"]
+NCrystal = "_ncrystal_core_monolithic"
