@@ -1203,7 +1203,7 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 
 
 ==> Test 294
-==> Correct! NCBadInput: invalid msd value (problem found in the @DYNINFO section ending in line 14)
+==> Correct! NCBadInput: "(anonymous TextData, 780bytes, type=ncmat)": problem while decoding "msd" parameters in line 14 : invalid number "inf" (NaN or infinity is not allowed in NCMAT data)
 
 
 ==> Test 295
@@ -1403,63 +1403,63 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 
 
 ==> Test 344
-==> Correct! NCBadInput: (anonymous TextData, 102bytes, type=ncmat) either specify both Cell section and Atom Position information (@ATOMPOSITIONS or @ATOMSITES), or specify none of them
+==> Correct! NCBadInput: "(anonymous TextData, 122bytes, type=ncmat)": problem while decoding "cubic" parameter in line 3 : invalid number "nan" (NaN or infinity is not allowed in NCMAT data)
 
 
 ==> Test 345
-==> Correct! NCBadInput: (anonymous TextData, 102bytes, type=ncmat) either specify both Cell and Atom Position information, or specify none of them
+==> Correct! NCBadInput: "(anonymous TextData, 122bytes, type=ncmat)": problem while decoding "cubic" parameter in line 3 : invalid number "inf" (NaN or infinity is not allowed in NCMAT data)
 
 
 ==> Test 346
-==> Correct! NCBadInput: (anonymous TextData, 147bytes, type=ncmat) either specify both Cell section and Atom Position information (@ATOMPOSITIONS or @ATOMSITES), or specify none of them
+==> Correct! NCBadInput: "(anonymous TextData, 124bytes, type=ncmat)": problem while decoding site position parameter #3 for element "Al" in line 7 : invalid number "nan" (NaN or infinity is not allowed in NCMAT data)
 
 
 ==> Test 347
-==> Correct! NCBadInput: (anonymous TextData, 143bytes, type=ncmat) @ATOMSITES sections require a @SPACEGROUP section (problem in the @ATOMSITES section ending in line 7)
+==> Correct! NCBadInput: "(anonymous TextData, 133bytes, type=ncmat)": problem while decoding site position parameter #3 for element "Al" in line 7 : invalid division attempted in "1e308/1e-308"
 
 
 ==> Test 348
-==> Ok.
+==> Correct! NCBadInput: "(anonymous TextData, 122bytes, type=ncmat)": problem while decoding vector entry #2 in line 12 : invalid number "nan" (NaN or infinity is not allowed in NCMAT data)
 
 
 ==> Test 349
-==> Ok.
+==> Correct! NCBadInput: "(anonymous TextData, 124bytes, type=ncmat)": problem while decoding fraction parameter in line 10 : invalid number "inf" (NaN or infinity is not allowed in NCMAT data)
 
 
 ==> Test 350
-==> Correct! NCBadInput: "(anonymous TextData, 126bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "227" (space group 227 has several settings, so one of them must be specified: 227:1 (default), 227:2)
+==> Correct! NCBadInput: "(anonymous TextData, 139bytes, type=ncmat)": problem decoding temperature value in line 9
 
 
 ==> Test 351
-==> Correct! NCBadInput: "(anonymous TextData, 145bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "62" (space group 62 has several settings, so one of them must be specified: 62:abc (default), 62:ba-c, 62:cab, 62:-cba, 62:bca, 62:a-cb)
+==> Correct! NCBadInput: "(anonymous TextData, 145bytes, type=ncmat)": problem while decoding density value in line 9 : invalid number "nan" (NaN or infinity is not allowed in NCMAT data)
 
 
 ==> Test 352
-==> Correct! NCBadInput: "(anonymous TextData, 145bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "14" (space group 14 has several settings, so one of them must be specified: 14:b1 (default), 14:b2, 14:b3, 14:c1, 14:c2, 14:c3, 14:a1, 14:a2, 14:a3)
+==> Correct! NCBadInput: Invalid entry in @ATOMDB section in the line: "Al nanu 3.449fm 0.0082b 0.231b". Error is: Invalid specification. Line has unsupported format: "Al nanu 3.449fm 0.0082b 0.231b"
 
 
 ==> Test 353
-==> Correct! NCBadInput: "(anonymous TextData, 128bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "225:1" (space group 225 has only one setting, which is written as just "225")
+==> Correct! NCBadInput: Invalid entry in @ATOMDB section in the line: "Al is nan Al 1 Cr". Error is: Invalid specification (invalid fraction: "nan" )
 
 
 ==> Test 354
-==> Correct! NCBadInput: "(anonymous TextData, 130bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "225:abc" (space group 225 has only one setting, which is written as just "225")
+==> Correct! NCBadInput: "(anonymous TextData, 162bytes, type=ncmat)": invalid volume fraction "nan" specified in @OTHERPHASES section in line 9 (must be a floating point number greater than 0.0 and less than 1.0)
 
 
 ==> Test 355
-==> Correct! NCBadInput: "(anonymous TextData, 148bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "166:H" (setting choice codes are case-sensitive and lower case, change it to "166:h" if that is the intention)
+==> Correct! NCBadInput: (anonymous TextData, 102bytes, type=ncmat) either specify both Cell section and Atom Position information (@ATOMPOSITIONS or @ATOMSITES), or specify none of them
 
 
 ==> Test 356
-==> Correct! NCBadInput: "(anonymous TextData, 148bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "166:R" (setting choice codes are case-sensitive and lower case, change it to "166:r" if that is the intention)
+==> Correct! NCBadInput: (anonymous TextData, 102bytes, type=ncmat) either specify both Cell and Atom Position information, or specify none of them
 
 
 ==> Test 357
-==> Correct! NCBadInput: "(anonymous TextData, 149bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "62:CAB" (setting choice codes are case-sensitive and lower case, change it to "62:cab" if that is the intention)
+==> Correct! NCBadInput: (anonymous TextData, 147bytes, type=ncmat) either specify both Cell section and Atom Position information (@ATOMPOSITIONS or @ATOMSITES), or specify none of them
 
 
 ==> Test 358
-==> Correct! NCBadInput: "(anonymous TextData, 148bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "14:C1" (setting choice codes are case-sensitive and lower case, change it to "14:c1" if that is the intention)
+==> Correct! NCBadInput: (anonymous TextData, 143bytes, type=ncmat) @ATOMSITES sections require a @SPACEGROUP section (problem in the @ATOMSITES section ending in line 7)
 
 
 ==> Test 359
@@ -1471,30 +1471,74 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 
 
 ==> Test 361
-==> Ok.
+==> Correct! NCBadInput: "(anonymous TextData, 126bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "227" (space group 227 has several settings, so one of them must be specified: 227:1 (default), 227:2)
 
 
 ==> Test 362
-==> Ok.
+==> Correct! NCBadInput: "(anonymous TextData, 145bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "62" (space group 62 has several settings, so one of them must be specified: 62:abc (default), 62:ba-c, 62:cab, 62:-cba, 62:bca, 62:a-cb)
 
 
 ==> Test 363
-==> Ok.
+==> Correct! NCBadInput: "(anonymous TextData, 145bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "14" (space group 14 has several settings, so one of them must be specified: 14:b1 (default), 14:b2, 14:b3, 14:c1, 14:c2, 14:c3, 14:a1, 14:a2, 14:a3)
 
 
 ==> Test 364
-==> Correct! NCBadInput: egrid must have either at least 10 entries or exactly 3 or 1 entries (problem found in the @DYNINFO section ending in line 14)
+==> Correct! NCBadInput: "(anonymous TextData, 128bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "225:1" (space group 225 has only one setting, which is written as just "225")
 
 
 ==> Test 365
-==> Correct! NCBadInput: egrid with 3 entries must have integral number as third entry (problem found in the @DYNINFO section ending in line 14)
+==> Correct! NCBadInput: "(anonymous TextData, 130bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 5 : Invalid space group specification: "225:abc" (space group 225 has only one setting, which is written as just "225")
 
 
 ==> Test 366
-==> Correct! NCBadInput: egrid must have either at least 10 entries or exactly 3 or 1 entries (problem found in the @DYNINFO section ending in line 14)
+==> Correct! NCBadInput: "(anonymous TextData, 148bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "166:H" (setting choice codes are case-sensitive and lower case, change it to "166:h" if that is the intention)
 
 
 ==> Test 367
+==> Correct! NCBadInput: "(anonymous TextData, 148bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "166:R" (setting choice codes are case-sensitive and lower case, change it to "166:r" if that is the intention)
+
+
+==> Test 368
+==> Correct! NCBadInput: "(anonymous TextData, 149bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "62:CAB" (setting choice codes are case-sensitive and lower case, change it to "62:cab" if that is the intention)
+
+
+==> Test 369
+==> Correct! NCBadInput: "(anonymous TextData, 148bytes, type=ncmat)": problem while decoding the @SPACEGROUP entry in line 6 : Invalid space group specification: "14:C1" (setting choice codes are case-sensitive and lower case, change it to "14:c1" if that is the intention)
+
+
+==> Test 370
+==> Ok.
+
+
+==> Test 371
+==> Ok.
+
+
+==> Test 372
+==> Ok.
+
+
+==> Test 373
+==> Ok.
+
+
+==> Test 374
+==> Ok.
+
+
+==> Test 375
+==> Correct! NCBadInput: egrid must have either at least 10 entries or exactly 3 or 1 entries (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 376
+==> Correct! NCBadInput: egrid with 3 entries must have integral number as third entry (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 377
+==> Correct! NCBadInput: egrid must have either at least 10 entries or exactly 3 or 1 entries (problem found in the @DYNINFO section ending in line 14)
+
+
+==> Test 378
 ==> Correct! NCBadInput: egrid must have either at least 10 entries or exactly 3 or 1 entries (problem found in the @DYNINFO section ending in line 14)
 
 Loading refnc1/Ag_sg225.ncmat
