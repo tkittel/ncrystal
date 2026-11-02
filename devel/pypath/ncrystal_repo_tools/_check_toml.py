@@ -130,17 +130,23 @@ def check_metadata():
              == {f'ncrystal-python=={version}'} )
     assert ( projkeys_monolith - projkeys_core ) == {'dependencies'}
     assert ( projkeys_core - projkeys_monolith ) == set()
-    assert ( projkeys_core - projkeys_meta ) == {'scripts'}
-    assert ( projkeys_core - projkeys_verify ) == set()
+    assert ( projkeys_core - projkeys_meta ) == {'scripts','entry-points'}
+    assert ( projkeys_core - projkeys_verify ) == {'entry-points'}
     assert ( projkeys_verify - projkeys_core ) == {'dependencies',
                                                     'optional-dependencies'}
     assert ( projkeys_meta - projkeys_core ) == {'dependencies',
                                                   'optional-dependencies'}
     assert ( projkeys_py - projkeys_monolith ) == {'dynamic'}
-    assert ( projkeys_monolith - projkeys_py ) == {'version'}
-    assert ( projkeys_core - projkeys_meta ) == {'scripts'}
+    assert ( projkeys_monolith - projkeys_py ) == {'version','entry-points'}
+    assert ( projkeys_core - projkeys_meta ) == {'scripts','entry-points'}
     assert ( projkeys_coreempty - projkeys_core ) == set()
-    assert ( projkeys_core - projkeys_coreempty ) == {'scripts'}
+    assert ( projkeys_core - projkeys_coreempty ) == {'scripts',
+                                                      'entry-points'}
+    #cmake.prefix entry points (for find_package in scikit-build-core builds):
+    assert ( data_core['project']['entry-points']
+             == {'cmake.prefix':{'NCrystal':'_ncrystal_core'}} )
+    assert ( data_monolith['project']['entry-points']
+             == {'cmake.prefix':{'NCrystal':'_ncrystal_core_monolithic'}} )
 
     cmp_common_entries( 'project', data_coreempty, data_core )
     cmp_common_entries( 'build-system', data_coreempty, data_py )
@@ -158,7 +164,8 @@ def check_metadata():
                         allow_diff = ['name','description',
                                       'dependencies','scripts'] )
     cmp_common_entries( 'project', data_monolith, data_core,
-                        allow_diff = ['name','scripts','description'] )
+                        allow_diff = ['name','scripts','description',
+                                      'entry-points'] )
     cmp_common_entries( 'project', data_monolith, data_py,
                         allow_diff = ['name','scripts','description'] )
     #NB: projects.scripts checked elsewhere in more detail!

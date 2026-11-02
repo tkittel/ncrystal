@@ -164,18 +164,24 @@ CMake code for a small project using NCrystal might look like the following
 
   cmake_minimum_required(VERSION 3.16...3.31)
   project(MyExampleProject LANGUAGES CXX)
-  execute_process( COMMAND "ncrystal-config" "--show" "cmakedir"
-                   OUTPUT_VARIABLE NCrystal_DIR
-                   OUTPUT_STRIP_TRAILING_WHITESPACE )
-  find_package(NCrystal 4.4.7 REQUIRED)
+  find_package(NCrystal 4.4.7 QUIET)
+  if (NOT NCrystal_FOUND)
+    execute_process( COMMAND "ncrystal-config" "--show" "cmakedir"
+                     OUTPUT_VARIABLE NCrystal_DIR
+                     OUTPUT_STRIP_TRAILING_WHITESPACE )
+    find_package(NCrystal 4.4.7 REQUIRED)
+  endif()
   add_executable(exampleapp "${PROJECT_SOURCE_DIR}/exampleapp.cc")
   target_link_libraries( exampleapp NCrystal::NCrystal )
   install( TARGETS exampleapp DESTINATION bin )
 
-Note that the "execute_process( ... )" command above is optional, but is
-required before the code can work in an environment where the NCrystal CMake
-modules are not automatically injected into the CMake package search path (this
-notably includes NCrystal installed via "pip install ncrystal").
+The CMake lines above first look for NCrystal directly. This works when the
+NCrystal CMake files are already in the CMake search path, for instance for
+installations in standard locations, or for NCrystal installed with pip when
+your own project is built with scikit-build-core. Otherwise, they ask
+"ncrystal-config --show cmakedir" where they are. That is only used as a
+fallback, since ncrystal-config can not always be run, e.g. when
+cross-compiling.
 
 
 
