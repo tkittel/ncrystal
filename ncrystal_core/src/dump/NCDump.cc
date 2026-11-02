@@ -26,6 +26,8 @@
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/cfgutils/NCCfgManip.hh"
 #include "NCrystal/internal/extd_utils/NCPlaneProvider.hh"
+#include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
+#include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include <sstream>
 
 void NCrystal::dump( std::ostream& os, const Info&c, DumpVerbosity verbosityVal )
@@ -169,7 +171,12 @@ void NCrystal::dump( std::ostream& os, const Info&c, DumpVerbosity verbosityVal 
       os<<"Lattice spacings   [Aa] : "<<fmtg(si.lattice_a)<<' '<<fmtg(si.lattice_b)<<' '<<fmtg(si.lattice_c)<<'\n';
       os<<"Lattice angles    [deg] : "<<fmtg(si.alpha)<<' '<<fmtg(si.beta)<<' '<<fmtg(si.gamma)<<'\n';
       os<<"Unit cell volume [Aa^3] : "<<fmtg(si.volume)<<'\n';
-      os<<"Atoms / unit cell       : "<<si.n_atoms<<'\n';
+      os<<"Atoms / unit cell       : ";
+      if ( c.getAverageAtomsPerCell() != si.n_atoms )
+        os<<fmtg(c.getAverageAtomsPerCell())<<" ("<<si.n_atoms<<" positions)";
+      else
+        os<<si.n_atoms;
+      os<<'\n';
     };
 
     if ( c.hasAtomInfo() ) {
@@ -177,47 +184,107 @@ void NCrystal::dump( std::ostream& os, const Info&c, DumpVerbosity verbosityVal 
       unsigned ntot = 0;
       for ( auto& ai : c.getAtomInfos() )
         ntot += ai.numberPerUnitCell();
-      os<<"Atoms in unit cell (total "<<ntot<<"):\n";
+      os<<"Atom positions in unit cell (total "<<ntot<<"):\n";
       for ( auto& ai : c.getAtomInfos() ) {
         auto lbl = safeDisplayLabel( ai.atom() );
         nc_assert(longestDisplayLabel>0);
         os << "     "<< ai.numberPerUnitCell() <<' '
            << str_ljust(lbl,longestDisplayLabel)
            <<" atom"<<(ai.numberPerUnitCell()==1?"":"s");
-        if ( ai.debyeTemp().has_value() || ai.msd().has_value() ) {
-          os <<" [";
-          if ( ai.debyeTemp().has_value() ) {
-            os <<"T_Debye="<<ai.debyeTemp().value();
-            if ( ai.msd().has_value() )
-              os << ", ";
-          }
-          if ( ai.msd().has_value() )
-            os <<"MSD="<<ai.msd().value()<<"Aa^2";
-          os << "]";
+        VectS props;
+        if ( ai.occupancy() != 1.0 ) {
+          std::ostringstream ss;
+          ss << "occupancy="<<fmtg(ai.occupancy());
+          props.push_back( ss.str() );
         }
+        if ( ai.debyeTemp().has_value() ) {
+          std::ostringstream ss;
+          ss << "T_Debye="<<ai.debyeTemp().value();
+          props.push_back( ss.str() );
+        }
+        if ( ai.msd().has_value() ) {
+          std::ostringstream ss;
+          ss << "MSD="<<ai.msd().value()<<"Aa^2";
+          props.push_back( ss.str() );
+        }
+        if ( !props.empty() )
+          os << " [" << joinstr( props, ", " ) << "]";
         os<<'\n';
       }
       {
         os<<hr;
-        os<<"Atomic coordinates:\n";
         auto& atomlist = c.getAtomInfos();
-        if ( !verbose && ntot>30) {
-          os<<"  (suppressed due to their large number, increase verbosity to show)\n";
+        auto fmtg_frac_str = [](double value)->std::string
+        {
+          std::ostringstream ss;
+          ss << fmtg_frac(value);
+          return ss.str();
+        };
+        auto streamPos = [&os,&fmtg_frac_str]( const std::string& lbl,
+                                               const AtomInfo::Pos& pos )
+        {
+          os<<"     "<<lbl<<"   "
+            <<str_rjust(fmtg_frac_str(pos[0]),10)<<"   "
+            <<str_rjust(fmtg_frac_str(pos[1]),10)<<"   "
+            <<str_rjust(fmtg_frac_str(pos[2]),10);
+        };
+        //Sites are shown if available for all AtomInfo objects (their
+        //positions are then the symmetry images of the sites):
+        const auto& csi = c.getStructureInfo();
+        const bool all_sites
+          = ( csi.spacegroup_setting.has_value()
+              && std::all_of( atomlist.begin(), atomlist.end(),
+                              []( const AtomInfo& ai )
+                              { return !ai.sites().empty(); } ) );
+        if ( !all_sites ) {
+          //Positions without sites:
+          os<<"Atomic coordinates:\n";
+          if ( !verbose && ntot>30) {
+            os<<"  (suppressed due to their large number, increase verbosity to show)\n";
+          } else {
+            for ( auto& ai : atomlist ) {
+              auto lbl = safeDisplayLabel(ai.atom());
+              nc_assert(longestDisplayLabel>0);
+              for ( auto& pos : ai.unitCellPositions() ) {
+                streamPos( str_ljust(lbl,longestDisplayLabel), pos );
+                os<<'\n';
+              }
+            }
+          }
         } else {
-          auto fmtg_frac_str = [](double value)->std::string
-          {
-            std::ostringstream ss;
-            ss << fmtg_frac(value);
-            return ss.str();
-          };
+          //Sites, followed by their other positions if verbose:
+          os<<( verbose ? "Atomic sites and positions:\n" : "Atomic sites:\n" );
+          const SGSymmetry& sym = SGSymmetry::get(
+            InfoUtils::getSpaceGroupFromStructureInfo( csi ) );
           for ( auto& ai : atomlist ) {
             auto lbl = safeDisplayLabel(ai.atom());
-            for ( auto& pos : ai.unitCellPositions() ) {
-              nc_assert(longestDisplayLabel>0);
-              os<<"     "<<str_ljust(lbl,longestDisplayLabel)<<"   "
-                <<str_rjust(fmtg_frac_str(pos[0]),10)<<"   "
-                <<str_rjust(fmtg_frac_str(pos[1]),10)<<"   "
-                <<str_rjust(fmtg_frac_str(pos[2]),10)<<'\n';
+            nc_assert(longestDisplayLabel>0);
+            const std::string blank( lbl.size() > longestDisplayLabel
+                                     ? lbl.size() : longestDisplayLabel, ' ' );
+            for ( auto& site : ai.sites() ) {
+              streamPos( str_ljust(lbl,longestDisplayLabel), site.position );
+              os<<"   (x"<<site.multiplicity<<")"<<( verbose ? ":" : "" )<<'\n';
+              if ( !verbose )
+                continue;
+              //The other positions of the site (sorted as the stored ones),
+              //skipping the first which is the (symmetrised) site itself:
+              const auto orbit
+                = expandSiteToOrbit( sym, site.position.as<Vector>() );
+              AtomInfo::AtomPositions orbitpos;
+              for ( auto i : ncrange( std::size_t(1), orbit.positions.size() ) )
+                orbitpos.push_back( orbit.positions[i].as<AtomInfo::Pos>() );
+              std::sort( orbitpos.begin(), orbitpos.end(),
+                         []( const AtomInfo::Pos& a, const AtomInfo::Pos& b )
+                         {
+                           return std::lexicographical_compare( a.begin(),
+                                                                a.end(),
+                                                                b.begin(),
+                                                                b.end() );
+                         } );
+              for ( auto& pos : orbitpos ) {
+                streamPos( blank, pos );
+                os<<'\n';
+              }
             }
           }
         }
