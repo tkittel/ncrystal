@@ -115,6 +115,24 @@ twona = load( """NCMAT v8
 show( 'Na in two roles (0.9 and 1/2)', twona )
 assert abs( twona.numberdensity * twona.structure_info['volume'] - 5.6 ) < 1e-12
 
+#Exposure via queries, Python AtomInfo and the dump:
+def show_exposure( title, info ):
+    si = info.structure_info
+    print( f'{title}: n_atoms={si["n_atoms"]}'
+           f' average_atoms_per_cell={si["average_atoms_per_cell"]:.12g}'
+           f' occupancies={info._query("occupancies")}' )
+    for ai in info.atominfos:
+        print( f'  {ai} count={ai.count} occupancy={ai.occupancy:.12g}' )
+    for line in info.dump_str().splitlines():
+        if 'Atoms / unit cell' in line or ' atom' in line and '[' in line:
+            print( f'  dump: {line.strip()}' )
+
+show_exposure( 'exposure, no occupancies', ref )
+show_exposure( 'exposure, Na 9/10, Cl 2/3', part2 )
+show_exposure( 'exposure, Na in two roles', twona )
+assert ref.structure_info['average_atoms_per_cell'] == 8.0
+assert twona.structure_info['average_atoms_per_cell'] == 5.6
+
 expect_error( 'zero', nacl( ['Na 0'] ) )
 expect_error( 'negative', nacl( ['Na -0.1'] ) )
 expect_error( 'above one', nacl( ['Na 1.01'] ) )

@@ -635,7 +635,9 @@ class Info(RCBase):
         """Information about crystal structure, as a dictionary with the keys
         spacegroup (number, 0 if unknown), spacegroup_setting (string like
         "227:2" or "166:r", None if unknown), a, b, c (Aa), alpha, beta, gamma
-        (degrees), volume (Aa^3) and n_atoms."""
+        (degrees), volume (Aa^3), n_atoms (number of atom positions) and
+        average_atoms_per_cell (the average number of atoms, which is less
+        than n_atoms in case of partial occupancies)."""
         d = self._query('structure')
         nc_assert(d)
         return d
@@ -709,8 +711,19 @@ class Info(RCBase):
 
         @property
         def count(self):
-            """Number of atoms of this type per unit cell"""
+            """Number of positions of this atom per unit cell (the average number
+            of atoms is count*occupancy)"""
             return self.__n
+
+        @property
+        def occupancy(self):
+            """The occupancy of the positions of this atom, in (0,1] (it is 1
+            unless some of the positions are vacant)."""
+            _info = self._info_wr()
+            nc_assert(_info is not None,
+                      ("AtomInfo.occupancy can not be used after"
+                       " associated Info object is deleted"))
+            return _info._query('occupancies')[self._listidx]
 
         @property
         def debyeTemperature(self):
@@ -753,6 +766,8 @@ class Info(RCBase):
 
         def __str__(self):
             ll=[str(self.atomData.displayLabel()),str(self.__n)]
+            if self.occupancy != 1.0:
+                ll.append(f'occupancy={self.occupancy:g}')
             #Like C++ dump, omit unavailable values (None):
             if self.__dt is not None:
                 ll.append(f'DebyeT={self.__dt:g}K')
