@@ -199,7 +199,7 @@ All files start with `NCMAT vN`, are ASCII or UTF-8 (non-ASCII only in comments)
   - `mcstasunion`: McStas-Union instrument code.
   - `minimc`: see Sec. 8.
   - `query`: low-level JSON queries.
-  - `verifyatompos`: still uses ASE spacegroup, now partly redundant with the sgsym load-time check.
+  - (`verifyatompos` was removed in 5.0.0, superseded by the sgsym load-time check.)
   - `config`.
 - **JSON query machinery** (`src/query/`, Delta38, many NEW files). Top-level keys: `version`, `list`, `mmc`, `util`, `sab`, `vdos`, `filtertable`.
   - `util` subkeys: wl2ekin, ekin2wl, mathval, fmadiagnose, kinutils, browsedb, browsefactories, factorythreads, atomdb, eqrefl, atomsites, atompositions, sgsym (most NEW).

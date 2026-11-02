@@ -104,17 +104,17 @@ have them estimated (chapter 33).
 
 ## Verification helpers
 
-`ncrystal_verifyatompos` checks that atom positions in an NCMAT file are
-consistent with its space group using ASE (largely superseded by the
-load-time check of chapter 10); the composer's `verify_crystal_structure`
-and the `inspect`/`plot_xsect` methods, `nctool --dump` and the
+The consistency of atom positions with the space group is checked whenever
+a material is loaded (chapter 10; the former `ncrystal_verifyatompos` tool
+was removed in 5.0.0); the composer's `verify_crystal_structure` and the
+`inspect`/`plot_xsect` methods, `nctool --dump` and the
 `produce_validation_plot` functions serve the same purpose from the physics
 side.
 
 ## Validation
 
 - `tests/scripts/composer.py`, `composer2.py`, `cif2ncmat.py`,
-  `cif2ncmatgen.py`, `long_cif2ncmatgen.py`, `verifyatompos.py`, `hfgpy.py`,
+  `cif2ncmatgen.py`, `long_cif2ncmatgen.py`, `hfgpy.py`,
   `vdos2ncmat.py`, `analysevdos.py`, and the ncrystal-notebooks repository's
   material-creation notebooks (the most complete user documentation).
 
