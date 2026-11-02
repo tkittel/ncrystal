@@ -327,10 +327,6 @@ namespace NCRYSTAL_NAMESPACE {
 
         } else {
           nc_assert_always(inelas=="vdosdebye");
-          if ( knllux != -1 )
-            NCRYSTAL_THROW2(BadInput,
-                            "Only legacy (knllux=-1) is supported with"
-                            " inelas="<<inelas<<" mode for now.");//fixme
           if ( !info.hasDebyeTemperature() )
             NCRYSTAL_THROW2(BadInput,"inelas="<<inelas
                             <<" mode requires specification of Debye"
@@ -346,7 +342,7 @@ namespace NCRYSTAL_NAMESPACE {
             ntot += ai.numberPerUnitCell();
           for ( auto& ai_orig : info.getAtomInfos() ) {
             auto * ai_ptr = &ai_orig;
-            components.addfct_cl([&info,ai_ptr,vdoslux,ntot]()
+            components.addfct_cl([&info,ai_ptr,vdoslux,knllux,ntot]()
             {
               ProcImpl::ProcComposition::ComponentList complist;
               auto& ai = *ai_ptr;
@@ -356,8 +352,19 @@ namespace NCRYSTAL_NAMESPACE {
                                                                 ai.atomData().scatteringXS(),
                                                                 ai.atomData().averageMassAMU(),
                                                                 vdoslux );
-              auto scathelper = SAB::createScatterHelperWithCache( std::move(sabdata) );
-              complist.emplace_back(ai.numberPerUnitCell()*1.0/ntot,makeSO<SABScatter>(std::move(scathelper)));
+              const double scale = ai.numberPerUnitCell()*1.0/ntot;
+              if ( knllux == -1 ) {
+                //legacy:
+                auto scathelper = SAB::createScatterHelperWithCache( std::move(sabdata) );
+                complist.emplace_back(scale,makeSO<SABScatter>(std::move(scathelper)));
+                return complist;
+              }
+              const auto teff = debyeEffectiveTemperature( ai.debyeTemp().value(),
+                                                           info.getTemperature() );
+              auto sabext = SAB::createSABExtendedWithCache( knllux, sabdata,
+                                                             teff, nullptr );
+              complist.emplace_back(scale,makeSO<SABScatterNG>(std::move(sabext),
+                                                               sabdata->boundXS()));
               return complist;
             });
           }
