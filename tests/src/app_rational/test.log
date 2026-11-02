@@ -1,0 +1,11 @@
+zero denominator: CalcError: Rational number with zero denominator
+too large numerator: CalcError: Rational number exceeds the supported range (magnitudes of numerator and denominator up to 2^53)
+too large denominator: CalcError: Rational number exceeds the supported range (magnitudes of numerator and denominator up to 2^53)
+division by zero: CalcError: Rational division by zero
+Arithmetic and comparison of 1464 small fractions in all 2143296 combinations: OK
+1-9/10 = 1/10 = 0.1 (double arithmetic: 0.099999999999999978)
+Comparisons near 2^53 (no overflow): OK
+sum too large: CalcError: Rational number exceeds the supported range (magnitudes of numerator and denominator up to 2^53)
+product too large: CalcError: Rational number exceeds the supported range (magnitudes of numerator and denominator up to 2^53)
+denominators too large: CalcError: Rational number exceeds the supported range (magnitudes of numerator and denominator up to 2^53)
+All OK
