@@ -5,20 +5,7 @@ on:
   pull_request:
 
 jobs:
-  ncdevtool_check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-        with:
-          path: src
-      - name: Pip install packages for ncdevtool
-        run: pip install -r ./src/devel/reqs/requirements_devel.txt
-      - name: ncdevtool checks
-        run: ./src/devel/bin/ncdevtool check -n "fix""me"
-
   build:
-    needs: [ ncdevtool_check ]
     # More platform information available on:
     # https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
     #
@@ -26,9 +13,10 @@ jobs:
     # clang/gcc on this platform, and add a conda-based test.
 
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       matrix:
-        os: [windows-2022, windows-2025]
+        os: [windows-2022]
 
     steps:
     - name: Checkout
@@ -80,4 +68,4 @@ jobs:
 
       #NB more verbosity by appending: "-VV":
     - name: Run CTests
-      run: ctest --test-dir ./build  --build-config Release --no-tests=error --output-on-failure --test-output-size-failed 100000 --test-output-truncation middle
+      run: ctest --test-dir ./build  --build-config Release --no-tests=error -R "sabsample|zzdiag_sabnan" --output-on-failure --test-output-size-failed 100000 --test-output-truncation middle

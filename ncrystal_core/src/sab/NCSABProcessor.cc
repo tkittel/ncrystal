@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/sab/NCSABProcessor.hh"
+#include <iostream>//TEMPORARY CI-DEBUG
 #include "NCrystal/internal/sab/NCSABSurveyor.hh"
 #include "NCrystal/internal/sab/NCSABCellInteg.hh"
 #include "NCrystal/internal/sab/NCSABCellSample.hh"
@@ -428,6 +429,16 @@ namespace NCRYSTAL_NAMESPACE {
               StdLogLinCellIntegrator::integrateWithinKB( cellData, E_div_kT,
                                                           scheme, crossedRes );
               contrib = crossedRes.sum();
+              if ( !std::isfinite( contrib ) ) {//TEMPORARY CI-DEBUG
+                static int s_nprinted = 0;
+                if ( s_nprinted++ < 10 )
+                  std::cout << "CIDEBUG integrateWithinKB non-finite: E_div_kT="
+                            << fmt(E_div_kT) << " scheme="
+                            << static_cast<int>(scheme)
+                            << " fullCellIntegral="
+                            << fmt(fullCellIntegral) << " contrib=" << contrib
+                            << " " << cellData << std::endl;
+              }
               if ( fullCellIntegral < cutoffref*taperBand ) {
                 //fixme replace /twoLogTaperBand with *invTwoLogTaperBand
                 const double t = ncclamp( ( std::log(fullCellIntegral/cutoffref)
@@ -1126,10 +1137,15 @@ namespace NCRYSTAL_NAMESPACE {
             m_diagnostics_fcAR.reserve( m_eGrid.size() );
           for ( auto& nd : egridNodes ) {
             m_sIntegral.push_back( nd.sint );
-            if ( do_diag )
+            if ( do_diag ) {
               m_diagnostics_fcAR.push_back( nd.touched
                                             ? ( nd.sint / nd.touched )
                                             : 1.0 );
+              if ( !std::isfinite( m_diagnostics_fcAR.back() ) )//TEMPORARY CI-DEBUG
+                std::cout << "CIDEBUG fcAR idx=" << m_diagnostics_fcAR.size()-1
+                          << " sint=" << nd.sint << " touched=" << nd.touched
+                          << " ntouched=" << nd.ntouched << std::endl;
+            }
             if (!do_sample)
               continue;
 
@@ -1172,6 +1188,10 @@ namespace NCRYSTAL_NAMESPACE {
               m_diagnostics_stripTries.push_back( ok
                                                   ? st.expectedTries( e, integ )
                                                   : -1.0 );
+              if ( !std::isfinite( m_diagnostics_stripTries.back() ) )//TEMPORARY CI-DEBUG
+                std::cout << "CIDEBUG stripTries idx=" << k << " e=" << e
+                          << " integ=" << integ << " val="
+                          << m_diagnostics_stripTries.back() << std::endl;
             }
           }
         }
@@ -1436,6 +1456,29 @@ namespace NCRYSTAL_NAMESPACE {
 
         nc_assert_always( m_eGrid.size()
                           < std::numeric_limits<std::uint32_t>::max() );
+        {//TEMPORARY CI-DEBUG
+          auto rep = [this]( const char * name, const VectD& v )
+          {
+            std::size_t nbad = 0;
+            for ( auto i : ncrange( v.size() ) ) {
+              if ( std::isfinite( v[i] ) )
+                continue;
+              if ( nbad++ < 5 )
+                std::cout << "CIDEBUG toJSON " << name << "[" << i << "]="
+                          << v[i] << " (n=" << v.size() << ", egrid="
+                          << ( i < m_eGrid.size() ? m_eGrid[i] : -1.0 )
+                          << ")" << std::endl;
+            }
+            std::cout << "CIDEBUG toJSON " << name << ": " << nbad
+                      << " non-finite of " << v.size() << std::endl;
+          };
+          rep( "egrid", m_eGrid );
+          rep( "sintegral", m_sIntegralUnscaled );
+          rep( "sintegral_scaled", m_sIntegral );
+          rep( "full_cell_AR", m_diagnostics_fcAR );
+          rep( "strip_tries", m_diagnostics_stripTries );
+          std::cout << "CIDEBUG invSScale=" << m_invSScale << std::endl;
+        }
         os <<"{\"egrid\":";
         streamJSONHugeDblVect(os, VectD( m_eGrid ));
         os <<",\"sintegral\":";
@@ -1474,6 +1517,14 @@ namespace NCRYSTAL_NAMESPACE {
                                    .expectedTries( vectAt(m_eGrid,i),
                                                    vectAt(m_sIntegral,i) ) );
           }
+          for ( auto k : ncrange( strip_tries.size() ) )//TEMPORARY CI-DEBUG
+            if ( !std::isfinite( strip_tries[k] ) || k < 3 )
+              std::cout << "CIDEBUG sample_info strip_tries[" << k << "]="
+                        << strip_tries[k] << " ept=" << epts_with_strip[k]
+                        << " e=" << m_eGrid[epts_with_strip[k]]
+                        << " stripidx=" << m_stripIdx[epts_with_strip[k]]
+                        << " sint=" << m_sIntegral[epts_with_strip[k]]
+                        << std::endl;
           os << "\"epts_with_beta_strip_sampling\":";
           streamJSON(os,epts_with_strip);
           os << ",\"beta_strip_expected_tries\":";
