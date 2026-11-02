@@ -13,15 +13,15 @@ exposure, no occupancies: n_atoms=8 average_atoms_per_cell=8 occupancies=(1.0, 1
 exposure, Na 9/10, Cl 2/3: n_atoms=8 average_atoms_per_cell=6.26666666667 occupancies=(0.9, 0.6666666666666666)
   AtomInfo(Na, 4, occupancy=0.9, DebyeT=300K, MSD=0.021212Aa^2, hasPositions=yes) count=4 occupancy=0.9
   AtomInfo(Cl, 4, occupancy=0.666667, DebyeT=300K, MSD=0.0137552Aa^2, hasPositions=yes) count=4 occupancy=0.666666666667
-  dump: Atoms / unit cell       : 8
-  dump: 4 Na atoms [T_Debye=300K, MSD=0.021212Aa^2]
-  dump: 4 Cl atoms [T_Debye=300K, MSD=0.0137552Aa^2]
+  dump: Atoms / unit cell       : 6.26667 (8 positions)
+  dump: 4 Na atoms [occupancy=0.9, T_Debye=300K, MSD=0.021212Aa^2]
+  dump: 4 Cl atoms [occupancy=0.666667, T_Debye=300K, MSD=0.0137552Aa^2]
 exposure, Na in two roles: n_atoms=8 average_atoms_per_cell=5.6 occupancies=(0.9, 0.5)
   AtomInfo(Na(a), 4, occupancy=0.9, DebyeT=300K, MSD=0.021212Aa^2, hasPositions=yes) count=4 occupancy=0.9
   AtomInfo(Na(b), 4, occupancy=0.5, DebyeT=250K, MSD=0.0302859Aa^2, hasPositions=yes) count=4 occupancy=0.5
-  dump: Atoms / unit cell       : 8
-  dump: 4 Na(a) atoms [T_Debye=300K, MSD=0.021212Aa^2]
-  dump: 4 Na(b) atoms [T_Debye=250K, MSD=0.0302859Aa^2]
+  dump: Atoms / unit cell       : 5.6 (8 positions)
+  dump: 4 Na(a) atoms [occupancy=0.9, T_Debye=300K, MSD=0.021212Aa^2]
+  dump: 4 Na(b) atoms [occupancy=0.5, T_Debye=250K, MSD=0.0302859Aa^2]
 zero: NCBadInput: (anonymous TextData, 251bytes, type=ncmat) invalid occupancy of "Na": 0 (must be in (0,1]) (problem in the @ATOMOCCUPANCIES section ending in line 10)
 negative: NCBadInput: (anonymous TextData, 254bytes, type=ncmat) invalid occupancy of "Na": -0.1 (must be in (0,1]) (problem in the @ATOMOCCUPANCIES section ending in line 10)
 above one: NCBadInput: (anonymous TextData, 254bytes, type=ncmat) invalid occupancy of "Na": 1.01 (must be in (0,1]) (problem in the @ATOMOCCUPANCIES section ending in line 10)
