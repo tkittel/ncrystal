@@ -200,6 +200,99 @@ bool NC::Rational::operator<( const Rational& o ) const noexcept
   return fracLess( m_n - fa * m_d, m_d, o.m_n - fb * o.m_d, o.m_d );
 }
 
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    //Whether the correctly rounded double value of p/q (|p|,q <= 2^53, q>0)
+    //is below (-1), equal to (0) or above (+1) x:
+    int roundedCmp( int_t p, int_t q, double x ) noexcept
+    {
+      const double v = static_cast<double>( p ) / static_cast<double>( q );
+      return v < x ? -1 : ( v > x ? 1 : 0 );
+    }
+
+    //The value (a+k*c)/(b+k*d) for k>=1 (a mediant-type step in the
+    //Stern-Brocot tree), or false if its numerator or denominator would
+    //exceed the limits:
+    bool stepValue( int_t a, int_t b, int_t c, int_t d, int_t k, int_t maxden,
+                    int_t& p, int_t& q ) noexcept
+    {
+      nc_assert( k >= 1 && b >= 1 && d >= 1 );
+      if ( k > ( maxden - b ) / d )
+        return false;
+      q = b + k * d;//<= maxden
+      const int_t ac = ( c < 0 ? -c : c );
+      if ( ac != 0 && k > ( kMax - ( a < 0 ? -a : a ) ) / ac )
+        return false;
+      p = a + k * c;
+      return true;
+    }
+  }
+}
+
+NC::Optional<NC::Rational>
+NC::rationalFromDouble( double x, Rational::int_t maxDenominator )
+{
+  if ( !std::isfinite( x ) || !( ncabs( x ) <= double( kMax ) )
+       || maxDenominator < 1 )
+    return NullOpt;
+  maxDenominator = ncmin( maxDenominator, kMax );
+  const double fl = std::floor( x );
+  if ( fl == x )
+    return Rational( static_cast<int_t>( fl ) );
+
+  //Walk the Stern-Brocot tree between the integers below and above x,
+  //always keeping the bounds a/b and c/d on either side of the set of
+  //rationals which round to x (an interval, since rounding is monotonic).
+  //The first mediant in that interval is the simplest rational in it. Runs
+  //of steps in the same direction are done at once, by finding the largest
+  //k for which (a+k*c)/(b+k*d) (or (c+k*a)/(d+k*b)) stays on the same side
+  //(exponential and then binary search), which keeps the number of
+  //iterations logarithmic like for continued fractions:
+  int_t a = static_cast<int_t>( fl ), b = 1;
+  int_t c = a + 1, d = 1;
+  while ( true ) {
+    int_t p, q;
+    if ( !stepValue( a, b, c, d, 1, maxDenominator, p, q ) )
+      return NullOpt;
+    const int s = roundedCmp( p, q, x );
+    if ( s == 0 )
+      return Rational( p, q );//(mediants are already reduced)
+    //Moving the lower bound up (s<0), or the upper bound down (s>0):
+    const int_t lo_n = ( s < 0 ? a : c ), lo_d = ( s < 0 ? b : d );
+    const int_t hi_n = ( s < 0 ? c : a ), hi_d = ( s < 0 ? d : b );
+    auto sameSide = [&]( int_t k, int_t& pk, int_t& qk )
+    {
+      return ( stepValue( lo_n, lo_d, hi_n, hi_d, k, maxDenominator, pk, qk )
+               && roundedCmp( pk, qk, x ) == s );
+    };
+    int_t kgood = 1;//(k=1 is the mediant just tested)
+    int_t kbad = 2;
+    int_t pk, qk;
+    while ( sameSide( kbad, pk, qk ) ) {
+      kgood = kbad;
+      if ( kbad > kMax / 2 )
+        return NullOpt;
+      kbad *= 2;
+    }
+    while ( kbad - kgood > 1 ) {
+      const int_t kmid = kgood + ( kbad - kgood ) / 2;
+      if ( sameSide( kmid, pk, qk ) )
+        kgood = kmid;
+      else
+        kbad = kmid;
+    }
+    nc_assert_always( stepValue( lo_n, lo_d, hi_n, hi_d, kgood,
+                                 maxDenominator, pk, qk ) );
+    if ( s < 0 ) {
+      a = pk;
+      b = qk;
+    } else {
+      c = pk;
+      d = qk;
+    }
+  }
+}
+
 std::ostream& NC::operator<<( std::ostream& os, const Rational& r )
 {
   os << r.numerator();
