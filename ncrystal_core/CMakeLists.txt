@@ -549,6 +549,16 @@ if ( NCRYSTAL_NAMESPACE )
 endif()
 set_target_properties( NCrystal PROPERTIES OUTPUT_NAME "${_tmp_basiclibname}" )
 
+#ABI versioning: SONAME libNCrystal.so.<major> (macOS:
+#libNCrystal.<major>.dylib) for the stable C API (and public C++
+#headers). Plugins using internal headers must instead match the full version
+#(checked when loading them). No VERSION property, to avoid a third file
+#(libNCrystal.so.X.Y.Z). DLL names on Windows are not affected:
+if ( NOT WIN32 )
+  set_target_properties( NCrystal PROPERTIES
+                         SOVERSION "${PROJECT_VERSION_MAJOR}" )
+endif()
+
 #Export all symbols on windows if requested:
 if ( WIN32 AND NCRYSTAL_WINEXPORTALL )
   #We must export all symbols in libNCrystal.so, even those from internal
@@ -641,13 +651,20 @@ elseif( NCRYSTAL_ENABLE_DATA STREQUAL "ON" )
   ncinstall(FILES ${DATAFILES} DESTINATION ${NCrystal_DATAFILESDIR})
 endif()
 
+#Wheels can not contain symlinks (they would become copies, cf. github issue
+#186), so skip the unversioned namelink there (linking uses full paths anyway):
+set( _tmp_namelink "" )
+if ( DEFINED SKBUILD_PROJECT_NAME )
+  set( _tmp_namelink NAMELINK_SKIP )
+endif()
 ncinstall(
   TARGETS NCrystal
   EXPORT NCrystalTargets
   RUNTIME DESTINATION ${NCrystal_SHLIBDIR}
   ARCHIVE DESTINATION ${NCrystal_LIBDIR}
-  LIBRARY DESTINATION ${NCrystal_LIBDIR}
+  LIBRARY DESTINATION ${NCrystal_LIBDIR} ${_tmp_namelink}
 )
+unset( _tmp_namelink )
 
 #Examples:
 if ( NCRYSTAL_ENABLE_EXAMPLES )
