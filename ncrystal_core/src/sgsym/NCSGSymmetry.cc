@@ -23,6 +23,7 @@
 #include "NCrystal/internal/utils/NCStrView.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
+#include "NCrystal/internal/utils/NCRational.hh"
 #include <set>
 #include <mutex>
 
@@ -611,6 +612,128 @@ namespace NCRYSTAL_NAMESPACE {
                       " positions, specify coordinates with sufficient"
                       " precision, preferably as exact fractions like 1/3.");
     }
+
+    //Exact counterparts of the above for rational coordinates:
+    using RPos = std::array<Rational,3>;
+
+    //Largest denominator of rational coordinates recovered from doubles,
+    //enough for all decimals with up to 8 digits after the decimal point:
+    constexpr Rational::int_t site_max_denominator = 100000000;
+
+    Vector toVector( const RPos& p )
+    {
+      return Vector( p[0].toDouble(), p[1].toDouble(), p[2].toDouble() );
+    }
+
+    RPos wrapPos( const RPos& p )
+    {
+      return { p[0].wrappedToUnitInterval(), p[1].wrappedToUnitInterval(),
+               p[2].wrappedToUnitInterval() };
+    }
+
+    RPos applyOp( const SymOp& op, const RPos& p )
+    {
+      RPos r;
+      for ( unsigned i = 0; i < 3; ++i ) {
+        Rational v( op.trans( i ), SymOp::tdenom );
+        for ( unsigned j = 0; j < 3; ++j ) {
+          const int m = op.rot( i, j );
+          nc_assert( m >= -1 && m <= 1 );
+          if ( m == 1 )
+            v += p[j];
+          else if ( m == -1 )
+            v -= p[j];
+        }
+        r[i] = v;
+      }
+      return r;
+    }
+
+    RPos periodicDiff( const RPos& a, const RPos& b )
+    {
+      RPos d;
+      for ( unsigned i = 0; i < 3; ++i ) {
+        const Rational x = a[i] - b[i];
+        d[i] = x - Rational( ( x + Rational( 1, 2 ) ).floor() );
+      }
+      return d;
+    }
+
+    double maxAbs( const RPos& d )
+    {
+      return ncmax( ncabs( d[0].toDouble() ), ncabs( d[1].toDouble() ),
+                    ncabs( d[2].toDouble() ) );
+    }
+
+    //Same as expandSiteToOrbit (and with the same tolerances), but in exact
+    //rational arithmetic, so the resulting positions are the correctly
+    //rounded values of the exact positions (e.g. 1/10 and not 1-0.9). The
+    //site coordinates are recovered as rationals from the doubles (see
+    //rationalFromDouble). Returns false if that is not possible, or if the
+    //arithmetic exceeds the range of Rational:
+    bool expandSiteToOrbitExact( const SGSymmetry& sym,
+                                 const Vector& input_site,
+                                 SGSiteOrbit& res )
+    {
+      RPos site;
+      const double coords[3] = { input_site.x(), input_site.y(),
+                                 input_site.z() };
+      for ( unsigned i = 0; i < 3; ++i ) {
+        auto r = rationalFromDouble( coords[i], site_max_denominator );
+        if ( !r.has_value() )
+          return false;
+        site[i] = r.value();
+      }
+      const auto& ops = sym.operations();
+      try {
+        site = wrapPos( site );
+        const Vector site_dbl = toVector( site );
+        RPos sum;
+        unsigned nstab = 0;
+        for ( auto& op : ops ) {
+          const RPos d = periodicDiff( applyOp( op, site ), site );
+          const double dist = maxAbs( d );
+          if ( dist < site_merge_tol ) {
+            for ( unsigned i = 0; i < 3; ++i )
+              sum[i] += site[i] + d[i];
+            ++nstab;
+          } else if ( dist < site_distinct_tol ) {
+            throwNearSpecial( site_dbl, dist );
+          }
+        }
+        nc_assert_always( nstab >= 1 );
+        const Rational rn( static_cast<Rational::int_t>( nstab ) );
+        RPos symsite;
+        for ( unsigned i = 0; i < 3; ++i )
+          symsite[i] = sum[i] / rn;
+        symsite = wrapPos( symsite );
+        std::vector<RPos> positions;
+        for ( auto& op : ops ) {
+          const RPos img = wrapPos( applyOp( op, symsite ) );
+          bool found = false;
+          for ( auto& p : positions ) {
+            const double dist = maxAbs( periodicDiff( img, p ) );
+            if ( dist < site_merge_tol ) {
+              found = true;
+              break;
+            }
+            if ( dist < site_distinct_tol )
+              throwNearSpecial( site_dbl, dist );
+          }
+          if ( !found )
+            positions.push_back( img );
+        }
+        nc_assert_always( positions.size() * nstab == ops.size() );
+        res.positions.clear();
+        res.positions.reserve( positions.size() );
+        for ( auto& p : positions )
+          res.positions.push_back( toVector( p ) );
+        res.siteSymmetryOrder = nstab;
+        return true;
+      } catch ( Error::CalcError& ) {
+        return false;//out of range
+      }
+    }
   }
 }
 
@@ -621,6 +744,13 @@ NC::SGSiteOrbit NC::expandSiteToOrbit( const SGSymmetry& sym,
        || !std::isfinite( input_site.z() ) )
     NCRYSTAL_THROW2(BadInput,"Invalid site coordinates: ("<<input_site.x()
                     <<", "<<input_site.y()<<", "<<input_site.z()<<")");
+  {
+    SGSiteOrbit res;
+    if ( expandSiteToOrbitExact( sym, input_site, res ) )
+      return res;
+  }
+
+  //Otherwise in doubles:
   const Vector site = wrapPos( input_site );
   const auto& ops = sym.operations();
 

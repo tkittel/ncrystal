@@ -110,7 +110,11 @@ namespace NCRYSTAL_NAMESPACE {
   //but not on it (e.g. due to insufficient precision like 0.333 instead of
   //1/3), in which case a BadInput exception is thrown. These thresholds are
   //based on an analysis of rounding noise and genuinely distinct positions in
-  //CIF files from the Crystallography Open Database.
+  //CIF files from the Crystallography Open Database. When the coordinates
+  //are the doubles of simple rationals (denominators up to 1e8, e.g. parsed
+  //from "0.1" or "1/3"), all of this is done in exact rational arithmetic,
+  //and the positions are the correctly rounded values of the exact images
+  //(e.g. 1-1/10 gives exactly the double 0.9).
 
   struct SGSiteOrbit {
     std::vector<Vector> positions;//wrapped into [0,1), symmetrised site first
