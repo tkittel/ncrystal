@@ -437,6 +437,51 @@ namespace NCRYSTAL_NAMESPACE {
         }
       }
 
+      //Replace the positions of AtomInfo objects with sites by the symmetry
+      //images of their sites, so positions given with limited precision
+      //(e.g. 0.3333 for 1/3) are snapped to the symmetric structure. Left as
+      //they are if a site can not be expanded:
+      void snapPositionsToSites( const StructureInfo& si, AtomInfoList& atomlist )
+      {
+        nc_assert( si.spacegroup_setting.has_value() );
+        const SGSymmetry& sym
+          = SGSymmetry::get( SpaceGroup( si.spacegroup_setting.value() ) );
+        for ( auto& ai : atomlist ) {
+          if ( ai.sites().empty() )
+            continue;
+          AtomInfo::AtomPositions newpos;
+          std::vector<AtomInfo::Pos> newrepr;
+          bool ok = true;
+          for ( auto& site : ai.sites() ) {
+            SGSiteOrbit orbit;
+            try {
+              orbit = expandSiteToOrbit( sym, site.position.as<Vector>() );
+            } catch ( Error::BadInput& ) {
+              ok = false;
+              break;
+            }
+            if ( orbit.positions.size() != site.multiplicity ) {
+              ok = false;
+              break;
+            }
+            AtomInfo::AtomPositions orbitpos;
+            for ( auto& p : orbit.positions )
+              orbitpos.push_back( p.as<AtomInfo::Pos>() );
+            std::stable_sort( orbitpos.begin(), orbitpos.end(),
+                              details::atominfo_pos_compare );
+            newrepr.push_back( orbitpos.front() );
+            newpos.insert( newpos.end(), orbitpos.begin(), orbitpos.end() );
+          }
+          if ( !ok || newpos.size() != ai.unitCellPositions().size() )
+            continue;
+          std::stable_sort( newpos.begin(), newpos.end(),
+                            details::atominfo_pos_compare );
+          ai.detail_accessPos() = std::move( newpos );
+          for ( auto i : ncrange( newrepr.size() ) )
+            ai.detail_accessSites().at( i ).position = newrepr.at( i );
+        }
+      }
+
       void validateAndCompleteUnitCell( InfoBuilder::UnitCell& uc )
       {
         auto& si = uc.structinfo;
@@ -564,8 +609,11 @@ namespace NCRYSTAL_NAMESPACE {
         }
         if ( si.spacegroup_setting.has_value() )
           si.spacegroup_setting.value().validate();
-        if ( uc.atomlist.has_value() )
+        if ( uc.atomlist.has_value() ) {
           groupPositionsIntoSites( si, uc.atomlist.value() );
+          if ( si.spacegroup_setting.has_value() )
+            snapPositionsToSites( si, uc.atomlist.value() );
+        }
       }
 
   }
