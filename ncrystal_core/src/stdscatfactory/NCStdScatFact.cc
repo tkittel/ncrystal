@@ -175,7 +175,10 @@ namespace NCRYSTAL_NAMESPACE {
             }
             if ( ppwcutoff && ppwcutoff->hasPlanesWithheldInLastLoop() ) {
               nc_assert_always(info.hasStructureInfo());
-              cl.emplace_back(makeSO<PowderBragg>(info.getStructureInfo(),
+              //(average number of atoms, i.e. positions*occupancy):
+              const double v0natoms = ( info.getStructureInfo().volume
+                                        * info.getAverageAtomsPerCell() );
+              cl.emplace_back(makeSO<PowderBragg>(v0natoms,
                                                   ppwcutoff->consumePlanesWithheldInLastLoop()));
             }
             return cl;

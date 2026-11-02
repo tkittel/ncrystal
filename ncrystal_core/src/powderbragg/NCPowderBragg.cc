@@ -174,7 +174,14 @@ NC::PowderBragg::PowderBragg(const Info&ci)
       data.back().second += f;
     }
   }
-  init(ci.getStructureInfo(),std::move(data));
+  //Per-atom normalisation, with the average number of atoms
+  //(positions*occupancy):
+  const auto& si = ci.getStructureInfo();
+  const double natoms = ci.getAverageAtomsPerCell();
+  if ( !(si.volume>0) || !(natoms>0) )
+    NCRYSTAL_THROW(BadInput,"Passed structure info object has"
+                   " invalid volume or n_atoms fields.");
+  init(si.volume * natoms,std::move(data));
 }
 
 NC::EnergyDomain NC::PowderBragg::domain() const noexcept

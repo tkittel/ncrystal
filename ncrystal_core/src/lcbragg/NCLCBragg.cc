@@ -58,10 +58,13 @@ namespace NCRYSTAL_NAMESPACE {
           plane_provider = stdpp.get();
         }
 
+        //(average number of atoms, i.e. positions*occupancy):
+        const double v0natoms
+          = si.volume * cinfo.getAverageAtomsPerCell();
         m_lchelper = NC::ncmake_unique<LCHelper>( lcaxis.as<Vector>().unit().as<LCAxis>(),
                                                   lcaxis_labframe,
                                                   mosaicity,
-                                                  si.volume * si.n_atoms,
+                                                  v0natoms,
                                                   plane_provider,
                                                   prec, ntrunc );
 

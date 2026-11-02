@@ -22,6 +22,9 @@
 #include "NCrystal/NCrystal.hh"
 #include "NCrystal/internal/infobld/NCInfoBuilder.hh"
 #include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
+#include "NCrystal/internal/extd_utils/NCFillHKL.hh"
+#include "NCrystal/internal/elincscatter/NCElIncScatter.hh"
+#include "NCrystal/internal/powderbragg/NCPowderBragg.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include <iostream>
 
@@ -75,8 +78,17 @@ namespace {
     }
     bldr.unitcell = std::move( uc );
     bldr.hklPlanes.emplace();
-    bldr.hklPlanes.value().dspacingRange = NC::PairDD( 1.0, 2.0 );
-    bldr.hklPlanes.value().source = NC::HKLList();
+    bldr.hklPlanes.value().dspacingRange = NC::PairDD( 0.6, 1e9 );
+    bldr.hklPlanes.value().source = NC::InfoBuilder::SinglePhaseBuilder
+      ::HKLPlanes::HKLListGenFct( []( const NC::StructureInfo* si,
+                                      const NC::AtomInfoList* al,
+                                      NC::PairDD )
+      {
+        nc_assert_always( si && al );
+        NC::FillHKLCfg cfg;
+        cfg.dcutoff = 0.6;
+        return NC::calculateHKLPlanes( *si, *al, cfg );
+      } );
     return NC::InfoBuilder::buildInfoPtr( std::move( bldr ) );
   }
 
@@ -149,6 +161,81 @@ int main()
                      std::numeric_limits<double>::quiet_NaN() } ) {
     std::cout << "occupancy " << NC::fmt( o );
     expectBadInput( "", [o]() { buildNaCl( o, 1.0 ); } );
+  }
+
+  //Structure factors: |F| of every rock salt reflection is linear in the Na
+  //occupancy (|F| = |o*A_Na +- A_Cl|, without sign change since b_Cl > b_Na),
+  //so |F| at o=0.8 is the average of those at o=1 and o=0.6:
+  {
+    NC::FillHKLCfg cfg;
+    cfg.dcutoff = 0.6;
+    auto planes = [&cfg]( double o )
+    {
+      auto info = buildNaCl( o, 1.0 );
+      return NC::calculateHKLPlanes( info->getStructureInfo(),
+                                     info->getAtomInfos(), cfg );
+    };
+    const auto h10 = planes( 1.0 );
+    const auto h08 = planes( 0.8 );
+    const auto h06 = planes( 0.6 );
+    REQUIRE( h10.size() == h08.size() && h10.size() == h06.size() );
+    REQUIRE( h10.size() > 10 );
+    for ( auto i : NC::ncrange( h10.size() ) ) {
+      REQUIRE( h10[i].dspacing == h08[i].dspacing );
+      REQUIRE( h10[i].dspacing == h06[i].dspacing );
+      REQUIRE( h10[i].multiplicity == h08[i].multiplicity );
+      REQUIRE( NC::floateq( 2.0 * std::sqrt( h08[i].fsquared ),
+                            std::sqrt( h10[i].fsquared )
+                            + std::sqrt( h06[i].fsquared ), 1e-12, 0.0 ) );
+    }
+    std::cout << "F^2 of " << h10.size()
+              << " families linear in |F| versus occupancy: OK\n";
+  }
+
+  //Incoherent elastic at very low energies (Debye-Waller factors 1): per unit
+  //cell the sum of npos*(o*sigma_inc+o*(1-o)*sigma_coh) over the roles:
+  for ( double o : { 1.0, 0.9, 0.5, 0.1 } ) {
+    auto info = buildNaCl( o, 1.0 );
+    NC::ElIncScatter sc( *info );
+    NC::CachePtr cp;
+    const double xs_cell
+      = sc.crossSectionIsotropic( cp, NC::NeutronEnergy( 1e-12 ) ).dbl()
+      * NC::InfoUtils::occupancyWeightedAtomCount( info->getAtomInfos() );
+    double expected = 0.0;
+    for ( auto& ai : info->getAtomInfos() ) {
+      const double oo = ai.occupancy();
+      expected += ai.numberPerUnitCell()
+        * ( oo * ai.atomData().incoherentXS().dbl()
+            + oo * ( 1.0 - oo ) * ai.atomData().coherentXS().dbl() );
+    }
+    std::cout << "Na occupancy " << NC::fmt( o )
+              << ": incoherent elastic xs per cell at E->0 = "
+              << NC::fmt( xs_cell, "%.6g" ) << " barn\n";
+    REQUIRE( NC::floateq( xs_cell, expected, 1e-9, 0.0 ) );
+  }
+
+  //Powder Bragg cross sections are per actual atom: times the average number
+  //of atoms they must equal lambda^2/(2V)*sum(d*mult*F^2) over planes with
+  //2d>lambda:
+  for ( double o : { 1.0, 0.7 } ) {
+    auto info = buildNaCl( o, 1.0 );
+    NC::PowderBragg pb( *info );
+    const double natoms
+      = NC::InfoUtils::occupancyWeightedAtomCount( info->getAtomInfos() );
+    const double cellvol = info->getStructureInfo().volume;
+    for ( double wl : { 1.0, 2.5, 4.0 } ) {
+      double sum = 0.0;
+      for ( auto& h : info->hklList() )
+        if ( 2.0 * h.dspacing > wl )
+          sum += h.dspacing * h.multiplicity * h.fsquared;
+      const double expected = wl * wl / ( 2.0 * cellvol ) * sum;
+      NC::CachePtr cp;
+      const double xs_cell = natoms * pb.crossSectionIsotropic(
+        cp, NC::NeutronWavelength( wl ) ).dbl();
+      REQUIRE( NC::floateq( xs_cell, expected, 1e-9, 0.0 ) );
+    }
+    std::cout << "Na occupancy " << NC::fmt( o )
+              << ": powder Bragg normalisation OK\n";
   }
 
   //Anisotropic displacements are reserved:
