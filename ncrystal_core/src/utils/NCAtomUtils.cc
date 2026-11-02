@@ -139,7 +139,7 @@ void NC::validateAtomDBLine(const VectS& words, unsigned ncmat_version )
     if (!endswith(s,unit))
       return false;
     auto ss = s.substr(0,s.size()-unit.size());
-    return safe_str2dbl(ss,val);
+    return safe_str2dbl(ss,val) && std::isfinite(val);//never NaN or infinity
   };
 
   if (words.size()>10000)//not documented in ncmat_doc.md, but is really just a sanity check.
@@ -222,7 +222,8 @@ void NC::validateAtomDBLine(const VectS& words, unsigned ncmat_version )
     for ( unsigned icomp = 0; icomp < ncomp; ++icomp ) {
       //Fraction:
       double frac;
-      if (!safe_str2dbl(words.at(2+icomp*2),frac)||frac<=0.0 || !(frac<=1.0) )
+      if ( !safe_str2dbl(words.at(2+icomp*2),frac) || !std::isfinite(frac)
+           || frac<=0.0 || !(frac<=1.0) )
         NCRYSTAL_THROW2(BadInput,"Invalid specification (invalid fraction: \""<<words.at(2+icomp*2)<<"\" )");
       totfrac.add(frac);
       if (AtomSymbol(words.at(3+icomp*2)).isInvalid())
