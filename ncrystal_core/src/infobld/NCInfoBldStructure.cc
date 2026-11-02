@@ -533,6 +533,10 @@ namespace NCRYSTAL_NAMESPACE {
             if ( ai.msd().has_value() != uc_atomlist.front().msd().has_value() )
               NCRYSTAL_THROW(BadInput,"Inconsistency: MSD values specified for some but not all AtomInfo objects.");
 
+            for ( auto& site : ai.sites() )
+              if ( site.uij.has_value() )
+                NCRYSTAL_THROW(BadInput,"Anisotropic displacements (uij) of"
+                               " atom sites are not supported yet.");
           }
 
           //Ensure only one atom exists at a given position, within a tolerance:

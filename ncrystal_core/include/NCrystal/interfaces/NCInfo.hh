@@ -191,6 +191,12 @@ namespace NCRYSTAL_NAMESPACE {
     bool hasStructureInfo() const;
     const StructureInfo& getStructureInfo() const;
 
+    //Average number of atoms per unit cell, i.e. the sum over the AtomInfo
+    //objects of numberPerUnitCell()*occupancy() (whereas StructureInfo::n_atoms
+    //counts positions), or n_atoms if there are no AtomInfo objects. Only
+    //available if isCrystalline():
+    double getAverageAtomsPerCell() const;
+
     //Convenience method, calculating the d-spacing of a given Miller
     //index. Calling this incurs the overhead of creating a reciprocal lattice
     //matrix from the structure info:
@@ -450,6 +456,7 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Single-phase only:
     Optional<StructureInfo> structinfo;
+    double averageAtomsPerCell = 0.0;//see getAverageAtomsPerCell()
     AtomInfoList atomlist;
     DynamicInfoList dyninfolist;
     std::function<CrossSect(NeutronEnergy)> xsectprovider;
@@ -537,6 +544,12 @@ namespace NCRYSTAL_NAMESPACE {
   }
   inline bool Info::hasStructureInfo() const { singlePhaseOnly("structure info"); return m_data->structinfo.has_value(); }
   inline const StructureInfo& Info::getStructureInfo() const  { singlePhaseOnly("structure info"); nc_assert(hasStructureInfo()); return m_data->structinfo.value(); }
+  inline double Info::getAverageAtomsPerCell() const
+  {
+    singlePhaseOnly("structure info");
+    nc_assert( isCrystalline() );
+    return m_data->averageAtomsPerCell;
+  }
   inline bool Info::providesNonBraggXSects() const { singlePhaseOnly("non-Bragg cross section info"); return !!m_data->xsectprovider; }
   inline CrossSect Info::xsectScatNonBragg(NeutronEnergy ekin) const  { singlePhaseOnly("non-Bragg cross section info"); nc_assert(!!m_data->xsectprovider); return m_data->xsectprovider(ekin); }
   inline bool Info::hasTemperature() const { return m_data->temp.has_value(); }

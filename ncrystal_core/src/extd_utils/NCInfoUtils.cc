@@ -22,6 +22,7 @@
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 #include "NCrystal/internal/utils/NCStrView.hh"
+#include "NCrystal/internal/utils/NCMath.hh"
 
 namespace NC = NCrystal;
 
@@ -144,4 +145,12 @@ void NC::InfoUtils::completeAndCheckStructureInfoCell( StructureInfo& si )
   si.alpha = cp.alpha;
   si.beta = cp.beta;
   si.gamma = cp.gamma;
+}
+
+double NC::InfoUtils::occupancyWeightedAtomCount( const AtomInfoList& atomlist )
+{
+  StableSum n;
+  for ( const auto& ai : atomlist )
+    n.add( ai.numberPerUnitCell() * ai.occupancy() );
+  return n.sum();
 }

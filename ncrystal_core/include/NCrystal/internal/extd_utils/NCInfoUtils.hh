@@ -50,6 +50,11 @@ namespace NCRYSTAL_NAMESPACE {
     //of the setting from getSpaceGroupCandidateForHKLFromStructureInfo (e.g.
     //b=c=a for cubic), and throw BadInput if the cell contradicts it:
     void completeAndCheckStructureInfoCell( StructureInfo& );
+
+    //Average number of atoms in the unit cell: the sum of
+    //numberPerUnitCell()*occupancy() over the list (exactly the number of
+    //positions when all occupancies are 1):
+    double occupancyWeightedAtomCount( const AtomInfoList& );
   }
 }
 

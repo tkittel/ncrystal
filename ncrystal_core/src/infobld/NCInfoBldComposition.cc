@@ -20,6 +20,7 @@
 
 #include "NCInfoBldComposition.hh"
 #include "NCInfoBldStructure.hh"
+#include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 
 namespace NC = NCrystal;
@@ -66,13 +67,17 @@ namespace NCRYSTAL_NAMESPACE {
         Info::Composition new_composition;
         if ( has_uc_atomlist ) {
           //From unit cell:
+          //(occupancy-weighted, i.e. the average numbers of atoms):
           auto& atomlist = unitcell.value().atomlist.value();
-          const auto ntot = totalNumberOfAtomsInUnitCell( atomlist );
-          nc_assert_always( ntot > 0 );
+          totalNumberOfAtomsInUnitCell( atomlist );//validates
+          const double ntot = InfoUtils::occupancyWeightedAtomCount( atomlist );
+          nc_assert_always( ntot > 0.0 );
           new_composition.reserve( atomlist.size() );
           for ( const auto& ai : atomlist ) {
             nc_assert( ai.numberPerUnitCell() > 0 );
-            new_composition.emplace_back( ai.numberPerUnitCell() / double(ntot), ai.atom() );
+            new_composition.emplace_back( ai.numberPerUnitCell()
+                                          * ai.occupancy() / ntot,
+                                          ai.atom() );
           }
         } else {
           //From dynamics
@@ -151,9 +156,16 @@ namespace NCRYSTAL_NAMESPACE {
         if ( unitcell.has_value() ) {
           //Always take final density/numberdensity values from unit cell when
           //possible - but check compatibility with any number already provided.
+          //(the average number of atoms, i.e. occupancy-weighted, if atoms
+          //are known):
           const auto& si = unitcell.value().structinfo;
           nc_assert( si.volume > 0.0 && si.n_atoms > 0 );
-          const auto numberDensityUC = NumberDensity{ si.n_atoms / si.volume };
+          const auto& al = unitcell.value().atomlist;
+          const double natoms
+            = ( al.has_value()
+                ? InfoUtils::occupancyWeightedAtomCount( al.value() )
+                : double( si.n_atoms ) );
+          const auto numberDensityUC = NumberDensity{ natoms / si.volume };
           const auto densityUC = Density( numberDensityUC, averageAtomMass );
           if ( numberDensity.has_value() && !floateq( numberDensityUC.dbl(), numberDensity.value().dbl(), 1e-2 ) )
             NCRYSTAL_THROW2(BadInput,"Provided (" << numberDensity.value() << ") versus calculated-from-unit-cell"
