@@ -227,6 +227,53 @@ namespace NCRYSTAL_NAMESPACE {
 namespace NCRYSTAL_NAMESPACE {
   namespace Plugins {
     namespace {
+
+      //Value returned by ncplugin_getncversion (v) as text ("5.*.*" for
+      //wildcards, "4.4.7 or later" for minimum versions):
+      std::string pluginNCVersionStr( long v )
+      {
+        const long va = ( v < 0 ? -v : v );
+        std::ostringstream ss;
+        const long flds[3] = { va/1000000, (va/1000)%1000, va%1000 };
+        for ( auto i : ncrange(3) ) {
+          if ( i )
+            ss << '.';
+          if ( flds[i] == 998 )
+            ss << '*';
+          else
+            ss << flds[i];
+        }
+        if ( v < 0 )
+          ss << " or later";
+        return ss.str();
+      }
+
+      //Whether NCrystal can load a plugin whose ncplugin_getncversion returned
+      //v: the exact NCRYSTAL_VERSION (any field 998 matches anything), or
+      //-NCRYSTAL_VERSION for a minimum version (no wildcards). Throws for
+      //invalid values.
+      bool pluginNCVersionOK( long v, const std::string& fn )
+      {
+        const long va = ( v < 0 ? -v : v );
+        const long flds[3] = { va/1000000, (va/1000)%1000, va%1000 };
+        const long nc[3] = { NCRYSTAL_VERSION/1000000,
+                             (NCRYSTAL_VERSION/1000)%1000,
+                             NCRYSTAL_VERSION%1000 };
+        if ( v < 0 ) {
+          for ( auto f : flds )
+            if ( f == 998 )
+              NCRYSTAL_THROW2( DataLoadError, "Dynamic plugin "<<fn
+                               <<" has invalid ncplugin_getncversion value "
+                               <<v<<" (wildcards are not supported for"
+                               " minimum versions)." );
+          return va <= NCRYSTAL_VERSION;
+        }
+        for ( auto i : ncrange(3) )
+          if ( flds[i] != 998 && flds[i] != nc[i] )
+            return false;
+        return true;
+      }
+
       std::string resolvePathToShlib( std::string path )
       {
         std::string found;
@@ -251,7 +298,8 @@ namespace NCRYSTAL_NAMESPACE {
 
       PluginInfo loadDynamicPluginImpl( std::string path_to_shared_lib,
                                         std::string pluginName = "",
-                                        std::string regfctname = "ncplugin_register" )
+                                        std::string regfctname = "ncplugin_register",
+                                        bool checkVersion = true )
       {
         path_to_shared_lib = resolvePathToShlib(path_to_shared_lib);
 
@@ -266,6 +314,25 @@ namespace NCRYSTAL_NAMESPACE {
         DynLoader dl( pinfo.fileName,
                       DynLoader::ScopeFlag::local,//reduce symbol interference between plugins
                       DynLoader::LazyFlag::now );//better get the error upon load
+
+        if ( checkVersion ) {
+          //Plugins might use internal headers, so by default require an exact
+          //version match (see pluginNCVersionOK for alternatives):
+          auto vf = dl.tryGetFunction<long()>("ncplugin_getncversion");
+          if ( !vf.first )
+            NCRYSTAL_THROW2( DataLoadError, "Dynamic plugin "<<pinfo.fileName
+                             <<" lacks the ncplugin_getncversion function"
+                             " (built for an older NCrystal release?). Plugins"
+                             " must be rebuilt for NCrystal "
+                             NCRYSTAL_VERSION_STR "." );
+          const long v = vf.second();
+          if ( !pluginNCVersionOK( v, pinfo.fileName ) )
+            NCRYSTAL_THROW2( DataLoadError, "Dynamic plugin "<<pinfo.fileName
+                             <<" requires NCrystal "<<pluginNCVersionStr(v)
+                             <<" and can not be used with NCrystal "
+                             NCRYSTAL_VERSION_STR " (plugins must normally be"
+                             " rebuilt for each release)." );
+        }
 
         if (pinfo.pluginName.empty())
           pinfo.pluginName = dl.getFunction<const char*()>("ncplugin_getname")();
@@ -425,7 +492,8 @@ void NCP::ensurePluginsLoaded()
                              std::string regfctname )
     {
       regfctname = std::string(ncrystal_xstr(NCRYSTAL_C_NAMESPACE)) + regfctname;
-      loadDynamicPluginImpl( getSBLDPkgLib(pkgname), pluginname, regfctname);
+      loadDynamicPluginImpl( getSBLDPkgLib(pkgname), pluginname, regfctname,
+                             false );//always same build, no version hook
     };
     loadstdplugin("NCFactories","stddatasrc","register_stddatasrc_factory");
     loadstdplugin("NCScatFact","stdscat","register_stdscat_factory");
