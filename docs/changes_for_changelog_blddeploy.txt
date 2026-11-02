@@ -1,0 +1,49 @@
+Input for the CHANGELOG from the tk_blddeploy branch (build, deployment and
+packaging), in the same spirit as changes_for_changelog.txt (to be curated into
+the real CHANGELOG at release time, after which this file is dropped).
+
+### Library versioning and plugins
+
+     * The NCrystal shared library once again has a versioned SONAME on
+       Unix: libNCrystal.so.<major> (macOS: libNCrystal.<major>.dylib),
+       with an unversioned libNCrystal.so symlink for linking. The major
+       version marks compatibility of the C API (and public C++ headers).
+       No VERSION property is set, so there is no third
+       libNCrystal.so.X.Y.Z file. Wheels contain only the single
+       libNCrystal.so.<major> file (cf. github issue #186, which led to the
+       removal of SOVERSION in NCrystal 4.0.0). Windows DLL names are
+       unchanged.
+     * Dynamic plugins must now provide a third C-mangled function, long
+       ncplugin_getncversion(), returning NCRYSTAL_VERSION at build time
+       (NCPluginBoilerplate.hh provides it automatically). Since plugins may
+       use internal headers, plugins are only loaded into the exact NCrystal
+       version they were built for, otherwise a DataLoadError explains that
+       the plugin must be rebuilt. Plugins built for earlier NCrystal
+       versions are thus rejected. Plugins carefully implemented to only rely
+       on stable interfaces can instead return -NCRYSTAL_VERSION, meaning
+       "this or any later version", or use 998 as a wildcard for any of the
+       major, minor and patch fields (e.g. 5998998 for any 5.*.* version).
+       With NCPluginBoilerplate.hh, define NCPLUGIN_NCVERSION_COMPAT_OVERRIDE
+       to the value to return.
+     * More robust search for the NCrystal shared library by the Python
+       modules (when ncrystal-core was not installed via Python): The
+       ncrystal-config command is first looked for in the environment of the
+       Python interpreter (which might not be activated), and then in the
+       PATH. Libraries with a version different from that of the Python
+       modules are skipped (if nothing else is found, the resulting error
+       lists them all). As a last resort, libNCrystal.so.<major>
+       (libNCrystal.<major>.dylib on macOS) is loaded via the system dynamic
+       loader, for system packages where ncrystal-config is in a separate
+       development package.
+     * The ncrystal-core Python packages now register a "cmake.prefix" entry
+       point, so CMake projects built with scikit-build-core (e.g. plugins
+       installed with pip) find NCrystal via find_package(NCrystal) without
+       invoking ncrystal-config. The entry point names the _ncrystal_core
+       (or _ncrystal_core_monolithic) module itself, which contains
+       forwarding NCrystalConfig.cmake and NCrystalConfigVersion.cmake files
+       in its cmake/ subdirectory. The CMake code in the examples and README now
+       first tries find_package(NCrystal ... QUIET) and only falls back to
+       "ncrystal-config --show cmakedir" if needed, since ncrystal-config can
+       not always be run (e.g. when cross-compiling).
+     * The examples (downstream_cmake, plugin and the README CMake code) now
+       require NCrystal 4.4.7 (the example plugin: ncrystal-core>=4.4.7).
