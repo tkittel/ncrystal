@@ -104,7 +104,7 @@ must contain only this file, with the message
   `create_argparser_for_sphinx(progname)`, and
   `@cli_entry_point def main(progname, arglist)`. Tools: nctool, browse,
   minimc, cif2ncmat, hfg2ncmat, ncmat2hkl, ncmat2endf, endf2ncmat, vdos2ncmat,
-  verifyatompos, query, ncmat2cpp, mcstasunion; plus `config`
+  query, ncmat2cpp, mcstasunion; plus `config`
   (`_cliwrap_config.py`, runs the compiled `ncrystal-config` in a subprocess).
 - Discovery = glob of `_cli_*.py` (`_cliimpl.cli_tool_list_impl`). Names:
   short (`ncmat2cpp`), canonical (`ncrystal_ncmat2cpp`, but `nctool`,
