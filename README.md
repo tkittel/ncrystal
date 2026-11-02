@@ -167,7 +167,7 @@ CMake code for a small project using NCrystal might look like the following
   execute_process( COMMAND "ncrystal-config" "--show" "cmakedir"
                    OUTPUT_VARIABLE NCrystal_DIR
                    OUTPUT_STRIP_TRAILING_WHITESPACE )
-  find_package(NCrystal 4.0.0 REQUIRED)
+  find_package(NCrystal 4.4.7 REQUIRED)
   add_executable(exampleapp "${PROJECT_SOURCE_DIR}/exampleapp.cc")
   target_link_libraries( exampleapp NCrystal::NCrystal )
   install( TARGETS exampleapp DESTINATION bin )
