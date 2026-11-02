@@ -239,9 +239,22 @@ set( ExtDep_{name}_LINK_FLAGS "{ldflags}")
 
     if is_not_syshdrs:
         #Do not add -isystem to our include paths:
-        content += 'set( ExtDep_{name}_IsNotSystemHeaders "ON" )\n'
+        content += f'set( ExtDep_{name}_IsNotSystemHeaders "ON" )\n'
 
     add_file( outdir / f'ExtDep_{name}.cmake', content = content )
+
+def check_includemap_complete( includemap ):
+    mapped = { k for k,_ in includemap }
+    hdrs = set()
+    for f in dirs.srcincroot.joinpath('NCrystal').rglob('*'):
+        if f.suffix in ('.h','.hh') and f.is_file():
+            hdrs.add( str(f.relative_to(dirs.srcincroot)) )
+    hdrs.add( 'NCrystal/ncapi.h' )#generated from ncapi.h.in
+    missing = sorted( hdrs - mapped )
+    if missing:
+        raise SystemExit( 'ERROR: Headers not covered by the NCDevHeaders'
+                          ' include map (changes to them would not trigger'
+                          ' rebuilds):\n  ' + '\n  '.join(missing) )
 
 def platform_so_ending():
     import platform
@@ -366,9 +379,12 @@ def define_files():
               link_target = dirs.genroot.joinpath(ncapi_loc_in_genroot) )
     includemap.append( ( 'NCrystal/ncapi.h', f'{pkgname_core}/ncapi.h' ) )
 
-    for fn in ['NCrystal.hh','NCPluginBoilerplate.hh']:
+    for fn in ['NCrystal.hh','NCPluginBoilerplate.hh','NCRNG.hh','ncrystal.h']:
         add_file( f'pkgs/{cfg.sbpkgname_ncrystalhh}/libinc/{fn}',
                   link_target = dirs.srcroot.joinpath(f'include/NCrystal/{fn}') )
+        #Map, or changes are not tracked (plain -I dirs are not scanned):
+        includemap.append( ( f'NCrystal/{fn}',
+                             f'{cfg.sbpkgname_ncrystalhh}/{fn}' ) )
 
     #NCrystalDev package (python module):
     #assert cfg.sbpkgname_lib in all_ncsbpkgs
@@ -420,6 +436,10 @@ mod.main()
     for sf in pglob(dirs.datadir,'*.ncmat'):
         add_file( f'pkgs/{cfg.sbpkgname_data}/data/{sf.name}',
                   link_target = sf )
+
+    #All headers must be in the include map, or changes to them would not
+    #trigger rebuilds (cf. https://github.com/mctools/simplebuild/issues/103):
+    check_includemap_complete( includemap )
 
     #TODO: One custom extdep per pkg, and in an extra incpath, so we enforce the
     #deps to be correct??.
