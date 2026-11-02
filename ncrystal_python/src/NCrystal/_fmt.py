@@ -43,11 +43,10 @@ def find_fraction( x, tol = 1e-15, max_denom = 1000000 ):
 def prettyFmtValue(x):
     """Recognises common fractions in truncated values like '0.33333333' or
     '0.4166667' and formats them as '1/3' and '5/12'. This not only saves space,
-    but can also reinject accuracy in atom positions (ncrystal_verifyatompos can
-    be used to check this, but it seems to be a clear improvement in all cases
-    tested so far). Additionally also performs optimisations for storage
-    efficiency, in particular omitting leading 0s with no information value
-    (e.g. "0.2341" becomes ".2341").
+    but can also reinject accuracy in atom positions (which seems to be a clear
+    improvement in all cases tested so far). Additionally also performs
+    optimisations for storage efficiency, in particular omitting leading 0s
+    with no information value (e.g. "0.2341" becomes ".2341").
 
     """
     assert 0.0 <= x <= 1.0
