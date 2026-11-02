@@ -44,8 +44,14 @@ must contain only this file, with the message
 - `_locatelib._search()` order: `NCRYSTAL_LIB` (+ optional
   `NCRYSTAL_LIB_NAMESPACE_PROTECTION`, both never namespaced) ->
   `_ncrystal_core[_monolithic].info` module (skipped in sb mode) ->
-  `ncrystal-config --show shlibpath namespace version`. Version must match
-  exactly. `NCRYSTAL_DEBUG_LIBSEARCH` prints the search.
+  `ncrystal-config --show shlibpath namespace version` (first from the
+  interpreter's scripts dir / `sys.prefix/bin` / conda `Library/bin` on
+  Windows, then from PATH) -> system loader by SONAME
+  (`libNCrystal.so.<major>`/`libNCrystal.<major>.dylib`, version via
+  `ncrystal_version_str`, not on Windows, non-namespaced only). In sb mode
+  only `sb_nccmd_config` from PATH. `NCRYSTAL_LIB` is always used if set;
+  other candidates with a different version are skipped, and an ImportError
+  lists them if nothing matches. `NCRYSTAL_DEBUG_LIBSEARCH` prints the search.
 - `_chooks._load()` wraps the C API with ctypes into a dict of callables
   (`_get_raw_cfcts()`), keyed by C name or by a python-side helper name
   (`iter_hkllist`, `raw_vdos2knl`, `jsonquery`, `flexmmcrun`, ...).
