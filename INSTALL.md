@@ -198,8 +198,10 @@ pip install ./ncrystal_python
 Note that runtime (i.e. when importing the NCrystal module later), you will get
 failures if `ncrystal-core` was not somehow installed. More specifically, if
 `ncrystal-core` was not installed with Python tools, then the command
-`ncrystal-config` must be available in your PATH, so the Python modules can use
-it to locate the binary shared library from `ncrystal-core`.
+`ncrystal-config` must be available in your PATH (or in the environment of the
+Python interpreter), so the Python modules can use it to locate the binary
+shared library from `ncrystal-core`. The versions of `ncrystal-core` and
+`ncrystal-python` must be identical.
 
 
 Quick and dirty monolithic installations
