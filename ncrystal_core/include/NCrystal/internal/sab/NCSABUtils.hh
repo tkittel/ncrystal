@@ -357,13 +357,12 @@ inline double NCrystal::SABUtils::safeLogOrElse( double s, double valueIfNonPosi
 #else
   //Workaround for buggy clang behaviour (seen in clang 21.1.8): clang -O3
   //optimises the ternary above into an unconditional log(s), so causing a
-  //std::log(0.0) call despite our guard -> FPE.
-  volatile double vs = ( s > 0.0 ? s
-                         : std::numeric_limits<double>::denorm_min() );
+  //std::log(0.0) call despite our guard -> FPE. The volatile keeps clang from
+  //replacing the log argument with s, and the result is selected on s itself
+  //(log(denorm_min) is finite, so it can not be used to detect s<=0):
+  volatile double vs = ( s > 0.0 ? s : 1.0 );
   const double lv = std::log( vs );
-  if ( lv <= -744.4400719213812 )
-    return valueIfNonPositive;
-  return lv;
+  return ( s > 0.0 ? lv : valueIfNonPositive );
 #endif
 }
 
