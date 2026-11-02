@@ -97,10 +97,15 @@ namespace NCRYSTAL_NAMESPACE {
     }
 
     //If CellData fields a1,a2,b1,b2 have already been set, this can be used to
-    //finish up, based on lower corner alpha/beta indices.
+    //finish up, based on lower corner alpha/beta indices. The S values of the
+    //cell are scaled by 2^k (k is returned), such that the largest is in
+    //[0.5,1). This keeps them out of the subnormal range, except for values
+    //more than ~1e308 below the largest, which are set to 0 (log/exp of
+    //subnormal values are unreliable, e.g. with MSVC or FTZ/DAZ modes, exp can
+    //return 0). Sampling within the cell does not depend on the scale:
     using CellData = SABUtils::CellData;
-    void initCellDataSvals( CellData& c, const VectD& sab,
-                            std::size_t na, std::size_t ia, std::size_t ib )
+    int initCellDataSvals( CellData& c, const VectD& sab,
+                           std::size_t na, std::size_t ia, std::size_t ib )
     {
       nc_assert( c.a2 > c.a1 );
       nc_assert( c.a1 >= 0.0 );
@@ -111,8 +116,19 @@ namespace NCRYSTAL_NAMESPACE {
       i += (na-1);
       c.S[2] = vectAt(sab,i++);
       c.S[3] = vectAt(sab,i);
-      for ( int j = 0; j < 4; ++j )
+      int k = 0;
+      const double smax = ncmax( c.S[0], c.S[1], c.S[2], c.S[3] );
+      if ( smax > 0.0 ) {
+        std::frexp( smax, &k );
+        k = -k;
+      }
+      for ( int j = 0; j < 4; ++j ) {
+        c.S[j] = std::ldexp( c.S[j], k );
+        if ( c.S[j] < std::numeric_limits<double>::min() )
+          c.S[j] = 0.0;
         c.logS[j] = NC::SABUtils::safeLogOrElse( c.S[j], 0.0 );
+      }
+      return k;
     }
 
     //This can initialise a CellData object from scratch based on lower corner
@@ -142,6 +158,9 @@ namespace NCRYSTAL_NAMESPACE {
         using CCells = std::vector<std::pair<double,std::int64_t>>;
         CCells contrib_cells;//{ contrib, cellidx }
         VectD cumul;
+        //The contributions above are relative to the largest one, and must be
+        //multiplied by 2^contribExponent to get the actual values:
+        int contribExponent = 0;
 
         struct Decoded { bool fully_inside; CellData cellData; };
         Decoded decodeCell( const SABData& sab, std::size_t i ) const
@@ -177,8 +196,21 @@ namespace NCRYSTAL_NAMESPACE {
                           && std::isfinite(E_div_kT) );
 
         //First figure out which cells have which contributions, and if they are
-        //completely covered or not (indicated by negative cellidx):
-        res.contrib_cells.reserve(8192);
+        //completely covered or not (indicated by negative cellidx). The
+        //contributions are kept as m*2^e, since the cells are integrated with
+        //their S values scaled by 2^kscale (see initCellDataSvals):
+        struct Contrib { double m; int e; std::int64_t cellidx; };
+        std::vector<Contrib> contribs;
+        contribs.reserve(8192);
+        auto addContrib = [&contribs]( double c, int kscale,
+                                       std::int64_t cellidx )
+        {
+          Contrib e;
+          e.m = std::frexp( c, &e.e );
+          e.e -= kscale;
+          e.cellidx = cellidx;
+          contribs.push_back( e );
+        };
 
         const double foure = 4*E_div_kT;
         const double minusE = -E_div_kT;
@@ -217,7 +249,7 @@ namespace NCRYSTAL_NAMESPACE {
             cell.a2 = a2;
             cell.b1 = b1;
             cell.b2 = b2;
-            initCellDataSvals( cell, sab.sab(), na, ia, ib );
+            const int kscale = initCellDataSvals( cell, sab.sab(), na, ia, ib );
             if ( cell.S[0]+cell.S[1]+cell.S[2]+cell.S[3]==0.0 )
               continue;//no actual contribution since S=0 in entire cell
 
@@ -240,17 +272,30 @@ namespace NCRYSTAL_NAMESPACE {
               nc_assert(ptInsideKB( a2, b2 ));//fourth corner is also inside
               StableSumKahan sum;
               SABUtils::StdLogLinCellIntegrator::integrateFullCell( cell, sum );
-              res.contrib_cells.emplace_back(sum.sum(),-cellidx);//-cellidx
+              addContrib( sum.sum(), kscale, -cellidx );//-cellidx
             } else {
               //cell crosses boundary
               StableSumKahan sum;
               SABUtils::StdLogLinCellIntegrator
                 ::integrateWithinKB( cell, E_div_kT,
                                      SABCfg::IntegrationScheme::MaxPrec, sum );
-              res.contrib_cells.emplace_back(sum.sum(),cellidx);//+cellidx
+              addContrib( sum.sum(), kscale, cellidx );//+cellidx
             }
           }
         }
+        //Contributions relative to the largest one (exactly, as the mantissas
+        //are only scaled by powers of two):
+        int emax = std::numeric_limits<int>::min();
+        for ( auto& e : contribs )
+          if ( e.m > 0.0 )
+            emax = std::max( emax, e.e );
+        if ( emax == std::numeric_limits<int>::min() )
+          emax = 0;
+        res.contribExponent = emax;
+        res.contrib_cells.reserve( contribs.size() );
+        for ( auto& e : contribs )
+          res.contrib_cells.emplace_back( std::ldexp( e.m, e.e - emax ),
+                                          e.cellidx );
         //Now sort by contribution, small to large. That will make our
         //cumulative sum more robust (otherwise tiny contributions after large
         //ones might get imprecise).
@@ -347,7 +392,9 @@ NC::SABRef::refSampleAlphaBeta( RNG& rng,
       = ext.extender->crossSection(NeutronEnergy(E_div_kT*kT)).dbl();
     double extS = 4.0 * ncfma( ext_xs_E, E_div_kT,
                                   -(ext_xs_Ecell*E_div_kT_cell) );
-    probabilityExtension = extS / ( extS + analysedEpt.cumul.back() );
+    const double cellS = std::ldexp( analysedEpt.cumul.back(),
+                                     analysedEpt.contribExponent );
+    probabilityExtension = extS / ( extS + cellS );
   }
   nc_assert( probabilityExtension >= 0.0 && probabilityExtension <= 1.0 );
 
