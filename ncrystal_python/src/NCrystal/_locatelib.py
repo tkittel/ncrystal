@@ -75,15 +75,26 @@ def _search():
     #     like CTests). Normally this variable is also enough for us to be able
     #     to decode the NCrystal namespace protection used, if any. But if it
     #     fails, one can use the NCRYSTAL_LIB_NAMESPACE_PROTECTION variable to
-    #     specify it explicitly.
+    #     specify it explicitly. If set, it is always used.
     #
     #  2) Attempt to get the location via a python module providing it (in case
     #     ncrystal-core was installed via PyPI for instance).
     #
-    #  3) Invoke "ncrystal-config --show ..." for the information.
+    #  3) Invoke "ncrystal-config --show ..." for the information, first the one
+    #     in the environment of the current Python interpreter (which might not
+    #     be activated, i.e. not in the PATH), then the one in the PATH.
     #
-    #  If simplebuild devel mode we allow env var overrides, but apart from that
-    #  always go straight to the ncrystal-config method.
+    #  4) Last resort: Let the system dynamic loader find the library by its
+    #     SONAME (libNCrystal.so.<major>). This is for installations where the
+    #     library is in the default library search path but ncrystal-config is
+    #     not available (e.g. a system package with ncrystal-config in a
+    #     separate development package). Only non-namespaced libraries can be
+    #     found like this.
+    #
+    #  Candidates from 2-4 with a version different from that of the Python
+    #  modules are skipped. If simplebuild devel mode we allow env var
+    #  overrides, but apart from that always go straight to the sb_nccmd_config
+    #  command in the PATH.
 
     # Always invoke _detect_monolithic_installation() since it also detects
     # broken installations.
@@ -99,56 +110,50 @@ def _search():
               f' = {"yes" if is_monolithic else "no"}')
 
     v = _search_env_overrides()
-    if verbose and v:
-        print('NCrystal._locatelib: Succesfully searched via method: env vars')
+    if v:
+        if verbose:
+            print('NCrystal._locatelib: Succesfully searched via method:'
+                  ' env vars')
+        return _finalise( v[0], v[1], verbose )
 
     is_simplebuild_devel = ( pathlib.Path(__file__).parent
                              .joinpath('_is_sblddevel.py').is_file() )
 
-    if not v and not is_simplebuild_devel:
-        v = _search_core_info_mod( is_monolithic )
-        if verbose and v:
-            print('NCrystal._locatelib: Succesfully searched via method: pymod')
+    from . import __version__ as _nc_version
+    rejected = []#candidates with wrong version
+    for method, fct, by_name in _candidate_searches( is_simplebuild_devel,
+                                                     is_monolithic ):
+        v = fct()
+        if not v:
+            continue
+        lib, namespace, version = v
+        if verbose:
+            print(f'NCrystal._locatelib: Found via method {method}:'
+                  f' "{lib}" (version {version})')
+        if version is not None and version.strip() != _nc_version.strip():
+            rejected.append( ( method, lib, version.strip() ) )
+            continue
+        if verbose:
+            print('NCrystal._locatelib: Succesfully searched via method:'
+                  f' {method}')
+        return _finalise( lib, namespace, verbose, by_name )
 
-    if not v:
-        v = _search_nccfgapp( 'sb_nccmd_config'
-                              if is_simplebuild_devel
-                              else 'ncrystal-config' )
-        if verbose and v:
-            print('NCrystal._locatelib: Succesfully searched'
-                  ' via method: ncrystal-config')
-
-    if not v:
+    if not rejected:
         from .exceptions import NCFileNotFound
         raise NCFileNotFound('Could not locate the NCrystal shared library'
                              ' file. Have you installed the ncrystal-core'
                              ' package?')
-    lib, namespace, version = v
-    if verbose:
-        print(f'NCrystal._locatelib: namespace = "{namespace}"')
-        print(f'NCrystal._locatelib: lib = "{lib}"')
 
-    lib = pathlib.Path(lib)
-    if not lib.is_file():
-        from .exceptions import NCFileNotFound
-        raise NCFileNotFound('Problems locating the NCrystal shared library'
-                             f' file. Tried "{lib}" unsuccesfully.')
-    version_ok = True
-    if version is not None:
-        from . import __version__ as _nc_version
-        version_ok = _nc_version.strip() == version.strip()
-    if version_ok:
-        return ( lib.absolute().resolve(), ( namespace or '' ) )
-
-    #Found it, but there was a version mismatch!
+    #Found something, but only with version mismatches!
     import textwrap
+    found = '\n'.join( f'  {ver} ({meth}: {lib})'
+                       for meth, lib, ver in rejected )
     msg = textwrap.dedent(f"""
     ERROR: Inconsistent environment detected.
 
-    The version of the installed core ncrystal modules ({version}) and the
-    ncrystal Python API ({_nc_version}) are not identical. This is not
-    supported.
-    """)
+    The ncrystal Python API has version {_nc_version}, but only core ncrystal
+    libraries with other versions were found. This is not supported. Found:
+    """) + found + '\n'
     #The environment is not necessarily completely broken, but the NCrystal
     #packages can not be used. Hence, we emit an ImportError here. However, we
     #also emit a warning, in case the client code is hiding ImportError's, on
@@ -156,6 +161,56 @@ def _search():
     from ._common import warn
     warn(msg)
     raise ImportError(msg)
+
+def _finalise( lib, namespace, verbose, by_name = False ):
+    #by_name: lib is a name for the system dynamic loader, not a path.
+    if verbose:
+        from ._common import print
+        print(f'NCrystal._locatelib: namespace = "{namespace or ""}"')
+        print(f'NCrystal._locatelib: lib = "{lib}"')
+    if by_name:
+        return lib, ( namespace or '' )
+    lib = pathlib.Path(lib)
+    if not lib.is_file():
+        from .exceptions import NCFileNotFound
+        raise NCFileNotFound('Problems locating the NCrystal shared library'
+                             f' file. Tried "{lib}" unsuccesfully.')
+    return ( lib.absolute().resolve(), ( namespace or '' ) )
+
+def _candidate_searches( is_simplebuild_devel, is_monolithic ):
+    #Yields (methodname, fct, by_name) in order of preference, where fct()
+    #returns (lib,namespace,version) or None, and by_name indicates that lib is
+    #a name for the system dynamic loader rather than a path.
+    if is_simplebuild_devel:
+        yield ( 'sb_nccmd_config',
+                lambda : _search_nccfgapp('sb_nccmd_config'), False )
+        return
+    yield 'pymod', lambda : _search_core_info_mod( is_monolithic ), False
+    for cmd in _nccfgapp_cmds():
+        yield ( f'ncrystal-config ({cmd})',
+                lambda c=cmd: _search_nccfgapp(c), False )
+    yield 'system loader (SONAME)', _search_system_soname, True
+
+def _nccfgapp_cmds():
+    #ncrystal-config commands to try: first the one in the environment of the
+    #current Python interpreter (which might not be activated), then the one in
+    #the PATH (if different).
+    import os
+    import shutil
+    import sys
+    import sysconfig
+    dirs = [ sysconfig.get_path('scripts') ]
+    if sys.platform.startswith('win'):
+        #conda on Windows:
+        dirs.append( str(pathlib.Path(sys.prefix).joinpath('Library','bin')) )
+    cmds = [ shutil.which( 'ncrystal-config', path = d ) for d in dirs if d ]
+    cmds.append( shutil.which( 'ncrystal-config' ) )
+    seen = set()
+    for c in cmds:
+        key = os.path.normcase( os.path.abspath( c ) ) if c else None
+        if key and key not in seen:
+            seen.add( key )
+            yield c
 
 def _search_env_overrides():
     import os
@@ -197,6 +252,31 @@ def _search_core_info_mod( is_monolithic ):
     if mod:
         return mod.libpath(), mod.namespace(), mod.version()
 
+def _search_system_soname():
+    #Try to load libNCrystal.so.<major> (libNCrystal.<major>.dylib on macOS)
+    #via the system dynamic loader, to read its version. Not attempted on
+    #Windows. A library with another version stays loaded (C++ libraries can in
+    #general not be unloaded), which is harmless: this is the last candidate, so
+    #the import then fails, and with RTLD_LOCAL its symbols can not interfere
+    #with other libraries:
+    import platform
+    sysname = platform.system()
+    if sysname == 'Windows':
+        return None
+    from . import __version__ as _nc_version
+    major = _nc_version.split('.')[0]
+    name = ( f'libNCrystal.{major}.dylib' if sysname == 'Darwin'
+             else f'libNCrystal.so.{major}' )
+    import ctypes
+    try:
+        lib = ctypes.CDLL( name, mode = ctypes.RTLD_LOCAL )
+        f = lib.ncrystal_version_str
+    except (OSError, AttributeError):
+        return None
+    f.restype = ctypes.c_char_p
+    f.argtypes = []
+    return name, '', f().decode('utf8')
+
 def _search_nccfgapp( cmdname ):
     #Try to query ncrystal-config script:
     import subprocess
@@ -204,7 +284,8 @@ def _search_nccfgapp( cmdname ):
         res = subprocess.run( [cmdname,'--show','shlibpath',
                                'namespace','version'],
                               capture_output=True, check=False )
-    except FileNotFoundError:
+    except OSError:
+        #Not found, not executable, or e.g. built for another architecture:
         return None
 
     if res.returncode == 0:
