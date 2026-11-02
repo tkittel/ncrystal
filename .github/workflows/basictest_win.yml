@@ -101,8 +101,6 @@ jobs:
         if %errorlevel% neq 0 exit /b %errorlevel%
         ncrystal_hfg2ncmat --help
         if %errorlevel% neq 0 exit /b %errorlevel%
-        ncrystal_verifyatompos --help
-        if %errorlevel% neq 0 exit /b %errorlevel%
         ncrystal_cif2ncmat codid::9008460
         if %errorlevel% neq 0 exit /b %errorlevel%
         ncrystal_ncmat2hkl --help
