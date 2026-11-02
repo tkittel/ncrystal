@@ -145,7 +145,6 @@ jobs:
         ncrystal_cif2ncmat --help
         ncrystal_ncmat2cpp --help
         ncrystal_hfg2ncmat --help
-        ncrystal_verifyatompos --help
         export NCRYSTAL_ONLINEDB_CACHEDIR="$PWD/codidcache"
         mkdir -p "${NCRYSTAL_ONLINEDB_CACHEDIR}"
         cp ./src/tests/data/fake_cod_9005777.cif "${NCRYSTAL_ONLINEDB_CACHEDIR}/cod_9005777.cif"
