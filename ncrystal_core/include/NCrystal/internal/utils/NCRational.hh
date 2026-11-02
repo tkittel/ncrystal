@@ -75,8 +75,18 @@ namespace NCRYSTAL_NAMESPACE {
 
   std::ostream& operator<<( std::ostream&, const Rational& );//"n/d" or "n"
 
-}
+  //The simplest rational (the one with the smallest denominator) whose
+  //correctly rounded double value is exactly x, if there is one with a
+  //denominator of at most maxDenominator. For instance 0.1 gives 1/10, and
+  //0.30625 gives 49/160. This recovers the exact rational value behind a
+  //double parsed from text like "9/10" or "0.30625", as long as that value
+  //has a denominator of at most maxDenominator. Returns NullOpt if there is
+  //no such rational, or if x is not finite or |x|>Rational::kMaxValue.
+  //(A free function, since Optional<Rational> needs a complete Rational):
+  Optional<Rational> rationalFromDouble( double x,
+                                         Rational::int_t maxDenominator );
 
+}
 
 ////////////////////////////
 // Inline implementations //
