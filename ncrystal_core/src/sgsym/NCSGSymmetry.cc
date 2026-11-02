@@ -23,6 +23,7 @@
 #include "NCrystal/internal/utils/NCStrView.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
+#include "NCrystal/internal/utils/NCRational.hh"
 #include <set>
 #include <mutex>
 
@@ -611,6 +612,160 @@ namespace NCRYSTAL_NAMESPACE {
                       " positions, specify coordinates with sufficient"
                       " precision, preferably as exact fractions like 1/3.");
     }
+
+    //Exact counterparts of the above for rational coordinates, represented
+    //by integer numerators over a common denominator:
+    using int_t = std::int64_t;
+    using IPos = std::array<int_t,3>;
+
+    //Largest denominator of rational coordinates recovered from doubles,
+    //enough for all decimals with up to 8 digits after the decimal point:
+    constexpr int_t site_max_denominator = 100000000;
+
+    //Limit on the common denominator, so all numerators in
+    //expandSiteToOrbitExact stay below 2^53 (in magnitude):
+    constexpr int_t site_max_common_denominator = ( int_t(1) << 53 ) / 1024;
+
+    int_t wrapNum( int_t n, int_t den )
+    {
+      n %= den;
+      return n < 0 ? n + den : n;
+    }
+
+    //Periodic difference of numerators, in [-den/2,den/2]:
+    int_t periodicDiffNum( int_t a, int_t b, int_t den )
+    {
+      const int_t r = wrapNum( a - b, den );
+      return 2 * r > den ? r - den : r;
+    }
+
+    double periodicDist( const IPos& a, const IPos& b, int_t den )
+    {
+      int_t m = 0;
+      for ( unsigned i = 0; i < 3; ++i ) {
+        const int_t d = periodicDiffNum( a[i], b[i], den );
+        m = std::max<int_t>( m, d < 0 ? -d : d );
+      }
+      return double( m ) / double( den );
+    }
+
+    //Correctly rounded (since |numerators| and den are at most 2^53):
+    Vector toVector( const IPos& p, int_t den )
+    {
+      const double d = static_cast<double>( den );
+      return Vector( static_cast<double>( p[0] ) / d,
+                     static_cast<double>( p[1] ) / d,
+                     static_cast<double>( p[2] ) / d );
+    }
+
+    //Apply op, with translations in units of 1/24 scaled to the denominator
+    //(tscale=den/24):
+    IPos applyOp( const SymOp& op, const IPos& p, int_t tscale )
+    {
+      IPos r;
+      for ( unsigned i = 0; i < 3; ++i ) {
+        int_t v = op.trans( i ) * tscale;
+        for ( unsigned j = 0; j < 3; ++j )
+          v += op.rot( i, j ) * p[j];
+        r[i] = v;
+      }
+      return r;
+    }
+
+    //Same as expandSiteToOrbit (and with the same tolerances), but in exact
+    //integer arithmetic, so the resulting positions are the correctly
+    //rounded values of the exact positions (e.g. 1/10 and not 1-0.9). The
+    //site coordinates are recovered as rationals from the doubles (see
+    //rationalFromDouble), and represented with a common denominator D (a
+    //multiple of 24, D*nstab after symmetrisation). Bounds, given D <=
+    //2^53/1024: symmetrised sums are below 192*1.5*D, and images of numerators
+    //below D*nstab<=192*D are below 4*192*D. Returns false if the coordinates
+    //are not recognised as rationals, or if D would exceed the limit:
+    bool expandSiteToOrbitExact( const SGSymmetry& sym,
+                                 const Vector& input_site,
+                                 SGSiteOrbit& res )
+    {
+      static_assert( site_max_common_denominator * 1024 <= ( int_t(1) << 53 ),
+                     "" );
+      const double coords[3] = { input_site.x(), input_site.y(),
+                                 input_site.z() };
+      Rational rc[3];
+      int_t den = SymOp::tdenom;
+      for ( unsigned i = 0; i < 3; ++i ) {
+        auto r = rationalFromDouble( coords[i], site_max_denominator );
+        if ( !r.has_value() )
+          return false;
+        rc[i] = r.value();
+        //den = lcm(den,rc[i].denominator()), if within the limit:
+        int_t a = den, b = rc[i].denominator();
+        while ( b ) {
+          const int_t tmp = a % b;
+          a = b;
+          b = tmp;
+        }
+        const int_t f = rc[i].denominator() / a;
+        if ( den > site_max_common_denominator / f )
+          return false;
+        den *= f;
+      }
+      nc_assert( den % SymOp::tdenom == 0 );
+      IPos site;
+      for ( unsigned i = 0; i < 3; ++i ) {
+        //(|numerator| <= 2^53 and the factor is at most den, so we reduce
+        //modulo the denominator before scaling, to not overflow):
+        const int_t d = rc[i].denominator();
+        site[i] = wrapNum( rc[i].numerator(), d ) * ( den / d );
+      }
+      const Vector site_dbl = toVector( site, den );
+      const auto& ops = sym.operations();
+
+      //Symmetrise:
+      IPos sum = { 0, 0, 0 };
+      int_t nstab = 0;
+      for ( auto& op : ops ) {
+        const IPos img = applyOp( op, site, den / SymOp::tdenom );
+        const double dist = periodicDist( img, site, den );
+        if ( dist < site_merge_tol ) {
+          for ( unsigned i = 0; i < 3; ++i )
+            sum[i] += site[i] + periodicDiffNum( img[i], site[i], den );
+          ++nstab;
+        } else if ( dist < site_distinct_tol ) {
+          throwNearSpecial( site_dbl, dist );
+        }
+      }
+      nc_assert_always( nstab >= 1 && nstab <= 192 );
+      const int_t den2 = den * nstab;
+      IPos symsite;
+      for ( unsigned i = 0; i < 3; ++i )
+        symsite[i] = wrapNum( sum[i], den2 );
+
+      //Expand:
+      std::vector<IPos> positions;
+      for ( auto& op : ops ) {
+        IPos img = applyOp( op, symsite, den2 / SymOp::tdenom );
+        for ( auto& e : img )
+          e = wrapNum( e, den2 );
+        bool found = false;
+        for ( auto& p : positions ) {
+          const double dist = periodicDist( img, p, den2 );
+          if ( dist < site_merge_tol ) {
+            found = true;
+            break;
+          }
+          if ( dist < site_distinct_tol )
+            throwNearSpecial( site_dbl, dist );
+        }
+        if ( !found )
+          positions.push_back( img );
+      }
+      nc_assert_always( positions.size() * nstab == ops.size() );
+      res.positions.clear();
+      res.positions.reserve( positions.size() );
+      for ( auto& p : positions )
+        res.positions.push_back( toVector( p, den2 ) );
+      res.siteSymmetryOrder = static_cast<unsigned>( nstab );
+      return true;
+    }
   }
 }
 
@@ -621,6 +776,13 @@ NC::SGSiteOrbit NC::expandSiteToOrbit( const SGSymmetry& sym,
        || !std::isfinite( input_site.z() ) )
     NCRYSTAL_THROW2(BadInput,"Invalid site coordinates: ("<<input_site.x()
                     <<", "<<input_site.y()<<", "<<input_site.z()<<")");
+  {
+    SGSiteOrbit res;
+    if ( expandSiteToOrbitExact( sym, input_site, res ) )
+      return res;
+  }
+
+  //Otherwise in doubles:
   const Vector site = wrapPos( input_site );
   const auto& ops = sym.operations();
 
