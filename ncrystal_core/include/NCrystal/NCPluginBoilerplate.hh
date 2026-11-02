@@ -27,8 +27,16 @@
 //of plugins, and to ensure all plugins have a C++ namespace which contains the
 //name of the plugin (to avoid symbol clashes). Of course, usage of the present
 //header file is not strictly required: the actual basic requirements of a
-//plugin is just a shared object (module) which defines two functions with
-//C-mangling: void ncplugin_register(void) and const char * ncplugin_getname().
+//plugin is just a shared object (module) which defines three functions with
+//C-mangling: void ncplugin_register(void), const char * ncplugin_getname(), and
+//long ncplugin_getncversion() (returning NCRYSTAL_VERSION at build time, since
+//plugins might use internal headers and must therefore be built against the
+//exact NCrystal version they are loaded into). Plugins which are carefully
+//implemented to only rely on stable interfaces can define
+//NCPLUGIN_NCVERSION_COMPAT_OVERRIDE to return something else: -NCRYSTAL_VERSION
+//means "this or any later version", and a field (major, minor, patch) of 998
+//matches any value (e.g. 5998998L means any 5.*.* version, and 5003998L any
+//5.3.* version).
 
 #ifndef NCPLUGIN_NAME
 #  error NCPLUGIN_NAME undefined
@@ -86,6 +94,14 @@ extern "C" {
   ncpluginhh_export const char * ncplugin_getname()
   {
     return NCPLUGIN_NAME_CSTR;
+  }
+  ncpluginhh_export long ncplugin_getncversion()
+  {
+#  ifdef NCPLUGIN_NCVERSION_COMPAT_OVERRIDE
+    return NCPLUGIN_NCVERSION_COMPAT_OVERRIDE;
+#  else
+    return NCRYSTAL_VERSION;//exact version required
+#  endif
   }
 }
 

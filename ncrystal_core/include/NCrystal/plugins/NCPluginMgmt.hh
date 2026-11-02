@@ -28,15 +28,22 @@ namespace NCRYSTAL_NAMESPACE {
   namespace Plugins {
     //
     // The loadDynamicPlugin function attempts to load a plugin by specifying a path to
-    // a shared library which defines (with C-mangling) two functions:
+    // a shared library which defines (with C-mangling) three functions:
     //
     //   void ncplugin_register();
     //   const char* ncplugin_getname();
+    //   long ncplugin_getncversion();
     //
     // The ncplugin_getname function should simply provide the plugin name
-    // whenever called. When ncplugin_register is called, the plugin is expected
-    // to enable itself by calling global NCrystal functions (usually this means
-    // calling registerFactory(..), but in principle it could also be functions
+    // whenever called, and ncplugin_getncversion the value of NCRYSTAL_VERSION
+    // when the plugin was built (plugins are only loaded into that exact
+    // NCrystal version, since they might use internal headers). Plugins
+    // carefully relying only on stable interfaces can instead return
+    // -NCRYSTAL_VERSION, indicating a minimum version, or use 998 as a
+    // wildcard for any field (e.g. 5998998 means any 5.*.* version). When
+    // ncplugin_register is called, the plugin is expected to enable itself by
+    // calling global NCrystal functions (usually this means calling
+    // registerFactory(..), but in principle it could also be functions
     // registering i/o managers, in-memory file data, or changing the default
     // RNG).
     //
