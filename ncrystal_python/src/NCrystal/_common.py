@@ -147,6 +147,20 @@ class capture_print_ctxmgr:
 
 def warn(msg):
     """Emit NCrystalUserWarning via standard warnings.warn function"""
+    _warn_impl( msg, stacklevel = 3 )
+
+def warn_once(msg):
+    """Like warn(..), but only the first time it is called with a given
+    message (e.g. for obsolete functionality used in loops)."""
+    m = str(msg)
+    if m in _warned_once:
+        return
+    _warned_once.add(m)
+    _warn_impl( m, stacklevel = 3 )
+
+_warned_once = set()
+
+def _warn_impl( msg, stacklevel ):
     import warnings
 
     from .exceptions import NCrystalUserWarning
@@ -154,7 +168,7 @@ def warn(msg):
     if _add_warn_counts_to_msgs[0]:
         _add_warn_counts_to_msgs[1] += 1
         m = f'{m} [warn#{_add_warn_counts_to_msgs[1]}]'
-    warnings.warn( NCrystalUserWarning(m), stacklevel = 2 )
+    warnings.warn( NCrystalUserWarning(m), stacklevel = stacklevel )
 
 #Hook to avoid repeated warnings to be silenced during unit tests, by appending
 #a warning number to them:

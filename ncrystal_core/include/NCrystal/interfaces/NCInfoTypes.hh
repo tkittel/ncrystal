@@ -44,7 +44,10 @@ namespace NCRYSTAL_NAMESPACE {
     double beta = 0.0;//degree
     double gamma = 0.0;//degree
     double volume = 0.0;//Aa^3
-    unsigned n_atoms = 0;//Number of atoms per unit cell
+    unsigned n_positions = 0;//Number of atom positions per unit cell
+    double n_atoms_average = 0.0;//Average number of atoms per unit cell (can be
+                                 //lower than n_positions in case of partial
+                                 //occupancies)
   };
 
   enum class NCRYSTAL_API HKLInfoType : unsigned { SymEqvGroup = 0,
@@ -152,16 +155,22 @@ namespace NCRYSTAL_NAMESPACE {
     };
     using AtomPositions = std::vector<Pos>;
     const AtomPositions& unitCellPositions() const noexcept { return m_pos; }
-    unsigned numberPerUnitCell() const noexcept { return static_cast<unsigned>( m_pos.size() ); }
+    unsigned numberOfPositions() const noexcept { return static_cast<unsigned>( m_pos.size() ); }
+
+    //Occupancy (in (0,1], default 1) shared by all positions, so the average
+    //number of atoms per unit cell is numberOfPositions()*occupancy(). The
+    //rest (missing atoms) are randomly placed vacancies:
+    double occupancy() const noexcept { return m_occupancy; }
+    double averageNumberOfAtoms() const noexcept { return numberOfPositions() * m_occupancy; }
 
     //The crystallographic sites: one per orbit of the space group setting, so
     //the unit cell positions are the symmetry images of the site positions
-    //(the multiplicities add up to numberPerUnitCell()). Empty if unknown.
+    //(the multiplicities add up to numberOfPositions()). Empty if unknown.
     struct NCRYSTAL_API Site {
       Pos position;              //orbit representative (fractional coordinates)
       unsigned multiplicity = 0; //number of positions in the orbit
-      //Placeholders reserved for future work, never there currently:
-      Optional<double> occupancy;
+      //Reserved for future anisotropic displacements (not supported yet, so
+      //always NullOpt and rejected by InfoBuilder if set):
       Optional<std::array<double,6>> uij;
     };
     using AtomSites = std::vector<Site>;
@@ -180,13 +189,16 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Constructor:
     AtomInfo( IndexedAtomData, AtomPositions&&,
-              Optional<DebyeTemperature>, Optional<double> msd );
+              Optional<DebyeTemperature>, Optional<double> msd,
+              double occupancy = 1.0 );
     AtomInfo( IndexedAtomData, AtomSites&&,
-              Optional<DebyeTemperature>, Optional<double> msd );
+              Optional<DebyeTemperature>, Optional<double> msd,
+              double occupancy = 1.0 );
   private:
     IndexedAtomData m_iad;
     Optional<DebyeTemperature> m_dt;
     Optional<double> m_msd;
+    double m_occupancy = 1.0;
     std::vector<Pos> m_pos;
     std::vector<Site> m_sites;
     const DynamicInfo* m_dyninfo = nullptr;

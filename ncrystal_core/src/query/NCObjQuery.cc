@@ -50,7 +50,28 @@ namespace NCRYSTAL_NAMESPACE {
       streamJSONDictEntry( os, "beta", si.beta );
       streamJSONDictEntry( os, "gamma", si.gamma );
       streamJSONDictEntry( os, "volume", si.volume );
-      streamJSONDictEntry( os, "n_atoms", si.n_atoms, JSONDictPos::LAST );
+      streamJSONDictEntry( os, "n_positions", si.n_positions );
+      streamJSONDictEntry( os, "n_atoms_average", si.n_atoms_average,
+                           JSONDictPos::LAST );
+    }
+
+    void queryimpl_occupancies( std::ostream& os, const Info& info )
+    {
+      //["occupancies"]: per AtomInfo (in order) the occupancy, or null if
+      //there are no AtomInfo objects:
+      if ( !info.hasAtomInfo() ) {
+        os << "null";
+        return;
+      }
+      os << '[';
+      bool first = true;
+      for ( auto& ai : info.getAtomInfos() ) {
+        if ( !first )
+          os << ',';
+        first = false;
+        streamJSON( os, ai.occupancy() );
+      }
+      os << ']';
     }
 
     void queryimpl_sites( std::ostream& os, const Info& info )
@@ -100,15 +121,18 @@ void NC::JSONQueryInfo( std::ostream& os, const Info& info,
   constexpr auto sv_list = StrView::make("list");
   constexpr auto sv_structure = StrView::make("structure");
   constexpr auto sv_sites = StrView::make("sites");
+  constexpr auto sv_occupancies = StrView::make("occupancies");
   if ( query.size() != 1 )
     NCRYSTAL_THROW2(BadInput, "Invalid Info JSON query (no arguments"
                     " should follow key \""<<key<<"\")");
   if ( key == sv_list ) {
-    os << "[\"structure\",\"sites\"]";
+    os << "[\"structure\",\"sites\",\"occupancies\"]";
   } else if ( key == sv_structure ) {
     queryimpl_structure( os, info );
   } else if ( key == sv_sites ) {
     queryimpl_sites( os, info );
+  } else if ( key == sv_occupancies ) {
+    queryimpl_occupancies( os, info );
   } else {
     NCRYSTAL_THROW2(BadInput, "Invalid Info JSON query key: \""<<key<<'"');
   }

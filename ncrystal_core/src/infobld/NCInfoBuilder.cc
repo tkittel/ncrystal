@@ -174,12 +174,16 @@ namespace NCRYSTAL_NAMESPACE {
           //machine precision). Also verify that Debye temperatures match up
           //where appropriate. This is easily done with the links once we know
           //the total number of atoms in the unit cell:
-          const auto ntot = totalNumberOfAtomsInUnitCell( unitcell.value().atomlist.value() );
-          nc_assert_always( ntot > 0 );
+          //(occupancy-weighted, i.e. average numbers of atoms):
+          const auto& uc_atomlist = unitcell.value().atomlist.value();
+          totalNumberOfAtomsInUnitCell( uc_atomlist );//validates
+          const double ntot = unitcell.value().structinfo.n_atoms_average;
+          nc_assert_always( ntot > 0.0 );
           for ( auto & di : dynamics.value() ) {
             auto ai = di->correspondingAtomInfo();
             nc_assert(ai!=nullptr);
-            const double calc_frac = ai->numberPerUnitCell() / double(ntot);
+            const double calc_frac
+              = ai->averageNumberOfAtoms() / ntot;
             if ( ! floateq( calc_frac, di->fraction(), 1e-6, 1e-6 ) )
               NCRYSTAL_THROW2( BadInput,"Fractions specified in DynamicInfoList are incompatible with"
                                " those calculated from unit cell content for"<<di->atom()<<": "

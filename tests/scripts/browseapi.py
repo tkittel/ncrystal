@@ -89,7 +89,7 @@ def test_entries():
         print(f'     props: {e.props}' if e.props
               else f'     ERROR {e.error!r}')
     p = first(b.match('crystal')).props
-    assert p.sg == 225 and p.natoms == 4
+    assert p.sg == 225 and p.npositions == 4
     assert p.composition == ((13,((0,1.0),)),)
     assert p.crystalsystem == 'cubic' and p.crystal is True
     assert abs( p.braggthreshold - 2*4.04958/3**0.5 ) < 1e-9
@@ -124,7 +124,7 @@ def test_selection():
     show('chained search',v.search('togo').search('mentions'))
     show('where formula',v.where('formula=he'))#case-insensitive
     show('where not He',v.where('formula!=He'))
-    show('where several',v.where('crystal=yes','sg==225','natoms>3'))
+    show('where several',v.where('crystal=yes','sg==225','npositions>3'))
     show('where None',v.where('sg > 200'))#missing values never match
     show('where None !=',v.where('sg != 225'))
     show('where text',v.where('state=GAS',"formula='He'"))
@@ -224,7 +224,7 @@ def test_lazlau():
             print(f'  {e.fullkey}: comments={e.comments} error={e.error}')
             p = e.props
             print(f'     sg={p.sg} crystalsystem={p.crystalsystem}'
-                  f' formula={p.formula} natoms={p.natoms}'
+                  f' formula={p.formula} npositions={p.npositions}'
                   f' braggthreshold={p.braggthreshold:.6g}'
                   f' vdos={p.vdos} scatknl={p.scatknl}')
             assert e.load().info.hasStructureInfo()

@@ -316,16 +316,16 @@ namespace NCRYSTAL_NAMESPACE {
       std::size_t totalNumberOfAtomsInUnitCell( const AtomInfoList& atomlist )
       {
         //Derives number of atoms in a unit cell from atom list. Also
-        //validatesthat atomlist nonempty, that all ai.numberPerUnitCell() > 0,
+        //validatesthat atomlist nonempty, that all ai.numberOfPositions() > 0,
         //and returns the sum of those.
         std::size_t ntot(0);
         if ( atomlist.empty() )
           NCRYSTAL_THROW2(BadInput,"AtomInfoList must be non-empty if provided");
         for ( const auto& ai : atomlist ) {
-          if ( ai.numberPerUnitCell() == 0 )
-            NCRYSTAL_THROW(BadInput,"AtomInfo object should not have numberPerUnitCell()==0");
-          nc_assert( ai.numberPerUnitCell() > 0 );
-          ntot += ai.numberPerUnitCell();
+          if ( ai.numberOfPositions() == 0 )
+            NCRYSTAL_THROW(BadInput,"AtomInfo object should not have numberOfPositions()==0");
+          nc_assert( ai.numberOfPositions() > 0 );
+          ntot += ai.numberOfPositions();
         }
         nc_assert_always( ntot > 0 );
         return ntot;
@@ -417,7 +417,7 @@ namespace NCRYSTAL_NAMESPACE {
           if ( !ai.sites().empty() )
             continue;
           std::vector<Vector> positions;
-          positions.reserve( ai.numberPerUnitCell() );
+          positions.reserve( ai.numberOfPositions() );
           for ( auto& p : ai.unitCellPositions() )
             positions.push_back( p.as<Vector>() );
           std::vector<std::vector<unsigned>> orbits;
@@ -487,15 +487,15 @@ namespace NCRYSTAL_NAMESPACE {
               si.spacegroup_setting
                 = InfoUtils::getSpaceGroupFromStructureInfo( si ).settingIdx();
             expandSitesToPositions( si, uc_atomlist );
-            if ( si.n_atoms == 0 )
-              si.n_atoms = static_cast<unsigned>( totalNumberOfAtomsInUnitCell( uc_atomlist ) );
+            if ( si.n_positions == 0 )
+              si.n_positions = static_cast<unsigned>( totalNumberOfAtomsInUnitCell( uc_atomlist ) );
           }
           //First validate total number of atoms is >0 and consistently specified:
           auto natompos = totalNumberOfAtomsInUnitCell( uc_atomlist );//throws if empty or have entries with 0 atoms
           nc_assert(natompos>0);
-          if ( si.n_atoms != natompos )
-            NCRYSTAL_THROW2(BadInput,"Inconsistent total number of atoms deduced from StructureInfo and AtomInfo ("
-                            <<si.n_atoms<<" vs. "<<natompos<<")");
+          if ( si.n_positions != natompos )
+            NCRYSTAL_THROW2(BadInput,"Inconsistent total number of atom positions deduced from StructureInfo and AtomInfo ("
+                            <<si.n_positions<<" vs. "<<natompos<<")");
 
           //Sort for reproducibility:
           std::stable_sort(uc_atomlist.begin(),uc_atomlist.end(),
@@ -521,7 +521,7 @@ namespace NCRYSTAL_NAMESPACE {
                               ai.detail_accessPos().end(),
                               details::atominfo_pos_compare );
 
-            nc_assert( ai.numberPerUnitCell() > 0 );//was validated in totalNumberOfAtomsInUnitCell(..)
+            nc_assert( ai.numberOfPositions() > 0 );//was validated in totalNumberOfAtomsInUnitCell(..)
 
             //Debye temps and msd's should be specified for all or none of the AtomInfo objects:
             if ( ai.debyeTemp().has_value() != uc_atomlist.front().debyeTemp().has_value() )
@@ -533,14 +533,41 @@ namespace NCRYSTAL_NAMESPACE {
             if ( ai.msd().has_value() != uc_atomlist.front().msd().has_value() )
               NCRYSTAL_THROW(BadInput,"Inconsistency: MSD values specified for some but not all AtomInfo objects.");
 
+            for ( auto& site : ai.sites() )
+              if ( site.uij.has_value() )
+                NCRYSTAL_THROW(BadInput,"Anisotropic displacements (uij) of"
+                               " atom sites are not supported yet.");
           }
 
           //Ensure only one atom exists at a given position, within a tolerance:
           details::detect_duplicate_positions(all_positions);
         }
 
-        if ( ! ( si.n_atoms > 0 ) )
-          NCRYSTAL_THROW2(BadInput,"StructureInfo n_atoms not a positive number: "<<si.n_atoms);
+        if ( ! ( si.n_positions > 0 ) )
+          NCRYSTAL_THROW2(BadInput,"StructureInfo n_positions not a positive number: "<<si.n_positions);
+
+        //Average number of atoms per unit cell (occupancy-weighted if the
+        //atoms are known, otherwise n_positions unless provided):
+        if ( uc.atomlist.has_value() ) {
+          StableSum sum;
+          for ( const auto& ai : uc.atomlist.value() )
+            sum.add( ai.averageNumberOfAtoms() );
+          const double navg = sum.sum();
+          if ( si.n_atoms_average != 0.0
+               && !floateq( si.n_atoms_average, navg, 1e-10, 1e-10 ) )
+            NCRYSTAL_THROW2(BadInput,"Inconsistent average number of atoms"
+                            " per unit cell deduced from StructureInfo and"
+                            " AtomInfo ("<<si.n_atoms_average<<" vs. "
+                            <<navg<<")");
+          si.n_atoms_average = navg;
+        } else if ( si.n_atoms_average == 0.0 ) {
+          si.n_atoms_average = si.n_positions;
+        }
+        if ( !( si.n_atoms_average > 0.0
+                && si.n_atoms_average <= si.n_positions ) )
+          NCRYSTAL_THROW2(BadInput,"StructureInfo n_atoms_average must be"
+                          " positive and not exceed n_positions ("
+                          <<si.n_positions<<"): "<<si.n_atoms_average);
 
         //Calculate unit cell volume:
         auto latRot = getLatticeRot( si.lattice_a, si.lattice_b, si.lattice_c,

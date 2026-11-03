@@ -169,21 +169,21 @@ void NCrystal::dump( std::ostream& os, const Info&c, DumpVerbosity verbosityVal 
       os<<"Lattice spacings   [Aa] : "<<fmtg(si.lattice_a)<<' '<<fmtg(si.lattice_b)<<' '<<fmtg(si.lattice_c)<<'\n';
       os<<"Lattice angles    [deg] : "<<fmtg(si.alpha)<<' '<<fmtg(si.beta)<<' '<<fmtg(si.gamma)<<'\n';
       os<<"Unit cell volume [Aa^3] : "<<fmtg(si.volume)<<'\n';
-      os<<"Atoms / unit cell       : "<<si.n_atoms<<'\n';
+      os<<"Atoms / unit cell       : "<<si.n_positions<<'\n';
     };
 
     if ( c.hasAtomInfo() ) {
       os<<hr;
       unsigned ntot = 0;
       for ( auto& ai : c.getAtomInfos() )
-        ntot += ai.numberPerUnitCell();
+        ntot += ai.numberOfPositions();
       os<<"Atoms in unit cell (total "<<ntot<<"):\n";
       for ( auto& ai : c.getAtomInfos() ) {
         auto lbl = safeDisplayLabel( ai.atom() );
         nc_assert(longestDisplayLabel>0);
-        os << "     "<< ai.numberPerUnitCell() <<' '
+        os << "     "<< ai.numberOfPositions() <<' '
            << str_ljust(lbl,longestDisplayLabel)
-           <<" atom"<<(ai.numberPerUnitCell()==1?"":"s");
+           <<" atom"<<(ai.numberOfPositions()==1?"":"s");
         if ( ai.debyeTemp().has_value() || ai.msd().has_value() ) {
           os <<" [";
           if ( ai.debyeTemp().has_value() ) {

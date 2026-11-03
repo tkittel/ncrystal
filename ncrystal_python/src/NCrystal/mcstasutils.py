@@ -257,19 +257,27 @@ def cfgstr_2_hkl(*, cfgstr, tgtformat, verbose=True, fp_format = '%.14g' ):
     yield f'# lattice_cc {fmtfp_header(si["gamma"])} [degrees]'
     yield f'# Vc {fmtfp_header(si["volume"])} [Aa^3]'
     yield '#'
-    n_atoms = sum( ai.count for ai in info.atominfos )
-    assert si["n_atoms"] == n_atoms
-    yield f'# multiplicity {n_atoms} [atoms/unit cell]'
+    #Average numbers of atoms (i.e. occupancy-weighted):
+    navg = [ ai.averageNumberOfAtoms for ai in info.atominfos ]
+    n_atoms = si["n_atoms_average"]
+    assert abs( sum(navg) - n_atoms ) < 1e-9 * n_atoms
+    yield f'# multiplicity {fmtfp_header(n_atoms)} [atoms/unit cell]'
     yield f'# density {fmtfp_header(info.density)} [g/cm^3]'
     yield f'# number_density {fmtfp_header(info.numberdensity)} [atoms/Aa^3]'
-    daltons_per_unitcell = sum(ai.atomData.averageMassAMU() * ai.count
-                               for ai in info.atominfos)
+    daltons_per_unitcell = sum(ai.atomData.averageMassAMU() * n
+                               for ai, n in zip(info.atominfos, navg))
     yield f'# weight {fmtfp_header(daltons_per_unitcell)} [g/mol of entire unit cell]'
     yield f'# average_mass {fmtfp_header(daltons_per_unitcell/n_atoms)} [average atomic g/mol]'
 
-    sigma_coh = sum(ai.atomData.coherentXS() * ai.count for ai in info.atominfos)
-    sigma_inc = sum(ai.atomData.incoherentXS() * ai.count for ai in info.atominfos)
-    sigma_abs = sum(ai.atomData.captureXS() * ai.count for ai in info.atominfos)
+    sigma_coh = sum(ai.atomData.coherentXS() * n
+                    for ai, n in zip(info.atominfos, navg))
+    #(randomly placed vacancies add (1-occupancy)*sigma_coh per actual atom
+    #to the incoherent scattering, like in NCrystal's own models):
+    sigma_inc = sum( ( ai.atomData.incoherentXS()
+                       + ( 1.0 - ai.occupancy ) * ai.atomData.coherentXS() ) * n
+                     for ai, n in zip(info.atominfos, navg) )
+    sigma_abs = sum(ai.atomData.captureXS() * n
+                    for ai, n in zip(info.atominfos, navg))
     sigma_coh /= n_atoms
     sigma_inc /= n_atoms
     sigma_abs /= n_atoms
@@ -297,13 +305,23 @@ def cfgstr_2_hkl(*, cfgstr, tgtformat, verbose=True, fp_format = '%.14g' ):
                 else:
                     has_debye_temp = False
                     _dt = 0.0
-                _dtw = ai.count * ai.atomData.scatteringXS()
+                _dtw = ai.averageNumberOfAtoms * ai.atomData.scatteringXS()
                 debye_temp_sum += _dt*_dtw
                 debye_temp_sumw += _dtw
 
-            d[ai.atomData.elementName()] = d.get(ai.atomData.elementName(),0) + ai.count
+            d[ai.atomData.elementName()] = ( d.get(ai.atomData.elementName(),0)
+                                             + ai.numberOfPositions )
+        if all( ai.occupancy == 1.0 for ai in info.atominfos ):
             nformula_per_unitcell = functools.reduce(math.gcd, [c for _,c in d.items()])
-        formula = ''.join(( f'{k}{v//nformula_per_unitcell}' if v!=nformula_per_unitcell else k) for k,v in sorted(d.items()))
+            formula = ''.join(( f'{k}{v//nformula_per_unitcell}' if v!=nformula_per_unitcell else k) for k,v in sorted(d.items()))
+        else:
+            #Partial occupancies: average numbers of atoms per unit cell:
+            davg = {}
+            for ai in info.atominfos:
+                en = ai.atomData.elementName()
+                davg[en] = davg.get(en,0.0) + ai.averageNumberOfAtoms
+            nformula_per_unitcell = 1
+            formula = ''.join( f'{k}{v:.14g}' for k,v in sorted(davg.items()) )
         yield f'# formula {formula}'
         yield f'# nformula_per_unitcell {nformula_per_unitcell}'
         if debye_temp_sum:

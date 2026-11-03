@@ -148,7 +148,7 @@ def check_cell( name, info, dcut ):
     V = math.sqrt( np.linalg.det( metric_tensor( *cellpars_of(si) ) ) )
     assert abs( si['volume']/V - 1.0 ) < 1e-12, (name,si['volume'],V)
     natoms = sum( len(ai.positions) for ai in info.atominfos )
-    assert natoms == si['n_atoms']
+    assert natoms == si['n_positions']
     mass = sum( ai.atomData.averageMassAMU()*len(ai.positions)
                 for ai in info.atominfos )
     amu_per_aa3_in_gcm3 = 1.66053906660
@@ -234,7 +234,7 @@ def check_orientation( name, info, ncmat, dcut ):
 
 def powder_spectrum( info, dcut ):
     #Invariant (for a given crystal) list of (d, sum(mult*F2)/natoms^2).
-    n2 = info.structure_info['n_atoms']**2
+    n2 = info.structure_info['n_atoms_average']**2
     out = []
     for d, w in sorted( ( e.d, e.mult*e.f2 ) for e in info.hklObjects() ):
         if out and d < out[-1][0]*(1+3e-6):#above hkl merge tolerance
@@ -284,7 +284,8 @@ def check_crystal( name, cellpars, atoms, nplanes = 300 ):
     nchecked = check_cell( name, info, dcut )
     check_orientation( name, info, ncmat, dcut )
     spec = powder_spectrum( info, dcut )
-    vpa = info.structure_info['volume'] / info.structure_info['n_atoms']
+    vpa = ( info.structure_info['volume']
+           / info.structure_info['n_atoms_average'] )
     dmax = max( e.d for e in info.hklObjects() )
     wls = [ 2*dcut + f*2*(dmax-dcut) for f in (0.01,0.2,0.5,0.8,0.99) ]
     xs = cohelas_xs_per_atom( ncmat, dcut, wls )
@@ -296,7 +297,7 @@ def check_crystal( name, cellpars, atoms, nplanes = 300 ):
         vinfo = load_info( vncmat, dcut )
         nchecked += check_cell( vn, vinfo, dcut )
         vsi = vinfo.structure_info
-        assert abs( vsi['volume']/vsi['n_atoms']/vpa - 1.0 ) < 1e-9, vn
+        assert abs( vsi['volume']/vsi['n_atoms_average']/vpa - 1.0 ) < 1e-9, vn
         assert abs( vinfo.density/info.density - 1.0 ) < 1e-9, vn
         cmp_spectra( vn, spec, powder_spectrum( vinfo, dcut ) )
         for x1, x2 in zip( xs, cohelas_xs_per_atom( vncmat, dcut, wls ) ):

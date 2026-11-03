@@ -143,7 +143,7 @@ def test_lazlau():
 
 def test_physics():
     run('formula=o','-f','virtual')#case-insensitive
-    run('crystal=yes','sg=225','natoms=4','-f','virtual')
+    run('crystal=yes','sg=225','npositions=4','-f','virtual')
     run('sg > 200','-f','virtual')#missing values never match
     run('crystal=no','density<1.5','-f','virtual')
     run('absxs>0.2','nelements=1','state=solid','-f','virtual')

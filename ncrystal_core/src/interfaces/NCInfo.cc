@@ -117,12 +117,18 @@ const NC::Info::CustomSectionData& NC::Info::getCustomSection( const NC::Info::C
 NC::AtomInfo::AtomInfo( IndexedAtomData iad,
                         AtomPositions&& pos,
                         Optional<DebyeTemperature> dt,
-                        Optional<double> msd )
+                        Optional<double> msd,
+                        double occupancy )
   : m_iad(std::move(iad)),
     m_dt(std::move(dt)),
     m_msd(std::move(msd)),
+    m_occupancy(occupancy),
     m_pos(std::move(pos))
 {
+  if ( !std::isfinite( m_occupancy )
+       || !( m_occupancy > 0.0 && m_occupancy <= 1.0 ) )
+    NCRYSTAL_THROW2(BadInput,"Invalid occupancy value passed to AtomInfo"
+                    " constructor (must be in (0,1]): " << fmt(m_occupancy) );
   nc_assert_always( m_pos.size()<100000 && m_pos.size() < std::numeric_limits<unsigned>::max() );
   if ( m_pos.empty() )
     NCRYSTAL_THROW(BadInput,"Empty position list passed to AtomInfo constructor.");
@@ -135,12 +141,18 @@ NC::AtomInfo::AtomInfo( IndexedAtomData iad,
 NC::AtomInfo::AtomInfo( IndexedAtomData iad,
                         AtomSites&& sites,
                         Optional<DebyeTemperature> dt,
-                        Optional<double> msd )
+                        Optional<double> msd,
+                        double occupancy )
   : m_iad(std::move(iad)),
     m_dt(std::move(dt)),
     m_msd(std::move(msd)),
+    m_occupancy(occupancy),
     m_sites(std::move(sites))
 {
+  if ( !std::isfinite( m_occupancy )
+       || !( m_occupancy > 0.0 && m_occupancy <= 1.0 ) )
+    NCRYSTAL_THROW2(BadInput,"Invalid occupancy value passed to AtomInfo"
+                    " constructor (must be in (0,1]): " << fmt(m_occupancy) );
   nc_assert_always( m_sites.size()<100000 );
   if ( m_sites.empty() )
     NCRYSTAL_THROW(BadInput,"Empty site list passed to AtomInfo constructor.");

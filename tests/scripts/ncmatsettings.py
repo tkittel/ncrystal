@@ -54,7 +54,7 @@ def load( sg = '3:c', version = 8 ):
 
 def main():
     info = load()
-    print( 'P2 with 2-fold along c (3:c):', info.structure_info['n_atoms'],
+    print( 'P2 with 2-fold along c (3:c):', info.structure_info['n_positions'],
            'atoms, setting', info.structure_info['spacegroup_setting'] )
     assert info.structure_info['spacegroup_setting'] == '3:c'
     fam = { e.hkl_label: sorted( zip( map(int,e.h), map(int,e.k), map(int,e.l) ) )

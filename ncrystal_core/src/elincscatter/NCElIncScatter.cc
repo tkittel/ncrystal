@@ -29,6 +29,7 @@
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCStableDbl.hh"
 #include <sstream>
 
 namespace NC = NCrystal;
@@ -76,14 +77,25 @@ namespace NCRYSTAL_NAMESPACE {
       //Prefer initialising via atom infos (in this case we require all to contribute):
       if ( info.hasAtomInfo() ) {
 
-        unsigned ntot(0);
-        for ( const auto& ai : info.getAtomInfos() )
-          ntot += ai.numberPerUnitCell();
+        //Average number of atoms per unit cell (positions*occupancy):
+        const double ntot = info.getStructureInfo().n_atoms_average;
 
         for ( auto& ai : info.getAtomInfos() ) {
-          //scale factor + cross section:
-          scale.push_back(double(ai.numberPerUnitCell())*cfg.scale_factor/ntot);
-          bixs.push_back( getSigma(ai.atomData()) );
+          //scale factor + cross section (per actual atom). Randomly placed
+          //vacancies make part of the coherent scattering incoherent: the
+          //disorder term 4pi*o(1-o)*b^2 per position, i.e. (1-o)*sigma_coh
+          //per atom. Not added if the full sigma_coh is already included
+          //(use_sigma_coherent, i.e. coherent elastic scattering treated in
+          //the incoherent approximation, which already contains it):
+          const double o = ai.occupancy();
+          scale.push_back( ( StableDbl( double(ai.numberOfPositions()) ) * o
+                             * cfg.scale_factor ).value() / ntot );
+          const double disorder
+            = ( cfg.use_sigma_incoherent && !cfg.use_sigma_coherent
+                ? ( ( StableDbl( 1.0 ) - StableDbl( o ) )
+                    * ai.atomData().coherentXS().get() ).value()
+                : 0.0 );
+          bixs.push_back( getSigma(ai.atomData()) + disorder );
           //msd:
           if ( ai.msd().has_value() ) {
             msd.push_back( ai.msd().value() );

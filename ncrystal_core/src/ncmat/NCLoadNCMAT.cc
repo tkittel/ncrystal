@@ -706,7 +706,7 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
     si.beta = data.cell.angles[1];
     si.gamma = data.cell.angles[2];
     //Leave si.volume with zero value (InfoBuilder will calculate it).
-    si.n_atoms = data.atompos.size();//(0 for sites: set by InfoBuilder)
+    si.n_positions = data.atompos.size();//(0 for sites: set by InfoBuilder)
 
     //==> Get sorted list of atom positions (so adjacant entries have same element name):
     const bool data_hasAtomSites = data.hasAtomSites();
@@ -746,7 +746,7 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
       for ( auto& ep : elem2pos )
         for ( auto& p : ep.second )
           natoms += expandSiteToOrbit( sym, p.as<Vector>() ).positions.size();
-      si.n_atoms = static_cast<unsigned>( natoms );
+      si.n_positions = static_cast<unsigned>( natoms );
     }
 
     if ( builder.dynamics.value().empty() && data_hasDebyeTemperature ) {
@@ -830,7 +830,7 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
       //Very simple heuristics here for now to select appropriate dcutoff value
       //(specifically we needed to raise the value for expensive Y2O3/SiLu2O5
       //with ~80/65 atoms/cell):
-      cfgvars.dcutoff = ( builder.unitcell.value().structinfo.n_atoms > 40 ? 0.2 : 0.1 ) ;
+      cfgvars.dcutoff = ( builder.unitcell.value().structinfo.n_positions > 40 ? 0.2 : 0.1 ) ;
       std::string cmt;
       if (cfgvars.dcutoff>=cfgvars.dcutoffup) {
         //automatically selected conflicts with value of dcutoffup.

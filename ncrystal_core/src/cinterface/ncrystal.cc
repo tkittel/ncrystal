@@ -588,7 +588,7 @@ int ncrystal_info_getstructure( ncrystal_info_t ci,
     *beta = si.beta;
     *gamma = si.gamma;
     *volume = si.volume;
-    *n_atoms = si.n_atoms;
+    *n_atoms = si.n_positions;//NB: Ignores occupancies!!!
     return 1;
   } NCCATCH;
   *spacegroup = 9999;
@@ -1832,7 +1832,7 @@ void ncrystal_info_getatominfo( ncrystal_info_t ci, unsigned iatom,
       NCRYSTAL_THROW(BadInput,"ncrystal_info_getatominfo iatom is out of bounds");
     const NC::AtomInfo& ai = atominfos.at(iatom);
     *atomdataindex = ai.atom().index.get();
-    *number_per_unit_cell = ai.numberPerUnitCell();
+    *number_per_unit_cell = ai.numberOfPositions();
     if ( ai.debyeTemp().has_value() )
       *debye_temp = ai.debyeTemp().value().dbl();
     else
