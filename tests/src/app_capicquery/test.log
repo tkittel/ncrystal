@@ -1,0 +1,50 @@
+Crystal (stdlib::Al_sg225.ncmat):
+  spacegroup: 225
+  spacegroup_setting: 523 "225"
+  lattice_abc: 4.04958 4.04958 4.04958
+  lattice_angles: 90 90 90
+  cell_volume: 66.4094599932
+  n_positions: 4
+  n_atoms_average: 4
+  cell_numberdensity: 0.0150580956403
+Crystal, density override (stdlib::Al_sg225.ncmat;density=0.5x):
+  spacegroup: 225
+  spacegroup_setting: 523 "225"
+  lattice_abc: 4.04958 4.04958 4.04958
+  lattice_angles: 90 90 90
+  cell_volume: 66.4094599932
+  n_positions: 4
+  n_atoms_average: 4
+  cell_numberdensity: 0.00752904782016
+Partial occupancy (nacl_occu.ncmat):
+  spacegroup: 225
+  spacegroup_setting: 523 "225"
+  lattice_abc: 5.64 5.64 5.64
+  lattice_angles: 90 90 90
+  cell_volume: 179.406144
+  n_positions: 8
+  n_atoms_average: 7.6
+  cell_numberdensity: 0.00557394511528
+Gas (freegas::He/1e-3gcm3):
+  spacegroup: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "spacegroup")
+  spacegroup_setting: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "spacegroup_setting")
+  lattice_abc: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "lattice_abc")
+  lattice_angles: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "lattice_angles")
+  cell_volume: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "cell_volume")
+  n_positions: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "n_positions")
+  n_atoms_average: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "n_atoms_average")
+  cell_numberdensity: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "cell_numberdensity")
+Multiphase (phases<0.5*stdlib::Al_sg225.ncmat&0.5*stdlib::Cu_sg225.ncmat>):
+  spacegroup: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "spacegroup")
+  spacegroup_setting: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "spacegroup_setting")
+  lattice_abc: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "lattice_abc")
+  lattice_angles: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "lattice_angles")
+  cell_volume: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "cell_volume")
+  n_positions: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "n_positions")
+  n_atoms_average: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "n_atoms_average")
+  cell_numberdensity: ERROR (is_error=1): MissingInfo: Structure information is not available (needed for key "cell_numberdensity")
+List of keys:
+  list: "spacegroup,spacegroup_setting,lattice_abc,lattice_angles,cell_volume,n_positions,n_atoms_average,cell_numberdensity"
+Bad keys:
+  foobar: ERROR (is_error=1): BadInput: Unknown key for ncrystal_info_cquery: "foobar" (the key "list" gives the supported keys)
+  : ERROR (is_error=1): BadInput: Unknown key for ncrystal_info_cquery: "" (the key "list" gives the supported keys)

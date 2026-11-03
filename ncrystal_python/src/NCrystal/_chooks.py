@@ -312,17 +312,6 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
     for s in ('temperature','xsectabsorption','xsectfree','density','numberdensity','sld'):
         _wrap(f'ncrystal_info_get{s}',_dbl,(ncrystal_info_t,))
     _wrap('ncrystal_info_getstateofmatter',_int,( ncrystal_info_t,))
-    _raw_info_getstruct = _wrap('ncrystal_info_getstructure',_int,(ncrystal_info_t,_uintp,_dblp,_dblp,_dblp,_dblp,_dblp,_dblp,_dblp,_uintp))
-    def ncrystal_info_getstructure(nfo):
-        sg,natom=_uint(),_uint()
-        a,b,c,alpha,beta,gamma,vol = _dbl(),_dbl(),_dbl(),_dbl(),_dbl(),_dbl(),_dbl(),
-        if _raw_info_getstruct(nfo,sg,a,b,c,alpha,beta,gamma,vol,natom) == 0:
-            return {}
-        return { 'spacegroup': int(sg.value), 'a': a.value, 'b': b.value,
-                 'c': c.value, 'alpha': alpha.value, 'beta': beta.value,
-                 'gamma': gamma.value, 'volume': vol.value,
-                 'n_atoms': int(natom.value) }
-    functions['ncrystal_info_getstructure'] = ncrystal_info_getstructure
 
     _wrap('ncrystal_info_nphases',_int,(ncrystal_info_t,))
     _wrap('ncrystal_info_getphase',ncrystal_info_t,(ncrystal_info_t,_int,_dblp))
