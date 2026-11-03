@@ -670,10 +670,11 @@ def produce_validation_plot( data_or_file, verbose_lbls = True, line_width_scale
             _nc_common.print(f'Structure[{lbl}]:',si)
         if si and verbose_lbls:
             sgno=si.get('spacegroup',None)
-            lbl += ( f' (SG-{sgno or "unspecified"}, {si["n_atoms"]} atoms/cell,'
+            lbl += ( f' (SG-{sgno or "unspecified"},'
+                     f' {si["n_atoms_average"]:g} atoms/cell,'
                      f' Vcell={si["volume"]:g})' )
             sgno_all.add(sgno)
-            natoms_all.add(si['n_atoms'])
+            natoms_all.add(si['n_atoms_average'])
 
         plt.plot(wls,mc.scatter.xsect(wl=wls),
                  label=fix_lbl_for_plt(lbl),

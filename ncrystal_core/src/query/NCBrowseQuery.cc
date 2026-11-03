@@ -180,12 +180,12 @@ namespace NCRYSTAL_NAMESPACE {
           for ( auto& di : sp->getDynamicInfoList() )
             ditypes.insert( dynInfoTypeName( *di ) );
         }
-        Optional<unsigned> sg, natoms;
+        Optional<unsigned> sg, npositions;
         if ( !info.isMultiPhase() && info.hasStructureInfo() ) {
           auto& si = info.getStructureInfo();
           if ( si.spacegroup )
             sg = si.spacegroup;
-          natoms = si.n_atoms;
+          npositions = si.n_positions;
         }
         //Bragg threshold (max over phases):
         Optional<double> braggthr;
@@ -227,7 +227,7 @@ namespace NCRYSTAL_NAMESPACE {
                              Info::toString( info.stateOfMatter() ) );
         streamJSONDictEntry( os, "crystalline", crystalline );
         streamJSONDictEntry( os, "spacegroup", sg );
-        streamJSONDictEntry( os, "natoms_unitcell", natoms );
+        streamJSONDictEntry( os, "npositions_unitcell", npositions );
         streamJSONDictEntry( os, "dyninfo_types",
                              VectS( ditypes.begin(), ditypes.end() ) );
         streamJSONDictEntry( os, "braggthreshold", braggthr );

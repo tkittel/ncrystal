@@ -28,7 +28,7 @@
 namespace NCRYSTAL_NAMESPACE {
   namespace InfoBuilderDetail {
 
-    //Total number of atoms in the unit cell (sum of numberPerUnitCell()),
+    //Total number of atoms in the unit cell (sum of numberOfPositions()),
     //validating that the list is non-empty and that no entry has zero atoms:
     std::size_t totalNumberOfAtomsInUnitCell( const AtomInfoList& );
 

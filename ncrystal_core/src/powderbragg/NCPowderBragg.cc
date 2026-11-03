@@ -57,12 +57,10 @@ namespace NCRYSTAL_NAMESPACE {
 
 void NC::PowderBragg::init( const StructureInfo& si, VectDFM&& data )
 {
-  nc_assert_always(si.n_atoms>0);
-  nc_assert_always(si.volume>0);
-  if (!(si.volume>0) || !(si.n_atoms>=1) )
+  if (!(si.volume>0) || !(si.n_atoms_average>0) )
     NCRYSTAL_THROW(BadInput,"Passed structure info object has"
-                   " invalid volume or n_atoms fields.");
-  init(si.volume * si.n_atoms, std::move(data));
+                   " invalid volume or n_atoms_average fields.");
+  init(si.volume * si.n_atoms_average, std::move(data));
 }
 
 void NC::PowderBragg::init( double v0_times_natoms, VectDFM&& origdata )
@@ -171,6 +169,7 @@ NC::PowderBragg::PowderBragg(const Info&ci)
       data.back().second += f;
     }
   }
+  //Per-atom normalisation, with the average number of atoms:
   init(ci.getStructureInfo(),std::move(data));
 }
 
