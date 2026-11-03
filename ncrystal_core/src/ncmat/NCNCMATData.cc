@@ -401,6 +401,33 @@ void NC::NCMATData::validateAtomSites() const
   }
 }
 
+void NC::NCMATData::validateAtomOccupancies() const
+{
+  if (!hasAtomOccupancies())
+    return;
+  if ( version < 8 )
+    NCRYSTAL_THROW2(BadInput,sourceDescription<<" @ATOMOCCUPANCIES sections"
+                    " are only allowed in NCMAT v8 or later");
+  std::set<std::string> seen;
+  for ( auto& e : atomoccupancies ) {
+    validateElementName(e.first);
+    if ( !seen.insert( e.first ).second )
+      NCRYSTAL_THROW2(BadInput,sourceDescription<<" occupancy of \""<<e.first
+                      <<"\" specified more than once");
+    if ( !std::isfinite( e.second ) || !( e.second > 0.0 && e.second <= 1.0 ) )
+      NCRYSTAL_THROW2(BadInput,sourceDescription<<" invalid occupancy of \""
+                      <<e.first<<"\": "<<fmt(e.second)<<" (must be in (0,1])");
+  }
+}
+
+double NC::NCMATData::atomOccupancy( const std::string& label ) const
+{
+  for ( auto& e : atomoccupancies )
+    if ( e.first == label )
+      return e.second;
+  return 1.0;
+}
+
 bool NC::NCMATData::hasSpaceGroupSetting() const
 {
   return spacegroup_spec.find(':') != std::string::npos;
@@ -487,6 +514,7 @@ void NC::NCMATData::validate() const
   validateCell();
   validateAtomPos();
   validateAtomSites();
+  validateAtomOccupancies();
   validateSpaceGroup();
   validateDebyeTemperature();
   validateTemperature();
@@ -614,6 +642,23 @@ void NC::NCMATData::validate() const
     atompos_elems2count[e.first] += 1;
   const bool countsKnown = atomsites.empty();
 
+  //Occupancies are only for atoms of the unit cell:
+  if ( hasAtomOccupancies() ) {
+    if ( atompos_elems2count.empty() )
+      NCRYSTAL_THROW2(BadInput,sourceDescription<<" @ATOMOCCUPANCIES sections"
+                      " require atom positions (@ATOMPOSITIONS or @ATOMSITES)");
+    for ( auto& e : atomoccupancies )
+      if ( !atompos_elems2count.count( e.first ) )
+        NCRYSTAL_THROW2(BadInput,sourceDescription<<" \""<<e.first<<"\" in the"
+                        " @ATOMOCCUPANCIES section does not appear in the list"
+                        " of atom positions (@ATOMPOSITIONS or @ATOMSITES)");
+  }
+  //Average total number of atoms (occupancy-weighted):
+  StableSum atompos_wtot_sum;
+  for ( auto& e : atompos_elems2count )
+    atompos_wtot_sum.add( e.second * atomOccupancy( e.first ) );
+  const double atompos_wtot = atompos_wtot_sum.sum();
+
   for (auto& e : atompos_elems2count)
     allElementNames.insert(e.first);
 
@@ -654,14 +699,16 @@ void NC::NCMATData::validate() const
       // fractions inferred from ATOMPOSITIONS sections:
       if ( !countsKnown )
         continue;
-      double calcfraction = itA->second*1.0/atompos.size();
+      double calcfraction = itA->second*atomOccupancy(itA->first)/atompos_wtot;
       double dyninfofraction = dyninfo_elems2frac[itA->first];
       double distf = ncabs(calcfraction-dyninfofraction);
       if (distf>1e-9) {
         std::ostringstream ss;
         ss << sourceDescription<<" the fraction for "<<itA->first<<" specified in the dyninfo section differs from the"
            << " same fraction calculated from the number of each atom appearing in the list of atompositions";
-        if (distf<1e-3)
+        if ( hasAtomOccupancies() )
+          ss << " (weighted by the occupancies)";
+        if ( distf<1e-3 && !hasAtomOccupancies() )
           ss << " (they almost do, but more precision is required - note that it is possible to specify"
             " fractions like "<<itA->second<<"/"<<atompos.size()<<" in NCMAT files instead of numbers like "<<dyninfofraction<<")";
         NCRYSTAL_THROW(BadInput,ss.str());
@@ -839,6 +886,21 @@ void NC::NCMATData::toJSON( std::ostream& ss ) const
     ss << ']';
   } else {
     streamJSONDictEntry( ss, "atomsites", json_null_t{} );
+  }
+  if ( data.hasAtomOccupancies() ) {
+    ss << ",\"atomoccupancies\":[";
+    bool first = true;
+    for ( auto& e : data.atomoccupancies ) {
+      ss << ( first ? "[" : ",[" );
+      first = false;
+      streamJSON( ss, e.first );
+      ss << ',';
+      streamJSON( ss, e.second );
+      ss << ']';
+    }
+    ss << ']';
+  } else {
+    streamJSONDictEntry( ss, "atomoccupancies", json_null_t{} );
   }
   if ( data.stateOfMatter.has_value() ) {
     streamJSONDictEntry( ss, "state_of_matter", NCMATData::stateOfMatter2Str(data.stateOfMatter.value()) );
