@@ -82,7 +82,7 @@ class PhysicsProps:
             'crystal': info['crystalline'],
             'crystalsystem': _crystal_system( info['spacegroup'] ),
             'sg': info['spacegroup'],
-            'natoms': info['natoms_unitcell'],
+            'npositions': info['npositions_unitcell'],
             'braggthreshold': info['braggthreshold'],
             **{ t: ( t in info['dyninfo_types'] ) for t in _dyninfo_types },
             'nphases': info['nphases'],
@@ -326,7 +326,7 @@ _propdocs = [
     ('crystal', 'yes or no'),
     ('crystalsystem', ', '.join(_crystal_systems[:-1]) + ', or cubic'),
     ('sg', 'space group number'),
-    ('natoms', 'number of atoms in the unit cell'),
+    ('npositions', 'number of atom positions in the unit cell'),
     ('braggthreshold', 'Bragg threshold [Aa]'),
     *( ( t, 'whether some atoms have this type of dynamics (yes or no)' )
        for t in _dyninfo_types ),

@@ -198,7 +198,7 @@ int main()
       uc.structinfo.lattice_c = c;
       uc.structinfo.alpha = uc.structinfo.beta = alpha;
       uc.structinfo.gamma = gamma;
-      uc.structinfo.n_atoms = 2;
+      uc.structinfo.n_positions = 2;
       if ( declared )
         uc.structinfo.spacegroup_setting
           = SG( declared, NC::SpaceGroupParseMode::Strict ).settingIdx();
@@ -330,13 +330,13 @@ int main()
       const auto& ai2 = info2->getAtomInfos().front();
       const NC::SpaceGroup
         setting2( info2->getStructureInfo().spacegroup_setting.value() );
-      std::cout << "Diamond from site (" << site << "): " << ai2.numberPerUnitCell()
+      std::cout << "Diamond from site (" << site << "): " << ai2.numberOfPositions()
                 << " positions, " << ai2.sites().size() << " site of multiplicity "
                 << ai2.sites().front().multiplicity << ", setting " << setting2
                 << std::endl;
-      REQUIRE( ai2.numberPerUnitCell() == 8 && ai2.sites().size() == 1
+      REQUIRE( ai2.numberOfPositions() == 8 && ai2.sites().size() == 1
                && ai2.sites().front().multiplicity == 8
-               && info2->getStructureInfo().n_atoms == 8 );
+               && info2->getStructureInfo().n_positions == 8 );
       REQUIRE( setting2 == NC::SpaceGroup( sg, NC::SpaceGroupParseMode::Strict ) );
     }
     //A site given twice (here as a symmetry-equivalent site) is an error:

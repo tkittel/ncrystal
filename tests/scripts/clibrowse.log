@@ -199,7 +199,7 @@ properties:
   crystalsystem   triclinic, monoclinic, orthorhombic, tetragonal, trigonal,
                   hexagonal, or cubic
   sg              space group number
-  natoms          number of atoms in the unit cell
+  npositions      number of atom positions in the unit cell
   braggthreshold  Bragg threshold [Aa]
   vdos, vdosdebye, scatknl, freegas, sterile
                   whether some atoms have this type of dynamics (yes or no)
@@ -305,7 +305,7 @@ virtual::othermat.ncmat
 ============= CLI >>browse formula=o -f virtual<< =============
 virtual::Al_sg225.ncmat
 virtual::othermat.ncmat
-============= CLI >>browse crystal=yes sg=225 natoms=4 -f virtual<< =============
+============= CLI >>browse crystal=yes sg=225 npositions=4 -f virtual<< =============
 virtual::mycrystal.ncmat
 ============= CLI >>browse 'sg > 200' -f virtual<< =============
 virtual::mycrystal.ncmat
@@ -370,7 +370,7 @@ No matching data found.
             'crystal': True,
             'crystalsystem': 'cubic',
             'sg': 225,
-            'natoms': 4,
+            'npositions': 4,
             'braggthreshold': 4.6760522062,
             'vdos': False,
             'vdosdebye': True,
@@ -383,7 +383,7 @@ No matching data found.
 virtual::mytestmat.ncmat
     | truncated in the listing.
 ============= CLI >>browse 'foo>1'<< =============
-Caught expected ArgumentError('Invalid property "foo" in condition "foo>1" (must be one of: nelements, formula, mass, cohsl, cohxs, incohxs, scatxs, absxs, density, numdens, state, crystal, crystalsystem, sg, natoms, braggthreshold, vdos, vdosdebye, scatknl, freegas, sterile, nphases)')
+Caught expected ArgumentError('Invalid property "foo" in condition "foo>1" (must be one of: nelements, formula, mass, cohsl, cohxs, incohxs, scatxs, absxs, density, numdens, state, crystal, crystalsystem, sg, npositions, braggthreshold, vdos, vdosdebye, scatknl, freegas, sterile, nphases)')
 ============= CLI >>browse 'COHSL<0'<< =============
 Caught expected ArgumentError('Invalid property "COHSL" in condition "COHSL<0" (names are case-sensitive, did you mean "cohsl"?)')
 ============= CLI >>browse 'absxs>x'<< =============
