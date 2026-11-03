@@ -437,6 +437,87 @@ namespace NCRYSTAL_NAMESPACE {
         }
       }
 
+      //Replace the positions of AtomInfo objects with sites by the symmetry
+      //images of their sites, so positions given with limited precision
+      //(e.g. 0.3333 for 1/3) are snapped to the symmetric structure. The
+      //positions are stored site by site (see AtomInfo::sites()): each site's
+      //sorted orbit, starting with the site's (new) representative:
+      void snapPositionsToSites( const StructureInfo& si,
+                                 AtomInfoList& atomlist )
+      {
+        nc_assert_always( si.spacegroup_setting.has_value() );
+        const SpaceGroup sg( si.spacegroup_setting.value() );
+        const SGSymmetry& sym = SGSymmetry::get( sg );
+        for ( auto& ai : atomlist ) {
+          if ( ai.sites().empty() )
+            continue;
+          AtomInfo::AtomPositions newpos;
+          newpos.reserve( ai.numberOfPositions() );
+          std::vector<AtomInfo::Pos> newrepr;
+          for ( auto& site : ai.sites() ) {
+            const auto orbit
+              = expandSiteToOrbit( sym, site.position.as<Vector>() );
+            //(both can not happen with the public AtomInfo constructors, which
+            //take either positions or sites, and sites are expanded above):
+            if ( orbit.positions.size() != site.multiplicity )
+              NCRYSTAL_THROW2(LogicError,"The site "
+                              <<details::posDescr( ai, site.position )
+                              <<" has multiplicity "<<site.multiplicity
+                              <<", but "<<orbit.positions.size()
+                              <<" symmetry-equivalent positions in space"
+                              " group "<<sg);
+            AtomInfo::AtomPositions orbitpos;
+            for ( auto& p : orbit.positions )
+              orbitpos.push_back( p.as<AtomInfo::Pos>() );
+            std::stable_sort( orbitpos.begin(), orbitpos.end(),
+                              details::atominfo_pos_compare );
+            newrepr.push_back( orbitpos.front() );
+            newpos.insert( newpos.end(), orbitpos.begin(), orbitpos.end() );
+          }
+          if ( newpos.size() != ai.numberOfPositions() )
+            NCRYSTAL_THROW2(LogicError,"The sites of "
+                            <<ai.atomData().description(false)<<" generate "
+                            <<newpos.size()<<" positions in space group "
+                            <<sg<<", but "<<ai.numberOfPositions()
+                            <<" positions were specified");
+          ai.detail_accessPos() = std::move( newpos );
+          for ( auto i : ncrange( newrepr.size() ) )
+            ai.detail_accessSites().at( i ).position = newrepr.at( i );
+        }
+      }
+
+      //Check the invariant of AtomInfo objects with sites, established by
+      //snapPositionsToSites (see AtomInfo::sites()):
+      void checkPositionsBySite( const AtomInfoList& atomlist )
+      {
+        for ( auto& ai : atomlist ) {
+          if ( ai.sites().empty() )
+            continue;
+          const auto& pos = ai.unitCellPositions();
+          std::size_t i = 0;
+          for ( auto& site : ai.sites() ) {
+            const std::size_t iend = i + site.multiplicity;
+            if ( !( site.multiplicity > 0 && iend <= pos.size()
+                    && vectAt( pos, i ) == site.position ) )
+              NCRYSTAL_THROW2(LogicError,"Positions of "
+                              <<ai.atomData().description(false)
+                              <<" are not stored site by site, each"
+                              " starting with the site representative");
+            for ( ++i; i < iend; ++i )
+              if ( !details::atominfo_pos_compare( vectAt( pos, i - 1 ),
+                                                   vectAt( pos, i ) ) )
+                NCRYSTAL_THROW2(LogicError,"Positions of "
+                                <<ai.atomData().description(false)
+                                <<" are not sorted within the orbit of"
+                                " their site");
+          }
+          if ( i != pos.size() )
+            NCRYSTAL_THROW2(LogicError,"Site multiplicities of "
+                            <<ai.atomData().description(false)
+                            <<" do not add up to the number of positions");
+        }
+      }
+
       void validateAndCompleteUnitCell( InfoBuilder::UnitCell& uc )
       {
         auto& si = uc.structinfo;
@@ -587,8 +668,12 @@ namespace NCRYSTAL_NAMESPACE {
         }
         if ( si.spacegroup_setting.has_value() )
           si.spacegroup_setting.value().validate();
-        if ( uc.atomlist.has_value() )
+        if ( uc.atomlist.has_value() ) {
           groupPositionsIntoSites( si, uc.atomlist.value() );
+          if ( si.spacegroup_setting.has_value() )
+            snapPositionsToSites( si, uc.atomlist.value() );
+          checkPositionsBySite( uc.atomlist.value() );
+        }
       }
 
   }
