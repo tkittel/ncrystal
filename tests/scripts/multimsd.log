@@ -31,19 +31,13 @@ Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 66.4095
 Atoms / unit cell       : 8
 ----------------------------------------------------------------------------------------------------
-Atoms in unit cell (total 8):
-     4 Al(a) atoms [T_Debye=410.4K, MSD=0.00988887Aa^2]
-     4 Al(b) atoms [T_Debye=10K, MSD=15.8117Aa^2]
+Atom positions in unit cell (total 8):
+     4 Al(a) positions [T_Debye=410.4K, MSD=0.00988887Aa^2]
+     4 Al(b) positions [T_Debye=10K, MSD=15.8117Aa^2]
 ----------------------------------------------------------------------------------------------------
-Atomic coordinates:
-     Al(a)            0            0            0
-     Al(a)            0          1/2          1/2
-     Al(a)          1/2            0          1/2
-     Al(a)          1/2          1/2            0
-     Al(b)            0            0          1/2
-     Al(b)            0          1/2            0
-     Al(b)          1/2            0            0
-     Al(b)          1/2          1/2          1/2
+Atomic sites:
+     Al(a)            0            0            0   (x4)
+     Al(b)            0            0          1/2   (x4)
 ----------------------------------------------------------------------------------------------------
 Dynamic info for Al(a) (50%):
    type: S(alpha,beta) [from VDOSDebye]

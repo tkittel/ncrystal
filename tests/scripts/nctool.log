@@ -107,23 +107,13 @@ Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 195.072
 Atoms / unit cell       : 12
 ----------------------------------------------------------------------------------------------------
-Atoms in unit cell (total 12):
-     8 F  atoms [T_Debye=486.72K, MSD=0.0101855Aa^2]
-     4 Sr atoms [T_Debye=266.35K, MSD=0.0070195Aa^2]
+Atom positions in unit cell (total 12):
+     8 F  positions [T_Debye=486.72K, MSD=0.0101855Aa^2]
+     4 Sr positions [T_Debye=266.35K, MSD=0.0070195Aa^2]
 ----------------------------------------------------------------------------------------------------
-Atomic coordinates:
-     F           1/4          1/4          1/4
-     F           1/4          1/4          3/4
-     F           1/4          3/4          1/4
-     F           1/4          3/4          3/4
-     F           3/4          1/4          1/4
-     F           3/4          1/4          3/4
-     F           3/4          3/4          1/4
-     F           3/4          3/4          3/4
-     Sr            0            0            0
-     Sr            0          1/2          1/2
-     Sr          1/2            0          1/2
-     Sr          1/2          1/2            0
+Atomic sites:
+     F           1/4          1/4          1/4   (x8)
+     Sr            0            0            0   (x4)
 ----------------------------------------------------------------------------------------------------
 Dynamic info for F (66.6667%):
    type: S(alpha,beta) [from VDOS]
