@@ -80,6 +80,12 @@ namespace NCRYSTAL_NAMESPACE {
     bool hasAtomSites() const { return !atomsites.empty(); }
     void validateAtomSites() const;
 
+    //@ATOMOCCUPANCIES (v8+): occupancies of atom labels (others have 1):
+    std::vector<std::pair<std::string,double> > atomoccupancies;
+    bool hasAtomOccupancies() const { return !atomoccupancies.empty(); }
+    void validateAtomOccupancies() const;
+    double atomOccupancy( const std::string& label ) const;
+
     //@TEMPERATURE (v7+)
     enum class TemperatureType { Default, Fixed };
     Optional<std::pair<Temperature,TemperatureType>> temperature;

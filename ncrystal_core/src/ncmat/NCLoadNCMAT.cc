@@ -726,14 +726,29 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
       const auto& iad = elementname_2_indexedatomdata(current_elementname);
       elem2pos[iad.index] = std::move(positions);
     }
+    //Occupancies (1 unless listed in @ATOMOCCUPANCIES):
+    std::map<AtomIndex,double> elem2occu;
+    for ( auto& e : data.atomoccupancies )
+      elem2occu[elementname_2_indexedatomdata(e.first).index] = e.second;
+    auto occupancyOf = [&elem2occu]( AtomIndex idx )
+    {
+      auto it = elem2occu.find( idx );
+      return it == elem2occu.end() ? 1.0 : it->second;
+    };
 
     //==> Calculate element fractions (sanity check consistency with dyninfo
     //fractions, which should have already been validated by data.validate()).
     //For sites, the counts are only known after the expansion, and
     //InfoBuilder then checks the fractions:
     if ( !data_hasAtomSites ) {
+      //(occupancy-weighted):
+      StableSum wtot_sum;
+      for ( auto& ep : elem2pos )
+        wtot_sum.add( ep.second.size() * occupancyOf( ep.first ) );
+      const double wtot = wtot_sum.sum();
       for (auto& ep : elem2pos) {
-        double fr_calc = double(ep.second.size()) / atompos.size();
+        double fr_calc
+          = double(ep.second.size()) * occupancyOf( ep.first ) / wtot;
         //Whether or not the number already exists, we update with these higher precision fractions (e.g. 0.666667
         //specified in file's dyninfo section might be consistent with 2./3. but it is not as precise):
         elem2frac[ep.first] = fr_calc;
@@ -801,9 +816,14 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
           site.position = p;
           sites.push_back( std::move( site ) );
         }
-        bldr_atomlist.emplace_back( std::move(iad), std::move(sites), ai_debye_temp, msd );
+        bldr_atomlist.emplace_back( std::move(iad), std::move(sites),
+                                    ai_debye_temp, msd,
+                                    occupancyOf( ef.first ) );
       } else {
-        bldr_atomlist.emplace_back( std::move(iad), std::move(std::move(elem2pos.at(ef.first))), ai_debye_temp, msd );
+        bldr_atomlist.emplace_back( std::move(iad),
+                                    std::move(elem2pos.at(ef.first)),
+                                    ai_debye_temp, msd,
+                                    occupancyOf( ef.first ) );
       }
     }
 

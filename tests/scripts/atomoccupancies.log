@@ -1,0 +1,40 @@
+no occupancies: n_positions=8 numberdensity=0.0445915609222 Na=0.5 Cl=0.5
+Na 0.9 (sites): n_positions=8 numberdensity=0.0423619828761 Na=0.473684210526 Cl=0.526315789474
+Na 9/10, Cl 2/3 (sites): n_positions=8 numberdensity=0.0349300560558 Na=0.574468085106 Cl=0.425531914894
+Na 0.9 (positions): n_positions=8 numberdensity=0.0423619828761 Na=0.473684210526 Cl=0.526315789474
+Na 9/10, Cl 2/3 (positions): n_positions=8 numberdensity=0.0349300560558 Na=0.574468085106 Cl=0.425531914894
+Na in two roles (0.9 and 1/2): n_positions=8 numberdensity=0.0312140926456 Na(a)=0.642857142857 Na(b)=0.357142857143
+exposure, no occupancies: n_positions=8 n_atoms_average=8 occupancies=(1.0, 1.0)
+  AtomInfo(Na, 4, DebyeT=300K, MSD=0.021212Aa^2, hasPositions=yes) numberOfPositions=4 averageNumberOfAtoms=4 occupancy=1
+  AtomInfo(Cl, 4, DebyeT=300K, MSD=0.0137552Aa^2, hasPositions=yes) numberOfPositions=4 averageNumberOfAtoms=4 occupancy=1
+  dump: Atoms / unit cell       : 8
+  dump: 4 Na atoms [T_Debye=300K, MSD=0.021212Aa^2]
+  dump: 4 Cl atoms [T_Debye=300K, MSD=0.0137552Aa^2]
+exposure, Na 9/10, Cl 2/3: n_positions=8 n_atoms_average=6.26666666667 occupancies=(0.9, 0.6666666666666666)
+  AtomInfo(Na, 4, occupancy=0.9, DebyeT=300K, MSD=0.021212Aa^2, hasPositions=yes) numberOfPositions=4 averageNumberOfAtoms=3.6 occupancy=0.9
+  AtomInfo(Cl, 4, occupancy=0.666667, DebyeT=300K, MSD=0.0137552Aa^2, hasPositions=yes) numberOfPositions=4 averageNumberOfAtoms=2.66666666667 occupancy=0.666666666667
+  dump: Atoms / unit cell       : 8
+  dump: 4 Na atoms [T_Debye=300K, MSD=0.021212Aa^2]
+  dump: 4 Cl atoms [T_Debye=300K, MSD=0.0137552Aa^2]
+exposure, Na in two roles: n_positions=8 n_atoms_average=5.6 occupancies=(0.9, 0.5)
+  AtomInfo(Na(a), 4, occupancy=0.9, DebyeT=300K, MSD=0.021212Aa^2, hasPositions=yes) numberOfPositions=4 averageNumberOfAtoms=3.6 occupancy=0.9
+  AtomInfo(Na(b), 4, occupancy=0.5, DebyeT=250K, MSD=0.0302859Aa^2, hasPositions=yes) numberOfPositions=4 averageNumberOfAtoms=2 occupancy=0.5
+  dump: Atoms / unit cell       : 8
+  dump: 4 Na(a) atoms [T_Debye=300K, MSD=0.021212Aa^2]
+  dump: 4 Na(b) atoms [T_Debye=250K, MSD=0.0302859Aa^2]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The AtomInfo.count property is obsolete. Please use .numberOfPositions (or .averageNumberOfAtoms) instead. [warn#1]
+AtomInfo.count: 4
+AtomInfo.count: 4
+AtomInfo.count: 4
+zero: NCBadInput: (anonymous TextData, 251bytes, type=ncmat) invalid occupancy of "Na": 0 (must be in (0,1]) (problem in the @ATOMOCCUPANCIES section ending in line 10)
+negative: NCBadInput: (anonymous TextData, 254bytes, type=ncmat) invalid occupancy of "Na": -0.1 (must be in (0,1]) (problem in the @ATOMOCCUPANCIES section ending in line 10)
+above one: NCBadInput: (anonymous TextData, 254bytes, type=ncmat) invalid occupancy of "Na": 1.01 (must be in (0,1]) (problem in the @ATOMOCCUPANCIES section ending in line 10)
+twice: NCBadInput: (anonymous TextData, 265bytes, type=ncmat) occupancy of "Na" specified more than once (problem in the @ATOMOCCUPANCIES section ending in line 11)
+unknown label: NCBadInput: (anonymous TextData, 252bytes, type=ncmat) "K" in the @ATOMOCCUPANCIES section does not appear in the list of atom positions (@ATOMPOSITIONS or @ATOMSITES)
+missing value: NCBadInput: "(anonymous TextData, 249bytes, type=ncmat)": wrong number of data entries after element name "Na" in line 10 (expected one number)
+extra value: NCBadInput: "(anonymous TextData, 255bytes, type=ncmat)": wrong number of data entries after element name "Na" in line 10 (expected one number)
+not a number: NCBadInput: "(anonymous TextData, 253bytes, type=ncmat)": problem while decoding the occupancy of element "Na" in line 10 : Invalid number in string is not a double: "abc"
+empty section: NCBadInput: "(anonymous TextData, 244bytes, type=ncmat)": no occupancies specified in @ATOMOCCUPANCIES section (expected in line 9)
+unweighted fractions (sites): NCBadInput: Fractions specified in DynamicInfoList are incompatible with those calculated from unit cell content forAtom(descr="Na",index=0): 0.5 vs 0.473684
+unweighted fractions (positions): NCBadInput: (anonymous TextData, 341bytes, type=ncmat) the fraction for Cl specified in the dyninfo section differs from the same fraction calculated from the number of each atom appearing in the list of atompositions (weighted by the occupancies)
+NCMAT v7: NCBadInput: "(anonymous TextData, 344bytes, type=ncmat)": has @ATOMOCCUPANCIES section which is not supported in the indicated NCMAT format version, "NCMAT v7". It is only available starting with "NCMAT v8".
