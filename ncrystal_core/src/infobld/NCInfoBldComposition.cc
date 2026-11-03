@@ -66,13 +66,16 @@ namespace NCRYSTAL_NAMESPACE {
         Info::Composition new_composition;
         if ( has_uc_atomlist ) {
           //From unit cell:
+          //(occupancy-weighted, i.e. the average numbers of atoms):
           auto& atomlist = unitcell.value().atomlist.value();
-          const auto ntot = totalNumberOfAtomsInUnitCell( atomlist );
-          nc_assert_always( ntot > 0 );
+          totalNumberOfAtomsInUnitCell( atomlist );//validates
+          const double ntot = unitcell.value().structinfo.n_atoms_average;
+          nc_assert_always( ntot > 0.0 );
           new_composition.reserve( atomlist.size() );
           for ( const auto& ai : atomlist ) {
-            nc_assert( ai.numberPerUnitCell() > 0 );
-            new_composition.emplace_back( ai.numberPerUnitCell() / double(ntot), ai.atom() );
+            nc_assert( ai.numberOfPositions() > 0 );
+            new_composition.emplace_back( ai.averageNumberOfAtoms() / ntot,
+                                          ai.atom() );
           }
         } else {
           //From dynamics
@@ -151,9 +154,12 @@ namespace NCRYSTAL_NAMESPACE {
         if ( unitcell.has_value() ) {
           //Always take final density/numberdensity values from unit cell when
           //possible - but check compatibility with any number already provided.
+          //(using the average number of atoms, already completed by
+          //validateAndCompleteUnitCell):
           const auto& si = unitcell.value().structinfo;
-          nc_assert( si.volume > 0.0 && si.n_atoms > 0 );
-          const auto numberDensityUC = NumberDensity{ si.n_atoms / si.volume };
+          nc_assert( si.volume > 0.0 && si.n_atoms_average > 0.0 );
+          const auto numberDensityUC
+            = NumberDensity{ si.n_atoms_average / si.volume };
           const auto densityUC = Density( numberDensityUC, averageAtomMass );
           if ( numberDensity.has_value() && !floateq( numberDensityUC.dbl(), numberDensity.value().dbl(), 1e-2 ) )
             NCRYSTAL_THROW2(BadInput,"Provided (" << numberDensity.value() << ") versus calculated-from-unit-cell"

@@ -75,7 +75,7 @@ namespace {
     auto info = NC::FactImpl::createInfo( NC::MatCfg( cfgstr ) );
     NC::PowderBragg pb( *info );
     //Independent reference: xs(E) = sum over planes with E >= E(2d) of
-    //fsq*mult*d*wl^2/(2*V*n_atoms):
+    //fsq*mult*d*wl^2/(2*V*n_atoms_average):
     const auto& si = info->getStructureInfo();
     auto ref = [&info,&si]( double e )
     {
@@ -83,7 +83,7 @@ namespace {
       for ( const auto& hkl : info->hklList() )
         if ( e >= NC::wl2ekin( 2.0 * hkl.dspacing ) )
           sum.add( hkl.fsquared * hkl.multiplicity * hkl.dspacing );
-      return sum.sum() * NC::ekin2wlsq( e ) * 0.5 / ( si.volume * si.n_atoms );
+      return sum.sum() * NC::ekin2wlsq( e ) * 0.5 / ( si.volume * si.n_atoms_average );
     };
     check( cfgstr, pb, ref );
   }

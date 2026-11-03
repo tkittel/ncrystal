@@ -40,8 +40,8 @@ namespace NCRYSTAL_NAMESPACE {
     PowderBragg( const Info& );
 
     //Specialised constructors taking (dspacing,fsquared*multiplicity) pairs.
-    //Either needs structure info, or just v0*n_atoms, unit cell volume in Aa^3
-    //and number atoms per unit cell:
+    //Either needs structure info, or just v0*n_atoms_average, unit cell volume
+    //in Aa^3 and average number of atoms per unit cell:
 
     using VectDFM = std::vector<PairDD>;
     PowderBragg( const StructureInfo&, VectDFM&& );

@@ -62,7 +62,7 @@ def physics( ncmat ):
     m = NC.directLoad( ncmat, 'dcutoff=0.6;comp=coh_elas',
                        doAbsorption = False )
     si = m.info.structure_info
-    return ( si['spacegroup'], si['volume']/si['n_atoms'], m.info.density,
+    return ( si['spacegroup'], si['volume']/si['n_atoms_average'], m.info.density,
              [ float(x) for x in m.scatter.xsect( wl = _wavelengths ) ] )
 
 def check_same_physics( name, ref, res, spacegroup ):
