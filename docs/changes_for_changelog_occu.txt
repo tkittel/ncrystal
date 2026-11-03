@@ -1,0 +1,54 @@
+Input for the CHANGELOG from the tk_occu branch (partial site occupancies and
+related structure work), in the same spirit as changes_for_changelog.txt (to
+be curated into the real CHANGELOG at release time, after which this file is
+dropped).
+
+### Partial site occupancies
+
+     * NCMAT v8 files can specify partial occupancies (vacancies) in a new
+       @ATOMOCCUPANCIES section, with one occupancy in (0,1] per element (or
+       @ATOMDB label), shared by all its positions. Vacancies are assumed to
+       be randomly placed: the structure factors use the occupancy-weighted
+       coherent scattering lengths, and the incoherent elastic model adds the
+       resulting disorder scattering, (1-o)*sigma_coh per actual atom. The
+       composition, densities, Bragg normalisations and the weights of the
+       inelastic components (also for inelas=vdosdebye) use the average
+       numbers of atoms, and the fractions in @DYNINFO sections must be
+       consistent with them.
+     * C++ API (intentional 5.0.0 changes): StructureInfo::n_atoms is replaced
+       by n_positions (number of atom positions per unit cell) and
+       n_atoms_average (average number of atoms per unit cell, lower in case
+       of vacancies). AtomInfo::numberPerUnitCell() is renamed
+       numberOfPositions(), and AtomInfo gets occupancy() and
+       averageNumberOfAtoms(). The AtomInfo::Site::occupancy placeholder is
+       removed, and Site::uij is reserved for future anisotropic
+       displacements (rejected if set).
+     * C API: new ncrystal_info_cquery function for keyed access to e.g. the
+       space group (and setting), lattice parameters, cell volume, number of
+       positions, average number of atoms and the number density of unit
+       cells (cell_numberdensity), with errors reported in the result rather
+       than as exceptions. Availability can be tested with #ifdef
+       ncrystal_info_cquery. The ncrystal_info_getstructure function is now
+       obsolete (its last argument is the number of positions).
+     * Python API: the structure dict has keys n_positions and n_atoms_average
+       instead of n_atoms. AtomInfo has numberOfPositions,
+       averageNumberOfAtoms and occupancy properties, with .count kept as an
+       obsolete alias (warning once). The browse property natoms is renamed
+       npositions.
+     * Dumps show the average number of atoms per cell when it differs from
+       the number of positions, the occupancies, and the atomic sites (only
+       the sites at the lowest verbosity, each followed by its other
+       positions otherwise). The per-element lines now count positions.
+
+### Atom positions and NCMAT parsing
+
+     * When the space group setting is known, atom positions are replaced by
+       the exact symmetry images of their sites (e.g. 0.3333 becomes 1/3),
+       computed in exact rational arithmetic when the site coordinates are
+       recognised as fractions. Positions are stored site by site, each
+       site's sorted orbit starting with the site representative. In the
+       standard library, this moves 33 positions in 5 files by at most 2e-16.
+     * NaN or infinity is now rejected in all numbers of NCMAT data.
+     * The ncrystal_verifyatompos command-line tool is removed, since atom
+       positions are now verified against the space group whenever a
+       material is loaded.
