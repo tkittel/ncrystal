@@ -127,7 +127,7 @@ def show_exposure( title, info ):
                f' averageNumberOfAtoms={ai.averageNumberOfAtoms:.12g}'
                f' occupancy={ai.occupancy:.12g}' )
     for line in info.dump_str().splitlines():
-        if 'Atoms / unit cell' in line or ' atom' in line and '[' in line:
+        if 'Atoms / unit cell' in line or ' position' in line and '[' in line:
             print( f'  dump: {line.strip()}' )
 
 show_exposure( 'exposure, no occupancies', ref )
