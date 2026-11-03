@@ -36,14 +36,11 @@ Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 66.4095
 Atoms / unit cell       : 4
 ----------------------------------------------------------------------------------------------------
-Atoms in unit cell (total 4):
-     4 Al atoms [T_Debye=412.207K, MSD=0.00980669Aa^2]
+Atom positions in unit cell (total 4):
+     4 Al positions [T_Debye=412.207K, MSD=0.00980669Aa^2]
 ----------------------------------------------------------------------------------------------------
-Atomic coordinates:
-     Al            0            0            0
-     Al            0          1/2          1/2
-     Al          1/2            0          1/2
-     Al          1/2          1/2            0
+Atomic sites:
+     Al            0            0            0   (x4)
 ----------------------------------------------------------------------------------------------------
 Dynamic info for Al (100%):
    type: S(alpha,beta) [from VDOS]
@@ -109,14 +106,11 @@ Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 114.756
 Atoms / unit cell       : 4
 ----------------------------------------------------------------------------------------------------
-Atoms in unit cell (total 4):
-     4 Al atoms [T_Debye=412.207K, MSD=0.00980669Aa^2]
+Atom positions in unit cell (total 4):
+     4 Al positions [T_Debye=412.207K, MSD=0.00980669Aa^2]
 ----------------------------------------------------------------------------------------------------
-Atomic coordinates:
-     Al            0            0            0
-     Al            0          1/2          1/2
-     Al          1/2            0          1/2
-     Al          1/2          1/2            0
+Atomic sites:
+     Al            0            0            0   (x4)
 ----------------------------------------------------------------------------------------------------
 Dynamic info for Al (100%):
    type: S(alpha,beta) [from VDOS]
@@ -183,14 +177,11 @@ Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 34.0016
 Atoms / unit cell       : 4
 ----------------------------------------------------------------------------------------------------
-Atoms in unit cell (total 4):
-     4 Al atoms [T_Debye=412.207K, MSD=0.00980669Aa^2]
+Atom positions in unit cell (total 4):
+     4 Al positions [T_Debye=412.207K, MSD=0.00980669Aa^2]
 ----------------------------------------------------------------------------------------------------
-Atomic coordinates:
-     Al            0            0            0
-     Al            0          1/2          1/2
-     Al          1/2            0          1/2
-     Al          1/2          1/2            0
+Atomic sites:
+     Al            0            0            0   (x4)
 ----------------------------------------------------------------------------------------------------
 Dynamic info for Al (100%):
    type: S(alpha,beta) [from VDOS]
