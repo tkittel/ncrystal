@@ -10,7 +10,7 @@ Coinciding atoms (differing by a lattice vector) rejected: The same atom positio
 Coinciding atoms (across x boundary) rejected: The same atom position is used twice: O (0.99999, 0, 0) and Al (0, 0, 0)
 Coinciding atoms (across y and z boundaries) rejected: The same atom position is used twice: Al (0.5, 0, 0) and O (0.5, 0.99999, 2e-05)
 Coinciding atoms (not adjacent in x-, y- or z-sorted lists) rejected: The same atom position is used twice: Al (0.1, 0.1, 0.1) and O (0.10002, 0.10002, 0.10002)
-Nearby positions accepted (n_atoms=2)
+Nearby positions accepted (n_positions=2)
 P1 structure in cubic cell (no SG): True
 P1 structure declared as SG-221 rejected
 P312 structure as SG-149: True

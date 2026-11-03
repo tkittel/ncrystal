@@ -84,10 +84,10 @@ def site_errors():
             load( sites, sg )
     #Within the tolerance a site is moved onto the special position:
     info = load( [ 'Al 0.0001 0 0' ] )
-    print( 'Site Al (0.0001, 0, 0) in 225:', info.structure_info['n_atoms'], 'atoms' )
-    assert info.structure_info['n_atoms'] == 4
+    print( 'Site Al (0.0001, 0, 0) in 225:', info.structure_info['n_positions'], 'atoms' )
+    assert info.structure_info['n_positions'] == 4
     info = load( [ 'Al 0 0 0', 'Cr 1/2 1/2 1/2' ] )
-    assert info.structure_info['n_atoms'] == 8
+    assert info.structure_info['n_positions'] == 8
     with ensure_error( NC.NCBadInput ):
         load( [ 'Al 0 0 0', 'Cr 1/2 1/2 1/2' ], fracs = { 'Al' : 0.3, 'Cr' : 0.7 } )
 
@@ -108,7 +108,7 @@ def main():
         xs = NC.createScatter( 'sites.ncmat;inelas=0' ).xsect( egrid )
         xs_orig = NC.createScatter( f'{name};inelas=0' ).xsect( egrid )
         assert np.allclose( xs, xs_orig, rtol = 1e-12, atol = 0.0 ), name
-        print( f'{name}: {nsites} sites -> {info.structure_info["n_atoms"]} atoms'
+        print( f'{name}: {nsites} sites -> {info.structure_info["n_positions"]} atoms'
                f' (setting {info.structure_info["spacegroup_setting"]}), same positions and xs' )
 
     #A monoclinic structure with its 2-fold axis along c loads with the
@@ -129,9 +129,9 @@ def main():
 """
     NC.registerInMemoryFileData( 'p2c.ncmat', p2c )
     info = NC.createInfo( 'p2c.ncmat;inelas=0;dcutoff=1.0' )
-    print( 'P2 with 2-fold along c (3:c):', info.structure_info['n_atoms'], 'atoms,',
+    print( 'P2 with 2-fold along c (3:c):', info.structure_info['n_positions'], 'atoms,',
            info.atominfos[0].sites, 'setting', info.structure_info['spacegroup_setting'] )
-    assert info.structure_info['n_atoms'] == 2
+    assert info.structure_info['n_positions'] == 2
     fam = { e.hkl_label: ( e.mult, sorted( zip( map(int,e.h), map(int,e.k), map(int,e.l) ) ) )
             for e in info.hklObjects() }
     for lbl, (mult, eqv) in fam.items():
@@ -277,9 +277,9 @@ def main():
     print( 'v8, 167:H (wrong case):', msg )
     assert 'change it to "167:h"' in msg
     info = load_r( '167:h' )
-    print( 'v8, 167:h:', info.structure_info['n_atoms'], 'atoms, setting',
+    print( 'v8, 167:h:', info.structure_info['n_positions'], 'atoms, setting',
            info.structure_info['spacegroup_setting'] )
-    assert info.structure_info['n_atoms'] == 12
+    assert info.structure_info['n_positions'] == 12
 
 if __name__ == '__main__':
     main()

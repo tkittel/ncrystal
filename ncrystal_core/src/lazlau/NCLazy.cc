@@ -341,7 +341,7 @@ namespace NCRYSTAL_NAMESPACE {
             nc_assert_always( formulaPerUnitCell.has_value() );
             auto natoms = chemform_ntot * formulaPerUnitCell.value();
             nc_assert_always( natoms < 60000 );
-            si.n_atoms = static_cast<unsigned>(natoms);
+            si.n_positions = static_cast<unsigned>(natoms);
 
             //Prepare stuff needed for processing the data lines:
             this->rec_lattice.emplace( si.lattice_a, si.lattice_b, si.lattice_c,

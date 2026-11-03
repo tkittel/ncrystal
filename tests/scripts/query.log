@@ -509,7 +509,7 @@ Caught expected NCBadInput('Invalid key for JSON Huge Vector: "2"')
 Caught expected NCBadInput('Invalid key for JSON Huge Vector: "5"')
 Normal query with huge arrays worked afterwards
 >>> Info query ['list']:
-('structure', 'sites')
+('structure', 'sites', 'occupancies')
 >>> Info query ['structure']:
 {'a': 4.04958,
  'alpha': 90.0,
@@ -517,7 +517,8 @@ Normal query with huge arrays worked afterwards
  'beta': 90.0,
  'c': 4.04958,
  'gamma': 90.0,
- 'n_atoms': 4,
+ 'n_atoms_average': 4.0,
+ 'n_positions': 4,
  'spacegroup': 225,
  'spacegroup_setting': '225',
  'volume': 66.4094599931859}
