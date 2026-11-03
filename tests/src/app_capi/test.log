@@ -4,5 +4,6 @@ NCrystal WARNING: The ncrystal_info_hasatompos function is obsolete. Please stop
 NCrystal WARNING: The ncrystal_info_hasanydebyetemp function is obsolete. Please stop using it and instead call ncrystal_info_hasatomdebyetemp().
 NCrystal WARNING: The ncrystal_info_getdebyetempbyelement function is obsolete. Please stop using it.
 NCrystal WARNING: The ncrystal_info_getglobaldebyetemp function is obsolete. Please stop using it.
+NCrystal WARNING: The ncrystal_info_getstructure function is obsolete. Please use ncrystal_info_cquery instead (note that the last argument of ncrystal_info_getstructure is now the number of atom positions, and not the average number of atoms in case of partial occupancies).
 NCrystal WARNING: The ncrystal_get_file_contents function is obsolete. Please stop using it and use the ncrystal_get_text_data function instead.
 NCrystal WARNING: The ncrystal_genscatter_nonoriented function is obsolete. Please use the ncrystal_samplescatterisotropic function instead.
