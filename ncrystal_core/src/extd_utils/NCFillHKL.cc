@@ -169,7 +169,8 @@ namespace NCRYSTAL_NAMESPACE {
         if ( ! ( ncabs( ai.atomData().coherentScatLen() ) > 0.0 ) )
           continue;//ignore "sterile" species
         res.msd.push_back( ai.msd().value() );
-        res.csl.push_back( ai.atomData().coherentScatLen() );
+        //Average scattering length of the positions (random vacancies):
+        res.csl.push_back( ai.atomData().coherentScatLen() * ai.occupancy() );
         SmallVector<Vector,32> pos;
         pos.reserve_hint( ai.unitCellPositions().size() );
         for ( const auto& p : ai.unitCellPositions() )

@@ -96,7 +96,7 @@ def test_duplicate_positions():
     #But nearby (0.0002) distinct positions are fine:
     si = load( '4 5 6', '90 90 90', 0,
                [('Al','0 0 0'),('O','0.9998 0 0')] ).structure_info
-    print(f'Nearby positions accepted (n_atoms={si["n_atoms"]})')
+    print(f'Nearby positions accepted (n_positions={si["n_positions"]})')
 
 def test_symmetry_selfcheck():
     #The structure must have the symmetry assumed by NCrystal for the space

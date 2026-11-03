@@ -175,7 +175,10 @@ namespace NCRYSTAL_NAMESPACE {
             }
             if ( ppwcutoff && ppwcutoff->hasPlanesWithheldInLastLoop() ) {
               nc_assert_always(info.hasStructureInfo());
-              cl.emplace_back(makeSO<PowderBragg>(info.getStructureInfo(),
+              const double v0natoms
+                = ( info.getStructureInfo().volume
+                    * info.getStructureInfo().n_atoms_average );
+              cl.emplace_back(makeSO<PowderBragg>(v0natoms,
                                                   ppwcutoff->consumePlanesWithheldInLastLoop()));
             }
             return cl;
@@ -339,7 +342,7 @@ namespace NCRYSTAL_NAMESPACE {
 
           unsigned ntot = 0.0;
           for ( auto& ai : info.getAtomInfos() )
-            ntot += ai.numberPerUnitCell();
+            ntot += ai.numberOfPositions();
           for ( auto& ai_orig : info.getAtomInfos() ) {
             auto * ai_ptr = &ai_orig;
             components.addfct_cl([&info,ai_ptr,vdoslux,knllux,ntot]()
@@ -352,7 +355,7 @@ namespace NCRYSTAL_NAMESPACE {
                                                                 ai.atomData().scatteringXS(),
                                                                 ai.atomData().averageMassAMU(),
                                                                 vdoslux );
-              const double scale = ai.numberPerUnitCell()*1.0/ntot;
+              const double scale = ai.numberOfPositions()*1.0/ntot;
               if ( knllux == -1 ) {
                 //legacy:
                 auto scathelper = SAB::createScatterHelperWithCache( std::move(sabdata) );

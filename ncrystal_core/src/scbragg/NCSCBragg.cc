@@ -102,7 +102,8 @@ NC::SCBragg::pimpl::pimpl(const NC::Info& cinfo, MosaicityFWHM mosaicity,
   //Setup based on structure info:
   RotMatrix reci_lattice = getReciprocalLatticeRot( cinfo.getStructureInfo() );
   RotMatrix cry2lab = getCrystal2LabRot( sco, reci_lattice );
-  double V0numAtom = cinfo.getStructureInfo().n_atoms * cinfo.getStructureInfo().volume;
+  double V0numAtom = ( cinfo.getStructureInfo().n_atoms_average
+                       * cinfo.getStructureInfo().volume );
 
   double maxdsp = setupFamilies( cinfo, cry2lab, plane_provider, V0numAtom );
 
