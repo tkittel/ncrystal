@@ -8,20 +8,20 @@ exposure, no occupancies: n_positions=8 n_atoms_average=8 occupancies=(1.0, 1.0)
   AtomInfo(Na, 4, DebyeT=300K, MSD=0.021212Aa^2, hasPositions=yes) numberOfPositions=4 averageNumberOfAtoms=4 occupancy=1
   AtomInfo(Cl, 4, DebyeT=300K, MSD=0.0137552Aa^2, hasPositions=yes) numberOfPositions=4 averageNumberOfAtoms=4 occupancy=1
   dump: Atoms / unit cell       : 8
-  dump: 4 Na atoms [T_Debye=300K, MSD=0.021212Aa^2]
-  dump: 4 Cl atoms [T_Debye=300K, MSD=0.0137552Aa^2]
+  dump: 4 Na positions [T_Debye=300K, MSD=0.021212Aa^2]
+  dump: 4 Cl positions [T_Debye=300K, MSD=0.0137552Aa^2]
 exposure, Na 9/10, Cl 2/3: n_positions=8 n_atoms_average=6.26666666667 occupancies=(0.9, 0.6666666666666666)
   AtomInfo(Na, 4, occupancy=0.9, DebyeT=300K, MSD=0.021212Aa^2, hasPositions=yes) numberOfPositions=4 averageNumberOfAtoms=3.6 occupancy=0.9
   AtomInfo(Cl, 4, occupancy=0.666667, DebyeT=300K, MSD=0.0137552Aa^2, hasPositions=yes) numberOfPositions=4 averageNumberOfAtoms=2.66666666667 occupancy=0.666666666667
-  dump: Atoms / unit cell       : 8
-  dump: 4 Na atoms [T_Debye=300K, MSD=0.021212Aa^2]
-  dump: 4 Cl atoms [T_Debye=300K, MSD=0.0137552Aa^2]
+  dump: Atoms / unit cell       : 6.26667 (8 positions)
+  dump: 4 Na positions [occupancy=0.9, T_Debye=300K, MSD=0.021212Aa^2]
+  dump: 4 Cl positions [occupancy=0.666667, T_Debye=300K, MSD=0.0137552Aa^2]
 exposure, Na in two roles: n_positions=8 n_atoms_average=5.6 occupancies=(0.9, 0.5)
   AtomInfo(Na(a), 4, occupancy=0.9, DebyeT=300K, MSD=0.021212Aa^2, hasPositions=yes) numberOfPositions=4 averageNumberOfAtoms=3.6 occupancy=0.9
   AtomInfo(Na(b), 4, occupancy=0.5, DebyeT=250K, MSD=0.0302859Aa^2, hasPositions=yes) numberOfPositions=4 averageNumberOfAtoms=2 occupancy=0.5
-  dump: Atoms / unit cell       : 8
-  dump: 4 Na(a) atoms [T_Debye=300K, MSD=0.021212Aa^2]
-  dump: 4 Na(b) atoms [T_Debye=250K, MSD=0.0302859Aa^2]
+  dump: Atoms / unit cell       : 5.6 (8 positions)
+  dump: 4 Na(a) positions [occupancy=0.9, T_Debye=300K, MSD=0.021212Aa^2]
+  dump: 4 Na(b) positions [occupancy=0.5, T_Debye=250K, MSD=0.0302859Aa^2]
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): The AtomInfo.count property is obsolete. Please use .numberOfPositions (or .averageNumberOfAtoms) instead. [warn#1]
 AtomInfo.count: 4
 AtomInfo.count: 4
