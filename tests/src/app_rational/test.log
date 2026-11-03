@@ -1,0 +1,7 @@
+rationalFromDouble recovers all 90600 fractions a/b with |a|<=b<=300: OK
+rationalFromDouble recovers 1010031 decimals: OK
+rationalFromDouble agrees with brute force search on 3000 values (1000 with a rational): OK
+rationalFromDouble edge cases: OK
+rationalFromDouble(x,64) agrees with detectSimpleRationalNumbers on 102144 fractions and random values: OK
+On 4288 doubles next to those fractions, only detectSimpleRationalNumbers finds a fraction for 240 (and they never disagree): OK
+All OK
