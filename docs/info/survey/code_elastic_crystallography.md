@@ -387,7 +387,7 @@ On this branch, only `knllux` and the `vdoslux` extensions are new in cfgutils (
 - strain
 - ncmat2hkl, ncmat2hkl2 (laz/lau round trip)
 - cif2ncmat, cif2ncmatgen, long_cif2ncmatgen (random CIFs in all 230 space groups)
-- composer, composer2, verifyatompos (ase)
+- composer, composer2
 - dkelas (scatknl materials, Info and process level, including elastic)
 - pgbe (issue #171, LCBragg)
 - mmc_scge, mmc_scpg (single-crystal Ge and PG via MiniMC)
