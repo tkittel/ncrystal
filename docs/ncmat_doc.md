@@ -890,7 +890,8 @@ materials and provide their own displacement and effective temperature data,
 rather than relying on the automatic estimation of these quantities directly
 from the kernels. Additionally, rules concerning the @STATEOFMATTER and
 @SPACEGROUP sections have been updated, the @DEBYETEMPERATURE section is no
-longer allowed, and a new @ATOMSITES section is introduced.
+longer allowed, and new @ATOMSITES and @ATOMOCCUPANCIES sections are
+introduced.
 
 ## The @SPACEGROUP section accepts a setting ##
 
@@ -944,6 +945,37 @@ As an example, diamond silicon can be given by its single site:
 ```
 
 Here the site is expanded to the 8 atoms of the unit cell.
+
+## The @ATOMOCCUPANCIES section ##
+
+The new optional @ATOMOCCUPANCIES section allows the description of crystals in
+which some atom positions are vacant. Each line contains an element name (or a
+label defined in @ATOMDB) followed by its occupancy: the probability that a
+given position of that element is actually occupied, a number in the interval
+(0,1] which can also be given as a fraction (e.g. `2/3`). The occupancy applies
+to all positions of the element, and elements which are not listed have an
+occupancy of 1. Each element can only be listed once, and must appear in the
+@ATOMPOSITIONS or @ATOMSITES section. The section must not be empty. For
+example:
+
+```
+@ATOMOCCUPANCIES
+  Na 0.9
+  Cl 2/3
+```
+
+The occupancy is thus an average over the unit cells of the crystal, in each of
+which a given position is either occupied or vacant. The vacancies are assumed
+to be distributed without any correlation between positions, and the average
+number of atoms of an element in the unit cell is the number of its positions
+times its occupancy (e.g. 3.6 for four positions with an occupancy of 0.9). The
+fractions in the @DYNINFO sections must be consistent with these average
+numbers.
+
+As always, if a particular element appears in multiple roles within a material,
+one must use generic labels defined in the @ATOMDB section to separate the
+roles. This is therefore necessary in case different sites of a given element
+have different occupancies.
 
 ## Changes for the @DYNINFO section ##
 
@@ -1064,9 +1096,10 @@ a basic syntax highlighting of .ncmat files:
 ```
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Major mode for .ncmat files:
-(setq ncmat-sections '("CELL" "ATOMPOSITIONS" "ATOMSITES" "SPACEGROUP"
-                       "DEBYETEMPERATURE" "DYNINFO" "TEMPERATURE" "DENSITY"
-                       "ATOMDB" "STATEOFMATTER" "OTHERPHASES" "CUSTOM_[A-Z]+"))
+(setq ncmat-sections '("CELL" "ATOMPOSITIONS" "ATOMSITES" "ATOMOCCUPANCIES"
+                       "SPACEGROUP" "DEBYETEMPERATURE" "DYNINFO"
+                       "TEMPERATURE" "DENSITY" "ATOMDB" "STATEOFMATTER"
+                       "OTHERPHASES" "CUSTOM_[A-Z]+"))
 (setq ncmat-fields '("lengths" "angles" "cubic" "element" "fraction" "type"
                      "debye_temp" "temperature" "msd" "at_temperature"
                      "effective_temperature" "sab_scaled" "sab"
