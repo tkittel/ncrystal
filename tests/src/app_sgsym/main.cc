@@ -36,6 +36,9 @@ namespace NCRYSTAL_NAMESPACE {
   namespace detail {
     //fwd declare internal fct:
     std::vector<SymOp> rawSymOpsFromHallSymbol( StrView );
+    //Private to the sgsym component (NCSGExactOrbit.hh):
+    Optional<std::pair<std::int64_t,std::int64_t>>
+    rationalFromDouble( double x, std::int64_t maxDenominator );
   }
 }
 
@@ -798,6 +801,18 @@ namespace {
     return m;
   }
 
+  //Value as recovered by rationalFromDouble, e.g. "1/10" or "0":
+  std::string fracStr( double x )
+  {
+    const auto r = NC::detail::rationalFromDouble( x, 100 );
+    nc_assert_always( r.has_value() );
+    std::ostringstream ss;
+    ss << r.value().first;
+    if ( r.value().second != 1 )
+      ss << '/' << r.value().second;
+    return ss.str();
+  }
+
   bool inUnitCell( const NC::Vector& v )
   {
     return ( v.x() >= 0.0 && v.x() < 1.0 && v.y() >= 0.0 && v.y() < 1.0
@@ -911,6 +926,67 @@ void run()
   expectBad( "1", NC::Vector( std::numeric_limits<double>::quiet_NaN(),
                               0.0, 0.0 ) );
   expectBad( "1", NC::Vector( 0.0, NC::kInfinity, 0.0 ) );
+
+  //Rational coordinates are expanded exactly, so all positions are the
+  //correctly rounded values of their fractions (e.g. 1-1/10 gives exactly the
+  //double of 9/10, unlike 1.0-0.1 in double arithmetic):
+  std::cout << "Exact expansion of rational coordinates:" << std::endl;
+  {
+    //Images of (1/10,7/20,7/10) have denominators dividing lcm(20,24)=120:
+    std::size_t ncoords = 0;
+    for ( std::uint16_t hn = 1; hn <= 530; ++hn ) {
+      const NC::SpaceGroup sg{ NC::SpaceGroupSettingIdx{ hn } };
+      const auto orbit = NC::expandSiteToOrbit( NC::SGSymmetry::get( sg ),
+                                                NC::Vector( 0.1, 0.35, 0.7 ) );
+      for ( auto& p : orbit.positions ) {
+        for ( double c : { p.x(), p.y(), p.z() } ) {
+          const auto r = NC::detail::rationalFromDouble( c, 1000000 );
+          REQUIRE( r.has_value() && 120 % r.value().second == 0 );
+          ++ncoords;
+        }
+      }
+    }
+    std::cout << "  (0.1, 0.35, 0.7) in all 530 settings: all " << ncoords
+              << " coordinates exact" << std::endl;
+    //Printing the positions:
+    const auto o = expand( "62", NC::Vector( 0.1, 0.25, 0.2 ) );
+    std::cout << "  62 site (0.1, 0.25, 0.2):";
+    for ( auto& p : o.positions ) {
+      std::cout << " (" << fracStr( p.x() ) << ", " << fracStr( p.y() )
+                << ", " << fracStr( p.z() )
+                << ")";
+      REQUIRE( p.x() == 0.1 || p.x() == 0.4 || p.x() == 0.6 || p.x() == 0.9 );
+    }
+    std::cout << std::endl;
+    //Rounded special positions are symmetrised to exactly 1/3, 2/3:
+    const auto o2 = expand( "194", NC::Vector( 0.3333, 0.6667, 0.25 ) );
+    REQUIRE( o2.positions.size() == 2 );
+    REQUIRE( o2.positions.front().x() == 1.0 / 3.0 );
+    REQUIRE( o2.positions.front().y() == 2.0 / 3.0 );
+    REQUIRE( o2.positions.back().x() == 2.0 / 3.0 );
+    REQUIRE( o2.positions.back().y() == 1.0 / 3.0 );
+    std::cout << "  194 site (0.3333, 0.6667, 0.25): exactly (1/3, 2/3, 1/4)"
+              << " and (2/3, 1/3, 3/4)" << std::endl;
+    //Coordinates which are not simple rationals, or with a too large common
+    //denominator (here about 1e16), are expanded in double arithmetic
+    //instead:
+    const double s2 = std::sqrt( 2.0 ) - 1.0;
+    const auto o3 = expand( "62", NC::Vector( s2, 0.25, 0.2 ) );
+    REQUIRE( o3.positions.size() == 4 && o3.positions.front().x() == s2 );
+    const double big1 = 12345677.0 / 99999989.0;
+    const double big2 = 23456789.0 / 99999971.0;
+    const auto o4 = expand( "191", NC::Vector( big1, big2, 0.1 ) );
+    REQUIRE( o4.positions.size() == 24 );
+    REQUIRE( o4.positions.front().x() == big1 );
+    for ( auto& p : o4.positions ) {
+      bool found = false;
+      for ( auto& q : o4.positions )
+        if ( pdist( p, NC::Vector( q.y(), q.x(), 1.0 - q.z() ) ) < 1e-15 )
+          found = true;
+      REQUIRE( found );//(y,x,-z) is an operation of 191
+    }
+    std::cout << "  Fallback to double arithmetic: OK" << std::endl;
+  }
   std::cout << "All OK" << std::endl;
 }
 

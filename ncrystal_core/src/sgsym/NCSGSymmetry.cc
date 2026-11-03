@@ -23,6 +23,7 @@
 #include "NCrystal/internal/utils/NCStrView.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
+#include "NCSGExactOrbit.hh"
 #include <set>
 #include <mutex>
 
@@ -569,8 +570,8 @@ NC::SGSymmetry::SGSymmetry( internal_t, SpaceGroup sg )
 
 namespace NCRYSTAL_NAMESPACE {
   namespace {
-    constexpr double site_merge_tol = 5e-4;
-    constexpr double site_distinct_tol = 1e-2;
+    using detail::site_merge_tol;
+    using detail::site_distinct_tol;
 
     double wrapCoord( double x )
     {
@@ -601,17 +602,19 @@ namespace NCRYSTAL_NAMESPACE {
       return ncmax( ncabs( d.x() ), ncabs( d.y() ), ncabs( d.z() ) );
     }
 
-    [[noreturn]] void throwNearSpecial( const Vector& site, double dist )
-    {
-      NCRYSTAL_THROW2(BadInput,"The site ("<<fmt(site.x())<<", "
-                      <<fmt(site.y())<<", "<<fmt(site.z())<<") is close to a"
-                      " special position but not on it (symmetry-equivalent"
-                      " positions are only "<<fmt(dist,"%.2g")<<" apart in"
-                      " fractional coordinates). For sites on special"
-                      " positions, specify coordinates with sufficient"
-                      " precision, preferably as exact fractions like 1/3.");
-    }
+    using detail::throwNearSpecial;
   }
+}
+
+void NC::detail::throwNearSpecial( const Vector& site, double dist )
+{
+  NCRYSTAL_THROW2(BadInput,"The site ("<<fmt(site.x())<<", "
+                  <<fmt(site.y())<<", "<<fmt(site.z())<<") is close to a"
+                  " special position but not on it (symmetry-equivalent"
+                  " positions are only "<<fmt(dist,"%.2g")<<" apart in"
+                  " fractional coordinates). For sites on special"
+                  " positions, specify coordinates with sufficient"
+                  " precision, preferably as exact fractions like 1/3.");
 }
 
 NC::SGSiteOrbit NC::expandSiteToOrbit( const SGSymmetry& sym,
@@ -621,6 +624,13 @@ NC::SGSiteOrbit NC::expandSiteToOrbit( const SGSymmetry& sym,
        || !std::isfinite( input_site.z() ) )
     NCRYSTAL_THROW2(BadInput,"Invalid site coordinates: ("<<input_site.x()
                     <<", "<<input_site.y()<<", "<<input_site.z()<<")");
+  {
+    SGSiteOrbit res;
+    if ( detail::expandSiteToOrbitExact( sym, input_site, res ) )
+      return res;
+  }
+
+  //Otherwise in doubles:
   const Vector site = wrapPos( input_site );
   const auto& ops = sym.operations();
 
