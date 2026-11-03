@@ -39,6 +39,12 @@ int main(int argc, char** argv) {
   ncrystal_info_hasanydebyetemp( info );
   ncrystal_info_getdebyetempbyelement( info, 0 );
   ncrystal_info_getglobaldebyetemp( info );
+  {
+    unsigned sg, npos;
+    double a, b, c, alpha, beta, gamma, vol;
+    ncrystal_info_getstructure( info, &sg, &a, &b, &c, &alpha, &beta, &gamma,
+                                &vol, &npos );
+  }
   char* foo = ncrystal_get_file_contents( "stdlib::Al_sg225.ncmat" );
   ncrystal_dealloc_string(foo);
 

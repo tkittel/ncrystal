@@ -12,6 +12,7 @@ phys_utils
 plugins
 query
 sab
+sgsym
 threads
 utils
 vdos

@@ -47,6 +47,7 @@
 #include "NCrystal/internal/ncmat/NCParseNCMAT.hh"
 #include "NCrystal/misc/NCCompositionUtils.hh"
 #include "NCrystal/internal/query/NCQuery.hh"
+#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 #include <cstdio>
 #include <chrono>
 #include <map>
@@ -569,13 +570,116 @@ void ncrystal_invalidate(void* o)
   ncc::internal(o) = 0;
 }
 
+int ncrystal_info_cquery( ncrystal_info_t ci, const char* key,
+                          ncrystal_cqueryresult_t* res )
+{
+  try {
+    if ( !res ) {
+      ncc::setError("ncrystal_info_cquery: null result pointer","BadInput");
+      return 0;
+    }
+    res->val_str[0] = '\0';
+    for ( auto& e : res->val_dbl )
+      e = 0.0;
+    res->is_error = res->n_dbl = res->has_str = res->reserved_int = 0;
+    res->reserved = nullptr;
+    auto setStr = [res]( const std::string& s )
+    {
+      constexpr std::size_t nmax = sizeof(res->val_str) - 1;
+      const std::size_t n = NC::ncmin( s.size(), nmax );
+      std::memcpy( res->val_str, s.data(), n );
+      res->val_str[n] = '\0';
+      if ( s.size() > nmax && nmax >= 3 )
+        std::memcpy( res->val_str + nmax - 3, "...", 3 );//truncated
+    };
+    auto setError = [res,&setStr]( const char* type, const char* msg )
+    {
+      setStr( std::string(type) + ": " + msg );
+      res->is_error = 1;
+      res->n_dbl = res->has_str = 0;
+    };
+    try {
+      auto& info = ncc::extract(ci);
+      const NC::StrView k( key ? key : "" );
+      auto setDbls = [res]( std::initializer_list<double> l )
+      {
+        nc_assert_always( l.size() <= 12 );
+        for ( auto v : l )
+          res->val_dbl[res->n_dbl++] = v;
+      };
+      auto structInfo = [&info,&k]() -> const NC::StructureInfo&
+      {
+        if ( info->isMultiPhase() || !info->hasStructureInfo() )
+          NCRYSTAL_THROW2(MissingInfo,"Structure information is not"
+                          " available (needed for key \""<<k<<"\")");
+        return info->getStructureInfo();
+      };
+      static const char * s_keys
+        = "spacegroup,spacegroup_setting,lattice_abc,lattice_angles,"
+          "cell_volume,n_positions,n_atoms_average,cell_numberdensity";
+      if ( k == "list" ) {
+        setStr( s_keys );
+        res->has_str = 1;
+      } else if ( k == "spacegroup" ) {
+        setDbls( { double( structInfo().spacegroup ) } );
+      } else if ( k == "spacegroup_setting" ) {
+        const auto& si = structInfo();
+        if ( !si.spacegroup_setting.has_value() )
+          NCRYSTAL_THROW(MissingInfo,"Space group setting is not available");
+        setDbls( { double( si.spacegroup_setting.value().get() ) } );
+        setStr( NC::SpaceGroup( si.spacegroup_setting.value() ).toString() );
+        res->has_str = 1;
+      } else if ( k == "lattice_abc" ) {
+        const auto& si = structInfo();
+        setDbls( { si.lattice_a, si.lattice_b, si.lattice_c } );
+      } else if ( k == "lattice_angles" ) {
+        const auto& si = structInfo();
+        setDbls( { si.alpha, si.beta, si.gamma } );
+      } else if ( k == "cell_volume" ) {
+        setDbls( { structInfo().volume } );
+      } else if ( k == "n_positions" ) {
+        setDbls( { double( structInfo().n_positions ) } );
+      } else if ( k == "n_atoms_average" ) {
+        setDbls( { structInfo().n_atoms_average } );
+      } else if ( k == "cell_numberdensity" ) {
+        const auto& si = structInfo();
+        setDbls( { info->getNumberDensity().dbl() / si.n_atoms_average } );
+      } else {
+        NCRYSTAL_THROW2(BadInput,"Unknown key for ncrystal_info_cquery: \""
+                        <<k<<"\" (the key \"list\" gives the supported"
+                        " keys)");
+      }
+      return 1;
+    } catch ( NC::Error::Exception& e ) {
+      setError( e.getTypeName(), e.what() );
+    } catch ( std::exception& e ) {
+      setError( "Error", e.what() );
+    }
+  } catch (...) {
+  }
+  if ( res ) {
+    res->is_error = 1;
+    if ( res->val_str[0] == '\0' ) {
+      static const char msg[] = "unknown error";
+      std::memcpy( res->val_str, msg, sizeof(msg) );
+    }
+  }
+  return 0;
+}
+
 int ncrystal_info_getstructure( ncrystal_info_t ci,
                                 unsigned* spacegroup,
                                 double* lattice_a, double* lattice_b, double* lattice_c,
                                 double* alpha, double* beta, double* gamma,
                                 double* volume, unsigned* n_atoms )
 {
+  //obsolete fct:
   try {
+    static NC::Msg::WarnFirstTime wf;
+    wf("The ncrystal_info_getstructure function is obsolete. Please use"
+       " ncrystal_info_cquery instead (note that the last argument of"
+       " ncrystal_info_getstructure is now the number of atom positions,"
+       " and not the average number of atoms in case of partial occupancies).");
     auto& info = ncc::extract(ci);
     if (!info->hasStructureInfo())
       return 0;

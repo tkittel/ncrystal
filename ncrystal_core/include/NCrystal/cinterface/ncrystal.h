@@ -398,6 +398,14 @@ extern "C" {
 #  undef ncrystal_info_getstructure
 #endif
 #define ncrystal_info_getstructure NCRYSTAL_APPLY_C_NAMESPACE(info_getstructure)
+#ifdef ncrystal_info_cquery
+#  undef ncrystal_info_cquery
+#endif
+#define ncrystal_info_cquery NCRYSTAL_APPLY_C_NAMESPACE(info_cquery)
+#ifdef ncrystal_cqueryresult_t
+#  undef ncrystal_cqueryresult_t
+#endif
+#define ncrystal_cqueryresult_t NCRYSTAL_APPLY_C_NAMESPACE(cqueryresult_t)
 #ifdef ncrystal_info_gettemperature
 #  undef ncrystal_info_gettemperature
 #endif
@@ -848,13 +856,27 @@ extern "C" {
   /*============================================================================== */
   /*============================================================================== */
 
-  /*Access crystal structure. Returns 0 if structure information is unavailable,   */
-  /*otherwise the passed parameters are set and 1 is returned:                     */
-  NCRYSTAL_API int ncrystal_info_getstructure( ncrystal_info_t,
-                                               unsigned* spacegroup,
-                                               double* lattice_a, double* lattice_b, double* lattice_c,
-                                               double* alpha, double* beta, double* gamma,
-                                               double* volume, unsigned* n_atoms );
+  /* Generic access to material information:                                       */
+  /*                                                                               */
+  /* Supported keys include at least the following, with the n_dbl first values of */
+  /* val_dbl and/or (if has_str) val_str set as appropriate (cf. C++ documentation */
+  /* for what the quantities are):                                                 */
+  /*    "spacegroup", "spacegroup_setting" (index and name), "lattice_abc",        */
+  /*    "lattice_angles", "cell_volume", "n_positions", "n_atoms_average",         */
+  /*    "cell_numberdensity"                                                       */
+  /* The key "list" puts a comma separated list of all supported keys in val_str.  */
+  /* Returns 1 on success. Otherwise (unknown key, or information unavailable)     */
+  /* returns 0, sets is_error and puts the error message in val_str, prefixed      */
+  /* with the error type (e.g. "BadInput: ...").                                   */
+  typedef struct {
+    char val_str[1024];
+    double val_dbl[12];
+    int is_error, n_dbl, has_str, reserved_int;
+    void * reserved;
+  } ncrystal_cqueryresult_t;
+  NCRYSTAL_API int ncrystal_info_cquery( ncrystal_info_t,
+                                         const char* key,
+                                         ncrystal_cqueryresult_t* );
 
   /*Access various scalar information:                                             */
   NCRYSTAL_API double ncrystal_info_getxsectabsorption( ncrystal_info_t );
@@ -1434,6 +1456,15 @@ extern "C" {
 
   /*Obsolete function which now just is an alias for ncrystal_clear_caches above:  */
   NCRYSTAL_API void ncrystal_clear_info_caches(void);
+
+  /*Obsolete function. Use ncrystal_info_cquery instead. Returns 0 if structure    */
+  /*information is unavailable, otherwise the passed parameters are set and 1 is   */
+  /*returned (n_positions is the number of atom positions per unit cell):          */
+  NCRYSTAL_API int ncrystal_info_getstructure( ncrystal_info_t,
+                                               unsigned* spacegroup,
+                                               double* lattice_a, double* lattice_b, double* lattice_c,
+                                               double* alpha, double* beta, double* gamma,
+                                               double* volume, unsigned* n_positions );
 
   /*Obsolete function. Atom positions are now always available when                */
   /*ncrystal_info_natominfo returns a value greater than 0:                        */
