@@ -1467,7 +1467,7 @@ def _composerimpl_from_info( infoobj ):
 
     if i.isCrystalline():
         si = i.structure_info
-        si_natoms = si['n_atoms']
+        si_npositions = si['n_positions']
         o.set_cellsg( a = si['a'], b = si['b'], c = si['c'],
                       alpha = si['alpha'], beta = si['beta'], gamma = si['gamma'],
                       spacegroup = ( si['spacegroup'] or None ) )
@@ -1481,7 +1481,7 @@ def _composerimpl_from_info( infoobj ):
             for x,y,z in ai.positions:
                 all_atompos.append( (lbl,x,y,z) )#NB: site_occupancy=1 here!
         from .exceptions import nc_assert
-        nc_assert(len(all_atompos)==si_natoms)
+        nc_assert(len(all_atompos)==si_npositions)
         o.set_atompos( all_atompos )
     else:
         o.set_density( i.density, unit='g/cm3' )

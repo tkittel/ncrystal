@@ -100,7 +100,7 @@ def _actualtest( verbose ):
     require( si['alpha'] == 90.0 )
     require( si['beta'] == 90.0 )
     require( si['gamma'] == 90.0 )
-    require( si['n_atoms'] == 4 )
+    require( si['n_positions'] == 4 )
     require_flteq(si['volume'],66.4094599932)
     require( al.hasHKLInfo() )
     require( al.nHKL() == 3 )
