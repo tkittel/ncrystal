@@ -166,6 +166,9 @@ namespace NCRYSTAL_NAMESPACE {
     //The crystallographic sites: one per orbit of the space group setting, so
     //the unit cell positions are the symmetry images of the site positions
     //(the multiplicities add up to numberOfPositions()). Empty if unknown.
+    //When available, the unit cell positions are stored site by site: the
+    //first multiplicity positions are the (lexicographically sorted) orbit of
+    //the first site, starting with its representative position, and so on.
     struct NCRYSTAL_API Site {
       Pos position;              //orbit representative (fractional coordinates)
       unsigned multiplicity = 0; //number of positions in the orbit
