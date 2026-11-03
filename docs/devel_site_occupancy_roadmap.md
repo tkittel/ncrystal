@@ -1,8 +1,7 @@
 # Roadmap: partial site occupancy
 
-Status: **postponed to NCrystal 5.0**, since it requires C++ ABI changes (see
-below) and a new NCMAT format version. This note records the agreed design so
-work can resume from it.
+Status: **in progress for NCrystal 5.0.0** (branch `tk_occu`). This note
+records the agreed design, updated after the 2026-11 design discussion.
 
 ## Motivation and current state
 
@@ -23,21 +22,47 @@ mass of the element and zero cross sections (see
 
 ## Agreed design
 
-- **Occupancy is a property of the atom role (`AtomInfo`)**, not of
-  `AtomData`. The `AtomData` (possibly a mixture of elements/isotopes) keeps
-  meaning "what sits on the site when it is occupied". A vacancy
-  pseudo-component in `AtomData`/`@ATOMDB` was considered and rejected (it
-  would e.g. make the averaged mass o*m, which is wrong for the dynamics).
-- **Vacancies only.** Substitution (several elements sharing sites) already
-  works via `@ATOMDB` mixtures, including the disorder term. A partially
-  occupied mixed site combines both mechanisms.
-- **Format: new NCMAT version (v8) with a per-role `@ATOMSITEOCCUPANCIES`
-  section**, listing each atom label once (e.g. `Al 0.8`, fractions like `2/3`
-  allowed, default 1, valid range 0<o<=1). Occupancy is thus shared by all
-  positions of a role, like `@DYNINFO`. Sites of the same element with
-  different occupancies become different roles via `@ATOMDB` aliases (the
-  composer already creates such labels). Older format versions reject the
-  section, and existing files are unaffected.
+1. **Occupancy is a property of the atom role (`AtomInfo`)**, not of the
+   individual crystallographic sites, nor of `AtomData`. The `AtomData`
+   (possibly a mixture of elements/isotopes) keeps meaning "what sits on the
+   site when it is occupied". Sites of the same element with different
+   occupancies become different roles (via `@ATOMDB` aliases, as the composer
+   already does), which is natural since such sites most likely also differ
+   in dynamics. A vacancy pseudo-component in `AtomData`/`@ATOMDB` was
+   rejected (it would e.g. make the averaged mass o*m, which is wrong for the
+   dynamics).
+   - C++: new `double AtomInfo::occupancy() const` (1 if not specified). The
+     placeholder `AtomInfo::Site::occupancy` (added in the 5.0.0 development
+     cycle) is removed again, so there is a single source of truth.
+   - NCMAT v8: new section `@ATOMOCCUPANCIES`, listing each atom label at
+     most once (e.g. `Al 0.8`, fractions like `2/3` allowed, valid range
+     0<o<=1, default 1). Older format versions reject the section, and
+     existing files are unaffected.
+2. **Mixed sites (substitution) only via `@ATOMDB` mixtures**, which already
+   include the disorder term. A partially occupied mixed site combines a
+   mixture role with an `@ATOMOCCUPANCIES` entry. Several roles on the same
+   positions remain a load error: allowing it would need cross terms between
+   roles in the incoherent disorder term (4pi*[sum(o_i*b_i^2)-(sum(o_i*b_i))^2]
+   per site). Separate dynamics for the components of a mixture, and
+   molecular kernels covering several roles, would instead relax the
+   one-to-one `AtomInfo`/`DynamicInfo` relation; that is out of scope for
+   5.0.0.
+3. **Counting distinguishes positions from (average) atoms:**
+   `StructureInfo::n_positions` and `AtomInfo::numberOfPositions()` count
+   positions, while `StructureInfo::n_atoms_average` and
+   `AtomInfo::averageNumberOfAtoms()` are the occupancy-weighted counts
+   (positions*o). They replace `StructureInfo::n_atoms` and
+   `AtomInfo::numberPerUnitCell()`, so code assuming that a count of atoms
+   relates to e.g. the number density must choose explicitly. Composition,
+   density, number density and the consistency check of `@DYNINFO`
+   fractions use the average counts.
+4. **Anisotropic displacements are not part of NCMAT v8**; they will come with
+   a future format version (v9), rather than reserving syntax now. In C++,
+   `AtomInfo::Site::uij` stays as a reserved per-site placeholder (the tensor
+   refers to the site's representative position), and `InfoBuilder` rejects
+   it being set until its meaning is defined. The intention is that it will
+   only provide the shape of the displacements, the magnitude coming from the
+   role's msd.
 
 ## Physics
 
@@ -47,47 +72,43 @@ factor exp(-W):
 | Quantity | Treatment |
 |---|---|
 | Structure factor | Absorb o into the per-role coherent scattering lengths used by `NCFillHKL.cc` (the `csl` arrays), so no per-position weights or special fast paths are needed. |
-| Atoms per unit cell | sites*o, used for composition, density and number density. |
+| Atoms per unit cell | positions*o, used for composition, density and number density. |
 | Incoherent elastic | o*sigma_inc*exp(-2W), plus the disorder term 4pi*o(1-o)*b^2*exp(-2W), with b the (mixture-averaged) coherent scattering length of the `AtomData`. |
 | Inelastic, absorption | Unchanged per real atom (they follow the occupancy-weighted composition). |
 
 The disorder term assumes randomly placed vacancies (no short-range order),
 the standard approximation and what the current workaround gives.
 
-## Why this needs an ABI break
+## Interfaces
 
-- `AtomInfo` (public, `NCInfoTypes.hh`) needs a new data member, changing its
-  memory layout.
-- `AtomInfo::numberPerUnitCell()` should return the average number of atoms
-  per cell (sites*o, e.g. 3.6 for 4 sites at 90%), so its return type changes
-  from `unsigned` to `double`. A new `sitesPerUnitCell()` returns the number
-  of positions (4).
-- `StructureInfo::n_atoms` (`unsigned`) needs the same decision (sites or
-  average atoms).
-- The C API (`ncrystal_info_getatominfo` in `cinterface/ncrystal.h`) returns
-  an unsigned atom count, and must expose occupancy (with matching
-  `_chooks.py` changes, or preferably JSON queries where feasible).
-
-The existing `NCRYSTAL_ALLOW_ABI_BREAKAGE` define can be used to develop the
-public-interface parts before 5.0.
+- Public C++ headers change deliberately (5.0.0 is an ABI break anyway, and
+  `NCRYSTAL_ALLOW_ABI_BREAKAGE` is not used): `AtomInfo` gains the
+  occupancy, `AtomInfo::Site` loses its occupancy placeholder.
+- C API: the new `ncrystal_info_cquery` gives keyed access to e.g.
+  `n_positions`, `n_atoms_average` and `cell_numberdensity` (the latter is
+  what McStas components need), and `ncrystal_info_getstructure` is
+  obsolete. Occupancies are exposed through the JSON query path
+  (`ncrystal_info_jsonquery`, `Info._query`), and from there in the Python
+  `Info.AtomInfo` objects (`numberOfPositions`, `averageNumberOfAtoms`,
+  `occupancy`; `count` is an obsolete alias).
 
 ## Plan
 
 Each step its own commit(s), with tests:
 
-1. **Done:** refactoring of `NCFillHKL.cc` (shared F^2 calculation, so the
-   occupancy only needs to enter the per-role scattering lengths).
-2. **No ABI impact:** NCMAT v8 parsing of `@ATOMSITEOCCUPANCIES` into the
-   parser's internal data, the scattering length multiplier and the disorder
-   term, written against internal interfaces.
-3. **Behind `NCRYSTAL_ALLOW_ABI_BREAKAGE`:** the `AtomInfo` member,
-   `sitesPerUnitCell()`, and the `numberPerUnitCell()`/`n_atoms` semantics.
-   Without the define, NCMAT data using the new section gives a clear "not
-   supported in this build" error.
-4. **NCrystal 5.0:** C API and Python exposure (`Info.AtomInfo`), and
-   replacing the composer/`cif2ncmat` workaround by the new section (writing
-   v8 only when needed, reading it back in `from_ncmat`/`from_info`).
-5. Documentation: a v8 section in `docs/ncmat_doc.md`, and CHANGELOG entries.
+1. This design update.
+2. C++ data model: `AtomInfo::occupancy()`, removal of
+   `Site::occupancy`, `InfoBuilder` validation (range, reserved `uij`), and
+   occupancy-weighted composition and density.
+3. Physics: o*b in `NCFillHKL.cc`, and o*sigma_inc plus the disorder term in
+   the incoherent elastic model.
+4. NCMAT v8 parsing of `@ATOMOCCUPANCIES`, with error tests.
+5. JSON query and Python exposure.
+6. Validation tests (see below).
+7. Composer and `cif2ncmat`: write native occupancies (v8 only when needed),
+   read them back in `from_ncmat`/`from_info`, and remove the `Og`
+   workaround.
+8. Documentation: `docs/ncmat_doc.md` (v8 section) and CHANGELOG input.
 
 ## Validation
 
@@ -96,17 +117,16 @@ Each step its own commit(s), with tests:
   sections, while density and composition differ (the new ones correct).
 - Per-plane F^2 checked against an independent calculation including
   occupancy (reusing `tests/pypath/NCTestUtils/latticecells.py`).
-- Limits: o=1 identical to no section; continuity for small o; combination
-  with `@ATOMDB` mixtures.
+- Limits: o=1 bit-identical to no section; continuity for small o;
+  combination with `@ATOMDB` mixtures.
 - `cif2ncmat` round trips of partially occupied CIF data (occupancy support
   to be added to `tests/pypath/NCTestUtils/cifgen.py`): composition and
   density must match the CIF formula, without fake elements.
-- Errors: o<=0 or o>1, the section in pre-v8 files, `@DYNINFO` fractions
-  inconsistent with the weighted composition.
+- Errors: o<=0 or o>1, the section in pre-v8 files, unknown or repeated
+  labels, `@DYNINFO` fractions inconsistent with the weighted composition.
 
-## Related items (also postponed)
+## Related items
 
-- Anisotropic (per-site) displacements also need new NCMAT syntax and could
-  share the same format version bump.
+- Anisotropic (per-site) displacements: see design point 4.
 - The single crystal d-spacing spread (`delta_d`) is only a stub which throws
   if used; implementing it needs a new broadening model.
