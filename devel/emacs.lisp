@@ -21,8 +21,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Major mode for .ncmat files:
-(setq ncmat-sections '("CELL" "ATOMPOSITIONS" "SPACEGROUP" "DEBYETEMPERATURE" "DYNINFO" "TEMPERATURE"
-                       "DENSITY" "ATOMDB" "STATEOFMATTER" "OTHERPHASES" "CUSTOM_[A-Z]+"))
+(setq ncmat-sections '("CELL" "ATOMPOSITIONS" "ATOMSITES" "ATOMOCCUPANCIES"
+                       "SPACEGROUP" "DEBYETEMPERATURE" "DYNINFO"
+                       "TEMPERATURE" "DENSITY" "ATOMDB" "STATEOFMATTER"
+                       "OTHERPHASES" "CUSTOM_[A-Z]+"))
 (setq ncmat-fields '("lengths" "angles" "cubic" "element" "fraction" "type"
                      "debye_temp" "temperature" "msd" "at_temperature"
                      "effective_temperature" "sab_scaled" "sab"
