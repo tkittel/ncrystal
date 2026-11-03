@@ -92,3 +92,8 @@ File layout conventions:
 - The marker word spelled "fix"+"me" (any capitalisation) is used for work-in-progress notes on this branch, but the marker check in `ncdevtool check` flags every occurrence, so it must all be resolved before merging to `main`. Don't add new ones unless asked.
 - User-visible changes get an entry at the top of `CHANGELOG`.
 - CI covers many compilers/platforms and Python 3.9-3.14, so stay within C++11 in core and Python 3.9 in the Python package.
+
+## AI agents: attribution
+
+- An AI agent is never the author or committer of a commit: both are the human who requested the work. The agent is credited only by a final `Assisted-by: <agent name and version> <email>` trailer, never by `Co-Authored-By` or similar lines. PR and issue texts written by an agent end with the same `Assisted-by` line.
+- Never refer to agent sessions anywhere (commits, PR/issue texts and comments, code and code comments, docs): no session links or IDs, no "Generated with ..." lines, and no references to discussions, studies or results that only exist in a session. Refer instead to the code itself, or to published material (e.g. a study committed to a repository).
