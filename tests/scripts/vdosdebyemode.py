@@ -54,6 +54,45 @@ def register( name, a, elems, tdebyes ):
                        ' type vdosdebye\n' for e in elems )
     NC.registerInMemoryFileData( f'{name}_dyninfo.ncmat', data + dyninfo )
 
+_occu = """NCMAT v8
+@CELL
+ lengths 5.64 5.64 5.64
+ angles 90 90 90
+@SPACEGROUP
+ 225
+@ATOMSITES
+ Na 0 0 0
+ Cl 1/2 1/2 1/2
+@ATOMOCCUPANCIES
+ Na 1/2
+@DYNINFO
+ element Na
+ fraction 1/3
+ type vdosdebye
+ debye_temp 290.0
+@DYNINFO
+ element Cl
+ fraction 2/3
+ type vdosdebye
+ debye_temp 250.0
+"""
+
+def test_occupancies( energies ):
+    #With partial occupancies (and NCMAT v8, which has no @DEBYETEMPERATURE),
+    #inelas=vdosdebye must still weight the atoms like the @DYNINFO fractions
+    #(the average numbers of atoms, here 2 Na and 4 Cl):
+    NC.registerInMemoryFileData( 'NaCl_occu.ncmat', _occu )
+    for knllux in ( 3, 0, -1 ):
+        res = []
+        for inelas in ( 'vdosdebye', 'auto' ):
+            cfg = ( f'NaCl_occu.ncmat;temp=200K;knllux={knllux};comp=inelas'
+                    f';inelas={inelas}' )
+            sc = NC.createScatter( cfg )
+            res.append( [ sc.xsect( ekin = e ) for e in energies ] )
+        assert res[0] == res[1], ('NaCl_occu', knllux)
+        print(f'NaCl (Na occupancy 1/2) knllux={knllux}: '
+              + ' '.join( f'{x:.6g}' for x in res[0] ) )
+
 def main():
     register( 'Al', 4.04958, ['Al'], [410.4] )
     register( 'NaCl', 5.64, ['Na','Cl'], [290.0, 250.0] )
@@ -68,6 +107,7 @@ def main():
             assert res[0] == res[1], (name, knllux)
             print(f'{name} knllux={knllux}: '
                   + ' '.join( f'{x:.6g}' for x in res[0] ) )
+    test_occupancies( energies )
 
 if __name__ == '__main__':
     main()
