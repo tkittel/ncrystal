@@ -30,14 +30,11 @@ Lattice angles    [deg] : 90 90 90
 Unit cell volume [Aa^3] : 67.83
 Atoms / unit cell       : 4
 ----------------------------------------------------------------------------------------------------
-Atoms in unit cell (total 4):
-     4 Au atoms [T_Debye=167K, MSD=0.0159294Aa^2]
+Atom positions in unit cell (total 4):
+     4 Au positions [T_Debye=167K, MSD=0.0159294Aa^2]
 ----------------------------------------------------------------------------------------------------
-Atomic coordinates:
-     Au            0            0            0
-     Au            0          1/2          1/2
-     Au          1/2            0          1/2
-     Au          1/2          1/2            0
+Atomic sites:
+     Au            0            0            0   (x4)
 ----------------------------------------------------------------------------------------------------
 Dynamic info for Au (100%):
    type: S(alpha,beta) [from VDOSDebye]
