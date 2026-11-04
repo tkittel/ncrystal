@@ -42,7 +42,7 @@ namespace NCRYSTAL_NAMESPACE {
       //k = Emax*(xs_table(Emax)-xs_extender(Emax)). Above Emax, e*xs is fitted
       //with cubics (to 1e-10) up to where the extender reaches its high-energy
       //form B+A/E, giving the tail B+(A+k)/E:
-      IsoXSDescr describeSABExtended( const SABProcessor& p,
+      IsoXSTable tabulateSABExtended( const SABProcessor& p,
                                       const SAB::SABExtender& ext )
       {
         auto t = p.createXSTabulation();
@@ -70,10 +70,7 @@ namespace NCRYSTAL_NAMESPACE {
         }
         t.tail[2] = highE.A + k;
         t.tail[3] = highE.B;
-        IsoXSDescr res;
-        res.breakpts = { t.E.front(), emax };
-        res.table = std::move( t );
-        return res;
+        return t;
       }
 
     }
@@ -87,7 +84,8 @@ NCS::SABExtended::SABExtended( shared_obj<const SABProcessor> p,
     m_e( std::move(e) ),
     m_kT( m_p->kT() ),
     m_invkT( 1.0 / m_kT ),
-    m_xs( describeSABExtended( *m_p, *m_e ) )
+    m_xs( tabulateSABExtended( *m_p, *m_e ) ),
+    m_xsBreakpoints{ m_xs.table().E.front(), m_p->getEMaxInfo().ekin.dbl() }
 {
   nc_assert(!m_p->getEDivKTGrid().empty());
   nc_assert(!m_p->getPhaseSpaceIntegralAtGrid().empty());

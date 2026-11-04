@@ -29,8 +29,8 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  //Utilities for IsoXSTable and IsoXSDescr (NCTypes.hh). An IsoXSTable t
-  //describes a cross section xs(e) (energy e in eV, xs in barn) as:
+  //Utilities for IsoXSTable (NCTypes.hh), which describes a cross section
+  //xs(e) (energy e in eV, xs in barn) as:
   //
   //  e < E[0]:           xs = tail[0]/sqrt(e) + tail[1]
   //  E[i] <= e < E[i+1]: e*xs = P_i(u) + sqrt(e)*Q_i(u) + r[i]/e
@@ -43,34 +43,29 @@ namespace NCRYSTAL_NAMESPACE {
   //physical energies). The r[i] terms allow a sum of tabulations to be a
   //tabulation. At e=0 the first form uses the smallest positive double
   //instead (keeping xs finite).
-  //
-  //IsoXSDescr::breakpts holds the energies of known kinks and discontinuities
-  //of the cross section, sorted.
 
   class IsoXSEvaluator final : private MoveOnly {
   public:
-    //Provides IsoXSDescr::table evaluations. Holds an IsoXSDescr with a cross
-    //section table, and adds relevant cached data allowing for subsequent fast
-    //repeated evaluations. Alternatively, the oneShotEval methods provides
-    //bit-identical results without initialisation, at the cost of a binary
-    //search.
+    //Provides IsoXSTable evaluations. Holds an IsoXSTable, and adds relevant
+    //cached data allowing for subsequent fast repeated evaluations.
+    //Alternatively, the oneShotEval method provides bit-identical results
+    //without initialisation, at the cost of a binary search.
 
-    explicit IsoXSEvaluator( IsoXSDescr );
-    const IsoXSDescr& descr() const noexcept { return m_descr; }
+    explicit IsoXSEvaluator( IsoXSTable );
+    const IsoXSTable& table() const noexcept { return m_table; }
 
     //Evaluations accept ekin in eV and return xs in barn:
     double eval( double ekin ) const ncnoexceptndebug;
     static double oneShotEval( const IsoXSTable&, double ekin );
-    static double oneShotEval( const IsoXSDescr&, double ekin );
 
-    //Scaled evaluation (cf. scaleIsoXSDescr):
+    //Scaled evaluation (cf. scaleIsoXSTable):
     double evalScaled( double ekin,
                        double escale,
                        double xsscale ) const ncnoexceptndebug;
 
 
   private:
-    IsoXSDescr m_descr;
+    IsoXSTable m_table;
     VectD m_invw;
     LogGuideTable m_guide;
   };
@@ -86,17 +81,19 @@ namespace NCRYSTAL_NAMESPACE {
     NeutronEnergy emin;
   };
 
-  //Merge the descriptions of several components, each with a scale factor, into
-  //a description of their summed cross section. The breakpts are the sorted
-  //union of all breakpts. The table is the exact sum of the scaled tables
+  //Merge the tables of several components, each with a scale factor, into a
+  //table of their summed cross section: the exact sum of the scaled tables
   //(agreeing with the sum of the scaled inputs to within a few ulp), with E the
-  //sorted union of all E, and present only if all inputs have a table. Scale
-  //factors must be non-negative and finite, and inputs with scale factor 0 are
-  //ignored. An empty input gives an empty description:
-  IsoXSDescr mergeIsoXSDescr( Span<const std::pair<double,const IsoXSDescr*>> );
+  //sorted union of all E. Scale factors must be non-negative and finite, and
+  //inputs with scale factor 0 are ignored, but at least one input must
+  //remain:
+  IsoXSTable mergeIsoXSTables( Span<const std::pair<double,const IsoXSTable*>> );
 
   //Explicit copy:
-  IsoXSDescr cloneIsoXSDescr( const IsoXSDescr& );
+  IsoXSTable cloneIsoXSTable( const IsoXSTable& );
+
+  //Sort energies of kinks and discontinuities, removing duplicates:
+  void sortBreakpoints( VectD& );
 
   //The derivative d(xs)/de of the tabulated cross section at e > 0, in the
   //same piece of the table as evalIsoXS (so at the energies E[i] it is the
@@ -108,13 +105,13 @@ namespace NCRYSTAL_NAMESPACE {
   //       type:
   double evalIsoXS( const IsoXSTable&, double e );
 
-  //The description of xs'(e) = xsscale*xs(escale*e), where xs is the cross
-  //section of the given description (escale>0 and xsscale>=0, both finite).
+  //The table of xs'(e) = xsscale*xs(escale*e), where xs is the cross section
+  //of the given table (escale>0 and xsscale>=0, both finite).
   //For instance, all free-gas cross sections are such scaled versions of a
   //single universal one. It agrees with IsoXSEvaluator::evalScaled to within
   //rounding (at discontinuities, energies within rounding of the jump might
   //evaluate on either side):
-  IsoXSDescr scaleIsoXSDescr( const IsoXSDescr&, double escale, double xsscale );
+  IsoXSTable scaleIsoXSTable( const IsoXSTable&, double escale, double xsscale );
 
 }
 
@@ -126,7 +123,7 @@ namespace NCRYSTAL_NAMESPACE {
 inline double NCrystal::IsoXSEvaluator::eval( double e ) const ncnoexceptndebug
 {
   nc_assert( e >= 0.0 );
-  const auto& t = m_descr.table.value();
+  const auto& t = m_table;
   const VectD& E = t.E;
   if ( e < E.front() ) {
     if ( !t.tail[0] )
@@ -162,20 +159,13 @@ oneShotEval( const IsoXSTable& tbl, double ekin )
 }
 
 inline double NCrystal::IsoXSEvaluator::
-oneShotEval( const IsoXSDescr& descr, double ekin )
-{
-  nc_assert( descr.table.has_value() );
-  return evalIsoXS( descr.table.value(), ekin );
-}
-
-inline double NCrystal::IsoXSEvaluator::
 evalScaled( double e, double escale, double xsscale ) const ncnoexceptndebug
 {
   //Below the table, the 1/sqrt form is evaluated in e (as for the scaled
-  //description), since the clamping of e=0 and underflows of escale*e would
+  //table), since the clamping of e=0 and underflows of escale*e would
   //otherwise differ:
   nc_assert( e >= 0.0 && escale > 0.0 && xsscale >= 0.0 );
-  const auto& t = m_descr.table.value();
+  const auto& t = m_table;
   const double x = escale * e;
   if ( x < t.E.front() ) {
     if ( !t.tail[0] )
