@@ -20,7 +20,7 @@
 
 // Tests related to the generation of lists of HKL planes.
 
-#include "NCrystal/NCrystal.hh"
+#include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/extd_utils/NCFillHKL.hh"
 #include "NCrystal/internal/phys_utils/NCEqRefl.hh"

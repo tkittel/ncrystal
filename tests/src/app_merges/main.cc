@@ -18,7 +18,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/NCrystal.hh"
+#include "NCrystal/factories/NCFact.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/powderbragg/NCPowderBragg.hh"
 #include "NCrystal/internal/elincscatter/NCElIncScatter.hh"
