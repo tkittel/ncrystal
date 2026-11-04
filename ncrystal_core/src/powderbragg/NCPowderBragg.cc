@@ -110,20 +110,17 @@ void NC::PowderBragg::init( double v0_times_natoms, VectDFM&& origdata )
   nc_assert( m_threshold.get() > 0.0 );
 }
 
-NC::IsoXSDescr NC::PowderBragg::isoXSDescr() const
+NC::Optional<NC::IsoXSTable> NC::PowderBragg::createIsoXSTable() const
 {
   //e*xs is the cumulative sum m_fdm_commul[i] from the edge m_2dE[i] up to the
   //next edge (and beyond the last one), zero below the first edge:
   nc_assert( m_2dE.size() == m_fdm_commul.size() );
-  IsoXSDescr res;
-  res.table.emplace();
-  auto& t = res.table.value();
+  IsoXSTable t;
   const std::size_t n = m_2dE.size();
   if ( n == 0 ) {
     t.E = { 1.0, 2.0 };//zero everywhere (empty p)
-    return res;
+    return t;
   }
-  res.breakpts = m_2dE;
   t.E = m_2dE;
   if ( n == 1 )
     t.E.push_back( 2.0 * m_2dE.front() );
@@ -132,7 +129,7 @@ NC::IsoXSDescr NC::PowderBragg::isoXSDescr() const
   for ( auto i : ncrange( nintervals ) )
     t.p[4*i] = m_fdm_commul[i];
   t.tail[2] = m_fdm_commul.back();
-  return res;
+  return t;
 }
 
 void NC::PowderBragg::initGuide()

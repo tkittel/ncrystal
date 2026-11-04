@@ -75,20 +75,21 @@ namespace NCRYSTAL_NAMESPACE {
     // the first interval is then the same, no matter how close to 0 the first
     // sample point is, so no table could meet the tolerance there.
     //
-    // Known discontinuities (the breakpts of the isoXSDescr() of the
-    // processes, e.g. Bragg edges, or the boundaries of their energy domains)
+    // Known discontinuities (see Process::createIsoXSBreakpoints,
+    // e.g. Bragg edges, or the boundaries of the energy domains of processes)
     // are represented by two table points with the same wavelength: the first
     // with the cross section just below the discontinuity, the second with the
     // cross section just above it. A pair can also have the same cross section
     // and different slopes (e.g. at a kink).
     //
-    // The cross sections of processes without a table in their isoXSDescr()
-    // are sampled, and features narrower than the sampling, which are not known
-    // in advance, can not be found reliably. Therefore a warning is emitted for
-    // such physics processes not known to be free of such features (e.g. a
-    // future process with absorption resonances). Exceptions are thrown
-    // if the cross section is not finite or negative, if it does not converge
-    // for wavelength -> 0, or if an unexpected discontinuity is found.
+    // The cross sections of processes without a table (see
+    // Process::createIsoXSTable) are sampled, and features narrower
+    // than the sampling, which are not known in advance, can not be found
+    // reliably. Therefore a warning is emitted for such physics processes not
+    // known to be free of such features (e.g. a future process with absorption
+    // resonances). Exceptions are thrown if the cross section is not finite or
+    // negative, if it does not converge for wavelength -> 0, or if an
+    // unexpected discontinuity is found.
 
     struct IsoMacroXSTableParams {
       //NB: The defaults here are what will be used by the C API
@@ -98,7 +99,7 @@ namespace NCRYSTAL_NAMESPACE {
                           //discontinuities). 0 means auto (see autoNDense)
       bool discontinuities = true;//Include points at the known discontinuities
       //NB: ndense and discontinuities are only used for materials with
-      //processes without a table in their isoXSDescr() (see below).
+      //processes without a table (see below).
     };
 
     //Information about the creation of a table, for diagnostics:

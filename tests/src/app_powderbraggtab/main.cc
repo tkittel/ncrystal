@@ -32,13 +32,13 @@ namespace {
   void check( const char * label, const NC::PowderBragg& pb,
               const std::function<double(double)>& ref )
   {
-    //Cross sections as described by isoXSDescr() (to within rounding), zero
+    //Cross sections as given by the table (to within rounding), zero
     //below the first edge, C_i/E between edges with C_i increasing, and (if
     //available) within 1e-13 of an independent reference:
-    const auto d = pb.isoXSDescr();
-    nc_assert_always( d.table.has_value() );
-    const auto& t = d.table.value();
-    const auto& edges = d.breakpts;
+    const auto d = pb.createIsoXSTable();
+    nc_assert_always( d.has_value() );
+    const auto& t = d.value();
+    const auto edges = pb.createIsoXSBreakpoints();
     nc_assert_always( !edges.empty() && edges.front() == pb.domain().elow.dbl() );
     NC::VectD energies = NC::geomspace( 1e-6, 10.0, 4001 );
     for ( auto e : edges ) {

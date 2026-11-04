@@ -30,16 +30,16 @@ namespace NC = NCrystal;
 int main()
 {
   //FreeGas cross sections (from tabulations) against the formula in
-  //FreeGasXSProvider::crossSectionUntabulated, and as described by isoXSDescr() (to
-  //within rounding):
+  //FreeGasXSProvider::crossSectionUntabulated, and as given by
+  //createIsoXSTable() (to within rounding):
   double worst = 0.0;
   for ( double mass : { 1.008, 2.014, 12.011, 207.2, 238.03 } ) {
     for ( double temp : { 0.1, 20.0, 293.15, 3000.0 } ) {
       NC::FreeGas fg( NC::Temperature{ temp }, NC::AtomMass{ mass }, NC::SigmaFree{ 3.5 } );
       NC::FreeGasXSProvider ref( NC::Temperature{ temp }, NC::AtomMass{ mass }, NC::SigmaFree{ 3.5 } );
-      const auto d = fg.isoXSDescr();
-      nc_assert_always( d.table.has_value() && d.breakpts.empty() );
-      const auto& t = d.table.value();
+      const auto d = fg.createIsoXSTable();
+      nc_assert_always( d.has_value() && fg.createIsoXSBreakpoints().empty() );
+      const auto& t = d.value();
       NC::VectD energies = NC::geomspace( 1e-14, 1e6, 50003 );
       for ( auto e : t.E ) {
         energies.push_back( e );
@@ -60,7 +60,7 @@ int main()
   nc_assert_always( worst < 1e-10 );
   {
     NC::FreeGas fg( NC::Temperature{ 293.15 }, NC::AtomMass{ 1.008 }, NC::SigmaFree{ 20.0 } );
-    std::cout << "Number of points: " << fg.isoXSDescr().table.value().E.size() << std::endl;
+    std::cout << "Number of points: " << fg.createIsoXSTable().value().E.size() << std::endl;
   }
   std::cout << "FreeGas tabulations within 1e-10 of the formula, and as"
             " described: OK" << std::endl;

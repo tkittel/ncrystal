@@ -60,8 +60,10 @@ namespace NCRYSTAL_NAMESPACE {
     ScatterOutcomeIsotropic
     sampleScatterIsotropic(CachePtr&, RNG&, NeutronEnergy ) const override;
 
-    //The SABExtended description, scaled (computed on each call):
-    IsoXSDescr isoXSDescr() const override;
+    //The SABExtended table, scaled (computed on each call), and its
+    //breakpoints:
+    Optional<IsoXSTable> createIsoXSTable() const override;
+    VectD createIsoXSBreakpoints() const override;
 
     const SABExtended& sabExtended() const noexcept { return *m_sh; }
 
