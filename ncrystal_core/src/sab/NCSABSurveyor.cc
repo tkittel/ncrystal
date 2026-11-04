@@ -317,8 +317,8 @@ NCS::SABCellSurvey::SABCellSurvey( double alpha1, double alpha2,
   nc_assert( alpha1>=0.0 );
   nc_assert( alpha2>alpha1 );
   nc_assert( beta2>beta1 );
-  nc_assert( E_div_kT > 0.0 );//fixme: we could allow also 0?
-  nc_assert( !ncisinf(E_div_kT) );//fixme: we could allow inf?
+  nc_assert( E_div_kT > 0.0 );
+  nc_assert( !ncisinf(E_div_kT) );
 
   double a1 = alpha1;
   double a2 = alpha2;
