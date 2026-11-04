@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/sab/NCSABXSProvider.hh"
+#include "NCrystal/internal/utils/NCMath.hh"
 
 namespace NC = NCrystal;
 
@@ -87,8 +88,8 @@ NC::CrossSect NC::SABXSProvider::crossSection( NeutronEnergy ekin ) const
     const double dEkin = *itEkinUpper - *itEkinLower;
     nc_assert(dEkin>0.0);
     double xs = *itXSLower + dXS * ( ekin.dbl() - *itEkinLower ) / dEkin;
-    nc_assert(xs>=std::min<double>(*itXSLower,*itXSUpper));
-    nc_assert(xs<=std::max<double>(*itXSLower,*itXSUpper));
+    nc_assert(xs>=ncmin(*itXSUpper,*itXSLower));
+    nc_assert(xs<=ncmax(*itXSUpper,*itXSLower));
     return CrossSect{ xs };
   }
 }

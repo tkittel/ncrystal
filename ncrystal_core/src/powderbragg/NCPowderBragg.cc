@@ -366,7 +366,7 @@ NC::Optional<std::string> NC::PowderBragg::specificJSONDescription() const
   double max_contrib(0.0);
   nc_assert(m_2dE.size()==m_fdm_commul.size());
   for ( auto i : ncrange(m_2dE.size()) )
-    max_contrib = std::max<double>( max_contrib,m_fdm_commul.at(i) / m_2dE.at(i) );
+    max_contrib = ncmax( m_fdm_commul.at(i) / m_2dE.at(i), max_contrib );
 
   std::ostringstream ss;
   {

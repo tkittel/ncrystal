@@ -55,7 +55,7 @@ double NC::evalIsoXS( const IsoXSDescr::Tabulation& t, double e )
   if ( e < E.front() ) {
     if ( !t.tail[0] )
       return t.tail[1];
-    const double ee = std::max( e, std::numeric_limits<double>::denorm_min() );
+    const double ee = ncmax( std::numeric_limits<double>::denorm_min(), e );
     return t.tail[0] / std::sqrt( ee ) + t.tail[1];
   }
   if ( !( e < E.back() ) )

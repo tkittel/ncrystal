@@ -651,8 +651,8 @@ namespace NCRYSTAL_NAMESPACE {
         m_minfilled = m_maxfilled = val;
       } else {
         //subsequent fill:
-        m_minfilled = std::min<double>(val,m_minfilled);
-        m_maxfilled = std::max<double>(val,m_maxfilled);
+        m_minfilled = ncmin(m_minfilled,val);
+        m_maxfilled = ncmax(m_maxfilled,val);
       }
     }
 

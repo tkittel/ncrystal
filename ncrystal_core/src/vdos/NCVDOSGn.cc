@@ -755,7 +755,7 @@ NCV::VDOSGn::Impl::produceNewOrderByConvolutionImpl( Order order,
     dt_mismatch = true;
     //But at certain transition points, we might need this on-demand thinning of
     //one spectrum:
-    dt = std::max<double>(dt1,dt2);
+    dt = ncmax(dt2,dt1);
     if ( thinFactor1 > thinFactor2 ) {
       //thin dt2
       nc_assert(thinFactor1%thinFactor2==0);

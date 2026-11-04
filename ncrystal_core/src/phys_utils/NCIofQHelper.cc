@@ -52,7 +52,7 @@ NC::IofQHelper::IofQHelper( const VectD& Q, const VectD& IofQ )
     for ( auto& e : IofQ ) {
       if ( ! ( e>=0.0 ) )
         NCRYSTAL_THROW(BadInput,"IofQHelper: I(Q) values must be >= 0");
-      emax = std::max<double>(e,emax);
+      emax = ncmax(emax,e);
     }
     if (!(emax>0.0))
       NCRYSTAL_THROW(BadInput,"IofQHelper: I(Q) must have some values >= 0");
