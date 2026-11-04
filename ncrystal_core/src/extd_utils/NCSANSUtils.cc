@@ -100,7 +100,7 @@ namespace NCRYSTAL_NAMESPACE {
           //where the scattering objects occupy more volumes than the solution
           //(e.g. if >50% of the volume is occupied by spheres it is unlikely
           //that approximations regarding diluteness etc. would still hold).
-          double phi = std::min<double>( fracA, fracB ) / ( fracA+fracB );
+          double phi = ncmin( fracB, fracA ) / ( fracA+fracB );
 
           //Absorp any extra scale factors (<1.0 if the two phases in question
           //are not the only phases) into phi:

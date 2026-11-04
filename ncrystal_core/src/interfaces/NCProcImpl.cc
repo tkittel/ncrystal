@@ -398,8 +398,8 @@ NCPI::ProcComposition::ProcComposition( ComponentList components,
       m_domain = d;
       first = false;
     } else {
-      m_domain.elow = NeutronEnergy{ std::min<double>(m_domain.elow.get(),d.elow.get()) };
-      m_domain.ehigh = NeutronEnergy{ std::max<double>(m_domain.ehigh.get(),d.ehigh.get()) };
+      m_domain.elow = NeutronEnergy{ ncmin(d.elow.get(),m_domain.elow.get()) };
+      m_domain.ehigh = NeutronEnergy{ ncmax(d.ehigh.get(),m_domain.ehigh.get()) };
     }
   }
 
