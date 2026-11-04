@@ -80,7 +80,9 @@ namespace NCRYSTAL_NAMESPACE {
     NCRYSTAL_API bool threadsAvailable();
 
     namespace detail {
-      //For internal usage (fixme: just for testing?):
+      //Temporarily use n threads unless the user configured the thread-pool
+      //(reference counted: the first begin enables, the last end restores 1
+      //thread). For internal usage, e.g. by queries:
       NCRYSTAL_API void beginTemporaryThreads( ThreadCount );
       NCRYSTAL_API void endTemporaryThreads();
 
