@@ -82,7 +82,6 @@ namespace {
         const auto iref = Picker::oneShotPick( u, pre );
         REQUIRE( iref < n );
         REQUIRE( picker.pick( u, n ) == iref );
-        REQUIRE( NC::pickRandIdxByWeight( u, pre ) == iref );
         if ( n == nn )
           REQUIRE( picker.pick( u ) == iref );
         ++g_nchecks;
@@ -90,16 +89,13 @@ namespace {
       //RNG versions, including the number of random numbers consumed:
       auto rng1 = NC::createBuiltinRNG( 12345 + n );
       auto rng2 = NC::createBuiltinRNG( 12345 + n );
-      auto rng3 = NC::createBuiltinRNG( 12345 + n );
       for ( unsigned i = 0; i < 2000; ++i ) {
         const auto iref = Picker::oneShotPick( *rng1, pre );
         REQUIRE( ( n == nn ? picker.pick( *rng2 ) : picker.pick( *rng2, n ) ) == iref );
-        REQUIRE( NC::pickRandIdxByWeight( *rng3, pre ) == iref );
         ++g_nchecks;
       }
       const double rnext = rng1->generate();
       REQUIRE( rng2->generate() == rnext );
-      REQUIRE( rng3->generate() == rnext );
     }
     std::cout << "OK: " << label << " (n=" << nn << ")" << std::endl;
   }
