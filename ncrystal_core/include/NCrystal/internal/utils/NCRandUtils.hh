@@ -102,12 +102,6 @@ namespace NCRYSTAL_NAMESPACE {
     std::size_t lowerBoundIdx( double val ) const noexcept;
   };
 
-  //FIXME: Kept for the ncplugin-MagScat plugin (NCParamagneticScatter.cc), which
-  //should be updated (PR) to use RandIdxByWeightPicker::oneShotPick before the
-  //release, after which these can be removed:
-  std::size_t pickRandIdxByWeight( RNG&, Span<const double> commulvals);
-  std::size_t pickRandIdxByWeight( double rand01val, Span<const double> commulvals);
-
   //Sample exponential:
   double randExp( RNG& rng );//sample non-negative value from exp(-x)
   double randExpInterval( RNG& rng, double a, double b, double c );//sample value in [a,b] from exp(-c*x)
@@ -202,11 +196,6 @@ inline std::size_t NCrystal::RandIdxByWeightPicker::pick( RNG& rng,
                                                           std::size_t n ) const
 {
   return n==1 ? 0 : pick( rng.generate(), n );
-}
-
-inline std::size_t NCrystal::pickRandIdxByWeight( RNG& rng, Span<const double> commulvals)
-{
-  return RandIdxByWeightPicker::oneShotPick( rng, commulvals );
 }
 
 inline double NCrystal::randIsotropicScatterAngle( NCrystal::RNG& rng )
