@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#include "NCrystal/NCrystal.hh"
+#include "NCrystal/factories/NCFact.hh"
 #include "NCrystal/internal/infobld/NCInfoBuilder.hh"
 #include "NCrystal/internal/extd_utils/NCFillHKL.hh"
 #include "NCrystal/internal/elincscatter/NCElIncScatter.hh"

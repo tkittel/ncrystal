@@ -18,7 +18,6 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/NCrystal.hh"
 #include "NCrystal/internal/minimc/NCMMC_EngineOpts.hh"
 #include <iostream>
 
