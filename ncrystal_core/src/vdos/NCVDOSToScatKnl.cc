@@ -24,9 +24,9 @@
 #include "NCrystal/internal/vdos/NCVDOSKnlGrid.hh"
 #include "NCrystal/internal/vdos/NCVDOSExpand.hh"
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
-#include "NCrystal/internal/utils/NCString.hh"//fixme?
+#include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/utils/NCIter.hh"
-#include "NCrystal/internal/utils/NCMsg.hh"//fixme?
+#include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/fact_utils/NCFactoryJobs.hh"
 #include "NCrystal/internal/sab/NCSABUtils.hh"
 #include "NCVDOSToScatKnl_FMA.hh"
@@ -237,7 +237,6 @@ NCV::createScatteringKernel( const VDOSData& vdosdata,
   //Expand VDOS to Gn functions:
   const auto gnexpn = expandVDOSToGnFcts( vdosdata, vdoslux,
                                           targetEmax_requested);
-  //fixmerequest_override_max_order );
   const auto& Gn_asym = gnexpn.Gn;
 
   //Setup the alpha/beta grids. The grid-spacing is not even, rather it attempts
