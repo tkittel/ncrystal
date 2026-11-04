@@ -467,8 +467,10 @@ mod.main()
                       content=f'#!/usr/bin/env bash\n{app_name}\n',
                       make_executable=True )
 
+    #Also depend on the package with NCrystal.hh, or its mapped include is not
+    #tracked (mctools/simplebuild#105):
     create_pkginfo( cfg.sbpkgname_examples,
-                    pkg_deps = [cfg.sbpkgname_lib] )
+                    pkg_deps = [cfg.sbpkgname_lib, cfg.sbpkgname_ncrystalhh] )
     add_compiled_examples(example_src,cfg.sbpkgname_examples)
 
 
