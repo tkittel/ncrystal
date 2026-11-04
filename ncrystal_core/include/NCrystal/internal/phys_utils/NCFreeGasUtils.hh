@@ -88,9 +88,9 @@ namespace NCRYSTAL_NAMESPACE {
     //relative deviation below 1e-10 from crossSectionUntabulated:
     CrossSect crossSectionTabulated( NeutronEnergy ) const;
 
-    //The same as an IsoXSDescr::Tabulation (see NCIsoXSUtils.hh), agreeing
+    //The same as an IsoXSTable (see NCIsoXSUtils.hh), agreeing
     //with crossSectionTabulated to within rounding:
-    IsoXSDescr::Tabulation createXSTabulation() const;
+    IsoXSTable createXSTabulation() const;
   private:
     double m_sigmaFree, m_ca;
   };

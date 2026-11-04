@@ -192,10 +192,10 @@ namespace NCRYSTAL_NAMESPACE {
       //n-1 above the table (n=E.size()), also at the boundaries of the region:
       class TabulationRegions final {
       public:
-        TabulationRegions( const IsoXSDescr::Tabulation& t, double scale )
+        TabulationRegions( const IsoXSTable& t, double scale )
           : m_t( t ), m_scale( scale ), m_n( static_cast<long>( t.E.size() ) ) {}
         long n() const { return m_n; }
-        const IsoXSDescr::Tabulation& tab() const { return m_t; }
+        const IsoXSTable& tab() const { return m_t; }
         double scale() const { return m_scale; }
         long region( double e ) const
         {
@@ -247,7 +247,7 @@ namespace NCRYSTAL_NAMESPACE {
           s = m_scale * dxs * ( -2.0 * e / wl );//de/dwl = -2e/wl
         }
       private:
-        const IsoXSDescr::Tabulation& m_t;
+        const IsoXSTable& m_t;
         double m_scale;
         long m_n;
       };
@@ -263,7 +263,7 @@ namespace NCRYSTAL_NAMESPACE {
       //tol*e^2*xs -/+ e^2*(H-xs) >= 0, which are checked with their Bernstein
       //coefficients. Segments which can not be covered by a single interval
       //are split:
-      TablePoints tabulateExact( const IsoXSDescr::Tabulation& t, double scale,
+      TablePoints tabulateExact( const IsoXSTable& t, double scale,
                                  double wlmax, double tol )
       {
         const TabulationRegions tab( t, scale );
