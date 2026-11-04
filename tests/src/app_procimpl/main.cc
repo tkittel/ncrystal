@@ -37,7 +37,7 @@ namespace {
   };
 
   //Isotropic process with a configurable domain, keeping the default
-  //isoXSDescr():
+  //createIsoXSTable() and createIsoXSBreakpoints():
   class MyIsoScatDomain final : public NC::ProcImpl::ScatterIsotropicMat {
   public:
     MyIsoScatDomain( NC::EnergyDomain d ) : m_d( d ) {}
@@ -55,7 +55,7 @@ namespace {
     NC::EnergyDomain m_d;
   };
 
-  //Isotropic process overriding isoXSDescr() with a table (xs = 2 barn):
+  //Isotropic process with a table (xs = 2 barn) and a breakpoint:
   class MyIsoScatTabulated final : public NC::ProcImpl::ScatterIsotropicMat {
   public:
     const char* name() const noexcept final { return "MyIsoScatTabulated"; }
@@ -67,17 +67,18 @@ namespace {
     {
       return { ekin, NC::CosineScatAngle{0.5} };
     }
-    NC::IsoXSDescr isoXSDescr() const override
+    NC::VectD createIsoXSBreakpoints() const override
     {
-      NC::IsoXSDescr d;
-      d.breakpts = { 0.5 };
+      return { 0.5 };
+    }
+    NC::Optional<NC::IsoXSTable> createIsoXSTable() const override
+    {
       NC::IsoXSTable t;
       t.E = { 1.0, 2.0 };
       t.p = { 2.0, 2.0, 0.0, 0.0 };//e*xs = 2*e = 2 + 2*u on [1,2]
       t.tail[1] = 2.0;
       t.tail[3] = 2.0;
-      d.table = std::move( t );
-      return d;
+      return t;
     }
   };
 
@@ -146,23 +147,48 @@ int main() {
   (void)std::make_shared<NC::ProcImpl::NullScatter>();
   (void)std::make_shared<NC::ProcImpl::NullAbsorption>();
 
-  //Default isoXSDescr(): breakpts at the finite, non-zero domain bounds, no table:
+  //Defaults: breakpoints at the finite, non-zero domain bounds, no table:
   {
     using NC::NeutronEnergy;
     auto check = []( NC::EnergyDomain d, const NC::VectD& expected )
     {
       MyIsoScatDomain p( d );
-      const NC::ProcImpl::ScatterIsotropicMat& base = p;
-      NC::IsoXSDescr x = base.isoXSDescr();
-      nc_assert_always( x.breakpts == expected );
-      nc_assert_always( !x.table.has_value() );
+      const NC::ProcImpl::Process& base = p;
+      nc_assert_always( base.createIsoXSBreakpoints() == expected );
+      nc_assert_always( !base.createIsoXSTable().has_value() );
     };
     check( { NeutronEnergy{0.0}, NeutronEnergy{NC::kInfinity} }, {} );
     check( { NeutronEnergy{1e-3}, NeutronEnergy{2.0} }, { 1e-3, 2.0 } );
     check( { NeutronEnergy{0.0}, NeutronEnergy{2.0} }, { 2.0 } );
     check( { NeutronEnergy{1e-3}, NeutronEnergy{NC::kInfinity} }, { 1e-3 } );
     check( NC::EnergyDomain::null(), {} );
-    nc_assert_always( MyIsoScat().isoXSDescr().breakpts.empty() );
+    nc_assert_always( MyIsoScat().createIsoXSBreakpoints().empty() );
+    nc_assert_always( MyIsoAbs().createIsoXSBreakpoints().empty() );
+    nc_assert_always( !MyIsoAbs().createIsoXSTable().has_value() );
+  }
+  //Anisotropic processes throw LogicError, also as ProcComposition components:
+  {
+    namespace NCPI = NC::ProcImpl;
+    NCPI::ProcComposition::ComponentList cl;
+    cl.emplace_back( 1.0, NC::makeSO<MyIsoScatTabulated>() );
+    cl.emplace_back( 1.0, NC::makeSO<MyAnisoScat>() );
+    const NCPI::ProcComposition pc( std::move(cl) );
+    const MyAnisoScat a;
+    for ( const NCPI::Process* p : { static_cast<const NCPI::Process*>( &a ),
+                                     static_cast<const NCPI::Process*>( &pc ) } ) {
+      for ( int k : { 0, 1 } ) {
+        bool threw = false;
+        try {
+          if ( k == 0 )
+            (void)p->createIsoXSTable();
+          else
+            (void)p->createIsoXSBreakpoints();
+        } catch ( NC::Error::LogicError& ) {
+          threw = true;
+        }
+        nc_assert_always( threw );
+      }
+    }
   }
   //A CachePtr can only be used with the process which created it:
   {
@@ -178,14 +204,14 @@ int main() {
     }
     nc_assert_always( threw );
   }
-  //An override is returned intact through the base class:
+  //Overrides are returned intact through the base class:
   {
     MyIsoScatTabulated p;
-    const NC::ProcImpl::ScatterIsotropicMat& base = p;
-    NC::IsoXSDescr x = base.isoXSDescr();
-    nc_assert_always( ( x.breakpts == NC::VectD{ 0.5 } ) );
-    nc_assert_always( x.table.has_value() );
-    const auto& t = x.table.value();
+    const NC::ProcImpl::Process& base = p;
+    nc_assert_always( ( base.createIsoXSBreakpoints() == NC::VectD{ 0.5 } ) );
+    const auto x = base.createIsoXSTable();
+    nc_assert_always( x.has_value() );
+    const auto& t = x.value();
     nc_assert_always( ( t.E == NC::VectD{ 1.0, 2.0 } ) && t.p.size() == 4 );
     nc_assert_always( t.tail[1] == 2.0 && t.tail[3] == 2.0 );
   }

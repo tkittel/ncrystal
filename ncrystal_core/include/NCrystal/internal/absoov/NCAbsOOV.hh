@@ -47,10 +47,9 @@ namespace NCRYSTAL_NAMESPACE {
     //For initialising directly from Info objects:
     AbsOOV( const Info& info ) : AbsOOV( info.getXSectAbsorption() ) {}
 
-    //Description of the cross section (see NCIsoXSUtils.hh). The table is
-    //exact below 1e300 eV, and gives 0 above (the high-energy tail of the
-    //tabulation format has no 1/sqrt(e) term):
-    IsoXSDescr isoXSDescr() const;
+    //The table is exact below 1e300 eV, and gives 0 above (the high-energy
+    //tail of the tabulation format has no 1/sqrt(e) term):
+    Optional<IsoXSTable> createIsoXSTable() const override;
 
 #ifdef NCRYSTAL_ALLOW_ABI_BREAKAGE
     void evalManyXSIsotropic( CachePtr&, const double* ekin, std::size_t N,

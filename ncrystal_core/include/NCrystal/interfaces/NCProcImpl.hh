@@ -127,6 +127,15 @@ namespace NCRYSTAL_NAMESPACE {
       //This can be called only when materialType is Isotropic:
       virtual CrossSect crossSectionIsotropic(CachePtr&, NeutronEnergy ) const = 0;
 
+      //Also only when materialType is Isotropic (LogicError otherwise): the
+      //cross section as an IsoXSTable (see NCIsoXSUtils.hh), if available,
+      //agreeing with crossSectionIsotropic within rounding (~ulp level) and
+      //strictly zero outside domain(), and the sorted energies of known kinks
+      //and discontinuities of the cross section. The default implementations
+      //return no table, and any finite non-zero domain bounds:
+      virtual Optional<IsoXSTable> createIsoXSTable() const;
+      virtual VectD createIsoXSBreakpoints() const;
+
       //This can be called only when processType is Scatter:
       virtual ScatterOutcome sampleScatter(CachePtr&, RNG&, NeutronEnergy, const NeutronDirection& ) const = 0;
 
@@ -209,14 +218,6 @@ namespace NCRYSTAL_NAMESPACE {
       //Isotropic material, anisotropic methods are implemented in terms of the isotropic ones:
       CrossSect crossSection(CachePtr&, NeutronEnergy, const NeutronDirection& ) const final;
       ScatterOutcome sampleScatter(CachePtr&, RNG&, NeutronEnergy, const NeutronDirection& ) const override;
-
-      //Standard description of the cross section of the process (see
-      //NCIsoXSUtils.hh). If the returned description has a table, it must agree
-      //with calls to the crossSectionIsotropic method within rounding (~ulp
-      //level), and be strictly zero outside domain(). The default
-      //implementation returns breakpts at any finite non-zero domain bounds,
-      //and no table:
-      virtual IsoXSDescr isoXSDescr() const;
 
 #ifdef NCRYSTAL_ALLOW_ABI_BREAKAGE
       bool isPureElasticScatter() const override;
@@ -347,10 +348,10 @@ namespace NCRYSTAL_NAMESPACE {
                        ProcessType processType = ProcessType::Scatter );
       const ComponentList& components() const noexcept;
 
-      //Merged description of the components (see NCIsoXSUtils.hh), with a
-      //table if all components are ScatterIsotropicMat processes with tables:
-      //Fixme: revisit this interface
-      IsoXSDescr isoXSDescr() const;
+      //The merged table if all components have one, and the union of their
+      //breakpoints:
+      Optional<IsoXSTable> createIsoXSTable() const final;
+      VectD createIsoXSBreakpoints() const final;
 
       EnergyDomain domain() const noexcept final { return m_domain; }
       CrossSect crossSection(CachePtr& cacheptr, NeutronEnergy ekin, const NeutronDirection& dir ) const final;

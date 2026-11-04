@@ -49,7 +49,7 @@ namespace NCRYSTAL_NAMESPACE {
 
     CrossSect crossSectionIsotropic(CachePtr&, NeutronEnergy ) const override;
     ScatterOutcomeIsotropic sampleScatterIsotropic(CachePtr&, RNG&, NeutronEnergy ) const override;
-    IsoXSDescr isoXSDescr() const override;
+    Optional<IsoXSTable> createIsoXSTable() const override;
 
     virtual ~FreeGas();
 

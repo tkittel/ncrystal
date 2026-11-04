@@ -46,12 +46,15 @@ NC::SABScatterNG::crossSectionIsotropic( CachePtr&, NeutronEnergy ekin ) const
   return CrossSect{ m_sh->xsEvaluator().evalScaled( ekin.dbl(), 1.0, m_scale ) };
 }
 
-NC::IsoXSDescr NC::SABScatterNG::isoXSDescr() const
+NC::Optional<NC::IsoXSTable>
+NC::SABScatterNG::createIsoXSTable() const
 {
-  IsoXSDescr res;
-  res.table = scaleIsoXSTable( m_sh->xsEvaluator().table(), 1.0, m_scale );
-  res.breakpts = m_sh->xsBreakpoints();
-  return res;
+  return scaleIsoXSTable( m_sh->xsEvaluator().table(), 1.0, m_scale );
+}
+
+NC::VectD NC::SABScatterNG::createIsoXSBreakpoints() const
+{
+  return m_sh->xsBreakpoints();
 }
 
 NC::ScatterOutcomeIsotropic
