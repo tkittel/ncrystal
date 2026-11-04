@@ -42,10 +42,7 @@ namespace NCRYSTAL_NAMESPACE {
     };
     std::ostream& operator<<( std::ostream&, const CellData& );
 
-    //Fixme: decide if better with a class or namespace for the next:
-    struct StdLogLinCellIntegrator final : private NonInstantiable {
-
-      ~StdLogLinCellIntegrator() = delete;
+    namespace StdLogLinCellIntegrator {
 
       using Region = SABCellSurvey::Region;
       using RegionList = SABCellSurvey::RegionList;
@@ -58,15 +55,15 @@ namespace NCRYSTAL_NAMESPACE {
       //Important note: This is intended for usage in the case where we are
       //already certain that the phase space boundary CROSSES the cell.
 
-      static void integrateWithinKB( const CellData&,
-                                     double E_div_kT,
-                                     IntegrationScheme,
-                                     StableSumKahan& tgt );
+      void integrateWithinKB( const CellData&,
+                              double E_div_kT,
+                              IntegrationScheme,
+                              StableSumKahan& tgt );
 
       ////////////////////////////////////////////////////////////////////////
       //Integrate a full cell (this is a lot faster):
 
-      static void integrateFullCell( const CellData& c, StableSumKahan& tgt )
+      inline void integrateFullCell( const CellData& c, StableSumKahan& tgt )
       {
 #ifndef NDEBUG
         //logS must be log(S). For subnormal S (which do occur in kernels),
@@ -92,8 +89,7 @@ namespace NCRYSTAL_NAMESPACE {
         tgt.add( f * c2 );
       }
 
-
-    };
+    }
 
   }
 }
