@@ -108,7 +108,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-NC::IsoXSDescr::Tabulation NC::ElIncXS::tabulateMonoAtomic( double meanSqDisp,
+NC::IsoXSTable NC::ElIncXS::tabulateMonoAtomic( double meanSqDisp,
                                                             SigmaBound bound_incoh_xs )
 {
   nc_assert( meanSqDisp >= 0.0 && meanSqDisp < 1e6 );
@@ -117,7 +117,7 @@ NC::IsoXSDescr::Tabulation NC::ElIncXS::tabulateMonoAtomic( double meanSqDisp,
   constexpr double kkk = 16.0 * kPiSq * ekin2wlsqinv(1.0);
   const double sigma = bound_incoh_xs.dbl();
   const double c = kkk * meanSqDisp;
-  IsoXSDescr::Tabulation res;
+  IsoXSTable res;
   if ( meanSqDisp < 1e-290 ) {
     //Constant cross section (for msd<1e-290 good to 1e-10 below 1e277eV, and
     //keeping E=t/c and the coefficients sigma/c*p, |p|<4, finite):
