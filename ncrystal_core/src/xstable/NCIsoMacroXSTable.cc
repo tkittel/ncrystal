@@ -967,13 +967,14 @@ NCX::createIsoMacroXSTable( const MatCfg& cfg,
   std::vector<UntabulatedLeaf> untabulated;
   collectLeaves( *scat, 1.0, tabulated, untabulated );
   collectLeaves( *absn, 1.0, tabulated, untabulated );
-  IsoXSDescr merged;
+  Optional<IsoXSTable> merged;
   {
-    std::vector<std::pair<double,const IsoXSDescr*>> inputs;
+    std::vector<std::pair<double,const IsoXSTable*>> inputs;
     for ( auto& t : tabulated )
-      inputs.emplace_back( t.first, &t.second );
+      if ( t.first != 0.0 )
+        inputs.emplace_back( t.first, &t.second.table.value() );
     if ( !inputs.empty() )
-      merged = mergeIsoXSDescr( inputs );
+      merged = mergeIsoXSTables( inputs );
   }
   VectD sorted_disc = discontinuities;
   std::sort( sorted_disc.begin(), sorted_disc.end() );
@@ -983,8 +984,8 @@ NCX::createIsoMacroXSTable( const MatCfg& cfg,
     const double e = wl2ekin( wl );
     //de/dwl = -2e/wl:
     double res = 0.0;
-    if ( merged.table.has_value() )
-      res = ( evalIsoXSDerivative( merged.table.value(), e )
+    if ( merged.has_value() )
+      res = ( evalIsoXSDerivative( merged.value(), e )
               * ( -2.0 * e / wl ) );
     for ( auto& u : untabulated ) {
       auto f = [&u]( double w )
@@ -997,9 +998,9 @@ NCX::createIsoMacroXSTable( const MatCfg& cfg,
     return numberDensity * res;
   };
 
-  if ( untabulated.empty() && merged.table.has_value() ) {
+  if ( untabulated.empty() && merged.has_value() ) {
     validateParams( params );
-    auto pts = tabulateExact( merged.table.value(), numberDensity, params.wlmax,
+    auto pts = tabulateExact( merged.value(), numberDensity, params.wlmax,
                               tol_exact_factor * params.tol );
     if ( diagnostics ) {
       diagnostics->nDiscontinuities = pts.ndiscontinuities;
@@ -1013,8 +1014,8 @@ NCX::createIsoMacroXSTable( const MatCfg& cfg,
   //Processes with tables are smooth between the energies of their tables,
   //so these are sampled too:
   VectD samplePoints;
-  if ( merged.table.has_value() )
-    for ( auto e : merged.table.value().E )
+  if ( merged.has_value() )
+    for ( auto e : merged.value().E )
       samplePoints.push_back( ekin2wl( e ) );
   auto res = createIsoMacroXSTable( xs_of_wl, dxs_of_wl,
                                     std::move( discontinuities ), samplePoints,

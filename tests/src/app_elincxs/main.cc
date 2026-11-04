@@ -55,10 +55,8 @@ int main()
   double worst = 0.0;
   for ( double msd : { 0.0, 1e-12, 1e-6, 1e-4, 0.003, 0.0117, 0.05, 0.3, 3.0, 1e3 } ) {
     for ( double sigma : { 0.0, 0.07, 5.08, 82.02 } ) {
-      NC::IsoXSDescr d;
-      d.table = NC::ElIncXS::tabulateMonoAtomic( msd, NC::SigmaBound{ sigma } );
-      const NC::IsoXSEvaluator ev( std::move(d) );
-      const auto& t = ev.descr().table.value();
+      const NC::IsoXSEvaluator ev( NC::ElIncXS::tabulateMonoAtomic( msd, NC::SigmaBound{ sigma } ) );
+      const auto& t = ev.table();
       for ( auto e : energies ) {
         const double v = ev.eval( e );
         nc_assert_always( v == NC::evalIsoXS( t, e ) );
@@ -99,10 +97,8 @@ int main()
     for ( auto v : t.p )
       nc_assert_always( std::isfinite( v ) );
     nc_assert_always( std::isfinite( t.E.back() ) && std::isfinite( t.tail[2] ) );
-    NC::IsoXSDescr d;
-    d.table = std::move(t);
-    const NC::IsoXSEvaluator ev( std::move(d) );
-    const auto& tt = ev.descr().table.value();
+    const NC::IsoXSEvaluator ev( std::move(t) );
+    const auto& tt = ev.table();
     for ( double e : { 1.0, tt.E.front(), tt.E[tt.E.size()/2], tt.E.back(), 1e300 } )
       nc_assert_always( std::isfinite( ev.eval( e ) ) );
   }

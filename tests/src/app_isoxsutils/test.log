@@ -215,6 +215,6 @@ OK: random grid (n=110, with q, with r, coefficient style 0)
 OK: random grid (n=110, with q, with r, coefficient style 1)
 OK: random grid (n=110, with q, with r, coefficient style 2)
 evalIsoXS and IsoXSEvaluator agree with the reference in 3055836 checks
-mergeIsoXSDescr agrees with the sum of its inputs in 381546 checks (max deviation below 8 ulp of the absolute evaluation)
-scaleIsoXSDescr agrees with IsoXSEvaluator::evalScaled in 98730 checks (within rounding of the energy)
+mergeIsoXSTables agrees with the sum of its inputs in 362364 checks (max deviation below 8 ulp of the absolute evaluation)
+scaleIsoXSTable agrees with IsoXSEvaluator::evalScaled in 98730 checks (within rounding of the energy)
 evalIsoXSDerivative agrees with differences of evalIsoXS in 9749 checks
