@@ -23,6 +23,7 @@
 
 #include "NCrystal/core/NCTypes.hh"
 #include "NCrystal/internal/utils/NCFMA.hh"
+#include "NCrystal/internal/utils/NCMath.hh"
 
 //Various utilities related to kinematics, including those related to the
 //S(alpha,beta) formalism.
@@ -139,7 +140,7 @@ namespace NCRYSTAL_NAMESPACE {
     const double sq = std::sqrt( ekin_div_kT * kk );
     const double aminus = ( detail::alphaMinusNeedsTaylor( ekin_div_kT, beta )
                             ? detail::alphaMinusTaylor( ekin_div_kT, beta )
-                            : std::max(0.0, a - 2.0 * sq) );
+                            : ncmax(a - 2.0 * sq, 0.0) );
     //No ncfma needed in a+-2*sq: multiplication by 2 is exact, and sq (a
     //sqrt) is far from overflowing:
     const double aplus = a + 2.0 * sq;
@@ -157,7 +158,7 @@ namespace NCRYSTAL_NAMESPACE {
     const double sq = std::sqrt( ekin_div_kT * kk );
     const double aminus = ( detail::alphaMinusNeedsTaylor( ekin_div_kT, beta )
                             ? detail::alphaMinusTaylor( ekin_div_kT, beta )
-                            : std::max(0.0, a - 2.0 * sq) );
+                            : ncmax(a - 2.0 * sq, 0.0) );
     const double aplus = a + 2.0 * sq;
     return { aminus, aplus, 4.0*sq };
   }
@@ -172,7 +173,7 @@ namespace NCRYSTAL_NAMESPACE {
     nc_assert( kk >= 0.0 );
     const double a = kk + ekin_div_kT;
     const double sq = std::sqrt( ekin_div_kT * kk );
-    return std::max(0.0, a - 2.0 * sq);
+    return ncmax(a - 2.0 * sq, 0.0);
   }
 
   inline double getAlphaPlus( double ekin_div_kT, double beta )

@@ -167,7 +167,7 @@ namespace NCRYSTAL_NAMESPACE {
         //with corners at (x0,y0) and (x1,y1) intersects the line y=x.
         nc_assert(x1>x0);
         nc_assert(y1>y0);
-        return std::min<double>(x1, y1) >= std::max<double>(y0, x0);
+        return ncmin(y1, x1) >= ncmax(x0, y0);
       }
     }
   }

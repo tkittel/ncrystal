@@ -22,6 +22,7 @@
 #include "NCrystal/internal/utils/NCIter.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
+#include "NCrystal/internal/utils/NCMath.hh"
 namespace NC = NCrystal;
 
 namespace NCRYSTAL_NAMESPACE {
@@ -605,7 +606,7 @@ NC::SABUtils::TailedBreakdown NC::SABUtils::createTailedBreakdown( const Span<co
                         //smallest positive non-subnormal number (2.2e-308
                         //before passing to the log):
                         constexpr double z = std::numeric_limits<double>::min();
-                        tp.logsval = std::log( std::max<double>( tp.sval, z ) );
+                        tp.logsval = std::log( ncmax( z, tp.sval ) );
                       };
 
   //Enough setting up, time to analyse the tails and how they fall wrt the grid:
