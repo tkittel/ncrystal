@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/utils/NCHists.hh"
+#include "NCrystal/internal/utils/NCMath.hh"
 
 namespace NC = NCrystal;
 
@@ -89,8 +90,8 @@ void NC::Hists::RunningStats1D::merge( const RunningStats1D& o )
 #endif
   m_sumw += o.m_sumw;
   m_sumwx += o.m_sumwx;
-  m_minfilled = std::min<double>(m_minfilled,o.m_minfilled);
-  m_maxfilled = std::max<double>(m_maxfilled,o.m_maxfilled);
+  m_minfilled = ncmin(o.m_minfilled,m_minfilled);
+  m_maxfilled = ncmax(o.m_maxfilled,m_maxfilled);
 }
 
 

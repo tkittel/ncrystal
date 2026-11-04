@@ -25,6 +25,7 @@
 #include "NCrystal/internal/utils/NCFastSearch.hh"
 #include "NCrystal/internal/utils/NCSpan.hh"
 #include "NCrystal/internal/utils/NCFMA.hh"
+#include "NCrystal/internal/utils/NCMath.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -130,7 +131,7 @@ inline double NCrystal::IsoXSEvaluator::eval( double e ) const ncnoexceptndebug
   if ( e < E.front() ) {
     if ( !t.tail[0] )
       return t.tail[1];
-    const double ee = std::max( e, std::numeric_limits<double>::denorm_min() );
+    const double ee = ncmax( std::numeric_limits<double>::denorm_min(), e );
     return t.tail[0] / std::sqrt( ee ) + t.tail[1];
   }
   if ( !( e < E.back() ) )
@@ -179,7 +180,7 @@ evalScaled( double e, double escale, double xsscale ) const ncnoexceptndebug
   if ( x < t.E.front() ) {
     if ( !t.tail[0] )
       return xsscale * t.tail[1];
-    const double ee = std::max( e, std::numeric_limits<double>::denorm_min() );
+    const double ee = ncmax( std::numeric_limits<double>::denorm_min(), e );
     return ( t.tail[0] * ( xsscale / std::sqrt( escale ) ) ) / std::sqrt( ee )
       + xsscale * t.tail[1];
   }

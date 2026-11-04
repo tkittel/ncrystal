@@ -23,6 +23,7 @@
 
 #include "NCrystal/core/NCTypes.hh"
 #include "NCrystal/internal/utils/NCPointwiseDist.hh"
+#include "NCrystal/internal/utils/NCMath.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -101,7 +102,7 @@ inline double NCrystal::IofQHelper::calcQIofQIntegral( NeutronEnergy ekin ) cons
 inline double NCrystal::IofQHelper::sampleQValue( RNG& rng, NeutronEnergy ekin ) const
 {
   constexpr double kkk = 4.0 * ekin2ksq(1.0);
-  const double twok = std::sqrt( kkk * std::min<double>(m_ekinMax.dbl(),ekin.dbl()) );
+  const double twok = std::sqrt( kkk * ncmin(ekin.dbl(),m_ekinMax.dbl()) );
   return m_pwdist.sampleBelow( rng, twok );
 }
 
