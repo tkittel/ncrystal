@@ -210,25 +210,13 @@ void do_tests() {
     };
 
     NC::TinyVector<MyBigAlign,5> bigalign;
-    nc_assert_always(bigalign.isLocalStorage());
     bigalign.emplace_back(MyBigAlign{{1.0,3.0,4.0}});
     nc_assert_always(is_aligned<512>(bigalign.begin()));
-    nc_assert_always(bigalign.isLocalStorage());
     bigalign.emplace_back(MyBigAlign{{1.0,3.0,4.0}});
     bigalign.emplace_back(MyBigAlign{{1.0,3.0,4.0}});
-    nc_assert_always(bigalign.isLocalStorage());
     bigalign.emplace_back(MyBigAlign{{1.0,3.0,4.0}});
-    nc_assert_always(bigalign.isLocalStorage());
     bigalign.emplace_back(MyBigAlign{{1.0,3.0,4.0}});
     nc_assert_always(is_aligned<512>(bigalign.begin()));
-    nc_assert_always(bigalign.isLocalStorage());
-    nc_assert_always(bigalign.isFastAccess());
-
-    nc_assert_always( (NC::TinyVector<MyBigAlign,3>::isFastAccess()==true) );
-    nc_assert_always( (NC::TinyVector<MyDbl,3>::isFastAccess()==true) );
-
-    nc_assert_always( (NC::TinyVector<MyBigAlign,3>::isFastAccess()==true) );
-    nc_assert_always( (NC::TinyVector<float,3>::isFastAccess()==true) );
     std::cout<<"sizeof(MyBigAlign) = "<<sizeof(MyBigAlign)<<std::endl;
     std::cout<<"alignof(MyBigAlign) = "<<alignof(MyBigAlign)<<std::endl;
 

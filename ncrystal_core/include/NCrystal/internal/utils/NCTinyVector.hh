@@ -92,10 +92,6 @@ namespace NCRYSTAL_NAMESPACE {
     void reserve( size_type ) const noexcept {}
     void reserve_hint( size_type ) const noexcept {}
 
-    //fixme: remove?
-    constexpr bool isLocalStorage() const noexcept { return true; }
-    static constexpr bool isFastAccess() noexcept { return true; }
-
     ///////////////////////////////////////////////////////////////////////////
     //Insert or remove elements:
     void push_back( const TValue& value );
