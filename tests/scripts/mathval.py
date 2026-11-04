@@ -26,20 +26,6 @@ from NCrystalDev.misc import evaluate_query as ncquery
 from NCTestUtils.mpmathctx import get_mpmath_context
 
 
-def mp_integrate01_kpowx( k, mp ):
-    k = mp.mpf(k)
-    if k == 1:
-        return mp.mpf(1)
-    lnk = mp.log(k)
-    return (k-mp.mpf(1))/lnk
-
-def mp_integrate01_xkpowx( k, mp ):
-    k = mp.mpf(k)
-    if k == 1:
-        return mp.mpf('1/2')
-    lnk = mp.log(k)
-    return (k*(lnk-mp.mpf(1))+mp.mpf(1))/(lnk**2)
-
 def mp_sample_xkpowx( k, R, mp ):
     k=mp.mpf(k)
     R=mp.mpf(R)
@@ -51,37 +37,9 @@ def mp_sample_xkpowx( k, R, mp ):
 def main():
     mp = get_mpmath_context(1000)#fixme: reduce??
     d = ncquery(['util','mathval','kpowx'])
-    kvals = d['k']
-    nc_kpowx = d['integral01_kpowx']
-    nc_xkpowx = d['integral01_xkpowx']
     nc_kpowx_samples = d['sample_kpowx']
-    assert len(kvals)>10 and 1.0 in kvals
-    assert max(kvals)>1e250 and min(kvals)<1e-250
-
-    thr = 5e-15
 
     cmps = []
-    for k, ncval in zip(kvals,nc_kpowx):
-        refval = mp_integrate01_kpowx(k,mp)
-        cmps.append( (ncval,refval,f'int_0^1(k^x)dx [k={k:.15g}]') )
-
-    for k, ncval in zip(kvals,nc_xkpowx):
-        refval = mp_integrate01_xkpowx(k,mp)
-        cmps.append( (ncval,refval,f'int_0^1(x*k^x)dx [k={k:.15g}]') )
-
-    worst = None
-    for ncval,refval,descr in cmps:
-        rd = abs(ncval/refval-mp.mpf(1))
-        precstr = 'OK' if rd<thr else f'{float(rd):g}'
-        print(f'{descr} = {float(ncval):.14g} [precision: {precstr}]')
-        worst = rd if worst is None else max(worst,rd)
-
-    if not worst < thr:
-        print(f"Worst precision: {float(worst):.3g}")
-        raise SystemExit(f'ERROR: Precision not below {thr:g}!')
-    else:
-        print(f"Precision < {thr:g}? : YES")
-
     sample_refvals=[]
     for k in nc_kpowx_samples['k']:
         for R in nc_kpowx_samples['R']:

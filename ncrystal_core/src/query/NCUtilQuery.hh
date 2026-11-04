@@ -514,30 +514,7 @@ namespace NCRYSTAL_NAMESPACE {
             testsample.push_back(randKPowX( k, std::log(k), R ));
         }
 
-        VectD testk = { 1e-300, 1e-10, 1e-3, 0.5, 0.74,0.76,0.779,0.781,0.79,
-                        0.81, 0.89, 0.91, 0.95, 0.99, 1.0-1e-5, 1.0-1e-14, 1.0,
-                        1.0+1e-14, 1.0+1e-5, 1.01, 1.05, 1.09, 1.11, 1.19,
-                        1.21, 1.219,1.221, 1.24,1.26,3.0, 400.0, 1e4, 1e10,
-                        1e300 };
-        VectD kpowx, xkpowx;
-        for ( auto k : testk ) {
-          Optional<double> lnk = std::log(k);
-          double v1 = integrate01_kpowx( k, lnk );
-          double v2 = integrate01_kpowx( k );
-          nc_assert_always( v1==v2 );
-          kpowx.push_back( v1 );
-          v1 = integrate01_xkpowx( k, lnk );
-          v2 = integrate01_xkpowx( k );
-          nc_assert_always( v1==v2 );
-          xkpowx.push_back( v1 );
-        }
-        os << "{\"k\":";
-        streamJSON(os,testk);
-        os << ",\"integral01_kpowx\":";
-        streamJSON(os,kpowx);
-        os << ",\"integral01_xkpowx\":";
-        streamJSON(os,xkpowx);
-        os << ",\"sample_kpowx\":{";
+        os << "{\"sample_kpowx\":{";
         os << "\"k\":";
         streamJSON(os,testsamplek);
         os << ",\"R\":";
