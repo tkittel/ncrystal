@@ -245,12 +245,6 @@ std::size_t NC::RandIdxByWeightPicker::oneShotPick( double rand01val,
                                   { return fastLowerBoundIdx( commulvals, x ); } );
 }
 
-std::size_t NC::pickRandIdxByWeight( double rand01val,
-                                     Span<const double> commulvals)
-{
-  return RandIdxByWeightPicker::oneShotPick( rand01val, commulvals );
-}
-
 NC::RandIdxByWeightPicker::RandIdxByWeightPicker( VectD&& v )
   : m_v( std::move(v) )
 {
