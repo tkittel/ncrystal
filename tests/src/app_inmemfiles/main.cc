@@ -18,7 +18,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/NCrystal.hh"
+#include "NCrystal/factories/NCFact.hh"
 #include <iostream>
 namespace NC = NCrystal;
 
