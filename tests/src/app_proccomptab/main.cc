@@ -35,16 +35,15 @@ namespace {
   {
     //The cross section of the composition (from its merged table where
     //available) agrees with the scaled sum of the cross sections of its
-    //components, as does its isoXSDescr() table when it has one. Sampling
+    //components, as does its table when it has one. Sampling
     //works as before:
     auto sc = NC::FactImpl::createScatter( NC::MatCfg( cfgstr ) );
     auto pc = dynamic_cast<const NCPI::ProcComposition*>( &*sc );
     nc_assert_always( pc != nullptr );
-    const auto d = pc->isoXSDescr();
+    const auto d = pc->createIsoXSTable();
     unsigned ntab = 0;
     for ( auto& c : pc->components() ) {
-      auto p = dynamic_cast<const NCPI::ScatterIsotropicMat*>( &*c.process );
-      if ( p && p->isoXSDescr().table.has_value() )
+      if ( c.process->createIsoXSTable().has_value() )
         ++ntab;
     }
     NC::CachePtr cp;
@@ -60,12 +59,12 @@ namespace {
           sum += c.scale * c.process->crossSectionIsotropic( ccp[i], ekin ).dbl();
       }
       nc_assert_always( NC::floateq( xs, sum, 1e-13, 0.0 ) );
-      if ( d.table.has_value() )
-        nc_assert_always( NC::floateq( xs, NC::evalIsoXS( d.table.value(), e ), 1e-13, 0.0 ) );
+      if ( d.has_value() )
+        nc_assert_always( NC::floateq( xs, NC::evalIsoXS( d.value(), e ), 1e-13, 0.0 ) );
       (void)pc->sampleScatterIsotropic( cp, *rng, ekin );
     }
     std::cout << cfgstr << ": " << pc->components().size() << " components, "
-              << ntab << " with tables" << ( d.table.has_value() ? ", composition has a table" : "" )
+              << ntab << " with tables" << ( d.has_value() ? ", composition has a table" : "" )
               << ": OK" << std::endl;
   }
 }

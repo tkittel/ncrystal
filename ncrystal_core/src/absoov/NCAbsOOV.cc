@@ -38,7 +38,7 @@ NC::AbsOOV::AbsOOV( SigmaAbsorption sigabs)
 }
 
 
-NC::IsoXSDescr NC::AbsOOV::isoXSDescr() const
+NC::Optional<NC::IsoXSTable> NC::AbsOOV::createIsoXSTable() const
 {
   //xs = c/sqrt(e) is tail[0]/sqrt(e) below the table, and e*xs = c*sqrt(e)
   //(i.e. Q = c) within it:
@@ -46,9 +46,7 @@ NC::IsoXSDescr NC::AbsOOV::isoXSDescr() const
   t.E = { 1.0, 1e300 };
   t.q = { m_c, 0.0, 0.0, 0.0 };
   t.tail[0] = m_c;
-  IsoXSDescr d;
-  d.table = std::move( t );
-  return d;
+  return t;
 }
 
 NC::CrossSect NC::AbsOOV::crossSectionIsotropic(CachePtr&, NeutronEnergy ekin ) const

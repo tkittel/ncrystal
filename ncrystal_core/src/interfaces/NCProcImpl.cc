@@ -40,15 +40,26 @@ NCPI::ScatterIsotropicMat::sampleScatter( CachePtr& cp,
   return { outcome_isotropic.ekin, outdir };
 }
 
-NC::IsoXSDescr NCPI::ScatterIsotropicMat::isoXSDescr() const
+NC::Optional<NC::IsoXSTable> NCPI::Process::createIsoXSTable() const
 {
-  IsoXSDescr res;
+  if ( materialType() != MaterialType::Isotropic )
+    NCRYSTAL_THROW(LogicError,"Process::createIsoXSTable can only be"
+                   " called for isotropic materials.");
+  return NullOpt;
+}
+
+NC::VectD NCPI::Process::createIsoXSBreakpoints() const
+{
+  if ( materialType() != MaterialType::Isotropic )
+    NCRYSTAL_THROW(LogicError,"Process::createIsoXSBreakpoints can"
+                   " only be called for isotropic materials.");
+  VectD res;
   const auto d = domain();
   if ( d.isNull() )
     return res;
   for ( auto e : { d.elow.dbl(), d.ehigh.dbl() } )
     if ( e > 0.0 && std::isfinite( e ) )
-      res.breakpts.push_back( e );
+      res.push_back( e );
   return res;
 }
 
@@ -403,15 +414,15 @@ NCPI::ProcComposition::ProcComposition( ComponentList components,
     }
   }
 
-  //Merge the tables of the ScatterIsotropicMat components which have one:
-  std::vector<IsoXSDescr> descrs;
+  //Merge the tables of the isotropic components which have one:
+  std::vector<IsoXSTable> tables;
   SmallVector<std::size_t,6> tabulated;
   for ( auto i : ncrange( m_components.size() ) ) {
-    auto p = dynamic_cast<const ScatterIsotropicMat*>( m_components[i].process.get() );
-    if ( p ) {
-      IsoXSDescr d = p->isoXSDescr();
-      if ( d.table.has_value() ) {
-        descrs.push_back( std::move( d ) );
+    const auto& p = *m_components[i].process;
+    if ( p.materialType() == MaterialType::Isotropic ) {
+      auto t = p.createIsoXSTable();
+      if ( t.has_value() ) {
+        tables.push_back( std::move( t.value() ) );
         tabulated.push_back( i );
         continue;
       }
@@ -425,19 +436,18 @@ NCPI::ProcComposition::ProcComposition( ComponentList components,
     return;
   }
   std::vector<std::pair<double,const IsoXSTable*>> inputs;
-  inputs.reserve( descrs.size() );
-  for ( auto k : ncrange( descrs.size() ) )
-    inputs.emplace_back( m_components[tabulated[k]].scale,
-                         &descrs[k].table.value() );
+  inputs.reserve( tables.size() );
+  for ( auto k : ncrange( tables.size() ) )
+    inputs.emplace_back( m_components[tabulated[k]].scale, &tables[k] );
   //Order for picking components when sampling: by typical size (mean over a
   //logarithmic energy grid), largest first:
   {
     std::vector<std::pair<double,std::size_t>> sizes;
     const auto egrid = geomspace( 1e-5, 10.0, 64 );
-    for ( auto k : ncrange( descrs.size() ) ) {
+    for ( auto k : ncrange( tables.size() ) ) {
       double s = 0.0;
       for ( auto e : egrid )
-        s += evalIsoXS( descrs[k].table.value(), e );
+        s += evalIsoXS( tables[k], e );
       sizes.emplace_back( -s * m_components[tabulated[k]].scale, tabulated[k] );
     }
     std::sort( sizes.begin(), sizes.end() );
@@ -569,39 +579,44 @@ void NCPI::ProcComposition::Impl::addUntabulatedMany( const ProcComposition* THI
 }
 #endif
 
-NC::IsoXSDescr NCPI::ProcComposition::isoXSDescr() const
+NC::Optional<NC::IsoXSTable>
+NCPI::ProcComposition::createIsoXSTable() const
 {
-  std::vector<IsoXSDescr> descrs;
-  descrs.reserve( m_components.size() );
-  for ( auto& comp : m_components ) {
-    auto p = dynamic_cast<const ScatterIsotropicMat*>( comp.process.get() );
-    if ( p ) {
-      descrs.push_back( p->isoXSDescr() );
-    } else {
-      //No table, breakpts at the finite, non-zero domain bounds:
-      IsoXSDescr d;
-      const auto dom = comp.process->domain();
-      if ( !dom.isNull() )
-        for ( auto e : { dom.elow.dbl(), dom.ehigh.dbl() } )
-          if ( e > 0.0 && std::isfinite( e ) )
-            d.breakpts.push_back( e );
-      descrs.push_back( std::move( d ) );
-    }
+  if ( m_materialType != MaterialType::Isotropic )
+    NCRYSTAL_THROW(LogicError,"Process::createIsoXSTable can only be"
+                   " called for isotropic materials.");
+  if ( m_tabulatedXS ) {
+    //The tables were merged at construction, the other components have none:
+    if ( !m_untabulated.empty() )
+      return NullOpt;
+    return cloneIsoXSTable( m_tabulatedXS->table() );
   }
-  IsoXSDescr res;
-  bool allHaveTable = true;
+  //At most one table (e.g. a single component):
+  std::vector<IsoXSTable> tables;
   std::vector<std::pair<double,const IsoXSTable*>> inputs;
-  for ( auto k : ncrange( descrs.size() ) ) {
-    res.breakpts.insert( res.breakpts.end(), descrs[k].breakpts.begin(),
-                         descrs[k].breakpts.end() );
-    if ( descrs[k].table.has_value() )
-      inputs.emplace_back( m_components[k].scale, &descrs[k].table.value() );
-    else
-      allHaveTable = false;
+  tables.reserve( m_components.size() );
+  for ( auto& c : m_components ) {
+    auto t = c.process->createIsoXSTable();
+    if ( !t.has_value() )
+      return NullOpt;
+    tables.push_back( std::move( t.value() ) );
   }
-  sortBreakpoints( res.breakpts );
-  if ( allHaveTable )
-    res.table = mergeIsoXSTables( inputs );
+  for ( auto k : ncrange( tables.size() ) )
+    inputs.emplace_back( m_components[k].scale, &tables[k] );
+  return mergeIsoXSTables( inputs );
+}
+
+NC::VectD NCPI::ProcComposition::createIsoXSBreakpoints() const
+{
+  if ( m_materialType != MaterialType::Isotropic )
+    NCRYSTAL_THROW(LogicError,"Process::createIsoXSBreakpoints can"
+                   " only be called for isotropic materials.");
+  VectD res;
+  for ( auto& c : m_components ) {
+    const auto bp = c.process->createIsoXSBreakpoints();
+    res.insert( res.end(), bp.begin(), bp.end() );
+  }
+  sortBreakpoints( res );
   return res;
 }
 

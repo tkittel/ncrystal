@@ -103,14 +103,14 @@ int main()
       nc_assert_always( std::isfinite( ev.eval( e ) ) );
   }
 
-  //ElIncScatter: cross sections are exactly those of isoXSDescr(), and within
+  //ElIncScatter: cross sections are exactly those of its table, and within
   //1e-10 of the summed formula:
   const NC::VectD msd = { 0.0117, 0.0051, 0.0 }, bixs = { 5.08, 0.0, 2.1 },
     scale = { 0.25, 0.5, 0.25 };
   NC::ElIncScatter sc( msd, bixs, scale );
   const NC::ProcImpl::ScatterIsotropicMat& base = sc;
-  auto d = base.isoXSDescr();
-  nc_assert_always( d.breakpts.empty() && d.table.has_value() );
+  auto d = base.createIsoXSTable();
+  nc_assert_always( base.createIsoXSBreakpoints().empty() && d.has_value() );
   NC::CachePtr cp;
   NC::VectD many( energies.size() );
 #ifdef NCRYSTAL_ALLOW_ABI_BREAKAGE
@@ -119,7 +119,7 @@ int main()
   for ( auto i : NC::ncrange( energies.size() ) ) {
     const double e = energies[i];
     const double v = sc.crossSectionIsotropic( cp, NC::NeutronEnergy{ e } ).dbl();
-    nc_assert_always( v == NC::evalIsoXS( d.table.value(), e ) );
+    nc_assert_always( v == NC::evalIsoXS( d.value(), e ) );
 #ifdef NCRYSTAL_ALLOW_ABI_BREAKAGE
     nc_assert_always( v == many[i] );
 #endif
