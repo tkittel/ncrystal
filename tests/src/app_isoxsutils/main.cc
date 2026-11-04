@@ -31,14 +31,14 @@ namespace NC = NCrystal;
 namespace {
 
   static_assert( !std::is_copy_constructible<NC::IsoXSDescr>::value, "" );
-  static_assert( !std::is_copy_constructible<NC::IsoXSDescr::Tabulation>::value, "" );
+  static_assert( !std::is_copy_constructible<NC::IsoXSTable>::value, "" );
   static_assert( std::is_move_constructible<NC::IsoXSDescr>::value, "" );
 
   std::uint64_t g_nchecks = 0;
 
   //Straightforward reference implementation of the formulas in the
   //NCIsoXSUtils.hh comments:
-  double refXS( const NC::IsoXSDescr::Tabulation& p, double e )
+  double refXS( const NC::IsoXSTable& p, double e )
   {
     if ( e < p.E.front() ) {
       const double ee = ( e == 0.0 ? std::numeric_limits<double>::denorm_min() : e );
@@ -79,7 +79,7 @@ namespace {
     };
     NC::IsoXSDescr d;
     d.breakpts = { E.front(), E.back() };
-    NC::IsoXSDescr::Tabulation p;
+    NC::IsoXSTable p;
     p.E = std::move(E);
     for ( std::size_t i = 0; i + 1 < p.E.size(); ++i ) {
       const bool zeroqr = ( coefstyle == 2 && rng.generate() < 0.5 );
@@ -192,7 +192,7 @@ namespace {
     };
     NC::IsoXSDescr d;
     d.breakpts = { E.front(), E.back() };
-    NC::IsoXSDescr::Tabulation p;
+    NC::IsoXSTable p;
     p.E = std::move(E);
     for ( std::size_t i = 0; i + 1 < p.E.size(); ++i ) {
       for ( int k = 0; k < 4; ++k ) {
@@ -230,10 +230,10 @@ namespace {
           REQUIRE( std::binary_search( m.breakpts.begin(), m.breakpts.end(), b ) );
     const NC::IsoXSEvaluator ev( std::move(m) );
     const auto& t = ev.descr().table.value();
-    std::vector<NC::IsoXSDescr::Tabulation> absin;
+    std::vector<NC::IsoXSTable> absin;
     for ( auto& c : in ) {
       const auto& ti = c.second->table.value();
-      NC::IsoXSDescr::Tabulation a;
+      NC::IsoXSTable a;
       a.E = ti.E; a.p = ti.p; a.q = ti.q; a.r = ti.r;
       for ( auto* v : { &a.p, &a.q, &a.r } )
         for ( auto& x : *v )
@@ -548,7 +548,7 @@ int main()
   }
   {
     //Empty p means zero (here with only a Q part, like free-gas tables):
-    NC::IsoXSDescr::Tabulation a, b;
+    NC::IsoXSTable a, b;
     a.E = b.E = { 0.5, 1.0, 3.0 };
     a.q = b.q = { 1.0, -0.5, 0.25, 0.1, 2.0, 0.3, -0.2, 0.05 };
     b.p.assign( 8, 0.0 );

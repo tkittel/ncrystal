@@ -1487,7 +1487,7 @@ NCS::SABProcessor::crossSectionUnitSigmaBound( NeutronEnergy ekin ) const
   return CrossSect{ Sint * kTdiv4 / ekin.dbl() };
 }
 
-NC::IsoXSDescr::Tabulation NCS::SABProcessor::createXSTabulation() const
+NC::IsoXSTable NCS::SABProcessor::createXSTabulation() const
 {
   //On the grid, e*xs = (kT/4)*Sint(t) = sqrt(e)*(sqrt(kT)/4)*g(t), with g the
   //HymanInterp interpolation (a cubic Hermite in u, the same u in t and e):
@@ -1500,7 +1500,7 @@ NC::IsoXSDescr::Tabulation NCS::SABProcessor::createXSTabulation() const
   nc_assert_always( m.size() == x.size() );
   const double kT = sp->m_kT;
   const double c = 0.25 * std::sqrt( kT );
-  IsoXSDescr::Tabulation res;
+  IsoXSTable res;
   res.E.reserve( x.size() );
   for ( auto t : x )
     res.E.push_back( t * kT );

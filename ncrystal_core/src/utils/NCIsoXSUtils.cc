@@ -27,7 +27,7 @@ namespace NC = NCrystal;
 #ifndef NDEBUG
 namespace NCRYSTAL_NAMESPACE {
   namespace {
-    void validateTabulation( const IsoXSDescr::Tabulation& t )
+    void validateTabulation( const IsoXSTable& t )
     {
       const VectD& E = t.E;
       nc_assert_always( E.size() >= 2 );
@@ -42,7 +42,7 @@ namespace NCRYSTAL_NAMESPACE {
 }
 #endif
 
-double NC::evalIsoXS( const IsoXSDescr::Tabulation& t, double e )
+double NC::evalIsoXS( const IsoXSTable& t, double e )
 {
   const VectD& E = t.E;
   //Cheap checks only (validateTabulation is O(n), done once in IsoXSEvaluator):
@@ -79,7 +79,7 @@ double NC::evalIsoXS( const IsoXSDescr::Tabulation& t, double e )
   return ncfma( vectAt( t.r, i ), inv, exs ) * inv;
 }
 
-double NC::evalIsoXSDerivative( const IsoXSDescr::Tabulation& t, double e )
+double NC::evalIsoXSDerivative( const IsoXSTable& t, double e )
 {
   const VectD& E = t.E;
   nc_assert( E.size() >= 2 );
@@ -244,7 +244,7 @@ NC::IsoXSDescr NC::mergeIsoXSDescr( Span<const std::pair<double,const IsoXSDescr
   if ( !nused || !allHaveTable )
     return res;
 
-  IsoXSDescr::Tabulation t;
+  IsoXSTable t;
   for ( auto& in : inputs ) {
     if ( in.first == 0.0 )
       continue;

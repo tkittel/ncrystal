@@ -71,7 +71,7 @@ namespace {
     {
       NC::IsoXSDescr d;
       d.breakpts = { 0.5 };
-      NC::IsoXSDescr::Tabulation t;
+      NC::IsoXSTable t;
       t.E = { 1.0, 2.0 };
       t.p = { 2.0, 2.0, 0.0, 0.0 };//e*xs = 2*e = 2 + 2*u on [1,2]
       t.tail[1] = 2.0;

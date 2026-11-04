@@ -109,7 +109,7 @@ NC::CrossSect NC::FreeGasXSProvider::crossSectionTabulated( NeutronEnergy ekin )
   return CrossSect{ freeGasUniversal().evalScaled( ekin.dbl(), m_ca, m_sigmaFree ) };
 }
 
-NC::IsoXSDescr::Tabulation NC::FreeGasXSProvider::createXSTabulation() const
+NC::IsoXSTable NC::FreeGasXSProvider::createXSTabulation() const
 {
   nc_assert( m_ca > 0.0 );
   auto d = scaleIsoXSDescr( freeGasUniversal().descr(), m_ca, m_sigmaFree );
