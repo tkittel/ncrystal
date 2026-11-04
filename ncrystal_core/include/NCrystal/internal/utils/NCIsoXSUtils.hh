@@ -29,8 +29,8 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  //Utilities for IsoXSDescr (NCTypes.hh). Its Tabulation t describes a cross
-  //section xs(e) (energy e in eV, xs in barn) as:
+  //Utilities for IsoXSTable and IsoXSDescr (NCTypes.hh). An IsoXSTable t
+  //describes a cross section xs(e) (energy e in eV, xs in barn) as:
   //
   //  e < E[0]:           xs = tail[0]/sqrt(e) + tail[1]
   //  E[i] <= e < E[i+1]: e*xs = P_i(u) + sqrt(e)*Q_i(u) + r[i]/e
@@ -60,7 +60,7 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Evaluations accept ekin in eV and return xs in barn:
     double eval( double ekin ) const ncnoexceptndebug;
-    static double oneShotEval( const IsoXSDescr::Tabulation&, double ekin );
+    static double oneShotEval( const IsoXSTable&, double ekin );
     static double oneShotEval( const IsoXSDescr&, double ekin );
 
     //Scaled evaluation (cf. scaleIsoXSDescr):
@@ -78,7 +78,7 @@ namespace NCRYSTAL_NAMESPACE {
   //Form of a cross section at high energies: xs(E) = B + A/E for E >= emin.
   //Note: emin must be large enough that the form is exact to double precision
   //      (within a few ulp). It becomes the high-energy tail of an
-  //      IsoXSDescr::Tabulation (tail[3]=B, tail[2]=A), so only cross sections
+  //      IsoXSTable (tail[3]=B, tail[2]=A), so only cross sections
   //      with such a form for some finite emin can currently be tabulated
   //      this way.
   struct IsoXSHighEForm final {
@@ -101,12 +101,12 @@ namespace NCRYSTAL_NAMESPACE {
   //The derivative d(xs)/de of the tabulated cross section at e > 0, in the
   //same piece of the table as evalIsoXS (so at the energies E[i] it is the
   //derivative from above):
-  double evalIsoXSDerivative( const IsoXSDescr::Tabulation&, double e );
+  double evalIsoXSDerivative( const IsoXSTable&, double e );
 
   //Fixme: Remove this standalone evalIsoXS and use two functions above. Also
   //       make all 3 evaluations methods in IsoXSEvaluator return CrossSect
   //       type:
-  double evalIsoXS( const IsoXSDescr::Tabulation&, double e );
+  double evalIsoXS( const IsoXSTable&, double e );
 
   //The description of xs'(e) = xsscale*xs(escale*e), where xs is the cross
   //section of the given description (escale>0 and xsscale>=0, both finite).
@@ -156,7 +156,7 @@ inline double NCrystal::IsoXSEvaluator::eval( double e ) const ncnoexceptndebug
 }
 
 inline double NCrystal::IsoXSEvaluator::
-oneShotEval( const IsoXSDescr::Tabulation& tbl, double ekin )
+oneShotEval( const IsoXSTable& tbl, double ekin )
 {
   return evalIsoXS( tbl, ekin );
 }

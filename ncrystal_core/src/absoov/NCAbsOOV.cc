@@ -42,7 +42,7 @@ NC::IsoXSDescr NC::AbsOOV::isoXSDescr() const
 {
   //xs = c/sqrt(e) is tail[0]/sqrt(e) below the table, and e*xs = c*sqrt(e)
   //(i.e. Q = c) within it:
-  IsoXSDescr::Tabulation t;
+  IsoXSTable t;
   t.E = { 1.0, 1e300 };
   t.q = { m_c, 0.0, 0.0, 0.0 };
   t.tail[0] = m_c;
