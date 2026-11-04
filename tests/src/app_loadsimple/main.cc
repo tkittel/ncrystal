@@ -18,7 +18,8 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/NCrystal.hh"
+#include "NCrystal/factories/NCFactImpl.hh"
+#include "NCrystal/dump/NCDump.hh"
 #include "NCrystal/internal/utils/NCStrView.hh"
 #include <iostream>
 
