@@ -382,8 +382,14 @@ namespace NCRYSTAL_NAMESPACE {
           nc_assert( npts!=65u || is_flex );
           nc_assert( npts!=2u || is_trapez );
           nc_assert( npts!=3u || (is_trapez||is_simpson) );
+#ifndef NDEBUG
+          nc_assert_always( encode() == s );//round-trip check
+#endif
         }
-        StdLogLinCellIntegrator::IntegrationScheme encode() const//fixme: used?
+#ifndef NDEBUG
+        //Inverse of the constructor (debug builds only, for the round-trip
+        //check above):
+        StdLogLinCellIntegrator::IntegrationScheme encode() const
         {
           std::uint_fast32_t v = static_cast<std::uint_fast32_t>(npts);
           if (is_romberg) {
@@ -401,6 +407,7 @@ namespace NCRYSTAL_NAMESPACE {
           }
           return static_cast<StdLogLinCellIntegrator::IntegrationScheme>(v);
         }
+#endif
       };
 
       //fillContribAtAlpha: see NCSABCellInteg_FMA.hh (included above).
