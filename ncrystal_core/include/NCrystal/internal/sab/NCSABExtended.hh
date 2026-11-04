@@ -72,10 +72,11 @@ namespace NCRYSTAL_NAMESPACE {
       //Access cross sections, always assuming SigmaBound=1barn.
       CrossSect crossSectionUnitSigmaBound( NeutronEnergy ekin ) const;
 
-      //The evaluator of the description defining crossSectionUnitSigmaBound
-      //(see NCIsoXSUtils.hh). Its breakpts are the ends of the processor's
-      //energy grid:
+      //The evaluator of the table defining crossSectionUnitSigmaBound (see
+      //NCIsoXSUtils.hh), and the kinks of that cross section (the ends of the
+      //processor's energy grid):
       const IsoXSEvaluator& xsEvaluator() const noexcept { return m_xs; }
+      const VectD& xsBreakpoints() const noexcept { return m_xsBreakpoints; }
 
       //Sample scatterings:
       ScatterOutcomeIsotropic sampleScatter( RNG&, NeutronEnergy ) const;
@@ -93,6 +94,7 @@ namespace NCRYSTAL_NAMESPACE {
       double m_extSAtEmax;
       double m_tableSAtEmax;
       IsoXSEvaluator m_xs;
+      VectD m_xsBreakpoints;
       PairDD scatABHighE( RNG&, NeutronEnergy ) const;
     };
   }

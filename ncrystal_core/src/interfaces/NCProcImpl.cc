@@ -424,10 +424,11 @@ NCPI::ProcComposition::ProcComposition( ComponentList components,
     std::sort( m_untabulated.begin(), m_untabulated.end() );
     return;
   }
-  std::vector<std::pair<double,const IsoXSDescr*>> inputs;
+  std::vector<std::pair<double,const IsoXSTable*>> inputs;
   inputs.reserve( descrs.size() );
   for ( auto k : ncrange( descrs.size() ) )
-    inputs.emplace_back( m_components[tabulated[k]].scale, &descrs[k] );
+    inputs.emplace_back( m_components[tabulated[k]].scale,
+                         &descrs[k].table.value() );
   //Order for picking components when sampling: by typical size (mean over a
   //logarithmic energy grid), largest first:
   {
@@ -443,9 +444,8 @@ NCPI::ProcComposition::ProcComposition( ComponentList components,
     for ( auto& e : sizes )
       m_tabulatedBySize.push_back( e.second );
   }
-  auto merged = mergeIsoXSDescr( inputs );
-  nc_assert_always( merged.table.has_value() );
-  m_tabulatedXS = std::make_shared<const IsoXSEvaluator>( std::move( merged ) );
+  m_tabulatedXS
+    = std::make_shared<const IsoXSEvaluator>( mergeIsoXSTables( inputs ) );
 }
 
 double NCPI::ProcComposition::Impl::crossSectionWithTable( const ProcComposition* THIS,
@@ -588,11 +588,21 @@ NC::IsoXSDescr NCPI::ProcComposition::isoXSDescr() const
       descrs.push_back( std::move( d ) );
     }
   }
-  std::vector<std::pair<double,const IsoXSDescr*>> inputs;
-  inputs.reserve( descrs.size() );
-  for ( auto k : ncrange( descrs.size() ) )
-    inputs.emplace_back( m_components[k].scale, &descrs[k] );
-  return mergeIsoXSDescr( inputs );
+  IsoXSDescr res;
+  bool allHaveTable = true;
+  std::vector<std::pair<double,const IsoXSTable*>> inputs;
+  for ( auto k : ncrange( descrs.size() ) ) {
+    res.breakpts.insert( res.breakpts.end(), descrs[k].breakpts.begin(),
+                         descrs[k].breakpts.end() );
+    if ( descrs[k].table.has_value() )
+      inputs.emplace_back( m_components[k].scale, &descrs[k].table.value() );
+    else
+      allHaveTable = false;
+  }
+  sortBreakpoints( res.breakpts );
+  if ( allHaveTable )
+    res.table = mergeIsoXSTables( inputs );
+  return res;
 }
 
 NC::CrossSect NCPI::ProcComposition::crossSection( CachePtr& cacheptr,

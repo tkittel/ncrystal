@@ -121,7 +121,7 @@ double NC::evalIsoXSDerivative( const IsoXSTable& t, double e )
   return ( dF - F / e ) / e;
 }
 
-NC::IsoXSDescr NC::scaleIsoXSDescr( const IsoXSDescr& d, double escale,
+NC::IsoXSTable NC::scaleIsoXSTable( const IsoXSTable& t, double escale,
                                     double xsscale )
 {
   //With x=escale*e: e*xs'(e) = (xsscale/escale)*x*xs(x), so in each interval
@@ -132,21 +132,13 @@ NC::IsoXSDescr NC::scaleIsoXSDescr( const IsoXSDescr& d, double escale,
   const double kp = xsscale / escale;
   const double kq = xsscale / std::sqrt( escale );
   const double kr = kp / escale;
-  IsoXSDescr res;
-  res.breakpts.reserve( d.breakpts.size() );
-  for ( auto b : d.breakpts )
-    res.breakpts.push_back( b / escale );
-  if ( !d.table.has_value() )
-    return res;
-  const auto& t = d.table.value();
-  res.table.emplace();
-  auto& c = res.table.value();
+  IsoXSTable c;
   c.E.reserve( t.E.size() );
   for ( auto e : t.E )
     c.E.push_back( e / escale );
   for ( auto i : ncrange( std::size_t(1), c.E.size() ) )
     if ( !( vectAt( c.E, i - 1 ) < vectAt( c.E, i ) ) )
-      NCRYSTAL_THROW(CalcError,"scaleIsoXSDescr: energy scale collapses grid points");
+      NCRYSTAL_THROW(CalcError,"scaleIsoXSTable: energy scale collapses grid points");
   auto scaled = []( const VectD& v, double k )
   {
     VectD r;
@@ -163,35 +155,33 @@ NC::IsoXSDescr NC::scaleIsoXSDescr( const IsoXSDescr& d, double escale,
   c.tail[2] = t.tail[2] * kp;
   c.tail[3] = t.tail[3] * xsscale;
   c.tail[4] = t.tail[4] * kr;
-  return res;
+  return c;
 }
 
-NC::IsoXSDescr NC::cloneIsoXSDescr( const IsoXSDescr& d )
+NC::IsoXSTable NC::cloneIsoXSTable( const IsoXSTable& t )
 {
-  IsoXSDescr res;
-  res.breakpts = d.breakpts;
-  if ( d.table.has_value() ) {
-    const auto& t = d.table.value();
-    res.table.emplace();
-    auto& c = res.table.value();
-    c.E = t.E;
-    c.p = t.p;
-    c.q = t.q;
-    c.r = t.r;
-    for ( auto k : ncrange( 5 ) )
-      c.tail[k] = t.tail[k];
-  }
-  return res;
+  IsoXSTable c;
+  c.E = t.E;
+  c.p = t.p;
+  c.q = t.q;
+  c.r = t.r;
+  for ( auto k : ncrange( 5 ) )
+    c.tail[k] = t.tail[k];
+  return c;
 }
 
-NC::IsoXSEvaluator::IsoXSEvaluator( IsoXSDescr d )
-  : m_descr( std::move( d ) )
+void NC::sortBreakpoints( VectD& v )
 {
-  if ( !m_descr.table.has_value() )
-    NCRYSTAL_THROW(BadInput,"IsoXSEvaluator needs an IsoXSDescr with a table");
-  const VectD& E = m_descr.table.value().E;
+  std::sort( v.begin(), v.end() );
+  v.erase( std::unique( v.begin(), v.end() ), v.end() );
+}
+
+NC::IsoXSEvaluator::IsoXSEvaluator( IsoXSTable t )
+  : m_table( std::move( t ) )
+{
+  const VectD& E = m_table.E;
 #ifndef NDEBUG
-  validateTabulation( m_descr.table.value() );
+  validateTabulation( m_table );
 #endif
   m_invw.reserve( E.size() - 1 );
   for ( auto i : ncrange( std::size_t(1), E.size() ) )
@@ -224,31 +214,24 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-NC::IsoXSDescr NC::mergeIsoXSDescr( Span<const std::pair<double,const IsoXSDescr*>> inputs )
+NC::IsoXSTable NC::mergeIsoXSTables( Span<const std::pair<double,const IsoXSTable*>> inputs )
 {
-  IsoXSDescr res;
-  bool allHaveTable = true;
   std::size_t nused = 0;
   for ( auto& in : inputs ) {
     nc_assert_always( in.second != nullptr );
     nc_assert_always( in.first >= 0.0 && std::isfinite( in.first ) );
-    if ( in.first == 0.0 )
-      continue;
-    ++nused;
-    res.breakpts.insert( res.breakpts.end(), in.second->breakpts.begin(), in.second->breakpts.end() );
-    if ( !in.second->table.has_value() )
-      allHaveTable = false;
+    if ( in.first != 0.0 )
+      ++nused;
   }
-  std::sort( res.breakpts.begin(), res.breakpts.end() );
-  res.breakpts.erase( std::unique( res.breakpts.begin(), res.breakpts.end() ), res.breakpts.end() );
-  if ( !nused || !allHaveTable )
-    return res;
+  if ( !nused )
+    NCRYSTAL_THROW(BadInput,"mergeIsoXSTables needs at least one input with"
+                   " non-zero scale factor");
 
   IsoXSTable t;
   for ( auto& in : inputs ) {
     if ( in.first == 0.0 )
       continue;
-    const auto& ti = in.second->table.value();
+    const auto& ti = *in.second;
 #ifndef NDEBUG
     validateTabulation( ti );
 #endif
@@ -266,7 +249,7 @@ NC::IsoXSDescr NC::mergeIsoXSDescr( Span<const std::pair<double,const IsoXSDescr
     const double s = in.first;
     if ( s == 0.0 )
       continue;
-    const auto& ti = in.second->table.value();
+    const auto& ti = *in.second;
     for ( auto k : ncrange( nint ) ) {
       //Each merged interval lies within one region of each input, since all
       //input breakpoints are merged breakpoints:
@@ -302,6 +285,5 @@ NC::IsoXSDescr NC::mergeIsoXSDescr( Span<const std::pair<double,const IsoXSDescr
     t.q.clear();
   if ( allZero( t.r ) )
     t.r.clear();
-  res.table = std::move(t);
-  return res;
+  return t;
 }
