@@ -26,7 +26,6 @@
 #include "NCrystal/internal/utils/NCIsoXSUtils.hh"
 #include "NCPolyBoundHelper.hh"
 #include <array>
-#include "NCrystal/internal/absoov/NCAbsOOV.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 
@@ -70,7 +69,7 @@ namespace NCRYSTAL_NAMESPACE {
       //the spacing of the points where the tolerance is not met):
       constexpr unsigned max_refine_iterations = 100;
 
-      //Leaf processes without a table in their isoXSDescr(), whose cross
+      //Leaf processes without a table (createIsoXSTable), whose cross
       //sections are known to have no features which the table creation could
       //miss: they are smooth, apart from the boundaries of their energy domains
       //(which are included explicitly). Null processes and processes with
@@ -98,23 +97,22 @@ namespace NCRYSTAL_NAMESPACE {
         names.insert( proc.name() );
         if ( proc.isNull() )
           return;
-        auto iso = dynamic_cast<const ProcImpl::ScatterIsotropicMat*>( &proc );
-        if ( iso && iso->isoXSDescr().table.has_value() )
+        if ( proc.createIsoXSTable().has_value() )
           return;
         if ( !isValidatedUntabulated( proc.name() ) )
           unvalidated.insert( proc.name() );
       }
 
       //Collect the leaf processes (of ProcComposition trees, with their scale
-      //factors), separating those with a table in their isoXSDescr() (for
-      //absorption, only AbsOOV has one):
+      //factors), separating those with a table (see
+      //Process::createIsoXSTable):
       struct UntabulatedLeaf {
         double scale;
         const ProcImpl::Process* process;
         CachePtr cache;
       };
       void collectLeaves( const ProcImpl::Process& proc, double scale,
-                          std::vector<std::pair<double,IsoXSDescr>>& tabulated,
+                          std::vector<std::pair<double,IsoXSTable>>& tabulated,
                           std::vector<UntabulatedLeaf>& untabulated )
       {
         if ( auto comp = dynamic_cast<const ProcImpl::ProcComposition*>( &proc ) ) {
@@ -124,15 +122,9 @@ namespace NCRYSTAL_NAMESPACE {
         }
         if ( proc.isNull() )
           return;
-        if ( auto iso = dynamic_cast<const ProcImpl::ScatterIsotropicMat*>( &proc ) ) {
-          auto d = iso->isoXSDescr();
-          if ( d.table.has_value() ) {
-            tabulated.emplace_back( scale, std::move( d ) );
-            return;
-          }
-        }
-        if ( auto oov = dynamic_cast<const AbsOOV*>( &proc ) ) {
-          tabulated.emplace_back( scale, oov->isoXSDescr() );
+        auto t = proc.createIsoXSTable();
+        if ( t.has_value() ) {
+          tabulated.emplace_back( scale, std::move( t.value() ) );
           return;
         }
         untabulated.push_back( UntabulatedLeaf{ scale, &proc, nullptr } );
@@ -174,7 +166,7 @@ namespace NCRYSTAL_NAMESPACE {
                            << params.tol << " (must be in the range (0,1))" );
       }
 
-      //For materials where all processes have a table in their isoXSDescr(),
+      //For materials where all processes have a table,
       //the table is built directly from the merged table of the processes,
       //with the exact errors of the interpolation (see tabulateExact). Even so,
       //a smaller tolerance than requested is used, as a margin against rounding
@@ -496,22 +488,13 @@ namespace NCRYSTAL_NAMESPACE {
       }
 
       //The wavelengths of the known discontinuities and kinks of the cross
-      //section of a process: the breakpts of its isoXSDescr() (e.g. the Bragg
-      //edges), or otherwise the boundaries of its energy domain:
+      //section of a process (see Process::createIsoXSBreakpoints,
+      //e.g. the Bragg edges or the boundaries of its energy domain):
       void collectBreakpoints( const ProcImpl::Process& proc, VectD& wl )
       {
-        IsoXSDescr d;
-        if ( auto comp = dynamic_cast<const ProcImpl::ProcComposition*>( &proc ) ) {
-          d = comp->isoXSDescr();
-        } else if ( auto iso = dynamic_cast<const ProcImpl::ScatterIsotropicMat*>( &proc ) ) {
-          d = iso->isoXSDescr();
-        } else {
-          const auto domain = proc.domain();
-          if ( !domain.isNull() )
-            d.breakpts = { domain.elow.dbl(), domain.ehigh.dbl() };
-        }
-        wl.reserve( wl.size() + d.breakpts.size() );
-        for ( auto e : d.breakpts )
+        const auto bp = proc.createIsoXSBreakpoints();
+        wl.reserve( wl.size() + bp.size() );
+        for ( auto e : bp )
           if ( e > 0.0 && std::isfinite( e ) )
             wl.push_back( ekin2wl( e ) );
       }
@@ -960,10 +943,10 @@ NCX::createIsoMacroXSTable( const MatCfg& cfg,
   };
 
   //The slope of the cross section: from the merged tables of the processes
-  //which have a table in their isoXSDescr(), and from numerical differences
+  //which have a table, and from numerical differences
   //for the other processes (whose cross sections are smooth between the known
   //discontinuities):
-  std::vector<std::pair<double,IsoXSDescr>> tabulated;
+  std::vector<std::pair<double,IsoXSTable>> tabulated;
   std::vector<UntabulatedLeaf> untabulated;
   collectLeaves( *scat, 1.0, tabulated, untabulated );
   collectLeaves( *absn, 1.0, tabulated, untabulated );
@@ -972,7 +955,7 @@ NCX::createIsoMacroXSTable( const MatCfg& cfg,
     std::vector<std::pair<double,const IsoXSTable*>> inputs;
     for ( auto& t : tabulated )
       if ( t.first != 0.0 )
-        inputs.emplace_back( t.first, &t.second.table.value() );
+        inputs.emplace_back( t.first, &t.second );
     if ( !inputs.empty() )
       merged = mergeIsoXSTables( inputs );
   }

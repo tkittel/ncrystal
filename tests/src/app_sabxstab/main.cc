@@ -67,10 +67,11 @@ namespace {
           return p.crossSectionUnitSigmaBound( NC::NeutronEnergy{ e } ).dbl();
         return k / e + ext.extender().crossSection( NC::NeutronEnergy{ e } ).dbl();
       };
-      const auto d = s->isoXSDescr();
-      nc_assert_always( d.table.has_value() );
-      const auto& t = d.table.value();
-      nc_assert_always( d.breakpts.size() == 2 && d.breakpts.back() == emax );
+      const auto d = s->createIsoXSTable();
+      nc_assert_always( d.has_value() );
+      const auto& t = d.value();
+      const auto bp = s->createIsoXSBreakpoints();
+      nc_assert_always( bp.size() == 2 && bp.back() == emax );
       NC::CachePtr cp0;
       const double scale = s->crossSectionIsotropic( cp0, NC::NeutronEnergy{ 1.0 } ).dbl()
         / ext.crossSectionUnitSigmaBound( NC::NeutronEnergy{ 1.0 } ).dbl();

@@ -48,10 +48,10 @@ namespace {
       auto p = dynamic_cast<const NCPI::ScatterIsotropicMat*>( leaf );
       if ( !p )
         continue;
-      const auto d = p->isoXSDescr();
-      if ( !d.table.has_value() )
+      const auto d = p->createIsoXSTable();
+      if ( !d.has_value() )
         continue;
-      const auto& t = d.table.value();
+      const auto& t = d.value();
       const auto dom = p->domain();
       NC::VectD energies = NC::geomspace( 1e-10, 1e3, 20001 );
       for ( double e : { 0.0, dom.elow.dbl(), dom.ehigh.dbl() } ) {
@@ -80,12 +80,12 @@ namespace {
 
   void testAbsOOV()
   {
-    //The table of AbsOOV::isoXSDescr() agrees with crossSectionIsotropic (to
+    //The table of AbsOOV agrees with crossSectionIsotropic (to
     //within rounding) at all energies from 1e-10 eV to below 1e300 eV:
     for ( double sigabs : { 0.0, 0.231, 3835.0 } ) {
       const NC::AbsOOV p{ NC::SigmaAbsorption{ sigabs } };
-      const auto d = p.isoXSDescr();
-      nc_assert_always( d.table.has_value() && d.breakpts.empty() );
+      const auto d = p.createIsoXSTable();
+      nc_assert_always( d.has_value() && p.createIsoXSBreakpoints().empty() );
       NC::VectD energies = NC::geomspace( 1e-10, 1e300, 20001 );
       for ( double e : { 1.0, 1e300 } ) {
         energies.push_back( std::nextafter( e, 0.0 ) );
@@ -94,7 +94,7 @@ namespace {
       NC::CachePtr cp;
       for ( auto e : energies ) {
         const double xs = p.crossSectionIsotropic( cp, NC::NeutronEnergy{ e } ).dbl();
-        const double v = NC::evalIsoXS( d.table.value(), e );
+        const double v = NC::evalIsoXS( d.value(), e );
         nc_assert_always( e >= 1e300 || NC::floateq( xs, v, 1e-14, 0.0 ) );
       }
     }

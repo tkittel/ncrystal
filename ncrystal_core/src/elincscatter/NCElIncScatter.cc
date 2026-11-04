@@ -253,11 +253,10 @@ NC::CosineScatAngle NC::ElIncScatter::sampleMu( RNG& rng, NeutronEnergy ekin ) c
   return ElIncXS::sampleMuMonoAtomic( rng, ekin, elms[idx].first );
 }
 
-NC::IsoXSDescr NC::ElIncScatter::isoXSDescr() const
+NC::Optional<NC::IsoXSTable>
+NC::ElIncScatter::createIsoXSTable() const
 {
-  IsoXSDescr res;
-  res.table = cloneIsoXSTable( m_xs.table() );
-  return res;
+  return cloneIsoXSTable( m_xs.table() );
 }
 
 NC::ScatterOutcomeIsotropic NC::ElIncScatter::sampleScatterIsotropic( CachePtr&, RNG& rng, NeutronEnergy ekin ) const

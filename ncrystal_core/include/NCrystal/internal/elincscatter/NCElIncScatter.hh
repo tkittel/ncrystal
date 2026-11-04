@@ -71,7 +71,7 @@ namespace NCRYSTAL_NAMESPACE {
 
     //The cross section is defined by the sum of the elements' tabulations
     //(ElIncXS::tabulateMonoAtomic):
-    IsoXSDescr isoXSDescr() const override;
+    Optional<IsoXSTable> createIsoXSTable() const override;
 
     //Simple additive merge:
     std::shared_ptr<Process> createMerged( const Process& other,

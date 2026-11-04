@@ -493,11 +493,6 @@ namespace NCRYSTAL_NAMESPACE {
     double tail[5] = {0};
   };
 
-  struct IsoXSDescr final {
-    Optional<IsoXSTable> table;
-    VectD breakpts;
-  };
-
   //Index identifying RNG streams:
   class NCRYSTAL_API RNGStreamIndex final : public EncapsulatedValue<RNGStreamIndex,uint64_t> {
   public:
