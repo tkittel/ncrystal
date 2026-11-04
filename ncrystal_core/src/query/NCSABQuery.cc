@@ -481,7 +481,7 @@ namespace NCRYSTAL_NAMESPACE {
         }
         {
           StableSumKahan sum_full;
-          using SCI = StdLogLinCellIntegrator;
+          namespace SCI = StdLogLinCellIntegrator;
           SCI::integrateFullCell(cell,sum_full);
           cellinteg_full = sum_full.sum();
 
