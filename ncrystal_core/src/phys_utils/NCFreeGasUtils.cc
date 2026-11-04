@@ -80,25 +80,23 @@ namespace NCRYSTAL_NAMESPACE {
       return stable_exp( -x ) * kInvSqrtPi + ( s + 0.5 / s ) * ncerf( s );
     }
 
-    IsoXSDescr describeFreeGasUniversal()
+    IsoXSTable tabulateFreeGasUniversal()
     {
       constexpr double xmax = 36.0;//must match highEForm
       auto fit = fitPiecewiseCubic( freeGasH, 1.5e-10, xmax, 1e-10, 4.0 );
       nc_assert_always( fit.x.back() == xmax );
-      IsoXSDescr res;
-      res.table.emplace();
-      auto& t = res.table.value();
+      IsoXSTable t;
       t.E = std::move( fit.x );
       t.q = std::move( fit.c );
       t.tail[0] = 2.0 * kInvSqrtPi;
       t.tail[2] = 0.5;
       t.tail[3] = 1.0;
-      return res;
+      return t;
     }
 
     const IsoXSEvaluator& freeGasUniversal()
     {
-      static const IsoXSEvaluator ev( describeFreeGasUniversal() );
+      static const IsoXSEvaluator ev( tabulateFreeGasUniversal() );
       return ev;
     }
   }
@@ -112,8 +110,7 @@ NC::CrossSect NC::FreeGasXSProvider::crossSectionTabulated( NeutronEnergy ekin )
 NC::IsoXSTable NC::FreeGasXSProvider::createXSTabulation() const
 {
   nc_assert( m_ca > 0.0 );
-  auto d = scaleIsoXSDescr( freeGasUniversal().descr(), m_ca, m_sigmaFree );
-  return std::move( d.table.value() );
+  return scaleIsoXSTable( freeGasUniversal().table(), m_ca, m_sigmaFree );
 }
 
 NC::IsoXSHighEForm NC::FreeGasXSProvider::highEForm() const

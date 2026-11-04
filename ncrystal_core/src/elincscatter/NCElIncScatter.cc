@@ -171,32 +171,25 @@ namespace NCRYSTAL_NAMESPACE {
                                      std::move(res.value().scale) );
     }
 
-    IsoXSDescr describeMonoAtomic( double msd, SigmaBound sigma )
-    {
-      IsoXSDescr res;
-      res.table = ElIncXS::tabulateMonoAtomic( msd, sigma );
-      return res;
-    }
-
     //Sum of the tabulations of the elements:
-    IsoXSDescr describeElInc( const ElIncXS& ei )
+    IsoXSTable tabulateElInc( const ElIncXS& ei )
     {
       const auto elms = ei.elementData();
+      if ( elms.empty() )
+        return ElIncXS::tabulateMonoAtomic( 0.0, SigmaBound{ 0.0 } );
       if ( elms.size() == 1 )
-        return describeMonoAtomic( elms[0].first,
-                                   SigmaBound{ elms[0].second } );
-      std::vector<IsoXSDescr> descrs( elms.size() );
-      std::vector<std::pair<double,const IsoXSDescr*>> inputs;
+        return ElIncXS::tabulateMonoAtomic( elms[0].first,
+                                            SigmaBound{ elms[0].second } );
+      std::vector<IsoXSTable> tables;
+      tables.reserve( elms.size() );
+      std::vector<std::pair<double,const IsoXSTable*>> inputs;
       inputs.reserve( elms.size() );
-      for ( auto i : ncrange( elms.size() ) ) {
-        descrs[i] = describeMonoAtomic( elms[i].first,
-                                        SigmaBound{ elms[i].second } );
-        inputs.emplace_back( 1.0, &descrs[i] );
-      }
-      auto merged = mergeIsoXSDescr( inputs );
-      if ( !merged.table.has_value() )
-        return describeMonoAtomic( 0.0, SigmaBound{ 0.0 } );//no elements
-      return merged;
+      for ( auto& e : elms )
+        tables.push_back( ElIncXS::tabulateMonoAtomic( e.first,
+                                                       SigmaBound{ e.second } ) );
+      for ( auto& t : tables )
+        inputs.emplace_back( 1.0, &t );
+      return mergeIsoXSTables( inputs );
     }
 
     std::vector<IsoXSEvaluator> elementEvaluators( const ElIncXS& ei )
@@ -207,8 +200,8 @@ namespace NCRYSTAL_NAMESPACE {
         return res;
       res.reserve( elms.size() );
       for ( auto& e : elms )
-        res.emplace_back( describeMonoAtomic( e.first,
-                                              SigmaBound{ e.second } ) );
+        res.emplace_back( ElIncXS::tabulateMonoAtomic( e.first,
+                                                       SigmaBound{ e.second } ) );
       return res;
     }
 
@@ -262,7 +255,9 @@ NC::CosineScatAngle NC::ElIncScatter::sampleMu( RNG& rng, NeutronEnergy ekin ) c
 
 NC::IsoXSDescr NC::ElIncScatter::isoXSDescr() const
 {
-  return cloneIsoXSDescr( m_xs.descr() );
+  IsoXSDescr res;
+  res.table = cloneIsoXSTable( m_xs.table() );
+  return res;
 }
 
 NC::ScatterOutcomeIsotropic NC::ElIncScatter::sampleScatterIsotropic( CachePtr&, RNG& rng, NeutronEnergy ekin ) const
@@ -272,7 +267,7 @@ NC::ScatterOutcomeIsotropic NC::ElIncScatter::sampleScatterIsotropic( CachePtr&,
 
 NC::ElIncScatter::ElIncScatter( std::unique_ptr<ElIncXS> p )
   : m_elincxs( std::move(p) ),
-    m_xs( describeElInc( *m_elincxs ) ),
+    m_xs( tabulateElInc( *m_elincxs ) ),
     m_elmxs( elementEvaluators( *m_elincxs ) )
 {
 }
