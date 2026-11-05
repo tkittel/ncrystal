@@ -54,7 +54,9 @@ NC::SABScatter::SABScatter( const DI_ScatKnl& di_sk, VDOS::VDOSLux vdoslux,
                             bool useCache, uint32_t vdos2sabExcludeFlag )
   : SABScatter( [&di_sk,vdoslux,useCache,vdos2sabExcludeFlag]()
                 {
-                  auto sabdata_ptr = extractSABDataFromDynInfo(&di_sk,vdoslux,useCache,vdos2sabExcludeFlag);
+                  auto sabdata_ptr
+                    = DynInfoUtils::extractSABDataFromDynInfo(
+                        &di_sk, vdoslux, useCache, vdos2sabExcludeFlag );
                   nc_assert_always(!!sabdata_ptr);
                   return ( useCache
                            ? SAB::createScatterHelperWithCache( std::move(sabdata_ptr),

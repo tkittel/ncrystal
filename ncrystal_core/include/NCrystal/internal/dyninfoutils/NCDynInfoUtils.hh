@@ -27,51 +27,52 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  //fixme: add a namespace?
+  namespace DynInfoUtils {
 
-  //Access SABData from DynInfo object (or just expand from VDOSDebye
-  //model). This might result in some calculations carried out in order to
-  //either convert scattering kernels to the correct format or create it by
-  //expansion from a VDOS. The vdoslux parameter is used as described in
-  //NCMatCfg.hh, and only affects VDOS-based scattering kernels. For the special
-  //case of VDOSDebye based kernels, the vdoslux parameter might be reduced, to
-  //prevent wasting resources on what is anyway rather crude input (fixme: update).
-  //
-  //The vdos2sabExcludeFlag is for special use-cases (testing) only, and only
-  //affects DI_VDOS, and can be used to selectively exclude parts or all of
-  //certain phonon-orders from the S(alpha,beta) when expanded from a VDOS. It
-  //should be composed according to the formula: MODE + 4*LOW + 40000*HIGH Here,
-  //MODE indicates what to exclude (0x0 nothing, 0x1 sigma_coherent, 0x2
-  //sigma_incoherent, 0x3 both). LOW is the lowest order to exclude something
-  //from, and HIGH is the highest. Both LOW and HIGH must be in [1,9999] where a
-  //value of 9999 is interpreted as infinity.
-  //
-  //Unless useCache=false is set, a MT-safe caching mechanism will be employed
-  //behind the scene in order to prevent duplication of work in case of repeated
-  //calls. The cache can obviously be cleared with the
-  //clearSABDataFromDynInfoCaches function (automatically invoked by the global
-  //clearCaches function):
-  shared_obj<const SABData>
-  extractSABDataFromDynInfo( const DI_ScatKnl*, VDOS::VDOSLux = {},
-                             bool useCache = true,
-                             std::uint32_t vdos2sabExcludeFlag = 0 );
+    //Access SABData from DynInfo object (or just expand from VDOSDebye model).
+    //This might result in some calculations carried out in order to either
+    //convert scattering kernels to the correct format or create it by expansion
+    //from a VDOS. The vdoslux parameter is used as described in NCMatCfg.hh,
+    //and only affects VDOS-based scattering kernels. For the special case of
+    //VDOSDebye based kernels with a legacy vdoslux value, the vdoslux is
+    //reduced by 3 levels for backwards compatibility reasons.
+    //
+    //The vdos2sabExcludeFlag is for special use-cases (testing) only, and only
+    //affects DI_VDOS, and can be used to selectively exclude parts or all of
+    //certain phonon-orders from the S(alpha,beta) when expanded from a VDOS. It
+    //should be composed according to the formula: MODE + 4*LOW + 40000*HIGH
+    //Here, MODE indicates what to exclude (0x0 nothing, 0x1 sigma_coherent, 0x2
+    //sigma_incoherent, 0x3 both). LOW is the lowest order to exclude something
+    //from, and HIGH is the highest. Both LOW and HIGH must be in [1,9999] where
+    //a value of 9999 is interpreted as infinity.
+    //
+    //Unless useCache=false is set, a MT-safe caching mechanism will be employed
+    //behind the scene in order to prevent duplication of work in case of
+    //repeated calls. The cache is cleared by the global clearCaches function:
+    shared_obj<const SABData>
+    extractSABDataFromDynInfo( const DI_ScatKnl*, VDOS::VDOSLux = {},
+                               bool useCache = true,
+                               std::uint32_t vdos2sabExcludeFlag = 0 );
 
-  //Effective temperature and mean-squared displacement associated
-  //with a dyninfo, when available:
-  Optional<Temperature> extractTeffFromDynInfo( const DI_ScatKnl* );
-  Optional<double> extractMSDFromDynInfo( const DI_ScatKnl* );//[Aa^2]
+    //Effective temperature and mean-squared displacement associated
+    //with a dyninfo, when available:
+    Optional<Temperature> extractTeffFromDynInfo( const DI_ScatKnl* );
+    Optional<double> extractMSDFromDynInfo( const DI_ScatKnl* );//[Aa^2]
 
-  shared_obj<const SABData>
-  extractSABDataFromVDOSDebyeModel( DebyeTemperature, Temperature,
-                                    SigmaBound, AtomMass,
-                                    VDOS::VDOSLux = {}, bool useCache = true );
+    shared_obj<const SABData>
+    extractSABDataFromVDOSDebyeModel( DebyeTemperature, Temperature,
+                                      SigmaBound, AtomMass,
+                                      VDOS::VDOSLux = {},
+                                      bool useCache = true );
 
-  //Idealised VDOS based only on Debye temperature:
-  VDOSData createVDOSDebye( DebyeTemperature, Temperature,
-                            SigmaBound, AtomMass);
+    //Idealised VDOS based only on Debye temperature:
+    VDOSData createVDOSDebye( DebyeTemperature, Temperature,
+                              SigmaBound, AtomMass);
 
-  //Effective temperature of the idealised Debye VDOS:
-  Temperature debyeEffectiveTemperature( DebyeTemperature, Temperature );
+    //Effective temperature of the idealised Debye VDOS:
+    Temperature debyeEffectiveTemperature( DebyeTemperature, Temperature );
+  }
+
 }
 
 

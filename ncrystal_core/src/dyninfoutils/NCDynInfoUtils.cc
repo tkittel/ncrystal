@@ -29,6 +29,7 @@
 #include "NCrystal/internal/vdos/NCVDOSEval.hh"
 #include "NCrystal/internal/extd_utils/NCSABAnalyser.hh"
 namespace NC = NCrystal;
+namespace NCDI = NCrystal::DynInfoUtils;
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -299,9 +300,10 @@ namespace NCRYSTAL_NAMESPACE {
         //50% of [0,debye_energy], to benefit from the quadratic scaling below
         //the first grid point implemented in VDOSEval (i.e. we get a more
         //precise G1 function constructed):
-        auto vdosdata = createVDOSDebye( param.debyeTemperature,
-                                         param.temperature,
-                                         param.boundXS, param.elementMass );
+        auto vdosdata = NCDI::createVDOSDebye( param.debyeTemperature,
+                                               param.temperature,
+                                               param.boundXS,
+                                               param.elementMass );
         SABData sabdata = SABUtils::transformKernelToStdFormat
           ( createScatteringKernel( vdosdata, param.vdoslux ) );
         return std::make_shared<const SABData>(std::move(sabdata));
@@ -340,12 +342,12 @@ namespace NCRYSTAL_NAMESPACE {
 }
 
 NC::shared_obj<const NC::SABData>
-NC::extractSABDataFromVDOSDebyeModel( DebyeTemperature debT,
-                                      Temperature temperature,
-                                      SigmaBound boundXS,
-                                      AtomMass elementMassAMU,
-                                      VDOS::VDOSLux vdoslux,
-                                      bool useCache )
+NCDI::extractSABDataFromVDOSDebyeModel( DebyeTemperature debT,
+                                        Temperature temperature,
+                                        SigmaBound boundXS,
+                                        AtomMass elementMassAMU,
+                                        VDOS::VDOSLux vdoslux,
+                                        bool useCache )
 {
   auto key = DICache::getDebyeKey(vdoslux,temperature,
                                   debT,boundXS,elementMassAMU);
@@ -355,10 +357,10 @@ NC::extractSABDataFromVDOSDebyeModel( DebyeTemperature debT,
 }
 
 NC::shared_obj<const NC::SABData>
-NC::extractSABDataFromDynInfo( const NC::DI_ScatKnl* di,
-                               VDOS::VDOSLux vdoslux,
-                               bool useCache,
-                               std::uint32_t vdos2sabExcludeFlag )
+NCDI::extractSABDataFromDynInfo( const NC::DI_ScatKnl* di,
+                                 VDOS::VDOSLux vdoslux,
+                                 bool useCache,
+                                 std::uint32_t vdos2sabExcludeFlag )
 {
   nc_assert( di );
 
@@ -388,7 +390,7 @@ NC::extractSABDataFromDynInfo( const NC::DI_ScatKnl* di,
 }
 
 NC::Optional<NC::Temperature>
-NC::extractTeffFromDynInfo( const DI_ScatKnl* di )
+NCDI::extractTeffFromDynInfo( const DI_ScatKnl* di )
 {
   if ( auto di_vdebye = dynamic_cast<const DI_VDOSDebye*>( di ) )
     return debyeEffectiveTemperature( di_vdebye->debyeTemperature(),
@@ -414,7 +416,7 @@ NC::extractTeffFromDynInfo( const DI_ScatKnl* di )
 }
 
 NC::Optional<double>
-NC::extractMSDFromDynInfo( const DI_ScatKnl* di )
+NCDI::extractMSDFromDynInfo( const DI_ScatKnl* di )
 {
   if ( auto di_vdos = dynamic_cast<const DI_VDOS*>( di ) )
     return VDOSEval( di_vdos->vdosData() ).getMSD();
@@ -435,8 +437,9 @@ NC::extractMSDFromDynInfo( const DI_ScatKnl* di )
 }
 
 //Idealised VDOS based only on Debye temperature:
-NC::Temperature NC::debyeEffectiveTemperature( DebyeTemperature debyeTemperature,
-                                               Temperature temperature )
+NC::Temperature
+NCDI::debyeEffectiveTemperature( DebyeTemperature debyeTemperature,
+                                 Temperature temperature )
 {
   //The scale of the VDOS and the atom mass do not affect the result:
   auto vdos = createVDOSDebye( debyeTemperature, temperature,
@@ -444,10 +447,10 @@ NC::Temperature NC::debyeEffectiveTemperature( DebyeTemperature debyeTemperature
   return Temperature{ DoValidate, VDOSEval( vdos ).calcEffectiveTemperature() };
 }
 
-NC::VDOSData NC::createVDOSDebye( DebyeTemperature debyeTemperature,
-                                  Temperature temperature,
-                                  SigmaBound boundXS,
-                                  AtomMass elementMassAMU )
+NC::VDOSData NCDI::createVDOSDebye( DebyeTemperature debyeTemperature,
+                                    Temperature temperature,
+                                    SigmaBound boundXS,
+                                    AtomMass elementMassAMU )
 {
   //NB: Must keep function exactly synchronised with createVDOSDebye function in
   //Python interface:

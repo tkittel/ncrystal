@@ -1090,7 +1090,8 @@ void ncrystal_dyninfo_extract_scatknl( ncrystal_info_t ci,
     NC::DI_ScatKnl::EGridShPtr shptr_egrid;
     auto di_sk = dynamic_cast<const NC::DI_ScatKnl*>(di.get());
     if (di_sk) {
-      shptr_sabdata = NC::extractSABDataFromDynInfo(di_sk,vdoslux);
+      shptr_sabdata = NC::DynInfoUtils::extractSABDataFromDynInfo( di_sk,
+                                                                   vdoslux );
       shptr_egrid = di_sk->energyGrid();
       //In case the sabdata factory does not keep strong references, we must
       //keep the newly created object in shptr_sabdata alive when returning to

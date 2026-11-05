@@ -87,9 +87,9 @@ namespace NCRYSTAL_NAMESPACE {
                                    ve.calcEffectiveTemperature() };
           msd_vdos = ve.getMSD( ve.calcGamma0() );
         }
-        return { extractSABDataFromDynInfo( di_knl,
-                                            VDOS::VDOSLux(cfg.get_vdoslux()) ),
-                 extractTeffFromDynInfo( di_knl ),
+        const VDOS::VDOSLux vdoslux( cfg.get_vdoslux() );
+        return { DynInfoUtils::extractSABDataFromDynInfo( di_knl, vdoslux ),
+                 DynInfoUtils::extractTeffFromDynInfo( di_knl ),
                  teff_vdos,
                  msd_vdos,
                  di_knl->energyGrid(),

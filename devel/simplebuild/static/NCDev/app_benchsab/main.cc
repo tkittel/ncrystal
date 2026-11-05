@@ -80,7 +80,8 @@ int main( int argc, char** argv )
   auto sabload =[&di_knl,vdoslux]()
   {
     const bool useCache = false;
-    return NC::extractSABDataFromDynInfo( di_knl, vdoslux, useCache );
+    return NC::DynInfoUtils::extractSABDataFromDynInfo( di_knl, vdoslux,
+                                                        useCache );
   };
 
   std::shared_ptr<const NC::SABData> sab;
