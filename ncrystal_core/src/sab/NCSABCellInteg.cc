@@ -199,14 +199,14 @@ namespace NCRYSTAL_NAMESPACE {
         struct Input {
           AlphaInterpMethod interpAtB1, interpAtB2;
           double a1, a2, b1, b2, s11, s12, s21, s22;
-          double E_div_kT;
+          EDivKT E_div_kT;
           bool is_bounded_by_betaminus;
           bool is_bounded_by_betaplus;
         };
         IntegrandOfA( const Input& i )
           : m_interpAtB1(i.interpAtB1),
             m_interpAtB2(i.interpAtB2),
-            m_4e(4.0 * i.E_div_kT),
+            m_4e(4.0 * i.E_div_kT.dbl()),
             m_a2minusa1( i.a2 - i.a1 ),
             m_b1(i.b1), m_b2(i.b2), m_invdb(1.0/(i.b2-i.b1)),
             m_is_bounded_by_both( i.is_bounded_by_betaminus
@@ -414,7 +414,7 @@ namespace NCRYSTAL_NAMESPACE {
 
       static void impl_numIntRegion( const CellData& entire_cell,
                                      const CellData& subcell,
-                                     double E_div_kT,
+                                     EDivKT e,
                                      StdLogLinCellIntegrator::IntegrationScheme
                                      scheme_encoded,
                                      bool is_bounded_by_betaminus,
@@ -477,10 +477,10 @@ namespace NCRYSTAL_NAMESPACE {
                                    scheme.npts );
           const bool is_bounded_on_both_sides ( is_bounded_by_betaminus
                                                 && is_bounded_by_betaplus );
-          const double foure = 4.0*E_div_kT;
+          const double foure = 4.0*e.dbl();
           fillContribAtAlpha( contrib_at_a, scheme.npts,
                               sofa_at_b1.S, sofa_at_b2.S, sofa_at_b2.a,
-                              foure, E_div_kT, cs.b1, cs.b2, invdb,
+                              foure, e.dbl(), cs.b1, cs.b2, invdb,
                               is_bounded_by_betaminus, is_bounded_by_betaplus,
                               is_bounded_on_both_sides );
         }
@@ -500,7 +500,7 @@ namespace NCRYSTAL_NAMESPACE {
           i.s12 = cs.S[1];
           i.s21 = cs.S[2];
           i.s22 = cs.S[3];
-          i.E_div_kT = E_div_kT;
+          i.E_div_kT = e;
           i.is_bounded_by_betaminus = is_bounded_by_betaminus;
           i.is_bounded_by_betaplus = is_bounded_by_betaplus;
           unsigned minlvl, maxlvl;
@@ -583,17 +583,14 @@ namespace NCRYSTAL_NAMESPACE {
 }
 
 void NCS::StdLogLinCellIntegrator::integrateWithinKB( const CellData& c,
-                                                      double E_div_kT,
+                                                      EDivKT e,
                                                       StdLogLinCellIntegrator::
                                                       IntegrationScheme scheme,
                                                       StableSumKahan& tgt )
 {
-  SABCellSurvey surv( c.a1, c.a2, c.b1, c.b2, E_div_kT );//fixme: in
-                                                         //SABProcessor.cc we
-                                                         //call this function
-                                                         //from a context where
-                                                         //we already have a
-                                                         //SABCellSurvey!
+  //fixme: in SABProcessor.cc we call this function from a context where we
+  //already have a SABCellSurvey!
+  SABCellSurvey surv( c.a1, c.a2, c.b1, c.b2, e );
   auto& regions = surv.regions();
   if ( regions.empty() )
     return;
@@ -647,7 +644,7 @@ void NCS::StdLogLinCellIntegrator::integrateWithinKB( const CellData& c,
       continue;
     }
 
-    nclikely impl_numIntRegion( c, subcell, E_div_kT, scheme,
+    nclikely impl_numIntRegion( c, subcell, e, scheme,
                                 r.is_bounded_by_betaminus,
                                 r.is_bounded_by_betaplus,
                                 tgt );

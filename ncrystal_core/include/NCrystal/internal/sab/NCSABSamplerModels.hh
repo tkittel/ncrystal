@@ -37,7 +37,7 @@ namespace NCRYSTAL_NAMESPACE {
       //there.
 
     public:
-      PairDD sampleAlphaBeta( double ekin_div_kT,
+      PairDD sampleAlphaBeta( EDivKT,
                               RNG&, std::int64_t loopmax ) const override;
 
       struct CommonCache {
@@ -88,7 +88,10 @@ namespace NCRYSTAL_NAMESPACE {
       //Special technical sampler which doesn't actually scatter (i.e. returns
       //alpha=beta=0). For usage of edge-cases with vanishing cross-section.
     public:
-      PairDD sampleAlphaBeta(double, RNG&, std::int64_t) const override { return {0.0,0.0}; }
+      PairDD sampleAlphaBeta( EDivKT, RNG&, std::int64_t ) const override
+      {
+        return {0.0,0.0};
+      }
     };
 
 #if 0

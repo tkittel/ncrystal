@@ -114,7 +114,7 @@ namespace NCRYSTAL_NAMESPACE {
     //empty cells. Such are marked by having the indices set to invalid values
     //(alphaGrid.size()).
     void activeGridCells( const SABData& data,
-                          double ekin_div_kT,
+                          EDivKT,
                           std::vector<std::pair<uint16_t,uint16_t>>& out_alpharanges,
                           std::size_t& ibeta_low );
 
@@ -125,7 +125,7 @@ namespace NCRYSTAL_NAMESPACE {
     //extent of the alpha grid. Empty ranges are marked by indices both equal to
     //alphaGrid.size() in the out_alpharanges vector.
     void activeGridRanges( const SABData& data,
-                           double ekin_div_kT,
+                           EDivKT,
                            std::vector<std::pair<uint16_t,uint16_t>>& out_alpharanges,
                            std::size_t& ibeta_low );
 

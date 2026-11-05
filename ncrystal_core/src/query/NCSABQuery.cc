@@ -102,14 +102,14 @@ namespace NCRYSTAL_NAMESPACE {
         std::uint64_t ntries = 0;
         double prob1 = -1.0;//probability of edge @ beta=b1
       };
-      SampleResult testFullCellOverlaySample( double E_div_kT,
+      SampleResult testFullCellOverlaySample( EDivKT e,
                                               RNG& rng,
                                               const CellData& c,
                                               std::uint64_t nsample,
                                               std::uint64_t ntries_max )
       {
         FullCellSampler fcsampler( &c );
-        const double foure = 4*E_div_kT;
+        const double foure = 4*e.dbl();
         SampleResult res;
         res.prob1 = fcsampler.probabilityEdge1();
         res.a.reserve( countToSizeT( nsample ) );
@@ -129,14 +129,14 @@ namespace NCRYSTAL_NAMESPACE {
         return res;
       }
 
-      SampleResult produceRefCellSamples( double E_div_kT,
+      SampleResult produceRefCellSamples( EDivKT e,
                                           RNG& rng,
                                           const CellData& c,
                                           std::uint64_t nsample,
                                           std::uint64_t ntries_max )
       {
-        RefCellSampler refsampler( c, E_div_kT );
-        const double foure = 4*E_div_kT;
+        RefCellSampler refsampler( c, e );
+        const double foure = 4*e.dbl();
         SampleResult res;
         res.prob1 = -1.0;//not available
         res.a.reserve( countToSizeT( nsample ) );
@@ -390,7 +390,8 @@ namespace NCRYSTAL_NAMESPACE {
                                                       sab->elementMassAMU(),
                                                       SigmaBound{1.0},
                                                       cfg.sct_table_npts );
-        auto ab = SABRef::refSampleAlphaBeta( rng, sab, E_div_kT, nsample,
+        auto ab = SABRef::refSampleAlphaBeta( rng, sab, EDivKT{E_div_kT},
+                                              nsample,
                                               std::move(ext) );
         os << "{\"refsample\":{\"extender\":";
         streamJSON( os, use_sct ? "SCT" : "FreeGas" );
@@ -452,7 +453,7 @@ namespace NCRYSTAL_NAMESPACE {
       }
 
 
-      void query_impl_sglcell( std::ostream& os, double E_div_kT,
+      void query_impl_sglcell( std::ostream& os, EDivKT e,
                                double a1, double a2, double b1, double b2,
                                double s11, double s12, double s21, double s22,
                                std::uint64_t nsample, std::uint64_t seed )
@@ -462,7 +463,7 @@ namespace NCRYSTAL_NAMESPACE {
         VectD alpha_v = {a1,a2};
         VectD beta_v = {b1,b2};
         SABSurveyor surv( alpha_v, beta_v );
-        SABCellSurvey cellsurv( a1, a2, b1, b2, E_div_kT );
+        SABCellSurvey cellsurv( a1, a2, b1, b2, e );
         double cellinteg_full;
         SmallVector<std::pair<StrView,double>,32> cellinteg_pb_list;
         double cellinteg_pb_chosen_for_fcsample = -1.0;
@@ -489,7 +490,7 @@ namespace NCRYSTAL_NAMESPACE {
           for ( auto sv_scheme : sv_allschemes.split(';') ) {
             auto scheme = SABCfg::str2IntegScheme( sv_scheme );
             StableSumKahan sum_pb;
-            SCI::integrateWithinKB( cell, E_div_kT, scheme, sum_pb);
+            SCI::integrateWithinKB( cell, e, scheme, sum_pb);
             cellinteg_pb_list.emplace_back(sv_scheme,sum_pb.sum());
             if ( scheme == SABCfg::IntegrationScheme::Flex5 )
               cellinteg_pb_chosen_for_fcsample = sum_pb.sum();
@@ -506,14 +507,14 @@ namespace NCRYSTAL_NAMESPACE {
         SampleResult samples_fc, samples_ref;
         Optional<double> prob1_fc;
         auto rng = createBuiltinRNG( seed );
-        if ( nsample>0 && E_div_kT>E_div_kT_touch ) {
-          samples_ref = produceRefCellSamples( E_div_kT, rng, cell,
+        if ( nsample>0 && e.dbl()>E_div_kT_touch ) {
+          samples_ref = produceRefCellSamples( e, rng, cell,
                                                nsample, ntries_max );
           nc_assert_always( samples_ref.a.size() == nsample );
           nc_assert_always( samples_ref.b.size() == nsample );
           //Full-cell sampling only when not too inefficient:
           if ( predicted_fc_ar > 0.001 )
-            samples_fc = testFullCellOverlaySample( E_div_kT, rng, cell,
+            samples_fc = testFullCellOverlaySample( e, rng, cell,
                                                     nsample, ntries_max );
           prob1_fc = samples_fc.prob1;
         }
@@ -539,27 +540,27 @@ namespace NCRYSTAL_NAMESPACE {
           os<<"},\"celleval_OBSOLETE\":{\"full_integral\":";//fixme: remove this obsolete class
           streamJSON(os,ce.integral());
           os<<",\"phasespace_integral\":";
-          streamJSON(os,ce.integralWithinKinematicBounds( E_div_kT ));
+          streamJSON(os,ce.integralWithinKinematicBounds( e ));
           os<<",\"phasespace_E_div_kT\":";
-          streamJSON(os,E_div_kT);
+          streamJSON(os,e.dbl());
         }
         os<<"},\"cellintegral\":{\"full_integral\":";
         streamJSON(os,cellinteg_full);
         os<<",\"phasespace_E_div_kT\":";
-        streamJSON(os,E_div_kT);
+        streamJSON(os,e.dbl());
         os <<",\"integration_regions\":";
         cellsurv.toJSON(os);
         os<<",\"phasespace_integral_format\":[\"scheme\",\"value\"]";
         os<<",\"phasespace_integral\":[";
         bool first=true;
-        for ( auto& e : cellinteg_pb_list ) {
+        for ( auto& sv : cellinteg_pb_list ) {
           if (!first)
             os<<',';
           first = false;
           os<<'[';
-          streamJSON(os,e.first);
+          streamJSON(os,sv.first);
           os<<',';
-          streamJSON(os,e.second);
+          streamJSON(os,sv.second);
           os<<']';
         }
         os <<"]},\"sampling\":{";
@@ -860,7 +861,7 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
          || !(s11>=0.0) || !(s12>=0.0)
          || !(s21>=0.0) || !(s22>=0.0) )
       invalid(usage);
-    query_impl_sglcell( os, E_div_kT, a1, a2, b1, b2,
+    query_impl_sglcell( os, EDivKT{E_div_kT}, a1, a2, b1, b2,
                         s11, s12, s21, s22, nsample, seed );
   } else if ( key == sv_analyse ) {
     //query like: ["sab","analyse",MATCFGSTR,ATOMDISPLAYLABEL,

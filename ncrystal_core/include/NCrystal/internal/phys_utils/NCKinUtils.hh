@@ -24,6 +24,7 @@
 #include "NCrystal/core/NCTypes.hh"
 #include "NCrystal/internal/utils/NCFMA.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCExtraTypes.hh"
 
 //Various utilities related to kinematics, including those related to the
 //S(alpha,beta) formalism.
@@ -45,40 +46,41 @@ namespace NCRYSTAL_NAMESPACE {
   convertABToDeltaEMuWithIsotropicFallback( double alpha, double beta,
                                             NeutronEnergy ekin, double kT,
                                             RNG&,
-                                            double isotropicBelowEDivKT = 0.0 );
+                                            EDivKT isotropicBelowEDivKT
+                                            = EDivKT{0.0} );
 
   //Get kinematically accessible alpha region for given ekin/kT and beta:
-  double getAlphaMinus( double ekin_div_kT, double beta );
-  double getAlphaPlus( double ekin_div_kT, double beta );
+  double getAlphaMinus( EDivKT e, double beta );
+  double getAlphaPlus( EDivKT e, double beta );
 
   //It is faster to get both (alpha-,alpha+) at once (returns (1.0,-1.0) if not
   //kinematically accessible, i.e. beta<-E/kT):
   struct AlphaLimits_t { double first, second; };
-  AlphaLimits_t getAlphaLimits( double ekin_div_kT, double beta );
+  AlphaLimits_t getAlphaLimits( EDivKT e, double beta );
 
   //Get { alpha-, alpha+, and alpha+ - alpha- } in numerically stable manner:
   struct AlphaLimitsWithDiff { double aminus, aplus, adiff; };
-  AlphaLimitsWithDiff getAlphaLimitsWithDiff( double ekin_div_kT, double beta );
+  AlphaLimitsWithDiff getAlphaLimitsWithDiff( EDivKT e, double beta );
 
   //Get kinematically accessible beta region for given ekin/kT and alpha:
-  double getBetaMinus( double ekin_div_kT, double alpha );
-  double getBetaPlus( double ekin_div_kT, double alpha );
+  double getBetaMinus( EDivKT e, double alpha );
+  double getBetaPlus( EDivKT e, double alpha );
 
   //It is again faster to get both (beta-,beta+) at once:
   struct BetaLimits_t { double first, second; };
-  BetaLimits_t getBetaLimits( double ekin_div_kT, double alpha );
+  BetaLimits_t getBetaLimits( EDivKT e, double alpha );
 
   //Near kinematic endpoint. alpha-, alpha, and alpha+ might become numerically
   //indistinguishable at floating point precision, but mu=cos(scattering_angle)
   //should be sampled isotropically in this limit (since
   //S(alpha-,beta)~=S(alpha+,beta)). For consistency, always use this function
   //to detect this degenerate case:
-  inline bool muIsotropicAtBeta( double beta, double ekin_div_kT )
+  inline bool muIsotropicAtBeta( double beta, EDivKT e )
   {
-    nc_assert(beta>=-ekin_div_kT);
-    nc_assert(ekin_div_kT>=0.0);
+    nc_assert(beta>=-e.dbl());
+    nc_assert(e.dbl()>=0.0);
     constexpr double lim(-1.0+1e-14);
-    return beta <= ekin_div_kT*lim;
+    return beta <= e.dbl()*lim;
   }
 
 
@@ -127,19 +129,19 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   //Get kinematically accessible alpha region for given ekin/kT and beta:
-  inline AlphaLimits_t getAlphaLimits( double ekin_div_kT, double beta )
+  inline AlphaLimits_t getAlphaLimits( EDivKT e, double beta )
   {
-    nc_assert( ekin_div_kT >= 0.0 );
+    nc_assert( e.dbl() >= 0.0 );
     nc_assert( !std::isnan(beta) );
-    const double kk = ekin_div_kT + beta;
+    const double kk = e.dbl() + beta;
     if ( !(kk >= 0.0) ) {
       //kinematically forbidden
       return {1.0,-1.0};
     }
-    const double a = kk + ekin_div_kT;
-    const double sq = std::sqrt( ekin_div_kT * kk );
-    const double aminus = ( detail::alphaMinusNeedsTaylor( ekin_div_kT, beta )
-                            ? detail::alphaMinusTaylor( ekin_div_kT, beta )
+    const double a = kk + e.dbl();
+    const double sq = std::sqrt( e.dbl() * kk );
+    const double aminus = ( detail::alphaMinusNeedsTaylor( e.dbl(), beta )
+                            ? detail::alphaMinusTaylor( e.dbl(), beta )
                             : ncmax(a - 2.0 * sq, 0.0) );
     //No ncfma needed in a+-2*sq: multiplication by 2 is exact, and sq (a
     //sqrt) is far from overflowing:
@@ -148,43 +150,43 @@ namespace NCRYSTAL_NAMESPACE {
     return { aminus, aplus };
   }
 
-  inline AlphaLimitsWithDiff getAlphaLimitsWithDiff( double ekin_div_kT, double beta )
+  inline AlphaLimitsWithDiff getAlphaLimitsWithDiff( EDivKT e, double beta )
   {
-    nc_assert( ekin_div_kT >= 0.0 );
+    nc_assert( e.dbl() >= 0.0 );
     nc_assert( !std::isnan(beta) );
-    nc_assert( beta >= -ekin_div_kT );
-    const double kk = ekin_div_kT + beta;
-    const double a = kk + ekin_div_kT;
-    const double sq = std::sqrt( ekin_div_kT * kk );
-    const double aminus = ( detail::alphaMinusNeedsTaylor( ekin_div_kT, beta )
-                            ? detail::alphaMinusTaylor( ekin_div_kT, beta )
+    nc_assert( beta >= -e.dbl() );
+    const double kk = e.dbl() + beta;
+    const double a = kk + e.dbl();
+    const double sq = std::sqrt( e.dbl() * kk );
+    const double aminus = ( detail::alphaMinusNeedsTaylor( e.dbl(), beta )
+                            ? detail::alphaMinusTaylor( e.dbl(), beta )
                             : ncmax(a - 2.0 * sq, 0.0) );
     const double aplus = a + 2.0 * sq;
     return { aminus, aplus, 4.0*sq };
   }
 
-  inline double getAlphaMinus( double ekin_div_kT, double beta ) {
-    nc_assert(ekin_div_kT >= 0.0);
-    if ( detail::alphaMinusNeedsTaylor( ekin_div_kT, beta ) )
-      return detail::alphaMinusTaylor( ekin_div_kT, beta );
-    nc_assert( ekin_div_kT >= 0.0 );
+  inline double getAlphaMinus( EDivKT e, double beta ) {
+    nc_assert(e.dbl() >= 0.0);
+    if ( detail::alphaMinusNeedsTaylor( e.dbl(), beta ) )
+      return detail::alphaMinusTaylor( e.dbl(), beta );
+    nc_assert( e.dbl() >= 0.0 );
     nc_assert( !std::isnan(beta) );
-    const double kk = ekin_div_kT + beta;
+    const double kk = e.dbl() + beta;
     nc_assert( kk >= 0.0 );
-    const double a = kk + ekin_div_kT;
-    const double sq = std::sqrt( ekin_div_kT * kk );
+    const double a = kk + e.dbl();
+    const double sq = std::sqrt( e.dbl() * kk );
     return ncmax(a - 2.0 * sq, 0.0);
   }
 
-  inline double getAlphaPlus( double ekin_div_kT, double beta )
+  inline double getAlphaPlus( EDivKT e, double beta )
   {
-    nc_assert(ekin_div_kT >= 0.0);
-    nc_assert( ekin_div_kT >= 0.0 );
+    nc_assert(e.dbl() >= 0.0);
+    nc_assert( e.dbl() >= 0.0 );
     nc_assert( !std::isnan(beta) );
-    const double kk = ekin_div_kT + beta;
+    const double kk = e.dbl() + beta;
     nc_assert( kk >= 0.0 );
-    const double a = kk + ekin_div_kT;
-    const double sq = std::sqrt( ekin_div_kT * kk );
+    const double a = kk + e.dbl();
+    const double sq = std::sqrt( e.dbl() * kk );
     return a + 2.0 * sq;
   }
 
@@ -216,29 +218,42 @@ namespace NCRYSTAL_NAMESPACE {
       p = ncfma( x, p, c1 );
       return ekin_div_kT*x*p;
     }
+
+    //Versions of getBetaMinus/getBetaPlus on primitives, for low-level
+    //numerical code (e.g. fma-dispatched kernels) which must not use strong
+    //types:
+    inline double raw_getBetaMinus( double ekin_div_kT, double alpha )
+    {
+      nc_assert(ekin_div_kT*alpha>=0);
+      return ( betaMinusNeedsTaylor( ekin_div_kT, alpha )
+               ? betaMinusTaylor( ekin_div_kT, alpha )
+               : alpha - 2.0 * std::sqrt(ekin_div_kT*alpha) );
+    }
+
+    inline double raw_getBetaPlus( double ekin_div_kT, double alpha )
+    {
+      nc_assert(ekin_div_kT*alpha>=0);
+      return alpha + 2.0 * std::sqrt(ekin_div_kT*alpha);
+    }
   }
 
-  inline double getBetaMinus( double ekin_div_kT, double alpha )
+  inline double getBetaMinus( EDivKT e, double alpha )
   {
-    nc_assert(ekin_div_kT*alpha>=0);
-    return ( detail::betaMinusNeedsTaylor( ekin_div_kT, alpha )
-             ? detail::betaMinusTaylor( ekin_div_kT, alpha )
-             : alpha - 2.0 * std::sqrt(ekin_div_kT*alpha) );
+    return detail::raw_getBetaMinus( e.dbl(), alpha );
   }
 
-  inline double getBetaPlus( double ekin_div_kT, double alpha )
+  inline double getBetaPlus( EDivKT e, double alpha )
   {
-    nc_assert(ekin_div_kT*alpha>=0);
-    return alpha + 2.0 * std::sqrt(ekin_div_kT*alpha);
+    return detail::raw_getBetaPlus( e.dbl(), alpha );
   }
 
-  inline BetaLimits_t getBetaLimits( double ekin_div_kT, double alpha )
+  inline BetaLimits_t getBetaLimits( EDivKT e, double alpha )
   {
-    nc_assert(ekin_div_kT>=0);
+    nc_assert(e.dbl()>=0);
     nc_assert(alpha>=0);
-    const double sq = std::sqrt(ekin_div_kT*alpha);
-    return { ( detail::betaMinusNeedsTaylor( ekin_div_kT, alpha )
-               ? detail::betaMinusTaylor( ekin_div_kT, alpha )
+    const double sq = std::sqrt(e.dbl()*alpha);
+    return { ( detail::betaMinusNeedsTaylor( e.dbl(), alpha )
+               ? detail::betaMinusTaylor( e.dbl(), alpha )
                : alpha - 2.0 * sq ), alpha + 2.0 * sq };
   }
 }

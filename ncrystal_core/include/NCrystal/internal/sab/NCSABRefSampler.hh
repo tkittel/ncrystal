@@ -23,6 +23,7 @@
 
 #include "NCrystal/interfaces/NCSABData.hh"
 #include "NCrystal/internal/sab/NCSABExtender.hh"
+#include "NCrystal/internal/utils/NCExtraTypes.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -54,7 +55,7 @@ namespace NCRYSTAL_NAMESPACE {
     std::pair<VectD,VectD>
     refSampleAlphaBeta( RNG&,
                         shared_obj<const SABData>,
-                        double E_div_kT,
+                        EDivKT,
                         std::uint64_t nsample,
                         Optional<RefSampleExtension> = NullOpt);
 

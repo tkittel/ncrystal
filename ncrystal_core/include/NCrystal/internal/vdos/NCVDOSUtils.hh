@@ -24,6 +24,7 @@
 #include "NCrystal/internal/utils/NCRect.hh"
 #include "NCrystal/internal/utils/NCSpan.hh"
 #include "NCrystal/internal/utils/NCFMA.hh"
+#include "NCrystal/internal/utils/NCExtraTypes.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -72,7 +73,7 @@ namespace NCRYSTAL_NAMESPACE {
     // 4*E_div_kT*alpha). The returned rectangle is empty when the intersection
     // has no area. Boundary-only intersections are therefore excluded, but of
     // course the usual caveats of floating point arithmetic applies.
-    Rectangle findABExtentWithinKB( const Rectangle&, double E_div_kT );
+    Rectangle findABExtentWithinKB( const Rectangle&, EDivKT );
 
     // In-place spacing out of the positive and negative parts of a finite,
     // strictly increasing grid. For adjacent nonzero points a < b with the same
