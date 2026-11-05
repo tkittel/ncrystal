@@ -81,10 +81,10 @@ namespace {
   NC::VDOSData makeDebyeVDOS()
   {
     //Al-like
-    return NC::createVDOSDebye( NC::DebyeTemperature{410.0},
-                                NC::Temperature{293.15},
-                                NC::SigmaBound{1.5},
-                                NC::AtomMass{26.98} );
+    return NC::DynInfoUtils::createVDOSDebye( NC::DebyeTemperature{410.0},
+                                              NC::Temperature{293.15},
+                                              NC::SigmaBound{1.5},
+                                              NC::AtomMass{26.98} );
   }
 
   void testGnEval()
@@ -478,10 +478,10 @@ namespace {
     struct Res { unsigned order; NC::Rectangle sab; NC::VectD a, b, e0; };
     auto run = []( const Cfg& c, double debyeT )
     {
-      auto vd = NC::createVDOSDebye( NC::DebyeTemperature{debyeT},
-                                     NC::Temperature{c.temp},
-                                     NC::SigmaBound{1.5},
-                                     NC::AtomMass{c.mass} );
+      auto vd = NC::DynInfoUtils::createVDOSDebye( NC::DebyeTemperature{debyeT},
+                                                   NC::Temperature{c.temp},
+                                                   NC::SigmaBound{1.5},
+                                                   NC::AtomMass{c.mass} );
       const NCV::VDOSLux lux( c.lux );
       auto gnexpn = NCV::expandVDOSToGnFcts( vd, lux );
       auto dim = NCV::gridDimFromLux( lux );

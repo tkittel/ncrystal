@@ -125,7 +125,8 @@ namespace NCRYSTAL_NAMESPACE {
           auto di_knl = dynamic_cast<const DI_ScatKnl*>(di.get());
           if ( !di_knl )
             continue;//freegas/sterile: never an msd carrier
-          Optional<double> msd_value = extractMSDFromDynInfo( di_knl );
+          Optional<double> msd_value
+            = DynInfoUtils::extractMSDFromDynInfo( di_knl );
           if ( msd_value.has_value() ) {
             msd.push_back( msd_value.value() );
             scale.push_back( di->fraction() * cfg.scale_factor );
