@@ -158,7 +158,7 @@ namespace NCRYSTAL_NAMESPACE {
 #endif
         //As a sanity check, std::is_sorted should yield true if everything was
         //implemented consistently:
-        nc_assert_always( std::is_sorted(data.get(), data.get()+n) );//fixme _always
+        nc_assert( std::is_sorted(data.get(), data.get()+n) );
       }
 
       inline bool rectIntersectsIdentityLine( double x0, double y0,
