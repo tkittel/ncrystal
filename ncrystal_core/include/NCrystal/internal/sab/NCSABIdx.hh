@@ -268,15 +268,11 @@ namespace NCRYSTAL_NAMESPACE {
 
     inline void verifyGridSizes( std::size_t nalpha, std::size_t nbeta )
     {
-      //Fixme: better location for this? In SABData class? Or
-      //TransformKnlToStdFormat? Also, not inlined...
-      static_assert(std::is_same<PackedIndex::index_t,std::uint32_t>::value,"");
-      static_assert( std::numeric_limits<std::uint16_t>::max()==65535, "" );
-      static_assert( PackedIndex::maxAlphaIdx()==65534, "" );
-      static_assert( PackedIndex::maxBetaIdx()==65534, "" );
-      if ( !( nalpha <= 65534 && nbeta <= 65534 ) )
-        NCRYSTAL_THROW2(BadInput,"SAB grid too large"
-                        " (max size is 65534x65534)");
+      constexpr std::size_t namax = PackedIndex::maxAlphaIdx();
+      constexpr std::size_t nbmax = PackedIndex::maxBetaIdx();
+      if ( !( nalpha <= namax && nbeta <= nbmax ) )
+        NCRYSTAL_THROW2(BadInput,"SAB grid too large (max size is "
+                        <<namax<<"x"<<nbmax<<")");
       if ( !( nalpha >= 2 && nbeta >= 2 ) )
         NCRYSTAL_THROW2(BadInput,"SAB grid too small (min size is 2x2)");
     }
