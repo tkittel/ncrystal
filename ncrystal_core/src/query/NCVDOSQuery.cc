@@ -80,10 +80,11 @@ namespace NCRYSTAL_NAMESPACE {
             auto divdosdebye = dynamic_cast<const DI_VDOSDebye*>(di.get());
             if ( divdosdebye ) {
               res.guard_vdosData
-                = createVDOSDebye( divdosdebye->debyeTemperature(),
-                                   divdosdebye->temperature(),
-                                   divdosdebye->atomData().scatteringXS(),
-                                   divdosdebye->atomData().averageMassAMU() );
+                = DynInfoUtils::createVDOSDebye(
+                    divdosdebye->debyeTemperature(),
+                    divdosdebye->temperature(),
+                    divdosdebye->atomData().scatteringXS(),
+                    divdosdebye->atomData().averageMassAMU() );
               have_vdos = true;
             }
           }

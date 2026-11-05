@@ -410,7 +410,7 @@ namespace {
         di_h = p;
     }
     REQUIRE( di_h != nullptr );
-    auto sab = NC::extractSABDataFromDynInfo( di_h );
+    auto sab = NC::DynInfoUtils::extractSABDataFromDynInfo( di_h );
     NC::VDOSEval ve( di_h->vdosData() );
     const NC::Temperature teff{ ve.calcEffectiveTemperature() };
     const NC::Temperature T = sab->temperature();
@@ -563,7 +563,7 @@ namespace {
         di_h = p;
     }
     REQUIRE( di_h != nullptr );
-    auto sab = NC::extractSABDataFromDynInfo( di_h );
+    auto sab = NC::DynInfoUtils::extractSABDataFromDynInfo( di_h );
     NC::VDOSEval ve( di_h->vdosData() );
     const double teff_true = ve.calcEffectiveTemperature();
     const double msd_true = ve.getMSD( ve.calcGamma0() );

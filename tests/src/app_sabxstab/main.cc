@@ -113,7 +113,7 @@ namespace {
     for ( auto& di : info->getDynamicInfoList() ) {
       auto di_knl = dynamic_cast<const NC::DI_ScatKnl*>( di.get() );
       nc_assert_always( di_knl != nullptr );
-      auto sabdata = NC::extractSABDataFromDynInfo( di_knl );
+      auto sabdata = NC::DynInfoUtils::extractSABDataFromDynInfo( di_knl );
       auto ext = NCS::SABExtended::createWithFGExtender( NC::SABCfg::createConfig( 3 ),
                                                          sabdata,
                                                          di_knl->energyGrid() );

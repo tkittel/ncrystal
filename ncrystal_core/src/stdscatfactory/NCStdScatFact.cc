@@ -37,6 +37,7 @@
 #include "NCrystal/internal/extd_utils/NCProcCompBldr.hh"
 
 namespace NC = NCrystal;
+namespace NCDI = NCrystal::DynInfoUtils;
 
 ///////////////////////////////////////////////////////////////////////////////////
 // The standard Scatter factory. Will accept with priority 100 any request for   //
@@ -274,9 +275,9 @@ namespace NCRYSTAL_NAMESPACE {
                   ProcImpl::ProcComposition::ComponentList complist;
                   const double scale = di_scatknl->fraction();
 
-                  auto sabdata = extractSABDataFromDynInfo( di_scatknl, vdoslux,
-                                                            true/*use cache*/,
-                                                            vdos2sabExcludeFlag );
+                  auto sabdata = NCDI::extractSABDataFromDynInfo( di_scatknl, vdoslux,
+                                                                  true/*use cache*/,
+                                                                  vdos2sabExcludeFlag );
                   if ( !sabdata->boundXS() )
                     return complist;
 
@@ -292,9 +293,9 @@ namespace NCRYSTAL_NAMESPACE {
                 {
                   ProcImpl::ProcComposition::ComponentList complist;
                   const double scale = di_scatknl->fraction();
-                  auto sabdata = extractSABDataFromDynInfo( di_scatknl, vdoslux,
-                                                            true/*use cache*/,
-                                                            vdos2sabExcludeFlag );
+                  auto sabdata = NCDI::extractSABDataFromDynInfo( di_scatknl, vdoslux,
+                                                                  true/*use cache*/,
+                                                                  vdos2sabExcludeFlag );
                   if ( sabdata->boundXS() ) {
                     nc_assert( knllux >= 0 && knllux <= 6 );
                     //Effective temperature for the (default) SCT
@@ -302,7 +303,7 @@ namespace NCRYSTAL_NAMESPACE {
                     //from a VDOS. Direct kernels provide none and fall
                     //back to the free-gas extender for now:
                     Optional<Temperature> teff
-                      = extractTeffFromDynInfo( di_scatknl );
+                      = NCDI::extractTeffFromDynInfo( di_scatknl );
                     auto sabext =
                       SAB::createSABExtendedWithCache(knllux, sabdata, teff,
                                                       di_scatknl->energyGrid());
@@ -350,11 +351,11 @@ namespace NCRYSTAL_NAMESPACE {
               ProcImpl::ProcComposition::ComponentList complist;
               auto& ai = *ai_ptr;
               nc_assert_always( ai.debyeTemp().has_value() );
-              auto sabdata =  extractSABDataFromVDOSDebyeModel( ai.debyeTemp().value(),
-                                                                info.getTemperature(),
-                                                                ai.atomData().scatteringXS(),
-                                                                ai.atomData().averageMassAMU(),
-                                                                vdoslux );
+              auto sabdata =  NCDI::extractSABDataFromVDOSDebyeModel( ai.debyeTemp().value(),
+                                                                      info.getTemperature(),
+                                                                      ai.atomData().scatteringXS(),
+                                                                      ai.atomData().averageMassAMU(),
+                                                                      vdoslux );
               const double scale = ai.averageNumberOfAtoms() / ntot;
               if ( knllux == -1 ) {
                 //legacy:
@@ -362,8 +363,8 @@ namespace NCRYSTAL_NAMESPACE {
                 complist.emplace_back(scale,makeSO<SABScatter>(std::move(scathelper)));
                 return complist;
               }
-              const auto teff = debyeEffectiveTemperature( ai.debyeTemp().value(),
-                                                           info.getTemperature() );
+              const auto teff = NCDI::debyeEffectiveTemperature( ai.debyeTemp().value(),
+                                                                 info.getTemperature() );
               auto sabext = SAB::createSABExtendedWithCache( knllux, sabdata,
                                                              teff, nullptr );
               complist.emplace_back(scale,makeSO<SABScatterNG>(std::move(sabext),
