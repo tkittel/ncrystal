@@ -72,7 +72,7 @@ namespace NCRYSTAL_NAMESPACE {
       prepareBCSData( double probability_b1_edge,
                       const SABCellSurvey&,
                       const CellData&,
-                      double E_div_kT );
+                      EDivKT );
 
       //BCSData can be serialised to a buffer. The serialisation returns an
       //index which is needed for unpacking (the index is really just the
@@ -86,7 +86,7 @@ namespace NCRYSTAL_NAMESPACE {
       //that all arguments are consistent:
       BoundedCellSampler( const CellData& cell,
                           const BCSData& oi,
-                          double E_div_kT );
+                          EDivKT );
 
       //Actual sampling method. For diagnostics purposes, this includes a count
       //of the internal number of tries (only the last of these was accepted).
@@ -122,9 +122,9 @@ namespace NCRYSTAL_NAMESPACE {
 inline NCrystal::SABUtils::BoundedCellSampler::
 BoundedCellSampler( const CellData& cell,
                     const BCSData& bcsdata,
-                    double E_div_kT )
+                    EDivKT e )
   : m_cell(cell),
-    m_4e(4.0*E_div_kT),
+    m_4e(4.0*e.dbl()),
     m_prob1(bcsdata.probability_b1_edge)
 {
   m_restrict_a1[0] = static_cast<double>(bcsdata.alpha_low[0]);
@@ -133,7 +133,7 @@ BoundedCellSampler( const CellData& cell,
   m_restrict_a2[1] = static_cast<double>(bcsdata.alpha_up[1]);
 
   nc_assert( m_prob1 >= 0 && m_prob1 <= 1 );
-  nc_assert( E_div_kT > 0 && std::isfinite(E_div_kT) );
+  nc_assert( e.dbl() > 0 && std::isfinite(e.dbl()) );
   m_overlay[0] = static_cast<double>(bcsdata.overlay[0]);
   m_overlay[1] = static_cast<double>(bcsdata.overlay[1]);
   for ( int i = 0; i < 2; ++i ) {

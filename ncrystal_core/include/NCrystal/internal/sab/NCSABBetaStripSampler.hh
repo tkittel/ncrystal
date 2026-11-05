@@ -22,6 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/interfaces/NCSABData.hh"
+#include "NCrystal/internal/utils/NCExtraTypes.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -67,12 +68,12 @@ namespace NCRYSTAL_NAMESPACE {
 
     class SABBetaStripSampler final : private MoveOnly {
     public:
-      SABBetaStripSampler( shared_obj<const SABData>, double emax_div_kT,
+      SABBetaStripSampler( shared_obj<const SABData>, EDivKT emax,
                            unsigned nStripsPerBetaCell = 4 );
       //Same, but sharing a log(S) table from createLogSTable (NCSABUtils.hh):
       SABBetaStripSampler( shared_obj<const SABData>,
                            shared_obj<const VectD> logSTable,
-                           double emax_div_kT,
+                           EDivKT emax,
                            unsigned nStripsPerBetaCell = 4 );
 
       //False if S=0 everywhere within KB(emax), in which case the object can
@@ -82,16 +83,16 @@ namespace NCRYSTAL_NAMESPACE {
       //Sample at 0<e<=emax. Requires S>0 somewhere within KB(e), and is only
       //efficient if expectedTries(e,..) is small:
       struct Result { double alpha, beta; unsigned ntries; };
-      Result sample( RNG&, double e ) const;
+      Result sample( RNG&, EDivKT e ) const;
 
-      double emaxDivKT() const noexcept { return m_emax; }
+      EDivKT emaxDivKT() const noexcept { return m_emax; }
 
       //Expected tries per sample call at e, given the integral of S within
       //KB(e):
-      double expectedTries( double e, double integralWithinKB ) const
+      double expectedTries( EDivKT e, double integralWithinKB ) const
       {
         nc_assert(integralWithinKB>0.0);
-        return m_totalWeight * 4.0 * std::sqrt( e ) / integralWithinKB;
+        return m_totalWeight * 4.0 * std::sqrt( e.dbl() ) / integralWithinKB;
       }
 
       //Rectangle [b0,b1]x[a0,a1] and S bound of each strip used (strips
@@ -113,7 +114,7 @@ namespace NCRYSTAL_NAMESPACE {
       StripCalc calcStripBound( double b0, double b1, std::uint32_t ib ) const;
       shared_obj<const SABData> m_sab;
       shared_obj<const VectD> m_logS;
-      double m_emax;
+      EDivKT m_emax;
       std::vector<Strip> m_strips;
       //Alias table for picking strips:
       VectD m_aliasProb;

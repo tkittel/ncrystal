@@ -299,9 +299,7 @@ NCS::SABSurveyor::SABSurveyor( const VectD& alphaGrid,
 
 NCS::SABCellSurvey::SABCellSurvey( double alpha1, double alpha2,
                                    double beta1, double beta2,
-                                   double E_div_kT
-                                   //fixme^^^: need typesafe E_div_kT
-                                   )
+                                   EDivKT e )
 {
   //fixme: special-early return for the few cases we are likely to encounter
   //mostly?
@@ -309,7 +307,7 @@ NCS::SABCellSurvey::SABCellSurvey( double alpha1, double alpha2,
   nc_assert( !ncisnan(alpha2) );
   nc_assert( !ncisnan(beta1) );
   nc_assert( !ncisnan(beta2) );
-  nc_assert( !ncisnan(E_div_kT) );
+  nc_assert( !ncisnan(e.dbl()) );
   nc_assert( !ncisinf(alpha1) );
   nc_assert( !ncisinf(alpha2) );
   nc_assert( !ncisinf(beta1) );
@@ -317,16 +315,15 @@ NCS::SABCellSurvey::SABCellSurvey( double alpha1, double alpha2,
   nc_assert( alpha1>=0.0 );
   nc_assert( alpha2>alpha1 );
   nc_assert( beta2>beta1 );
-  nc_assert( E_div_kT > 0.0 );
-  nc_assert( !ncisinf(E_div_kT) );
+  nc_assert( e.dbl() > 0.0 );
+  nc_assert( !ncisinf(e.dbl()) );
 
   double a1 = alpha1;
   double a2 = alpha2;
   const double b1 = beta1;
   const double b2 = beta2;
-  const double e = E_div_kT;
 
-  if (b2 <= -e)
+  if (b2 <= -e.dbl())
     return;//no overlap
   //Fixme: consider if we should use getAlphaLimits(e,b2) instead for better
   //efficiency:
@@ -336,7 +333,7 @@ NCS::SABCellSurvey::SABCellSurvey( double alpha1, double alpha2,
   double am2 = getAlphaMinus(e,b2);//alpha^-(b2)
 
   double am1(-1.0), ap1(-1.0);
-  if ( b1 >= -e ) {
+  if ( b1 >= -e.dbl() ) {
     //Fixme: consider if we should use getAlphaLimits(e,b1) instead for better
     am1 = getAlphaMinus(e,b1);//alpha^-(b1)
     ap1 = getAlphaPlus(e,b1);//alpha^+(b1)
@@ -362,7 +359,7 @@ NCS::SABCellSurvey::SABCellSurvey( double alpha1, double alpha2,
   TinyVector<Interval,3> intervals_lower, intervals_upper;
 
   //Look at lower bounds:
-  if ( b1 <= -e ) {
+  if ( b1 <= -e.dbl() ) {
     intervals_lower.emplace_back(a1,a2,true);//bounded by beta^-(alpha)
   } else {
     double aa1 = a1;
@@ -438,7 +435,7 @@ NCS::SABCellSurvey::SABCellSurvey( double alpha1, double alpha2,
   for ( auto i : ncrange( nsize ) ) {
     auto& r = m_regions[i];
     if ( r.is_bounded_by_betaminus &&
-         e > r.alpha_low && e < r.alpha_up )
+         e.dbl() > r.alpha_low && e.dbl() < r.alpha_up )
       isplit = i;
   }
   if ( isplit < nsize ) {
@@ -448,9 +445,9 @@ NCS::SABCellSurvey::SABCellSurvey( double alpha1, double alpha2,
       auto& r = m_regions[i];
       newregions.push_back(r);
       if ( i == isplit ) {
-        newregions.back().alpha_low = e;
+        newregions.back().alpha_low = e.dbl();
         newregions.push_back(r);
-        newregions.back().alpha_up = e;
+        newregions.back().alpha_up = e.dbl();
       }
     }
     std::swap(newregions,m_regions);

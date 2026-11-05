@@ -396,8 +396,8 @@ NS::SABIntegrator::Impl::analyseEnergyPoint(double ekin, bool doSampler ) const
 
   nc_assert(ekin>=0.);
   const double kT = m_data->temperature().kT();
-  const double ekin_div_kT = ekin / kT;
-  double beta_lower_limit = -ekin_div_kT;
+  const EDivKT e{ ekin / kT };
+  double beta_lower_limit = -e.dbl();
   bool starts_at_kinematic_endpoint = !m_disable_betafix;
   if (beta_lower_limit<betaGrid.front()) {
     //This can happen at high energies. Push up beta_lower_limit to juuuust
@@ -416,7 +416,7 @@ NS::SABIntegrator::Impl::analyseEnergyPoint(double ekin, bool doSampler ) const
   //NCSABUtils.hh for exactly what is extracted.:
   std::vector<std::pair<uint16_t,uint16_t>> alpharanges;
   std::size_t ibeta_low;
-  SABUtils::activeGridRanges( *m_data, ekin_div_kT, alpharanges, ibeta_low );
+  SABUtils::activeGridRanges( *m_data, e, alpharanges, ibeta_low );
 
   if ( ibeta_low >= betaGrid.size() ) {
     //No alpha ranges at all -> cross section is 0 here.
@@ -466,11 +466,11 @@ NS::SABIntegrator::Impl::analyseEnergyPoint(double ekin, bool doSampler ) const
       continue;//guard against lower limit falling exactly on a grid point
 
     nc_assert( beta.val >= beta_lower_limit );
-    nc_assert( beta.val >= -ekin_div_kT );
+    nc_assert( beta.val >= -e.dbl() );
     nc_assert( beta.idx < alpharanges.size() );
     double alow,aupp;
     {
-      auto alims = getAlphaLimits(ekin_div_kT, beta.val);
+      auto alims = getAlphaLimits(e, beta.val);
       alow = alims.first;
       aupp = alims.second;
     }
@@ -561,7 +561,7 @@ NS::SABIntegrator::Impl::analyseEnergyPoint(double ekin, bool doSampler ) const
   nc_assert( !doSampler || sampler_infos.size()+1 ==  nsamplervals );
 
   //Apply factor C/E, with C=boundXS*kT/4 (cf. eq. 4 in sampling paper):
-  double xs_total = xs_total_stable.sum() * m_data->boundXS().get() / (4*ekin_div_kT);
+  double xs_total = xs_total_stable.sum() * m_data->boundXS().get() / (4*e.dbl());
 
   if (!(xs_total>=0.0))
     xs_total = 0.0;

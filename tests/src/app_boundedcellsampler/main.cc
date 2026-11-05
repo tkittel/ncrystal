@@ -58,7 +58,7 @@ namespace {
 
   //Probability of the edge at beta=b1, from the integrals within KB(E) of the
   //cell with S=0 on the other edge:
-  double probEdge1( const NS::CellData& c, double e )
+  double probEdge1( const NS::CellData& c, NC::EDivKT e )
   {
     const auto scheme = NC::SABCfg::IntegrationScheme::MaxPrec;
     NS::CellData c1 = c;
@@ -79,16 +79,17 @@ namespace {
   Samples sampleBounded( const TestCell& t, const NS::CellData& c,
                          NC::RNG& rng, unsigned n )
   {
-    NS::SABCellSurvey cellsurv( t.a1, t.a2, t.b1, t.b2, t.e );
+    const NC::EDivKT e{ t.e };
+    NS::SABCellSurvey cellsurv( t.a1, t.a2, t.b1, t.b2, e );
     using BCS = NS::BoundedCellSampler;
-    auto bcsdata = BCS::prepareBCSData( probEdge1( c, t.e ), cellsurv, c, t.e );
+    auto bcsdata = BCS::prepareBCSData( probEdge1( c, e ), cellsurv, c, e );
     NC::MixedDataVector buf;
     buf.append( 123.0 );
     const auto idx = BCS::pack( buf, bcsdata );
     REQUIRE( idx > 0 && idx < buf.size_bytes() );
     buf.append( 456.0 );
     bcsdata = BCS::unpack( buf, idx );
-    BCS sampler( c, bcsdata, t.e );
+    BCS sampler( c, bcsdata, e );
     Samples res;
     for ( unsigned i = 0; i < n; ++i ) {
       auto ab = sampler.sampleAlphaBeta( rng );
@@ -102,7 +103,7 @@ namespace {
   Samples sampleRef( const TestCell& t, const NS::CellData& c,
                      NC::RNG& rng, unsigned n )
   {
-    NS::RefCellSampler sampler( c, t.e );
+    NS::RefCellSampler sampler( c, NC::EDivKT{t.e} );
     Samples res;
     for ( unsigned i = 0; i < n; ++i ) {
       auto ab = sampler.sampleAlphaBeta( rng );

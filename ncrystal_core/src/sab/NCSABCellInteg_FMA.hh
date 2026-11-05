@@ -98,8 +98,10 @@ namespace NCRYSTAL_NAMESPACE {
         nc_assert(b2>b1);
         //bl/bu via the robust getBetaMinus/getBetaPlus
         //(the naive a-+dbpm formula cancels catastrophically for a~=4E):
-        const double bl = ncclamp( getBetaMinus(fourE*0.25,alpha), b1, b2 );
-        const double bu = ncclamp( getBetaPlus(fourE*0.25,alpha), b1, b2 );
+        const double bl = ncclamp( detail::raw_getBetaMinus(fourE*0.25,alpha),
+                                   b1, b2 );
+        const double bu = ncclamp( detail::raw_getBetaPlus(fourE*0.25,alpha),
+                                   b1, b2 );
         const double dbpm = std::sqrt( fourE * alpha );
         //FIXME: ^^^ This calculates sqrt(4E*a) thrice instead of just once!
 
@@ -151,10 +153,9 @@ namespace NCRYSTAL_NAMESPACE {
           //(fixme: calculating expensive sqrt(4E*a) thrice instead of once!)
           double dbpm = std::sqrt( foure * a );//nb: expensive
           if ( is_bounded_by_betaminus )
-            bl = getBetaMinus(E_div_kT,a);
-          if ( is_bounded_by_betaplus )
-            bu = ncmax(bl,getBetaPlus(E_div_kT,a));//ncmax as a safeguard
-                                                   //against FP issues
+            bl = detail::raw_getBetaMinus(E_div_kT,a);
+          if ( is_bounded_by_betaplus ) //ncmax as a safeguard against FP issues:
+            bu = ncmax(bl,detail::raw_getBetaPlus(E_div_kT,a));
           //To find the contribution we integrate S(a,b) over [bl,bu]. This is
           //easy, since we always interpolate linearly in b:
           const double bmiddle( is_bounded_on_both_sides ? a : (bu+bl)*0.5 );

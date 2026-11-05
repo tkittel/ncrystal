@@ -24,6 +24,7 @@
 #include "NCrystal/interfaces/NCSABData.hh"
 #include "NCrystal/internal/utils/NCSpan.hh"
 #include "NCrystal/internal/utils/NCTinyVector.hh"
+#include "NCrystal/internal/utils/NCExtraTypes.hh"
 #include "NCrystal/internal/sab/NCSABIdx.hh"
 
 namespace NCRYSTAL_NAMESPACE {
@@ -88,7 +89,7 @@ namespace NCRYSTAL_NAMESPACE {
     public:
       SABCellSurvey( double alpha1, double alpha2,
                      double beta1, double beta2,
-                     double E_div_kT );
+                     EDivKT );
 
       struct Region final {
         double alpha_low;

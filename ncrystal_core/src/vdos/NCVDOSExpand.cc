@@ -43,7 +43,7 @@ namespace NCRYSTAL_NAMESPACE {
       //FIXME: Turn into query instead, and adopt plots into generic utility
       //script?
       void writeFileWithABRanges( const std::vector<ABRangeInfo>& r,
-                                  double targetEmax_div_kT )
+                                  EDivKT targetEmax_div_kT )
       {
         std::string fn = "ncrystal_alphabetaranges.txt";
         NCRYSTAL_WARN("Writing Alpha/Beta ranges to "<<fn
@@ -52,7 +52,7 @@ namespace NCRYSTAL_NAMESPACE {
           return;
         std::ofstream ofs(fn.c_str(), std::ofstream::out);
         ofs << "#ncrystal_alphabetaranges\n";
-        ofs << "#targetEmax_div_kT: "<<fmt(targetEmax_div_kT)<<"\n";
+        ofs << "#targetEmax_div_kT: "<<fmt(targetEmax_div_kT.dbl())<<"\n";
         ofs << "#note: all overlap_xxx=-1"
           " if not within phasespace.\n";
         ofs << "#colnames = n,alow,aup,blow,bup,"
@@ -150,7 +150,7 @@ NC::VDOS::expandVDOSToGnFcts( const VDOSData& vdosdata,
   const double invkT = 1.0/kT;
   const double gamma0 = vdoseval.calcGamma0();
   const double msd = vdoseval.getMSD( gamma0 );
-  double targetEmax_div_kT = targetEmax.dbl()*invkT;
+  EDivKT targetEmax_div_kT{ targetEmax.dbl()*invkT };
   unsigned max_phonon_order = 1;
   auto vdosgn_cfg = ( vdoslux.isLegacy()
                       ? VDOSGn::Cfg::Legacy
@@ -294,13 +294,14 @@ NC::VDOS::expandVDOSToGnFcts( const VDOSData& vdosdata,
                         " value might help).");
       }
     } while (!findABExtentWithinKB(abRange,
-                                   targetEmax_reduced.dbl()*invkT).isEmpty());
+                                   EDivKT{targetEmax_reduced.dbl()*invkT})
+             .isEmpty());
 
     if ( !vdoslux.isLegacy() || s_verbose )
       NCRYSTAL_WARN("VDOS expansion could only reach Emax="<<targetEmax_reduced
                     <<" and not the target Emax="<<targetEmax);
     targetEmax = targetEmax_reduced;
-    targetEmax_div_kT = targetEmax.dbl() * invkT;
+    targetEmax_div_kT = EDivKT{ targetEmax.dbl() * invkT };
     if ( vdoslux.isLegacy() )
       ++max_phonon_order;//legacy behaviour adds one more order
     break;

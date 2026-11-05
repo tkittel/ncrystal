@@ -79,24 +79,24 @@ namespace NCRYSTAL_NAMESPACE {
 }
 
 NCS::SABBetaStripSampler::SABBetaStripSampler( shared_obj<const SABData> sd,
-                                               double emax_div_kT,
+                                               EDivKT emax,
                                                unsigned nStripsPerBetaCell )
-  : SABBetaStripSampler( sd, createLogSTable( sd ), emax_div_kT,
+  : SABBetaStripSampler( sd, createLogSTable( sd ), emax,
                          nStripsPerBetaCell )
 {
 }
 
 NCS::SABBetaStripSampler::SABBetaStripSampler( shared_obj<const SABData> sd,
                                                shared_obj<const VectD> logST,
-                                               double emax_div_kT,
+                                               EDivKT emax,
                                                unsigned nStripsPerBetaCell )
   : m_sab( std::move(sd) ),
     m_logS( std::move(logST) ),
-    m_emax( emax_div_kT )
+    m_emax( emax )
 {
 #ifndef NDEBUG
   nc_assert_always( m_logS->size() == m_sab->sab().size() );
-  nc_assert_always( emax_div_kT > 0.0 && std::isfinite(emax_div_kT) );
+  nc_assert_always( emax.dbl() > 0.0 && std::isfinite(emax.dbl()) );
   nc_assert_always( nStripsPerBetaCell >= 1 && nStripsPerBetaCell <= 1000 );
 #endif
   const auto& ag = m_sab->alphaGrid();
@@ -106,7 +106,7 @@ NCS::SABBetaStripSampler::SABBetaStripSampler( shared_obj<const SABData> sd,
   //Smax*(b1-b0)*sqrt(b1+emax) (the largest alpha range of KB(e) in the strip
   //is 4*sqrt(e)*sqrt(b1+emax)):
   {
-    const double blo = ncmax( -m_emax, bg.front() );
+    const double blo = ncmax( -m_emax.dbl(), bg.front() );
     //Beyond this beta, KB(emax) is above the alpha grid:
     const double bcap = getBetaPlus( m_emax, ag.back() );
     const double bhi = ncmin( bg.back(), bcap );
@@ -132,7 +132,7 @@ NCS::SABBetaStripSampler::SABBetaStripSampler( shared_obj<const SABData> sd,
         const double smax = sc.bound.smax;
         if ( !( smax > 0.0 ) )
           continue;
-        const double b1pemax = b1 + m_emax;
+        const double b1pemax = b1 + m_emax.dbl();
         //Alpha cells, with one extra cell on each side as rounding margin:
         const auto ia0 = sc.ia0;
         const auto ia1 = sc.ia1;
@@ -240,10 +240,10 @@ double NCS::SABBetaStripSampler::evalSCell( double alpha, double beta,
 }
 
 NCS::SABBetaStripSampler::Result
-NCS::SABBetaStripSampler::sample( RNG& rng, double e ) const
+NCS::SABBetaStripSampler::sample( RNG& rng, EDivKT e ) const
 {
 #ifndef NDEBUG
-  nc_assert_always( e > 0.0 && e <= m_emax );
+  nc_assert_always( e.dbl() > 0.0 && e <= m_emax );
   nc_assert_always( hasStrips() );
 #endif
   Result res;
@@ -266,7 +266,7 @@ NCS::SABBetaStripSampler::sample( RNG& rng, double e ) const
       istrip = vectAt( m_alias, istrip );
     const auto& strip = vectAt( m_strips, istrip );
     const double beta = randInterval( rng, strip.b0, strip.b1 );
-    const double bpe = beta + e;
+    const double bpe = beta + e.dbl();
     if ( !( bpe > 0.0 ) )
       continue;
     const auto alim = getAlphaLimits( e, beta );

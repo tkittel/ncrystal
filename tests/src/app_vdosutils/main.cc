@@ -428,7 +428,7 @@ namespace {
     const auto check = [&nchecks](PairDD ar, PairDD br, double e,
                                   PairDD expectedA, PairDD expectedB) {
       ++nchecks;
-      const auto r = findABExtentWithinKB( Rectangle(ar,br),e );
+      const auto r = findABExtentWithinKB( Rectangle(ar,br),NC::EDivKT{e} );
 
       REQUIRE(!r.isEmpty());
 
@@ -440,7 +440,7 @@ namespace {
 
     const auto checkEmpty = [&nchecks](PairDD ar, PairDD br, double e) {
       ++nchecks;
-      const auto r = findABExtentWithinKB( Rectangle(ar,br),e );
+      const auto r = findABExtentWithinKB( Rectangle(ar,br),NC::EDivKT{e} );
       REQUIRE(r.isEmpty());
     };
     // Basic unrestricted intersection.
@@ -487,7 +487,8 @@ namespace {
       const double b1 = 2.0e-10;
       const double expectedLo = b0 * b0 / 4.0;
 
-      const auto r = findABExtentWithinKB( {0.0, 1.0, b0, b1}, e );
+      const auto r = findABExtentWithinKB( {0.0, 1.0, b0, b1},
+                                           NC::EDivKT{e} );
 
       REQUIRE(!r.isEmpty());
       REQUIRE(floateq(r.x0(), expectedLo,1.0e-6, 1.0e-30));
@@ -505,7 +506,8 @@ namespace {
       const double expected =
         a0 - 2.0 * std::sqrt(a0);
 
-      const auto r = findABExtentWithinKB( {a0, a1, -1.0, 1.0}, e );
+      const auto r = findABExtentWithinKB( {a0, a1, -1.0, 1.0},
+                                           NC::EDivKT{e} );
       REQUIRE(!r.isEmpty());
       REQUIRE(floateq(r.y0(), expected,1.0e-6, 1.0e-14));
       REQUIRE(r.y0() < 0.0);
@@ -521,7 +523,8 @@ namespace {
       const double e = 1.0;
       const double b = -0.999999;
 
-      const auto r = findABExtentWithinKB( {0.0, 10.0,b, b + 1.0e-8}, e );
+      const auto r = findABExtentWithinKB( {0.0, 10.0,b, b + 1.0e-8},
+                                           NC::EDivKT{e} );
       REQUIRE(!r.isEmpty());
       REQUIRE(r.x0() >= 0.0);
       REQUIRE(r.x1() > r.x0() );
@@ -531,7 +534,8 @@ namespace {
     // phase-space-derived result incorrectly.
     {
       ++nchecks;
-      const auto r = findABExtentWithinKB( {0.5, 2.0,-10.0, 10.0}, 1.0 );
+      const auto r = findABExtentWithinKB( {0.5, 2.0,-10.0, 10.0},
+                                           NC::EDivKT{1.0} );
       REQUIRE(!r.isEmpty());
       REQUIREFLTEQ(r.x0(), 0.5);
       REQUIREFLTEQ(r.x1(), 2.0);
@@ -547,7 +551,7 @@ namespace {
 
       for (const double e : es) {
         ++nchecks;
-        const auto r = findABExtentWithinKB( {0.0, 20.0 * e,-3.0 * e, 8.0 * e}, e );
+        const auto r = findABExtentWithinKB( {0.0, 20.0 * e,-3.0 * e, 8.0 * e}, NC::EDivKT{e} );
         REQUIRE(!r.isEmpty());
 
         const PairDD ar = r.xRange();
@@ -565,8 +569,8 @@ namespace {
         // Each alpha endpoint must have some beta in the rectangle
         // that is inside the closed phase-space region.
         const auto checkAlpha = [&](double alpha) {
-          const double betaLo = NC::getBetaMinus(e, alpha);
-          const double betaHi = NC::getBetaPlus(e, alpha);
+          const double betaLo = NC::getBetaMinus(NC::EDivKT{e}, alpha);
+          const double betaHi = NC::getBetaPlus(NC::EDivKT{e}, alpha);
 
           REQUIRE(betaLo <= 8.0 * e + tol);
           REQUIRE(betaHi >= -3.0 * e - tol);
@@ -578,7 +582,7 @@ namespace {
         // Each beta endpoint must have some alpha in the returned
         // alpha interval that is inside the closed phase-space region.
         const auto checkBeta = [&](double beta) {
-          const auto lim = NC::getAlphaLimits(e, beta);
+          const auto lim = NC::getAlphaLimits(NC::EDivKT{e}, beta);
           REQUIRE(lim.first <= ar.second + tol);
           REQUIRE(lim.second >= ar.first - tol);
         };
@@ -659,7 +663,7 @@ namespace {
     const auto check = [&nchecks](PairDD ar, PairDD br, double e,
                                   PairDD expectedA, PairDD expectedB) {
       ++nchecks;
-      const auto r = findABExtentWithinKB( {ar, br }, e );
+      const auto r = findABExtentWithinKB( {ar, br }, NC::EDivKT{e} );
 
       REQUIRE(!r.isEmpty());
       REQUIREFLTEQ(r.x0(), expectedA.first);
@@ -670,7 +674,7 @@ namespace {
 
     const auto checkEmpty = [&nchecks](PairDD ar, PairDD br, double e) {
       ++nchecks;
-      const auto r = findABExtentWithinKB( {ar, br}, e );
+      const auto r = findABExtentWithinKB( {ar, br}, NC::EDivKT{e} );
       REQUIRE(r.isEmpty());
     };
 

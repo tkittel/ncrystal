@@ -144,14 +144,14 @@ NC::PairDD NC::SABSampler::sampleHighE(NeutronEnergy ekin, RNG& rng) const
       return {-1.0,0.0};//must sample tabulated data with ekin=emax
   }
 
-  const double emax_div_kt = emax/m_kT;
+  const EDivKT emax_div_kt{ emax/m_kT };
   while (true) {
     //sample with extender:
     auto alphabeta = m_extender->sampleAlphaBeta(rng,ekin);
     //if outside emax curve, always return immediately:
-    if ( alphabeta.second <= -emax_div_kt )
+    if ( alphabeta.second <= -emax_div_kt.dbl() )
       return alphabeta;
-    auto alims =  getAlphaLimits( emax_div_kt,alphabeta.second );
+    auto alims =  getAlphaLimits( emax_div_kt, alphabeta.second );
     if (!valueInInterval(alims.first,alims.second,alphabeta.first))
       return alphabeta;
     //inside emax curve. Check P_discardinside:
@@ -202,20 +202,20 @@ NC::PairDD NC::SABSampler::sampleAlphaBeta(NeutronEnergy ekin, RNG& rng) const
 
   //Sample with *itSampler, using the rejection method to make the results
   //correct at the given ekin value:
-  const double ekin_div_kT = ekin.get()/m_kT;
-  const double sampling_ekin_div_kT = (ultra_small_ekin_mode
-                                       ? ultra_small_ekin/m_kT
-                                       : ekin_div_kT);
+  const EDivKT e{ ekin.get()/m_kT };
+  const EDivKT sampling_e{ ultra_small_ekin_mode
+                                ? ultra_small_ekin/m_kT
+                                : e.dbl() };
   int loopmax(100);
   while (loopmax--) {
-    std::tie(alpha,beta) = (*itSampler)->sampleAlphaBeta(sampling_ekin_div_kT,
+    std::tie(alpha,beta) = (*itSampler)->sampleAlphaBeta(sampling_e,
                                                          rng,
                                                          m_ptloopmax);
-    if (beta<-ekin_div_kT)
+    if (beta<-e.dbl())
       continue;
     double alow,aupp;
     {
-      auto alims = getAlphaLimits( ekin_div_kT, beta );
+      auto alims = getAlphaLimits( e, beta );
       alow = alims.first;
       aupp = alims.second;
     }

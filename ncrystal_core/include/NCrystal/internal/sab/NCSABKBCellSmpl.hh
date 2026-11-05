@@ -100,15 +100,15 @@ namespace NCRYSTAL_NAMESPACE {
 
      public:
 
-       SABKBCellSampler( double ekin_div_kT,
+       SABKBCellSampler( EDivKT e,
                          double beta0, double alpha0,
                          double beta1, double alpha1 )
          : SABKBCellSampler( internal_kT_div_ekin_t{},
-                             [ekin_div_kT]()
+                             [e]()
                              {
-                               nc_assert(ekin_div_kT>0.0);
-                               nc_assert(std::isfinite(ekin_div_kT));
-                               const double kT_div_ekin = 1.0/ekin_div_kT;
+                               nc_assert(e.dbl()>0.0);
+                               nc_assert(std::isfinite(e.dbl()));
+                               const double kT_div_ekin = 1.0/e.dbl();
                                nc_assert(kT_div_ekin>0.0);
                                nc_assert(std::isfinite(kT_div_ekin));
                                return kT_div_ekin;
@@ -116,19 +116,19 @@ namespace NCRYSTAL_NAMESPACE {
                              beta0, alpha0, beta1, alpha1 )
        {
 #ifndef NDEBUG
-         m_dbg_e = ekin_div_kT;
+         m_dbg_e = e.dbl();
 #endif
        }
 
 
        //Note that in order to preserve memory, the sampling requires
-       //ekin_div_kT as an argument. This MUST be the same as was used in the
+       //E/kT as an argument. This MUST be the same as was used in the
        //constructor.
-       PairDD sampleAlphaBeta( RNG& rng, double ekin_div_kT )
+       PairDD sampleAlphaBeta( RNG& rng, EDivKT e )
        {
-         nc_assert(m_dbg_e == ekin_div_kT);
+         nc_assert(m_dbg_e == e.dbl());
          PairDD xy = m_pbbsampler.sample(rng);
-         return { ekin_div_kT*xy.second, ekin_div_kT*(xy.first-1.0) };
+         return { e.dbl()*xy.second, e.dbl()*(xy.first-1.0) };
        }
      private:
        ParabolicBandBoxSampler m_pbbsampler;

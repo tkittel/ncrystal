@@ -928,21 +928,21 @@ double NC::FreeGasSampler::sampleAlpha( double beta, RNG& rng ) const
   //
   // For the case where beta ~= 0, ...
 
-  if ( m_c_real < m_c || muIsotropicAtBeta(beta,m_c) ) {
+  if ( m_c_real < m_c || muIsotropicAtBeta(beta,EDivKT{m_c}) ) {
     nc_assert( beta >= -m_c_real*1.001 );
     //Either we are close to the kinematical end-point, where [alpha-,alpha+] is
     //so tiny that S can be assumed to be constant over it, or the initial
     //energy is so extremely tiny that the neutron is basically at rest with
     //undefined direction. It seems appropriate to deal with both cases with a
     //simple isotropic scattering.
-    auto alim = getAlphaLimits( m_c_real, beta );
+    auto alim = getAlphaLimits( EDivKT{m_c_real}, beta );
     double alpha = alim.first+rng.generate()*(alim.second-alim.first);
     return ncclamp( alpha,alim.first, alim.second );
   }
 
   nc_assert( beta >= -m_c*1.001 );
   beta = ncmax( -m_c, beta );
-  auto alims = getAlphaLimits( m_c, beta );
+  auto alims = getAlphaLimits( EDivKT{m_c}, beta );
   double am = alims.first;
   double ap = alims.second;
   if (am==ap)

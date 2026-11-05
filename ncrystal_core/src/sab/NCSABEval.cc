@@ -88,7 +88,7 @@ namespace NCRYSTAL_NAMESPACE {
       }
 
       template <class TData>
-      void intCrossedKB( StableSum& sum, const TData& data, double ekin_div_kT )
+      void intCrossedKB( StableSum& sum, const TData& data, EDivKT e )
       {
         //Crosses kinematic borders (KB) and has already been trimmed (with
         //trimToKB). We need to:
@@ -105,17 +105,17 @@ namespace NCRYSTAL_NAMESPACE {
         // 2) Subtract the integral above beta+(alpha) //
         /////////////////////////////////////////////////
 
-        const double betaplus_at_a0 = getBetaPlus(ekin_div_kT,data.alpha.first);
+        const double betaplus_at_a0 = getBetaPlus(e,data.alpha.first);
         if ( data.beta.second > betaplus_at_a0 ) {
           nc_assert(valueInInterval(data.beta,ncmax(betaplus_at_a0,data.beta.first)));
           nc_assert(valueInInterval(data.beta,data.beta.second));
 
-          sum.add( - integrateRomberg17([ekin_div_kT,&data]( double beta )
+          sum.add( - integrateRomberg17([e,&data]( double beta )
           {
             nc_assert( valueInInterval(data.beta,beta) || beta<data.beta.second+0.001*(data.beta.second-data.beta.first) );
             beta = ncmin( data.beta.second, beta );//NCRomberg::evalFuncMany might evaluate slightly above upper limit
             const double alow = data.alpha.first;
-            const double ahigh = ncmin(getAlphaMinus(ekin_div_kT,beta),data.alpha.second);
+            const double ahigh = ncmin(getAlphaMinus(e,beta),data.alpha.second);
             const double dA = ahigh-alow;
             if ( !(dA>0.0) )
               return 0.0;
@@ -134,20 +134,20 @@ namespace NCRYSTAL_NAMESPACE {
 
 
         //First the region at alpha<E/kT:
-        const double betaminus_at_a0 = getBetaMinus(ekin_div_kT,data.alpha.first);
-        if ( data.alpha.first < ekin_div_kT && data.beta.first < betaminus_at_a0 ) {
+        const double betaminus_at_a0 = getBetaMinus(e,data.alpha.first);
+        if ( data.alpha.first < e.dbl() && data.beta.first < betaminus_at_a0 ) {
           Optional<double> splitpt;
-          const double ahighmax = ncmin(data.alpha.second,ekin_div_kT);
+          const double ahighmax = ncmin(data.alpha.second,e.dbl());
 #if 1
           const double b2 = ncmin(0.0,ncmin(data.beta.second,betaminus_at_a0));
-          if ( ahighmax > 0.8*ekin_div_kT && data.beta.first<= -0.9*ekin_div_kT ) {
+          if ( ahighmax > 0.8*e.dbl() && data.beta.first<= -0.9*e.dbl() ) {
             splitpt = data.beta.first + 0.01*(b2-data.beta.first);
           }
-          sum.add( - SCE_integrateRombergFlex([ekin_div_kT,ahighmax,&data]( double beta )
+          sum.add( - SCE_integrateRombergFlex([e,ahighmax,&data]( double beta )
           {
             beta = ncmin( data.beta.second, beta );//NCRomberg::evalFuncMany might evaluate slightly above upper limit
             const double alow = data.alpha.first;
-            const double ahigh = ncmin(getAlphaMinus(ekin_div_kT,beta),ahighmax);
+            const double ahigh = ncmin(getAlphaMinus(e,beta),ahighmax);
             const double dA = ahigh-alow;
             if ( !(dA>0.0) )
               return 0.0;
@@ -160,11 +160,11 @@ namespace NCRYSTAL_NAMESPACE {
           },
               data.beta.first,b2,splitpt));
 #else
-          sum.add( - integrateRomberg17([ekin_div_kT,ahighmax,&data]( double beta )
+          sum.add( - integrateRomberg17([e,ahighmax,&data]( double beta )
           {
             beta = ncmin( data.beta.second, beta );//NCRomberg::evalFuncMany might evaluate slightly above upper limit
             const double alow = data.alpha.first;
-            const double ahigh = ncmin(getAlphaMinus(ekin_div_kT,beta),ahighmax);
+            const double ahigh = ncmin(getAlphaMinus(e,beta),ahighmax);
             const double dA = ahigh-alow;
             if ( !(dA>0.0) )
               return 0.0;
@@ -179,12 +179,12 @@ namespace NCRYSTAL_NAMESPACE {
         }
         //Finally the region at alpha>E/kT:
 #if 0
-        if ( data.alpha.second > ekin_div_kT ) {
-          const double alowmin = ncmax(data.alpha.first,ekin_div_kT);
-          sum.add( - SCE_integrateRombergFlex([ekin_div_kT,alowmin,&data]( double beta )
+        if ( data.alpha.second > e.dbl() ) {
+          const double alowmin = ncmax(data.alpha.first,e.dbl());
+          sum.add( - SCE_integrateRombergFlex([e,alowmin,&data]( double beta )
           {
             beta = ncmin( data.beta.second, beta );//NCRomberg::evalFuncMany might evaluate slightly above upper limit
-            const double alow = ncmax(getAlphaPlus(ekin_div_kT,beta),alowmin);
+            const double alow = ncmax(getAlphaPlus(e,beta),alowmin);
             const double ahigh = data.alpha.second;
             const double dA = ahigh-alow;
             if ( !(dA>0.0) )
@@ -195,17 +195,17 @@ namespace NCRYSTAL_NAMESPACE {
               return integrateAlphaInterval( alow, Slow, ahigh, Shigh);
             else
               return (ahigh-alow)*0.5*(Slow+Shigh);
-          },data.beta.first,ncclamp(getBetaMinus(ekin_div_kT,data.alpha.second),data.beta.first,data.beta.second)));
+          },data.beta.first,ncclamp(getBetaMinus(e,data.alpha.second),data.beta.first,data.beta.second)));
         }
 #else
-        if ( data.alpha.second > ekin_div_kT ) {
-          auto gen_integrand = [ekin_div_kT,&data]( PairDD clamp_alpha )
+        if ( data.alpha.second > e.dbl() ) {
+          auto gen_integrand = [e,&data]( PairDD clamp_alpha )
           {
             const double ahigh = ncclamp( data.alpha.second, clamp_alpha );
 
-            return [ekin_div_kT,ahigh,clamp_alpha,&data]( double beta )
+            return [e,ahigh,clamp_alpha,&data]( double beta )
             {
-              const double alow = ncclamp( getAlphaPlus(ekin_div_kT,beta), clamp_alpha );
+              const double alow = ncclamp( getAlphaPlus(e,beta), clamp_alpha );
               const double dA = ahigh-alow;
               if ( !(dA>0.0) )
                 return 0.0;
@@ -217,14 +217,14 @@ namespace NCRYSTAL_NAMESPACE {
                 return (ahigh-alow)*0.5*(Slow+Shigh);
             };
           };
-          const double alowmin = ncmax(data.alpha.first,ekin_div_kT);
+          const double alowmin = ncmax(data.alpha.first,e.dbl());
           const double b0 = data.beta.first;
-          const double b2 = ncclamp( getBetaMinus(ekin_div_kT,data.alpha.second), data.beta );
+          const double b2 = ncclamp( getBetaMinus(e,data.alpha.second), data.beta );
 
-          if ( b0 < (-0.9)*ekin_div_kT ) {
+          if ( b0 < (-0.9)*e.dbl() ) {
 
             const double b1 = b0 + 0.01*(b2-b0);//ncmin(0.01,0.01*(b2-b0));
-            const double ap_at_b1 = ncclamp(getAlphaPlus(ekin_div_kT,b1),{alowmin,data.alpha.second});
+            const double ap_at_b1 = ncclamp(getAlphaPlus(e,b1),{alowmin,data.alpha.second});
             sum.add( -SCE_integrateRombergFlex(gen_integrand({alowmin,data.alpha.second}),b0,b1) );
             sum.add( -SCE_integrateRombergFlex(gen_integrand({ap_at_b1,data.alpha.second}),b1,b2) );
           } else {
@@ -235,7 +235,7 @@ namespace NCRYSTAL_NAMESPACE {
 
       }
       template <class TData>
-      Optional<TData> trimToKB( const TData& data_orig, double ekin_div_kT, BetaLimits_t blim_at_a0, BetaLimits_t blim_at_a1 )
+      Optional<TData> trimToKB( const TData& data_orig, EDivKT e, BetaLimits_t blim_at_a0, BetaLimits_t blim_at_a1 )
       {
         //Todo: Just "inplace_splitAtBeta etc. and avoid this Optional + dataptr stuff!
 
@@ -276,33 +276,33 @@ namespace NCRYSTAL_NAMESPACE {
           doSplitBeta( blim_at_a1.second, IgnorePart::Above );
 
         //Trim excess edge towards negative beta:
-        const double bminus_lower_reach = ( data->alpha.first >= ekin_div_kT
+        const double bminus_lower_reach = ( data->alpha.first >= e.dbl()
                                             ? blim_at_a0.first
-                                            : ( data->alpha.second <= ekin_div_kT
+                                            : ( data->alpha.second <= e.dbl()
                                                 ? blim_at_a1.first
-                                                : -ekin_div_kT ) );
+                                                : -e.dbl() ) );
 
         if ( data->beta.first < bminus_lower_reach )
           doSplitBeta( bminus_lower_reach, IgnorePart::Below );
         //Trim excess edge towards positive alpha:
         if ( data->beta.second < blim_at_a1.first ) {
-          nc_assert(data->alpha.second>=ekin_div_kT);
-          doSplitAlpha(getAlphaPlus(ekin_div_kT,data->beta.second),IgnorePart::Above);//NB: After calling doSplitAlpha we can no longer trust blim_at_a0/blim_at_a1 [SO DONT USE THEM!!!]
+          nc_assert(data->alpha.second>=e.dbl());
+          doSplitAlpha(getAlphaPlus(e,data->beta.second),IgnorePart::Above);//NB: After calling doSplitAlpha we can no longer trust blim_at_a0/blim_at_a1 [SO DONT USE THEM!!!]
         }
         blim_at_a1 = { -1,-1 };//invalidate since we might have called doSplitAlpha(...,Above)!!!
 
         //Trim excess edge towards negative alpha:
         if ( data->beta.first > 0 && data->beta.first > blim_at_a0.second ) {
           //handle case above beta=0:
-          doSplitAlpha(getAlphaMinus(ekin_div_kT,data->beta.first),IgnorePart::Below);
-        } else if ( data->beta.second < 0 && data->alpha.first < ekin_div_kT && data->beta.second < blim_at_a0.first ) {
+          doSplitAlpha(getAlphaMinus(e,data->beta.first),IgnorePart::Below);
+        } else if ( data->beta.second < 0 && data->alpha.first < e.dbl() && data->beta.second < blim_at_a0.first ) {
           //handle case below beta=0:
-          doSplitAlpha(getAlphaMinus(ekin_div_kT,data->beta.second),IgnorePart::Below);
+          doSplitAlpha(getAlphaMinus(e,data->beta.second),IgnorePart::Below);
         }
         blim_at_a0 = { -1,-1 };//invalidate since we might have called doSplitAlpha(...,Below)!!!
         //Trim excess edge towards positive alpha:
-        if ( data->alpha.second > ekin_div_kT && data->beta.second < getBetaMinus(ekin_div_kT,data->alpha.second) )
-          doSplitAlpha(getAlphaPlus(ekin_div_kT,data->beta.second),IgnorePart::Above);
+        if ( data->alpha.second > e.dbl() && data->beta.second < getBetaMinus(e,data->alpha.second) )
+          doSplitAlpha(getAlphaPlus(e,data->beta.second),IgnorePart::Above);
 
         return res;
       }
@@ -376,55 +376,54 @@ inline NC::PairDD NCS::SABCellEval<AIT,IO>::SCE_Data::sample( RNG& rng ) const
 // }
 
 template<NCS::InterpolationScheme AIT, NCS::SABInterpolationOrder IO>
-inline NCS::KBStatus NCS::SABCellEval<AIT,IO>::SCE_Data::kbStatus( double ekin_div_kT ) const
+inline NCS::KBStatus NCS::SABCellEval<AIT,IO>::SCE_Data::kbStatus( EDivKT e ) const
 {
-  const double ee = ekin_div_kT;
   const double b0 = this->beta.first;
   const double b1 = this->beta.second;
   const double a0 = this->alpha.first;
   const double a1 = this->alpha.second;
   //First check if we are completely outside:
-  if ( b1 <= -ee )
+  if ( b1 <= -e.dbl() )
     return KBStatus::FullyOutside;
   const double b0_m_a1 = b0 - a1;
   if ( b0_m_a1 >= 0.0 ) {
     //Fully above betaplus, if:
-    //  b0 >= a1 + 2*sqrt(ee*a1)  <=>
-    //  b0-a1 >= 2*sqrt(ee*a1)  <=> (since both sides non-negative)
-    //  (b0-a1)^2 >= 4*ee*a1
-    if ( ncsquare(b0_m_a1) >= 4.0*ee*a1 )
+    //  b0 >= a1 + 2*sqrt(e*a1)  <=>
+    //  b0-a1 >= 2*sqrt(e*a1)  <=> (since both sides non-negative)
+    //  (b0-a1)^2 >= 4*e*a1
+    if ( ncsquare(b0_m_a1) >= 4.0*e.dbl()*a1 )
       return KBStatus::FullyOutside;
   } else if ( a0 >= b1 ) {
-    if ( b1 <= -ee )
+    if ( b1 <= -e.dbl() )
       return KBStatus::FullyOutside;
     //Fully below betaminus, if (ai is a1 if a1<e and a0 if a0>=e):
-    //  b1 <= ai - 2*sqrt(ee*ai)  <=>
-    //  ai-b1 >= 2*sqrt(ee*ai)  <=> (since both sides non-negative)
-    //  (ai-b1)^2 >= 4*ee*ai
-    if ( a1 <= ee ) {
-      if ( ncsquare(a1-b1) >= 4*ee*a1 )
+    //  b1 <= ai - 2*sqrt(e*ai)  <=>
+    //  ai-b1 >= 2*sqrt(e*ai)  <=> (since both sides non-negative)
+    //  (ai-b1)^2 >= 4*e*ai
+    if ( a1 <= e.dbl() ) {
+      if ( ncsquare(a1-b1) >= 4*e.dbl()*a1 )
         return KBStatus::FullyOutside;
-    } else if ( a0 >= ee ) {
-      if ( ncsquare(a0-b1) >= 4*ee*a0 )
+    } else if ( a0 >= e.dbl() ) {
+      if ( ncsquare(a0-b1) >= 4*e.dbl()*a0 )
         return KBStatus::FullyOutside;
     } else {
       return KBStatus::Crossing;
     }
   }
   //Ok, we are not fully outside.
-  // auto blim_at_a1 = getBetaLimits( ekin_div_kT, a1 );
+  // auto blim_at_a1 = getBetaLimits( e, a1 );
   // if ( b0 >= blim_at_a1.second )
   //   return KBStatus::FullyOutside;
-  // if ( a1 <= ee && b1 <= blim_at_a1.first )
+  // if ( a1 <= e && b1 <= blim_at_a1.first )
   //   return KBStatus::FullyOutside;
-  // if ( a0 >= ee && b1 <= blim_at_a0.first )
+  // if ( a0 >= e && b1 <= blim_at_a0.first )
     // return KBStatus::FullyOutside;
 
   //Next check if we are completely inside:
-  auto blim_at_a0 = getBetaLimits( ekin_div_kT, a0 );
-  if ( b0 >= -ee && b1 <= blim_at_a0.second ) {
-    bool crossBMinusLeftSide = ( a0 < ee && b0 < blim_at_a0.first );
-    bool crossBMinusRightSide = ( a1 > ee && b0 < getBetaMinus(ee,a1) );
+  auto blim_at_a0 = getBetaLimits( e, a0 );
+  if ( b0 >= -e.dbl() && b1 <= blim_at_a0.second ) {
+    bool crossBMinusLeftSide = ( a0 < e.dbl() && b0 < blim_at_a0.first );
+    bool crossBMinusRightSide = ( a1 > e.dbl() && b0 < getBetaMinus(e,a1) );
     if ( !crossBMinusLeftSide && !crossBMinusRightSide )
       return KBStatus::FullyInside;
   }
@@ -432,28 +431,27 @@ inline NCS::KBStatus NCS::SABCellEval<AIT,IO>::SCE_Data::kbStatus( double ekin_d
 }
 
 template<NCS::InterpolationScheme AIT, NCS::SABInterpolationOrder IO>
-inline double NCS::SABCellEval<AIT,IO>::SCE_Data::sOverlayWKB( double ekin_div_kT ) const
+inline double NCS::SABCellEval<AIT,IO>::SCE_Data::sOverlayWKB( EDivKT e ) const
 {
-  const double ee = ekin_div_kT;
   const double b0 = this->beta.first;
   const double b1 = this->beta.second;
   const double a0 = this->alpha.first;
   const double a1 = this->alpha.second;
   //First check if we are completely outside:
-  if ( b1 <= -ee )
+  if ( b1 <= -e.dbl() )
     return 0.0;
-  auto blim_at_a1 = getBetaLimits( ekin_div_kT, a1 );
+  auto blim_at_a1 = getBetaLimits( e, a1 );
   if ( b0 >= blim_at_a1.second )
     return 0.0;
-  if ( a1 <= ee && b1 <= blim_at_a1.first )
+  if ( a1 <= e.dbl() && b1 <= blim_at_a1.first )
     return 0.0;
-  auto blim_at_a0 = getBetaLimits( ekin_div_kT, a0 );
-  if ( a0 >= ee && b1 <= blim_at_a0.first )
+  auto blim_at_a0 = getBetaLimits( e, a0 );
+  if ( a0 >= e.dbl() && b1 <= blim_at_a0.first )
     return 0.0;
   //Next check if we are completely inside:
-  if ( b0 >= -ee && b1 <= blim_at_a0.second ) {
-    bool crossBMinusLeftSide = ( a0 < ee && b0 < blim_at_a0.first );
-    bool crossBMinusRightSide = ( a1 > ee && b0 < blim_at_a1.first );
+  if ( b0 >= -e.dbl() && b1 <= blim_at_a0.second ) {
+    bool crossBMinusLeftSide = ( a0 < e.dbl() && b0 < blim_at_a0.first );
+    bool crossBMinusRightSide = ( a1 > e.dbl() && b0 < blim_at_a1.first );
     if ( !crossBMinusLeftSide && !crossBMinusRightSide ) {
       //yes, completely inside!
       return this->sMax();
@@ -461,35 +459,34 @@ inline double NCS::SABCellEval<AIT,IO>::SCE_Data::sOverlayWKB( double ekin_div_k
   }//  else {
 
   //Crosses kinematic borders, strip edges:
-  const auto trimmed_data = trimToKB( *this, ekin_div_kT, blim_at_a0, blim_at_a1 );
+  const auto trimmed_data = trimToKB( *this, e, blim_at_a0, blim_at_a1 );
 
   //For efficiency we just use the values at the corners as the overlay values: (todo: revisit??)
   return ( trimmed_data.has_value() ? trimmed_data.value() : *this ).sMax();
 }
 
 template<NCS::InterpolationScheme AIT, NCS::SABInterpolationOrder IO>
-inline void NCS::SABCellEval<AIT,IO>::SCE_Data::integralWKB( StableSum& sum, double ekin_div_kT ) const
+inline void NCS::SABCellEval<AIT,IO>::SCE_Data::integralWKB( StableSum& sum, EDivKT e ) const
 {
-  const double ee = ekin_div_kT;
   const double b0 = this->beta.first;
   const double b1 = this->beta.second;
   const double a0 = this->alpha.first;
   const double a1 = this->alpha.second;
   //First check if we are completely outside:
-  if ( b1 <= -ee )
+  if ( b1 <= -e.dbl() )
     return;
-  auto blim_at_a1 = getBetaLimits( ekin_div_kT, a1 );
+  auto blim_at_a1 = getBetaLimits( e, a1 );
   if ( b0 >= blim_at_a1.second )
     return;
-  if ( a1 <= ee && b1 <= blim_at_a1.first )
+  if ( a1 <= e.dbl() && b1 <= blim_at_a1.first )
     return;
-  auto blim_at_a0 = getBetaLimits( ekin_div_kT, a0 );
-  if ( a0 >= ee && b1 <= blim_at_a0.first )
+  auto blim_at_a0 = getBetaLimits( e, a0 );
+  if ( a0 >= e.dbl() && b1 <= blim_at_a0.first )
     return;
   //Next check if we are completely inside:
-  if ( b0 >= -ee && b1 <= blim_at_a0.second ) {
-    bool crossBMinusLeftSide = ( a0 < ee && b0 < blim_at_a0.first );
-    bool crossBMinusRightSide = ( a1 > ee && b0 < blim_at_a1.first );
+  if ( b0 >= -e.dbl() && b1 <= blim_at_a0.second ) {
+    bool crossBMinusLeftSide = ( a0 < e.dbl() && b0 < blim_at_a0.first );
+    bool crossBMinusRightSide = ( a1 > e.dbl() && b0 < blim_at_a1.first );
     if ( !crossBMinusLeftSide && !crossBMinusRightSide ) {
       this->integral(sum);//yes, completely inside!
       return;
@@ -497,11 +494,11 @@ inline void NCS::SABCellEval<AIT,IO>::SCE_Data::integralWKB( StableSum& sum, dou
   }//  else {
 
   //Crosses kinematic borders, needs more careful treatment:
-  const auto trimmed_data = trimToKB( *this, ekin_div_kT, blim_at_a0, blim_at_a1 );
+  const auto trimmed_data = trimToKB( *this, e, blim_at_a0, blim_at_a1 );
 
   intCrossedKB( sum,
                 ( trimmed_data.has_value() ? trimmed_data.value() : *this ),
-                ekin_div_kT );
+                e );
 
   //todo: just call kbStatus? And get blim_at_a0/blim_at_a1 back from there if needed???
 }

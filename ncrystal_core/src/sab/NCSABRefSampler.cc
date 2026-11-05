@@ -183,7 +183,7 @@ namespace NCRYSTAL_NAMESPACE {
         }
       };
 
-      EPtContribInfo analyseEPt( const SABData& sab, double E_div_kT )
+      EPtContribInfo analyseEPt( const SABData& sab, EDivKT e )
       {
         EPtContribInfo res;
 
@@ -192,8 +192,8 @@ namespace NCRYSTAL_NAMESPACE {
         const auto na = alphas.size();
         const auto nb = betas.size();
         nc_assert_always( na < packfactor && nb < packfactor );
-        nc_assert_always( na>=2 && nb >= 2 && E_div_kT > 0.0
-                          && std::isfinite(E_div_kT) );
+        nc_assert_always( na>=2 && nb >= 2 && e.dbl() > 0.0
+                          && std::isfinite(e.dbl()) );
 
         //First figure out which cells have which contributions, and if they are
         //completely covered or not (indicated by negative cellidx). The
@@ -205,15 +205,15 @@ namespace NCRYSTAL_NAMESPACE {
         auto addContrib = [&contribs]( double c, int kscale,
                                        std::int64_t cellidx )
         {
-          Contrib e;
-          e.m = std::frexp( c, &e.e );
-          e.e -= kscale;
-          e.cellidx = cellidx;
-          contribs.push_back( e );
+          Contrib contrib;
+          contrib.m = std::frexp( c, &contrib.e );
+          contrib.e -= kscale;
+          contrib.cellidx = cellidx;
+          contribs.push_back( contrib );
         };
 
-        const double foure = 4*E_div_kT;
-        const double minusE = -E_div_kT;
+        const double foure = 4*e.dbl();
+        const double minusE = -e.dbl();
         auto ptInsideKB = [foure]( double a, double b )
         {
           //Strict: a cell with a corner exactly on the boundary is left to
@@ -237,9 +237,9 @@ namespace NCRYSTAL_NAMESPACE {
             //computed sqrt from a raw alpha cancels catastrophically near the
             //boundary. Since dbpm>=0, "b2<=a-dbpm" <=> "a-b2>=0 &&
             //(a-b2)^2>=foure*a":
-            if ( a1 >= E_div_kT && a1-b2 >= 0.0 && ncsquare(a1-b2) >= foure*a1 )
+            if ( a1 >= e.dbl() && a1-b2 >= 0.0 && ncsquare(a1-b2) >= foure*a1 )
               continue;
-            if ( a2 <= E_div_kT && a2-b2 >= 0.0 && ncsquare(a2-b2) >= foure*a2 )
+            if ( a2 <= e.dbl() && a2-b2 >= 0.0 && ncsquare(a2-b2) >= foure*a2 )
               continue;
 
             //Ok, we have an overlap. Let us check that S is not zero in entire
@@ -277,7 +277,7 @@ namespace NCRYSTAL_NAMESPACE {
               //cell crosses boundary
               StableSumKahan sum;
               SABUtils::StdLogLinCellIntegrator
-                ::integrateWithinKB( cell, E_div_kT,
+                ::integrateWithinKB( cell, e,
                                      SABCfg::IntegrationScheme::MaxPrec, sum );
               addContrib( sum.sum(), kscale, cellidx );//+cellidx
             }
@@ -286,16 +286,17 @@ namespace NCRYSTAL_NAMESPACE {
         //Contributions relative to the largest one (exactly, as the mantissas
         //are only scaled by powers of two):
         int emax = std::numeric_limits<int>::min();
-        for ( auto& e : contribs )
-          if ( e.m > 0.0 )
-            emax = std::max( emax, e.e );
+        for ( auto& contrib : contribs )
+          if ( contrib.m > 0.0 )
+            emax = std::max( emax, contrib.e );
         if ( emax == std::numeric_limits<int>::min() )
           emax = 0;
         res.contribExponent = emax;
         res.contrib_cells.reserve( contribs.size() );
-        for ( auto& e : contribs )
-          res.contrib_cells.emplace_back( std::ldexp( e.m, e.e - emax ),
-                                          e.cellidx );
+        for ( auto& contrib : contribs )
+          res.contrib_cells.emplace_back( std::ldexp( contrib.m,
+                                                      contrib.e - emax ),
+                                          contrib.cellidx );
         //Now sort by contribution, small to large. That will make our
         //cumulative sum more robust (otherwise tiny contributions after large
         //ones might get imprecise).
@@ -304,9 +305,9 @@ namespace NCRYSTAL_NAMESPACE {
         //Create cumul vect:
         res.cumul.reserve(res.contrib_cells.size());
         StableSum contribsum;
-        for ( auto& e : res.contrib_cells ) {
-          nc_assert( e.first >= 0.0 );
-          contribsum.add( e.first );
+        for ( auto& contrib : res.contrib_cells ) {
+          nc_assert( contrib.first >= 0.0 );
+          contribsum.add( contrib.first );
           res.cumul.push_back( contribsum.sum() );
         }
         return res;
@@ -324,7 +325,7 @@ namespace NCRYSTAL_NAMESPACE {
     namespace {
       Optional<RefSampleExtension>
       prepareExtension( shared_obj<const SABData> sab,
-                        double E_div_kT,
+                        EDivKT e,
                         Optional<RefSampleExtension> opt_ext )
       {
         if ( !opt_ext.has_value() )
@@ -343,7 +344,7 @@ namespace NCRYSTAL_NAMESPACE {
             res.emax = sp.getEMaxInfo().ekin;
           }
         }
-        NeutronEnergy ekin( E_div_kT * sab->temperature().kT() );
+        NeutronEnergy ekin( e.dbl() * sab->temperature().kT() );
         if ( ekin <= res.emax )
           return NullOpt;//extension not relevant
         if ( res.extender == nullptr )
@@ -359,21 +360,21 @@ namespace NCRYSTAL_NAMESPACE {
 std::pair<NC::VectD,NC::VectD>
 NC::SABRef::refSampleAlphaBeta( RNG& rng,
                                 shared_obj<const SABData> sab,
-                                double E_div_kT,
+                                EDivKT e,
                                 std::uint64_t nsample,
                                 Optional<RefSampleExtension> opt_extension )
 {
   //Check if we need to use an extension or impose an EMax on the cell-based
   //processing:
-  opt_extension = prepareExtension(sab,E_div_kT,opt_extension);
+  opt_extension = prepareExtension(sab,e,opt_extension);
 
   const double kT = sab->temperature().kT();
-  double E_div_kT_cell = E_div_kT;
+  EDivKT E_div_kT_cell = e;
   if ( opt_extension.has_value() ) {
-    E_div_kT_cell = opt_extension.value().emax.dbl() / kT;
-    nc_assert( E_div_kT_cell < E_div_kT );//or prepareExtension would not
-                                                 //have returned a value
-    nc_assert( E_div_kT_cell > 0.0 );
+    E_div_kT_cell = EDivKT{ opt_extension.value().emax.dbl() / kT };
+    //(or prepareExtension would not have returned a value):
+    nc_assert( E_div_kT_cell < e );
+    nc_assert( E_div_kT_cell.dbl() > 0.0 );
   }
 
   //Analyse requested energy point (but not beyond emax:
@@ -389,9 +390,9 @@ NC::SABRef::refSampleAlphaBeta( RNG& rng,
     const double ext_xs_Ecell
       = ext.extender->crossSection(ext.emax).dbl();
     const double ext_xs_E
-      = ext.extender->crossSection(NeutronEnergy(E_div_kT*kT)).dbl();
-    double extS = 4.0 * ncfma( ext_xs_E, E_div_kT,
-                                  -(ext_xs_Ecell*E_div_kT_cell) );
+      = ext.extender->crossSection(NeutronEnergy(e.dbl()*kT)).dbl();
+    double extS = 4.0 * ncfma( ext_xs_E, e.dbl(),
+                                  -(ext_xs_Ecell*E_div_kT_cell.dbl()) );
     const double cellS = std::ldexp( analysedEpt.cumul.back(),
                                      analysedEpt.contribExponent );
     probabilityExtension = extS / ( extS + cellS );
@@ -447,12 +448,12 @@ NC::SABRef::refSampleAlphaBeta( RNG& rng,
 
   //Now do the sampling in the extended region (if any):
   if ( a.size() < nsample ) {
-    const NeutronEnergy ekin{ E_div_kT * kT };
+    const NeutronEnergy ekin{ e.dbl() * kT };
     nc_assert(opt_extension.has_value());
     const auto& ext = opt_extension.value();
     nc_assert( ext.extender!=nullptr );
     nc_assert( ekin > ext.emax );
-    const double fourecell = 4.0 * E_div_kT_cell;
+    const double fourecell = 4.0 * E_div_kT_cell.dbl();
     while ( a.size() < nsample ) {
       auto ab = ext.extender->sampleAlphaBeta(rng, ekin );
       if ( ncsquare( ab.first - ab.second ) >= fourecell * ab.first ) {

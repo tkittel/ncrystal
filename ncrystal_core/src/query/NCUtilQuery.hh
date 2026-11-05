@@ -161,13 +161,14 @@ namespace NCRYSTAL_NAMESPACE {
           0.2, 0.5, 1.0, 2.0, 5.0 };
       VectD ab_e, ab_beta, ab_aminus, ab_aplus;
       VectD bb_e, bb_alpha, bb_bminus, bb_bplus;
-      for ( auto e : evals ) {
+      for ( auto e_val : evals ) {
+        const EDivKT e{ e_val };
         for ( auto x : offsets ) {
           //alpha_minus/alpha_plus(e,beta), beta=x*e, singular at x=0.
           //Valid domain needs beta>=-e (kk=e+beta>=0), i.e. x>=-1:
           if ( x >= -1.0 ) {
-            const double beta = x*e;
-            ab_e.push_back(e);
+            const double beta = x*e.dbl();
+            ab_e.push_back(e.dbl());
             ab_beta.push_back(beta);
             ab_aminus.push_back( getAlphaMinus(e,beta) );
             ab_aplus.push_back( getAlphaPlus(e,beta) );
@@ -176,8 +177,8 @@ namespace NCRYSTAL_NAMESPACE {
           //x=0. Valid domain needs alpha>=0, i.e. x>=-4 (always true
           //here since offsets>=-2):
           {
-            const double alpha = (4.0+x)*e;
-            bb_e.push_back(e);
+            const double alpha = (4.0+x)*e.dbl();
+            bb_e.push_back(e.dbl());
             bb_alpha.push_back(alpha);
             bb_bminus.push_back( getBetaMinus(e,alpha) );
             bb_bplus.push_back( getBetaPlus(e,alpha) );

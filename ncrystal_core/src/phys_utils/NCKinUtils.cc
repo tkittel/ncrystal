@@ -26,10 +26,10 @@ NC::DeltaEMuVal_t
 NC::convertABToDeltaEMuWithIsotropicFallback( double alpha, double beta,
                                               NeutronEnergy ekin, double kT,
                                               RNG& rng,
-                                              double isotropicBelowEDivKT )
+                                              EDivKT isotropicBelowEDivKT )
 {
-  const double E_div_kT = ekin.get() / kT;
-  if ( E_div_kT < isotropicBelowEDivKT || muIsotropicAtBeta( beta, E_div_kT ) )
+  const EDivKT e{ ekin.get() / kT };
+  if ( e < isotropicBelowEDivKT || muIsotropicAtBeta( beta, e ) )
     return { beta * kT, 2.0 * rng.generate() - 1.0 };
   return convertAlphaBetaToDeltaEMu( alpha, beta, ekin, kT );
 }
@@ -38,7 +38,7 @@ NC::DeltaEMuVal_t NC::convertAlphaBetaToDeltaEMu(double alpha, double beta, Neut
 {
   DeltaEMuVal_t res;
 #ifndef NDEBUG
-  auto alim = getAlphaLimits(ekin.dbl()/kT,beta);
+  auto alim = getAlphaLimits(EDivKT{ekin.dbl()/kT},beta);
   nc_assert(valueInInterval(alim.first,alim.second,alpha));
 #endif
   nc_assert( ekin.dbl() >= 0.0 );
