@@ -77,8 +77,8 @@ namespace {
                     cfgstr.c_str(), di->atomData().elementName().c_str(),
                     i+1, nreps );
         const auto t0 = std::chrono::steady_clock::now();
-        auto sab = NC::extractSABDataFromDynInfo( di_scatknl, vdoslux,
-                                                  false/*useCache*/ );
+        auto sab = NC::DynInfoUtils::extractSABDataFromDynInfo(
+                     di_scatknl, vdoslux, false/*useCache*/ );
         const auto t1 = std::chrono::steady_clock::now();
         nc_assert_always( sab != nullptr );
         times_ms.push_back( toMS( t1 - t0 ) );

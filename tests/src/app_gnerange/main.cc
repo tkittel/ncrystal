@@ -299,10 +299,10 @@ namespace {
 
   NC::VDOSData makeDebyeVDOS( double debyeTempK, double tempK )
   {
-    return NC::createVDOSDebye( NC::DebyeTemperature{debyeTempK},
-                                NC::Temperature{tempK},
-                                NC::SigmaBound{1.5},
-                                NC::AtomMass{26.98} );
+    return NC::DynInfoUtils::createVDOSDebye( NC::DebyeTemperature{debyeTempK},
+                                              NC::Temperature{tempK},
+                                              NC::SigmaBound{1.5},
+                                              NC::AtomMass{26.98} );
   }
 
   void debyeSweep()

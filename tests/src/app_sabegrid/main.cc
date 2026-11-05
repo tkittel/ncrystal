@@ -39,7 +39,7 @@ int main()
   nc_assert_always( info->getDynamicInfoList().size() == 1 );
   auto di = dynamic_cast<const NC::DI_VDOS*>( info->getDynamicInfoList().front().get() );
   nc_assert_always( di != nullptr );
-  auto sab = NC::extractSABDataFromDynInfo( di );
+  auto sab = NC::DynInfoUtils::extractSABDataFromDynInfo( di );
   const auto cfg = NC::SABCfg::createConfig( 3 );
   NCS::SABProcessor p( cfg, sab, nullptr, NCS::SABProcessor::SampleSupport::NO );
   const auto& x = p.getEDivKTGrid();
