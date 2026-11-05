@@ -34,7 +34,7 @@ void doBenchmark( int knllux, NC::shared_obj<const NC::SABData> sab )
   using SABProcessor = NC::SABUtils::SABProcessor;
   const auto do_sample = SABProcessor::SampleSupport::YES;
   const auto do_diagnostics = SABProcessor::StoreExtraDiagnostics::NO;
-  std::shared_ptr<const NC::VectD> egrid = nullptr;//fixme?
+  std::shared_ptr<const NC::VectD> egrid = nullptr;
 
   SABProcessor( cfg, std::move(sab), egrid, do_sample, do_diagnostics );
 }
