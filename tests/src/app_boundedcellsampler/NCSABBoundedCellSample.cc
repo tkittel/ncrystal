@@ -217,7 +217,7 @@ NCS::BoundedCellSampler::BCSData
 NCS::BoundedCellSampler::prepareBCSData( double probability_b1_edge,
                                          const SABCellSurvey& survey,
                                          const CellData& cell,
-                                         double E_div_kT )
+                                         EDivKT e )
 {
 
   BCSData res;
@@ -303,7 +303,6 @@ NCS::BoundedCellSampler::prepareBCSData( double probability_b1_edge,
                               || restrict_a[1].has_value() );
   const double b1 = cell.b1;
   const double b2 = cell.b2;
-  const double e = E_div_kT;
 
   double o1(-1.0), o2(-1.0);
   auto it = regions.begin();
@@ -358,26 +357,28 @@ NCS::BoundedCellSampler::prepareBCSData( double probability_b1_edge,
     if ( r.is_bounded_by_betaplus ) {
       if ( r.is_bounded_by_betaminus ) {
         //bound by [betaminus(alpha),betaplus(alpha)]
-        updateO12( r.alpha_up, 4.0*std::sqrt(e * r.alpha_up), r.alpha_up );
-        updateO12( r.alpha_low, 4.0*std::sqrt(e * r.alpha_low), r.alpha_low );
+        updateO12( r.alpha_up, 4.0*std::sqrt(e.dbl() * r.alpha_up),
+                   r.alpha_up );
+        updateO12( r.alpha_low, 4.0*std::sqrt(e.dbl() * r.alpha_low),
+                   r.alpha_low );
         //local maximum at a=b2/3 for o1 and at a=b1/3 for o2:
         constexpr double onethird = 1.0/3.0;
         const double amax1 = b2*onethird;
         const double amax2 = b1*onethird;
         if ( valueInInterval( r.alpha_low, r.alpha_up, amax1 ) )
-          updateO1( amax1, 4.0*std::sqrt(e * amax1), amax1 );
+          updateO1( amax1, 4.0*std::sqrt(e.dbl() * amax1), amax1 );
         if ( valueInInterval( r.alpha_low, r.alpha_up, amax2 ) )
-          updateO2( amax2, 4.0*std::sqrt(e * amax2), amax2 );
+          updateO2( amax2, 4.0*std::sqrt(e.dbl() * amax2), amax2 );
         //check for restriction points:
         for ( auto& i_a : restriction_pts_in_region ) {
-          const double bw = 4.0*std::sqrt(e * i_a.second);
+          const double bw = 4.0*std::sqrt(e.dbl() * i_a.second);
           ( i_a.first
             ? updateO2( i_a.second, bw, i_a.second )
             :  updateO1( i_a.second, bw, i_a.second ) );
         }
       } else {
         //bound by [b1,betaplus(alpha)]
-        const double sqrte = std::sqrt(e);
+        const double sqrte = std::sqrt(e.dbl());
         const double twosqrte = 2.0 * sqrte;
         auto pt = [b1,updateO1,updateO2,twosqrte]( double a,
                                                    bool do1,
@@ -411,8 +412,8 @@ NCS::BoundedCellSampler::prepareBCSData( double probability_b1_edge,
         };
         pt( r.alpha_up );
         pt( r.alpha_low );
-        if ( valueInInterval( r.alpha_low, r.alpha_up, e ) )
-          pt( e );
+        if ( valueInInterval( r.alpha_low, r.alpha_up, e.dbl() ) )
+          pt( e.dbl() );
         //check for restriction points:
         for ( auto& i_a : restriction_pts_in_region )
           pt( i_a.second );//potentially calling twice with same point, but not

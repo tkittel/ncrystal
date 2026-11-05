@@ -180,7 +180,7 @@ NCS::SABExtended::sampleScatter( RNG& rng, NeutronEnergy ekin ) const
 {
   auto ab = sampleScatterAlphaBeta( rng, ekin );
 
-  constexpr double floorEDivKT = SABProcessor::lowEFloorEDivKT;
+  constexpr EDivKT floorEDivKT{ SABProcessor::lowEFloorEDivKT };
   auto r = convertABToDeltaEMuWithIsotropicFallback( ab.first, ab.second,
                                                      ekin, m_kT, rng,
                                                      floorEDivKT );

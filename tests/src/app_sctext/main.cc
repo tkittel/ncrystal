@@ -76,7 +76,7 @@ namespace {
   {
     auto betaIntegrand = [&]( double beta )
     {
-      auto al = NC::getAlphaLimits( c, beta );
+      auto al = NC::getAlphaLimits( NC::EDivKT{c}, beta );
       if ( !( al.second > al.first ) )
         return 0.0;
       auto innerIntegrand = [&]( double u )
@@ -153,7 +153,7 @@ namespace {
       const double invA = 1.0 / A;
       for ( double c : { 0.5, 5.0, 50.0 } ) {
         for ( double beta : { 0.0, 0.3, 1.0, 3.0, 10.0, 30.0 } ) {
-          auto alim = NC::getAlphaLimits( c, beta );
+          auto alim = NC::getAlphaLimits( NC::EDivKT{c}, beta );
           if ( !( alim.second > alim.first ) )
             continue;
           auto integrand = [beta]( double u )
@@ -333,7 +333,7 @@ namespace {
       //independent integration approach as integrateShape:
       auto marginal = [c,A,r]( double beta )
       {
-        auto al = NC::getAlphaLimits( c, beta );
+        auto al = NC::getAlphaLimits( NC::EDivKT{c}, beta );
         if ( !( al.second > al.first ) )
           return 0.0;
         auto innerIntegrand = [beta,A,r]( double u )

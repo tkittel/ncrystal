@@ -23,6 +23,7 @@
 
 #include "NCrystal/interfaces/NCSABData.hh"
 #include "NCrystal/internal/sab/NCSABExtender.hh"
+#include "NCrystal/internal/utils/NCExtraTypes.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -36,7 +37,7 @@ namespace NCRYSTAL_NAMESPACE {
     //too much lower than Ei (which is why we need a whole grid of Ei values,
     //rather than just one with Ei=Emax).
   public:
-    virtual PairDD sampleAlphaBeta( double ekin_div_kT, RNG&,
+    virtual PairDD sampleAlphaBeta( EDivKT, RNG&,
                                     std::int64_t loopmax ) const = 0;
     virtual ~SABSamplerAtE() = default;
   };

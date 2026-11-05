@@ -213,10 +213,11 @@ int main()
     const double betalim=0.01*ekin_div_kT;//NB: 0.01 should be same factor as used in alphaMinusNeedsTaylor!
     const double b0 = betalim*(1+1e-15);
     const double b1 = betalim*(1-1e-15);
+    const NC::EDivKT e{ ekin_div_kT };
     nc_assert_always( NC::detail::alphaMinusNeedsTaylor(ekin_div_kT,b0) != NC::detail::alphaMinusNeedsTaylor(ekin_div_kT,b1) );
     nc_assert_always( NC::detail::alphaMinusNeedsTaylor(ekin_div_kT,-b0) != NC::detail::alphaMinusNeedsTaylor(ekin_div_kT,-b1) );
-    nc_assert_always( NC::floateq( NC::getAlphaLimits(ekin_div_kT,b0).first, NC::getAlphaLimits(ekin_div_kT,b1).first, 1e-11, 1e-299 ) );
-    nc_assert_always( NC::floateq( NC::getAlphaLimits(ekin_div_kT,-b0).first, NC::getAlphaLimits(ekin_div_kT,-b1).first, 1e-11, 1e-299 ) );
+    nc_assert_always( NC::floateq( NC::getAlphaLimits(e,b0).first, NC::getAlphaLimits(e,b1).first, 1e-11, 1e-299 ) );
+    nc_assert_always( NC::floateq( NC::getAlphaLimits(e,-b0).first, NC::getAlphaLimits(e,-b1).first, 1e-11, 1e-299 ) );
   }
 
   ////////////////////////

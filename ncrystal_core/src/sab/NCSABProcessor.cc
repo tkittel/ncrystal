@@ -322,12 +322,12 @@ namespace NCRYSTAL_NAMESPACE {
         Optional<SABBetaStripSampler> m_stripBelowGrid;
         void initStripBelowGrid();
         using ABOutcome = SABProcessor::AlphaBetaOutcome;
-        ABOutcome sampleBelowFloor( RNG&, double E_div_kT ) const;
+        ABOutcome sampleBelowFloor( RNG&, EDivKT ) const;
       private:
 
         //Sample a scattering event:
         struct ABRes { double a, b; std::size_t ntries; };
-        ABRes sampleAlphaBetaFC( RNG&, double E_div_kT,
+        ABRes sampleAlphaBetaFC( RNG&, EDivKT,
                                  std::size_t nCellsTouched ) const;
 
       };
@@ -353,7 +353,7 @@ namespace NCRYSTAL_NAMESPACE {
 
       };
 
-      void sIntegralAtE( double E_div_kT,
+      void sIntegralAtE( EDivKT e,
                          const CellMgr& mgr,
                          const SABSurveyor& surv,
                          StdLogLinCellIntegrator::IntegrationScheme scheme,
@@ -361,20 +361,20 @@ namespace NCRYSTAL_NAMESPACE {
       {
         auto& prev = result.prevCache;
         const double prev_E = ( ( prev.E_div_kT >= 0.0
-                                  && prev.E_div_kT <= E_div_kT )
+                                  && prev.E_div_kT <= e.dbl() )
                                 ? prev.E_div_kT : -1.0 );
         const double prev_contrib( prev_E >= 0.0
                                    ? prev.sumFullyCoveredCells.sum() : 0.0 );
 
 
-        nc_assert(E_div_kT>0&&std::isfinite(E_div_kT));
+        nc_assert(e.dbl()>0&&std::isfinite(e.dbl()));
         //Find all touched cells:
         auto survCells = surv.data();
         //std::upper bound returns the first element where the comparision
         //returns true. The list must be sorted so the comparison will return
         //[false,false,...,false,true,true,...,true].
 
-        //we find the first element coming AFTER E_div_kT
+        //we find the first element coming AFTER e
 
         //FIXME: Why do we need the binary search? Why not just proceed over all
         //cells until e < ci.e_touch?
@@ -386,14 +386,14 @@ namespace NCRYSTAL_NAMESPACE {
         auto itLastTouchedE
           = std::upper_bound(itSearchBegin,
                              survCells.end(),
-                             E_div_kT,
-                             [](double e,
+                             e.dbl(),
+                             [](double val,
                                 const SABSurveyor::CellInfo& ci)
-                             { return e < ci.e_touch; } );
+                             { return val < ci.e_touch; } );
         //upper_bound returns one past the last touched:
         if( itLastTouchedE == survCells.begin() )
           NCRYSTAL_THROW2(BadInput,"Phase-space of neutron energy E/kT="
-                          <<fmt(E_div_kT)
+                          <<fmt(e.dbl())
                           <<" does not touch any S(alpha,beta) cells!");
         StableSumKahan sum;
         StableSumKahan sumFullCells;
@@ -422,11 +422,11 @@ namespace NCRYSTAL_NAMESPACE {
                        + ( prev_E >= 0.0 ? prev.nLastTouched : 0 ),
                        itLastTouchedE );
         for ( auto it = active.begin(); it != active.end(); ++it ) {
-          nc_assert( E_div_kT >= it->e_touch );
+          nc_assert( e.dbl() >= it->e_touch );
           nc_assert( prev_E < it->e_cover );
 
           const double fullCellIntegral = mgr.getCellIntegral( it->cellidx );
-          if ( E_div_kT >= it->e_cover ) {
+          if ( e.dbl() >= it->e_cover ) {
             //fully covers cells:
             sumCoveredCells.add(fullCellIntegral);
           } else {
@@ -442,7 +442,7 @@ namespace NCRYSTAL_NAMESPACE {
             } else {
               CellData cellData = mgr.lookupCellInfo( it->cellidx );
               StableSumKahan crossedRes;
-              StdLogLinCellIntegrator::integrateWithinKB( cellData, E_div_kT,
+              StdLogLinCellIntegrator::integrateWithinKB( cellData, e,
                                                           scheme, crossedRes );
               contrib = crossedRes.sum();
               if ( fullCellIntegral < cutoffref*taperBand ) {
@@ -468,11 +468,11 @@ namespace NCRYSTAL_NAMESPACE {
 
         //Prepare cache for next:
         active.erase( std::remove_if( active.begin(), active.end(),
-                                      [E_div_kT]( const SABSurveyor::CellInfo& c )
-                                      { return c.e_cover <= E_div_kT; } ),
+                                      [e]( const SABSurveyor::CellInfo& c )
+                                      { return c.e_cover <= e.dbl(); } ),
                       active.end() );
         prev.sumFullyCoveredCells.set(sumCoveredCells);
-        prev.E_div_kT = E_div_kT;
+        prev.E_div_kT = e.dbl();
         prev.nLastTouched = result.nTouchedCells;
         sum.add(sumCoveredCells);
         sumFullCells.add(sumCoveredCells);
@@ -821,7 +821,8 @@ namespace NCRYSTAL_NAMESPACE {
             nc_assert(E_div_kT>0.0);
             const double se = std::sqrt(E_div_kT);
             nc_assert(se>0.0);
-            sIntegralAtE( E_div_kT, cellmgr, surv, scheme, tmp_result );
+            sIntegralAtE( EDivKT{E_div_kT}, cellmgr, surv, scheme,
+                          tmp_result );
             return tmp_result.integralWithinKB / se;
           };
           E_min_max.first = NeutronEnergy{ kT*determineEMinDivKT( cfg, r, f ) };
@@ -915,7 +916,7 @@ namespace NCRYSTAL_NAMESPACE {
         sIntegralAtE_Result integAtE;
         for ( auto t : tvals ) {
           nc_assert( res.empty() || t > res.back().t );
-          sIntegralAtE( t, cellmgr, surv, scheme, integAtE );
+          sIntegralAtE( EDivKT{t}, cellmgr, surv, scheme, integAtE );
 #ifndef NDEBUG
           //The incremental touched-cells integral must equal a direct sum
           //(checked at a few points only, to keep Debug builds fast):
@@ -1179,7 +1180,7 @@ namespace NCRYSTAL_NAMESPACE {
           if ( do_diag ) {
             m_diagnostics_stripTries.reserve( m_eGrid.size() );
             for ( auto k : ncrange( m_eGrid.size() ) ) {
-              const double e = vectAt( m_eGrid, k );
+              const EDivKT e{ vectAt( m_eGrid, k ) };
               const double integ = vectAt( m_sIntegral, k );
               SABBetaStripSampler st( m_cellmgr.sabDataPtr(),
                                       m_cellmgr.logSTable(), e );
@@ -1276,10 +1277,11 @@ namespace NCRYSTAL_NAMESPACE {
                                NeutronEnergy ekin,
                                const AlphaBetaOutcome& alphabeta ) const
       {
+        const EDivKT floorEDivKT{ lowEFloorEDivKT };
         auto r = convertABToDeltaEMuWithIsotropicFallback( alphabeta.alpha,
                                                            alphabeta.beta,
                                                            ekin, m_kT, rng,
-                                                           lowEFloorEDivKT );
+                                                           floorEDivKT );
         return { NeutronEnergy{ ncmax( 0.0, ekin.dbl() + r.deltaE ) },
                  CosineScatAngle{ r.mu } };
       }
@@ -1292,33 +1294,33 @@ namespace NCRYSTAL_NAMESPACE {
         nc_assert( canSample() );
         //Find the index of the first value in the energy grid whose value exceeds
         //ekin (or the last value if ekin>=m_eGrid.back()):
-        const double E_div_kT = ekin.dbl()*m_invkT;
+        const EDivKT e{ ekin.dbl()*m_invkT };
         if ( m_stripBelowGrid.has_value() ) {
-          if ( E_div_kT < lowEFloorEDivKT )
-            return sampleBelowFloor( rng, E_div_kT );
-          if ( E_div_kT < m_eGrid.front() ) {
-            auto r = m_stripBelowGrid.value().sample( rng, E_div_kT );
+          if ( e.dbl() < lowEFloorEDivKT )
+            return sampleBelowFloor( rng, e );
+          if ( e.dbl() < m_eGrid.front() ) {
+            auto r = m_stripBelowGrid.value().sample( rng, e );
             return { r.alpha, r.beta, r.ntries };
           }
         }
         nc_assert(m_eGrid.size()>=2);
         std::size_t idx_E_overlay
-          = m_eGridGuide.lowerBoundIdx(m_eGrid.data(), m_eGrid.size(), E_div_kT);
+          = m_eGridGuide.lowerBoundIdx(m_eGrid.data(), m_eGrid.size(), e.dbl());
         if ( idx_E_overlay == m_eGrid.size() )
           --idx_E_overlay;
         nc_assert(m_nTouchedCells.size()==m_eGrid.size());
-        if ( E_div_kT > 0.0 && E_div_kT <= m_eGrid.back() ) {
+        if ( e.dbl() > 0.0 && e.dbl() <= m_eGrid.back() ) {
           const std::int32_t istrip = vectAt( m_stripIdx, idx_E_overlay );
           if ( istrip >= 0 ) {
             auto r = vectAt( m_strips, static_cast<std::size_t>( istrip ) )
-              .sample( rng, E_div_kT );
+              .sample( rng, e );
             return { r.alpha, r.beta, r.ntries };
           }
         }
         const std::size_t nCellsTouched = vectAt(m_nTouchedCells,idx_E_overlay);
-        ABRes alphabeta = sampleAlphaBetaFC( rng, E_div_kT, nCellsTouched );
+        ABRes alphabeta = sampleAlphaBetaFC( rng, e, nCellsTouched );
         nc_assert( ncsquare( alphabeta.a - alphabeta.b )
-                   <= E_div_kT * 4.0 * alphabeta.a );
+                   <= e.dbl() * 4.0 * alphabeta.a );
         SABProcessor::AlphaBetaOutcome res;
         res.alpha = alphabeta.a;
         res.beta = alphabeta.b;
@@ -1348,7 +1350,7 @@ namespace NCRYSTAL_NAMESPACE {
             ++j;
           SABBetaStripSampler st( m_cellmgr.sabDataPtr(),
                                   m_cellmgr.logSTable(),
-                                  vectAt( m_eGrid, j ) );
+                                  EDivKT{ vectAt( m_eGrid, j ) } );
           if ( !st.hasStrips() ) {
             h = j + 1;
             continue;//S=0 within KB(emax), nothing to sample
@@ -1361,8 +1363,8 @@ namespace NCRYSTAL_NAMESPACE {
             minAR = ncmin( minAR, ar );
             if ( !( integ > 0.0 && ar > 0.0 ) )
               continue;
-            if ( stripTryCost * st.expectedTries( vectAt( m_eGrid, k ), integ )
-                 < 1.0 / ar ) {
+            const EDivKT e{ vectAt( m_eGrid, k ) };
+            if ( stripTryCost * st.expectedTries( e, integ ) < 1.0 / ar ) {
               vectAt( m_stripIdx, k )
                 = static_cast<std::int32_t>( m_strips.size() );
               used = true;
@@ -1383,43 +1385,43 @@ namespace NCRYSTAL_NAMESPACE {
         if ( !( m_lowEExtrapolationConstant > 0.0 ) )
           return;//S=0 within KB(e) at low e: never sampled there
         SABBetaStripSampler st( m_cellmgr.sabDataPtr(), m_cellmgr.logSTable(),
-                                m_eGrid.front() );
+                                EDivKT{ m_eGrid.front() } );
         if ( !st.hasStrips() )
           return;
         m_stripBelowGrid = std::move( st );
       }
 
       SABProcessor::AlphaBetaOutcome
-      SABProcImpl::sampleBelowFloor( RNG& rng, double E_div_kT ) const
+      SABProcImpl::sampleBelowFloor( RNG& rng, EDivKT e ) const
       {
         //Beta sampled at e=lowEFloorEDivKT (resampling the rare
         //beta<-E/kT), alpha uniformly within KB(E):
-        nc_assert( E_div_kT >= 0.0 && E_div_kT < lowEFloorEDivKT );
+        nc_assert( e.dbl() >= 0.0 && e.dbl() < lowEFloorEDivKT );
         const auto& st = m_stripBelowGrid.value();
-        nc_assert( st.emaxDivKT() >= lowEFloorEDivKT );
+        nc_assert( st.emaxDivKT().dbl() >= lowEFloorEDivKT );
         SABProcessor::AlphaBetaOutcome res;
         res.ntries = 0;
         while ( true ) {
-          auto r = st.sample( rng, lowEFloorEDivKT );
+          auto r = st.sample( rng, EDivKT{ lowEFloorEDivKT } );
           res.ntries += r.ntries;
-          if ( r.beta >= -E_div_kT ) {
+          if ( r.beta >= -e.dbl() ) {
             res.beta = r.beta;
             break;
           }
         }
-        const auto alim = getAlphaLimits( E_div_kT, res.beta );
+        const auto alim = getAlphaLimits( e, res.beta );
         res.alpha = randInterval( rng, alim.first, alim.second );
         return res;
       }
 
       SABProcImpl::ABRes
       SABProcImpl::sampleAlphaBetaFC( RNG& rng,
-                                      double E_div_kT,
+                                      EDivKT e,
                                       std::size_t nCellsTouched ) const
       {
         ABRes res;
         res.ntries = 1;
-        const double foure = 4.0*E_div_kT;
+        const double foure = 4.0*e.dbl();
         while ( true ) {
           std::size_t randidx = m_cumulFCInt.pick( rng, nCellsTouched );
           auto cellidx = vectAt(m_cumulFCInt_cellidx,randidx);
@@ -1486,7 +1488,7 @@ namespace NCRYSTAL_NAMESPACE {
             epts_with_strip.push_back(i);
             strip_tries.push_back( vectAt( m_strips,
                                            static_cast<std::size_t>(is) )
-                                   .expectedTries( vectAt(m_eGrid,i),
+                                   .expectedTries( EDivKT{vectAt(m_eGrid,i)},
                                                    vectAt(m_sIntegral,i) ) );
           }
           os << "\"epts_with_beta_strip_sampling\":";
@@ -1583,11 +1585,11 @@ NCS::SABProcessor::EPtInfo NCS::SABProcessor::getEMaxInfo() const
 {
   auto sp = sp_cimpl(m_impl);
   EPtInfo res;
-  res.E_div_kT = sp->m_eGrid.back();
+  res.E_div_kT = EDivKT{ sp->m_eGrid.back() };
   res.phaseSpaceIntegral = sp->m_sIntegralUnscaled.back();
-  res.ekin = NeutronEnergy{ res.E_div_kT * sp->m_kT };
+  res.ekin = NeutronEnergy{ res.E_div_kT.dbl() * sp->m_kT };
   res.crossSectionUnitSigmaBound
-    = CrossSect{ res.phaseSpaceIntegral * 0.25 / res.E_div_kT };
+    = CrossSect{ res.phaseSpaceIntegral * 0.25 / res.E_div_kT.dbl() };
   return res;
 }
 

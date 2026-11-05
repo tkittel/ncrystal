@@ -23,6 +23,7 @@
 
 #include "NCrystal/interfaces/NCSABData.hh"
 #include "NCrystal/internal/sab/NCSABCfg.hh"
+#include "NCrystal/internal/utils/NCExtraTypes.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -110,7 +111,7 @@ namespace NCRYSTAL_NAMESPACE {
       //grid). Access this energy and associated information:
       struct EPtInfo final {
         NeutronEnergy ekin;
-        double E_div_kT;
+        EDivKT E_div_kT;
         double phaseSpaceIntegral;
         CrossSect crossSectionUnitSigmaBound;
       };
