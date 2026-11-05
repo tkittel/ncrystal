@@ -49,7 +49,7 @@ void NC::SABSampler::setData( Temperature temperature,
                               Optional<std::int64_t> loopmax )
 {
   m_ptloopmax = loopmax.value_or( 100 );
-  nc_assert( extender != nullptr );//fixme: change type to shared_obj?
+  nc_assert( extender != nullptr );
   m_egrid = std::move(egrid);
   m_samplers = std::move(samplers);
   nc_assert( m_egrid.size()>1 );
