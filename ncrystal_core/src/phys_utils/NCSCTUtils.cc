@@ -80,7 +80,7 @@ double NC::SCTXSProvider::evalFGBetaKernel( double c, double beta,
   //See the header for the derivation and conventions (u=sqrt(alpha_E),
   //value independent of alpha convention, only needed for beta>=0):
   nc_assert( c > 0.0 && beta >= 0.0 && invA > 0.0 );
-  auto alim = getAlphaLimits( c, beta );
+  auto alim = getAlphaLimits( EDivKT{c}, beta );
   if ( !( alim.second > alim.first ) )
     return 0.0;
   const double um = std::sqrt( alim.first * invA );

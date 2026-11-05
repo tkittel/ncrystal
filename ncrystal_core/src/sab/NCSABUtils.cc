@@ -405,7 +405,7 @@ void NC::SABUtils::expandBetaAndSABToAllBetas( Span<const double> halfbetagrid,
 }
 
 void NC::SABUtils::activeGridCells( const SABData& data,
-                                    double ekin_div_kT,
+                                    EDivKT e,
                                     std::vector<std::pair<std::uint16_t,std::uint16_t>>& out_alpharanges,
                                     std::size_t& ibeta_low  )
 {
@@ -415,7 +415,7 @@ void NC::SABUtils::activeGridCells( const SABData& data,
   //We want to find the active 2D cells. First we find the 1D active ranges:
   std::vector<std::pair<std::uint16_t,std::uint16_t>> alpha1dranges;
   std::size_t ibeta_low1d;
-  activeGridRanges( data, ekin_div_kT, alpha1dranges, ibeta_low1d );
+  activeGridRanges( data, e, alpha1dranges, ibeta_low1d );
 
   //Special case, nothing active:
   if ( alpha1dranges.empty() )
@@ -477,7 +477,7 @@ void NC::SABUtils::activeGridCells( const SABData& data,
 }
 
 void NC::SABUtils::activeGridRanges( const SABData& data,
-                                     double ekin_div_kT,
+                                     EDivKT e,
                                      std::vector<std::pair<std::uint16_t,std::uint16_t>>& out_alpharanges,
                                      std::size_t& ibeta_low  )
 {
@@ -502,8 +502,8 @@ void NC::SABUtils::activeGridRanges( const SABData& data,
 
   for (auto&& beta : enumerate(data.betaGrid())) {
     double alow(-1.0),aupp(-2.0);
-    if ( beta.val > -ekin_div_kT ) {
-      auto alims = getAlphaLimits( ekin_div_kT, beta.val );
+    if ( beta.val > -e.dbl() ) {
+      auto alims = getAlphaLimits( e, beta.val );
       alow = alims.first;
       aupp = alims.second;
     }

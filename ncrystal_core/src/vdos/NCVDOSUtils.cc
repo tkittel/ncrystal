@@ -56,25 +56,24 @@ NC::PairDD NC::VDOS::rangeXNexpMX(unsigned n, double eps, double accuracy ) {
 }
 
 NC::Rectangle NC::VDOS::findABExtentWithinKB( const Rectangle& r,
-                                              double E_div_kT )
+                                              EDivKT e )
 {
   nc_assert(std::isfinite(r.x0()));
   nc_assert(std::isfinite(r.x1()));
   nc_assert(std::isfinite(r.y0()));
   nc_assert(std::isfinite(r.y1()));
-  nc_assert(std::isfinite(E_div_kT));
+  nc_assert(std::isfinite(e.dbl()));
   const auto& alphaRange = r.xRange();
   const auto& betaRange = r.yRange();
   nc_assert(alphaRange.first >= 0.0);
   nc_assert(alphaRange.second > alphaRange.first);
   nc_assert(betaRange.second > betaRange.first);
-  nc_assert(E_div_kT > 0.0);
+  nc_assert(e.dbl() > 0.0);
 
   const double a0 = alphaRange.first;
   const double a1 = alphaRange.second;
   const double b0 = betaRange.first;
   const double b1 = betaRange.second;
-  const double e = E_div_kT;
 
   double al = a0;
   double ah = a1;
@@ -111,7 +110,7 @@ NC::Rectangle NC::VDOS::findABExtentWithinKB( const Rectangle& r,
     return {};
 
   // beta^-(alpha) has its minimum at alpha = e.
-  const double amin = ncmin(ncmax(e, al), ah);
+  const double amin = ncmin(ncmax(e.dbl(), al), ah);
   const double betaLo = ncmax(b0, getBetaMinus(e, amin));
   const double betaHi = ncmin(b1, getBetaPlus(e, ah));
   if ( !(betaLo<betaHi) )

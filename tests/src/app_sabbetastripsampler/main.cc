@@ -269,7 +269,7 @@ namespace {
                     const std::vector<RefStrip>& expected, Counts& counts )
   {
     ++counts.nconf;
-    NS::SABBetaStripSampler sampler( k.sd, emax, nstrips );
+    NS::SABBetaStripSampler sampler( k.sd, NC::EDivKT{emax}, nstrips );
     if ( !sampler.hasStrips() ) {
       for ( auto& rs : expected )
         REQUIRE( !refHasS( k, rs ) );
@@ -521,7 +521,7 @@ namespace {
                       unsigned nstrips, unsigned nsamples,
                       unsigned nfine_per_cell = 4 )
   {
-    NS::SABBetaStripSampler sampler( kernel.sd, emax, nstrips );
+    NS::SABBetaStripSampler sampler( kernel.sd, NC::EDivKT{emax}, nstrips );
     if ( !sampler.hasStrips() )
       return false;//no strips at all (tested elsewhere)
     const auto& ag = kernel.ag;
@@ -568,7 +568,8 @@ namespace {
     const double integralWithinKB = reftot.sum();
     if ( !( integralWithinKB > 0.0 ) )
       return false;//nothing to sample
-    const double expTries = sampler.expectedTries( e, integralWithinKB );
+    const double expTries = sampler.expectedTries( NC::EDivKT{e},
+                                                   integralWithinKB );
     if ( expTries > 200.0 )
       return false;//S bounds of strips far above S within KB(e)
 
@@ -580,7 +581,7 @@ namespace {
     unsigned long ntries = 0;
     for ( auto i : NC::ncrange( nsamples ) ) {
       (void)i;
-      const auto r = sampler.sample( *rng, e );
+      const auto r = sampler.sample( *rng, NC::EDivKT{e} );
       REQUIRE( r.ntries >= 1 );
       ntries += r.ntries;
       REQUIRE( r.beta >= blo && r.beta <= bhi );

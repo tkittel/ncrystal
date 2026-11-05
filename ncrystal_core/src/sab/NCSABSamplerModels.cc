@@ -45,7 +45,7 @@ NC::SAB::SABSamplerAtE_Alg1::SABSamplerAtE_Alg1( std::shared_ptr<const CommonCac
   nc_assert( ibetaOffset+betaVals.size() == m_common->data->betaGrid().size()+1 );
 }
 
-NC::PairDD NC::SAB::SABSamplerAtE_Alg1::sampleAlphaBeta(double ekin_div_kT,
+NC::PairDD NC::SAB::SABSamplerAtE_Alg1::sampleAlphaBeta(EDivKT e,
                                                         RNG&rng,
                                                         std::int64_t loopmax ) const
 {
@@ -81,7 +81,7 @@ NC::PairDD NC::SAB::SABSamplerAtE_Alg1::sampleAlphaBeta(double ekin_div_kT,
       //the kinematic boundary.
       const double b0 = m_firstBinKinematicEndpointValue;
       const double b1 = vectAt(m_betaSampler.getXVals(),1);
-      if ( b1 < -ekin_div_kT )
+      if ( b1 < -e.dbl() )
         continue;//reject no matter what
       nc_assert( b0 > m_betaSampler.getXVals().at(0) );//because we moved m_betaSampler.getXVals()[0] down by 4/3*(b1-b0)
       const double delta_beta = b1 - b0;
@@ -91,10 +91,11 @@ NC::PairDD NC::SAB::SABSamplerAtE_Alg1::sampleAlphaBeta(double ekin_div_kT,
       for ( auto iii : ncrange(nsampletries) ) {
         (void)iii;
         beta = ncmax(m_firstBinKinematicEndpointValue, b0 + delta_beta*rng.generate());
-        if ( beta < -ekin_div_kT )
+        if ( beta < -e.dbl() )
           break;//reject
         alphaval = sampleAlpha(m_ibetaOffset, rng.generate());
-        auto alims = getAlphaLimits(-m_firstBinKinematicEndpointValue,beta);
+        auto alims = getAlphaLimits( EDivKT{-m_firstBinKinematicEndpointValue},
+                                     beta );
         if ( valueInInterval(alims.first,alims.second,alphaval) )
           break;
         constexpr auto nsampletriesm1 = nsampletries - 1;
@@ -113,15 +114,15 @@ NC::PairDD NC::SAB::SABSamplerAtE_Alg1::sampleAlphaBeta(double ekin_div_kT,
           break;
         }
       }
-      if ( beta < -ekin_div_kT )
+      if ( beta < -e.dbl() )
         continue;//reject
-      auto alimits = getAlphaLimits( ekin_div_kT, beta );
+      auto alimits = getAlphaLimits( e, beta );
       if ( valueInInterval( alimits.first, alimits.second, alphaval ) )
         return { alphaval, beta };//accept
       continue;//reject
     }
 
-    if (beta <= ncmax(-ekin_div_kT,betaGrid.front()))
+    if (beta <= ncmax(-e.dbl(),betaGrid.front()))
       continue;//reject
 
     double alphal(-1.0), bl;
@@ -148,7 +149,7 @@ NC::PairDD NC::SAB::SABSamplerAtE_Alg1::sampleAlphaBeta(double ekin_div_kT,
     const double alpha = alphal + (alphah-alphal) * (beta-bl)/(bh-bl);
 
     //Check if we can accept this:
-    auto alimits = getAlphaLimits( ekin_div_kT, beta );
+    auto alimits = getAlphaLimits( e, beta );
     if ( valueInInterval( alimits.first, alimits.second, alpha ) )
       return { alpha, beta };//accept
   }
