@@ -604,6 +604,8 @@ namespace NCRYSTAL_NAMESPACE {
           logemin = findRoot2(froot,bracket_lo,bracket_hi, root_acc);
         } catch ( NC::Error::CalcError& e ) {
           logemin = -1.0;
+          //fixme: library code must not write debug files into the current
+          //working directory; find a better way to provide this information.
           //Write fct to file for debugging:
           std::string fn = "ncrystal_logemin_fail_info.txt";
           NCRYSTAL_WARN("Failed to find emin via root-finding. Will attempt"
