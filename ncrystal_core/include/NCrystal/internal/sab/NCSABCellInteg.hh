@@ -56,7 +56,7 @@ namespace NCRYSTAL_NAMESPACE {
       //already certain that the phase space boundary CROSSES the cell.
 
       void integrateWithinKB( const CellData&,
-                              double E_div_kT,
+                              EDivKT,
                               IntegrationScheme,
                               StableSumKahan& tgt );
 

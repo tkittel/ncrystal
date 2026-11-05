@@ -68,18 +68,18 @@ namespace NCRYSTAL_NAMESPACE {
 
       //Check if cell is fully inside or outside the kinematic reach (kinematic
       //boundary, KB) of a given neutron:
-      KBStatus kbStatus( double ekin_div_kT ) const;
+      KBStatus kbStatus( EDivKT e ) const;
 
       //Only consider parts within kinematic reach of a given neutron:
-      double integralWithinKinematicBounds( double ekin_div_kT ) const;
-      void addIntegralWithinKinematicBounds( StableSum&, double ekin_div_kT ) const;
-      double sOverlayValueWithinKinematicBounds( double ekin_div_kT ) const;//returns 0.0 if E/kT=0
+      double integralWithinKinematicBounds( EDivKT e ) const;
+      void addIntegralWithinKinematicBounds( StableSum&, EDivKT e ) const;
+      double sOverlayValueWithinKinematicBounds( EDivKT e ) const;//returns 0.0 if E/kT=0
 
       //Or further restrict the integral to the region below a given betamax
       //value (e.g. to find the contribution to ultra cold neutron production):
-      double integralWithinKinematicBoundsBelowBetamax( double ekin_div_kT, double betamax ) const;
-      void addIntegralWithinKinematicBoundsBelowBetamax( StableSum&, double ekin_div_kT, double betamax ) const;
-      double sOverlayValueWithinKinematicBoundsBelowBetamax( double ekin_div_kT, double betamax ) const;//returns 0.0 if no area
+      double integralWithinKinematicBoundsBelowBetamax( EDivKT e, double betamax ) const;
+      void addIntegralWithinKinematicBoundsBelowBetamax( StableSum&, EDivKT e, double betamax ) const;
+      double sOverlayValueWithinKinematicBoundsBelowBetamax( EDivKT e, double betamax ) const;//returns 0.0 if no area
 
       //Split cell:
       SABCellEval splitAtBeta( double betaval, IgnorePart ip ) const { return { m_data.splitAtBeta(betaval,ip) }; }
@@ -238,12 +238,12 @@ namespace NCRYSTAL_NAMESPACE {
       double eval( double alpha, double beta ) const;
       double integral() const;
       void integral(StableSum&) const;
-      SCE_Data splitAtBeta( double beta, IgnorePart ) const;
+      SCE_Data splitAtBeta( double beta, IgnorePart ) const;//fixme: conceptually wrong - how about the rest of the class?
       SCE_Data splitAtAlpha( double alpha, IgnorePart ) const;
       PairDD sample( RNG& ) const;
-      void integralWKB( StableSum&, double ekin_div_kT ) const;
-      double sOverlayWKB( double ekin_div_kT ) const;
-      KBStatus kbStatus( double ekin_div_kT ) const;
+      void integralWKB( StableSum&, EDivKT e ) const;
+      double sOverlayWKB( EDivKT e ) const;
+      KBStatus kbStatus( EDivKT e ) const;
       double sMax() const { return ncmax(S[0],S[1],S[2],S[3]); }
     };
 
@@ -263,72 +263,72 @@ namespace NCRYSTAL_NAMESPACE {
     inline PairDD SABCellEval<AI,IO>::sample( RNG& rng ) const { return m_data.sample(rng); }
 
     template< InterpolationScheme AI, SABInterpolationOrder IO>
-    KBStatus SABCellEval<AI,IO>::kbStatus( double ekin_div_kT ) const
+    KBStatus SABCellEval<AI,IO>::kbStatus( EDivKT e ) const
     {
-      return m_data.kbStatus(ekin_div_kT);
+      return m_data.kbStatus(e);
     }
 
     template< InterpolationScheme AI, SABInterpolationOrder IO>
-    inline double SABCellEval<AI,IO>::integralWithinKinematicBoundsBelowBetamax( double ekin_div_kT, double betamax ) const
+    inline double SABCellEval<AI,IO>::integralWithinKinematicBoundsBelowBetamax( EDivKT e, double betamax ) const
     {
-      if ( m_data.beta.first >= betamax || m_data.beta.second <= -ekin_div_kT )
+      if ( m_data.beta.first >= betamax || m_data.beta.second <= -e.dbl() )
         return 0.0;//likely excludes most cells if [ekin_div_kT,betamax] is a narrow threshold.
       StableSum sum;
       if ( m_data.beta.second <= betamax ) {
-        m_data.integralWKB( sum, ekin_div_kT );
+        m_data.integralWKB( sum, e );
       } else {
-        m_data.splitAtBeta( betamax, IgnorePart::Above ).integralWKB( sum, ekin_div_kT );
+        m_data.splitAtBeta( betamax, IgnorePart::Above ).integralWKB( sum, e );
       }
       return sum.sum();
     }
 
     template< InterpolationScheme AI, SABInterpolationOrder IO>
-    double SABCellEval<AI,IO>::sOverlayValueWithinKinematicBounds( double ekin_div_kT ) const
+    double SABCellEval<AI,IO>::sOverlayValueWithinKinematicBounds( EDivKT e ) const
     {
-      if ( !(ekin_div_kT>0.0) || m_data.beta.second <= -ekin_div_kT )
+      if ( !(e.dbl()>0.0) || m_data.beta.second <= -e.dbl() )
         return 0.0;
-      return m_data.sOverlayWKB( ekin_div_kT );
+      return m_data.sOverlayWKB( e );
     }
 
     template< InterpolationScheme AI, SABInterpolationOrder IO>
-    double SABCellEval<AI,IO>::sOverlayValueWithinKinematicBoundsBelowBetamax( double ekin_div_kT, double betamax ) const
+    double SABCellEval<AI,IO>::sOverlayValueWithinKinematicBoundsBelowBetamax( EDivKT e, double betamax ) const
     {
-      if ( m_data.beta.first >= betamax || m_data.beta.second <= -ekin_div_kT )
+      if ( m_data.beta.first >= betamax || m_data.beta.second <= -e.dbl() )
         return 0.0;
       if ( m_data.beta.second <= betamax ) {
-        return m_data.sOverlayWKB( ekin_div_kT );
+        return m_data.sOverlayWKB( e );
       } else {
-        return m_data.splitAtBeta( betamax, IgnorePart::Above ).sOverlayWKB( ekin_div_kT );
+        return m_data.splitAtBeta( betamax, IgnorePart::Above ).sOverlayWKB( e );
       }
     }
 
     template< InterpolationScheme AI, SABInterpolationOrder IO>
-    inline void SABCellEval<AI,IO>::addIntegralWithinKinematicBoundsBelowBetamax( StableSum& sum, double ekin_div_kT, double betamax ) const
+    inline void SABCellEval<AI,IO>::addIntegralWithinKinematicBoundsBelowBetamax( StableSum& sum, EDivKT e, double betamax ) const
     {
-      if ( m_data.beta.first >= betamax || m_data.beta.second <= -ekin_div_kT )
+      if ( m_data.beta.first >= betamax || m_data.beta.second <= -e.dbl() )
         return;//likely excludes most cells if [ekin_div_kT,betamax] is a narrow threshold.
       if ( m_data.beta.second <= betamax ) {
-        m_data.integralWKB( sum, ekin_div_kT );
+        m_data.integralWKB( sum, e );
       } else {
-        m_data.splitAtBeta( betamax, IgnorePart::Above ).integralWKB( sum, ekin_div_kT );
+        m_data.splitAtBeta( betamax, IgnorePart::Above ).integralWKB( sum, e );
       }
     }
 
     template< InterpolationScheme AI, SABInterpolationOrder IO>
-    inline double SABCellEval<AI,IO>::integralWithinKinematicBounds( double ekin_div_kT ) const
+    inline double SABCellEval<AI,IO>::integralWithinKinematicBounds( EDivKT e ) const
     {
-      if ( m_data.beta.second <= -ekin_div_kT )
+      if ( m_data.beta.second <= -e.dbl() )
         return 0.0;
       StableSum sum;
-      m_data.integralWKB( sum, ekin_div_kT );
+      m_data.integralWKB( sum, e );
       return sum.sum();
     }
 
     template< InterpolationScheme AI, SABInterpolationOrder IO>
-    void SABCellEval<AI,IO>::addIntegralWithinKinematicBounds( StableSum& sum, double ekin_div_kT ) const
+    void SABCellEval<AI,IO>::addIntegralWithinKinematicBounds( StableSum& sum, EDivKT e ) const
     {
-      if ( !(m_data.beta.second <= -ekin_div_kT) )
-        m_data.integralWKB( sum, ekin_div_kT );
+      if ( !(m_data.beta.second <= -e.dbl()) )
+        m_data.integralWKB( sum, e );
     }
 
     inline NAlphaCells::NAlphaCells( const VectD& alphaGrid ) ncnoexceptndebug

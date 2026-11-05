@@ -105,7 +105,7 @@ namespace NCRYSTAL_NAMESPACE {
     public:
 
       RefCellSampler() = default;//invalid object, for later assignment
-      RefCellSampler( const CellData& cell, double E_div_kT );
+      RefCellSampler( const CellData& cell, EDivKT );
       ~RefCellSampler();
 
       RefCellSampler( RefCellSampler&& );

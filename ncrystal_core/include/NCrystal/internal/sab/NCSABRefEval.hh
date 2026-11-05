@@ -48,7 +48,7 @@ namespace NCRYSTAL_NAMESPACE {
       NeutronEnergy m_ekin;
       Temperature m_temp;
       double m_kT;
-      double m_ekin_div_kT = -1.0;
+      EDivKT m_ekin_div_kT;
       double m_acceptanceRate = -1.0;
       double m_xsect_val = -1.0;
     public:
@@ -104,7 +104,7 @@ namespace NCRYSTAL_NAMESPACE {
         auto cell = m_sabeval.getCell( m_cell_idx.at(cell_contrib_nbr) );
         while ( true ) {
           result.alphaBeta = cell.sample(rng);
-          if ( result.alphaBeta.second < -m_ekin_div_kT )
+          if ( result.alphaBeta.second < -m_ekin_div_kT.dbl() )
             continue;
           auto alims = getAlphaLimits( m_ekin_div_kT, result.alphaBeta.second );
           if ( valueInInterval( alims.first, alims.second, result.alphaBeta.first ) )

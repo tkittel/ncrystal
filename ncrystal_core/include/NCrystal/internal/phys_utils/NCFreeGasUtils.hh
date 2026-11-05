@@ -144,11 +144,11 @@ namespace NCRYSTAL_NAMESPACE {
   inline PairDD FreeGasSampler::sampleAlphaBeta( RNG& rng ) const
   {
     double beta = sampleBeta(rng);
-    if ( beta < -m_c || muIsotropicAtBeta(beta,m_c) ) {
+    if ( beta < -m_c || muIsotropicAtBeta(beta,EDivKT{m_c}) ) {
       nc_assert( beta >= -m_c_real*1.001 );
       //close to kinematical end-point, or neutron has such an extreme energy
       //that it triggered various code-paths resulting in -m_c_real<beta<-m_c.
-      auto alim = getAlphaLimits( m_c_real, beta );
+      auto alim = getAlphaLimits( EDivKT{m_c_real}, beta );
       double alpha = alim.first+rng.generate()*(alim.second-alim.first);
       return std::make_pair(ncclamp(alpha,alim.first,alim.second), beta);
     }
@@ -158,7 +158,7 @@ namespace NCRYSTAL_NAMESPACE {
   inline PairDD FreeGasSampler::sampleDeltaEMu( RNG& rng ) const
   {
     double beta = sampleBeta(rng);
-    if ( beta <= -m_c || muIsotropicAtBeta(beta,m_c) ) {
+    if ( beta <= -m_c || muIsotropicAtBeta(beta,EDivKT{m_c}) ) {
       nc_assert( beta >= -m_c_real*1.001 );
       //close to kinematical end-point, or neutron has such an extreme energy
       //that it triggered various code-paths resulting in -m_c_real<beta<-m_c.

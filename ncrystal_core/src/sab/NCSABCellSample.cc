@@ -122,14 +122,13 @@ NC::PairDD NCS::FullCellSampler::sampleAlphaBeta( RNG& rng )
 namespace NCRYSTAL_NAMESPACE {
   namespace SABUtils {
     namespace {
-      Optional<PairDD> findActiveAlphaRange( const CellData& c, double E_div_kT )
+      Optional<PairDD> findActiveAlphaRange( const CellData& c, EDivKT e )
       {
         double a1 = c.a1;
         double a2 = c.a2;
         const double b1 = c.b1;
         const double b2 = c.b2;
-        const double e = E_div_kT;
-        if (c.b2 <= -e)
+        if (c.b2 <= -e.dbl())
           return NullOpt;//no overlap
         //fixme: reuse sqrt(e) in the next calls?:
         const double ap2 = getAlphaPlus(e,b2);//alpha^+(b2)
@@ -137,7 +136,7 @@ namespace NCRYSTAL_NAMESPACE {
           return NullOpt;//no overlap
         const double am2 = getAlphaMinus(e,b2);//alpha^-(b2)
         double am1(-1.0);
-        if ( b1 >= -e ) {
+        if ( b1 >= -e.dbl() ) {
           am1 = getAlphaMinus(e,b1);//alpha^-(b1)
         }
         //snap along alpha:
@@ -155,7 +154,7 @@ namespace NCRYSTAL_NAMESPACE {
 
       class RCSImpl final : private NoCopyMove {
         CellData m_cell;
-        double m_e;//E/kT
+        EDivKT m_e;
         double m_alow = -1.0, m_aup=-1.0;//active alpha range.
         struct AlphaPtGeom {
           double blow, bup, bmid, bwidth;
@@ -177,7 +176,7 @@ namespace NCRYSTAL_NAMESPACE {
           if ( bl >= m_cell.b1 && bu <= m_cell.b2 ) {
             res.bmid = a;
             //Exactly 4*sqrt(e*a) (bu-bl would cancel for narrow bands):
-            res.bwidth = 4.0 * std::sqrt( m_e * a );
+            res.bwidth = 4.0 * std::sqrt( m_e.dbl() * a );
           } else {
             res.bmid = 0.5*(res.blow+res.bup);
             res.bwidth = res.bup - res.blow;
@@ -220,11 +219,11 @@ namespace NCRYSTAL_NAMESPACE {
         }
 
       public:
-        RCSImpl( const CellData& cell, double E_div_kT )
-          : m_cell(cell), m_e(E_div_kT)
+        RCSImpl( const CellData& cell, EDivKT e )
+          : m_cell(cell), m_e(e)
         {
           {
-            auto arange = findActiveAlphaRange( cell, E_div_kT );
+            auto arange = findActiveAlphaRange( cell, e );
             if (!arange.has_value())
               NCRYSTAL_THROW(BadInput,"RefCellSampler can not be used with"
                              " cell with no phasespace overlap");
@@ -249,14 +248,14 @@ namespace NCRYSTAL_NAMESPACE {
               if ( valueInInterval(m_alow,m_aup,a) )
                 special_avals.push_back(a);
             };
-            addIfValid( m_e );
+            addIfValid( m_e.dbl() );
             addIfValid( m_cell.b1/3 );
             addIfValid( m_cell.b2/3 );
-            if ( m_cell.b1 + m_e >= 0.0 ) {
+            if ( m_cell.b1 + m_e.dbl() >= 0.0 ) {
               addIfValid( getAlphaMinus(m_e,m_cell.b1) );
               addIfValid( getAlphaPlus(m_e,m_cell.b1) );
             }
-            if ( m_cell.b2 + m_e >= 0.0 ) {
+            if ( m_cell.b2 + m_e.dbl() >= 0.0 ) {
               addIfValid( getAlphaMinus(m_e,m_cell.b2) );
               addIfValid( getAlphaPlus(m_e,m_cell.b2) );
             }
@@ -352,8 +351,8 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-NCS::RefCellSampler::RefCellSampler( const CellData& cell, double E_div_kT )
-  : m_impl(static_cast<void*>(new RCSImpl(cell,E_div_kT)))
+NCS::RefCellSampler::RefCellSampler( const CellData& cell, EDivKT e )
+  : m_impl(static_cast<void*>(new RCSImpl(cell,e)))
 {
 }
 
