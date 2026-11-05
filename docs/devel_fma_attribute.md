@@ -27,6 +27,12 @@ CPU dispatch. Internal NCrystal use only. Quick rules:
    `for (std::size_t i = 0; i < n; ++i)` loop instead.
 7. `nc_assert` (direct or indirect) are OK, since we do not apply the fma
    attribute in debug builds.
+8. Only primitives (`double`, integers, pointers to them) in the decorated
+   function: no strong types such as `NeutronEnergy` or `EDivKT`, neither
+   as parameters nor locals. Unwrap at the call site, and call `detail::raw_*`
+   versions of typed helpers (e.g. `detail::raw_getBetaMinus`). Nor may it
+   throw in release builds, directly or via anything it calls (no
+   `NCRYSTAL_THROW`, no `nc_assert_always`); `nc_assert` is fine (rule 7).
 
 Detailed reasoning given below for reference.
 
@@ -140,6 +146,13 @@ is confirmed (same minimal-repro method) to hit the identical undefined
 reference in an optimised Clang build, completely unprotected by this
 fix, which is why rule 7 keeps it as a real per-function audit item
 rather than folding it into "handled automatically."
+
+**Only primitives inside the decorated function (rule 8).** These are
+low-level numerical kernels, where the concerns are hardware FMA and
+auto-vectorisation. Strong types also hit the rule 6/7 Clang bug (confirmed
+with Clang 18.1.3, optimised build): constructing an `EDivKT` (via its
+inherited `EncapsulatedValue` constructor) inside a decorated function gives
+an undefined reference to that constructor at link time.
 
 **ARM / non-x86.** Not a rule to apply -- this needs no attention during
 everyday work, since the macro is already a safe no-op there and code must
