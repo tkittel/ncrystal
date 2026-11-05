@@ -27,7 +27,6 @@ Internal implementation details for utilities in ncmat.py
 
 __all__ = []
 
-#Fixme: reconsider this non-lazy import
 import _thread
 
 
