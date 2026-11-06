@@ -70,10 +70,6 @@ namespace NCRYSTAL_NAMESPACE {
       //NCIsoXSUtils.hh), agreeing to within rounding:
       IsoXSTable createXSTabulation() const;
 
-      //Sample a scattering event in (dE,mu) or (alpha,beta) space, with or
-      //without diagnostics (fixme: needed?):
-      ScatterOutcomeIsotropic sampleScatter( RNG&, NeutronEnergy ) const;
-
       struct AlphaBetaOutcome {
         double alpha, beta;
         unsigned ntries;
@@ -83,12 +79,6 @@ namespace NCRYSTAL_NAMESPACE {
       //Below this E/kT, beta is sampled at that value and mu is isotropic
       //(both exact to ~1e-8, while mu from alpha degrades as eps/sqrt(E/kT)):
       static constexpr double lowEFloorEDivKT = 1e-16;
-
-      struct ScatOutcomeDiag {
-        ScatterOutcomeIsotropic ekinmu;
-        AlphaBetaOutcome alphabeta;
-      };
-      ScatOutcomeDiag sampleScatterDiag( RNG&, NeutronEnergy ) const;
 
       bool hasSampleSupport() const;
 

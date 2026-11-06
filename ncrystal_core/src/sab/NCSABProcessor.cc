@@ -262,8 +262,6 @@ namespace NCRYSTAL_NAMESPACE {
         using AlphaBetaOutcome = SABProcessor::AlphaBetaOutcome;
         AlphaBetaOutcome sampleAlphaBeta( RNG&,
                                           NeutronEnergy ) const;
-        ScatterOutcomeIsotropic
-        ab2scatout( RNG&, NeutronEnergy, const AlphaBetaOutcome& ) const;
 
         void toJSON( std::ostream& ) const;
 
@@ -1272,20 +1270,6 @@ namespace NCRYSTAL_NAMESPACE {
         return ncmax( 0.0, std::sqrt( t ) * m_sIntegralSmooth.value().eval( t ) );
       }
 
-      ScatterOutcomeIsotropic
-      SABProcImpl::ab2scatout( RNG& rng,
-                               NeutronEnergy ekin,
-                               const AlphaBetaOutcome& alphabeta ) const
-      {
-        const EDivKT floorEDivKT{ lowEFloorEDivKT };
-        auto r = convertABToDeltaEMuWithIsotropicFallback( alphabeta.alpha,
-                                                           alphabeta.beta,
-                                                           ekin, m_kT, rng,
-                                                           floorEDivKT );
-        return { NeutronEnergy{ ncmax( 0.0, ekin.dbl() + r.deltaE ) },
-                 CosineScatAngle{ r.mu } };
-      }
-
 
 
       SABProcessor::AlphaBetaOutcome
@@ -1590,22 +1574,6 @@ NCS::SABProcessor::EPtInfo NCS::SABProcessor::getEMaxInfo() const
   res.ekin = NeutronEnergy{ res.E_div_kT.dbl() * sp->m_kT };
   res.crossSectionUnitSigmaBound
     = CrossSect{ res.phaseSpaceIntegral * 0.25 / res.E_div_kT.dbl() };
-  return res;
-}
-
-NC::ScatterOutcomeIsotropic
-NCS::SABProcessor::sampleScatter( RNG& rng, NeutronEnergy ekin ) const
-{
-  auto alphabeta = sp_cimpl(m_impl)->sampleAlphaBeta(rng,ekin);
-  return sp_cimpl(m_impl)->ab2scatout( rng, ekin, alphabeta );
-}
-
-NCS::SABProcessor::ScatOutcomeDiag
-NCS::SABProcessor::sampleScatterDiag( RNG& rng, NeutronEnergy ekin ) const
-{
-  ScatOutcomeDiag res;
-  res.alphabeta = sp_cimpl(m_impl)->sampleAlphaBeta(rng,ekin);
-  res.ekinmu = sp_cimpl(m_impl)->ab2scatout( rng, ekin, res.alphabeta );
   return res;
 }
 
