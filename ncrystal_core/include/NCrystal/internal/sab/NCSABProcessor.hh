@@ -82,8 +82,7 @@ namespace NCRYSTAL_NAMESPACE {
 
       bool hasSampleSupport() const;
 
-      //fixme: also a streamJSONSummary?
-      void toJSON( std::ostream& ) const;
+      void toJSONFullDiagnostics( std::ostream& ) const;
 
       //Stream information to JSON (appropriate for usage in a Process). If an
       //optional sigma_scale is provided (which would be the elemental cross

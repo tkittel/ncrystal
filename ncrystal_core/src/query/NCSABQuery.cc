@@ -310,7 +310,7 @@ namespace NCRYSTAL_NAMESPACE {
         os << "{\"extender\":";
         streamJSON( os, use_sct ? "SCT" : "FreeGas" );
         os << ",\"sabproc\":";
-        spe->processor().toJSON(os);
+        spe->processor().toJSONFullDiagnostics(os);
         os << ",\"sample\":";
         if ( !nsample ) {
           streamJSON(os,json_null_t{});
@@ -349,7 +349,7 @@ namespace NCRYSTAL_NAMESPACE {
                          SABProcessor::SampleSupport::YES,
                          SABProcessor::StoreExtraDiagnostics::YES );
         os << "{\"sabproc\":";
-        sp.toJSON(os);
+        sp.toJSONFullDiagnostics(os);
         auto rng = createBuiltinRNG( seed );
         VectD meantries;
         for ( auto e : sp.getEDivKTGrid() ) {
