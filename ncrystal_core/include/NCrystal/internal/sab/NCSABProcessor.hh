@@ -31,17 +31,17 @@ namespace NCRYSTAL_NAMESPACE {
 
     class SABProcessor final : public UniqueID {
 
-      // Class which processes an S(alpha,beta) table and provides both cross
-      // sections and sampling capabilities. In addition to an understanding of
-      // which cells are touched or covered by kinematic bounds of various
-      // energies (provided by SABSurveyor), this crucially depends on
-      // establishing a grid of energy values. At each energy point in this
-      // grid, the S(alpha,beta) table is integrated in order to provide both
-      // data needed for cross-sections, as well as sufficient per-cell integral
-      // information for an efficient sampling of scattering events later.
-
-      // fixme: more details here or elsewhere, including about egrid, algs,
-      // etc.
+      // Processes an S(alpha,beta) table to provide cross sections and
+      // sampling. Cross sections are the integral of S (as interpolated within
+      // each table cell) within the kinematic boundary, to the accuracy set in
+      // SABCfg::Cfg. Sampled (alpha,beta) values follow that same S exactly.
+      // Both hold up to the energy of getEMaxInfo(), above which SABExtended
+      // provides the extension.
+      //
+      // All expensive work happens in the constructor, at a cost depending on
+      // the table size and SABCfg::Cfg. Afterwards, cross sections and
+      // sampling are fast at all energies. Results are reproducible: identical
+      // across platforms for the same input and RNG stream.
 
     public:
 
@@ -50,6 +50,8 @@ namespace NCRYSTAL_NAMESPACE {
       enum class SampleSupport { YES, NO };
       enum class StoreExtraDiagnostics { YES, NO };
 
+      //The egrid argument follows the convention of DI_ScatKnl::energyGrid()
+      //(NCInfoTypes.hh), and can be null:
       SABProcessor( const SABCfg::Cfg& cfg,
                     shared_obj<const SABData>,
                     std::shared_ptr<const VectD> egrid,
@@ -106,7 +108,7 @@ namespace NCRYSTAL_NAMESPACE {
       };
       EPtInfo getEMaxInfo() const;
 
-      //For reference, access the gridded results (fixme: not just for ref?):
+      //For reference, access the gridded results:
       const VectD& getEDivKTGrid() const;//[units of kT]
       const VectD& getPhaseSpaceIntegralAtGrid() const;
 
