@@ -263,7 +263,7 @@ namespace NCRYSTAL_NAMESPACE {
         AlphaBetaOutcome sampleAlphaBeta( RNG&,
                                           NeutronEnergy ) const;
 
-        void toJSON( std::ostream& ) const;
+        void toJSONFullDiagnostics( std::ostream& ) const;
 
         double m_kT;
         double m_invkT;
@@ -1427,7 +1427,7 @@ namespace NCRYSTAL_NAMESPACE {
         }
       }
 
-      void SABProcImpl::toJSON( std::ostream& os ) const
+      void SABProcImpl::toJSONFullDiagnostics( std::ostream& os ) const
       {
         //Lots of diagnostics: Things related to egrid search (like how many
         //calls needed for root finding, how emin/emax were determined, how many
@@ -1605,9 +1605,9 @@ NCS::SABProcessor& NCS::SABProcessor::operator=( SABProcessor&& o ) noexcept
   return *this;
 }
 
-void NCS::SABProcessor::toJSON( std::ostream& os ) const
+void NCS::SABProcessor::toJSONFullDiagnostics( std::ostream& os ) const
 {
-  return sp_cimpl(m_impl)->toJSON(os);
+  return sp_cimpl(m_impl)->toJSONFullDiagnostics(os);
 }
 
 bool NCS::SABProcessor::hasSampleSupport() const
