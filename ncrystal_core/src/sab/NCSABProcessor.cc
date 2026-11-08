@@ -957,11 +957,11 @@ namespace NCRYSTAL_NAMESPACE {
           const std::size_t j = ( i == 0 ? 0 : ncmin( i - 1, n - 4 ) );
           double lag = 0.0;
           for ( auto a : ncrange( j, j + 4 ) ) {
-            double w = g[a];
+            double w = 1.0;
             for ( auto b : ncrange( j, j + 4 ) )
               if ( b != a )
                 w *= ( sm - lx[b] ) / ( lx[a] - lx[b] );
-            lag += w;
+            lag = ncfma( g[a], w, lag );
           }
           const double h = interp.eval( tm );
           if ( ncabs( h - lag ) > tol * ncmax( ncabs( lag ), ncabs( h ) ) )
@@ -1032,7 +1032,7 @@ namespace NCRYSTAL_NAMESPACE {
           for ( auto i : flagged ) {
             const double la = std::log( x[i] ), lb = std::log( x[i+1] );
             for ( auto w : check_fractions ) {
-              const double tc = std::exp( la + w * ( lb - la ) );
+              const double tc = std::exp( ncfma( w, lb - la, la ) );
               if ( tc > x[i] && tc < x[i+1] )
                 tnew.push_back( tc );
             }
@@ -1049,8 +1049,9 @@ namespace NCRYSTAL_NAMESPACE {
                                                cfg.integScheme );
           VectD failed;
           for ( auto& nd : newnodes ) {
-            const double sint_interp = std::sqrt( nd.t ) * interp.eval( nd.t );
-            if ( ncabs( sint_interp - nd.sint ) > tol * ncabs( nd.sint ) )
+            const double diff = ncfma( std::sqrt( nd.t ), interp.eval( nd.t ),
+                                       -nd.sint );
+            if ( ncabs( diff ) > tol * ncabs( nd.sint ) )
               failed.push_back( nd.t );
           }
           std::vector<EGridNode> merged;
@@ -1230,7 +1231,7 @@ namespace NCRYSTAL_NAMESPACE {
           const double gslope = m_sIntegralSmooth.value().nodeSlopes().front();
           if ( !( ncabs( 2.0 * t0 * gslope ) <= 0.1 * ncabs( gvals.front() ) ) ) {
             const double expected = 0.5 * m_sIntegral.front() / t0;
-            const double actual = expected + std::sqrt( t0 ) * gslope;
+            const double actual = ncfma( std::sqrt( t0 ), gslope, expected );
             NCRYSTAL_THROW2(CalcError,"Integral(S(alpha,beta)) over available"
                             " phasespace does not appear to decrease"
                             " as sqrt(E) at low E (actual slope was "
@@ -1555,8 +1556,9 @@ NC::IsoXSTable NCS::SABProcessor::createXSTabulation() const
     const double h = x[i+1] - x[i];
     const double d0 = h * m[i], d1 = h * m[i+1];
     res.q.insert( res.q.end(), { c * g0, c * d0,
-                                 c * ( 3.0 * ( g1 - g0 ) - 2.0 * d0 - d1 ),
-                                 c * ( 2.0 * ( g0 - g1 ) + d0 + d1 ) } );
+                                 c * ncfma( 3.0, g1 - g0,
+                                            -ncfma( 2.0, d0, d1 ) ),
+                                 c * ncfma( 2.0, g0 - g1, d0 + d1 ) } );
   }
   //Below the grid xs=K*sqrt(kT)/(4*sqrt(e)), above it xs=(kT/4)*Sint(Emax)/e
   //(cf. crossSectionUnitSigmaBound):
