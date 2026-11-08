@@ -31,7 +31,10 @@
 // median-combined per-row estimators result):                               //
 //                                                                           //
 //   Teff: Wick's second-moment rule on the asymmetric kernel,               //
-//         Var_beta(alpha) = 2*alpha*(m_n/M)*(Teff/T)                        //
+//         Var_beta(alpha) = 2*alpha*(m_n/M)*(Teff/T), for the full kernel   //
+//         incl. the excluded elastic line (raw, not m0-normalised moments). //
+//         Only rows where the elastic part is negligible are used, since    //
+//         stored (e.g. ENDF) kernels can violate the rule at lower alpha.   //
 //         (NCrystal's alpha convention is alpha=hbar^2*q^2/(2*m_n*kT),      //
 //         cf. convertAlphaBetaToDeltaEMu, i.e. A times the ENDF alpha).     //
 //   msd:  the Debye-Waller zeroth-moment rule for kernels with the          //
@@ -62,25 +65,10 @@ namespace NCRYSTAL_NAMESPACE {
     TeffMSD estimateTeffMSD( const SABData& );
 
     struct Options {
-      //NB: the per-row validity gates (floor-marker detection, wing coverage,
-      //ridge resolution, msd m0 window, ...) are hardcoded constants in the
-      //.cc: their values follow from error-propagation or convergence arguments
-      //rather than tuning, as confirmed by a sensitivity scan (each varied x2
-      //up/down over 263 ENDF8-, VDOS- and tests/data-derived kernels: accepted
-      //results flat at <<0.1%).  The single genuinely data-derived value is
-      //center_tol:
-      //
-      //Per-row self-validation via the first-moment (recoil) sum rule: only
-      //rows whose measured mean matches the expected recoil center -alpha*m_n/M
-      //to within this relative tolerance contribute to Teff. This certifies the
-      //row's sum-rule integrity: stored (e.g.  ENDF-converted) kernels break
-      //the delicate detailed-balance cancellation at small alpha (finite
-      //precision/grids), where the estimators otherwise produce garbage
-      //amplified by 1/alpha, while the large-alpha deep-recoil rows (exactly
-      //the SCT regime) plateau at the true value. Genuinely non-Gaussian
-      //kernels (e.g. cryogenic ortho-H) have no conforming rows at all and
-      //correctly yield "not inferable":
-      double center_tol = 0.05;
+      //NB: the per-row validity gates (floor-marker detection, coverage,
+      //ridge resolution, msd m0 window, first moment check, ...) are
+      //hardcoded constants in the .cc: their values follow from
+      //error-propagation or convergence arguments rather than tuning.
       bool collect_diagnostics = false;
     };
 
