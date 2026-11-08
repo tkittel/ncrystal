@@ -46,7 +46,7 @@ d = {'matnum':{"Si":37},
 m = EndfMetaData()
 m.update_from_dict(d)
 
-test_cfg('Si_sg227.ncmat;vdoslux=1;incoh_elas=false', elastic_mode='scaled',
+test_cfg('Si_sg227.ncmat;vdoslux=2001;incoh_elas=false', elastic_mode='scaled',
           check_edge_positions=True, endf_metadata=d,
           ref_parsed={'tsl_Si.endf':'0 0 1 451 7 2 7 4 7 451'},
           check_teff=True,
