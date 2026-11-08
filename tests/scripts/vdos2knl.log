@@ -1,50 +1,50 @@
-Calling nc_vdos.extractKnl( m=27, T=0.5, vdoslux=1, target_emax=0 )
- Got alpha : NumpyArray( shape=100 )
- Got beta : NumpyArray( shape=200 )
- Got sab : NumpyArray( shape=20000 )
+Calling nc_vdos.extractKnl( m=27, T=0.5, vdoslux=2001, target_emax=0 )
+ Got alpha : NumpyArray( shape=110 )
+ Got beta : NumpyArray( shape=240 )
+ Got sab : NumpyArray( shape=26400 )
  Got mass_amu : 27.0
  Got temperature : 0.5
  Got scatxs : 1.0
- Got suggested_emax : 1.0
+ Got suggested_emax : 5.0
 
-Calling nc_vdos.extractKnl( m=27, T=300, vdoslux=1, target_emax=0 )
- Got alpha : NumpyArray( shape=100 )
- Got beta : NumpyArray( shape=200 )
- Got sab : NumpyArray( shape=20000 )
+Calling nc_vdos.extractKnl( m=27, T=300, vdoslux=2001, target_emax=0 )
+ Got alpha : NumpyArray( shape=110 )
+ Got beta : NumpyArray( shape=240 )
+ Got sab : NumpyArray( shape=26400 )
  Got mass_amu : 27.0
  Got temperature : 300.0
  Got scatxs : 1.0
- Got suggested_emax : 1.0
+ Got suggested_emax : 5.0
 
-Calling nc_vdos.extractKnl( m=27, T=300, vdoslux=1, target_emax=50 )
- Got alpha : NumpyArray( shape=100 )
- Got beta : NumpyArray( shape=200 )
- Got sab : NumpyArray( shape=20000 )
+Calling nc_vdos.extractKnl( m=27, T=300, vdoslux=2001, target_emax=50 )
+ Got alpha : NumpyArray( shape=110 )
+ Got beta : NumpyArray( shape=240 )
+ Got sab : NumpyArray( shape=26400 )
  Got mass_amu : 27.0
  Got temperature : 300.0
  Got scatxs : 1.0
  Got suggested_emax : 50.0
 
-Calling nc_vdos.extractKnl( m=27, T=300, vdoslux=4, target_emax=0 )
- Got alpha : NumpyArray( shape=800 )
- Got beta : NumpyArray( shape=1600 )
- Got sab : NumpyArray( shape=1280000 )
+Calling nc_vdos.extractKnl( m=27, T=300, vdoslux=2004, target_emax=0 )
+ Got alpha : NumpyArray( shape=470 )
+ Got beta : NumpyArray( shape=1080 )
+ Got sab : NumpyArray( shape=507600 )
  Got mass_amu : 27.0
  Got temperature : 300.0
  Got scatxs : 1.0
- Got suggested_emax : 8.0
+ Got suggested_emax : 5.0
 
-Calling nc_vdos.extractKnl( m=27, T=300, vdoslux=4, target_emax=0.5 )
- Got alpha : NumpyArray( shape=800 )
- Got beta : NumpyArray( shape=1600 )
- Got sab : NumpyArray( shape=1280000 )
+Calling nc_vdos.extractKnl( m=27, T=300, vdoslux=2004, target_emax=0.5 )
+ Got alpha : NumpyArray( shape=470 )
+ Got beta : NumpyArray( shape=1080 )
+ Got sab : NumpyArray( shape=507600 )
  Got mass_amu : 27.0
  Got temperature : 300.0
  Got scatxs : 1.0
  Got suggested_emax : 0.5
 
-Calling nc_vdos.extractKnl( m=27, T=0.5, vdoslux=1, target_emax=5000 )
-Caught expected NCCalcError('VDOS expansion too slow - can not reach E=5000eV after 10000 phonon convolutions (likely causes: either the target energy value is too high, vdoslux too low, the temperature too high, or the VDOS is very unusual).')
+Calling nc_vdos.extractKnl( m=27, T=0.5, vdoslux=2001, target_emax=5000 )
+Caught expected NCCalcError: VDOS expansion would require excessive resources to reach E=5000eV
 T=0.1K: G1 binwidth/kT <= 0.25: True  |DB deviation| < 2.5%: True
 T=1K: G1 binwidth/kT <= 0.25: True  |DB deviation| < 2.5%: True
 T=5K: G1 binwidth/kT <= 0.25: True  |DB deviation| < 2.5%: True
