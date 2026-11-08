@@ -270,6 +270,9 @@ namespace NCRYSTAL_NAMESPACE {
     //performance to Neumaier summation.
     //fixme: this class needs unit tests
     void add(double);
+    //Adds a*b, with the multiplication explicitly fused into the summation
+    //(a plain add(a*b) might or might not be fused, depending on platform):
+    void addProduct(double a, double b);
     void add(const StableSumKahan& o) { add(o.sum()); }
     double sum() const;
     double sumUncorrected() const { return m_sum; }//not for normal usage
@@ -718,6 +721,15 @@ inline void NCrystal::StableSumKahan::add( double x )
   m_sum = t;
 }
 
+inline void NCrystal::StableSumKahan::addProduct( double a, double b )
+{
+  nc_assert( a*b>=0.0 );
+  const double y = ncfma( a, b, -m_correction );
+  const double t = m_sum + y;
+  m_correction = (t - m_sum) - y;
+  m_sum = t;
+}
+
 inline void NCrystal::StableSum::add( double x )
 {
   const double t = m_sum + x;
@@ -767,7 +779,7 @@ inline bool NCrystal::floateq(double a, double b, double rtol, double atol)
   if ( std::isinf(a) || std::isinf(b) ) {
     return a == b;
   } else {
-    return ncabs(a-b) <= (0.5 * rtol) * ( ncabs(a) + ncabs(b) ) + atol;
+    return ncabs(a-b) <= ncfma( 0.5 * rtol, ncabs(a) + ncabs(b), atol );
   }
 }
 
