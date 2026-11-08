@@ -1,15 +1,15 @@
 ==> stdlib::Al_sg225.ncmat;temp=20K;comp=inelas;knllux=3
   E=0 eV: checks OK
   E=4.94066e-324 eV: checks OK
-  E=1e-300 eV: xs*sqrt(E/eV)=2.074e-06 barn, checks OK
-  E=1e-20 eV: xs*sqrt(E/eV)=2.074e-06 barn, checks OK
-  E=1e-12 eV: xs*sqrt(E/eV)=2.074e-06 barn, checks OK
-  E=1e-08 eV: xs*sqrt(E/eV)=2.074e-06 barn, checks OK
+  E=1e-300 eV: xs*sqrt(E/eV)=2.059e-06 barn, checks OK
+  E=1e-20 eV: xs*sqrt(E/eV)=2.059e-06 barn, checks OK
+  E=1e-12 eV: xs*sqrt(E/eV)=2.059e-06 barn, checks OK
+  E=1e-08 eV: xs*sqrt(E/eV)=2.059e-06 barn, checks OK
 ==> stdlib::Polyethylene_CH2.ncmat;comp=inelas;knllux=3
   E=0 eV: checks OK
   E=4.94066e-324 eV: checks OK
-  E=1e-300 eV: xs*sqrt(E/eV)=0.5549 barn, checks OK
-  E=1e-20 eV: xs*sqrt(E/eV)=0.5549 barn, checks OK
-  E=1e-12 eV: xs*sqrt(E/eV)=0.5549 barn, checks OK
-  E=1e-08 eV: xs*sqrt(E/eV)=0.5549 barn, checks OK
+  E=1e-300 eV: xs*sqrt(E/eV)=0.5495 barn, checks OK
+  E=1e-20 eV: xs*sqrt(E/eV)=0.5495 barn, checks OK
+  E=1e-12 eV: xs*sqrt(E/eV)=0.5495 barn, checks OK
+  E=1e-08 eV: xs*sqrt(E/eV)=0.5495 barn, checks OK
 Caught expected NCBadInput('The S(alpha,beta) grid (alpha in [2,10], beta in [-1,1]) does not cover the line alpha=beta (beta>=0), which neutrons of all energies down to E=0 can reach.')
