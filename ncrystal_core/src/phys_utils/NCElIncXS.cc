@@ -97,8 +97,9 @@ namespace NCRYSTAL_NAMESPACE {
           const double d0 = h * ea;
           const double d1 = h * stable_exp( -b );
           res.p.insert( res.p.end(), { fa, d0,
-                                       3.0 * ( fb - fa ) - 2.0 * d0 - d1,
-                                       2.0 * ( fa - fb ) + d0 + d1 } );
+                                       ncfma( 3.0, fb - fa,
+                                              -ncfma( 2.0, d0, d1 ) ),
+                                       ncfma( 2.0, fa - fb, d0 + d1 ) } );
           res.t.push_back( b );
         }
         return res;
@@ -209,7 +210,7 @@ NC::CrossSect NC::ElIncXS::evaluate(NeutronEnergy ekin) const
   double e = kkk*ekin.dbl();
   double xs = 0.0;
   for ( auto& elmdata : m_elm_data )
-    xs += elmdata.second * eval_1mexpmtdivt( elmdata.first * e );
+    xs = ncfma( elmdata.second, eval_1mexpmtdivt( elmdata.first * e ), xs );
   return CrossSect{ xs };
 }
 
@@ -229,7 +230,8 @@ void NC::ElIncXS::evalXSContribsCommul( NeutronEnergy ekin,
   double xs = 0.0;
   unsigned i = 0;
   for ( auto& elmdata : m_elm_data )
-    res[i++] = ( xs += elmdata.second * eval_1mexpmtdivt( elmdata.first * e ) );
+    res[i++] = ( xs = ncfma( elmdata.second,
+                             eval_1mexpmtdivt( elmdata.first * e ), xs ) );
 }
 
 void NC::ElIncXS::evaluateMany( Span<const double> ekin, Span<double> tgt) const
@@ -259,7 +261,7 @@ void NC::ElIncXS::evaluateMany( Span<const double> ekin, Span<double> tgt) const
         buf[i] = eval_1mexpmtdivt( buf[i] );//NB: One day we want to vectorize
                                             //this!
       for( auto i : ncrange(nstep) )
-        tgt_ptr[i] += elmdata.second * buf[i];
+        tgt_ptr[i] = ncfma( elmdata.second, buf[i], tgt_ptr[i] );
     }
     tgt_ptr += nstep;
     ekin_ptr += nstep;
