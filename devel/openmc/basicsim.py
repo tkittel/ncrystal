@@ -117,6 +117,10 @@ def check_results(sp_file):
         print( f' Cone at {np.rad2deg(REF_pos):>5.1f} deg / '
                f'Expected: {REF_val:.2e} +/- {REF_err:.2e} / '
                f'Computed: : {val:.2e} +/- {err:.2e}' )
+    #TEMPORARY: full precision, for updating REF_VALUES/REF_ERRORS:
+    np.set_printoptions(precision=9)
+    print('NEW REF_VALUES =', repr(values))
+    print('NEW REF_ERRORS =', repr(errors))
     return test_result
 
 def plot_tally(sp_file):
