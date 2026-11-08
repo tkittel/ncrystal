@@ -47,6 +47,6 @@ m.update_from_dict(d)
 metadata = EndfMetaData()
 metadata.set_value( 'MATNUM', {"C":37, "H": 38} )
 
-test_cfg( 'Polyethylene_CH2.ncmat;vdoslux=1', material_name='CH2',
+test_cfg( 'Polyethylene_CH2.ncmat;vdoslux=2001', material_name='CH2',
           check_teff=False,
           endf_metadata=metadata, dump_file=False)
