@@ -1,6 +1,6 @@
 # Reference cross sections [barn/atom] vs. energy [eV] for the test "sabxs_testdata".
 # Regenerate with: sabxs_testdata.py --update
-@cfg vdos_paraH2.ncmat;temp=5;vdoslux=2000;knllux=0
+@cfg vdos_paraH2.ncmat;temp=5;vdoslux=0;knllux=0
 1e-10 620.7583
 4.308665e-10 299.0553
 2.782559e-09 117.6804
@@ -39,7 +39,7 @@
 8.180421 19.25466
 35.93814 20.20895
 1000 20.48008
-@cfg vdos_paraH2.ncmat;temp=20;vdoslux=2001;knllux=1
+@cfg vdos_paraH2.ncmat;temp=20;vdoslux=1;knllux=1
 1e-10 18043.125
 1.723466e-09 4346.2127
 2.782559e-09 3420.5083
@@ -78,7 +78,7 @@
 8.180421 19.956251
 35.93814 20.368653
 1000 20.485823
-@cfg vdos_paraH2.ncmat;temp=50;vdoslux=2002;knllux=2
+@cfg vdos_paraH2.ncmat;temp=50;vdoslux=2;knllux=2
 1e-10 92494.2196
 2.782559e-09 17534.4763
 4.308665e-09 14091.0688
@@ -117,7 +117,7 @@
 8.180421 20.4370949
 35.93814 20.4781052
 1000 20.4897569
-@cfg vdos_orthoD2.ncmat;temp=5;vdoslux=2003;knllux=3
+@cfg vdos_orthoD2.ncmat;temp=5;vdoslux=3;knllux=3
 1e-10 38.7167823
 4.308665e-10 18.652117
 2.782559e-09 7.33974467
@@ -156,7 +156,7 @@
 8.180421 3.38723961
 35.93814 3.391657
 1000 3.39291205
-@cfg vdos_orthoD2.ncmat;temp=20;vdoslux=2004;knllux=4
+@cfg vdos_orthoD2.ncmat;temp=20;vdoslux=4;knllux=4
 1e-10 1235.79656
 1.723466e-09 297.677671
 2.782559e-09 234.275025
@@ -195,7 +195,7 @@
 8.180421 3.39397646
 35.93814 3.39319047
 1000 3.39296716
-@cfg vdos_orthoD2.ncmat;temp=50;vdoslux=2005;knllux=5
+@cfg vdos_orthoD2.ncmat;temp=50;vdoslux=5;knllux=5
 1e-10 6695.22196
 2.782559e-09 1269.23887
 4.308665e-09 1019.98696
@@ -234,7 +234,7 @@
 8.180421 3.39691261
 35.93814 3.39385881
 1000 3.39299118
-@cfg vdos_liquidH2.ncmat;temp=14;vdoslux=2000;knllux=1
+@cfg vdos_liquidH2.ncmat;temp=14;vdoslux=0;knllux=1
 1e-10 10434.87
 1.206426e-09 3004.257
 2.782559e-09 1978.182
@@ -273,7 +273,7 @@
 8.180421 15.6922
 35.93814 19.39805
 1000 20.45094
-@cfg vdos_liquidH2.ncmat;temp=20;vdoslux=2001;knllux=2
+@cfg vdos_liquidH2.ncmat;temp=20;vdoslux=1;knllux=2
 1e-10 21928.724
 1.723466e-09 5282.1724
 2.782559e-09 4157.1169
@@ -312,7 +312,7 @@
 8.180421 19.487657
 35.93814 20.261989
 1000 20.48199
-@cfg vdos_liquidH2.ncmat;temp=40;vdoslux=2002;knllux=3
+@cfg vdos_liquidH2.ncmat;temp=40;vdoslux=2;knllux=3
 1e-10 73766.7088
 2.782559e-09 13984.234
 3.446932e-09 12564.4844
@@ -351,7 +351,7 @@
 8.180421 20.1920048
 35.93814 20.4223165
 1000 20.4877519
-@cfg vdos_liquidH2.ncmat;temp=293.15;vdoslux=2003;knllux=4
+@cfg vdos_liquidH2.ncmat;temp=293.15;vdoslux=3;knllux=4
 1e-10 378224.686
 2.782559e-09 71701.4074
 2.52617e-08 23796.8112
@@ -390,7 +390,7 @@
 25.2617 20.4978833
 35.93814 20.4955982
 1000 20.4903855
-@cfg vdos_hydrogen_osc.ncmat;temp=5;vdoslux=2004;knllux=5
+@cfg vdos_hydrogen_osc.ncmat;temp=5;vdoslux=4;knllux=5
 1e-10 3850.06667
 4.308665e-10 1854.8039
 2.782559e-09 729.886098
@@ -429,7 +429,7 @@
 8.180421 20.5536148
 35.93814 20.504628
 1000 20.49071
-@cfg vdos_hydrogen_osc.ncmat;temp=14;vdoslux=2005;knllux=0
+@cfg vdos_hydrogen_osc.ncmat;temp=14;vdoslux=5;knllux=0
 1e-10 23772.72
 1.206426e-09 6844.32217
 2.782559e-09 4506.72849
@@ -468,9 +468,9 @@
 8.180421 20.5885909
 35.93814 20.5125894
 1000 20.4909962
-@cfg vdos_hydrogen_osc.ncmat;temp=30;vdoslux=2000;knllux=2
+@cfg vdos_hydrogen_osc.ncmat;temp=30;vdoslux=0;knllux=2
 @error NCCalcError: VDOS expansion would require excessive resources to reach E=0.1eV (stopped after 525 phonon orders). The VDOS-temperature combination might be too unusual (a lower temperature or higher vdoslux value might help).
-@cfg vdos_clathrate_H.ncmat;temp=5;vdoslux=2001;knllux=3
+@cfg vdos_clathrate_H.ncmat;temp=5;vdoslux=1;knllux=3
 1e-10 0.64923279
 4.308665e-10 0.31277306
 2.782559e-09 0.12307892
@@ -509,7 +509,7 @@
 8.180421 20.274875
 35.93814 20.44118
 1000 20.48843
-@cfg vdos_clathrate_H.ncmat;temp=100;vdoslux=2002;knllux=4
+@cfg vdos_clathrate_H.ncmat;temp=100;vdoslux=2;knllux=4
 1e-10 6872.54633
 2.782559e-09 1302.85322
 8.61733e-09 740.341198
@@ -548,7 +548,7 @@
 8.61733 20.4001492
 35.93814 20.4686007
 1000 20.4894153
-@cfg vdos_clathrate_H.ncmat;temp=293.15;vdoslux=2003;knllux=5
+@cfg vdos_clathrate_H.ncmat;temp=293.15;vdoslux=3;knllux=5
 1e-10 53899.907
 2.782559e-09 10217.9983
 2.52617e-08 3391.23564
@@ -587,7 +587,7 @@
 25.2617 20.4955998
 35.93814 20.493993
 1000 20.4903278
-@cfg vdos_clathrate_O2.ncmat;temp=5;vdoslux=2004;knllux=0
+@cfg vdos_clathrate_O2.ncmat;temp=5;vdoslux=4;knllux=0
 1e-10 15.715292
 4.308665e-10 7.57096807
 2.782559e-09 2.9792362
@@ -626,7 +626,7 @@
 8.180421 3.74007805
 35.93814 3.74416308
 1000 3.74532371
-@cfg vdos_clathrate_O2.ncmat;temp=100;vdoslux=2005;knllux=1
+@cfg vdos_clathrate_O2.ncmat;temp=100;vdoslux=5;knllux=1
 1e-10 2397.5672
 2.782559e-09 454.516939
 8.61733e-09 258.279257
@@ -665,7 +665,7 @@
 8.61733 3.74549016
 35.93814 3.74539651
 1000 3.74536804
-@cfg vdos_clathrate_O2.ncmat;temp=293.15;vdoslux=2000;knllux=3
+@cfg vdos_clathrate_O2.ncmat;temp=293.15;vdoslux=0;knllux=3
 1e-10 8496.81
 2.782559e-09 1610.774
 2.52617e-08 534.6053
@@ -704,7 +704,7 @@
 25.2617 3.738145
 35.93814 3.74029
 1000 3.745185
-@cfg vdos_graphiteoxide_D.ncmat;temp=20;vdoslux=2001;knllux=4
+@cfg vdos_graphiteoxide_D.ncmat;temp=20;vdoslux=1;knllux=4
 1e-10 2.1423587
 1.723466e-09 0.51604885
 2.782559e-09 0.40613476
@@ -743,7 +743,7 @@
 8.180421 3.3570898
 35.93814 3.3847942
 1000 3.3926654
-@cfg vdos_graphiteoxide_D.ncmat;temp=293.15;vdoslux=2002;knllux=5
+@cfg vdos_graphiteoxide_D.ncmat;temp=293.15;vdoslux=2;knllux=5
 1e-10 5785.22917
 2.782559e-09 1096.7266
 2.52617e-08 363.990387
@@ -782,7 +782,7 @@
 25.2617 3.38829209
 35.93814 3.38967848
 1000 3.39284095
-@cfg vdos_graphiteoxide_D.ncmat;temp=1000;vdoslux=2003;knllux=0
+@cfg vdos_graphiteoxide_D.ncmat;temp=1000;vdoslux=3;knllux=0
 1e-10 43554.5749
 2.782559e-09 8256.79665
 7.742637e-08 1565.27341
@@ -821,7 +821,7 @@
 76.59849 3.39341909
 86.1733 3.39336795
 1000 3.39299409
-@cfg Al2O3_Alvdos_from_Al225.ncmat;temp=20;vdoslux=2004;knllux=1
+@cfg Al2O3_Alvdos_from_Al225.ncmat;temp=20;vdoslux=4;knllux=1
 1e-10 0.108088346
 1.723466e-09 0.0260361947
 2.782559e-09 0.0204907011
@@ -860,7 +860,7 @@
 8.180421 2.72713648
 35.93814 2.7879619
 1000 2.80524342
-@cfg Al2O3_Alvdos_from_Al225.ncmat;temp=293.15;vdoslux=2005;knllux=2
+@cfg Al2O3_Alvdos_from_Al225.ncmat;temp=293.15;vdoslux=5;knllux=2
 1e-10 667.748361
 2.782559e-09 126.587447
 2.52617e-08 42.0128468
@@ -899,7 +899,7 @@
 25.2617 2.78977587
 35.93814 2.79456232
 1000 2.80548063
-@cfg Al2O3_Alvdos_from_Al225.ncmat;temp=1000;vdoslux=2000;knllux=4
+@cfg Al2O3_Alvdos_from_Al225.ncmat;temp=1000;vdoslux=0;knllux=4
 1e-10 5161.001
 2.782559e-09 978.3895
 7.742637e-08 185.4774
@@ -938,7 +938,7 @@
 76.59849 2.803636
 86.1733 2.803887
 1000 2.805715
-@cfg Li2O_sg225_LithiumOxide_sabsmall_temp10K.ncmat;vdoslux=2001;knllux=5
+@cfg Li2O_sg225_LithiumOxide_sabsmall_temp10K.ncmat;vdoslux=1;knllux=5
 1e-10 0.59597644
 8.61733e-10 0.20302183
 2.782559e-09 0.11298139
@@ -977,7 +977,7 @@
 8.180421 1.903409
 35.93814 1.9367485
 1000 1.9462208
-@cfg Li2O_sg225_LithiumOxide_sabsmall_temp10K.ncmat;vdoslux=2002;knllux=0
+@cfg Li2O_sg225_LithiumOxide_sabsmall_temp10K.ncmat;vdoslux=2;knllux=0
 1e-10 0.595976435
 8.61733e-10 0.203021824
 2.782559e-09 0.112981386
@@ -1016,5 +1016,5 @@
 8.180421 1.90340902
 35.93814 1.93674852
 1000 1.94622083
-@cfg vdos_hydrogen_osc.ncmat;temp=293.15;vdoslux=2001;knllux=1
+@cfg vdos_hydrogen_osc.ncmat;temp=293.15;vdoslux=1;knllux=1
 @error NCCalcError: VDOS expansion would require excessive resources to reach E=0.1eV (stopped after 3023 phonon orders). The VDOS-temperature combination might be too unusual (a lower temperature or higher vdoslux value might help).

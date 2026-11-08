@@ -147,7 +147,7 @@ def _actualtest( verbose ):
     require(alpc_clone3.getRNGState()=='3a20660a10fd581bd7cddef8fc3f32a2b067bd44')
 
     #Pick Nickel at 1.2 angstrom, to also both vdos + incoherent-elastic + coherent-elastic:
-    _cfgstr3='stdlib::Ni_sg225.ncmat;dcutoff=0.6;vdoslux=2002;knllux=3'
+    _cfgstr3='stdlib::Ni_sg225.ncmat;dcutoff=0.6;vdoslux=2'
     _seed=2543577
     prfct(f'Trying to createScatterIndependentRNG("{_cfgstr3}",{_seed})')
     nipc = NC.createScatterIndependentRNG(_cfgstr3,_seed)
