@@ -35,7 +35,7 @@ namespace NCRYSTAL_NAMESPACE {
       //of magnitude for the floors) over 263 ENDF8-, VDOS- and
       //tests/data-derived kernels moved accepted results by <<0.1%:
       constexpr double opt_alpha_min = 0.1;       //1/alpha blowup guard
-      constexpr double opt_coverage_nsigma = 4.0; //+-4sigma trunc. bias ~1e-4
+      constexpr double opt_trunc_relbias = 1e-4;  //max est. truncation bias
       constexpr unsigned opt_resolution_minpts = 8;//points per +-2sigma
       constexpr double opt_floor_relmin = 10.0;   //S<=relmin*min(S>0) or...
       constexpr double opt_floor_relmax = 1e-30;  //...S<=relmax*max(S)
@@ -105,9 +105,30 @@ namespace NCRYSTAL_NAMESPACE {
       struct RowMoments {
         double m0 = -1.0, mean = -1.0, var = -1.0;
         unsigned npts = 0;
-        double b_first = 0.0, b_last = 0.0;
         unsigned npts_core = 0;//points within +-2 sigma of mean
+        //Estimated contributions to m0 and to the central second moment
+        //(unnormalised) of the parts of the row beyond the beta grid, from
+        //exponential extrapolation of the outermost two points where the
+        //data reaches a grid end (if not decaying there, e.g. noise near the
+        //floor, the edge value is assumed to continue for a full grid width):
+        double tail_m0 = 0.0, tail_m2 = 0.0;
       };
+
+      //Add the tail estimate beyond grid end point (b0,w0), with (b1,w1)
+      //the next point inwards:
+      void addTail( RowMoments& rm, double b0, double w0,
+                    double b1, double w1, double gridwidth )
+      {
+        const double lambda = ( w0 < w1
+                                ? ncmin( gridwidth, ncabs( b1 - b0 )
+                                         / std::log( w1 / w0 ) )
+                                : gridwidth );
+        const double s = ( b0 < b1 ? -1.0 : 1.0 );//outward direction
+        const double d0 = b0 - rm.mean;
+        rm.tail_m0 += w0 * lambda;
+        rm.tail_m2 += w0 * lambda * ( d0*d0 + 2.0*s*d0*lambda
+                                      + 2.0*lambda*lambda );
+      }
 
       RowMoments calcRowMoments( const VectD& beta, const VectD& sab,
                                  std::size_t nalpha, std::size_t ia,
@@ -119,19 +140,23 @@ namespace NCRYSTAL_NAMESPACE {
         double bprev(0.0), wprev(0.0);
         bool have_prev = false;
         const std::size_t nb = beta.size();
+        std::size_t j_first(nb), j_second(nb), j_last(nb), j_prevlast(nb);
         for ( std::size_t j = 0; j < nb; ++j ) {
           const double w = vectAt( sab, j*nalpha + ia );
           if ( !( w > floor ) )
             continue;
           const double b = vectAt( beta, j );
-          if ( !res.npts ) {
-            res.b_first = b;
-          } else {
+          if ( j_first == nb )
+            j_first = j;
+          else if ( j_second == nb )
+            j_second = j;
+          j_prevlast = j_last;
+          j_last = j;
+          if ( res.npts ) {
             const double halfdb = 0.5*( b - bprev );
             m0.add( halfdb*( w + wprev ) );
             m1.add( halfdb*( w*b + wprev*bprev ) );
           }
-          res.b_last = b;
           bprev = b;
           wprev = w;
           have_prev = true;
@@ -162,6 +187,16 @@ namespace NCRYSTAL_NAMESPACE {
           have_prev = true;
         }
         res.var = m2.sum() / res.m0;
+        //Tails beyond the grid ends (only where data reaches them):
+        auto sv = [&sab,nalpha,ia](std::size_t j)
+        { return vectAt( sab, j*nalpha + ia ); };
+        const double gw = beta.back() - beta.front();
+        if ( j_first == 0 )
+          addTail( res, vectAt( beta, j_first ), sv( j_first ),
+                   vectAt( beta, j_second ), sv( j_second ), gw );
+        if ( j_last + 1 == nb )
+          addTail( res, vectAt( beta, j_last ), sv( j_last ),
+                   vectAt( beta, j_prevlast ), sv( j_prevlast ), gw );
         return res;
       }
 
@@ -264,6 +299,10 @@ NC::SABAnalyser::analyse( const SABData& sab, const Options& opt )
         } else if ( !( rm.m0 > opt_msd_m0_low
                        && rm.m0 < opt_msd_m0_high ) ) {
           setstat( RowStatus::M0OutOfWindow, false );
+        } else if ( !( rm.tail_m0 <= opt_trunc_relbias * ( 1.0 - rm.m0 )
+                       * ( -std::log1p( -rm.m0 ) ) ) ) {
+          //relative msd bias is tail_m0/((1-m0)*(-log(1-m0))):
+          setstat( RowStatus::WingsNotCovered, false );
         } else if ( ncabs( calcRowM0Stride2( bgrid, S, na, ia, floor )
                            - rm.m0 )
                     > opt_msd_m0_convergence * ( 1.0 - rm.m0 ) ) {
@@ -282,8 +321,8 @@ NC::SABAnalyser::analyse( const SABData& sab, const Options& opt )
         setstat( RowStatus::AlphaTooLow, true );
         continue;
       }
-      if ( rm.b_first > rm.mean - opt_coverage_nsigma*sigma
-           || rm.b_last < rm.mean + opt_coverage_nsigma*sigma ) {
+      if ( !( rm.tail_m0 <= opt_trunc_relbias * rm.m0
+              && rm.tail_m2 <= opt_trunc_relbias * rm.var * rm.m0 ) ) {
         setstat( RowStatus::WingsNotCovered, true );
         continue;
       }
