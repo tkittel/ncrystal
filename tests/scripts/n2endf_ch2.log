@@ -5,7 +5,7 @@
 {'endf_metadata': EndfMetaData({"ALAB": "MyLAB", "AUTH": "NCrystal", "LIBNAME": "MyLib", "NLIB": 0, "REFERENCE": "REFERENCE", "LREL": 0, "NVER": 1, "MATNUM": {"C": 37, "H": 38}, "ENDATE": "", "EDATE": "MMMYY", "DDATE": "MMMYY", "RDATE": "MMMYY"}),
  'force': True,
  'material_name': 'CH2',
- 'ncmat_cfg': 'Polyethylene_CH2.ncmat;vdoslux=2001'}
+ 'ncmat_cfg': 'Polyethylene_CH2.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#1]
 Initialise nuclear data...
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): ENDF output will not contain a Bragg diffraction component [warn#2]

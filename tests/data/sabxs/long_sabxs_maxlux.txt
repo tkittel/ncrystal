@@ -1,6 +1,6 @@
 # Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxs_maxlux".
 # Regenerate with: long_sabxs_maxlux.py --update
-@cfg stdlib::C_sg227_Diamond.ncmat;temp=293.15;vdoslux=2006;knllux=6
+@cfg stdlib::C_sg227_Diamond.ncmat;temp=293.15;vdoslux=6;knllux=6
 1e-10 275.06738
 2.782559e-09 52.1455077
 2.52617e-08 17.3064472

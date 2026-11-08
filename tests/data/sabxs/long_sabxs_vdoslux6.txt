@@ -1,6 +1,6 @@
 # Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxs_vdoslux6".
 # Regenerate with: long_sabxs_vdoslux6.py --update
-@cfg stdlib::Al_sg225.ncmat;temp=293.15;vdoslux=2006;knllux=0
+@cfg stdlib::Al_sg225.ncmat;temp=293.15;vdoslux=6;knllux=0
 1e-10 544.466492
 2.782559e-09 103.216462
 2.52617e-08 34.2563352
@@ -39,7 +39,7 @@
 25.2617 1.39356026
 35.93814 1.39448369
 1000 1.39659012
-@cfg stdlib::Polyethylene_CH2.ncmat;temp=293.15;vdoslux=2006;knllux=1
+@cfg stdlib::Polyethylene_CH2.ncmat;temp=293.15;vdoslux=6;knllux=1
 1e-10 54956.5809
 2.782559e-09 10418.3157
 2.52617e-08 3457.71686
@@ -78,7 +78,7 @@
 25.2617 15.2384074
 35.93814 15.2373963
 1000 15.2350898
-@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=1000;vdoslux=2006;knllux=2
+@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=1000;vdoslux=6;knllux=2
 1e-10 6546.30569
 2.782559e-09 1241.0066
 7.742637e-08 235.26321
@@ -117,7 +117,7 @@
 76.59849 5.43726191
 86.1733 5.43768876
 1000 5.44085811
-@cfg Li_from_Li2O.ncmat;temp=10;vdoslux=2006;knllux=3
+@cfg Li_from_Li2O.ncmat;temp=10;vdoslux=6;knllux=3
 1e-10 0.00789548787
 8.61733e-10 0.00268963042
 2.782559e-09 0.00149677905
@@ -156,7 +156,7 @@
 8.180421 1.0330451
 35.93814 1.04396055
 1000 1.04706181
-@cfg stdlib::Be_sg194.ncmat;temp=20;vdoslux=2006;knllux=0
+@cfg stdlib::Be_sg194.ncmat;temp=20;vdoslux=6;knllux=0
 1e-10 0.111521219
 1.723466e-09 0.0268631011
 2.782559e-09 0.0211414827
@@ -195,7 +195,7 @@
 8.180421 6.05055178
 35.93814 6.14229683
 1000 6.16836313
-@cfg stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=293.15;vdoslux=2006;knllux=1
+@cfg stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=293.15;vdoslux=6;knllux=1
 1e-10 18308.1859
 2.782559e-09 3470.74833
 2.52617e-08 1151.89893

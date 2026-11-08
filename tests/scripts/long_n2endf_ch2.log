@@ -6,7 +6,7 @@
  'force': True,
  'include_gif': True,
  'material_name': 'CH2',
- 'ncmat_cfg': 'Polyethylene_as_an_amorphous_polymeric_material_consisting_of_a_long_chain_of_carbon_atoms_with_two_hydrogen_atoms_for_each_of_those_carbon_atoms_thus_yielding_the_formula_CH2.ncmat;vdoslux=2001'}
+ 'ncmat_cfg': 'Polyethylene_as_an_amorphous_polymeric_material_consisting_of_a_long_chain_of_carbon_atoms_with_two_hydrogen_atoms_for_each_of_those_carbon_atoms_thus_yielding_the_formula_CH2.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#1]
 Initialise nuclear data...
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): ENDF output will not contain a Bragg diffraction component [warn#2]

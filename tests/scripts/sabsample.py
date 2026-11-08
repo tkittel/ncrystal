@@ -54,7 +54,7 @@ def dosample_query( method, ekin, nsamples, cfgstr, atomlbl, egrid = None ):
     seedstr = gen_seedstr()
     if method == 'highvdoslux':
         method = 'std'
-        cfgstr += ';vdoslux=2005;knllux=6'
+        cfgstr += ';vdoslux=5;knllux=6'
         #fixme: egrid with just a few points (one at 2*ekin, the rest very low)
     if method == 'std':
         query = [ 'sab','proc', cfgstr, atomlbl,
@@ -310,16 +310,16 @@ def main(do_plot,luxlvl,test_select):
 
         { 'cfgstr': 'solid::H/1gcm3;vdoslux=1000', 'ekin': '2' },
 
-        { 'cfgstr': 'stdlib::Polyethylene_CH2.ncmat;knllux=4;vdoslux=2003','atomlbl': 'H',
+        { 'cfgstr': 'stdlib::Polyethylene_CH2.ncmat;knllux=4;vdoslux=3','atomlbl': 'H',
           'ekin': '15' },
 
-        { 'cfgstr': 'stdlib::Polyethylene_CH2.ncmat;knllux=4;vdoslux=2003','atomlbl': 'H',
+        { 'cfgstr': 'stdlib::Polyethylene_CH2.ncmat;knllux=4;vdoslux=3','atomlbl': 'H',
           'ekin': '10000' },
 
-        { 'cfgstr': 'stdlib::Polyethylene_CH2.ncmat;knllux=4;vdoslux=2003','atomlbl': 'C',
+        { 'cfgstr': 'stdlib::Polyethylene_CH2.ncmat;knllux=4;vdoslux=3','atomlbl': 'C',
           'ekin': '15' },
 
-        { 'cfgstr': 'stdlib::Polyethylene_CH2.ncmat;knllux=4;vdoslux=2003','atomlbl': 'C',
+        { 'cfgstr': 'stdlib::Polyethylene_CH2.ncmat;knllux=4;vdoslux=3','atomlbl': 'C',
           'ekin': '10000' },
 
         { 'cfgstr': 'stdlib::Be_sg194.ncmat;vdoslux=1003', 'ekin': '10' },
@@ -342,14 +342,14 @@ def main(do_plot,luxlvl,test_select):
         #fallback in either would collapse the KS pvals, the recoil
         #widths differing by ~sqrt(Teff/T)~2) and agree on the
         #independently-computed table-vs-extender mixing:
-        { 'cfgstr': 'stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=2001',
+        { 'cfgstr': 'stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=1',
           'atomlbl': 'H', 'ekin': '6.0' },
 
         #Trimmed JENDL-5 benzene@100K fixture above the H kernel's
         #Emax (~5.6eV): H's teff is refused by the analyser, so this
         #guards the free-gas-extension-after-refusal path (and, with
         #the accepted C, the material is the mixed SCT/FG case):
-        { 'cfgstr': 'benzene_solid_100K_sabsmall.ncmat;vdoslux=2001',
+        { 'cfgstr': 'benzene_solid_100K_sabsmall.ncmat;vdoslux=1',
           'atomlbl': 'H', 'ekin': '7.0' },
 
     ]

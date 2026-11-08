@@ -1,6 +1,6 @@
 # Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxs_heavy".
 # Regenerate with: long_sabxs_heavy.py --update
-@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=5;vdoslux=2000;knllux=0
+@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=5;vdoslux=0;knllux=0
 1e-10 0.002515159
 4.308665e-10 0.001211697
 2.782559e-09 0.0004768104
@@ -39,7 +39,7 @@
 8.180421 5.05778
 35.93814 5.353534
 1000 5.438009
-@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=20;vdoslux=2001;knllux=1
+@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=20;vdoslux=1;knllux=1
 1e-10 0.36850559
 1.723466e-09 0.088765196
 2.782559e-09 0.069858938
@@ -78,7 +78,7 @@
 8.180421 5.0789767
 35.93814 5.3583904
 1000 5.4381833
-@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=293.15;vdoslux=2002;knllux=2
+@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=293.15;vdoslux=2;knllux=2
 1e-10 1018.70769
 2.782559e-09 193.120062
 2.52617e-08 64.0942504
@@ -117,7 +117,7 @@
 25.2617 5.40535952
 35.93814 5.41592157
 1000 5.44025039
-@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=1000;vdoslux=2003;knllux=3
+@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=1000;vdoslux=3;knllux=3
 1e-10 6547.36703
 2.782559e-09 1241.2078
 7.742637e-08 235.301351
@@ -156,7 +156,7 @@
 76.59849 5.43728912
 86.1733 5.43771294
 1000 5.44086019
-@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=3000;vdoslux=2004;knllux=4
+@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=3000;vdoslux=4;knllux=4
 1e-10 24109.1515
 2.782559e-09 4570.45813
 7.742637e-08 866.440667
@@ -195,7 +195,7 @@
 229.7955 5.440785
 258.5199 5.44082576
 1000 5.44107174
-@cfg stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=5;vdoslux=2005;knllux=5
+@cfg stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=5;vdoslux=5;knllux=5
 1e-10 0.00417428403
 4.308665e-10 0.00201099334
 2.782559e-09 0.000791338493
@@ -234,7 +234,7 @@
 8.180421 6.41178113
 35.93814 6.7970128
 1000 6.90687734
-@cfg stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=20;vdoslux=2000;knllux=1
+@cfg stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=20;vdoslux=0;knllux=1
 1e-10 0.5842356
 1.723466e-09 0.14073
 2.782559e-09 0.1107557
@@ -273,7 +273,7 @@
 8.180421 6.413496
 35.93814 6.797434
 1000 6.906892
-@cfg stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=293.15;vdoslux=2001;knllux=2
+@cfg stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=293.15;vdoslux=1;knllux=2
 1e-10 1048.9533
 2.782559e-09 198.85384
 2.52617e-08 65.997235
@@ -312,7 +312,7 @@
 25.2617 6.8662658
 35.93814 6.8794722
 1000 6.9098403
-@cfg stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=1000;vdoslux=2002;knllux=3
+@cfg stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=1000;vdoslux=2;knllux=3
 1e-10 6736.39424
 2.782559e-09 1277.04237
 7.742637e-08 242.09478
@@ -351,7 +351,7 @@
 76.59849 6.90621381
 86.1733 6.90673619
 1000 6.91060694
-@cfg stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=3000;vdoslux=2003;knllux=4
+@cfg stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=3000;vdoslux=3;knllux=4
 1e-10 24851.5829
 2.782559e-09 4711.20352
 7.742637e-08 893.122861
@@ -390,7 +390,7 @@
 229.7955 6.91053324
 258.5199 6.91058138
 1000 6.91087138
-@cfg stdlib::PbS_sg225_LeadSulfide.ncmat;temp=5;vdoslux=2004;knllux=5
+@cfg stdlib::PbS_sg225_LeadSulfide.ncmat;temp=5;vdoslux=4;knllux=5
 1e-10 0.032287727
 4.308665e-10 0.01555486
 2.782559e-09 0.0061209357
@@ -429,7 +429,7 @@
 8.180421 5.7515586
 35.93814 5.93377751
 1000 5.98554924
-@cfg stdlib::PbS_sg225_LeadSulfide.ncmat;temp=20;vdoslux=2005;knllux=0
+@cfg stdlib::PbS_sg225_LeadSulfide.ncmat;temp=20;vdoslux=5;knllux=0
 1e-10 6.4132137
 1.723466e-09 1.54480744
 2.782559e-09 1.21577651
@@ -468,7 +468,7 @@
 8.180421 5.77988534
 35.93814 5.94022537
 1000 5.98578096
-@cfg stdlib::PbS_sg225_LeadSulfide.ncmat;temp=293.15;vdoslux=2000;knllux=2
+@cfg stdlib::PbS_sg225_LeadSulfide.ncmat;temp=293.15;vdoslux=0;knllux=2
 1e-10 921.7378
 2.782559e-09 174.7372
 2.52617e-08 57.99355
@@ -507,7 +507,7 @@
 25.2617 5.97976
 35.93814 5.982044
 1000 5.987284
-@cfg stdlib::PbS_sg225_LeadSulfide.ncmat;temp=1000;vdoslux=2001;knllux=3
+@cfg stdlib::PbS_sg225_LeadSulfide.ncmat;temp=1000;vdoslux=1;knllux=3
 1e-10 3775.38
 2.782559e-09 715.71251
 7.742637e-08 135.68325
@@ -546,7 +546,7 @@
 76.59849 5.9871583
 86.1733 5.987193
 1000 5.9874544
-@cfg stdlib::PbS_sg225_LeadSulfide.ncmat;temp=3000;vdoslux=2002;knllux=4
+@cfg stdlib::PbS_sg225_LeadSulfide.ncmat;temp=3000;vdoslux=2;knllux=4
 1e-10 12431.9842
 2.782559e-09 2356.77623
 7.742637e-08 446.789841
@@ -585,7 +585,7 @@
 229.7955 5.98749894
 258.5199 5.98749664
 1000 5.98748366
-@cfg stdlib::KBr_sg225_PotassiumBromide.ncmat;temp=5;vdoslux=2003;knllux=5
+@cfg stdlib::KBr_sg225_PotassiumBromide.ncmat;temp=5;vdoslux=3;knllux=5
 1e-10 0.0703078494
 4.308665e-10 0.0338713456
 2.782559e-09 0.0133285915
@@ -624,7 +624,7 @@
 8.180421 3.7454526
 35.93814 3.79568971
 1000 3.80996292
-@cfg stdlib::KBr_sg225_PotassiumBromide.ncmat;temp=20;vdoslux=2004;knllux=0
+@cfg stdlib::KBr_sg225_PotassiumBromide.ncmat;temp=20;vdoslux=4;knllux=0
 1e-10 8.39507891
 1.723466e-09 2.02219704
 2.782559e-09 1.59148656
@@ -663,7 +663,7 @@
 8.180421 3.7541053
 35.93814 3.79765928
 1000 3.8100337
-@cfg stdlib::KBr_sg225_PotassiumBromide.ncmat;temp=293.15;vdoslux=2005;knllux=1
+@cfg stdlib::KBr_sg225_PotassiumBromide.ncmat;temp=293.15;vdoslux=5;knllux=1
 1e-10 1389.88646
 2.782559e-09 263.485824
 2.52617e-08 87.4483029
@@ -702,7 +702,7 @@
 25.2617 3.80811387
 35.93814 3.80882125
 1000 3.81043484
-@cfg stdlib::KBr_sg225_PotassiumBromide.ncmat;temp=1000;vdoslux=2000;knllux=3
+@cfg stdlib::KBr_sg225_PotassiumBromide.ncmat;temp=1000;vdoslux=0;knllux=3
 1e-10 5792.438
 2.782559e-09 1098.093
 7.742637e-08 208.1734
@@ -741,7 +741,7 @@
 76.59849 3.810795
 86.1733 3.810762
 1000 3.810518
-@cfg stdlib::KBr_sg225_PotassiumBromide.ncmat;temp=3000;vdoslux=2001;knllux=4
+@cfg stdlib::KBr_sg225_PotassiumBromide.ncmat;temp=3000;vdoslux=1;knllux=4
 1e-10 18401.023
 2.782559e-09 3488.3478
 7.742637e-08 661.3048
@@ -780,7 +780,7 @@
 229.7955 3.8106381
 258.5199 3.8106222
 1000 3.8105279
-@cfg solid::Pb/11.3gcm3;temp=5;vdoslux=2002;knllux=5
+@cfg solid::Pb/11.3gcm3;temp=5;vdoslux=2;knllux=5
 1e-10 0.00587205656
 4.308665e-10 0.00282890827
 2.782559e-09 0.00111319312
@@ -819,7 +819,7 @@
 8.180421 9.78982853
 35.93814 10.7318907
 1000 11.0009729
-@cfg solid::Pb/11.3gcm3;temp=293.15;vdoslux=2003;knllux=0
+@cfg solid::Pb/11.3gcm3;temp=293.15;vdoslux=3;knllux=0
 1e-10 697.180786
 2.782559e-09 132.167057
 2.52617e-08 43.8647479
@@ -858,7 +858,7 @@
 25.2617 10.9026929
 35.93814 10.9347377
 1000 11.0082622
-@cfg solid::Pb/11.3gcm3;temp=1000;vdoslux=2004;knllux=1
+@cfg solid::Pb/11.3gcm3;temp=1000;vdoslux=4;knllux=1
 1e-10 3165.51339
 2.782559e-09 600.097702
 7.742637e-08 113.763957
