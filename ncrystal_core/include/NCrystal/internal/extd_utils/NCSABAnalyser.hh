@@ -41,9 +41,10 @@
 //         N(alpha)~=1) correctly yield "not inferable".                     //
 //                                                                           //
 // Guards per row: kernels store tiny floor-marker placeholder values in     //
-// far wings (masked away), the +-coverage_nsigma wings must be covered by   //
-// real data, and the recoil ridge must be resolved by the grid. Estimates   //
-// are returned raw together with robustness metrics                         //
+// far wings (masked away), the part of the row beyond the beta grid         //
+// (estimated by extrapolating its edges) must be negligible, and the        //
+// recoil ridge must be resolved by the grid. Estimates are returned raw     //
+// together with robustness metrics                                          //
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace NCRYSTAL_NAMESPACE {
