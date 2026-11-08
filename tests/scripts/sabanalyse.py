@@ -146,7 +146,7 @@ def main():
     #continuity-anchored and hence insensitive to the extender model --
     #only sampling differs -- so we check the chosen model instead of xs
     #values):
-    cfgstr = ( 'stdlib::LiquidWaterH2O_T293.6K.ncmat;comp=inelas;vdoslux=2001'
+    cfgstr = ( 'stdlib::LiquidWaterH2O_T293.6K.ncmat;comp=inelas;vdoslux=1'
                ';knllux=1' )
     s = NC.load( cfgstr ).scatter.getSummary()
     #NB: only H has a kernel (the O component is plain free gas):

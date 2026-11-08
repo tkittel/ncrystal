@@ -1,4 +1,4 @@
-============= CLI >>'Al_sg225.ncmat;temp=350K;vdoslux=2000'<< ====================
+============= CLI >>'Al_sg225.ncmat;temp=350K;vdoslux=0'<< ====================
 Initialise nuclear data...
 Write ENDF file tsl_Al.endf ...
 DUMPING endf dict begin
@@ -256,8 +256,8 @@ DUMPING endf dict end
 Files created:
   tsl_Al.endf : Al with fraction 1
 Suggested material density: 2.698645518 g/cm^3
-==================================================================================
-============= CLI >>'Si_sg227.ncmat;temp=293.6K;vdoslux=2000' -m MATNUM:Si:99 --now<< ====================
+===============================================================================
+============= CLI >>'Si_sg227.ncmat;temp=293.6K;vdoslux=0' -m MATNUM:Si:99 --now<< ====================
 Initialise nuclear data...
 Write ENDF file tsl_Si.endf ...
 DUMPING endf dict begin
@@ -504,8 +504,8 @@ DUMPING endf dict end
 Files created:
   tsl_Si.endf : Si with fraction 1
 Suggested material density: 2.329452891 g/cm^3
-==========================================================================================================
-============= CLI >>'ZnO_sg186_ZincOxide.ncmat;temp=293.15K;vdoslux=2000' -n ZnO -e scaled -m MATNUM:Zn:101,O:102<< ====================
+=======================================================================================================
+============= CLI >>'ZnO_sg186_ZincOxide.ncmat;temp=293.15K;vdoslux=0' -n ZnO -e scaled -m MATNUM:Zn:101,O:102<< ====================
 Initialise nuclear data...
 Write ENDF file tsl_O_in_ZnO.endf ...
 DUMPING endf dict begin
@@ -1001,8 +1001,8 @@ Files created:
   tsl_O_in_ZnO.endf : O with fraction 1/2
   tsl_Zn_in_ZnO.endf : Zn with fraction 1/2
 Suggested material density: 5.663552228 g/cm^3
-========================================================================================================================================
-============= CLI >>'Bi_sg166.ncmat;comp=inelas;temp=77K;vdoslux=2000' -m 'AUTH:J. Doe'<< ====================
+=====================================================================================================================================
+============= CLI >>'Bi_sg166.ncmat;comp=inelas;temp=77K;vdoslux=0' -m 'AUTH:J. Doe'<< ====================
 Initialise nuclear data...
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): ENDF output will not contain a Bragg diffraction component [warn#1]
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): ENDF output will not contain any incoherent elastic component [warn#2]
@@ -1244,4 +1244,4 @@ DUMPING endf dict end
 Files created:
   tsl_Bi.endf : Bi with fraction 1
 Suggested material density: 9.80750368 g/cm^3
-==============================================================================================================
+===========================================================================================================

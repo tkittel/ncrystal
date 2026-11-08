@@ -36,7 +36,7 @@ import numpy as np
 _cases = [ ('stdlib::Al_sg225.ncmat','Al'),
            ('stdlib::Polyethylene_CH2.ncmat','H'),
            ('stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=20','U') ]
-_lux = 2003
+_lux = 3
 
 def analyse( cfgstr, lbl, diag = False ):
     return q(['sab','analyse',cfgstr,lbl]+(['diag'] if diag else []))['sabanalyse']
