@@ -97,8 +97,8 @@ def main():
     ncsetenv('TOOL_UNITTESTS','1')
     ncsetenv('DPI','75')
     test_cli(['--bench','Al_sg225.ncmat'])
-    test_cli(['Al_sg225.ncmat;dcutoff=0.5;vdoslux=2'])
-    test_cli(['Al_sg225.ncmat;dcutoff=0.5;vdoslux=2','-a','--energy','-x','1e-3:1e2'])
+    test_cli(['Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002'])
+    test_cli(['Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002','-a','--energy','-x','1e-3:1e2'])
     with ensure_error(argparse.ArgumentError,
                       'argument --mc: expected 2 arguments'):
         test_cli(['--mc'])
@@ -112,27 +112,27 @@ def main():
                       ' ncrystal_minimc command for fine-grained access'
                       ' to MiniMC simulations.'):
         test_cli(['--mc','constant;wl=2','sphere;r=0.02',
-                  'Al_sg225.ncmat;vdoslux=1;comp=inelas;inelas=0'])
+                  'Al_sg225.ncmat;vdoslux=2001;comp=inelas;inelas=0'])
 
     for a in ['coh_elas','bragg','incoh_elas','sans','elastic','inelastic']:
-        test_cli(['--cfg','Al_sg225.ncmat;dcutoff=0.5;vdoslux=2',f'--{a}'])
+        test_cli(['--cfg','Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002',f'--{a}'])
 
-    test_cli(['Al_sg225.ncmat;vdoslux=1;temp=1000K',
-              'Al_sg225.ncmat;vdoslux=1;temp=10K',
+    test_cli(['Al_sg225.ncmat;vdoslux=2001;temp=1000K',
+              'Al_sg225.ncmat;vdoslux=2001;temp=10K',
               '--logy'])
-    test_cli(['Al_sg225.ncmat;vdoslux=1;temp=1000K',
-              'Al_sg225.ncmat;vdoslux=1;temp=10K',
+    test_cli(['Al_sg225.ncmat;vdoslux=2001;temp=1000K',
+              'Al_sg225.ncmat;vdoslux=2001;temp=10K',
               '--common','dcutoff=1.0Aa','--liny'])
 
     #This doesn't work, since we have issue #202:
     #assert not pathlib.Path("./ncrystal.pdf").is_file()
-    #    test_cli(['Al_sg225.ncmat;vdoslux=1;temp=1000K','--pdf'])
+    #    test_cli(['Al_sg225.ncmat;vdoslux=2001;temp=1000K','--pdf'])
     #    assert pathlib.Path("./ncrystal.pdf").is_file()
 
     with ensure_error(RuntimeError,'Currently we do not support switching back'
                       ' and forth between pdf plotting in the same process (see'
                       ' also https://github.com/mctools/ncrystal/issues/202)'):
-        test_cli(['Al_sg225.ncmat;vdoslux=1;temp=1000K','--pdf'])
+        test_cli(['Al_sg225.ncmat;vdoslux=2001;temp=1000K','--pdf'])
 
     test_cli(['--cfg',
               ('phases<0.65*Al_sg225.ncmat&0.35'
@@ -142,8 +142,8 @@ def main():
               ('phases<0.65*Al_sg225.ncmat&0.35'
                '*MgO_sg225_Periclase.ncmat>;temp=100K')])
 
-    test_cli(['Al_sg225.ncmat;temp=10 K;vdoslux=1',
-              'Al_sg225.ncmat;vdoslux=1;temp=10K',
+    test_cli(['Al_sg225.ncmat;temp=10 K;vdoslux=2001',
+              'Al_sg225.ncmat;vdoslux=2001;temp=10K',
               '--common','dcutoff=1.0Aa','--liny'])
 
 if __name__ == '__main__':
