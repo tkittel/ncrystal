@@ -47,7 +47,7 @@ endf>  "Polyethylene_as_an_amorphous_polymeric_material_consisting_o     38 1451
 endf>   f_a_long_chain_of_carbon_atoms_with_two_hydrogen_atoms_for_e     38 1451   16
 endf>   ach_of_those_carbon_atoms_thus_yielding_the_formula_CH2.ncma     38 1451   17
 endf>   t;                                                               38 1451   18
-endf>   vdoslux=2001;                                                    38 1451   19
+endf>   vdoslux=1;                                                       38 1451   19
 endf>   temp=293.15"                                                     38 1451   20
 endf>                                                                    38 1451   21
 endf> using NCrystal NCVERSION                                           38 1451   22
@@ -259,7 +259,7 @@ endf>  "Polyethylene_as_an_amorphous_polymeric_material_consisting_o     37 1451
 endf>   f_a_long_chain_of_carbon_atoms_with_two_hydrogen_atoms_for_e     37 1451   16
 endf>   ach_of_those_carbon_atoms_thus_yielding_the_formula_CH2.ncma     37 1451   17
 endf>   t;                                                               37 1451   18
-endf>   vdoslux=2001;                                                    37 1451   19
+endf>   vdoslux=1;                                                       37 1451   19
 endf>   temp=293.15"                                                     37 1451   20
 endf>                                                                    37 1451   21
 endf> using NCrystal NCVERSION                                           37 1451   22
