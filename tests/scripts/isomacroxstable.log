@@ -1,39 +1,39 @@
 stdlib::Al_sg225.ncmat
    ndiscontinuities=126 tol=0.0001 wlmax=500 maxrelerr<tol: OK
-   processes: AbsOOV ElIncScatter PowderBragg SABScatter
-   first: (0 Aa, 0.0841247/cm) last: (500 Aa, 4.44322/cm)
+   processes: AbsOOV ElIncScatter PowderBragg SABScatterNG
+   first: (0 Aa, 0.0841247/cm) last: (500 Aa, 4.44236/cm)
 stdlib::Al_sg225.ncmat tol=1e-2
    ndiscontinuities=126 tol=0.01 wlmax=500 maxrelerr<tol: OK
-   processes: AbsOOV ElIncScatter PowderBragg SABScatter
-   first: (0 Aa, 0.0841247/cm) last: (500 Aa, 4.44322/cm)
+   processes: AbsOOV ElIncScatter PowderBragg SABScatterNG
+   first: (0 Aa, 0.0841247/cm) last: (500 Aa, 4.44236/cm)
 stdlib::Al_sg225.ncmat tol=1e-3
    ndiscontinuities=126 tol=0.001 wlmax=500 maxrelerr<tol: OK
-   processes: AbsOOV ElIncScatter PowderBragg SABScatter
-   first: (0 Aa, 0.0841247/cm) last: (500 Aa, 4.44322/cm)
+   processes: AbsOOV ElIncScatter PowderBragg SABScatterNG
+   first: (0 Aa, 0.0841247/cm) last: (500 Aa, 4.44236/cm)
 stdlib::Al_sg225.ncmat wlmax=10
    ndiscontinuities=126 tol=0.0001 wlmax=10 maxrelerr<tol: OK
-   processes: AbsOOV ElIncScatter PowderBragg SABScatter
-   first: (0 Aa, 0.0841247/cm) last: (10 Aa, 0.0904623/cm)
+   processes: AbsOOV ElIncScatter PowderBragg SABScatterNG
+   first: (0 Aa, 0.0841247/cm) last: (10 Aa, 0.0904633/cm)
 stdlib::Al_sg225.ncmat wlmax=4.7
    ndiscontinuities=126 tol=0.0001 wlmax=4.7 maxrelerr<tol: OK
-   processes: AbsOOV ElIncScatter PowderBragg SABScatter
-   first: (0 Aa, 0.0841247/cm) last: (4.7 Aa, 0.0448165/cm)
+   processes: AbsOOV ElIncScatter PowderBragg SABScatterNG
+   first: (0 Aa, 0.0841247/cm) last: (4.7 Aa, 0.0448172/cm)
 stdlib::Al_sg225.ncmat;density=0.5x
    ndiscontinuities=126 tol=0.0001 wlmax=500 maxrelerr<tol: OK
-   processes: AbsOOV ElIncScatter PowderBragg SABScatter
-   first: (0 Aa, 0.0420623/cm) last: (500 Aa, 2.22161/cm)
+   processes: AbsOOV ElIncScatter PowderBragg SABScatterNG
+   first: (0 Aa, 0.0420623/cm) last: (500 Aa, 2.22118/cm)
 stdlib::Al_sg225.ncmat;inelas=0
    ndiscontinuities=155 tol=0.0001 wlmax=500 maxrelerr<tol: OK
    processes: AbsOOV ElIncScatter PowderBragg
    first: (0 Aa, 0/cm) last: (500 Aa, 3.86928/cm)
 stdlib::Be_sg194.ncmat;temp=80K
    ndiscontinuities=770 tol=0.0001 wlmax=500 maxrelerr<tol: OK
-   processes: AbsOOV ElIncScatter PowderBragg SABScatter
-   first: (0 Aa, 0.760456/cm) last: (500 Aa, 0.306584/cm)
+   processes: AbsOOV ElIncScatter PowderBragg SABScatterNG
+   first: (0 Aa, 0.760456/cm) last: (500 Aa, 0.306572/cm)
 stdlib::Polyethylene_CH2.ncmat
    ndiscontinuities=0 tol=0.0001 wlmax=500 maxrelerr<tol: OK
-   processes: AbsOOV ElIncScatter SABScatter
-   first: (0 Aa, 1.80525/cm) last: (500 Aa, 128.005/cm)
+   processes: AbsOOV ElIncScatter SABScatterNG
+   first: (0 Aa, 1.80525/cm) last: (500 Aa, 127.877/cm)
 stdlib::Al_sg225.ncmat;knllux=3
    ndiscontinuities=126 tol=0.0001 wlmax=500 maxrelerr<tol: OK
    processes: AbsOOV ElIncScatter PowderBragg SABScatterNG
@@ -47,12 +47,12 @@ stdlib::Polyethylene_CH2.ncmat;knllux=3
    processes: AbsOOV ElIncScatter SABScatterNG
    first: (0 Aa, 1.80525/cm) last: (500 Aa, 127.877/cm)
 stdlib::Y2SiO5_sg15_YSO.ncmat
-   ndiscontinuities=12113 tol=0.0001 wlmax=500 maxrelerr<tol: OK
-   processes: AbsOOV ElIncScatter PowderBragg SABScatter
-   first: (0 Aa, 0.321785/cm) last: (500 Aa, 8.31649/cm)
+   ndiscontinuities=12114 tol=0.0001 wlmax=500 maxrelerr<tol: OK
+   processes: AbsOOV ElIncScatter PowderBragg SABScatterNG
+   first: (0 Aa, 0.321785/cm) last: (500 Aa, 8.31435/cm)
 stdlib::B4C_sg166_BoronCarbide.ncmat
    ndiscontinuities=903 tol=0.0001 wlmax=500 maxrelerr<tol: OK
-   processes: AbsOOV ElIncScatter PowderBragg SABScatter
+   processes: AbsOOV ElIncScatter PowderBragg SABScatterNG
    first: (0 Aa, 0.602612/cm) last: (500 Aa, 23133.3/cm)
 gasmix::air
    ndiscontinuities=0 tol=0.0001 wlmax=500 maxrelerr<tol: OK
@@ -60,8 +60,8 @@ gasmix::air
    first: (0 Aa, 0.000431076/cm) last: (500 Aa, 0.0567512/cm)
 phases<0.3*stdlib::Al_sg225.ncmat&0.7*stdlib::Cu_sg225.ncmat>
    ndiscontinuities=224 tol=0.0001 wlmax=500 maxrelerr<tol: OK
-   processes: AbsOOV ElIncScatter PowderBragg SABScatter
-   first: (0 Aa, 0.486746/cm) last: (500 Aa, 65.3034/cm)
+   processes: AbsOOV ElIncScatter PowderBragg SABScatterNG
+   first: (0 Aa, 0.486746/cm) last: (500 Aa, 65.3016/cm)
 stdlib::void.ncmat
    ndiscontinuities=0 tol=0.0001 wlmax=500 maxrelerr<tol: OK
    processes: NullAbsorption NullScatter
@@ -71,8 +71,8 @@ NCrystal WARNING: Loading NCMAT data which has @CUSTOM_ section(s). This is OK i
 NCrystal WARNING: IsoMacroXSTable: the physics process "SANSSphereScatter" has not been validated for IsoMacroXSTable (features of its cross section might be missed)
 Al_sans.ncmat
    ndiscontinuities=126 tol=0.0001 wlmax=500 maxrelerr<tol: OK
-   processes: AbsOOV ElIncScatter PowderBragg SABScatter SANSSphereScatter
-   first: (0 Aa, 0.0757122/cm) last: (500 Aa, 6.23573/cm)
+   processes: AbsOOV ElIncScatter PowderBragg SABScatterNG SANSSphereScatter
+   first: (0 Aa, 0.0757122/cm) last: (500 Aa, 6.23493/cm)
 Caught expected NCCalcError('IsoMacroXSTable: the cross section has an unexpected discontinuity (or an extremely sharp feature) at wavelength 1.65323 Aa')
 Caught expected NCBadInput('IsoMacroXSTable: invalid tolerance 0 (must be in the range (0,1))')
 Caught expected NCBadInput('IsoMacroXSTable: invalid wlmax 1e-05 (must be larger than 0.0001 Aa)')

@@ -42,18 +42,18 @@ int main() {
 
   std::vector<double> wls = { 0.5, 1.0, 1.5, 2.0, 2.5, 3.0,
                               3.5, 4.0, 4.5, 5.0, 5.5, 6.0 };
-  std::vector<double> refvals_xs_al = { 1.3923477,
-                                        1.3722203,
-                                        1.37105605,
-                                        1.29430006,
-                                        1.11078278,
-                                        1.05874423,
-                                        1.38576601,
-                                        1.76844042,
-                                        1.40284708,
-                                        0.143071556,
-                                        0.148508575,
-                                        0.154752247 };
+  std::vector<double> refvals_xs_al = { 1.392352,
+                                        1.37228582,
+                                        1.37101347,
+                                        1.29429677,
+                                        1.11079037,
+                                        1.058752,
+                                        1.38578001,
+                                        1.7684551,
+                                        1.40285332,
+                                        0.143070194,
+                                        0.148521708,
+                                        0.154751173 };
 
   auto require_flteq = [](double a, double b)
   {
@@ -94,7 +94,7 @@ int main() {
     double xs = virtapi->crossSectionUncached( *scat_scge, neutron );
     std::cout<<" GeSC: xs(" << wl << " Aa, dir1) = "
              << std::setprecision(7)<<xs << " barn/atom" << std::endl;
-    require_flteq( 591.0135018262793, xs );
+    require_flteq( 591.0126833534165, xs );
   }
   {
     double wl = 1.540;
@@ -102,7 +102,7 @@ int main() {
     double xs = virtapi->crossSectionUncached( *scat_scge, neutron );
     std::cout<<" GeSC: xs(" << wl << " Aa, dir2) = "
              << std::setprecision(7)<<xs << " barn/atom" << std::endl;
-    require_flteq( 1.65475476221, xs );
+    require_flteq( 1.65393628935, xs );
   }
 
   {
