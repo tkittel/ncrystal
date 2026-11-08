@@ -864,38 +864,22 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
     query_impl_sglcell( os, EDivKT{E_div_kT}, a1, a2, b1, b2,
                         s11, s12, s21, s22, nsample, seed );
   } else if ( key == sv_analyse ) {
-    //query like: ["sab","analyse",MATCFGSTR,ATOMDISPLAYLABEL,
-    //             "diag","NAME=VALUE",...]
+    //query like: ["sab","analyse",MATCFGSTR,ATOMDISPLAYLABEL,"diag"]
     const char * usage
       = ( "correct usage: [\"sab\",\"analyse\",MATCFGSTR,"
-          "ATOMDISPLAYLABEL,\"diag\",\"NAME=VALUE\",...] (the"
-          " ATOMDISPLAYLABEL can be left as an empty string for"
-          " monoatomic materials, optional \"diag\" enables"
-          " extra diagnostics, and optional NAME=VALUE"
-          " tokens override SABAnalyser::Options fields)" );
-    if ( nargs < 1 )
+          "ATOMDISPLAYLABEL,\"diag\"] (the ATOMDISPLAYLABEL can be left"
+          " as an empty string for monoatomic materials, and the optional"
+          " \"diag\" enables extra diagnostics)" );
+    if ( nargs < 1 || nargs > 3 )
       invalid(usage);
     Optional<std::string> atomdsplbl;
     if ( nargs >= 2 && !arg(1).empty() )
       atomdsplbl = argstr(1);
     SABAnalyser::Options opt;
-    for ( auto i : ncrange( std::size_t(2), nargs ) ) {
-      auto a = arg(i);
-      if ( a == "diag" ) {
-        opt.collect_diagnostics = true;
-        continue;
-      }
-      auto ieq = a.find( StrView::make("=") );
-      if ( ieq == StrView::npos )
+    if ( nargs == 3 ) {
+      if ( arg(2) != "diag" )
         invalid(usage);
-      auto name = a.substr( 0, ieq );
-      const double val = str2dbl( a.substr( ieq + 1 ),
-                                  "invalid sab analyse option value" );
-      if ( name == "center_tol" ) {
-        opt.center_tol = val;
-      } else {
-        invalid(usage);
-      }
+      opt.collect_diagnostics = true;
     }
     auto xd = query_impl_extractSabData( argstr(0), atomdsplbl );
     query_impl_analyse( os, xd, opt );
