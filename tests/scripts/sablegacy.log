@@ -1,0 +1,12 @@
+benzene_solid_100K_sabsmall.ncmat;knllux=-1:
+   E=1e-07eV: xs=379b, 1000 scatterings sampled
+   E=0.025eV: xs=30.3b, 1000 scatterings sampled
+   E=2eV: xs=12.8b, 1000 scatterings sampled
+   E=50eV: xs=12.6b, 1000 scatterings sampled
+stdlib::Al_sg225.ncmat;vdoslux=1003;knllux=-1:
+   E=1e-07eV: xs=17.3b, 1000 scatterings sampled
+   E=0.025eV: xs=0.229b, 1000 scatterings sampled
+   E=20eV: xs=1.39b, 1000 scatterings sampled
+Caught expected NCCalcError('VDOS expansion too slow - can not reach E=1e-15eV after 100 phonon convolutions (likely causes: either the target energy value is too high, vdoslux too low, the temperature too high, or the VDOS is very unusual).')
+Legacy VDOS expansion error: OK
+Sharing of SABScatterHelper objects: OK
