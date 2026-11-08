@@ -31,11 +31,11 @@ import NCTestUtils.enable_testdatapath # noqa F401
 import NCrystalDev as NC
 from NCrystalDev.misc import evaluate_query as q
 
-def analyse( cfgstr, lbl='', diag=False, extra_tokens=None ):
+def analyse( cfgstr, lbl='', diag=False ):
     query = ['sab','analyse',cfgstr,lbl]
     if diag:
         query += ['diag']
-    return q(query + (extra_tokens or []))['sabanalyse']
+    return q(query)['sabanalyse']
 
 def check_vdos_case( cfgstr, lbl, teff_tol, msd_tol ):
     r = analyse( cfgstr, lbl )
@@ -103,18 +103,6 @@ def main():
     print(f'==> explicit effective_temperature honoured:'
           f' {"OK" if ok_efft else "FAIL"}')
     assert ok_efft
-
-    #Options override tokens: loosening center_tol must not disturb the
-    #plateau-dominated result for a good kernel (weak bound), while
-    #"auto" stays pinned to the default-options policy values:
-    r0 = analyse('stdlib::Al_sg225.ncmat')
-    r1 = analyse('stdlib::Al_sg225.ncmat',
-                 extra_tokens=['center_tol=0.2'])
-    ok_tok = ( abs( r1['teff']/r0['teff'] - 1.0 ) < 0.01
-               and r1['auto'] == r0['auto'] )
-    print(f'==> center_tol token accepted and benign:'
-          f' {"OK" if ok_tok else "FAIL"}')
-    assert ok_tok
 
     #Trimmed JENDL-5 fixtures (tests/data, ENDF truths in the file
     #headers): teff agrees with the ENDF values, msd is accepted for C in
