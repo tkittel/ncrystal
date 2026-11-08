@@ -1,0 +1,15 @@
+stdlib::Al_sg225.ncmat Al: all accepted rows within 1% of the truth (teff rows: many, msd rows: many)
+   cut kernel beta<=2: teff and msd refused or correct
+   cut kernel beta<=0: teff and msd refused or correct
+   cut kernel beta>=0.2*betamin: teff and msd refused or correct
+   cut kernel beta>=0.05*betamin: teff and msd refused or correct
+stdlib::Polyethylene_CH2.ncmat H: all accepted rows within 1% of the truth (teff rows: many, msd rows: many)
+   cut kernel beta<=2: teff and msd refused or correct
+   cut kernel beta<=0: teff and msd refused or correct
+   cut kernel beta>=0.2*betamin: teff and msd refused or correct
+   cut kernel beta>=0.05*betamin: teff and msd refused or correct
+stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=20 U: all accepted rows within 1% of the truth (teff rows: many, msd rows: many)
+   cut kernel beta<=2: teff and msd refused or correct
+   cut kernel beta<=0: teff and msd refused or correct
+   cut kernel beta>=0.2*betamin: teff and msd refused or correct
+   cut kernel beta>=0.05*betamin: teff and msd refused or correct
