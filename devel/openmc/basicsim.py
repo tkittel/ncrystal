@@ -157,7 +157,7 @@ def main():
 
     n_particles = 1000000
     E0 = 0.0045  # eV
-    cfg = 'Al_sg225.ncmat;vdoslux=2003;knllux=3'
+    cfg = 'Al_sg225.ncmat;vdoslux=3;knllux=3'
     model = pencil_beam_model(cfg, E0, n_particles)
     sp_file = model.run()
 
