@@ -150,7 +150,8 @@ namespace NCRYSTAL_NAMESPACE {
         h = ncmin( h, 0.25 * ( above ? hi - wl : wl - lo ) );
         if ( !above )
           h = -h;
-        return ( ( -3.0 * f( wl ) + 4.0 * f( wl + h ) - f( wl + 2.0 * h ) )
+        return ( ncfma( 4.0, f( wl + h ),
+                        ncfma( -3.0, f( wl ), -f( ncfma( 2.0, h, wl ) ) ) )
                  / ( 2.0 * h ) );
       }
 
@@ -218,15 +219,18 @@ namespace NCRYSTAL_NAMESPACE {
             double F = 0.0, dF = 0.0;
             if ( !t.p.empty() ) {
               const double * c = t.p.data() + 4 * k;
-              F = c[0] + u * ( c[1] + u * ( c[2] + u * c[3] ) );
-              dF = ( c[1] + u * ( 2.0 * c[2] + 3.0 * u * c[3] ) ) / w;
+              F = ncfma( u, ncfma( u, ncfma( u, c[3], c[2] ), c[1] ), c[0] );
+              dF = ncfma( u, ncfma( 3.0 * u, c[3], 2.0 * c[2] ), c[1] ) / w;
             }
             if ( !t.q.empty() ) {
               const double * d = t.q.data() + 4 * k;
               const double se = std::sqrt( e );
-              const double Q = d[0] + u * ( d[1] + u * ( d[2] + u * d[3] ) );
-              F += se * Q;
-              dF += 0.5 * Q / se + se * ( d[1] + u * ( 2.0 * d[2] + 3.0 * u * d[3] ) ) / w;
+              const double Q = ncfma( u, ncfma( u, ncfma( u, d[3], d[2] ),
+                                                d[1] ), d[0] );
+              const double dQ = ncfma( u, ncfma( 3.0 * u, d[3], 2.0 * d[2] ),
+                                       d[1] );
+              F = ncfma( se, Q, F );
+              dF += ncfma( se, dQ / w, 0.5 * Q / se );
             }
             if ( !t.r.empty() ) {
               F += t.r[k] / e;
@@ -299,7 +303,7 @@ namespace NCRYSTAL_NAMESPACE {
             //u=(e-Ek)/w, with the constant term computed directly (not as a
             //difference of the coefficients):
             const Poly9 uz = ( ( ez - Poly9( ez.coeff( 0 ) ) ) * ( 1.0 / w )
-                                   + Poly9( ( K * ta * ta - Ek ) / w ) );
+                                   + Poly9( ncfma( K * ta, ta, -Ek ) / w ) );
             if ( !t.p.empty() )
               G += composeCubic( t.p.data() + 4 * k, uz ) * ez;
             if ( !t.q.empty() )
@@ -357,17 +361,20 @@ namespace NCRYSTAL_NAMESPACE {
         {
           const double h = xb - lam[a];
           const double dy = ( yb - ya ) / h;
-          const double A[4] = { ya, sa, ( 3.0 * dy - 2.0 * sa - sb ) / h,
-                                ( sa + sb - 2.0 * dy ) / ( h * h ) };
+          const double A[4] = { ya, sa,
+                                ncfma( 3.0, dy, -ncfma( 2.0, sa, sb ) ) / h,
+                                ncfma( -2.0, dy, sa + sb ) / ( h * h ) };
           const Basis& bs = basis( a, m );
           const BArr& bg = BG[m];
           BArr bplus, bminus;
           bool plusOK = true, minusOK = true;
           for ( int i = 0; i < nb; ++i ) {
-            const double eh = ( A[0] * bs.b[0][i] + A[1] * bs.b[1][i]
-                                + A[2] * bs.b[2][i] + A[3] * bs.b[3][i] );
-            bplus[i] = ( 1.0 + tol ) * bg[i] - eh;
-            bminus[i] = ( tol - 1.0 ) * bg[i] + eh;
+            const double eh = ncfma( A[3], bs.b[3][i],
+                                     ncfma( A[2], bs.b[2][i],
+                                            ncfma( A[1], bs.b[1][i],
+                                                   A[0] * bs.b[0][i] ) ) );
+            bplus[i] = ncfma( 1.0 + tol, bg[i], -eh );
+            bminus[i] = ncfma( tol - 1.0, bg[i], eh );
             plusOK = plusOK && bplus[i] >= 0.0;
             minusOK = minusOK && bminus[i] >= 0.0;
           }
@@ -532,8 +539,9 @@ namespace NCRYSTAL_NAMESPACE {
         const double h = x1 - x0;
         const double u = ( x - x0 ) / h;
         const double v = 1.0 - u;
-        return ( v * v * ( ( 1.0 + 2.0 * u ) * y0 + u * h * s0 )
-                 + u * u * ( ( 3.0 - 2.0 * u ) * y1 - v * h * s1 ) );
+        const double t0 = ncfma( ncfma( 2.0, u, 1.0 ), y0, u * h * s0 );
+        const double t1 = ncfma( ncfma( -2.0, u, 3.0 ), y1, -( v * h * s1 ) );
+        return ncfma( v * v, t0, u * u * t1 );
       }
 
       //Try to cover the sample points from i to j with one interval, given the
@@ -688,7 +696,7 @@ double NCX::evalIsoMacroXSTable( const double* wl, const double* xs,
     //at 0:
     if ( slope[n-1] == 0.0 )
       return xs[n-1];
-    const double v = xs[n-1] + ( wavelength - wl[n-1] ) * slope[n-1];
+    const double v = ncfma( wavelength - wl[n-1], slope[n-1], xs[n-1] );
     return v > 0.0 ? v : 0.0;
   }
   //Last point with wl[i] <= wavelength (the second of a pair at a
@@ -809,7 +817,10 @@ NCX::createIsoMacroXSTable( const std::function<double(double)>& xs_of_wl,
   //100 for a term c*wl^2), while they do not for cross sections without a
   //limit (e.g. with 1/wl, log(wl) or sqrt(wl) behaviour):
   {
-    auto extrapTo0 = [&evalXS]( double h ) { return 2.0 * evalXS( h ) - evalXS( 2.0 * h ); };
+    auto extrapTo0 = [&evalXS]( double h )
+    {
+      return ncfma( 2.0, evalXS( h ), -evalXS( 2.0 * h ) );
+    };
     const double lim_a = extrapTo0( 1e-7 );
     const double lim_b = extrapTo0( 1e-8 );
     const double lim_c = extrapTo0( 1e-9 );
