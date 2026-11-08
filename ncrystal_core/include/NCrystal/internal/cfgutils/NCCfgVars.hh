@@ -203,46 +203,39 @@ namespace NCRYSTAL_NAMESPACE {
 
       //NB: Keep this carefully synchronised with implementation in NCVDOSLux.cc
 
-      //NB: During migration to new vdos expansion algorithms, we support some
-      //extra values in 1000..1005 and 2000..2006 to explicitly enable the
-      //next-gen or legacy algs for comparison. But this is considered a hidden
-      //developer-only feature and won't be reflected in the user-visible
-      //description or error messages.
+      //Values 0..6 select the VDOS expansion levels. Hidden developer-only
+      //values (not in the description or error messages): 1000..1005 select
+      //the legacy expansion (levels 0..5), and 2000..2006 are synonyms of
+      //0..6 (normalised to 0..6). Cf. VDOSLux.
 
       static constexpr auto name = "vdoslux";
       static constexpr auto group = VarGroupId::ScatterBase;
       static constexpr auto description =
         "Setting affecting \"luxury\" level when expanding phonon"
-        " spectrums (VDOS) into scattering kernels."
-        " This primarily impacts the granularity of the kernel and the upper neutron energy (Emax)"
-        " beyond which free-gas extrapolation is used, with implication for memory usage"
-        " and initialisation time. Allowed values are:"
-        " 0 (Extremely crude, 100x50 grid, Emax=0.5eV, 0.1MB, 0.02s init),"
-        " 1 (Crude, 200x100 grid, Emax=1eV, 0.5MB, 0.02s init),"
-        " 2 (Decent, 400x200 grid, Emax=3eV, 2MB, 0.08s init),"
-        " 3 (Good, 800x400 grid, Emax=5eV, 8MB, 0.2s init),"
-        " 4 (Very good, 1600x800 grid, Emax=8eV, 30MB, 0.8s init),"
-        " 5 (Overkill, 3200x1600 grid, Emax=12eV, 125MB, 5s init)."
-        " Note that when no actual VDOS input curve is available and one is approximated from a Debye temperature,"
-        " the vdoslux level actually used will be 3 less than the one specified in this parameter (but at least 0)."
+        " spectrums (VDOS) into scattering kernels. This primarily impacts"
+        " the granularity of the kernel, with implications for memory usage"
+        " and initialisation time. Kernels cover neutron energies up to 5eV,"
+        " beyond which they are extended with a short-collision-time model."
+        " Allowed values are (alpha x beta grid, kernel memory, and"
+        " initialisation time, for Al at room temperature):"
+        " 0 (Extremely crude, 60x130 grid, 0.06MB, 0.02s init),"
+        " 1 (Crude, 110x240 grid, 0.2MB, 0.03s init),"
+        " 2 (Decent, 170x400 grid, 0.5MB, 0.05s init),"
+        " 3 (Good, 280x650 grid, 1.5MB, 0.09s init),"
+        " 4 (Very good, 470x1080 grid, 4MB, 0.2s init),"
+        " 5 (Excellent, 770x1770 grid, 11MB, 0.35s init),"
+        " 6 (Overkill, 2000x4000 grid, 64MB, 2s init)."
         ;
       static constexpr value_type default_value() { return 3; }
       static value_type value_validate( value_type value )
       {
-        //legacy mode is explicitly selected by adding 1000 to the old vdoslux
-        //value which ran from 0 to 5, and nextgen mode is selecting by adding
-        //2000 to the future vdoslux value which runs from 0 to 6. For now,
-        //values in 0..5 selects the legacy.
-
-        const bool is_ng_val = ( 2000 <= value && value <= 2006 );
-        const bool is_legacy_val = ( ( 0 <= value && value <= 5 )
-                                     || ( 1000 <= value && value <= 1005 ) );
-        if ( is_legacy_val && value >=1000 )
-          value -= 1000;
-        if ( !is_ng_val && !is_legacy_val ) {
-          //Don't mention special migration values:
+        if ( 2000 <= value && value <= 2006 )
+          value -= 2000;
+        if ( !( ( 0 <= value && value <= 6 )
+                || ( 1000 <= value && value <= 1005 ) ) ) {
+          //Don't mention the hidden values:
           NCRYSTAL_THROW2(BadInput,
-                          name<<" must be an integral value from 0 to 5");
+                          name<<" must be an integral value from 0 to 6");
         }
         return value;
       }
