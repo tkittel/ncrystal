@@ -50,7 +50,7 @@ NC::PairDD NC::VDOS::rangeXNexpMX(unsigned n, double eps, double accuracy ) {
 
   const double n_dbl = static_cast<double>(n);
   const double k = kInvE * std::pow(eps,1.0/n_dbl);
-  auto f = [k](double y) { return y*std::exp(-y)-k; };
+  auto f = [k](double y) { return ncfma( y, std::exp(-y), -k ); };
   return { n_dbl*findRoot2( f, 0.0,   1.0, accuracy ),
            n_dbl*findRoot2( f, 1.0, 700.0, accuracy ) };
 }
@@ -624,7 +624,7 @@ void NC::VDOS::trimTailByIntegral( VectD& x, VectD& y, double frac )
     StableSumKahan sum;
     for (std::size_t i = 1; i < x.size(); ++i) {
       const double dx = vectAt(x, i) - vectAt(x, i - 1);
-      sum.add( dx * (vectAt(y, i - 1) + vectAt(y, i)) );
+      sum.addProduct( dx, vectAt(y, i - 1) + vectAt(y, i) );
     }
     integral = sum.sum()*0.5;
   }
@@ -649,7 +649,7 @@ void NC::VDOS::trimEquidistantGridUpperEdge(EquidistantGrid& g, double xmax)
   //A tiny tolerance ensures that a node which mathematically is at xmax is
   //always kept, rather than randomly dropped or kept depending on rounding
   //errors in xmax or in the node position:
-  xmax += 1e-9 * g.binWidth;
+  xmax = ncfma( 1e-9, g.binWidth, xmax );
 #ifndef NDEBUG
   nc_assert(g.npts >= 2);
   nc_assert(std::isfinite(g.x0));
@@ -891,8 +891,9 @@ void NC::VDOS::applyCrossingTaper( Span<double> spec, double xcross,
     //Quintic ramp 6t^5-15t^4+10t^3 (Ken Perlin's "smootherstep"): value,
     //slope and curvature are all continuous at the window edges, so the
     //taper cannot inject an artificial curvature spike there:
-    const double s = t*t*t*(t*(t*6.0-15.0)+10.0);
-    spec[i] *= ( risingEdge ? s : 1.0-s );
+    const double t3 = t*t*t;
+    const double p = ncfma( t, ncfma( t, 6.0, -15.0 ), 10.0 );
+    spec[i] *= ( risingEdge ? t3*p : ncfma( -t3, p, 1.0 ) );
   }
 }
 
