@@ -1,8 +1,7 @@
-============= CLI >>'stdlib::Al_sg225.ncmat;temp=350K;vdoslux=1' -vvv -n Al -f -e greater '--mdata={"ALAB": "MyLab"}'<< ====================
+============= CLI >>'stdlib::Al_sg225.ncmat;temp=350K;vdoslux=2001' -vvv -n Al -f -e greater '--mdata={"ALAB": "MyLab"}'<< ====================
 Initialise nuclear data...
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#1]
->>> alpha points: 100, alpha range: (5.96e-50, 692)
->>> beta points: 123, beta range: (0, 66)
+>>> alpha points: 110, alpha range: (0, 695)
+>>> beta points: 137, beta range: (0, 76)
 >>> Interpolating T=350.0K for Al
 >> Prepare elastic approximations
 >> Principal elastic mode for Al: coherent
@@ -11,7 +10,7 @@ Write ENDF file tsl_Al_in_Al.endf ...
 Files created:
   tsl_Al_in_Al.endf : Al with fraction 1
 Suggested material density: 2.698645518 g/cm^3
-============================================================================================================================================
+===============================================================================================================================================
 ============= CLI >>-h<< ====================
 usage: ncrystal_ncmat2endf CFGSTR [--elas MODE] [--name NAME] [--mdata DATA]
                            [<<additional options described below>>]
@@ -143,13 +142,12 @@ The list of supported meta-data keys and their meaning is:
                used to select the current date.
 
 =======================================================
-============= CLI >>'stdlib::Al_sg225.ncmat;vdoslux=1' -vvv -f -e scaled --totsab --asymsab<< ====================
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#2]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Creating non standard S(a,b) with LASYM = 3 [warn#3]
+============= CLI >>'stdlib::Al_sg225.ncmat;vdoslux=2001' -vvv -f -e scaled --totsab --asymsab<< ====================
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#1]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Creating non standard S(a,b) with LASYM = 3 [warn#2]
 Initialise nuclear data...
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#4]
->>> alpha points: 100, alpha range: (8.36e-50, 822)
->>> beta points: 129, beta range: (0, 77)
+>>> alpha points: 110, alpha range: (0, 824)
+>>> beta points: 139, beta range: (0, 87)
 >>> Interpolating T=293.15K for Al
 >> Prepare elastic approximations
 >> Scaled elastic mode for single atom Al: coherent
@@ -158,17 +156,16 @@ Write ENDF file tsl_Al.endf ...
 Files created:
   tsl_Al.endf : Al with fraction 1
 Suggested material density: 2.698645518 g/cm^3
-==================================================================================================================
-============= CLI >>'stdlib::Al_sg225.ncmat;vdoslux=1' -f --now --dir=some/out/dir --index mymat.json<< ====================
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#5]
+=====================================================================================================================
+============= CLI >>'stdlib::Al_sg225.ncmat;vdoslux=2001' -f --now --dir=some/out/dir --index mymat.json<< ====================
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#3]
 Initialise nuclear data...
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" would normally cover energies up to Emax=1eV with the provided cfg-string but a value of Emax=5eV was enforced. [warn#6]
 Write ENDF file tsl_Al.endf ...
 Files created:
   tsl_Al.endf : Al with fraction 1
 Suggested material density: 2.698645518 g/cm^3
 Writing index file: mymat.json
-============================================================================================================================
+===============================================================================================================================
 Content of mymat.json:
 {
     "density": 2.6986455176922477,

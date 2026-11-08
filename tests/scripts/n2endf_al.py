@@ -31,31 +31,31 @@ import NCrystalDev.ncmat as nc_ncmat
 ncmat2endf_impl.unit_test_chop_vals[0] = True
 ncmat2endf_impl.unit_test_abort_write[0] = 'dump'
 
-test_cfg('Al_sg225.ncmat;vdoslux=1', material_name='Al',
+test_cfg('Al_sg225.ncmat;vdoslux=2001', material_name='Al',
          othertemps=350, elastic_mode='scaled')
 #Next-gen kernel processing:
 test_cfg('Al_sg225.ncmat;vdoslux=2001;knllux=3', material_name='Al',
          othertemps=350, elastic_mode='scaled')
 
-test_cfg('AlN_sg186_AluminumNitride.ncmat;vdoslux=1', material_name='AlN',
+test_cfg('AlN_sg186_AluminumNitride.ncmat;vdoslux=2001', material_name='AlN',
          othertemps=350, elastic_mode='scaled', compare_xsec=False,
          dump_file=False, verbosity=3)
-test_cfg('Al2O3_sg167_Corundum.ncmat;vdoslux=1', material_name='Al2O3',
+test_cfg('Al2O3_sg167_Corundum.ncmat;vdoslux=2001', material_name='Al2O3',
          elastic_mode='mixed', compare_xsec=False,
          dump_file=False, verbosity=3)
-test_cfg('Al4C3_sg166_AluminiumCarbide.ncmat;vdoslux=1', material_name='Al4C3',
+test_cfg('Al4C3_sg166_AluminiumCarbide.ncmat;vdoslux=2001', material_name='Al4C3',
          othertemps=350, elastic_mode='greater', compare_xsec=False,
          dump_file=False, verbosity=3)
 # Long config strings
 test_cfg('Al_sg225.ncmat;temp=300K;temp=300K;temp=300K;'
          'temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;'
-         'temp=300K;temp=300K;vdoslux=1', material_name='Al',
+         'temp=300K;temp=300K;vdoslux=2001', material_name='Al',
          elastic_mode='scaled', compare_xsec=False,
          dump_file=False)
 c=nc_ncmat.NCMATComposer('Al_sg225.ncmat')
 verylongname = ('Al_with_a_Very_Very_Ver_Very_Very_Very_Very_'
                 'Ver_Very_Very_Very_Very_Ver_Very_Very_Long_Name.ncmat')
 c.write(verylongname)
-test_cfg(verylongname+';vdoslux=1', material_name='Al',
+test_cfg(verylongname+';vdoslux=2001', material_name='Al',
          elastic_mode='scaled', compare_xsec=False,
          dump_file=False)
