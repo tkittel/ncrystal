@@ -242,22 +242,25 @@ namespace NCRYSTAL_NAMESPACE {
     };
 
     struct vardef_knllux final : public ValInt<vardef_knllux> {
+      //Values 0..6 select the luxury level of the kernel processing. The
+      //hidden developer-only value -1 (not in the description or error
+      //messages) selects the legacy kernel integration and sampling.
       static constexpr auto name = "knllux";
       static constexpr auto group = VarGroupId::ScatterBase;
       static constexpr auto description =
         "Setting affecting \"luxury\" level when integrating and sampling"
-        " inelastic scattering kernels. Currently this parameter is only"
-        " intended to be modified by NCrystal developers and should be"
-        " left at its default value of -1, but this will certainly"
-        " change in the future so stay tuned."
+        " inelastic scattering kernels, with implications for the precision,"
+        " the initialisation time and the memory usage. Allowed values are"
+        " from 0 (Crude) to 6 (Overkill), with 3 (Good) being suitable for"
+        " most purposes."
         ;
 
-      static constexpr value_type default_value() { return -1; }
+      static constexpr value_type default_value() { return 3; }
       static value_type value_validate( value_type value )
       {
         if ( ! ( value>=-1 && value <= 6 ) )
-          NCRYSTAL_THROW2(BadInput,name<<" is an expert-only parameter"
-                          " which must be an integral value (-1..6)");
+          NCRYSTAL_THROW2(BadInput,name<<" must be an integral value"
+                          " from 0 to 6");
         return value;
       }
     };
