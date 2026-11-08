@@ -175,11 +175,14 @@ def main():
 """ )
     test('Al_sans.ncmat')
     #Discontinuities which are not known in advance are detected (here by
-    #disabling the known ones):
+    #disabling the known ones). The legacy SABScatter (knllux=-1) provides no
+    #table, so the cross section is sampled. Currently (Nov 2026), this is the
+    #simplest way to test that code path with standard materials:
     with ensure_error(NCCalcError,'IsoMacroXSTable: the cross section has an'
                       ' unexpected discontinuity (or an extremely sharp'
                       ' feature) at wavelength 1.65323 Aa'):
-        ncquery(base+['discontinuities=0'])
+        ncquery(['isomacroxstable','stdlib::Al_sg225.ncmat;knllux=-1',
+                 'discontinuities=0'])
     with ensure_error(NCBadInput,'IsoMacroXSTable: invalid tolerance 0 (must be'
                       ' in the range (0,1))'):
         ncquery(base+['tol=0'])
