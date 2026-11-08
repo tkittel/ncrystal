@@ -181,6 +181,8 @@ namespace NCRYSTAL_NAMESPACE {
         streamJSON( os, r.msd_relspread );
         os << ",\"msd_nrows\":";
         streamJSON( os, static_cast<std::uint64_t>(r.msd_nrows) );
+        os << ",\"max_row_m0\":";
+        streamJSON( os, r.max_row_m0 );
         os << ",\"recoil_center_ratio\":";
         stream_opt_dbl( r.recoil_center_ratio );
         os << ",\"teff_extender\":";
