@@ -48,12 +48,12 @@ Caught expected NCBadInput('Invalid MiniMC JSON query: ["mmc","scenario"] (corre
 Caught expected NCBadInput('Invalid MiniMC JSON query: ["mmc","scenario","1.8Aa"] (correct usage: ["mmc","scenario",CFGSTR,SCENARIOSTR])')
 
 >>> Sending query: ['mmc', 'scenario', 'Al_sg225.ncmat', '1.8Aa']
-{'geomcfg': 'sphere;r=0.0573025',
- 'srccfg': 'circular;z=-0.0573025;r=0.0573025;wl=1.8;n=1e6'}
+{'geomcfg': 'sphere;r=0.057315',
+ 'srccfg': 'circular;z=-0.057315;r=0.057315;wl=1.8;n=1e6'}
 
 >>> Sending query: ['mmc', 'scenario', 'Al_sg225.ncmat', '']
-{'geomcfg': 'sphere;r=0.0530935',
- 'srccfg': 'circular;z=-0.0530935;r=0.0530935;wl=3.74084;n=1e6'}
+{'geomcfg': 'sphere;r=0.0531',
+ 'srccfg': 'circular;z=-0.0531;r=0.0531;wl=3.74084;n=1e6'}
 
 >>> Sending query: ['mmc', 'inspectcfg']
 Caught expected NCBadInput('Invalid MiniMC JSON query: ["mmc","inspectcfg"] (correct usage: ["mmc","inspectcfg","src|geom|engine",STRCFG])')

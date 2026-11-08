@@ -33,7 +33,7 @@ endf>                                                                   999 1451
 endf> This file was converted from the following NCrystal [1,2]         999 1451   12
 endf> cfg-string:                                                       999 1451   13
 endf>                                                                   999 1451   14
-endf>        "stdlib::Al_sg225.ncmat;vdoslux=2001;temp=293.15"          999 1451   15
+endf>          "stdlib::Al_sg225.ncmat;vdoslux=1;temp=293.15"           999 1451   15
 endf>                                                                   999 1451   16
 endf> using NCrystal NCVERSION                                          999 1451   17
 endf> and endf-parserpy [3] EPVERSION                                   999 1451   18
