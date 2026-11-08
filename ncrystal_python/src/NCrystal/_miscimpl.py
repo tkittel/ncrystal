@@ -371,7 +371,7 @@ def detect_scatcomps( standard_comp_types, matsrc ):
             try:
                 m = load('vdoslux=0')
             except NCCalcError as e:
-                if not str(e).startswith('VDOS expansion too slow'):
+                if not str(e).startswith('VDOS expansion would require'):
                     raise
                 m = None
         if not m:
