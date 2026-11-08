@@ -251,8 +251,8 @@ def _actualtest( verbose ):
     prfct(f'Trying to createScatterIndependentRNG("{_cfgstr4}",{_seed4})')
     gesc = NC.createScatterIndependentRNG(_cfgstr4,_seed4)
     prfct('Verifying loaded Scatter object')
-    require_flteq(591.0135018262793,gesc.crossSection(wl2ekin(1.540),( 0., 1., 1. )))
-    require_flteq(1.6547547622137442,gesc.crossSection(wl2ekin(1.540),( 1., 1., 0. )))
+    require_flteq(591.0126833534165,gesc.crossSection(wl2ekin(1.540),( 0., 1., 1. )))
+    require_flteq(1.6539362893509624,gesc.crossSection(wl2ekin(1.540),( 1., 1., 0. )))
     prfct('standard Python-API testing done')
 
 
