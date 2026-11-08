@@ -210,7 +210,7 @@ Dynamic info for U232 (100%):
 
 ProcComposition(2 components, isotropic)
    |-- ElIncScatter(nelements=1;max_contrib=23.5117barn)
-   \-- SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=232.04u;sigma_free=23.3086barn)
+   \-- SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=232.04u;extend=sct;sigma_free=23.3086barn)
 
 >>> Absorption process (object tree):
 
@@ -269,7 +269,7 @@ Dynamic info for U232 (100%):
 
 ProcComposition(2 components, isotropic)
    |-- ElIncScatter(nelements=1;max_contrib=23.5117barn)
-   \-- SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=232.04u;sigma_free=23.3086barn)
+   \-- SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=232.04u;extend=sct;sigma_free=23.3086barn)
 
 >>> Absorption process (object tree):
 
