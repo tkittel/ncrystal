@@ -72,18 +72,18 @@ def main( do_plot ):
     def t( *a, **kw ):
         test( *a, **kw, do_plot = do_plot )
     vdos = nc_vdos.createVDOSDebye(400.0)
-    t( vdos, m = 27.0, T = 0.5, vdoslux = 1 )
-    expected_error = ( "VDOS expansion too slow - can not reach E=5000eV"
-                       " after 10000 phonon convolutions (likely causes:"
-                       " either the target energy value is too high, vdoslux"
-                       " too low, the temperature too high, or the VDOS is"
-                       " very unusual).")
-    t( vdos, m = 27.0, T = 300.0, vdoslux = 1 )
-    t( vdos, m = 27.0, T = 300.0, vdoslux = 1, target_emax = 50 )
-    t( vdos, m = 27.0, T = 300.0, vdoslux = 4 )
-    t( vdos, m = 27.0, T = 300.0, vdoslux = 4, target_emax = 0.5 )
-    with ensure_error(nc_exceptions.NCCalcError,expected_error):
-        t( vdos, m = 27.0, T = 0.5, vdoslux = 1, target_emax = 5000 )
+    t( vdos, m = 27.0, T = 0.5, vdoslux = 2001 )
+    t( vdos, m = 27.0, T = 300.0, vdoslux = 2001 )
+    t( vdos, m = 27.0, T = 300.0, vdoslux = 2001, target_emax = 50 )
+    t( vdos, m = 27.0, T = 300.0, vdoslux = 2004 )
+    t( vdos, m = 27.0, T = 300.0, vdoslux = 2004, target_emax = 0.5 )
+    try:
+        t( vdos, m = 27.0, T = 0.5, vdoslux = 2001, target_emax = 5000 )
+        raise SystemExit('Did not emit exception as required!')
+    except nc_exceptions.NCCalcError as e:
+        msg = str(e)
+        print(f'Caught expected NCCalcError: {msg.split("(")[0].strip()}')
+        assert 'excessive resources' in msg
     test_g1_resolution()
     test_unusual_vdos()
     test_resource_limits()
