@@ -23,7 +23,8 @@
 def main():
     #Checking https://github.com/mctools/ncrystal/issues/262
     import NCrystalDev.misc as nc_misc
-    cfg = "CaO2H2_sg164_CalciumHydroxide.ncmat;temp=1000K"
+    #At 3000K the cheap vdoslux=0 load fails, so the retry is also tested:
+    cfg = "CaO2H2_sg164_CalciumHydroxide.ncmat;temp=3000K"
     print(nc_misc.detect_scattering_components(cfg))
 
 if __name__ == '__main__':

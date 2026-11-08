@@ -61,13 +61,13 @@ HKL planes (d_lower = 1.5 Aa, d_upper = inf Aa):
   Bragg XS(  5Aa) = 0 barn
   Bragg XS(5.5Aa) = 0 barn
   Bragg XS(  6Aa) = 0 barn
-  NonBragg XS(  3Aa) = 0.140695 barn
-  NonBragg XS(3.5Aa) = 0.136136 barn
-  NonBragg XS(  4Aa) = 0.136214 barn
-  NonBragg XS(4.5Aa) = 0.138925 barn
-  NonBragg XS(  5Aa) = 0.143286 barn
-  NonBragg XS(5.5Aa) = 0.148731 barn
-  NonBragg XS(  6Aa) = 0.154986 barn
+  NonBragg XS(  3Aa) = 0.140499 barn
+  NonBragg XS(3.5Aa) = 0.135933 barn
+  NonBragg XS(  4Aa) = 0.136005 barn
+  NonBragg XS(4.5Aa) = 0.138716 barn
+  NonBragg XS(  5Aa) = 0.143072 barn
+  NonBragg XS(5.5Aa) = 0.148509 barn
+  NonBragg XS(  6Aa) = 0.154752 barn
 
 
 
@@ -132,13 +132,13 @@ HKL planes (d_lower = 1.5 Aa, d_upper = inf Aa):
   Bragg XS(  5Aa) = 1.1075 barn
   Bragg XS(5.5Aa) = 1.34007 barn
   Bragg XS(  6Aa) = 0 barn
-  NonBragg XS(  3Aa) = 0.140695 barn
-  NonBragg XS(3.5Aa) = 0.136136 barn
-  NonBragg XS(  4Aa) = 0.136214 barn
-  NonBragg XS(4.5Aa) = 0.138925 barn
-  NonBragg XS(  5Aa) = 0.143286 barn
-  NonBragg XS(5.5Aa) = 0.148731 barn
-  NonBragg XS(  6Aa) = 0.154986 barn
+  NonBragg XS(  3Aa) = 0.140499 barn
+  NonBragg XS(3.5Aa) = 0.135933 barn
+  NonBragg XS(  4Aa) = 0.136005 barn
+  NonBragg XS(4.5Aa) = 0.138716 barn
+  NonBragg XS(  5Aa) = 0.143072 barn
+  NonBragg XS(5.5Aa) = 0.148509 barn
+  NonBragg XS(  6Aa) = 0.154752 barn
 
 
 
@@ -202,13 +202,13 @@ HKL planes (d_lower = 1.5 Aa, d_upper = inf Aa):
   Bragg XS(  5Aa) = 0 barn
   Bragg XS(5.5Aa) = 0 barn
   Bragg XS(  6Aa) = 0 barn
-  NonBragg XS(  3Aa) = 0.140695 barn
-  NonBragg XS(3.5Aa) = 0.136136 barn
-  NonBragg XS(  4Aa) = 0.136214 barn
-  NonBragg XS(4.5Aa) = 0.138925 barn
-  NonBragg XS(  5Aa) = 0.143286 barn
-  NonBragg XS(5.5Aa) = 0.148731 barn
-  NonBragg XS(  6Aa) = 0.154986 barn
+  NonBragg XS(  3Aa) = 0.140499 barn
+  NonBragg XS(3.5Aa) = 0.135933 barn
+  NonBragg XS(  4Aa) = 0.136005 barn
+  NonBragg XS(4.5Aa) = 0.138716 barn
+  NonBragg XS(  5Aa) = 0.143072 barn
+  NonBragg XS(5.5Aa) = 0.148509 barn
+  NonBragg XS(  6Aa) = 0.154752 barn
 Caught expected NCBadInput('strain must be in the interval [-0.5,0.5]')
 Caught expected NCBadInput('strain must be in the interval [-0.5,0.5]')
 Caught expected NCBadInput('Syntax error - invalid value "none" provided for parameter "strain"')

@@ -540,6 +540,8 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): Assuming atomic symbol "O" based o
 Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
+NCrystal WARNING: VDOS expansion could only reach Emax=1.90524eV and not the target Emax=5eV
+NCrystal WARNING: VDOS expansion could only reach Emax=3.44725eV and not the target Emax=5eV
 Writing autogen_CaO3Si_sg2_cod9005777.ncmat
 OUT>NCMAT v8
 OUT>#

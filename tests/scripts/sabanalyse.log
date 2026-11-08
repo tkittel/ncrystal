@@ -1,18 +1,18 @@
 ==> stdlib::Al_sg225.ncmat//mono:
-    teff ~ 320 K (vdos 320 K), relerr<0.02: OK [nrows=211]
-    msd  ~ 0.0098 Aa^2 (vdos 0.0098 Aa^2), relerr<0.02: OK [nrows=180]
+    teff ~ 320 K (vdos 320 K), relerr<0.02: OK [nrows=152]
+    msd  ~ 0.0098 Aa^2 (vdos 0.0098 Aa^2), relerr<0.02: OK [nrows=95]
 ==> stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=20//H:
-    teff ~ 634 K (vdos 634 K), relerr<0.03: OK [nrows=110]
-    msd  ~ 0.021 Aa^2 (vdos 0.021 Aa^2), relerr<0.08: OK [nrows=169]
+    teff ~ 633 K (vdos 634 K), relerr<0.03: OK [nrows=61]
+    msd  ~ 0.021 Aa^2 (vdos 0.021 Aa^2), relerr<0.08: OK [nrows=79]
 ==> stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=20//Ca:
-    teff ~ 137 K (vdos 137 K), relerr<0.02: OK [nrows=206]
-    msd  ~ 0.0026 Aa^2 (vdos 0.0026 Aa^2), relerr<0.02: OK [nrows=127]
+    teff ~ 137 K (vdos 137 K), relerr<0.02: OK [nrows=140]
+    msd  ~ 0.0026 Aa^2 (vdos 0.0026 Aa^2), relerr<0.02: OK [nrows=66]
 ==> stdlib::Fe_sg229_Iron-alpha.ncmat;temp=800//mono:
-    teff ~ 811 K (vdos 811 K), relerr<0.02: OK [nrows=237]
-    msd  ~ 0.011 Aa^2 (vdos 0.011 Aa^2), relerr<0.02: OK [nrows=155]
+    teff ~ 811 K (vdos 811 K), relerr<0.02: OK [nrows=153]
+    msd  ~ 0.011 Aa^2 (vdos 0.011 Aa^2), relerr<0.02: OK [nrows=96]
 ==> stdlib::Polyethylene_CH2.ncmat//H:
-    teff ~ 1.21e+03 K (vdos 1.21e+03 K), relerr<0.02: OK [nrows=155]
-    msd  ~ 0.048 Aa^2 (vdos 0.047 Aa^2), relerr<0.03: OK [nrows=142]
+    teff ~ 1.21e+03 K (vdos 1.21e+03 K), relerr<0.02: OK [nrows=61]
+    msd  ~ 0.047 Aa^2 (vdos 0.047 Aa^2), relerr<0.03: OK [nrows=81]
 NCrystal WARNING: Discarding 52 edges of provided kernel data due to missing S values.
 ==> liquid water (direct kernel):
     teff in (2T,10T) with modest spread: OK
@@ -20,5 +20,5 @@ NCrystal WARNING: Discarding 52 edges of provided kernel data due to missing S v
     auto: teff accepted, msd rejected: OK
 ==> explicit effective_temperature honoured: OK
 ==> JENDL benzene fixtures: 100K C teff+msd: OK, 100K H teff, no msd: OK, 20K C teff+msd: OK
-==> diagnostics: 400 rows, aligned arrays and valid status codes: OK
+==> diagnostics: 280 rows, aligned arrays and valid status codes: OK
 ==> direct-kernel extension methods: knllux=1 -> sct, freegas query -> freegas
