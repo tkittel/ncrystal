@@ -195,7 +195,7 @@ def test_knl():
     print(">>>> di.plot_Gn(1)")
     di.plot_Gn(1)
     print(">>>> di.plot_knl")
-    di.plot_knl(vdoslux=2000,phasespace_curves=[0.001,0.1])
+    di.plot_knl(vdoslux=0,phasespace_curves=[0.001,0.1])
 
 if __name__ == '__main__':
     import sys

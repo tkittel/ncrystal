@@ -1,6 +1,6 @@
 # Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxs_light".
 # Regenerate with: long_sabxs_light.py --update
-@cfg stdlib::Polyethylene_CH2.ncmat;temp=20;vdoslux=2000;knllux=0
+@cfg stdlib::Polyethylene_CH2.ncmat;temp=20;vdoslux=0;knllux=0
 1e-10 47.20132
 1.723466e-09 11.3698
 2.782559e-09 8.948129
@@ -39,7 +39,7 @@
 8.180421 14.86425
 35.93814 15.15061
 1000 15.23197
-@cfg stdlib::Polyethylene_CH2.ncmat;temp=250;vdoslux=2001;knllux=1
+@cfg stdlib::Polyethylene_CH2.ncmat;temp=250;vdoslux=1;knllux=1
 1e-10 42317.219
 2.782559e-09 8022.2267
 2.154333e-08 2883.1127
@@ -78,7 +78,7 @@
 21.54333 15.215842
 35.93814 15.223517
 1000 15.234591
-@cfg stdlib::Polyethylene_CH2.ncmat;temp=293.15;vdoslux=2002;knllux=2
+@cfg stdlib::Polyethylene_CH2.ncmat;temp=293.15;vdoslux=2;knllux=2
 1e-10 54949.2047
 2.782559e-09 10416.9174
 2.52617e-08 3457.25275
@@ -117,7 +117,7 @@
 25.2617 15.2325298
 35.93814 15.2332647
 1000 15.2349413
-@cfg stdlib::Polyethylene_CH2.ncmat;temp=306.265;vdoslux=2003;knllux=3
+@cfg stdlib::Polyethylene_CH2.ncmat;temp=306.265;vdoslux=3;knllux=3
 1e-10 58998.2191
 2.782559e-09 11184.5035
 2.639187e-08 3631.65725
@@ -156,7 +156,7 @@
 26.39187 15.2372318
 35.93814 15.23664
 1000 15.2350626
-@cfg stdlib::Polyethylene_CH2.ncmat;temp=306.27;vdoslux=2004;knllux=4
+@cfg stdlib::Polyethylene_CH2.ncmat;temp=306.27;vdoslux=4;knllux=4
 1e-10 59003.4915
 2.782559e-09 11185.5031
 2.63923e-08 3631.95221
@@ -195,7 +195,7 @@
 26.3923 15.238475
 35.93814 15.237553
 1000 15.2350954
-@cfg stdlib::Polyethylene_CH2.ncmat;temp=350;vdoslux=2005;knllux=5
+@cfg stdlib::Polyethylene_CH2.ncmat;temp=350;vdoslux=5;knllux=5
 1e-10 73165.6344
 2.782559e-09 13870.2712
 3.016066e-08 4212.96479
@@ -234,7 +234,7 @@
 30.16066 15.2405365
 35.93814 15.2396471
 1000 15.2351706
-@cfg stdlib::Polyethylene_CH2.ncmat;temp=1000;vdoslux=2000;knllux=1
+@cfg stdlib::Polyethylene_CH2.ncmat;temp=1000;vdoslux=0;knllux=1
 1e-10 342242.3
 2.782559e-09 64880.11
 7.742637e-08 12299.58
@@ -273,7 +273,7 @@
 76.59849 15.21841
 86.1733 15.22025
 1000 15.23373
-@cfg stdlib::Polyethylene_CH2.ncmat;temp=3000;vdoslux=2001;knllux=2
+@cfg stdlib::Polyethylene_CH2.ncmat;temp=3000;vdoslux=1;knllux=2
 1e-10 886872.76
 2.782559e-09 168127.64
 7.742637e-08 31872.556
@@ -312,7 +312,7 @@
 229.7955 15.241929
 258.5199 15.24116
 1000 15.236595
-@cfg stdlib::LiH_sg225_LithiumHydride.ncmat;temp=5;vdoslux=2002;knllux=3
+@cfg stdlib::LiH_sg225_LithiumHydride.ncmat;temp=5;vdoslux=2;knllux=3
 1e-10 0.042471254
 4.308665e-10 0.0204608523
 2.782559e-09 0.00805143482
@@ -351,7 +351,7 @@
 8.180421 10.6522492
 35.93814 10.7421808
 1000 10.7677318
-@cfg stdlib::LiH_sg225_LithiumHydride.ncmat;temp=293.15;vdoslux=2003;knllux=4
+@cfg stdlib::LiH_sg225_LithiumHydride.ncmat;temp=293.15;vdoslux=3;knllux=4
 1e-10 13705.0047
 2.782559e-09 2598.10679
 2.52617e-08 862.280078
@@ -390,7 +390,7 @@
 25.2617 10.7448728
 35.93814 10.7519467
 1000 10.7680828
-@cfg stdlib::LiH_sg225_LithiumHydride.ncmat;temp=1000;vdoslux=2004;knllux=5
+@cfg stdlib::LiH_sg225_LithiumHydride.ncmat;temp=1000;vdoslux=4;knllux=5
 1e-10 190988.351
 2.782559e-09 36206.3452
 7.742637e-08 6863.77077
@@ -429,7 +429,7 @@
 76.59849 10.7700392
 86.1733 10.7698887
 1000 10.7687881
-@cfg stdlib::LiH_sg225_LithiumHydride.ncmat;temp=3000;vdoslux=2005;knllux=0
+@cfg stdlib::LiH_sg225_LithiumHydride.ncmat;temp=3000;vdoslux=5;knllux=0
 1e-10 543764.6
 2.782559e-09 103083.401
 7.742637e-08 19541.8946
@@ -468,7 +468,7 @@
 229.7955 10.773967
 258.5199 10.77338
 1000 10.7698983
-@cfg stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=20;vdoslux=2000;knllux=2
+@cfg stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=20;vdoslux=0;knllux=2
 1e-10 8.69452
 1.723466e-09 2.094326
 2.782559e-09 1.648252
@@ -507,7 +507,7 @@
 8.180421 14.45941
 35.93814 14.88811
 1000 15.00991
-@cfg stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=293.15;vdoslux=2001;knllux=3
+@cfg stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=293.15;vdoslux=1;knllux=3
 1e-10 18247.089
 2.782559e-09 3459.1659
 2.52617e-08 1148.0549
@@ -546,7 +546,7 @@
 25.2617 14.956914
 35.93814 14.974006
 1000 15.012994
-@cfg stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=3000;vdoslux=2002;knllux=4
+@cfg stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=3000;vdoslux=2;knllux=4
 1e-10 725037.22
 2.782559e-09 137447.901
 7.742637e-08 26056.4937
@@ -585,7 +585,7 @@
 229.7955 15.0210318
 258.5199 15.0203002
 1000 15.0159602
-@cfg stdlib::MgH2_sg136_MagnesiumHydride.ncmat;temp=1;vdoslux=2003;knllux=5
+@cfg stdlib::MgH2_sg136_MagnesiumHydride.ncmat;temp=1;vdoslux=3;knllux=5
 8.61733e-11 0.000244524447
 1e-10 0.000226991005
 8.61733e-10 7.73261589e-05
@@ -624,7 +624,7 @@
 8.180421 14.6521909
 35.93814 14.7666317
 1000 14.7991463
-@cfg stdlib::MgH2_sg136_MagnesiumHydride.ncmat;temp=293.15;vdoslux=2004;knllux=0
+@cfg stdlib::MgH2_sg136_MagnesiumHydride.ncmat;temp=293.15;vdoslux=4;knllux=0
 1e-10 25308.272
 2.782559e-09 4797.7797
 2.52617e-08 1592.3242
@@ -663,7 +663,7 @@
 25.2617 14.7706125
 35.93814 14.7794494
 1000 14.7996069
-@cfg stdlib::MgH2_sg136_MagnesiumHydride.ncmat;temp=1000;vdoslux=2005;knllux=1
+@cfg stdlib::MgH2_sg136_MagnesiumHydride.ncmat;temp=1000;vdoslux=5;knllux=1
 1e-10 279201.869
 2.782559e-09 52929.2975
 7.742637e-08 10034.0007
@@ -702,7 +702,7 @@
 76.59849 14.8026259
 86.1733 14.802374
 1000 14.8005321
-@cfg stdlib::MgD2_sg136_MagnesiumDeuteride.ncmat;temp=5;vdoslux=2000;knllux=3
+@cfg stdlib::MgD2_sg136_MagnesiumDeuteride.ncmat;temp=5;vdoslux=0;knllux=3
 1e-10 0.005987964
 4.308665e-10 0.002884748
 2.782559e-09 0.001135166
@@ -741,7 +741,7 @@
 8.180421 3.29073
 35.93814 3.376829
 1000 3.401292
-@cfg stdlib::MgD2_sg136_MagnesiumDeuteride.ncmat;temp=293.15;vdoslux=2001;knllux=4
+@cfg stdlib::MgD2_sg136_MagnesiumDeuteride.ncmat;temp=293.15;vdoslux=1;knllux=4
 1e-10 3806.2163
 2.782559e-09 721.55804
 2.52617e-08 239.47631
@@ -780,7 +780,7 @@
 25.2617 3.3919557
 35.93814 3.3950001
 1000 3.4019446
-@cfg stdlib::MgD2_sg136_MagnesiumDeuteride.ncmat;temp=1000;vdoslux=2002;knllux=5
+@cfg stdlib::MgD2_sg136_MagnesiumDeuteride.ncmat;temp=1000;vdoslux=2;knllux=5
 1e-10 33272.546
 2.782559e-09 6307.59563
 7.742637e-08 1195.75483
@@ -819,7 +819,7 @@
 76.59849 3.40178252
 86.1733 3.40182929
 1000 3.40217121
-@cfg stdlib::CaO2H2_sg164_CalciumHydroxide.ncmat;temp=293.15;vdoslux=2003;knllux=0
+@cfg stdlib::CaO2H2_sg164_CalciumHydroxide.ncmat;temp=293.15;vdoslux=3;knllux=0
 1e-10 78333.343
 2.782559e-09 14849.9327
 2.52617e-08 4928.5213
@@ -858,7 +858,7 @@
 25.2617 10.5147845
 35.93814 10.5124169
 1000 10.5070164
-@cfg stdlib::CaO2H2_sg164_CalciumHydroxide.ncmat;temp=700;vdoslux=2004;knllux=1
+@cfg stdlib::CaO2H2_sg164_CalciumHydroxide.ncmat;temp=700;vdoslux=4;knllux=1
 1e-10 232661.982
 2.782559e-09 44106.5646
 6.032131e-08 9473.07325
@@ -897,7 +897,7 @@
 53.61894 10.5142145
 60.32131 10.5133923
 1000 10.5072118
-@cfg stdlib::CaO2H2_sg164_CalciumHydroxide.ncmat;temp=3000;vdoslux=2005;knllux=2
+@cfg stdlib::CaO2H2_sg164_CalciumHydroxide.ncmat;temp=3000;vdoslux=5;knllux=2
 1e-10 537222.823
 2.782559e-09 101843.253
 7.742637e-08 19306.7897
@@ -936,7 +936,7 @@
 229.7955 10.5117578
 258.5199 10.5112086
 1000 10.5079509
-@cfg stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=2000;knllux=4
+@cfg stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=0;knllux=4
 1e-10 94815.74
 2.782559e-09 17975.47
 2.530048e-08 5964.966
@@ -975,7 +975,7 @@
 25.30048 14.92743
 35.93814 14.92185
 1000 14.90906
-@cfg stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=2001;knllux=5
+@cfg stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=1;knllux=5
 1e-10 94815.735
 2.782559e-09 17975.466
 2.530048e-08 5964.9661
@@ -1014,7 +1014,7 @@
 25.30048 14.92743
 35.93814 14.921851
 1000 14.90906
-@cfg stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=2002;knllux=0
+@cfg stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=2;knllux=0
 1e-10 94815.735
 2.782559e-09 17975.4657
 2.530048e-08 5964.96548
@@ -1053,7 +1053,7 @@
 25.30048 14.9274296
 35.93814 14.9218511
 1000 14.90906
-@cfg stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat;vdoslux=2003;knllux=1
+@cfg stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat;vdoslux=3;knllux=1
 1e-10 9773.18729
 2.782559e-09 1854.07063
 2.530048e-08 618.250048
@@ -1092,7 +1092,7 @@
 25.30048 3.5099987
 35.93814 3.51012584
 1000 3.51041735
-@cfg stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat;vdoslux=2004;knllux=2
+@cfg stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat;vdoslux=4;knllux=2
 1e-10 9773.18729
 2.782559e-09 1854.07062
 2.530048e-08 618.250162
@@ -1131,7 +1131,7 @@
 25.30048 3.5099987
 35.93814 3.51012584
 1000 3.51041735
-@cfg stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat;vdoslux=2005;knllux=3
+@cfg stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat;vdoslux=5;knllux=3
 1e-10 9773.1873
 2.782559e-09 1854.07065
 2.530048e-08 618.25027
@@ -1170,7 +1170,7 @@
 25.30048 3.5099987
 35.93814 3.51012584
 1000 3.51041735
-@cfg solid::H2O/1gcm3;temp=5;vdoslux=2000;knllux=5
+@cfg solid::H2O/1gcm3;temp=5;vdoslux=0;knllux=5
 1e-10 5.74197
 4.308665e-10 2.766238
 2.782559e-09 1.088532
@@ -1209,7 +1209,7 @@
 8.180421 13.12518
 35.93814 14.50264
 1000 14.89399
-@cfg solid::H2O/1gcm3;temp=293.15;vdoslux=2001;knllux=0
+@cfg solid::H2O/1gcm3;temp=293.15;vdoslux=1;knllux=0
 1e-10 200119.04
 2.782559e-09 37937.284
 2.52617e-08 12590.914
@@ -1248,7 +1248,7 @@
 25.2617 14.868615
 35.93814 14.880489
 1000 14.907574
-@cfg solid::H2O/1gcm3;temp=1000;vdoslux=2002;knllux=1
+@cfg solid::H2O/1gcm3;temp=1000;vdoslux=2;knllux=1
 1e-10 452344.445
 2.782559e-09 85752.5553
 7.742637e-08 16256.4196

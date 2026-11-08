@@ -1,6 +1,6 @@
 # Reference cross sections [barn/atom] vs. energy [eV] for the test "sabxs_trouble".
 # Regenerate with: sabxs_trouble.py --update
-@cfg Li_from_Li2O.ncmat;temp=10;vdoslux=2000;knllux=0
+@cfg Li_from_Li2O.ncmat;temp=10;vdoslux=0;knllux=0
 1e-10 0.008306538
 8.61733e-10 0.002829656
 2.782559e-09 0.001574704
@@ -39,7 +39,7 @@
 8.180421 1.017801
 35.93814 1.040491
 1000 1.046937
-@cfg Li_from_Li2O.ncmat;temp=293.15;vdoslux=2001;knllux=1
+@cfg Li_from_Li2O.ncmat;temp=293.15;vdoslux=1;knllux=1
 1e-10 625.50776
 2.782559e-09 118.57974
 2.52617e-08 39.355173
@@ -78,7 +78,7 @@
 25.2617 1.0436476
 35.93814 1.0446962
 1000 1.0470882
-@cfg Li_from_Li2O.ncmat;temp=1000;vdoslux=2002;knllux=2
+@cfg Li_from_Li2O.ncmat;temp=1000;vdoslux=2;knllux=2
 1e-10 5048.40768
 2.782559e-09 957.044711
 7.742637e-08 181.430795
@@ -117,7 +117,7 @@
 76.59849 1.04689334
 86.1733 1.0469249
 1000 1.04715566
-@cfg O_from_Li2O.ncmat;temp=10;vdoslux=2003;knllux=3
+@cfg O_from_Li2O.ncmat;temp=10;vdoslux=3;knllux=3
 1e-10 0.0215417352
 8.61733e-10 0.00733828072
 2.782559e-09 0.00408375236
@@ -156,7 +156,7 @@
 8.180421 3.66109386
 35.93814 3.7261843
 1000 3.74467758
-@cfg O_from_Li2O.ncmat;temp=293.15;vdoslux=2004;knllux=4
+@cfg O_from_Li2O.ncmat;temp=293.15;vdoslux=4;knllux=4
 1e-10 1212.5015
 2.782559e-09 229.858249
 2.52617e-08 76.2871763
@@ -195,7 +195,7 @@
 25.2617 3.73088576
 35.93814 3.73518781
 1000 3.74500115
-@cfg O_from_Li2O.ncmat;temp=1000;vdoslux=2005;knllux=5
+@cfg O_from_Li2O.ncmat;temp=1000;vdoslux=5;knllux=5
 1e-10 8484.55548
 2.782559e-09 1608.44755
 7.742637e-08 304.920263
@@ -234,7 +234,7 @@
 76.59849 3.74388417
 86.1733 3.74404893
 1000 3.74525339
-@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=5;vdoslux=2000;knllux=1
+@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=5;vdoslux=0;knllux=1
 1e-10 0.002515159
 4.308665e-10 0.001211697
 2.782559e-09 0.0004768104
@@ -273,7 +273,7 @@
 8.180421 5.057787
 35.93814 5.353536
 1000 5.438009
-@cfg stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=293.15;vdoslux=2001;knllux=2
+@cfg stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=293.15;vdoslux=1;knllux=2
 1e-10 1048.9533
 2.782559e-09 198.85384
 2.52617e-08 65.997235
@@ -312,7 +312,7 @@
 25.2617 6.8662658
 35.93814 6.8794722
 1000 6.9098403
-@cfg stdlib::Al_sg225.ncmat;temp=293.15;vdoslux=2002;knllux=3
+@cfg stdlib::Al_sg225.ncmat;temp=293.15;vdoslux=2;knllux=3
 1e-10 544.247376
 2.782559e-09 103.174923
 2.52617e-08 34.2425485
@@ -351,7 +351,7 @@
 25.2617 1.39346884
 35.93814 1.39441943
 1000 1.39658781
-@cfg stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=10;vdoslux=2003;knllux=4
+@cfg stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=10;vdoslux=3;knllux=4
 1e-10 0.73018974
 8.61733e-10 0.248742139
 2.782559e-09 0.138424994
@@ -390,7 +390,7 @@
 8.180421 14.8483577
 35.93814 14.976641
 1000 15.0130884
-@cfg stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=1000;vdoslux=2004;knllux=5
+@cfg stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=1000;vdoslux=4;knllux=5
 1e-10 254578.646
 2.782559e-09 48261.385
 7.742637e-08 9149.08797
@@ -429,7 +429,7 @@
 76.59849 15.0156102
 86.1733 15.015481
 1000 15.0145362
-@cfg stdlib::Li2O_sg225_LithiumOxide.ncmat;temp=10;vdoslux=2005;knllux=0
+@cfg stdlib::Li2O_sg225_LithiumOxide.ncmat;temp=10;vdoslux=5;knllux=0
 1e-10 0.0124294723
 8.61733e-10 0.00423415086
 2.782559e-09 0.00235630448
@@ -468,7 +468,7 @@
 8.180421 1.90919878
 35.93814 1.93806641
 1000 1.94626819
-@cfg Li_from_Li2O.ncmat;temp=10;vdoslux=2004;knllux=4
+@cfg Li_from_Li2O.ncmat;temp=10;vdoslux=4;knllux=4
 1e-10 0.00790228383
 8.61733e-10 0.00269194549
 2.782559e-09 0.00149806738
@@ -507,7 +507,7 @@
 8.180421 1.03294912
 35.93814 1.0439387
 1000 1.04706102
-@cfg O_from_Li2O.ncmat;temp=293.15;vdoslux=2001;knllux=3<<FREEGASEXTENDER>>
+@cfg O_from_Li2O.ncmat;temp=293.15;vdoslux=1;knllux=3<<FREEGASEXTENDER>>
 1e-10 1211.2801
 2.782559e-09 229.6267
 2.52617e-08 76.210328
@@ -546,7 +546,7 @@
 25.2617 3.7298066
 35.93814 3.7344292
 1000 3.7449739
-@cfg stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=2000;knllux=0
+@cfg stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=0;knllux=0
 1e-10 94815.44
 2.782559e-09 17975.42
 2.530048e-08 5964.954
@@ -585,7 +585,7 @@
 25.30048 14.92743
 35.93814 14.92185
 1000 14.90906
-@cfg stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=2001;knllux=1
+@cfg stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=1;knllux=1
 1e-10 94815.735
 2.782559e-09 17975.466
 2.530048e-08 5964.969
@@ -624,7 +624,7 @@
 25.30048 14.92743
 35.93814 14.921851
 1000 14.90906
-@cfg benzene_solid_100K_sabsmall.ncmat;vdoslux=2002;knllux=2
+@cfg benzene_solid_100K_sabsmall.ncmat;vdoslux=2;knllux=2
 1e-10 11974.9575
 2.782559e-09 2270.14214
 8.61733e-09 1290.00669
@@ -663,7 +663,7 @@
 8.61733 12.558354
 35.93814 12.5717794
 1000 12.6061296
-@cfg benzene_solid_100K_sabsmall.ncmat;vdoslux=2003;knllux=3
+@cfg benzene_solid_100K_sabsmall.ncmat;vdoslux=3;knllux=3
 1e-10 11974.9575
 2.782559e-09 2270.14214
 8.61733e-09 1290.00669
@@ -702,7 +702,7 @@
 8.61733 12.5581918
 35.93814 12.5717794
 1000 12.6061296
-@cfg C_from_benzene_solid_20K_sabsmall.ncmat;vdoslux=2004;knllux=4
+@cfg C_from_benzene_solid_20K_sabsmall.ncmat;vdoslux=4;knllux=4
 1e-10 40.0702976
 1.723466e-09 9.6520964
 2.782559e-09 7.59628679
@@ -738,10 +738,10 @@
 1.340474 4.56638505
 1.53197 4.58328163
 1.723466 4.59588887
-8.180421 4.61263435
-35.93814 4.69913613
-1000 4.72371274
-@cfg C_from_benzene_solid_20K_sabsmall.ncmat;vdoslux=2005;knllux=5
+8.180421 4.61263561
+35.93814 4.69913641
+1000 4.72371275
+@cfg C_from_benzene_solid_20K_sabsmall.ncmat;vdoslux=5;knllux=5
 1e-10 40.0702976
 1.723466e-09 9.6520964
 2.782559e-09 7.59628679
@@ -777,6 +777,6 @@
 1.340474 4.56638541
 1.53197 4.58328216
 1.723466 4.59589395
-8.180421 4.61263435
-35.93814 4.69913613
-1000 4.72371274
+8.180421 4.6126356
+35.93814 4.69913641
+1000 4.72371275

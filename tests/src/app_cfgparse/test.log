@@ -468,6 +468,18 @@ Test C++ interface:
   => cfgstr: dir1=@crys_hkl:4,5,6@lab:1,2,3;infofactory=wuhu;lcaxis=1,1,1;mos=1arcmin
   => .applyStrCfg("dir1=@crys_hkl:4,5,6@lab:1,2,3") : 
   => cfgstr: dir1=@crys_hkl:4,5,6@lab:1,2,3;infofactory=wuhu;lcaxis=1,1,1;mos=1arcmin
+vdoslux=3: get_vdoslux()=3 cfgstr="vdoslux=3"
+vdoslux=2003: get_vdoslux()=3 cfgstr="vdoslux=3"
+vdoslux=2000: get_vdoslux()=0 cfgstr="vdoslux=0"
+vdoslux=2006: get_vdoslux()=6 cfgstr="vdoslux=6"
+vdoslux=1003: get_vdoslux()=1003 cfgstr="vdoslux=1003"
+vdoslux=1000: get_vdoslux()=1000 cfgstr="vdoslux=1000"
+vdoslux=1005: get_vdoslux()=1005 cfgstr="vdoslux=1005"
+vdoslux=7: BadInput: vdoslux must be an integral value from 0 to 6
+vdoslux=1006: BadInput: vdoslux must be an integral value from 0 to 6
+vdoslux=2007: BadInput: vdoslux must be an integral value from 0 to 6
+vdoslux=999: BadInput: vdoslux must be an integral value from 0 to 6
+vdoslux=-1: BadInput: vdoslux must be an integral value from 0 to 6
 Base parameters:
 
   atomdb:

@@ -472,9 +472,9 @@ namespace {
     //change into a macroscopic one, in particular on the special grids where
     //many values are mathematically exactly on boundaries.
     struct Cfg { double debyeT, temp, mass; int lux; };
-    const Cfg cfgs[] = { {410.0,293.15,26.98,2000},
-                         {200.0,10.0,207.2,2000},
-                         {900.0,600.0,12.0,2001} };
+    const Cfg cfgs[] = { {410.0,293.15,26.98,0},
+                         {200.0,10.0,207.2,0},
+                         {900.0,600.0,12.0,1} };
     struct Res { unsigned order; NC::Rectangle sab; NC::VectD a, b, e0; };
     auto run = []( const Cfg& c, double debyeT )
     {
@@ -540,7 +540,7 @@ namespace {
     //Full expansion + grid construction for a Debye VDOS. Output must be
     //reproducible across all platforms (to the precision printed):
     auto vd = makeDebyeVDOS();
-    const NCV::VDOSLux lux( 2000 );//lowest next-gen level
+    const NCV::VDOSLux lux( 0 );//lowest level
     auto gnexpn = NCV::expandVDOSToGnFcts( vd, lux );
     std::cout << "Expansion: maxOrder=" << gnexpn.Gn.maxOrder().value()
               << " suggestedEmax=" << NC::fmt(gnexpn.suggestedEmax.dbl(),"%.9g")

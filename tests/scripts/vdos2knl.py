@@ -23,7 +23,7 @@
 # NEEDS: numpy
 
 # Test expansion of VDOS curves into scattering kernels. Apart from basic
-# usage, this includes tests of non-legacy expansions (vdoslux 2000..2006) at
+# usage, this includes tests of next-gen expansions (vdoslux 0..6) at
 # low temperatures, where structure on the scale of kT must be resolved:
 #
 #  * G1 must be sampled finely enough, even when the input VDOS grid is
@@ -72,13 +72,13 @@ def main( do_plot ):
     def t( *a, **kw ):
         test( *a, **kw, do_plot = do_plot )
     vdos = nc_vdos.createVDOSDebye(400.0)
-    t( vdos, m = 27.0, T = 0.5, vdoslux = 2001 )
-    t( vdos, m = 27.0, T = 300.0, vdoslux = 2001 )
-    t( vdos, m = 27.0, T = 300.0, vdoslux = 2001, target_emax = 50 )
-    t( vdos, m = 27.0, T = 300.0, vdoslux = 2004 )
-    t( vdos, m = 27.0, T = 300.0, vdoslux = 2004, target_emax = 0.5 )
+    t( vdos, m = 27.0, T = 0.5, vdoslux = 1 )
+    t( vdos, m = 27.0, T = 300.0, vdoslux = 1 )
+    t( vdos, m = 27.0, T = 300.0, vdoslux = 1, target_emax = 50 )
+    t( vdos, m = 27.0, T = 300.0, vdoslux = 4 )
+    t( vdos, m = 27.0, T = 300.0, vdoslux = 4, target_emax = 0.5 )
     try:
-        t( vdos, m = 27.0, T = 0.5, vdoslux = 2001, target_emax = 5000 )
+        t( vdos, m = 27.0, T = 0.5, vdoslux = 1, target_emax = 5000 )
         raise SystemExit('Did not emit exception as required!')
     except nc_exceptions.NCCalcError as e:
         msg = str(e)
@@ -137,7 +137,7 @@ def test_unusual_vdos():
     #comments in the files), at temperatures where Gn spectra have structure
     #on the scale of kT while extending over hundreds or thousands of kT.
     #Tests both detailed balance of Gn functions, and that cross sections
-    #agree with reference values (obtained at vdoslux=2005, with budgets for
+    #agree with reference values (obtained at vdoslux=5, with budgets for
     #Gn points raised and all Gn functions kept at binwidths of kT/16).
     #
     #The exceptions are vdos_hydrogen_osc.ncmat and vdos_clathrate_H.ncmat,
@@ -188,9 +188,9 @@ def test_unusual_vdos():
                 assert maxdev < 0.12
         assert ngn >= 3
         print(f'{fn}: detailed balance of Gn functions fulfilled')
-        luxtests = [ ( 2003, 2.0, 0.025 ) ]
+        luxtests = [ ( 3, 2.0, 0.025 ) ]
         if fn == 'vdos_hydrogen_osc.ncmat':
-            luxtests.append( ( 2005, 5.0, 0.006 ) )
+            luxtests.append( ( 5, 5.0, 0.006 ) )
         for lux, emax_min, tol in luxtests:
             sc = NC.createScatter( f'{fn};temp={temp}K;comp=inelas'
                                    f';vdoslux={lux}' )
@@ -212,8 +212,8 @@ def test_resource_limits():
     c.set_density( 1.0 )
     c.set_state_of_matter( 'solid' )
     NC.registerInMemoryFileData( 'widevdos.ncmat', c.create_ncmat() )
-    for temp, lux, expect_error in [ ( 0.4, 2000, True ),
-                                     ( 5.0, 2000, False ) ]:
+    for temp, lux, expect_error in [ ( 0.4, 0, True ),
+                                     ( 5.0, 0, False ) ]:
         cfgstr = f'widevdos.ncmat;temp={temp}K;comp=inelas;vdoslux={lux}'
         try:
             NC.createScatter( cfgstr )

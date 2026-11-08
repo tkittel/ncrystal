@@ -126,7 +126,7 @@ namespace {
               << ' ' << NC::fmt(vdosdata.vdos_egrid().second,fmtprec()) << std::endl;
     dumpVectD( "vdos_density", vdosdata.vdos_density() );
 
-    const NC::VDOS::VDOSLux vdoslux( 2001 );
+    const NC::VDOS::VDOSLux vdoslux( 1 );
     NC::Optional<NC::NeutronEnergy> targetEmax;
     targetEmax = NC::NeutronEnergy{ 1.0 };
 

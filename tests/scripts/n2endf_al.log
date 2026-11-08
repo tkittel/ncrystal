@@ -5,7 +5,7 @@
 {'elastic_mode': 'scaled',
  'force': True,
  'material_name': 'Al',
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001',
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1',
  'othertemps': 350}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#1]
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it. [warn#2]
@@ -426,7 +426,7 @@ Created (or not) file tsl_Al_in_Al.endf with fraction 1
 {'elastic_mode': 'scaled',
  'force': True,
  'material_name': 'Al',
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001;knllux=3',
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1;knllux=3',
  'othertemps': 350}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#3]
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it. [warn#4]
@@ -847,7 +847,7 @@ Created (or not) file tsl_Al_in_Al.endf with fraction 1
 {'elastic_mode': 'scaled',
  'force': True,
  'material_name': 'AlN',
- 'ncmat_cfg': 'AlN_sg186_AluminumNitride.ncmat;vdoslux=2001',
+ 'ncmat_cfg': 'AlN_sg186_AluminumNitride.ncmat;vdoslux=1',
  'othertemps': 350,
  'verbosity': 3}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#5]
@@ -1676,7 +1676,7 @@ Created (or not) file tsl_Al_in_AlN.endf with fraction 0.5
 {'elastic_mode': 'mixed',
  'force': True,
  'material_name': 'Al2O3',
- 'ncmat_cfg': 'Al2O3_sg167_Corundum.ncmat;vdoslux=2001',
+ 'ncmat_cfg': 'Al2O3_sg167_Corundum.ncmat;vdoslux=1',
  'verbosity': 3}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#7]
 Initialise nuclear data...
@@ -2229,7 +2229,7 @@ Created (or not) file tsl_Al_in_Al2O3.endf with fraction 0.4
 {'elastic_mode': 'greater',
  'force': True,
  'material_name': 'Al4C3',
- 'ncmat_cfg': 'Al4C3_sg166_AluminiumCarbide.ncmat;vdoslux=2001',
+ 'ncmat_cfg': 'Al4C3_sg166_AluminiumCarbide.ncmat;vdoslux=1',
  'othertemps': 350,
  'verbosity': 3}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#8]
@@ -3077,7 +3077,7 @@ Created (or not) file tsl_Al_in_Al4C3.endf with fraction 0.571429
 {'elastic_mode': 'scaled',
  'force': True,
  'material_name': 'Al',
- 'ncmat_cfg': 'Al_sg225.ncmat;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;vdoslux=2001'}
+ 'ncmat_cfg': 'Al_sg225.ncmat;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;vdoslux=1'}
 Initialise nuclear data...
 Write ENDF file tsl_Al_in_Al.endf ...
 DUMPING endf dict begin
@@ -3347,7 +3347,7 @@ Created (or not) file tsl_Al_in_Al.endf with fraction 1
 {'elastic_mode': 'scaled',
  'force': True,
  'material_name': 'Al',
- 'ncmat_cfg': 'Al_with_a_Very_Very_Ver_Very_Very_Very_Very_Ver_Very_Very_Very_Very_Ver_Very_Very_Long_Name.ncmat;vdoslux=2001'}
+ 'ncmat_cfg': 'Al_with_a_Very_Very_Ver_Very_Very_Very_Very_Ver_Very_Very_Very_Very_Ver_Very_Very_Long_Name.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#10]
 Initialise nuclear data...
 Write ENDF file tsl_Al_in_Al.endf ...
