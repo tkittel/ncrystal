@@ -28,18 +28,18 @@ namespace NCRYSTAL_NAMESPACE {
       int vdosluxEncodeRaw( unsigned lvl, bool isLegacy )
       {
         int v = static_cast<int>(lvl);
-        if ( !isLegacy )
-          v += 2000;//for now, 0..N means legacy
+        if ( isLegacy )
+          v += 1000;
         return v;
       }
 
       unsigned vdosluxDecodeRaw( int rawval )
       {
+        //0 + val : nextgen
         //1000 + val : legacy
         //2000 + val : nextgen
-        //0 + val : legacy (only in the near future)
-        if ( rawval >= 0 && rawval <= 5 )
-          rawval += 1000;
+        if ( rawval >= 0 && rawval <= 6 )
+          rawval += 2000;
         unsigned res;
         if ( rawval >= 2000 && rawval <= 2006 ) {
           res = static_cast<unsigned>(rawval-2000);
@@ -68,7 +68,7 @@ NC::VDOS::VDOSLux::VDOSLux( int rawval )
 //NCCfgVars.hh.
 
 NC::VDOS::VDOSLux::VDOSLux()
-  : m_v( 3u + 128u )//legacy 3
+  : m_v( 3u )//nextgen 3
 {
   nc_assert( *this == VDOSLux(3) );
 }

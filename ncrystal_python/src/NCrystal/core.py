@@ -1034,10 +1034,10 @@ class Info(RCBase):
         def _loadKernel( self, vdoslux = 3 ):
             import numbers
             assert isinstance(vdoslux,numbers.Integral)
-            assert 0<=vdoslux<=5 or 1000<=vdoslux<=1005 or 2000<=vdoslux<=2006
+            assert 0<=vdoslux<=6 or 1000<=vdoslux<=1005 or 2000<=vdoslux<=2006
             vdoslux=int(vdoslux)
-            if 1000<=vdoslux<=1005:
-                vdoslux -= 1000
+            if 2000<=vdoslux<=2006:
+                vdoslux -= 2000
             if self.__lastvdoslux != vdoslux:
                 _keepalive, key = self._key
                 res={}
