@@ -44,36 +44,36 @@ Caught expected NCBadInput('Invalid energy unit on "1.0ergs". Possible units inc
   scenario = "1.8Aa on 0.5mfp"
   cfgstr   = "stdlib:: Al_sg225.ncmat   ;temp=20 C"
 
-    -> geomcfg   = "sphere;r=0.02865125"
-    -> srccfg    = "circular;z=-0.02865125;r=0.02865125;wl=1.8;n=1e6"
+    -> geomcfg   = "sphere;r=0.0286574"
+    -> srccfg    = "circular;z=-0.0286574;r=0.0286574;wl=1.8;n=1e6"
 
 >>> Testing
   scenario = ""
   cfgstr   = "stdlib:: Al_sg225.ncmat   ;temp=20 C"
 
-    -> geomcfg   = "sphere;r=0.0530935"
-    -> srccfg    = "circular;z=-0.0530935;r=0.0530935;wl=3.74084;n=1e6"
+    -> geomcfg   = "sphere;r=0.0531"
+    -> srccfg    = "circular;z=-0.0531;r=0.0531;wl=3.74084;n=1e6"
 
 >>> Testing
   scenario = "1.000e0kT"
   cfgstr   = "stdlib:: Al_sg225.ncmat   ;temp=20 C"
 
-    -> geomcfg   = "sphere;r=0.0573235"
-    -> srccfg    = "circular;z=-0.0573235;r=0.0573235;ekin=0.0252617;n=1e6"
+    -> geomcfg   = "sphere;r=0.057336"
+    -> srccfg    = "circular;z=-0.057336;r=0.057336;ekin=0.0252617;n=1e6"
 
 >>> Testing
   scenario = "2kT"
   cfgstr   = "stdlib:: Al_sg225.ncmat   ;temp=20 C"
 
-    -> geomcfg   = "sphere;r=0.0598435"
-    -> srccfg    = "circular;z=-0.0598435;r=0.0598435;ekin=0.0505234;n=1e6"
+    -> geomcfg   = "sphere;r=0.0598715"
+    -> srccfg    = "circular;z=-0.0598715;r=0.0598715;ekin=0.0505234;n=1e6"
 
 >>> Testing
   scenario = ""
   cfgstr   = "solid::Al/1gcm3"
 
-    -> geomcfg   = "sphere;r=0.1578935"
-    -> srccfg    = "circular;z=-0.1578935;r=0.1578935;ekin=0.0252617;n=1e6"
+    -> geomcfg   = "sphere;r=0.1576005"
+    -> srccfg    = "circular;z=-0.1576005;r=0.1576005;ekin=0.0252617;n=1e6"
 
 >>> Testing
   scenario = ""
@@ -86,15 +86,15 @@ Caught expected NCBadInput('Invalid energy unit on "1.0ergs". Possible units inc
   scenario = ""
   cfgstr   = "solid::Al/1gcm3;temp=1000K"
 
-    -> geomcfg   = "sphere;r=0.1577995"
-    -> srccfg    = "circular;z=-0.1577995;r=0.1577995;ekin=0.0861733;n=1e6"
+    -> geomcfg   = "sphere;r=0.157446"
+    -> srccfg    = "circular;z=-0.157446;r=0.157446;ekin=0.0861733;n=1e6"
 
 >>> Testing
   scenario = "1.8meV"
   cfgstr   = "stdlib:: Al_sg225.ncmat   ;temp=20 C"
 
-    -> geomcfg   = "sphere;r=0.50236"
-    -> srccfg    = "circular;z=-0.50236;r=0.50236;ekin=0.0018000000000000002;n=1e6"
+    -> geomcfg   = "sphere;r=0.50312"
+    -> srccfg    = "circular;z=-0.50312;r=0.50312;ekin=0.0018000000000000002;n=1e6"
 
 >>> Testing
   scenario = "["
@@ -124,8 +124,8 @@ Caught expected NCBadInput('Forbidden character "\\x0-30" in MiniMC scenario str
   scenario = "1Aa on slab"
   cfgstr   = "stdlib:: Al_sg225.ncmat   ;temp=20 C"
 
-    -> geomcfg   = "slab;dz=0.0604595"
-    -> srccfg    = "constant;z=-0.0604595;wl=1;n=1e6"
+    -> geomcfg   = "slab;dz=0.0604945"
+    -> srccfg    = "constant;z=-0.0604945;wl=1;n=1e6"
 
 >>> Testing
   scenario = "25meV on 2.0mm slab"
@@ -230,8 +230,8 @@ Caught expected NCBadInput('Can not use kT as a unit for a multi-phase material 
   scenario = ""
   cfgstr   = "phases<0.001*solid::Be/1gcm3;temp=100K&0.999*solid::Al/1gcm3;temp=200K>"
 
-    -> geomcfg   = "sphere;r=0.156757"
-    -> srccfg    = "circular;z=-0.156757;r=0.156757;wl=1.8;n=1e6"
+    -> geomcfg   = "sphere;r=0.1565345"
+    -> srccfg    = "circular;z=-0.1565345;r=0.1565345;wl=1.8;n=1e6"
 
 >>> Testing
   scenario = "1BT on 1m"
@@ -275,15 +275,15 @@ Caught expected NCBadInput('Invalid MiniMC scenario string: "1000 1Aa on 1m". Ex
   scenario = "12345 times"
   cfgstr   = "stdlib:: Al_sg225.ncmat   ;temp=20 C"
 
-    -> geomcfg   = "sphere;r=0.0530935"
-    -> srccfg    = "circular;z=-0.0530935;r=0.0530935;wl=3.74084;n=12345"
+    -> geomcfg   = "sphere;r=0.0531"
+    -> srccfg    = "circular;z=-0.0531;r=0.0531;wl=3.74084;n=12345"
 
 >>> Testing
   scenario = "1234.50e1 times"
   cfgstr   = "stdlib:: Al_sg225.ncmat   ;temp=20 C"
 
-    -> geomcfg   = "sphere;r=0.0530935"
-    -> srccfg    = "circular;z=-0.0530935;r=0.0530935;wl=3.74084;n=12345"
+    -> geomcfg   = "sphere;r=0.0531"
+    -> srccfg    = "circular;z=-0.0531;r=0.0531;wl=3.74084;n=12345"
 
 >>> Testing
   scenario = "1Aa on 1m 1234000 times"
@@ -454,8 +454,8 @@ Caught expected NCBadInput('Invalid count specification "-100". Count must be a 
     -> srccfg    = "circular;z=-0.0005;r=0.0005;wl=3;n=1e5"
 
 Testing scenario: "Al_sg225.ncmat" + ""
-  decoded geomcfg="sphere;r=0.0530935"
-  decoded srccfg="circular;z=-0.0530935;r=0.0530935;wl=3.74084;n=1e6"
+  decoded geomcfg="sphere;r=0.0531"
+  decoded srccfg="circular;z=-0.0531;r=0.0531;wl=3.74084;n=1e6"
   override_n set => Appending ";n=2e5" to src_cfg
 
 Testing scenario: "Al_sg225.ncmat;temp=300K" + "2Aa pencil on 2mm sphere"
@@ -474,6 +474,6 @@ Testing scenario: "gasmix::air/0.9relhumidity" + "1.8Aa on 10cm slab"
   override_n set => Appending ";n=2e5" to src_cfg
 
 Testing scenario: "C_sg194_pyrolytic_graphite.ncmat" + "0.99BT on 2mfp 1e5 times"
-  decoded geomcfg="sphere;r=0.01175025"
-  decoded srccfg="circular;z=-0.01175025;r=0.01175025;wl=6.64389;n=1e5"
+  decoded geomcfg="sphere;r=0.01175045"
+  decoded srccfg="circular;z=-0.01175045;r=0.01175045;wl=6.64389;n=1e5"
   override_n set => Appending ";n=2e5" to src_cfg

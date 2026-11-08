@@ -493,7 +493,7 @@ Caught expected NCBadInput('Tally not available in MiniMC dataset: "e" (no talli
 resA long title:
 '"constant;n=1e4;z=-0.009999999;wl=1.8" on "sphere;r=0.1" (69499 fills) ("nthreads=1;tallybins=theta:36:0:180")'
 resB long title:
-'"circular;n=1e4;z=-0.043389;wl=2;r=0.043389" on "sphere;r=0.043389" (31572 fills) ("nthreads=2;tallybins=theta:36:0:180")'
+'"circular;n=1e4;z=-0.0434477;wl=2;r=0.0434477" on "sphere;r=0.0434477" (31582 fills) ("nthreads=2;tallybins=theta:36:0:180")'
 resV3 long title:
 '"circular;n=1;z=-0.005;ekin=1;r=0.005" on "sphere;r=0.005" (1 fills) ("nthreads=1;tally=de,mu,q")'
 resV0 long title:

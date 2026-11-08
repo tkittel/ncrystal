@@ -181,7 +181,7 @@ Dynamic info for H (100%):
 ==> Scattering process (code level objects):
                            ProcComposition(2 components, isotropic)
                               |-- ElIncScatter(nelements=1;max_contrib=82.0168barn)
-                              \-- SABScatter(nalpha=50;nbeta=100;Emax=0.0255263eV;T=293.15K;M=1.00798u;sigma_free=20.4902barn)
+                              \-- SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=1.00798u;sigma_free=20.4902barn)
 ===========================================
 ============= CLI >>'dummyAl.ncmat;temp=300K' --cfg<< ====================
 ==> Debugging cfg-string: "dummyAl.ncmat;temp=300K"
@@ -191,7 +191,7 @@ Dynamic info for H (100%):
 ==> Scattering process (code level objects):
                            ProcComposition(2 components, isotropic)
                               |-- ElIncScatter(nelements=1;max_contrib=82.0168barn)
-                              \-- SABScatter(nalpha=50;nbeta=100;Emax=0.021302eV;T=300K;M=1.00798u;sigma_free=20.4902barn)
+                              \-- SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=300K;M=1.00798u;sigma_free=20.4902barn)
 ===========================================
 ============= CLI >>--test<< ====================
 Tests completed succesfully
@@ -361,19 +361,17 @@ Basic parameters related to scattering processes:
     Default value: 3
     Description: Setting affecting "luxury" level when expanding phonon
                  spectrums (VDOS) into scattering kernels. This primarily
-                 impacts the granularity of the kernel and the upper neutron
-                 energy (Emax) beyond which free-gas extrapolation is used, with
-                 implication for memory usage and initialisation time. Allowed
-                 values are: 0 (Extremely crude, 100x50 grid, Emax=0.5eV, 0.1MB,
-                 0.02s init), 1 (Crude, 200x100 grid, Emax=1eV, 0.5MB, 0.02s
-                 init), 2 (Decent, 400x200 grid, Emax=3eV, 2MB, 0.08s init), 3
-                 (Good, 800x400 grid, Emax=5eV, 8MB, 0.2s init), 4 (Very good,
-                 1600x800 grid, Emax=8eV, 30MB, 0.8s init), 5 (Overkill,
-                 3200x1600 grid, Emax=12eV, 125MB, 5s init). Note that when no
-                 actual VDOS input curve is available and one is approximated
-                 from a Debye temperature, the vdoslux level actually used will
-                 be 3 less than the one specified in this parameter (but at
-                 least 0).
+                 impacts the granularity of the kernel, with implications for
+                 memory usage and initialisation time. Kernels cover neutron
+                 energies up to 5eV, beyond which they are extended with a
+                 short-collision-time model. Allowed values are (alpha x beta
+                 grid, kernel memory, and initialisation time, for Al at room
+                 temperature): 0 (Extremely crude, 60x130 grid, 0.06MB, 0.02s
+                 init), 1 (Crude, 110x240 grid, 0.2MB, 0.03s init), 2 (Decent,
+                 170x400 grid, 0.5MB, 0.05s init), 3 (Good, 280x650 grid, 1.5MB,
+                 0.09s init), 4 (Very good, 470x1080 grid, 4MB, 0.2s init), 5
+                 (Excellent, 770x1770 grid, 11MB, 0.35s init), 6 (Overkill,
+                 2000x4000 grid, 64MB, 2s init).
 
   bkgd:
     Type: pseudo
@@ -562,7 +560,7 @@ Testing work_in_tmpdir()
 ==> Scattering process (code level objects):
                            ProcComposition(2 components, isotropic)
                               |-- ElIncScatter(nelements=1;max_contrib=82.0168barn)
-                              \-- SABScatter(nalpha=50;nbeta=100;Emax=0.021302eV;T=300K;M=1.00798u;sigma_free=20.4902barn)
+                              \-- SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=300K;M=1.00798u;sigma_free=20.4902barn)
 ===========================================
 ============= CLI >>--extract dummyAl.ncmat<< ====================
 NCMAT v5
@@ -584,7 +582,7 @@ NCMAT v5
                            ProcComposition(3 components, isotropic)
                               |-- ElIncScatter(nelements=1;max_contrib=0.0082barn)
                               |-- PowderBragg(nplanes=169;2dmax=4.67605Aa;max_contrib=1.67034barn)
-                              \-- SABScatter(nalpha=400;nbeta=800;Emax=5eV;T=300K;M=26.9815u;sigma_free=1.39667barn)
+                              \-- SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=300K;M=26.9815u;sigma_free=1.39667barn)
 ===========================================
 ============= CLI >>'missing.ncmat;temp=300K' --cfg<< ====================
 ==> Debugging cfg-string: "missing.ncmat;temp=300K"
@@ -597,7 +595,7 @@ Caught expected NCFileNotFound('Could not find data: "missing.ncmat"')
 ==> Scattering process (code level objects):
                            ProcComposition(2 components, isotropic)
                               |-- ElIncScatter(nelements=1;max_contrib=82.0168barn)
-                              \-- SABScatter(nalpha=50;nbeta=100;Emax=0.021302eV;T=300K;M=1.00798u;sigma_free=20.4902barn)
+                              \-- SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=300K;M=1.00798u;sigma_free=20.4902barn)
 ===========================================
 ============= CLI >>'missing.ncmat;temp=300K' --cfg<< ====================
 ==> Debugging cfg-string: "missing.ncmat;temp=300K"
@@ -607,7 +605,7 @@ Caught expected NCFileNotFound('Could not find data: "missing.ncmat"')
 ===========================================
 ============= CLI >>'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002'<< ====================
 ==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
-==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
+==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2"
 ==> Absorption process (code level objects):
                            AbsOOV(sigma_2200=0.231barn)
 ==> Scattering process (code level objects):
@@ -618,7 +616,7 @@ Caught expected NCFileNotFound('Could not find data: "missing.ncmat"')
 ===========================================
 ============= CLI >>'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002' -a --energy -x 1e-3:1e2<< ====================
 ==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
-==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
+==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2"
 ==> Absorption process (code level objects):
                            AbsOOV(sigma_2200=0.231barn)
 ==> Scattering process (code level objects):
@@ -686,7 +684,7 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
 ============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002' --coh_elas<< ====================
 ==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
 ==> Adding due to --coh_elas flag specified: "incoh_elas=0;inelas=0;sans=0"
-==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;incoh_elas=0;inelas=0;sans=0;vdoslux=2002"
+==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;incoh_elas=0;inelas=0;sans=0;vdoslux=2"
 ==> Absorption process (code level objects):
                            AbsOOV(sigma_2200=0.231barn)
 ==> Scattering process (code level objects):
@@ -695,7 +693,7 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
 ============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002' --bragg<< ====================
 ==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
 ==> Adding due to --coh_elas flag specified: "incoh_elas=0;inelas=0;sans=0"
-==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;incoh_elas=0;inelas=0;sans=0;vdoslux=2002"
+==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;incoh_elas=0;inelas=0;sans=0;vdoslux=2"
 ==> Absorption process (code level objects):
                            AbsOOV(sigma_2200=0.231barn)
 ==> Scattering process (code level objects):
@@ -704,7 +702,7 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
 ============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002' --incoh_elas<< ====================
 ==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
 ==> Adding due to --incoh_elas flag specified: "coh_elas=0;inelas=0;sans=0"
-==> Normalised cfg-string : "Al_sg225.ncmat;coh_elas=0;dcutoff=0.5;inelas=0;sans=0;vdoslux=2002"
+==> Normalised cfg-string : "Al_sg225.ncmat;coh_elas=0;dcutoff=0.5;inelas=0;sans=0;vdoslux=2"
 ==> Absorption process (code level objects):
                            AbsOOV(sigma_2200=0.231barn)
 ==> Scattering process (code level objects):
@@ -713,7 +711,7 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
 ============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002' --sans<< ====================
 ==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
 ==> Adding due to --sans flag specified: "coh_elas=0;incoh_elas=0;inelas=0"
-==> Normalised cfg-string : "Al_sg225.ncmat;coh_elas=0;dcutoff=0.5;incoh_elas=0;inelas=0;vdoslux=2002"
+==> Normalised cfg-string : "Al_sg225.ncmat;coh_elas=0;dcutoff=0.5;incoh_elas=0;inelas=0;vdoslux=2"
 ==> Absorption process (code level objects):
                            AbsOOV(sigma_2200=0.231barn)
 ==> Scattering process (code level objects):
@@ -722,7 +720,7 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
 ============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002' --elastic<< ====================
 ==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
 ==> Adding due to --elastic flag specified: "inelas=0"
-==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;inelas=0;vdoslux=2002"
+==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;inelas=0;vdoslux=2"
 ==> Absorption process (code level objects):
                            AbsOOV(sigma_2200=0.231barn)
 ==> Scattering process (code level objects):
@@ -733,7 +731,7 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
 ============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002' --inelastic<< ====================
 ==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
 ==> Adding due to --inelastic flag specified: "elas=0"
-==> Normalised cfg-string : "Al_sg225.ncmat;coh_elas=0;dcutoff=0.5;incoh_elas=0;sans=0;vdoslux=2002"
+==> Normalised cfg-string : "Al_sg225.ncmat;coh_elas=0;dcutoff=0.5;incoh_elas=0;sans=0;vdoslux=2"
 ==> Absorption process (code level objects):
                            AbsOOV(sigma_2200=0.231barn)
 ==> Scattering process (code level objects):
@@ -745,7 +743,7 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
 ===========================================
 ============= CLI >>'Al_sg225.ncmat;vdoslux=2001;temp=1000K' --pdf<< ====================
 ==> Debugging cfg-string: "Al_sg225.ncmat;vdoslux=2001;temp=1000K"
-==> Normalised cfg-string : "Al_sg225.ncmat;temp=1000;vdoslux=2001"
+==> Normalised cfg-string : "Al_sg225.ncmat;temp=1000;vdoslux=1"
 ==> Absorption process (code level objects):
                            AbsOOV(sigma_2200=0.231barn)
 ==> Scattering process (code level objects):
@@ -763,9 +761,9 @@ Caught expected RuntimeError('Currently we do not support switching back and for
                            ProcComposition(5 components, isotropic)
                               |-- ElIncScatter(nelements=3;max_contrib=0.0239527barn)
                               |-- PowderBragg(nplanes=969;2dmax=4.86244Aa;max_contrib=2.6496barn)
-                              |-- 0.244607 * SABScatter(nalpha=400;nbeta=800;Emax=5eV;T=100K;M=15.9993u;sigma_free=3.74537barn)
-                              |-- 0.244607 * SABScatter(nalpha=400;nbeta=800;Emax=5eV;T=100K;M=24.3051u;sigma_free=3.42069barn)
-                              \-- 0.510787 * SABScatter(nalpha=400;nbeta=800;Emax=5eV;T=100K;M=26.9815u;sigma_free=1.39667barn)
+                              |-- 0.244607 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=15.9993u;sigma_free=3.74537barn)
+                              |-- 0.244607 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=24.3051u;sigma_free=3.42069barn)
+                              \-- 0.510787 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=26.9815u;sigma_free=1.39667barn)
 ===========================================
 ============= CLI >>--phases 'phases<0.65*Al_sg225.ncmat&0.35*MgO_sg225_Periclase.ncmat>;temp=100K'<< ====================
 ==> Debugging cfg-string: "phases<0.65*Al_sg225.ncmat&0.35*MgO_sg225_Periclase.ncmat>;temp=100K"
@@ -776,11 +774,11 @@ Caught expected RuntimeError('Currently we do not support switching back and for
                            ProcComposition(5 components, isotropic)
                               |-- ElIncScatter(nelements=3;max_contrib=0.0239527barn)
                               |-- PowderBragg(nplanes=969;2dmax=4.86244Aa;max_contrib=2.6496barn)
-                              |-- 0.244607 * SABScatter(nalpha=400;nbeta=800;Emax=5eV;T=100K;M=15.9993u;sigma_free=3.74537barn)
-                              |-- 0.244607 * SABScatter(nalpha=400;nbeta=800;Emax=5eV;T=100K;M=24.3051u;sigma_free=3.42069barn)
-                              \-- 0.510787 * SABScatter(nalpha=400;nbeta=800;Emax=5eV;T=100K;M=26.9815u;sigma_free=1.39667barn)
+                              |-- 0.244607 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=15.9993u;sigma_free=3.74537barn)
+                              |-- 0.244607 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=24.3051u;sigma_free=3.42069barn)
+                              \-- 0.510787 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=26.9815u;sigma_free=1.39667barn)
 ===========================================
 ============= CLI >>'Al_sg225.ncmat;temp=10 K;vdoslux=2001' 'Al_sg225.ncmat;vdoslux=2001;temp=10K' --common dcutoff=1.0Aa --liny<< ====================
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Configuration specified more than once: "Al_sg225.ncmat;dcutoff=1;temp=10;vdoslux=2001" [warn#1]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Configuration specified more than once: "Al_sg225.ncmat;dcutoff=1;temp=10;vdoslux=1" [warn#1]
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Comparing identical setups? [warn#2]
 ===========================================

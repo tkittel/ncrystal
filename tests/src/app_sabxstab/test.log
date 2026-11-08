@@ -1,12 +1,12 @@
 Al_sg225.ncmat;knllux=3;comp=inelas:
   up to Emax within 1e-13, above within 1e-9 (SAB element with 242 egrid points)
 Polyethylene_CH2.ncmat;knllux=3;comp=inelas:
-  up to Emax within 1e-13, above within 1e-9 (SAB element with 323 egrid points)
-  up to Emax within 1e-13, above within 1e-9 (SAB element with 239 egrid points)
+  up to Emax within 1e-13, above within 1e-9 (SAB element with 325 egrid points)
+  up to Emax within 1e-13, above within 1e-9 (SAB element with 237 egrid points)
 Al_sg225.ncmat;temp=20K;knllux=3;comp=inelas:
-  up to Emax within 1e-13, above within 1e-9 (SAB element with 306 egrid points)
+  up to Emax within 1e-13, above within 1e-9 (SAB element with 310 egrid points)
 Al_sg225.ncmat;temp=3000K;knllux=3;comp=inelas:
-  up to Emax within 1e-13, above within 1e-9 (SAB element with 233 egrid points)
+  up to Emax within 1e-13, above within 1e-9 (SAB element with 235 egrid points)
 NCrystal WARNING: Discarding 204 edges of provided kernel data due to missing S values.
 NCrystal WARNING: Discarding 120 edges of provided kernel data due to missing S values.
 LiquidHeavyWaterD2O_T293.6K.ncmat;knllux=3;comp=inelas:
