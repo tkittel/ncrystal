@@ -272,10 +272,12 @@ double NC::estimateDerivative(const Fct1D* f, double x, double h, unsigned order
   nc_assert(f);
   nc_assert(h>0);
   nc_assert(order==4||order==6);
+  auto fx = [f,x,h](double c) { return f->eval(ncfma(c,h,x)); };
   if (order==6)
-    return (  256.*f->eval(x+0.25*h)-256.*f->eval(x-0.25*h)-32.*f->eval(x+0.5*h)+32.*f->eval(x-0.5*h)
-              -8.*f->eval(x+0.5*h)+8.*f->eval(x-0.5*h)+f->eval(x+h)-f->eval(x-h) ) / (90.*h);
-  return (-f->eval(x+h)+8*f->eval(x+0.5*h)-8*f->eval(x-0.5*h)+f->eval(x-h))/(6.0*h);
+    return ncfma( 256.0, fx(0.25)-fx(-0.25),
+                  ncfma( -40.0, fx(0.5)-fx(-0.5),
+                         fx(1.0)-fx(-1.0) ) ) / (90.*h);
+  return ncfma( 8.0, fx(0.5)-fx(-0.5), fx(-1.0)-fx(1.0) ) / (6.0*h);
 }
 
 double NC::estimateSingleSidedDerivative(const Fct1D* f, double x, double h, unsigned order)
@@ -284,15 +286,22 @@ double NC::estimateSingleSidedDerivative(const Fct1D* f, double x, double h, uns
   nc_assert(h!=0);
   nc_assert(order>=1&&order<=4);
 
+  auto fx = [f,x,h](double c) { return f->eval(ncfma(c,h,x)); };
   switch(order) {
   case 1:
     return ( f->eval(x+h)-f->eval(x) ) / h;
   case 2:
-    return ( -3.0*f->eval(x) +4.0*f->eval(x+0.5*h) -f->eval(x+h)) / h;
+    return ncfma( 4.0, fx(0.5), ncfma( -3.0, f->eval(x), -fx(1.0) ) ) / h;
   case 3:
-    return -2.*(4.5*f->eval(x)-8.*f->eval(x+0.25*h)+4.*f->eval(x+0.5*h)-0.5*f->eval(x+h)) /h;
+    return -2.*ncfma( 4.5, f->eval(x),
+                      ncfma( -8., fx(0.25),
+                             ncfma( 4., fx(0.5), -0.5*fx(1.0) ) ) ) / h;
   case 4:
-    return -(2/3.)*(31.5*f->eval(x)-64.*f->eval(x+0.125*h)+40.*f->eval(x+0.25*h)-8.*f->eval(x+0.5*h)+0.5*f->eval(x+h))/h;
+    return -(2/3.)*ncfma( 31.5, f->eval(x),
+                          ncfma( -64., fx(0.125),
+                                 ncfma( 40., fx(0.25),
+                                        ncfma( -8., fx(0.5),
+                                               0.5*fx(1.0) ) ) ) ) / h;
   default:
     nc_assert_always(false);
   }
@@ -328,11 +337,10 @@ double NC::findRoot(const Fct1D*f,double a, double b, double acc)
     //point which is at least 15% from the edges.
     double dfba = fb-fa;
     nc_assert(dfba);
-    double c = (a*fb-b*fa)/dfba;
+    double c = ncfma(a,fb,-(b*fa))/dfba;
     if ( b-a<acc )
       return c;
-    double k = 0.15*(b-a);
-    c = ncmax(a+k,ncmin(b-k,c));
+    c = ncmax(ncfma(0.15,b-a,a),ncmin(ncfma(-0.15,b-a,b),c));
     double fc = f->eval(c);
     if ( !fc )
       return c;
@@ -473,18 +481,25 @@ double NC::erfcdiff(double a, double b)
     //Use expansion: erfc(x)-1 ~= c1*x+c3*x^3+...+c11*x^11+O(x^13)
     //
     constexpr double c1  = - 2.0 * kInvSqrtPi;
-    constexpr double c3  =   2.0 * kInvSqrtPi / 3.0;
-    constexpr double c5  = - 0.2 * kInvSqrtPi;
-    constexpr double c7  =   kInvSqrtPi / 21.0;
-    constexpr double c9  = - kInvSqrtPi / 108.0;
-    constexpr double c11 =   kInvSqrtPi / 660.0;
-    constexpr double c13 = - kInvSqrtPi / 4680.0;
-    constexpr double c15 =   kInvSqrtPi / 37800.0;
     const double a2 = a*a;
     const double b2 = b*b;
-    const double a3to11 = a * a2 * ( c3 + a2 * ( c5 + a2 * ( c7 + ( a2 * ( c9 + a2 * ( c11 + a2 * ( c13 + a2 * c15 ) ) ) ) ) ) );
-    const double b3to11 = b * b2 * ( c3 + b2 * ( c5 + b2 * ( c7 + ( b2 * ( c9 + b2 * ( c11 + b2 * ( c13 + b2 * c15 ) ) ) ) ) ) );
-    return c1*(a-b) + ( a3to11 - b3to11 );
+    auto poly = []( double x2 )
+    {
+      //Constants declared here, since MSVC does not allow their use in the
+      //lambda otherwise:
+      constexpr double c3  =   2.0 * kInvSqrtPi / 3.0;
+      constexpr double c5  = - 0.2 * kInvSqrtPi;
+      constexpr double c7  =   kInvSqrtPi / 21.0;
+      constexpr double c9  = - kInvSqrtPi / 108.0;
+      constexpr double c11 =   kInvSqrtPi / 660.0;
+      constexpr double c13 = - kInvSqrtPi / 4680.0;
+      constexpr double c15 =   kInvSqrtPi / 37800.0;
+      return ncfma( x2, ncfma( x2, ncfma( x2, ncfma( x2, ncfma( x2,
+             ncfma( x2, c15, c13 ), c11 ), c9 ), c7 ), c5 ), c3 );
+    };
+    //a^3*poly(a^2)-b^3*poly(b^2):
+    const double d = ncfma( a * a2, poly( a2 ), -( b * b2 * poly( b2 ) ) );
+    return ncfma( c1, a-b, d );
   }
 
   //Use erfcdiff_notaylor, ordering arguments so b>=a.
@@ -504,7 +519,7 @@ double NC::erfc_rescaled(double x, double b)
   }
   //large x, employ expansion and combine exp(b)*exp(-x^2)=exp(b-x^2). If the
   //caller picked b appropriately, so |b-x^2|<700, this provides full precision.
-  const double bxx=b-x*x;
+  const double bxx=ncfma(-x,x,b);
   if (bxx<-745.1)
     return 0.0;
   const double c3  = -0.5         ;// = 1/2
@@ -515,7 +530,8 @@ double NC::erfc_rescaled(double x, double b)
   //const double c13 = 162.421875 ;// = 10395/64
   const double y = 1/x;
   const double y2 = y*y;
-  return kInvSqrtPi*std::exp(bxx)*(y+y2*(c3+y2*(c5+y2*(c7+y2*(c9+y2*c11)))));
+  const double p = ncfma(y2,ncfma(y2,ncfma(y2,ncfma(y2,c11,c9),c7),c5),c3);
+  return kInvSqrtPi*std::exp(bxx)*ncfma(y2,p,y);
 }
 
 namespace NCRYSTAL_NAMESPACE {
@@ -529,7 +545,7 @@ namespace NCRYSTAL_NAMESPACE {
       //fixme: check if we have an overlap with VDOSUtil's applyCrossingTaper
       const double f2 = f*f;
       const double t2 = tail_floor*tail_floor;
-      return std::sqrt( std::sqrt( f2*f2 + t2*t2 ) );
+      return std::sqrt( std::sqrt( ncfma( f2, f2, t2*t2 ) ) );
     }
   }
 }
@@ -571,7 +587,8 @@ NC::reducePtsInDistribution(Span<const double> x,
   nc_assert(ymax > 0.0);
 
   const double invYmax = 1.0 / ymax;
-  const double gappts = cfg.equidistant_fraction * targetN - 1.0;
+  const double gappts = ncfma( cfg.equidistant_fraction,
+                              static_cast<double>( targetN ), -1.0 );
 
   const double maxGap =
     gappts > 0.0 ? (x.back() - x.front()) / gappts : kInfinity;
@@ -615,8 +632,8 @@ NC::reducePtsInDistribution(Span<const double> x,
     const double dx1 = vectAt(px, i1) - vectAt(px, i0);
     const double dx2 = vectAt(px, i2) - vectAt(px, i0);
     const double area =
-      ncabs(dx1 * (vectAt(py, i2) - vectAt(py, i0)) -
-            dx2 * (vectAt(py, i1) - vectAt(py, i0)));
+      ncabs(ncfma(dx1, vectAt(py, i2) - vectAt(py, i0),
+                  -(dx2 * (vectAt(py, i1) - vectAt(py, i0)))));
 
     //To preserve also small features in the tails, we find the equivalent
     //change in the logy-curve, and combine the two for the final importance. We
@@ -624,8 +641,8 @@ NC::reducePtsInDistribution(Span<const double> x,
     //seemed to work best for our use-cases related to VDOS expansion.
 
     const double logArea =
-      ncabs(dx1 * (vectAt(plny, i2) - vectAt(plny, i0)) -
-            dx2 * (vectAt(plny, i1) - vectAt(plny, i0)));
+      ncabs(ncfma(dx1, vectAt(plny, i2) - vectAt(plny, i0),
+                  -(dx2 * (vectAt(plny, i1) - vectAt(plny, i0)))));
     return area * logArea * logArea;
   };
 
@@ -820,7 +837,7 @@ NC::reducePtsByEquidistribution(Span<const double> x,
     StableSumKahan total;
     for (std::size_t i = 0; i + 1 < n; ++i) {
       vectAt(dens, i) = std::sqrt(0.5*(vectAt(kappa, i)+vectAt(kappa, i + 1)));
-      total.add(vectAt(dens, i) * vectAt(width, i));
+      total.addProduct(vectAt(dens, i), vectAt(width, i));
     }
     const double t = total.sum();
     if (!(t > 0.0) || !std::isfinite(t))
@@ -872,7 +889,7 @@ NC::reducePtsByEquidistribution(Span<const double> x,
       d = ncfma(w_lin, vectAt(dlin, i), d);
     if (w_log > 0.0)
       d = ncfma(w_log, vectAt(dlog, i), d);
-    csum.add(d * vectAt(width, i));
+    csum.addProduct(d, vectAt(width, i));
     vectAt(cum, i + 1) = csum.sum();
   }
   const double mtot = cum.back();
@@ -896,7 +913,7 @@ NC::reducePtsByEquidistribution(Span<const double> x,
     //discrete point is kept:
     constexpr double tieBreakRelTol = 1e-9;
     if (hi > 0 && (q - vectAt(cum, hi - 1))
-        <= (vectAt(cum, hi) - q) + tieBreakRelTol*mtot)
+        <= ncfma(tieBreakRelTol, mtot, vectAt(cum, hi) - q))
       idx = hi - 1;
     const std::size_t lo_allowed = sel.back() + 1;
     const std::size_t hi_allowed = n - targetN + k;
@@ -992,7 +1009,7 @@ NC::reducePtsByEquidistributionRobust(Span<const double> x,
     for (std::size_t i = 0; i + 1 < n; ++i) {
       vectAt(dens, i) = std::sqrt(0.5 * (vectAt(kappa, i)
                                          + vectAt(kappa, i + 1)));
-      total.add(vectAt(dens, i) * vectAt(width, i));
+      total.addProduct(vectAt(dens, i), vectAt(width, i));
     }
     const double t = total.sum();
     if (!(t > 0.0) || !std::isfinite(t))
@@ -1041,7 +1058,7 @@ NC::reducePtsByEquidistributionRobust(Span<const double> x,
       d = ncfma(w_lin, vectAt(dlin, i), d);
     if (w_log > 0.0)
       d = ncfma(w_log, vectAt(dlog, i), d);
-    csum.add(d * vectAt(width, i));
+    csum.addProduct(d, vectAt(width, i));
     vectAt(cum, i + 1) = csum.sum();
   }
   const double mtot = cum.back();
@@ -1059,7 +1076,7 @@ NC::reducePtsByEquidistributionRobust(Span<const double> x,
     //reduces but does not eliminate near-ties):
     constexpr double tieBreakRelTol = 1e-9;
     if (hi > 0 && (q - vectAt(cum, hi - 1))
-        <= (vectAt(cum, hi) - q) + tieBreakRelTol*mtot)
+        <= ncfma(tieBreakRelTol, mtot, vectAt(cum, hi) - q))
       idx = hi - 1;
     const std::size_t lo_allowed = sel.back() + 1;
     const std::size_t hi_allowed = n - targetN + k;
