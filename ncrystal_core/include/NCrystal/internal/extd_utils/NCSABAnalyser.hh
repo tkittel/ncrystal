@@ -115,6 +115,9 @@ namespace NCRYSTAL_NAMESPACE {
       double msd_relspread = -1.0;
       unsigned teff_nrows = 0;
       unsigned msd_nrows = 0;
+      //Largest row integral over beta (at most 1 for a correct kernel, larger
+      //values indicate peaks not resolved by the beta grid):
+      double max_row_m0 = -1.0;
       //Consistency diagnostic: median over admissible rows of the row
       //mean divided by the expected recoil center -alpha*m_n/M (should
       //be ~1 for kernels obeying the Gaussian-approximation sum rules):

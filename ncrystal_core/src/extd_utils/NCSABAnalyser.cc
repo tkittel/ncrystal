@@ -291,6 +291,7 @@ NC::SABAnalyser::analyse( const SABData& sab, const Options& opt )
       setstat( RowStatus::NoData, false );
       continue;
     }
+    res.max_row_m0 = ncmax( res.max_row_m0, rm.m0 );
     if ( diag != nullptr ) {
       vectAt( diag->m0, ia ) = rm.m0;
       vectAt( diag->mean, ia ) = rm.mean;
@@ -391,12 +392,17 @@ namespace NCRYSTAL_NAMESPACE {
       //value adds wrong physics, so strictness is correct. The 0.03 spread cut
       //refuses the self-flagged tail, e.g. U in UO2 at 5K (spread 0.035, error
       //3%), for a worst accepted error of 0.77% (the msd values remain
-      //provisional pending ENDF-grade ground truth):
+      //provisional pending ENDF-grade ground truth). Kernels with a row
+      //integrating to more than 1+policy_msd_max_row_m0_excess are refused:
+      //their beta grids do not resolve all peaks (e.g. crude VDOS expansions,
+      //or rotating molecules), which also makes the m0 values used for msd
+      //unreliable:
       constexpr unsigned policy_teff_min_nrows = 10;
       constexpr double policy_teff_max_relspread = 0.1;
       constexpr unsigned policy_msd_min_nrows = 20;
       constexpr double policy_msd_max_relspread = 0.03;
       constexpr double policy_msd_sanity_max = 10.0;//[Aa^2]
+      constexpr double policy_msd_max_row_m0_excess = 0.01;
 
       struct TeffMSDCacheDB {
         std::mutex mtx;
@@ -468,6 +474,7 @@ NC::SABAnalyser::estimateTeffMSD( const SABData& sab )
   if ( r.msd.has_value()
        && r.msd_nrows >= policy_msd_min_nrows
        && r.msd_relspread <= policy_msd_max_relspread
+       && r.max_row_m0 <= 1.0 + policy_msd_max_row_m0_excess
        && std::isfinite( r.msd.value() )
        && r.msd.value() > 0.0
        && r.msd.value() < policy_msd_sanity_max )
