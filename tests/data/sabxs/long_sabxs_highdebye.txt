@@ -1,6 +1,6 @@
 # Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxs_highdebye".
 # Regenerate with: long_sabxs_highdebye.py --update
-@cfg stdlib::C_sg227_Diamond.ncmat;temp=5;vdoslux=2000;knllux=0
+@cfg stdlib::C_sg227_Diamond.ncmat;temp=5;vdoslux=0;knllux=0
 1e-10 0.0001526251
 4.308665e-10 7.352832e-05
 2.782559e-09 2.893384e-05
@@ -39,7 +39,7 @@
 8.180421 4.496857
 35.93814 4.672782
 1000 4.722766
-@cfg stdlib::C_sg227_Diamond.ncmat;temp=20;vdoslux=2001;knllux=1
+@cfg stdlib::C_sg227_Diamond.ncmat;temp=20;vdoslux=1;knllux=1
 1e-10 0.018820895
 1.723466e-09 0.0045335552
 2.782559e-09 0.0035679448
@@ -78,7 +78,7 @@
 8.180421 4.5044223
 35.93814 4.6745042
 1000 4.7228275
-@cfg stdlib::C_sg227_Diamond.ncmat;temp=293.15;vdoslux=2002;knllux=2
+@cfg stdlib::C_sg227_Diamond.ncmat;temp=293.15;vdoslux=2;knllux=2
 1e-10 275.40846
 2.782559e-09 52.2101675
 2.52617e-08 17.3279069
@@ -117,7 +117,7 @@
 25.2617 4.66196594
 35.93814 4.68058174
 1000 4.72304593
-@cfg stdlib::C_sg227_Diamond.ncmat;temp=1000;vdoslux=2003;knllux=3
+@cfg stdlib::C_sg227_Diamond.ncmat;temp=1000;vdoslux=3;knllux=3
 1e-10 5445.50936
 2.782559e-09 1032.3247
 7.742637e-08 195.701737
@@ -156,7 +156,7 @@
 76.59849 4.7143142
 86.1733 4.71546028
 1000 4.72383881
-@cfg stdlib::C_sg227_Diamond.ncmat;temp=3000;vdoslux=2004;knllux=4
+@cfg stdlib::C_sg227_Diamond.ncmat;temp=3000;vdoslux=4;knllux=4
 1e-10 28015.6627
 2.782559e-09 5311.02944
 7.742637e-08 1006.83171
@@ -195,7 +195,7 @@
 229.7955 4.72351773
 258.5199 4.72364119
 1000 4.72437356
-@cfg stdlib::C_sg227_Diamond.ncmat;temp=5000;vdoslux=2005;knllux=5
+@cfg stdlib::C_sg227_Diamond.ncmat;temp=5000;vdoslux=5;knllux=5
 1e-10 52361.9117
 2.782559e-09 9926.43499
 7.742637e-08 1881.79084
@@ -234,7 +234,7 @@
 382.9925 4.72434453
 430.8665 4.72437612
 1000 4.72451999
-@cfg stdlib::Be_sg194.ncmat;temp=5;vdoslux=2000;knllux=1
+@cfg stdlib::Be_sg194.ncmat;temp=5;vdoslux=0;knllux=1
 1e-10 0.0009695636
 4.308665e-10 0.0004670947
 2.782559e-09 0.0001838046
@@ -273,7 +273,7 @@
 8.180421 5.989996
 35.93814 6.128513
 1000 6.167868
-@cfg stdlib::Be_sg194.ncmat;temp=20;vdoslux=2001;knllux=2
+@cfg stdlib::Be_sg194.ncmat;temp=20;vdoslux=1;knllux=2
 1e-10 0.11210742
 1.723466e-09 0.027004304
 2.782559e-09 0.02125261
@@ -312,7 +312,7 @@
 8.180421 6.0402459
 35.93814 6.139951
 1000 6.1682788
-@cfg stdlib::Be_sg194.ncmat;temp=293.15;vdoslux=2002;knllux=3
+@cfg stdlib::Be_sg194.ncmat;temp=293.15;vdoslux=2;knllux=3
 1e-10 2105.736
 2.782559e-09 399.191909
 2.52617e-08 132.486881
@@ -351,7 +351,7 @@
 25.2617 6.14011681
 35.93814 6.14879685
 1000 6.16859673
-@cfg stdlib::Be_sg194.ncmat;temp=1000;vdoslux=2003;knllux=4
+@cfg stdlib::Be_sg194.ncmat;temp=1000;vdoslux=3;knllux=4
 1e-10 19836.0036
 2.782559e-09 3760.38219
 7.742637e-08 712.870505
@@ -390,7 +390,7 @@
 76.59849 6.1660859
 86.1733 6.1664469
 1000 6.16908596
-@cfg stdlib::Be_sg194.ncmat;temp=3000;vdoslux=2004;knllux=5
+@cfg stdlib::Be_sg194.ncmat;temp=3000;vdoslux=4;knllux=5
 1e-10 76899.1358
 2.782559e-09 14578.0444
 7.742637e-08 2763.61391
@@ -429,7 +429,7 @@
 229.7955 6.1693044
 258.5199 6.16930778
 1000 6.16932783
-@cfg stdlib::Be_sg194.ncmat;temp=5000;vdoslux=2005;knllux=0
+@cfg stdlib::Be_sg194.ncmat;temp=5000;vdoslux=5;knllux=0
 1e-10 123409.361
 2.782559e-09 23395.1542
 7.742637e-08 4435.10399
@@ -468,7 +468,7 @@
 382.9925 6.16956743
 430.8665 6.16954159
 1000 6.16942391
-@cfg stdlib::BeO_sg186.ncmat;temp=5;vdoslux=2000;knllux=2
+@cfg stdlib::BeO_sg186.ncmat;temp=5;vdoslux=0;knllux=2
 1e-10 0.001013195
 4.308665e-10 0.0004881144
 2.782559e-09 0.0001920762
@@ -507,7 +507,7 @@
 8.180421 4.794272
 35.93814 4.92023
 1000 4.956017
-@cfg stdlib::BeO_sg186.ncmat;temp=20;vdoslux=2001;knllux=3
+@cfg stdlib::BeO_sg186.ncmat;temp=20;vdoslux=1;knllux=3
 1e-10 0.090745718
 1.723466e-09 0.021858723
 2.782559e-09 0.017203
@@ -546,7 +546,7 @@
 8.180421 4.8160179
 35.93814 4.92518
 1000 4.9561947
-@cfg stdlib::BeO_sg186.ncmat;temp=293.15;vdoslux=2002;knllux=4
+@cfg stdlib::BeO_sg186.ncmat;temp=293.15;vdoslux=2;knllux=4
 1e-10 968.844959
 2.782559e-09 183.667406
 2.52617e-08 60.9569561
@@ -585,7 +585,7 @@
 25.2617 4.92444641
 35.93814 4.93422162
 1000 4.95651968
-@cfg stdlib::BeO_sg186.ncmat;temp=1000;vdoslux=2003;knllux=5
+@cfg stdlib::BeO_sg186.ncmat;temp=1000;vdoslux=3;knllux=5
 1e-10 10696.182
 2.782559e-09 2027.7135
 7.742637e-08 384.401697
@@ -624,7 +624,7 @@
 76.59849 4.95330774
 86.1733 4.95375698
 1000 4.9570412
-@cfg stdlib::BeO_sg186.ncmat;temp=3000;vdoslux=2004;knllux=0
+@cfg stdlib::BeO_sg186.ncmat;temp=3000;vdoslux=4;knllux=0
 1e-10 45603.2142
 2.782559e-09 8645.16453
 7.742637e-08 1638.89652
@@ -663,7 +663,7 @@
 229.7955 4.95709843
 258.5199 4.95712648
 1000 4.95729288
-@cfg stdlib::BeO_sg186.ncmat;temp=5000;vdoslux=2005;knllux=1
+@cfg stdlib::BeO_sg186.ncmat;temp=5000;vdoslux=5;knllux=1
 1e-10 78608.5864
 2.782559e-09 14902.1111
 7.742637e-08 2825.04797

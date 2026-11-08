@@ -603,8 +603,8 @@ Caught expected NCFileNotFound('Could not find data: "missing.ncmat"')
 ============= CLI >>--bench Al_sg225.ncmat<< ====================
 0.00ms
 ===========================================
-============= CLI >>'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002'<< ====================
-==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
+============= CLI >>'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2'<< ====================
+==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2"
 ==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2"
 ==> Absorption process (code level objects):
                            AbsOOV(sigma_2200=0.231barn)
@@ -614,8 +614,8 @@ Caught expected NCFileNotFound('Could not find data: "missing.ncmat"')
                               |-- PowderBragg(nplanes=22;2dmax=4.67605Aa;max_contrib=1.67315barn)
                               \-- SABScatterNG(nalpha=170;nbeta=400;Emax=5eV;T=293.15K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
 ===========================================
-============= CLI >>'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002' -a --energy -x 1e-3:1e2<< ====================
-==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
+============= CLI >>'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2' -a --energy -x 1e-3:1e2<< ====================
+==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2"
 ==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2"
 ==> Absorption process (code level objects):
                            AbsOOV(sigma_2200=0.231barn)
@@ -679,10 +679,10 @@ going to:
 ===========================================
 ============= CLI >>--mc 2Aa 2cm 'Al_sg225.ncmat;temp=250K'<< ====================
 ===========================================
-============= CLI >>--mc 'constant;wl=2' 'sphere;r=0.02' 'Al_sg225.ncmat;vdoslux=2001;comp=inelas;inelas=0'<< ====================
+============= CLI >>--mc 'constant;wl=2' 'sphere;r=0.02' 'Al_sg225.ncmat;vdoslux=1;comp=inelas;inelas=0'<< ====================
 Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new ncrystal_minimc command for fine-grained access to MiniMC simulations.')
-============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002' --coh_elas<< ====================
-==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
+============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2' --coh_elas<< ====================
+==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2"
 ==> Adding due to --coh_elas flag specified: "incoh_elas=0;inelas=0;sans=0"
 ==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;incoh_elas=0;inelas=0;sans=0;vdoslux=2"
 ==> Absorption process (code level objects):
@@ -690,8 +690,8 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
 ==> Scattering process (code level objects):
                            PowderBragg(nplanes=22;2dmax=4.67605Aa;max_contrib=1.67315barn)
 ===========================================
-============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002' --bragg<< ====================
-==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
+============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2' --bragg<< ====================
+==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2"
 ==> Adding due to --coh_elas flag specified: "incoh_elas=0;inelas=0;sans=0"
 ==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;incoh_elas=0;inelas=0;sans=0;vdoslux=2"
 ==> Absorption process (code level objects):
@@ -699,8 +699,8 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
 ==> Scattering process (code level objects):
                            PowderBragg(nplanes=22;2dmax=4.67605Aa;max_contrib=1.67315barn)
 ===========================================
-============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002' --incoh_elas<< ====================
-==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
+============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2' --incoh_elas<< ====================
+==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2"
 ==> Adding due to --incoh_elas flag specified: "coh_elas=0;inelas=0;sans=0"
 ==> Normalised cfg-string : "Al_sg225.ncmat;coh_elas=0;dcutoff=0.5;inelas=0;sans=0;vdoslux=2"
 ==> Absorption process (code level objects):
@@ -708,8 +708,8 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
 ==> Scattering process (code level objects):
                            ElIncScatter(nelements=1;max_contrib=0.0082barn)
 ===========================================
-============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002' --sans<< ====================
-==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
+============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2' --sans<< ====================
+==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2"
 ==> Adding due to --sans flag specified: "coh_elas=0;incoh_elas=0;inelas=0"
 ==> Normalised cfg-string : "Al_sg225.ncmat;coh_elas=0;dcutoff=0.5;incoh_elas=0;inelas=0;vdoslux=2"
 ==> Absorption process (code level objects):
@@ -717,8 +717,8 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
 ==> Scattering process (code level objects):
                            NullScatter
 ===========================================
-============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002' --elastic<< ====================
-==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
+============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2' --elastic<< ====================
+==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2"
 ==> Adding due to --elastic flag specified: "inelas=0"
 ==> Normalised cfg-string : "Al_sg225.ncmat;dcutoff=0.5;inelas=0;vdoslux=2"
 ==> Absorption process (code level objects):
@@ -728,8 +728,8 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
                               |-- ElIncScatter(nelements=1;max_contrib=0.0082barn)
                               \-- PowderBragg(nplanes=22;2dmax=4.67605Aa;max_contrib=1.67315barn)
 ===========================================
-============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002' --inelastic<< ====================
-==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2002"
+============= CLI >>--cfg 'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2' --inelastic<< ====================
+==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2"
 ==> Adding due to --inelastic flag specified: "elas=0"
 ==> Normalised cfg-string : "Al_sg225.ncmat;coh_elas=0;dcutoff=0.5;incoh_elas=0;sans=0;vdoslux=2"
 ==> Absorption process (code level objects):
@@ -737,12 +737,12 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
 ==> Scattering process (code level objects):
                            SABScatterNG(nalpha=170;nbeta=400;Emax=5eV;T=293.15K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
 ===========================================
-============= CLI >>'Al_sg225.ncmat;vdoslux=2001;temp=1000K' 'Al_sg225.ncmat;vdoslux=2001;temp=10K' --logy<< ====================
+============= CLI >>'Al_sg225.ncmat;vdoslux=1;temp=1000K' 'Al_sg225.ncmat;vdoslux=1;temp=10K' --logy<< ====================
 ===========================================
-============= CLI >>'Al_sg225.ncmat;vdoslux=2001;temp=1000K' 'Al_sg225.ncmat;vdoslux=2001;temp=10K' --common dcutoff=1.0Aa --liny<< ====================
+============= CLI >>'Al_sg225.ncmat;vdoslux=1;temp=1000K' 'Al_sg225.ncmat;vdoslux=1;temp=10K' --common dcutoff=1.0Aa --liny<< ====================
 ===========================================
-============= CLI >>'Al_sg225.ncmat;vdoslux=2001;temp=1000K' --pdf<< ====================
-==> Debugging cfg-string: "Al_sg225.ncmat;vdoslux=2001;temp=1000K"
+============= CLI >>'Al_sg225.ncmat;vdoslux=1;temp=1000K' --pdf<< ====================
+==> Debugging cfg-string: "Al_sg225.ncmat;vdoslux=1;temp=1000K"
 ==> Normalised cfg-string : "Al_sg225.ncmat;temp=1000;vdoslux=1"
 ==> Absorption process (code level objects):
                            AbsOOV(sigma_2200=0.231barn)
@@ -778,7 +778,7 @@ Caught expected RuntimeError('Currently we do not support switching back and for
                               |-- 0.244607 * SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=24.3051u;extend=sct;sigma_free=3.42069barn)
                               \-- 0.510787 * SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
 ===========================================
-============= CLI >>'Al_sg225.ncmat;temp=10 K;vdoslux=2001' 'Al_sg225.ncmat;vdoslux=2001;temp=10K' --common dcutoff=1.0Aa --liny<< ====================
+============= CLI >>'Al_sg225.ncmat;temp=10 K;vdoslux=1' 'Al_sg225.ncmat;vdoslux=1;temp=10K' --common dcutoff=1.0Aa --liny<< ====================
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Configuration specified more than once: "Al_sg225.ncmat;dcutoff=1;temp=10;vdoslux=1" [warn#1]
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Comparing identical setups? [warn#2]
 ===========================================

@@ -26,7 +26,7 @@ from NCrystalDev._numpy import _np, _np_geomspace, _np_linspace
 from NCrystalDev.constants import constant_boltzmann, wl2ekin
 
 # Monitoring of inelastic cross sections from the next-gen VDOS expansion and
-# kernel integration (vdoslux=2000..2006), on explicit lists of cfg-strings
+# kernel integration (vdoslux=0..6), on explicit lists of cfg-strings
 # chosen to cover the physics (VDOS shape, mass, Debye temperature,
 # temperature) and the numerical settings, as well as known troublemakers.
 # The sabxs_legacy test instead covers the legacy algorithms (vdoslux=1000..1005
@@ -50,17 +50,17 @@ def run( testname ):
 
 def _rdtol_for_cfgstr( cfgstr ):
     #The acceptable cross-platform reldiff depends on the vdoslux setting:
-    #vdoslux=2000 is not a priority (loosest tolerance), vdoslux=2001 is
-    #the historical default tolerance, and vdoslux>=2002 (more refined next-
+    #vdoslux=0 is not a priority (loosest tolerance), vdoslux=1 is
+    #the historical default tolerance, and vdoslux 2..6 (more refined next-
     #gen settings, where a still-open residual is being chased) get the
     #tightest tolerance:
     m = re.search( r';vdoslux=(\d+)', cfgstr )
     vdoslux = int( m.group(1) ) if m else None
-    if vdoslux == 2000:
+    if vdoslux == 0:
         return 1e-4
-    if vdoslux == 2001:
+    if vdoslux == 1:
         return 1e-5
-    if vdoslux is not None and vdoslux > 2001:
+    if vdoslux is not None and 2 <= vdoslux <= 6:
         return 1e-6
     return 1e-5
 
@@ -107,12 +107,12 @@ def _egrid_fct( mat ):
 def _rotate( entries, *, vdoslux = None, knllux = None ):
     #Expand (material,temperatures) entries into cfg-strings, assigning the
     #next (vdoslux,knllux) pair to each (material,temperature) from a cyclic
-    #sequence in which every vdoslux=2000..2005 meets every knllux=0..5
+    #sequence in which every vdoslux=0..5 meets every knllux=0..5
     #once per 36 cfg-strings. Fixed values can be given instead:
     i = 0
     for mat, temps in entries:
         for t in temps:
-            v = vdoslux if vdoslux is not None else 2000 + i % 6
+            v = vdoslux if vdoslux is not None else i % 6
             k = knllux if knllux is not None else ( i % 6 + i // 6 ) % 6
             i += 1
             tstr = '' if t is None else f';temp={t:g}'
@@ -172,9 +172,9 @@ def _list_trouble():
                           ( _sl('CaH2_sg62_CalciumHydride'), ( 10, 1000 ) ),
                           ( _sl('Li2O_sg225_LithiumOxide'), ( 10, ) ) ] )
     #The 1e-15 -> 1e-5 amplification case behind the reducer noise fix:
-    yield 'Li_from_Li2O.ncmat;temp=10;vdoslux=2004;knllux=4'
+    yield 'Li_from_Li2O.ncmat;temp=10;vdoslux=4;knllux=4'
     #Next-gen kernel but with the free-gas extender:
-    yield ( 'O_from_Li2O.ncmat;temp=293.15;vdoslux=2001;knllux=3'
+    yield ( 'O_from_Li2O.ncmat;temp=293.15;vdoslux=1;knllux=3'
             + _freegas_marker )
     #Direct kernels (fixed temperature), incl. trimmed JENDL-5 solids with
     #per-element teff/msd outcomes resp. zero-row teff refusal:
@@ -196,7 +196,7 @@ def _list_testdata():
                           ( 'Li2O_sg225_LithiumOxide_sabsmall_temp10K.ncmat',
                             ( None, None ) ) ] )
     #Expected refusal (excessive number of phonon orders needed):
-    yield 'vdos_hydrogen_osc.ncmat;temp=293.15;vdoslux=2001;knllux=1'
+    yield 'vdos_hydrogen_osc.ncmat;temp=293.15;vdoslux=1;knllux=1'
 
 def _list_light():
     yield from _rotate( [
@@ -269,19 +269,19 @@ def _list_vdoslux6():
             ( _sl('UO2_sg225_UraniumDioxide'), 1000 ),
             ( 'Li_from_Li2O.ncmat', 10 ), ( _sl('Be_sg194'), 20 ),
             ( _sl('CaH2_sg62_CalciumHydride'), 293.15 ) ] ):
-        yield f'{mat};temp={t:g};vdoslux=2006;knllux={i%4}'
+        yield f'{mat};temp={t:g};vdoslux=6;knllux={i%4}'
 
 def _list_knllux6():
     for i, ( mat, t ) in enumerate( [
             ( _sl('Al_sg225'), 293.15 ), ( _sl('Polyethylene_CH2'), 20 ),
             ( 'O_from_Li2O.ncmat', 1000 ), ( _sl('UO2_sg225_UraniumDioxide'),
                                             293.15 ) ] ):
-        yield f'{mat};temp={t:g};vdoslux={2000+i%3};knllux=6'
+        yield f'{mat};temp={t:g};vdoslux={i%3};knllux=6'
 
 def _list_maxlux():
     #Both kernel luxury settings at their maximum (1-2 minutes for most
     #materials, ~30s for diamond):
-    yield f'{_sl("C_sg227_Diamond")};temp=293.15;vdoslux=2006;knllux=6'
+    yield f'{_sl("C_sg227_Diamond")};temp=293.15;vdoslux=6;knllux=6'
 
 def _list_legacy():
     #All legacy vdoslux levels with VDOS input (vdoslux=1005 only for Al, the

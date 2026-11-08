@@ -279,6 +279,26 @@ namespace {
       std::cout<<"\"\n";
     }
   }
+
+  void test_vdoslux_values() {
+    //Hidden vdoslux values: 1000..1005 (legacy) are kept, 2000..2006 are
+    //normalised to 0..6 (so they give identical cfg strings and results):
+    using NC::Cfg::CfgManip;
+    for ( auto v : { "3", "2003", "2000", "2006", "1003", "1000", "1005",
+                     "7", "1006", "2007", "999", "-1" } ) {
+      std::cout<<"vdoslux="<<v<<": ";
+      try {
+        auto l = NC::Cfg::CfgData();
+        const std::string cfgstr = std::string("vdoslux=") + v;
+        auto toplvl = CfgManip::applyStrCfg( l, cfgstr );
+        nc_assert_always( toplvl.empty() );
+        std::cout<<"get_vdoslux()="<<CfgManip::get_vdoslux(l)
+                 <<" cfgstr=\""<<l<<"\""<<std::endl;
+      } catch ( NC::Error::BadInput& e ) {
+        std::cout<<"BadInput: "<<e.what()<<std::endl;
+      }
+    }
+  }
 }
 
 int main() {
@@ -288,6 +308,7 @@ int main() {
   test_varids();
   test_parsing();
   test_parse_and_fill();
+  test_vdoslux_values();
   NC::Cfg::dumpCfgVarList( std::cout, NC::Cfg::CfgVarListMode::TXT_FULL );
   std::cout<<std::endl;
   NC::Cfg::dumpCfgVarList( std::cout, NC::Cfg::CfgVarListMode::TXT_SHORT );

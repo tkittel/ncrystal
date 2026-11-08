@@ -5,7 +5,7 @@
 {'elastic_mode': 'scaled',
  'force': True,
  'material_name': 'Al',
- 'ncmat_cfg': 'stdlib::Al_sg225.ncmat;vdoslux=2001',
+ 'ncmat_cfg': 'stdlib::Al_sg225.ncmat;vdoslux=1',
  'othertemps': 350}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#1]
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it. [warn#2]

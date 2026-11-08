@@ -109,7 +109,7 @@ for i,line in enumerate(nc_createTextData('stdlib::Polyethylene_CH2.ncmat')):
 
 pathlib.Path(longfn).write_text( '\n'.join(data) )
 
-test_cfg( f'{longfn};vdoslux=2001', material_name='CH2',
+test_cfg( f'{longfn};vdoslux=1', material_name='CH2',
           check_teff=True, include_gif=True,
           ref_parsed={'tsl_H_in_CH2.endf':'0 0 1 451 7 2 7 4 7 451',
                       'tsl_C_in_CH2.endf':'0 0 1 451 7 2 7 4 7 451'},

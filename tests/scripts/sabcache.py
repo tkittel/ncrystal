@@ -30,7 +30,7 @@ from NCTestUtils.sab import extract_scathelper_uids
 
 def main():
     mat_al300k = nccore.load("stdlib::Al_sg225.ncmat;temp=300K")
-    mat_alvdoslux2 = nccore.load("stdlib::Al_sg225.ncmat;temp=200K;vdoslux=2002")
+    mat_alvdoslux2 = nccore.load("stdlib::Al_sg225.ncmat;temp=200K;vdoslux=2")
     mat_al = nccore.load("stdlib::Al_sg225.ncmat;temp=200K")
     mat_mp = nccore.load("""phases<
                               0.3 * stdlib::Al_sg225.ncmat;strain=0.1

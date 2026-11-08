@@ -72,25 +72,25 @@ assert EndfMetaData(metadata.to_dict()).to_json() == metadata.to_json()
 assert eval(repr(metadata)).to_json() == metadata.to_json() # round trip
 print(metadata)
 
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001', endf_metadata=metadata)
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1', endf_metadata=metadata)
 
 # Negative temperatures
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001', othertemps=[-100])
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1', othertemps=[-100])
 # Repeated temperatures
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001', othertemps=[293.15])
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1', othertemps=[293.15])
 # No inelastic
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001;comp=coh_elas')
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1;comp=coh_elas')
 # Wrong verbosity parameter
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001', verbosity='WRONGVALUE')
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1', verbosity='WRONGVALUE')
 # Wrong elastic mode
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001',
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1',
                elastic_mode='something wrong')
 # Conversion implemented only for natural elements
-test_cfg_fail( 'MgD2_sg136_MagnesiumDeuteride.ncmat;vdoslux=2001')
+test_cfg_fail( 'MgD2_sg136_MagnesiumDeuteride.ncmat;vdoslux=1')
 # Wrong temperature parameter
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001',
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1',
                othertemps='WRONGVALUE')
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001',
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1',
                othertemps=['WRONGVALUE'])
 # SANS not supported (currently being caught as multiphase)
 c=nc_ncmat.NCMATComposer('Al_sg225.ncmat')
@@ -99,39 +99,39 @@ c.add_hard_sphere_sans_model(50)
 c.write('Al_with_SANS.ncmat')
 test_cli_fail( 'Al_with_SANS.ncmat')
 # Conversion only supported for VDOS and VDOSDebye dyninfos
-test_cfg_fail( 'freegas::Ar/2.5e-5perAa3;vdoslux=2001')
+test_cfg_fail( 'freegas::Ar/2.5e-5perAa3;vdoslux=1')
 # Isotopic expansion requires generalized information file
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001', include_gif=False,
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1', include_gif=False,
                isotopic_expansion=True)
 # Isotopic expansion not implemented
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001', include_gif=True,
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1', include_gif=True,
                isotopic_expansion=True)
 
 # Try to set wrong parameter in metadata
 d = {'WRONGPARAM':0}
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001',
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1',
                endf_metadata=d)
 # Invalid symbol in metadata
 d = {'ALAB':r'WRONGSYMBOL"'}
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001',
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1',
                endf_metadata=d)
 # Invalid material number assignment
 d = {'MATNUM': 0}
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001',
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1',
                endf_metadata=d)
 d = {'MATNUM': {'Al':'0'}}
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001',
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1',
                endf_metadata=d)
 # Try to set wrong parameter for dates
 d = {'EDATE':'WRONGDATE'}
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001',
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1',
                endf_metadata=d)
 d = {'EDATE':0}
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001',
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1',
                endf_metadata=d)
 # Invalid data type for metadata
 d = {'ALAB':0}
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001',
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1',
                endf_metadata=d)
 # Try to read wrong parameter from metadata
 try:
@@ -150,9 +150,9 @@ test_cli_fail( '"stdlib::Al_sg225.ncmat"',
 test_cli_fail( '"phases<0.1*Al_sg225.ncmat&0.9*Si_sg227.ncmat>"')
 # File already exists
 Path('tsl_Al_in_Bla.endf').touch()
-test_cli_fail('"stdlib::Al_sg225.ncmat;vdoslux=2001"'
+test_cli_fail('"stdlib::Al_sg225.ncmat;vdoslux=1"'
               ' -q -n Bla -e mixed --totsab', exception_type=RuntimeError)
-test_cli_fail('"stdlib::Al_sg225.ncmat;vdoslux=2001"'
+test_cli_fail('"stdlib::Al_sg225.ncmat;vdoslux=1"'
               ' -q -n Bla -e scaled --asymsab', exception_type=RuntimeError)
 
 Path('Al_multirole.ncmat').write_text(
@@ -168,7 +168,7 @@ assert (ncmat2endf_impl._interp2d(0.5,1,[0,1],[0,1],
         _np.array([[0,0],[1,1]]))[0,0] == 0.5)
 assert (ncmat2endf_impl._interp2d([1],[0.5],[0,1],[0,1],
         _np.array([[0,1],[0,1]]))[0,0] == 0.5)
-cfg = 'ThO2_sg225_ThoriumDioxide.ncmat;vdoslux=2001'
+cfg = 'ThO2_sg225_ThoriumDioxide.ncmat;vdoslux=1'
 data = ncmat2endf_impl.NuclearData(ncmat_cfg=cfg,
                                    temperatures=(293.15,),
                                    elastic_mode='scaled',
@@ -200,7 +200,7 @@ data = ncmat2endf_impl.NuclearData(ncmat_cfg=cfg,
                                    verbosity=3)
 data._combine_temperatures = True
 data._get_alpha_beta_grid()
-cfg = 'V_sg229.ncmat;vdoslux=2001'
+cfg = 'V_sg229.ncmat;vdoslux=1'
 
 ncmat2endf_impl.unit_test_chop_vals[0] = True
 
@@ -225,5 +225,5 @@ data = ncmat2endf_impl.NuclearData(ncmat_cfg=cfg,
 stash = ncmat2endf_impl.allowed_scat_proc_names
 ncmat2endf_impl.allowed_scat_proc_names.remove('ElIncScatter')
 ncmat2endf_impl.allowed_scat_proc_names.add('ElIncScatterFooBar')
-test_cfg_fail( 'Al_sg225.ncmat;vdoslux=2001;temp=200K' )
+test_cfg_fail( 'Al_sg225.ncmat;vdoslux=1;temp=200K' )
 ncmat2endf_impl.allowed_scat_proc_names = stash

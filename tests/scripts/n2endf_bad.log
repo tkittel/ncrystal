@@ -13,7 +13,7 @@ EndfMetaData({"ALAB": "MyLAB", "AUTH": "NCrystal", "LIBNAME": "MyLib", "NLIB": 0
 --------------------------------------------------------------------------------
 {'endf_metadata': EndfMetaData({"ALAB": "MyLAB", "AUTH": "NCrystal", "LIBNAME": "MyLib", "NLIB": 0, "REFERENCE": "REFERENCE", "LREL": 0, "NVER": 1, "MATNUM": {"Ge": 99}, "ENDATE": "", "EDATE": "MMMYY", "DDATE": "MMMYY", "RDATE": "MMMYY"}),
  'force': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001'}
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#2]
 Initialise nuclear data...
 FAILED (as expected): Incorrect material number assignment
@@ -21,9 +21,7 @@ FAILED (as expected): Incorrect material number assignment
 
 
 --------------------------------------------------------------------------------
-{'force': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001',
- 'othertemps': [-100]}
+{'force': True, 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1', 'othertemps': [-100]}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#3]
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it. [warn#4]
 FAILED (as expected): Non positive temperatures
@@ -31,16 +29,14 @@ FAILED (as expected): Non positive temperatures
 
 
 --------------------------------------------------------------------------------
-{'force': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001',
- 'othertemps': [293.15]}
+{'force': True, 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1', 'othertemps': [293.15]}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#5]
 FAILED (as expected): Repeated temperatures: othertemps parameter must not include the temperature defined in the cfg string
 
 
 
 --------------------------------------------------------------------------------
-{'force': True, 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001;comp=coh_elas'}
+{'force': True, 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1;comp=coh_elas'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#6]
 FAILED (as expected): MF7/MT4 is mandatory in an ENDF file but no inelastic data found
 
@@ -48,7 +44,7 @@ FAILED (as expected): MF7/MT4 is mandatory in an ENDF file but no inelastic data
 
 --------------------------------------------------------------------------------
 {'force': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001',
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1',
  'verbosity': 'WRONGVALUE'}
 FAILED (as expected): Invalid value of verbosity parameter (expects value 0, 1, 2, or 3): WRONGVALUE
 
@@ -57,14 +53,14 @@ FAILED (as expected): Invalid value of verbosity parameter (expects value 0, 1, 
 --------------------------------------------------------------------------------
 {'elastic_mode': 'something wrong',
  'force': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001'}
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#7]
 FAILED (as expected): Elastic mode 'something wrong' not in (('greater', 'scaled', 'mixed'))
 
 
 
 --------------------------------------------------------------------------------
-{'force': True, 'ncmat_cfg': 'MgD2_sg136_MagnesiumDeuteride.ncmat;vdoslux=2001'}
+{'force': True, 'ncmat_cfg': 'MgD2_sg136_MagnesiumDeuteride.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#8]
 Initialise nuclear data...
 FAILED (as expected): Conversion to ENDF is currently supported only for natural elements
@@ -73,7 +69,7 @@ FAILED (as expected): Conversion to ENDF is currently supported only for natural
 
 --------------------------------------------------------------------------------
 {'force': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001',
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1',
  'othertemps': 'WRONGVALUE'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#9]
 FAILED (as expected): othertemps parameter: should be a list or tuple of float or int
@@ -82,7 +78,7 @@ FAILED (as expected): othertemps parameter: should be a list or tuple of float o
 
 --------------------------------------------------------------------------------
 {'force': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001',
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1',
  'othertemps': ['WRONGVALUE']}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#10]
 FAILED (as expected): Something wrong with the othertemps parameter: (['WRONGVALUE'])
@@ -94,7 +90,7 @@ FAILED (as expected): Only single phase materials supported
 
 
 --------------------------------------------------------------------------------
-{'force': True, 'ncmat_cfg': 'freegas::Ar/2.5e-5perAa3;vdoslux=2001'}
+{'force': True, 'ncmat_cfg': 'freegas::Ar/2.5e-5perAa3;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#11]
 FAILED (as expected): Conversion to ENDF supported only for VDOS and VDOSDebye dyninfos
 
@@ -104,7 +100,7 @@ FAILED (as expected): Conversion to ENDF supported only for VDOS and VDOSDebye d
 {'force': True,
  'include_gif': False,
  'isotopic_expansion': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001'}
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#12]
 FAILED (as expected): Isotopic expansion requires generalized information file, use --gif
 
@@ -114,7 +110,7 @@ FAILED (as expected): Isotopic expansion requires generalized information file, 
 {'force': True,
  'include_gif': True,
  'isotopic_expansion': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001'}
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#13]
 FAILED (as expected): Isotopic expansion in conversion to ENDF is not yet supported
 
@@ -123,7 +119,7 @@ FAILED (as expected): Isotopic expansion in conversion to ENDF is not yet suppor
 --------------------------------------------------------------------------------
 {'endf_metadata': {'WRONGPARAM': 0},
  'force': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001'}
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#14]
 FAILED (as expected): Invalid EndfMetaData parameter "WRONGPARAM"
 
@@ -132,7 +128,7 @@ FAILED (as expected): Invalid EndfMetaData parameter "WRONGPARAM"
 --------------------------------------------------------------------------------
 {'endf_metadata': {'ALAB': 'WRONGSYMBOL"'},
  'force': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001'}
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#15]
 FAILED (as expected): Forbidden character " in value of EndfMetaData parameter "ALAB"
 
@@ -141,7 +137,7 @@ FAILED (as expected): Forbidden character " in value of EndfMetaData parameter "
 --------------------------------------------------------------------------------
 {'endf_metadata': {'MATNUM': 0},
  'force': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001'}
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#16]
 FAILED (as expected): MATNUM must be a dict
 
@@ -150,7 +146,7 @@ FAILED (as expected): MATNUM must be a dict
 --------------------------------------------------------------------------------
 {'endf_metadata': {'MATNUM': {'Al': '0'}},
  'force': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001'}
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#17]
 FAILED (as expected): ('MATNUM must be a dict from element', ' labels (str) to material values (int)')
 
@@ -159,7 +155,7 @@ FAILED (as expected): ('MATNUM must be a dict from element', ' labels (str) to m
 --------------------------------------------------------------------------------
 {'endf_metadata': {'EDATE': 'WRONGDATE'},
  'force': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001'}
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#18]
 FAILED (as expected): ENDF date value is not in expected format, which is either special value "NOW" or a date in the format "MMMYY" (e.g. "Jun25").
 
@@ -168,7 +164,7 @@ FAILED (as expected): ENDF date value is not in expected format, which is either
 --------------------------------------------------------------------------------
 {'endf_metadata': {'EDATE': 0},
  'force': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001'}
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#19]
 FAILED (as expected): ENDF date value must be a string
 
@@ -177,7 +173,7 @@ FAILED (as expected): ENDF date value must be a string
 --------------------------------------------------------------------------------
 {'endf_metadata': {'ALAB': 0},
  'force': True,
- 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001'}
+ 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1'}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#20]
 FAILED (as expected): EndfMetaData parameter "ALAB" data must be of type str
 FAILED (as expected): Trying to read invalid EndfMetaData parameter "WRONGPARAM"
@@ -187,9 +183,9 @@ FAILED (as expected): Inconsistent usage of --quiet and --verbose flags
 FAILED (as expected): Argument to --mdata must be a JSON dictionary of key, value pairs
 ============= CLI >>'phases<0.1*Al_sg225.ncmat&0.9*Si_sg227.ncmat>'<< ====================
 FAILED (as expected): Only single phase materials supported
-============= CLI >>'stdlib::Al_sg225.ncmat;vdoslux=2001' -q -n Bla -e mixed --totsab<< ====================
+============= CLI >>'stdlib::Al_sg225.ncmat;vdoslux=1' -q -n Bla -e mixed --totsab<< ====================
 FAILED (as expected): Error: output file already exists (run with force=True or --force to overwrite)
-============= CLI >>'stdlib::Al_sg225.ncmat;vdoslux=2001' -q -n Bla -e scaled --asymsab<< ====================
+============= CLI >>'stdlib::Al_sg225.ncmat;vdoslux=1' -q -n Bla -e scaled --asymsab<< ====================
 FAILED (as expected): Error: output file already exists (run with force=True or --force to overwrite)
 ============= CLI >>Al_multirole.ncmat<< ====================
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#25]
@@ -278,5 +274,5 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Si" woul
 
 
 --------------------------------------------------------------------------------
-{'force': True, 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=2001;temp=200K'}
+{'force': True, 'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1;temp=200K'}
 FAILED (as expected): Material configuration indicates scattering processes which has not been vetted for conversion to the ENDF format: "ElIncScatter"

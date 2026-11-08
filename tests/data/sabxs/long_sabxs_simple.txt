@@ -1,6 +1,6 @@
 # Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxs_simple".
 # Regenerate with: long_sabxs_simple.py --update
-@cfg stdlib::Al_sg225.ncmat;temp=5;vdoslux=2000;knllux=0
+@cfg stdlib::Al_sg225.ncmat;temp=5;vdoslux=0;knllux=0
 1e-10 0.001508034
 4.308665e-10 0.0007265067
 2.782559e-09 0.0002858859
@@ -39,7 +39,7 @@
 8.180421 1.358085
 35.93814 1.387886
 1000 1.396353
-@cfg stdlib::Al_sg225.ncmat;temp=20;vdoslux=2001;knllux=1
+@cfg stdlib::Al_sg225.ncmat;temp=20;vdoslux=1;knllux=1
 1e-10 0.2061805
 1.723466e-09 0.049664519
 2.782559e-09 0.03908639
@@ -78,7 +78,7 @@
 8.180421 1.367148
 35.93814 1.389949
 1000 1.3964272
-@cfg stdlib::Al_sg225.ncmat;temp=293.15;vdoslux=2002;knllux=2
+@cfg stdlib::Al_sg225.ncmat;temp=293.15;vdoslux=2;knllux=2
 1e-10 544.247376
 2.782559e-09 103.174923
 2.52617e-08 34.2425485
@@ -117,7 +117,7 @@
 25.2617 1.39346884
 35.93814 1.39441943
 1000 1.39658781
-@cfg stdlib::Al_sg225.ncmat;temp=1000;vdoslux=2003;knllux=3
+@cfg stdlib::Al_sg225.ncmat;temp=1000;vdoslux=3;knllux=3
 1e-10 2808.57419
 2.782559e-09 532.431461
 7.742637e-08 100.93559
@@ -156,7 +156,7 @@
 76.59849 1.39637859
 86.1733 1.39641081
 1000 1.39664642
-@cfg stdlib::Al_sg225.ncmat;temp=3000;vdoslux=2004;knllux=4
+@cfg stdlib::Al_sg225.ncmat;temp=3000;vdoslux=4;knllux=4
 1e-10 9706.73621
 2.782559e-09 1840.14072
 7.742637e-08 348.843171
@@ -195,7 +195,7 @@
 229.7955 1.39665857
 258.5199 1.39665969
 1000 1.39666633
-@cfg stdlib::Cu_sg225.ncmat;temp=5;vdoslux=2005;knllux=5
+@cfg stdlib::Cu_sg225.ncmat;temp=5;vdoslux=5;knllux=5
 1e-10 0.00947929452
 4.308665e-10 0.00456672282
 2.782559e-09 0.00179703419
@@ -234,7 +234,7 @@
 8.180421 7.50963557
 35.93814 7.72334588
 1000 7.78406458
-@cfg stdlib::Cu_sg225.ncmat;temp=20;vdoslux=2000;knllux=1
+@cfg stdlib::Cu_sg225.ncmat;temp=20;vdoslux=0;knllux=1
 1e-10 1.284405
 1.723466e-09 0.309386
 2.782559e-09 0.2434894
@@ -273,7 +273,7 @@
 8.180421 7.492633
 35.93814 7.719476
 1000 7.783925
-@cfg stdlib::Cu_sg225.ncmat;temp=293.15;vdoslux=2001;knllux=2
+@cfg stdlib::Cu_sg225.ncmat;temp=293.15;vdoslux=1;knllux=2
 1e-10 1574.8737
 2.782559e-09 298.55444
 2.52617e-08 99.086813
@@ -312,7 +312,7 @@
 25.2617 7.7623887
 35.93814 7.7695006
 1000 7.7857233
-@cfg stdlib::Cu_sg225.ncmat;temp=1000;vdoslux=2002;knllux=3
+@cfg stdlib::Cu_sg225.ncmat;temp=1000;vdoslux=2;knllux=3
 1e-10 7399.13151
 2.782559e-09 1402.67984
 7.742637e-08 265.913625
@@ -351,7 +351,7 @@
 76.59849 7.78397278
 86.1733 7.78423448
 1000 7.78614763
-@cfg stdlib::Cu_sg225.ncmat;temp=3000;vdoslux=2003;knllux=4
+@cfg stdlib::Cu_sg225.ncmat;temp=3000;vdoslux=3;knllux=4
 1e-10 25482.533
 2.782559e-09 4830.81499
 7.742637e-08 915.801187
@@ -390,7 +390,7 @@
 229.7955 7.7860807
 258.5199 7.78610819
 1000 7.7862712
-@cfg stdlib::MgO_sg225_Periclase.ncmat;temp=5;vdoslux=2004;knllux=5
+@cfg stdlib::MgO_sg225_Periclase.ncmat;temp=5;vdoslux=4;knllux=5
 1e-10 0.0030577903
 4.308665e-10 0.00147311392
 2.782559e-09 0.000579677745
@@ -429,7 +429,7 @@
 8.180421 3.48325189
 35.93814 3.56031787
 1000 3.5822136
-@cfg stdlib::MgO_sg225_Periclase.ncmat;temp=20;vdoslux=2005;knllux=0
+@cfg stdlib::MgO_sg225_Periclase.ncmat;temp=20;vdoslux=5;knllux=0
 1e-10 0.301732473
 1.723466e-09 0.0726809661
 2.782559e-09 0.0572005522
@@ -468,7 +468,7 @@
 8.180421 3.4841626
 35.93814 3.56052517
 1000 3.58222105
-@cfg stdlib::MgO_sg225_Periclase.ncmat;temp=293.15;vdoslux=2000;knllux=2
+@cfg stdlib::MgO_sg225_Periclase.ncmat;temp=293.15;vdoslux=0;knllux=2
 1e-10 922.0652
 2.782559e-09 174.7992
 2.52617e-08 58.01374
@@ -507,7 +507,7 @@
 25.2617 3.561143
 35.93814 3.567645
 1000 3.582477
-@cfg stdlib::MgO_sg225_Periclase.ncmat;temp=1000;vdoslux=2001;knllux=3
+@cfg stdlib::MgO_sg225_Periclase.ncmat;temp=1000;vdoslux=1;knllux=3
 1e-10 6454.4917
 2.782559e-09 1223.6011
 7.742637e-08 231.9633
@@ -546,7 +546,7 @@
 76.59849 3.5813235
 86.1733 3.5815131
 1000 3.5828991
-@cfg stdlib::MgO_sg225_Periclase.ncmat;temp=3000;vdoslux=2002;knllux=4
+@cfg stdlib::MgO_sg225_Periclase.ncmat;temp=3000;vdoslux=2;knllux=4
 1e-10 24634.9166
 2.782559e-09 4670.12931
 7.742637e-08 885.335064
@@ -585,7 +585,7 @@
 229.7955 3.58297238
 258.5199 3.58297876
 1000 3.58301663
-@cfg stdlib::Li3N_sg191_LithiumNitride.ncmat;temp=5;vdoslux=2003;knllux=5
+@cfg stdlib::Li3N_sg191_LithiumNitride.ncmat;temp=5;vdoslux=3;knllux=5
 1e-10 0.0067049657
 4.308665e-10 0.00323016864
 2.782559e-09 0.00127109174
@@ -624,7 +624,7 @@
 8.180421 3.23414922
 35.93814 3.27661676
 1000 3.2886825
-@cfg stdlib::Li3N_sg191_LithiumNitride.ncmat;temp=20;vdoslux=2004;knllux=0
+@cfg stdlib::Li3N_sg191_LithiumNitride.ncmat;temp=20;vdoslux=4;knllux=0
 1e-10 0.85360915
 1.723466e-09 0.205616376
 2.782559e-09 0.161821829
@@ -663,7 +663,7 @@
 8.180421 3.2351421
 35.93814 3.27684277
 1000 3.28869062
-@cfg stdlib::Li3N_sg191_LithiumNitride.ncmat;temp=293.15;vdoslux=2005;knllux=1
+@cfg stdlib::Li3N_sg191_LithiumNitride.ncmat;temp=293.15;vdoslux=5;knllux=1
 1e-10 1753.42462
 2.782559e-09 332.40298
 2.52617e-08 110.320605
@@ -702,7 +702,7 @@
 25.2617 3.28185686
 35.93814 3.28401823
 1000 3.2889485
-@cfg stdlib::Li3N_sg191_LithiumNitride.ncmat;temp=1000;vdoslux=2000;knllux=3
+@cfg stdlib::Li3N_sg191_LithiumNitride.ncmat;temp=1000;vdoslux=0;knllux=3
 1e-10 11562.4
 2.782559e-09 2191.925
 7.742637e-08 415.5328
@@ -741,7 +741,7 @@
 76.59849 3.287067
 86.1733 3.287297
 1000 3.288974
-@cfg stdlib::Li3N_sg191_LithiumNitride.ncmat;temp=3000;vdoslux=2001;knllux=4
+@cfg stdlib::Li3N_sg191_LithiumNitride.ncmat;temp=3000;vdoslux=1;knllux=4
 1e-10 39723.778
 2.782559e-09 7530.5788
 7.742637e-08 1427.6009
@@ -780,7 +780,7 @@
 229.7955 3.289213
 258.5199 3.289204
 1000 3.2891508
-@cfg stdlib::Li2O_sg225_LithiumOxide.ncmat;temp=293.15;vdoslux=2002;knllux=5
+@cfg stdlib::Li2O_sg225_LithiumOxide.ncmat;temp=293.15;vdoslux=2;knllux=5
 1e-10 820.709079
 2.782559e-09 155.584757
 2.52617e-08 51.6366936

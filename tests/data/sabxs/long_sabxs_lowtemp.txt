@@ -1,6 +1,6 @@
 # Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxs_lowtemp".
 # Regenerate with: long_sabxs_lowtemp.py --update
-@cfg stdlib::Al_sg225.ncmat;temp=0.1;vdoslux=2000;knllux=0
+@cfg stdlib::Al_sg225.ncmat;temp=0.1;vdoslux=0;knllux=0
 8.61733e-12 2.611159e-07
 8.61733e-11 8.25721e-08
 1e-10 7.665133e-08
@@ -39,7 +39,7 @@
 8.180421 1.358139
 35.93814 1.387892
 1000 1.396353
-@cfg stdlib::Al_sg225.ncmat;temp=1;vdoslux=2001;knllux=1
+@cfg stdlib::Al_sg225.ncmat;temp=1;vdoslux=1;knllux=1
 8.61733e-11 5.7526326e-06
 1e-10 5.3401444e-06
 8.61733e-10 1.8191589e-06
@@ -78,7 +78,7 @@
 8.180421 1.3668809
 35.93814 1.3898882
 1000 1.396425
-@cfg stdlib::MgH2_sg136_MagnesiumHydride.ncmat;temp=0.1;vdoslux=2002;knllux=2
+@cfg stdlib::MgH2_sg136_MagnesiumHydride.ncmat;temp=0.1;vdoslux=2;knllux=2
 8.61733e-12 2.5091747e-07
 8.61733e-11 7.9347745e-08
 1e-10 7.36583122e-08
@@ -117,7 +117,7 @@
 8.180421 14.6365715
 35.93814 14.763071
 1000 14.7990183
-@cfg stdlib::MgH2_sg136_MagnesiumHydride.ncmat;temp=1;vdoslux=2003;knllux=3
+@cfg stdlib::MgH2_sg136_MagnesiumHydride.ncmat;temp=1;vdoslux=3;knllux=3
 8.61733e-11 0.00024452446
 1e-10 0.000226991017
 8.61733e-10 7.7326163e-05
@@ -156,7 +156,7 @@
 8.180421 14.6521909
 35.93814 14.7666317
 1000 14.7991463
-@cfg stdlib::Be_sg194.ncmat;temp=0.1;vdoslux=2004;knllux=4
+@cfg stdlib::Be_sg194.ncmat;temp=0.1;vdoslux=4;knllux=4
 8.61733e-12 3.06617021e-09
 8.61733e-11 9.6961631e-10
 1e-10 9.00092422e-10
@@ -195,7 +195,7 @@
 8.180421 6.05011819
 35.93814 6.14216718
 1000 6.16835847
-@cfg stdlib::Be_sg194.ncmat;temp=1;vdoslux=2005;knllux=5
+@cfg stdlib::Be_sg194.ncmat;temp=1;vdoslux=5;knllux=5
 8.61733e-11 3.07640426e-06
 1e-10 2.855813e-06
 8.61733e-10 9.72853381e-07
@@ -234,9 +234,9 @@
 8.180421 6.05033326
 35.93814 6.14224278
 1000 6.16836119
-@cfg stdlib::Polyethylene_CH2.ncmat;temp=0.1;vdoslux=2000;knllux=1
+@cfg stdlib::Polyethylene_CH2.ncmat;temp=0.1;vdoslux=0;knllux=1
 @error NCCalcError: VDOS expansion would require excessive resources to reach E=0.1eV (stopped after 2 phonon orders). The VDOS-temperature combination might be too unusual (a lower temperature or higher vdoslux value might help).
-@cfg stdlib::Polyethylene_CH2.ncmat;temp=1;vdoslux=2001;knllux=2
+@cfg stdlib::Polyethylene_CH2.ncmat;temp=1;vdoslux=1;knllux=2
 8.61733e-11 0.0013704833
 1e-10 0.0012722138
 8.61733e-10 0.00043338902
@@ -275,7 +275,7 @@
 8.180421 15.083842
 35.93814 15.200589
 1000 15.233767
-@cfg stdlib::C_sg227_Diamond.ncmat;temp=0.1;vdoslux=2002;knllux=3
+@cfg stdlib::C_sg227_Diamond.ncmat;temp=0.1;vdoslux=2;knllux=3
 8.61733e-12 2.58388496e-09
 8.61733e-11 8.17096168e-10
 1e-10 7.58507117e-10
@@ -314,7 +314,7 @@
 8.180421 4.50511437
 35.93814 4.67459826
 1000 4.72283089
-@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=0.1;vdoslux=2003;knllux=4
+@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=0.1;vdoslux=3;knllux=4
 8.61733e-12 1.01961841e-08
 8.61733e-11 3.2243405e-09
 1e-10 2.99314677e-09
@@ -353,7 +353,7 @@
 8.180421 5.07270806
 35.93814 5.35690782
 1000 5.43812794
-@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=1;vdoslux=2004;knllux=5
+@cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=1;vdoslux=4;knllux=5
 8.61733e-11 9.20360728e-06
 1e-10 8.54366952e-06
 8.61733e-10 2.91046339e-06
@@ -392,7 +392,7 @@
 8.180421 5.07292123
 35.93814 5.35697142
 1000 5.43813235
-@cfg Li_from_Li2O.ncmat;temp=0.1;vdoslux=2005;knllux=0
+@cfg Li_from_Li2O.ncmat;temp=0.1;vdoslux=5;knllux=0
 8.61733e-12 2.71200665e-09
 8.61733e-11 8.57619155e-10
 1e-10 7.96125739e-10
@@ -431,7 +431,7 @@
 8.180421 1.03299256
 35.93814 1.04394859
 1000 1.04706138
-@cfg Li_from_Li2O.ncmat;temp=1;vdoslux=2000;knllux=2
+@cfg Li_from_Li2O.ncmat;temp=1;vdoslux=0;knllux=2
 8.61733e-11 2.866884e-06
 1e-10 2.661316e-06
 8.61733e-10 9.065964e-07
@@ -470,7 +470,7 @@
 8.180421 1.017843
 35.93814 1.0405
 1000 1.046937
-@cfg stdlib::Ca_sg229_Calcium-gamma.ncmat;temp=0.1;vdoslux=2001;knllux=3
+@cfg stdlib::Ca_sg229_Calcium-gamma.ncmat;temp=0.1;vdoslux=1;knllux=3
 8.61733e-12 2.51046e-07
 8.61733e-11 7.9388259e-08
 1e-10 7.36959e-08
@@ -509,7 +509,7 @@
 8.180421 4.0002208
 35.93814 4.0486781
 1000 4.0624457
-@cfg stdlib::Ca_sg229_Calcium-gamma.ncmat;temp=1;vdoslux=2002;knllux=4
+@cfg stdlib::Ca_sg229_Calcium-gamma.ncmat;temp=1;vdoslux=2;knllux=4
 8.61733e-11 0.000205215906
 1e-10 0.000190501053
 8.61733e-10 6.48955944e-05
@@ -548,7 +548,7 @@
 8.180421 4.00620998
 35.93814 4.05004143
 1000 4.06249468
-@cfg solid::CH2/0.95gcm3;temp=0.1;vdoslux=2003;knllux=5
+@cfg solid::CH2/0.95gcm3;temp=0.1;vdoslux=3;knllux=5
 8.61733e-12 2.28074328e-05
 8.61733e-11 7.21240997e-06
 1e-10 6.69526232e-06
@@ -587,7 +587,7 @@
 8.180421 15.1633951
 35.93814 15.2187041
 1000 15.2344183
-@cfg vdos_paraH2.ncmat;temp=0.1;vdoslux=2004;knllux=0
+@cfg vdos_paraH2.ncmat;temp=0.1;vdoslux=4;knllux=0
 8.61733e-12 0.0059997667
 8.61733e-11 0.00189731126
 1e-10 0.00176126934
@@ -626,7 +626,7 @@
 8.180421 20.5494813
 35.93814 20.5036871
 1000 20.4906762
-@cfg vdos_paraH2.ncmat;temp=1;vdoslux=2005;knllux=1
+@cfg vdos_paraH2.ncmat;temp=1;vdoslux=5;knllux=1
 8.61733e-11 5.01036915
 1e-10 4.65110481
 8.61733e-10 1.58443577
@@ -665,7 +665,7 @@
 8.180421 20.5683342
 35.93814 20.5079785
 1000 20.4908305
-@cfg sabxs_debye_H_100K.ncmat;temp=0.1;vdoslux=2000;knllux=3
+@cfg sabxs_debye_H_100K.ncmat;temp=0.1;vdoslux=0;knllux=3
 8.61733e-12 0.0009552429
 8.61733e-11 0.0003020772
 1e-10 0.0002804175
