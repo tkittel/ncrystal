@@ -176,3 +176,35 @@ CHANGELOG at release time, after which both files are dropped).
      * ncmat_doc.md: the sab_scaled keyword gives
        S'(alpha,beta)=S(alpha,beta)*exp(beta/2), as always implemented; the
        documentation had the opposite sign in the exponent.
+
+### Next-gen inelastic physics by default
+
+     * vdoslux=0..6 now selects the next-gen VDOS expansion, with the
+       default 3. Kernels cover energies up to 5eV, beyond which they
+       are extended with the short-collision-time model, and there is
+       no longer a lower level for Debye-model VDOS. The legacy
+       expansion remains available via the hidden values 1000..1005,
+       and 2000..2006 are accepted as synonyms of 0..6.
+     * knllux now defaults to 3 (next-gen kernel integration and
+       sampling, levels 0..6). The legacy processing remains available
+       via the hidden value -1. The values 200..206 and -2..-6 are no
+       longer supported.
+     * The ucnmode cfg parameter and the UCN processes are removed
+       (ABI break); using ucnmode gives a clear error.
+     * SABAnalyser (Teff and msd estimates for direct kernels): row
+       completeness is judged from the data instead of a Gaussian model,
+       Teff comes from the exact moment sum rules, and msd is refused for
+       kernels with a row integrating to more than 1.01. It now works for
+       next-gen kernels (it failed for hydrogen), and accepts more direct
+       kernels. Options::center_tol and its query override are removed.
+     * The SABRefEval class and the ["sab","refeval",..] query are removed
+       (unreliable for kernel cells crossed by the kinematic boundary).
+       SAB::evalSABOneShot evaluates S(alpha,beta) at any point.
+     * Process names: SABScatter is now the next-gen kernel process
+       (formerly SABScatterNG), and the legacy one (knllux=-1) is
+       SABScatterLegacy.
+     * VDOS-based kernels: the up-scattering side (beta>0) is again
+       computed from the down-scattering side via detailed balance, now on
+       the asymmetric beta grids. Exported kernels satisfy detailed balance
+       to rounding, and low-energy cross sections at low temperatures are
+       slightly more accurate (up to ~0.2%).
