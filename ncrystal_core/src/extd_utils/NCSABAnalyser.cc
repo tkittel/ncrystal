@@ -41,7 +41,8 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr double opt_floor_relmax = 1e-30;  //...S<=relmax*max(S)
       constexpr double opt_msd_m0_low = 0.05;     //1/N and 1/(1-N) error
       constexpr double opt_msd_m0_high = 0.95;    //  amplification guards
-      constexpr unsigned opt_n_sigma_iter = 2;    //converged (1 vs 2: <0.1%)
+      constexpr double opt_center_tol = 0.05;     //first moment sanity check
+                                                  //(good kernels: <0.3%)
       //msd rows: require the trapezoidal m0 to be converged, tested by
       //halving the beta resolution (error ratio 4:1), relative to the
       //deficit 1-m0 which sets the msd error scale. Catches coarse
@@ -105,7 +106,11 @@ namespace NCRYSTAL_NAMESPACE {
       struct RowMoments {
         double m0 = -1.0, mean = -1.0, var = -1.0;
         unsigned npts = 0;
-        unsigned npts_core = 0;//points within +-2 sigma of mean
+        unsigned npts_core = 0;//points within +-2 std.dev. of mean
+        //Raw (not m0-normalised) first moment, and the variance of the full
+        //S(alpha,beta) incl. the elastic delta function of weight 1-m0 at
+        //beta=0, from the second moment about the recoil centre mu:
+        double raw_m1 = 0.0, full_var = -1.0, mu = 0.0;
         //Estimated contributions to m0 and to the central second moment
         //(unnormalised) of the parts of the row beyond the beta grid, from
         //exponential extrapolation of the outermost two points where the
@@ -124,7 +129,7 @@ namespace NCRYSTAL_NAMESPACE {
                                          / std::log( w1 / w0 ) )
                                 : gridwidth );
         const double s = ( b0 < b1 ? -1.0 : 1.0 );//outward direction
-        const double d0 = b0 - rm.mean;
+        const double d0 = b0 - rm.mu;
         rm.tail_m0 += w0 * lambda;
         rm.tail_m2 += w0 * lambda * ( d0*d0 + 2.0*s*d0*lambda
                                       + 2.0*lambda*lambda );
@@ -132,9 +137,10 @@ namespace NCRYSTAL_NAMESPACE {
 
       RowMoments calcRowMoments( const VectD& beta, const VectD& sab,
                                  std::size_t nalpha, std::size_t ia,
-                                 double floor, double sigma_guess )
+                                 double floor, double mu )
       {
         RowMoments res;
+        res.mu = mu;
         //First pass: m0 and m1 over the masked polyline:
         StableSum m0, m1;
         double bprev(0.0), wprev(0.0);
@@ -166,9 +172,10 @@ namespace NCRYSTAL_NAMESPACE {
         if ( res.npts < 10 || !( m0.sum() > 0.0 ) )
           return res;
         res.m0 = m0.sum();
+        res.raw_m1 = m1.sum();
         res.mean = m1.sum() / res.m0;
-        //Second pass: central second moment + core-resolution count:
-        StableSum m2;
+        //Second pass: central second moment, second moment about mu:
+        StableSum m2, m2mu;
         have_prev = false;
         for ( std::size_t j = 0; j < nb; ++j ) {
           const double w = vectAt( sab, j*nalpha + ia );
@@ -176,17 +183,28 @@ namespace NCRYSTAL_NAMESPACE {
             continue;
           const double b = vectAt( beta, j );
           const double d = b - res.mean;
-          if ( ncabs( d ) < 2.0*sigma_guess )
-            ++res.npts_core;
+          const double dmu = b - mu;
           if ( have_prev ) {
             const double dprev = bprev - res.mean;
+            const double dmuprev = bprev - mu;
             m2.add( 0.5*( b - bprev )*( w*d*d + wprev*dprev*dprev ) );
+            m2mu.add( 0.5*( b - bprev )*( w*dmu*dmu
+                                          + wprev*dmuprev*dmuprev ) );
           }
           bprev = b;
           wprev = w;
           have_prev = true;
         }
         res.var = m2.sum() / res.m0;
+        const double dm1 = res.raw_m1 - mu;
+        res.full_var = m2mu.sum() - dm1*dm1 + mu*mu*( 1.0 - res.m0 );
+        //Core-resolution count (points within +-2 std.dev. of the mean):
+        const double sd = std::sqrt( ncmax( 0.0, res.var ) );
+        for ( std::size_t j = 0; j < nb; ++j ) {
+          const double w = vectAt( sab, j*nalpha + ia );
+          if ( w > floor && ncabs( vectAt( beta, j ) - res.mean ) < 2.0*sd )
+            ++res.npts_core;
+        }
         //Tails beyond the grid ends (only where data reaches them):
         auto sv = [&sab,nalpha,ia](std::size_t j)
         { return vectAt( sab, j*nalpha + ia ); };
@@ -207,9 +225,6 @@ namespace NCRYSTAL_NAMESPACE {
 NC::SABAnalyser::Result
 NC::SABAnalyser::analyse( const SABData& sab, const Options& opt )
 {
-#ifndef NDEBUG
-  nc_assert_always( opt.center_tol > 0.0 && opt.center_tol < 1.0 );
-#endif
   const auto& agrid = sab.alphaGrid();
   const auto& bgrid = sab.betaGrid();
   const auto& S = sab.sab();
@@ -259,93 +274,83 @@ NC::SABAnalyser::analyse( const SABData& sab, const Options& opt )
   msd_rows.reserve( na );
   center_rows.reserve( na );
 
-  //Teff needs a sigma guess for the coverage/resolution guards, refined
-  //over n_sigma_iter passes (msd results are identical each pass, so
-  //only the final pass records them):
-  double r_guess = 2.0;
-  for ( unsigned ipass = 0; ipass < opt_n_sigma_iter; ++ipass ) {
-    const bool final_pass = ( ipass + 1 == opt_n_sigma_iter );
-    teff_rows.clear();
-    msd_rows.clear();
-    center_rows.clear();
-    for ( std::size_t ia = 0; ia < na; ++ia ) {
-      const double a = vectAt( agrid, ia );
-      const double sigma
-        = std::sqrt( 2.0 * a * ncmax( r_guess, 1e-3 ) / massratio );
-      auto rm = calcRowMoments( bgrid, S, na, ia, floor, sigma );
-      auto setstat = [&diag,ia,final_pass]( RowStatus st, bool for_teff )
-      {
-        if ( diag != nullptr && final_pass ) {
-          if ( for_teff )
-            vectAt( diag->teff_row_status, ia ) = st;
-          else
-            vectAt( diag->msd_row_status, ia ) = st;
-        }
-      };
-      if ( rm.m0 < 0.0 ) {
-        setstat( RowStatus::NoData, true );
-        setstat( RowStatus::NoData, false );
-        continue;
+  for ( auto ia : ncrange( na ) ) {
+    const double a = vectAt( agrid, ia );
+    auto rm = calcRowMoments( bgrid, S, na, ia, floor, -a / massratio );
+    auto setstat = [&diag,ia]( RowStatus st, bool for_teff )
+    {
+      if ( diag != nullptr ) {
+        if ( for_teff )
+          vectAt( diag->teff_row_status, ia ) = st;
+        else
+          vectAt( diag->msd_row_status, ia ) = st;
       }
-      if ( diag != nullptr && final_pass ) {
-        vectAt( diag->m0, ia ) = rm.m0;
-        vectAt( diag->mean, ia ) = rm.mean;
-        vectAt( diag->variance, ia ) = rm.var;
-      }
-      //msd row (independent of sigma iteration):
-      if ( final_pass ) {
-        if ( !( a > opt_alpha_min ) ) {
-          setstat( RowStatus::AlphaTooLow, false );
-        } else if ( !( rm.m0 > opt_msd_m0_low
-                       && rm.m0 < opt_msd_m0_high ) ) {
-          setstat( RowStatus::M0OutOfWindow, false );
-        } else if ( !( rm.tail_m0 <= opt_trunc_relbias * ( 1.0 - rm.m0 )
-                       * ( -std::log1p( -rm.m0 ) ) ) ) {
-          //relative msd bias is tail_m0/((1-m0)*(-log(1-m0))):
-          setstat( RowStatus::WingsNotCovered, false );
-        } else if ( ncabs( calcRowM0Stride2( bgrid, S, na, ia, floor )
-                           - rm.m0 )
-                    > opt_msd_m0_convergence * ( 1.0 - rm.m0 ) ) {
-          setstat( RowStatus::Unresolved, false );
-        } else {
-          const double c = -std::log1p( -rm.m0 ) / a;
-          const double msd_row = c / ( alpha2x_factor * kT );
-          msd_rows.push_back( msd_row );
-          setstat( RowStatus::Ok, false );
-          if ( diag != nullptr )
-            vectAt( diag->msd_row, ia ) = msd_row;
-        }
-      }
-      //Teff row:
-      if ( !( a > opt_alpha_min ) ) {
-        setstat( RowStatus::AlphaTooLow, true );
-        continue;
-      }
-      if ( !( rm.tail_m0 <= opt_trunc_relbias * rm.m0
-              && rm.tail_m2 <= opt_trunc_relbias * rm.var * rm.m0 ) ) {
-        setstat( RowStatus::WingsNotCovered, true );
-        continue;
-      }
-      if ( rm.npts_core < opt_resolution_minpts ) {
-        setstat( RowStatus::Unresolved, true );
-        continue;
-      }
-      const double c_row = rm.mean * massratio / ( -a );
-      if ( !( ncabs( c_row - 1.0 ) <= opt.center_tol ) ) {
-        setstat( RowStatus::CenterOffRecoil, true );
-        continue;
-      }
-      const double teff_row = massratio * T * rm.var / ( 2.0 * a );
-      teff_rows.push_back( teff_row );
-      center_rows.push_back( c_row );
-      setstat( RowStatus::Ok, true );
-      if ( diag != nullptr && final_pass )
-        vectAt( diag->teff_row, ia ) = teff_row;
+    };
+    if ( rm.m0 < 0.0 ) {
+      setstat( RowStatus::NoData, true );
+      setstat( RowStatus::NoData, false );
+      continue;
     }
-    if ( teff_rows.empty() )
-      break;//no admissible rows; another pass will not change that
-    VectD tmp( teff_rows );
-    r_guess = calcMedian( tmp ) / T;
+    if ( diag != nullptr ) {
+      vectAt( diag->m0, ia ) = rm.m0;
+      vectAt( diag->mean, ia ) = rm.mean;
+      vectAt( diag->variance, ia ) = rm.var;
+    }
+    //msd row:
+    if ( !( a > opt_alpha_min ) ) {
+      setstat( RowStatus::AlphaTooLow, false );
+    } else if ( !( rm.m0 > opt_msd_m0_low
+                   && rm.m0 < opt_msd_m0_high ) ) {
+      setstat( RowStatus::M0OutOfWindow, false );
+    } else if ( !( rm.tail_m0 <= opt_trunc_relbias * ( 1.0 - rm.m0 )
+                   * ( -std::log1p( -rm.m0 ) ) ) ) {
+      //relative msd bias is tail_m0/((1-m0)*(-log(1-m0))):
+      setstat( RowStatus::WingsNotCovered, false );
+    } else if ( ncabs( calcRowM0Stride2( bgrid, S, na, ia, floor )
+                       - rm.m0 )
+                > opt_msd_m0_convergence * ( 1.0 - rm.m0 ) ) {
+      setstat( RowStatus::Unresolved, false );
+    } else {
+      const double c = -std::log1p( -rm.m0 ) / a;
+      const double msd_row = c / ( alpha2x_factor * kT );
+      msd_rows.push_back( msd_row );
+      setstat( RowStatus::Ok, false );
+      if ( diag != nullptr )
+        vectAt( diag->msd_row, ia ) = msd_row;
+    }
+    //Teff row:
+    if ( !( a > opt_alpha_min ) ) {
+      setstat( RowStatus::AlphaTooLow, true );
+      continue;
+    }
+    if ( !( rm.m0 >= opt_msd_m0_high ) ) {
+      //elastic part negligible (stored kernels, e.g. ENDF liquids or ice,
+      //can violate the sum rules at lower alpha):
+      setstat( RowStatus::M0OutOfWindow, true );
+      continue;
+    }
+    if ( !( rm.full_var > 0.0
+            && rm.tail_m2 <= opt_trunc_relbias * rm.full_var ) ) {
+      setstat( RowStatus::WingsNotCovered, true );
+      continue;
+    }
+    if ( rm.npts_core < opt_resolution_minpts ) {
+      setstat( RowStatus::Unresolved, true );
+      continue;
+    }
+    //First moment sum rule (raw first moment is exactly -alpha/A):
+    const double c_row = rm.raw_m1 * massratio / ( -a );
+    if ( !( ncabs( c_row - 1.0 ) <= opt_center_tol ) ) {
+      setstat( RowStatus::CenterOffRecoil, true );
+      continue;
+    }
+    //Second moment sum rule (full variance is 2*alpha*Teff/(A*T)):
+    const double teff_row = massratio * T * rm.full_var / ( 2.0 * a );
+    teff_rows.push_back( teff_row );
+    center_rows.push_back( c_row );
+    setstat( RowStatus::Ok, true );
+    if ( diag != nullptr )
+      vectAt( diag->teff_row, ia ) = teff_row;
   }
 
   res.teff_nrows = static_cast<unsigned>( teff_rows.size() );
