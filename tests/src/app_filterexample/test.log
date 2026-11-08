@@ -2,7 +2,7 @@ synthetic, rising: 13 wavelengths OK
 synthetic, falling: 13 wavelengths OK
 synthetic, flat: 13 wavelengths OK
 filter_check_table: OK
-stdlib::Al_sg225.ncmat: 100639 wavelengths OK
-stdlib::Be_sg194.ncmat;temp=80K: 102196 wavelengths OK
-stdlib::Polyethylene_CH2.ncmat: 100636 wavelengths OK
-phases<0.3*stdlib::Al_sg225.ncmat&0.7*stdlib::Cu_sg225.ncmat>: 100816 wavelengths OK
+stdlib::Al_sg225.ncmat: 100495 wavelengths OK
+stdlib::Be_sg194.ncmat;temp=80K: 101893 wavelengths OK
+stdlib::Polyethylene_CH2.ncmat: 100201 wavelengths OK
+phases<0.3*stdlib::Al_sg225.ncmat&0.7*stdlib::Cu_sg225.ncmat>: 100723 wavelengths OK
