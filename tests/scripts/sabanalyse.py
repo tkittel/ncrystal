@@ -30,12 +30,23 @@ import NCTestUtils.enable_fpe # noqa F401
 import NCTestUtils.enable_testdatapath # noqa F401
 import NCrystalDev as NC
 from NCrystalDev.misc import evaluate_query as q
+from NCrystalDev.constants import const_neutron_mass_amu
 
 def analyse( cfgstr, lbl='', diag=False ):
     query = ['sab','analyse',cfgstr,lbl]
     if diag:
         query += ['diag']
     return q(query)['sabanalyse']
+
+def detailed_balance_median( cfgstr, lbl ):
+    r = analyse( cfgstr, lbl, diag=True )
+    d = r['diagnostics']
+    c = const_neutron_mass_amu / r['elementmassamu']
+    v = sorted( dev for a, dev in zip( d['alpha'],
+                                       d['detailed_balance_dev'] )
+                if a * c >= 3.0 and dev >= 0.0 )
+    assert len(v) > 10
+    return v[len(v)//2]
 
 def check_vdos_case( cfgstr, lbl, teff_tol, msd_tol ):
     r = analyse( cfgstr, lbl )
@@ -138,6 +149,25 @@ def main():
     assert nok > 100
     print(f'==> diagnostics: {n} rows, aligned arrays and'
           ' valid status codes: OK')
+
+    #Detailed balance diagnostic: guards against kernels from the VDOS
+    #expansion breaking detailed balance (only checked above
+    #alpha*m_n/M=3, where rows are smooth enough for a precise check):
+    for cfgstr, lbl in [ ('stdlib::Al_sg225.ncmat',''),
+                         ('stdlib::Be_sg194.ncmat',''),
+                         ('stdlib::Polyethylene_CH2.ncmat','H'),
+                         ('stdlib::UO2_sg225_UraniumDioxide.ncmat','O'),
+                         ('stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat','D'),
+                         ('benzene_solid_100K_sabsmall.ncmat','C'),
+                         ('benzene_solid_100K_sabsmall.ncmat','H') ]:
+        med = detailed_balance_median( cfgstr, lbl )
+        if 'sabsmall' in cfgstr:
+            print(f'==> detailed balance {cfgstr}//{lbl}: {med:.1g}')
+            continue
+        ok = med < ( 1e-12 if 'D2O' in cfgstr else 3e-5 )
+        print(f'==> detailed balance {cfgstr}//{lbl or "mono"}:'
+              f' {"OK" if ok else "FAIL"}')
+        assert ok, f'detailed balance violated ({med=})'
 
     #Consumer-level check: the auto-detected Teff must reach the factory
     #layer, i.e. next-gen direct-kernel materials get the SCT extension
