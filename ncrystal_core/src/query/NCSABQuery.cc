@@ -286,7 +286,7 @@ namespace NCRYSTAL_NAMESPACE {
                             VectD egrid,
                             std::uint64_t nsample,
                             std::uint64_t seed,
-                            NeutronEnergy sample_ekin,
+                            const std::vector<NeutronEnergy>& sample_ekins,
                             int knllux )
       {
         if ( knllux < 0 )
@@ -319,21 +319,30 @@ namespace NCRYSTAL_NAMESPACE {
           os << '}';
           return;
         }
-        auto rng = createBuiltinRNG( seed );
-        VectD a, b;//, ekin, mu;
-        a.reserve( countToSizeT( nsample ) );
-        b.reserve( countToSizeT( nsample ) );
-        ++nsample;
-        while (nsample-- > 1) {
-          auto evt =spe->sampleScatterAlphaBeta(rng,sample_ekin);
-          a.push_back( evt.first );
-          b.push_back( evt.second );
+        //One sample per energy (a list if more than one), each with a new RNG
+        //from the seed:
+        const bool many = sample_ekins.size() > 1;
+        if ( many )
+          os << '[';
+        for ( auto i : ncrange( sample_ekins.size() ) ) {
+          auto rng = createBuiltinRNG( seed );
+          VectD a, b;
+          a.reserve( countToSizeT( nsample ) );
+          b.reserve( countToSizeT( nsample ) );
+          for ( std::uint64_t n = 0; n < nsample; ++n ) {
+            auto evt = spe->sampleScatterAlphaBeta( rng, sample_ekins.at(i) );
+            a.push_back( evt.first );
+            b.push_back( evt.second );
+          }
+          os << ( i ? "," : "" ) << "{\"alpha\":";
+          streamJSONHugeDblVect(os,std::move(a));
+          os << ",\"beta\":";
+          streamJSONHugeDblVect(os,std::move(b));
+          os << '}';
         }
-        os << "{\"alpha\":";
-        streamJSONHugeDblVect(os,std::move(a));
-        os << ",\"beta\":";
-        streamJSONHugeDblVect(os,std::move(b));
-        os << "}}";
+        if ( many )
+          os << ']';
+        os << '}';
       }
 
       //Processor JSON (with diagnostics) and the mean number of tries of
@@ -372,11 +381,9 @@ namespace NCRYSTAL_NAMESPACE {
                                  Optional<Temperature> teff,
                                  std::uint64_t nsample,
                                  std::uint64_t seed,
-                                 NeutronEnergy sample_ekin,
+                                 const std::vector<NeutronEnergy>& sample_ekins,
                                  int knllux )
       {
-        auto rng = createBuiltinRNG( seed );
-        const double E_div_kT = sample_ekin.dbl() / sab->temperature().kT();
         //Extend beyond Emax per cfg, like the actual factories (the
         //default RefSampleExtension extender is free-gas):
         if ( knllux < 0 )
@@ -392,26 +399,41 @@ namespace NCRYSTAL_NAMESPACE {
                                                       sab->elementMassAMU(),
                                                       SigmaBound{1.0},
                                                       cfg.sct_table_npts );
-        auto ab = SABRef::refSampleAlphaBeta( rng, sab, EDivKT{E_div_kT},
-                                              nsample,
-                                              std::move(ext) );
-        os << "{\"refsample\":{\"extender\":";
-        streamJSON( os, use_sct ? "SCT" : "FreeGas" );
-        os << ",\"E\":";
-        streamJSON(os,sample_ekin);
-        os << ",\"E_div_kT\":";
-        streamJSON(os,E_div_kT);
-        os << ",\"kT\":";
-        streamJSON(os,sab->temperature().kT());
-        os << ",\"seed\":";
-        streamJSON(os,seed);
-        os << ",\"nsample\":";
-        streamJSON(os,nsample);
-        os << ",\"alpha\":";
-        streamJSONHugeDblVect(os,std::move(ab.first));
-        os << ",\"beta\":";
-        streamJSONHugeDblVect(os,std::move(ab.second));
-        os << "}}";
+        //Expensive, so once for all energies:
+        ext.emax = SABRef::autodetectRefSampleEmax( sab );
+        //One sample per energy (a list if more than one), each with a new RNG
+        //from the seed:
+        const bool many = sample_ekins.size() > 1;
+        os << "{\"refsample\":";
+        if ( many )
+          os << '[';
+        for ( auto i : ncrange( sample_ekins.size() ) ) {
+          const NeutronEnergy sample_ekin = sample_ekins.at(i);
+          auto rng = createBuiltinRNG( seed );
+          const double E_div_kT = sample_ekin.dbl() / sab->temperature().kT();
+          auto ab = SABRef::refSampleAlphaBeta( rng, sab, EDivKT{E_div_kT},
+                                                nsample, ext );
+          os << ( i ? "," : "" ) << "{\"extender\":";
+          streamJSON( os, use_sct ? "SCT" : "FreeGas" );
+          os << ",\"E\":";
+          streamJSON(os,sample_ekin);
+          os << ",\"E_div_kT\":";
+          streamJSON(os,E_div_kT);
+          os << ",\"kT\":";
+          streamJSON(os,sab->temperature().kT());
+          os << ",\"seed\":";
+          streamJSON(os,seed);
+          os << ",\"nsample\":";
+          streamJSON(os,nsample);
+          os << ",\"alpha\":";
+          streamJSONHugeDblVect(os,std::move(ab.first));
+          os << ",\"beta\":";
+          streamJSONHugeDblVect(os,std::move(ab.second));
+          os << '}';
+        }
+        if ( many )
+          os << ']';
+        os << '}';
       }
 
       void query_impl_legacysample( std::ostream& os,
@@ -892,11 +914,13 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
       = ( is_proc
           ? ( "correct usage: [\"sab\",\"proc\",MATCFGSTR,ATOMDISPLAYLABEL,"
               "NSAMPLE,SEED,SAMPLE_EVAL,EGRID0,..,EGRIDN]"
-              " (the EGRID pts are optional, and the ATOMDISPLAYLABEL can"
+              " (the EGRID pts are optional, SAMPLE_EVAL can be a comma"
+              " separated list, and the ATOMDISPLAYLABEL can"
               " be left as an empty string for monoatomic materials)" )
           : ( "correct usage: [\"sab\",\"refsample\",MATCFGSTR,"
               "ATOMDISPLAYLABEL,NSAMPLE,SEED,SAMPLE_EVAL,TYPE] where TYPE is one"
-              " of \"legacy\", \"legacy_oversample\", and \"ref\" (the"
+              " of \"legacy\", \"legacy_oversample\", and \"ref\" (SAMPLE_EVAL"
+              " can be a comma separated list for \"ref\", and the"
               " ATOMDISPLAYLABEL can be left as an empty string for monoatomic"
               " materials)" ) );
     if ( nargs < 5 )
@@ -918,10 +942,16 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
     if ( !optsd.has_value() )
       invalid(usage);
     std::uint64_t seed = optsd.value();
-    auto sample_ekin_raw = arg(4).toDbl();
-    if (!sample_ekin_raw.has_value()||!(sample_ekin_raw.value()>=0.0))
+    //SAMPLE_EVAL can be a comma separated list of energies:
+    std::vector<NeutronEnergy> sample_ekins;
+    for ( auto& part : arg(4).split(',') ) {
+      auto v = part.toDbl();
+      if ( !v.has_value() || !( v.value() >= 0.0 ) )
+        invalid(usage);
+      sample_ekins.emplace_back( DoValidate_t{}, v.value() );
+    }
+    if ( sample_ekins.empty() )
       invalid(usage);
-    NeutronEnergy sample_ekin( DoValidate_t{}, sample_ekin_raw.value() );
     VectD egrid;
     bool refsample_type_is_legacy(false);
     bool legacy_oversample(false);
@@ -952,14 +982,17 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
     }
     if ( key == sv_proc ) {
       query_impl_proc( os, std::move(sabdata), teff, std::move(egrid),
-                       nsample, seed, sample_ekin, knllux );
+                       nsample, seed, sample_ekins, knllux );
     } else {
-      if ( refsample_type_is_legacy )
+      if ( refsample_type_is_legacy ) {
+        if ( sample_ekins.size() != 1 )
+          invalid(usage);
         query_impl_legacysample( os, std::move(sabdata), nsample, seed,
-                                 sample_ekin, legacy_oversample );
-      else
+                                 sample_ekins.front(), legacy_oversample );
+      } else {
         query_impl_refsample( os, std::move(sabdata), teff, nsample, seed,
-                              sample_ekin, knllux );
+                              sample_ekins, knllux );
+      }
     }
   } else if ( key == sv_proctries ) {
     const char * usage
