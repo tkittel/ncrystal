@@ -109,6 +109,8 @@ ncforceinline double NCrystal::ncfma( double a, double b,
 {
 #ifdef __wasm__
   return softFMA( a, b, c );
+#elif defined(__GNUC__) || defined(__clang__)
+  return __builtin_fma( a, b, c );//as std::fma, minus a call in debug builds
 #else
   return std::fma( a, b, c );
 #endif
