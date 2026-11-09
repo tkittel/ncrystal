@@ -86,7 +86,7 @@ NC::PairDD NC::SAB::SABSamplerAtE_Alg1::sampleAlphaBeta(EDivKT e,
       nc_assert( b0 > m_betaSampler.getXVals().at(0) );//because we moved m_betaSampler.getXVals()[0] down by 4/3*(b1-b0)
       const double delta_beta = b1 - b0;
       nc_assert(delta_beta>0.0);
-      double alphaval;
+      double alphaval = 0.0;
       constexpr auto nsampletries = 30;
       for ( auto iii : ncrange(nsampletries) ) {
         (void)iii;
