@@ -27,7 +27,8 @@ def main( parser ):
     parser.init( short_description() )
     parser.add_argument(
         '--enable-github-parallel', action='store_true',
-        help="""Appends CMAKE_BUILD_PARALLEL_LEVEL=<nprocs> to $GITHUB_ENV"""
+        help="""Appends CMAKE_BUILD_PARALLEL_LEVEL=<nprocs> and
+        CTEST_PARALLEL_LEVEL=<nprocs> to $GITHUB_ENV"""
     )
 
     args = parser.parse_args()
@@ -39,7 +40,7 @@ def main( parser ):
         p = pathlib.Path(os.environ['GITHUB_ENV'])
         kv = []
         kv.append( ('CMAKE_BUILD_PARALLEL_LEVEL',str(n) ) )
-        #kv.append( ('CTEST_PARALLEL_LEVEL',str(n) ) )
+        kv.append( ('CTEST_PARALLEL_LEVEL',str(n) ) )
         s = ''
         for k,v in kv:
             print(f"Appending {k}={v} to " "${GITHUB_ENV}")
