@@ -28,6 +28,7 @@
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/fact_utils/NCFactoryJobs.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
+#include "NCrystal/internal/utils/NCSpline.hh"
 #include "NCVDOSGn_FMA.hh"
 #include <deque>
 
@@ -79,6 +80,8 @@ namespace NCRYSTAL_NAMESPACE {
         //to within this relative tolerance (0 disables).
         double thinSmoothFloor = 1e-6;//Points below this fraction of the
         //spectrum maximum are ignored when applying thinSmoothTol.
+        bool cubicThinned = true;//Interpolate thinned orders with cubics
+        //(otherwise linearly)
 
         //FIXME: Revisit all of the above for a dependency on vdoslux
       };
@@ -95,6 +98,7 @@ namespace NCRYSTAL_NAMESPACE {
           res.g1InterpTol = 0.0;
           res.minTemperature = 0.0;
           res.thinSmoothTol = 0.0;
+          res.cubicThinned = false;
         } else if (choice == VDOSGn::Cfg::MaxLux) {
           res.directConvolve = true;
         } else {
@@ -193,7 +197,8 @@ namespace NCRYSTAL_NAMESPACE {
                     double egrid_lower,
                     double egrid_binwidth,
                     unsigned long thinFactor,
-                    long startIdx = 0 );
+                    long startIdx = 0,
+                    bool cubicIfThinned = false );
         long getStartIdx() const { return m_startIdx; }
         double interpolateDensity(double energy) const;
         void interpolateDensityMany(Span<const double>, VectD&, VectD&) const;
@@ -214,6 +219,7 @@ namespace NCRYSTAL_NAMESPACE {
         unsigned long m_thinFactor;//NB: binwidth is G1's binwidth multiplied
                                    //    by m_thinFactor
         long m_startIdx;
+        VectD m_cubic;//thinned orders only, see HymanInterp::uniformCubics
       };
     }
   }
@@ -223,7 +229,8 @@ NCV::VDOSGnData::VDOSGnData( const VectD &spec,
                              double egrid_lower,
                              double egrid_binwidth,
                              unsigned long thinFactor,
-                             long startIdx )
+                             long startIdx,
+                             bool cubicIfThinned )
   : m_spec(spec.begin(),spec.end()),
     m_thinFactor(thinFactor),
     m_startIdx(startIdx)
@@ -250,6 +257,14 @@ NCV::VDOSGnData::VDOSGnData( const VectD &spec,
   for(unsigned i=0;i<m_spec.size();i++)
     m_spec[i] *= inv_asym_area;
   m_specMaxVal = *std::max_element(m_spec.begin(),m_spec.end());
+
+  //Thinned orders are interpolated with cubics (Hyman slopes, which keep the
+  //values in the range of the two nodes, so non-negative), except in legacy
+  //mode. Linear interpolation is not precise enough on the coarser grids.
+  //Unthinned orders stay linear, since their kinks (inherited from the VDOS)
+  //would make cubics ring:
+  if ( cubicIfThinned && m_thinFactor > 1 )
+    m_cubic = HymanInterp::uniformCubics( m_spec, m_egrid_binwidth );
 }
 
 double NCV::VDOSGnData::interpolateDensity(double energy) const
@@ -263,6 +278,8 @@ double NCV::VDOSGnData::interpolateDensity(double energy) const
                                             static_cast<std::size_t>(floor_a));
   double f = a - floor_a;//a-index instead would mix int and double => slower.
   nc_assert( index+1 < m_spec.size() );
+  if ( !m_cubic.empty() )
+    return evalCubicU( &m_cubic[4*index], f );
   const double * valptr = &m_spec[index];
   return nclerp( *valptr, *(valptr+1), f );
 }
@@ -333,15 +350,19 @@ void NCV::VDOSGnData::interpolateDensityMany( Span<const double> energy,
   }
 
 #ifndef NDEBUG
-  //Sanity check what we pass to vdosGnInterpolateDensityRun
+  //Sanity check what we pass to vdosGnInterpolateDensity[Cubic]Run
   for (std::size_t i = beg; i < end; ++i) {
     nc_assert( buf_ix[i] >= 0.0 );
     nc_assert( buf_ix[i] <= static_cast<double>(m_spec_size_minus_2) );
   }
 #endif
 
-  vdosGnInterpolateDensityRun( op + beg, buf_f + beg, buf_ix + beg,
-                               m_spec.data(), end - beg );
+  if ( m_cubic.empty() )
+    vdosGnInterpolateDensityRun( op + beg, buf_f + beg, buf_ix + beg,
+                                 m_spec.data(), end - beg );
+  else
+    vdosGnInterpolateDensityCubicRun( op + beg, buf_f + beg, buf_ix + beg,
+                                      m_cubic.data(), end - beg );
 
 #ifndef NDEBUG
   for (std::size_t i = 0; i < energy.size(); ++i)
@@ -925,7 +946,8 @@ NCV::VDOSGn::Impl::produceNewOrderByConvolutionImpl( Order order,
   }
 
   return VDOSGnData{ phonon_spe, start_energy, dt,
-                     thinFactor1*extraThinFactor, startIdx };
+                     thinFactor1*extraThinFactor, startIdx,
+                     m_cfg.cubicThinned };
 }
 
 NCV::VDOSGn::VDOSGn( VDOSGn&& ) = default;
