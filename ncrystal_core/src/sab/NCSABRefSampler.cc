@@ -331,19 +331,8 @@ namespace NCRYSTAL_NAMESPACE {
         if ( !opt_ext.has_value() )
           return NullOpt;//has to be explicitly requested
         RefSampleExtension res = opt_ext.value();
-        if ( res.emax.dbl() == 0.0 ) {
-          //ok, must detect:
-          if ( sab->suggestedEmax() > 0.0 ) {
-            res.emax = NeutronEnergy( sab->suggestedEmax() );
-          } else {
-            //The expensive way:
-            using SP = SABUtils::SABProcessor;
-            auto cfg =  SABCfg::createConfig( 5 );//6 is too slow, and the focus
-                                                  //here is sampling, not xs.
-            SP sp( cfg, sab, nullptr, SP::SampleSupport::NO );
-            res.emax = sp.getEMaxInfo().ekin;
-          }
-        }
+        if ( res.emax.dbl() == 0.0 )
+          res.emax = autodetectRefSampleEmax( sab );
         NeutronEnergy ekin( e.dbl() * sab->temperature().kT() );
         if ( ekin <= res.emax )
           return NullOpt;//extension not relevant
@@ -355,6 +344,19 @@ namespace NCRYSTAL_NAMESPACE {
       }
     }
   }
+}
+
+NC::NeutronEnergy
+NC::SABRef::autodetectRefSampleEmax( const shared_obj<const SABData>& sab )
+{
+  if ( sab->suggestedEmax() > 0.0 )
+    return NeutronEnergy( sab->suggestedEmax() );
+  //The expensive way:
+  using SP = SABUtils::SABProcessor;
+  auto cfg =  SABCfg::createConfig( 5 );//6 is too slow, and the focus
+                                        //here is sampling, not xs.
+  SP sp( cfg, sab, nullptr, SP::SampleSupport::NO );
+  return sp.getEMaxInfo().ekin;
 }
 
 std::pair<NC::VectD,NC::VectD>
