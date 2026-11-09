@@ -24,6 +24,8 @@
 
 #include "NCrystal/internal/xstable/NCIsoMacroXSTable.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCRandUtils.hh"
+#include "NCrystal/NCrystal.hh"
 #include <iostream>
 
 namespace NC = NCrystal;
@@ -107,6 +109,43 @@ namespace {
   {
     return wl < e ? below : above;
   }
+
+}
+
+namespace {
+
+  //A process without a table which is not validated for IsoMacroXSTable (a
+  //constant cross section, from a @CUSTOM_TESTFLAT section):
+  class TestFlatScatter final : public NC::ProcImpl::ScatterIsotropicMat {
+  public:
+    const char * name() const noexcept override { return "TestFlatScatter"; }
+    NC::CrossSect crossSectionIsotropic( NC::CachePtr&,
+                                         NC::NeutronEnergy ) const override
+    {
+      return NC::CrossSect{ 1.0 };
+    }
+    NC::ScatterOutcomeIsotropic sampleScatterIsotropic( NC::CachePtr&,
+                                                        NC::RNG& rng,
+                                                        NC::NeutronEnergy e ) const override
+    {
+      return { e, NC::randIsotropicScatterMu( rng ) };
+    }
+  };
+
+  class TestFlatScatterFactory final : public NC::FactImpl::ScatterFactory {
+  public:
+    const char * name() const noexcept override { return "TestFlatScatterFactory"; }
+    Priority query( const NC::FactImpl::ScatterRequest& cfg ) const override
+    {
+      return ( cfg.info().countCustomSections( "TESTFLAT" )
+               ? Priority{ 999 } : Priority::Unable );
+    }
+    ProcPtr produce( const NC::FactImpl::ScatterRequest& cfg ) const override
+    {
+      return combineProcs( globalCreateScatter( cfg ),
+                           NC::makeSO<TestFlatScatter>() );
+    }
+  };
 
 }
 
@@ -264,6 +303,25 @@ int main()
     nc_assert_always( ymin >= 0.0 );
     std::cout << "reduceHermitePoints: " << r.idx.size() << " of " << x.size()
               << " points, never negative: OK" << std::endl;
+  }
+  {
+    //Processes which have not been validated for IsoMacroXSTable give a
+    //warning:
+    NC::FactImpl::registerFactory( NC::ncmake_unique<TestFlatScatterFactory>() );
+    NC::registerInMemoryStaticFileData( "Al_testflat.ncmat",
+                                        "NCMAT v7\n"
+                                        "@CELL\n  cubic 4.04958\n"
+                                        "@SPACEGROUP\n  225\n"
+                                        "@ATOMPOSITIONS\n"
+                                        "  Al 0 0 0\n  Al 0 1/2 1/2\n"
+                                        "  Al 1/2 0 1/2\n  Al 1/2 1/2 0\n"
+                                        "@DYNINFO\n  element Al\n  fraction 1\n"
+                                        "  type vdosdebye\n  debye_temp 410\n"
+                                        "@CUSTOM_TESTFLAT\n" );
+    auto t = NCX::createIsoMacroXSTable( NC::MatCfg( "Al_testflat.ncmat" ),
+                                         NCX::IsoMacroXSTableParams() );
+    std::cout << "Al_testflat.ncmat: table with " << t.n() << " points"
+              << std::endl;
   }
   return 0;
 }
