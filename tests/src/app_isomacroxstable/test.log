@@ -20,3 +20,6 @@ tol=0: got expected exception: IsoMacroXSTable: invalid tolerance 0 (must be in 
 tiny wlmax: got expected exception: IsoMacroXSTable: invalid wlmax 1e-09 (must be larger than 0.0001 Aa)
 evalIsoMacroXSTable: OK
 reduceHermitePoints: 75 of 2001 points, never negative: OK
+NCrystal WARNING: Loading NCMAT data which has @CUSTOM_ section(s). This is OK if intended.
+NCrystal WARNING: IsoMacroXSTable: the physics process "TestFlatScatter" has not been validated for IsoMacroXSTable (features of its cross section might be missed)
+Al_testflat.ncmat: table with 143 points
