@@ -23,6 +23,7 @@
 
 #include "NCrystal/internal/utils/NCFMADispatch.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCSpline.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 #ifndef NCRYSTAL_WIN_FMA
@@ -52,6 +53,31 @@ namespace NCRYSTAL_NAMESPACE {
       for ( std::size_t k = 0; k < count; ++k ) {
         const std::size_t ix = static_cast<std::size_t>(ix_as_dbl[k]);
         out[k] = nclerp( spec[ix], spec[ix+1], f[k] );
+      }
+    }
+
+    NCRYSTAL_FMADISPATCH_WINFMA_DECLARE(
+      void, vdosGnInterpolateDensityCubicRun,
+      ( double* ncrestrict out, const double* ncrestrict f,
+        const double* ncrestrict ix_as_dbl,
+        const double* ncrestrict cubic, std::size_t count )
+    )
+
+    //Array form of interpolateDensity's evalCubicU call for thinned orders;
+    //must match it bit for bit:
+    NCRYSTAL_FMADISPATCH_DECLARATOR(void,vdosGnInterpolateDensityCubicRun)
+    ( double* ncrestrict out, const double* ncrestrict f,
+      const double* ncrestrict ix_as_dbl,//indices, as double
+      const double* ncrestrict cubic, std::size_t count )
+    {
+      NCRYSTAL_FMADISPATCH_WINFMA_FORWARD(
+        vdosGnInterpolateDensityCubicRun, (out,f,ix_as_dbl,cubic,count) );
+      nc_assert( buffersDisjoint( out, count, f, count ) );
+      nc_assert( buffersDisjoint( out, count, ix_as_dbl, count ) );
+      nc_assert( buffersDisjoint( f, count, ix_as_dbl, count ) );
+      for ( std::size_t k = 0; k < count; ++k ) {
+        out[k] = evalCubicU( cubic + 4 * static_cast<std::size_t>(ix_as_dbl[k]),
+                             f[k] );
       }
     }
 
