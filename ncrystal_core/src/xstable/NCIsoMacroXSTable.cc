@@ -375,9 +375,12 @@ namespace NCRYSTAL_NAMESPACE {
                    && ( minusOK || bernsteinNonNegative( bminus.data() ) ) );
         };
 
-        //Values and slopes on each side of candidate point m. Differences of
-        //the values at the level of rounding errors (e.g. where the tables of
-        //the processes are continuous) are not treated as discontinuities:
+        //Values and slopes on each side of candidate point m. Differences at
+        //the level of rounding errors (e.g. where the tables of the processes
+        //are continuous) are not treated as discontinuities or kinks (the
+        //latter would add a repeated table point, depending on rounding). The
+        //slopes are compared by their effect on the value over a wavelength
+        //range of the size of the wavelength:
         auto below = [&]( std::size_t m, double& y, double& s ) { tab.eval( reg[m-1], lam[m], y, s ); };
         auto above = [&]( std::size_t m, double& y, double& s )
         {
@@ -385,8 +388,11 @@ namespace NCRYSTAL_NAMESPACE {
           if ( m > 0 ) {
             double yb, sb;
             below( m, yb, sb );
-            if ( ncabs( y - yb ) <= 1e-12 * ncmax( y, yb ) )
+            if ( ncabs( y - yb ) <= 1e-12 * ncmax( y, yb ) ) {
               y = yb;
+              if ( ncabs( s - sb ) * lam[m] <= 1e-12 * ncmax( y, yb ) )
+                s = sb;
+            }
           }
         };
 
