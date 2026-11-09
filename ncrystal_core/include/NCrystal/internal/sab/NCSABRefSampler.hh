@@ -52,6 +52,11 @@ namespace NCRYSTAL_NAMESPACE {
       NeutronEnergy emax = NeutronEnergy{0.0};
     };
 
+    //The Emax used for an extension with emax=0 (autodetect). Expensive for
+    //SABData without a suggested Emax, so callers sampling at several
+    //energies can set it once in their RefSampleExtension:
+    NeutronEnergy autodetectRefSampleEmax( const shared_obj<const SABData>& );
+
     std::pair<VectD,VectD>
     refSampleAlphaBeta( RNG&,
                         shared_obj<const SABData>,

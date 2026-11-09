@@ -39,8 +39,8 @@ for name in names:
     cfg = f'{synthdir}/sabsynth_{name}.ncmat;knllux=3'
     #subnormal_values: samplers disagree there (to be investigated):
     if name != 'subnormal_values':
-        for ekin in [ 1e-5, 1e-3, 0.05 ]:
-            assert compare_with_ref( cfg, '', ekin, 20000, 2000 ) > 1e-3
+        pvals = compare_with_ref( cfg, '', [ 1e-5, 1e-3, 0.05 ], 20000, 2000 )
+        assert min( pvals ) > 1e-3, pvals
     #noise: the strip ladder leaves full-cell sampling at a few grid points
     #where a dedicated strip sampler would be cheaper (to be improved):
     check_method_choice( cfg, '', require_strips = False,
