@@ -601,6 +601,8 @@ inline double NCrystal::intervalPos01(double a, double b, double relpos)
 
 inline double NCrystal::nclerp(double a, double b, double t)
 {
+  //fixme: these asserts make hot loops (e.g. in
+  //SABBetaStripSampler::calcStripBound) much slower in debug builds. Revisit.
   nc_assert( std::isfinite(a) );
   nc_assert( std::isfinite(b) );
   nc_assert( std::isfinite(t) );
