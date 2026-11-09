@@ -86,8 +86,8 @@ Caught expected NCBadInput('Invalid energy unit on "1.0ergs". Possible units inc
   scenario = ""
   cfgstr   = "solid::Al/1gcm3;temp=1000K"
 
-    -> geomcfg   = "sphere;r=0.1574435"
-    -> srccfg    = "circular;z=-0.1574435;r=0.1574435;ekin=0.0861733;n=1e6"
+    -> geomcfg   = "sphere;r=0.1574445"
+    -> srccfg    = "circular;z=-0.1574445;r=0.1574445;ekin=0.0861733;n=1e6"
 
 >>> Testing
   scenario = "1.8meV"

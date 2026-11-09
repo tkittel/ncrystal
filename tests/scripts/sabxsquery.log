@@ -32,25 +32,25 @@ stdlib::Al_sg225.ncmat;knllux=3 (freegas): extension_method=freegas
   E=100        xs=1.3959 barn
   E=1000       xs=1.3966 barn
 stdlib::Polyethylene_CH2.ncmat;knllux=2 (sct, atoms C,H): extension_method=sct
-  E=1e-06      xs=549.58 barn
+  E=1e-06      xs=549.57 barn
   E=1e-05      xs=173.96 barn
-  E=0.0001     xs=55.546 barn
+  E=0.0001     xs=55.545 barn
   E=0.001      xs=19.281 barn
   E=0.01       xs=12.31 barn
-  E=0.1        xs=17.777 barn
+  E=0.1        xs=17.776 barn
   E=1          xs=15.32 barn
-  E=10         xs=15.239 barn
+  E=10         xs=15.238 barn
   E=100        xs=15.235 barn
   E=1000       xs=15.235 barn
 stdlib::Polyethylene_CH2.ncmat;knllux=2 (freegas, atoms C,H): extension_method=freegas
-  E=1e-06      xs=549.58 barn
+  E=1e-06      xs=549.57 barn
   E=1e-05      xs=173.96 barn
-  E=0.0001     xs=55.546 barn
+  E=0.0001     xs=55.545 barn
   E=0.001      xs=19.281 barn
   E=0.01       xs=12.31 barn
-  E=0.1        xs=17.777 barn
+  E=0.1        xs=17.776 barn
   E=1          xs=15.32 barn
-  E=10         xs=15.239 barn
+  E=10         xs=15.238 barn
   E=100        xs=15.235 barn
   E=1000       xs=15.235 barn
 Expected error: Invalid SAB JSON query: ["sab","xs","stdlib::Al_sg225.ncmat","","foo","0.025"] (correct usage: ["sab","xs",MATCFGSTR,ATOMDISPLAYLABEL,EXTENDER,E0,..,EN] where EXTENDER is "sct" or "freegas" and the E values are neutron energies in eV (the ATOMDISPLAYLABEL can be left as an empty string for monoatomic materials))
