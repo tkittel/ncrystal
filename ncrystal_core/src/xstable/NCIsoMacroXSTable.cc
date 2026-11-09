@@ -220,14 +220,13 @@ namespace NCRYSTAL_NAMESPACE {
             double F = 0.0, dF = 0.0;
             if ( !t.p.empty() ) {
               const double * c = t.p.data() + 4 * k;
-              F = ncfma( u, ncfma( u, ncfma( u, c[3], c[2] ), c[1] ), c[0] );
+              F = evalCubicU( c, u );
               dF = ncfma( u, ncfma( 3.0 * u, c[3], 2.0 * c[2] ), c[1] ) / w;
             }
             if ( !t.q.empty() ) {
               const double * d = t.q.data() + 4 * k;
               const double se = std::sqrt( e );
-              const double Q = ncfma( u, ncfma( u, ncfma( u, d[3], d[2] ),
-                                                d[1] ), d[0] );
+              const double Q = evalCubicU( d, u );
               const double dQ = ncfma( u, ncfma( 3.0 * u, d[3], 2.0 * d[2] ),
                                        d[1] );
               F = ncfma( se, Q, F );
