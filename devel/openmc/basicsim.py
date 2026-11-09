@@ -22,8 +22,8 @@
 import numpy as np
 import openmc
 
-REF_VALUES = np.array([5.60481868e+01, 5.75019668e-04, 7.67958251e-01])
-REF_ERRORS = np.array([2.58956360e-03, 4.83597510e-06, 1.96171839e-03])
+REF_VALUES = np.array([5.604825559e+01, 5.733450248e-04, 7.679983582e-01])
+REF_ERRORS = np.array([2.604129434e-03, 5.073000434e-06, 1.952927109e-03])
 REF_POSITIONS = np.array([0.00872665, 1.15202318, 2.29531971])
 
 def is_interactive():
