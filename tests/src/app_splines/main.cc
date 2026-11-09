@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/utils/NCSpline.hh"
+#include "NCrystal/internal/utils/NCRandUtils.hh"
 #include <iostream>
 
 namespace NC=NCrystal;
@@ -274,6 +275,45 @@ namespace {
     }
   }
 
+  void testHymanUniform()
+  {
+    //Same slopes and interpolation as HymanInterp on uniform grids (smooth,
+    //noisy and kinked data, and the minimal 4 and 5 nodes):
+    NC::RandXRSRImpl rng( 1234 );
+    for ( std::size_t n : { 4, 5, 6, 50 } ) {
+      for ( int kind : { 0, 1, 2 } ) {
+        const double h = 0.37;
+        NC::VectD x, y;
+        for ( auto i : NC::ncrange( n ) ) {
+          const double v = 1.5 + h * static_cast<double>( i );
+          x.push_back( v );
+          y.push_back( kind == 0 ? std::exp( -0.3 * v ) * v * v
+                       : ( kind == 1 ? rng.generate()
+                           : NC::ncabs( v - 1.5 - 0.5 * h * static_cast<double>( n ) ) ) );
+        }
+        const NC::HymanInterp hi( x, y );
+        const auto ref = hi.nodeSlopes();
+        const auto m = NC::HymanInterp::uniformSlopes( y, h );
+        nc_assert_always( m.size() == n );
+        for ( auto i : NC::ncrange( n ) )
+          nc_assert_always( NC::floateq( m[i], ref[i], 1e-12, 1e-12 ) );
+        //uniformCubics: exact at the nodes, HymanInterp in between:
+        const auto c = NC::HymanInterp::uniformCubics( y, h );
+        nc_assert_always( c.size() == 4 * ( n - 1 ) );
+        for ( auto i : NC::ncrange( n - 1 ) ) {
+          nc_assert_always( NC::evalCubicU( &c[4*i], 0.0 ) == y[i] );
+          nc_assert_always( NC::floateq( NC::evalCubicU( &c[4*i], 1.0 ),
+                                         y[i+1], 1e-12, 1e-12 ) );
+          for ( double u : { 0.25, 0.5, 0.9 } )
+            nc_assert_always( NC::floateq( NC::evalCubicU( &c[4*i], u ),
+                                           hi.eval( x[i] + u * h ),
+                                           1e-12, 1e-12 ) );
+        }
+      }
+    }
+    std::cout << "HymanInterp::uniformSlopes/uniformCubics: OK" << std::endl;
+  }
+
   void testFitPiecewiseCubic()
   {
     //fitPiecewiseCubic: within tol of smooth functions (checked densely),
@@ -311,6 +351,7 @@ int main() {
   testPCHIPInterp1();
   testPCHIPInterp2();
   testHymanInterp();
+  testHymanUniform();
   testFitPiecewiseCubic();
   std::cout<<"All OK"<<std::endl;
   return 0;

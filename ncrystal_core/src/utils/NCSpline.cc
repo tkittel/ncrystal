@@ -23,6 +23,7 @@
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/utils/NCFileUtils.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
+#include "NCSpline_FMA.hh"
 #include <fstream>
 #include <iomanip>
 #include <sstream>
@@ -409,17 +410,36 @@ NC::HymanInterp::HymanInterp( Span<const double> x, Span<const double> y )
                         : ( m_y[1] - m_y[0] ) / ( m_x[1] - m_x[0] ) );
     const double dr = ( i + 1 < n ? ( m_y[i+1] - m_y[i] ) / ( m_x[i+1] - m_x[i] )
                         : dl );
-    if ( dl * dr > 0.0 ) {
-      const double lim = 3.0 * ncmin( ncabs( dl ), ncabs( dr ) );
-      if ( m * dl < 0.0 )
-        m = 0.0;
-      else if ( ncabs( m ) > lim )
-        m = ( dl > 0.0 ? lim : -lim );
-    } else {
-      m = 0.0;
-    }
-    m_m[i] = m;
+    m_m[i] = hymanFilter( m, dl, dr );
   }
+}
+
+NC::VectD NC::HymanInterp::uniformSlopes( Span<const double> y, double h )
+{
+#ifndef NDEBUG
+  nc_assert_always( y.size() >= 4 );
+  nc_assert_always( h > 0.0 && std::isfinite( h ) );
+  for ( auto e : y )
+    nc_assert_always( std::isfinite( e ) );
+#endif
+  VectD res( y.size() );
+  NCRYSTAL_APPLY_C_NAMESPACE(detail_hymanSlopesUniform)( y.data(), y.size(),
+                                                        h, res.data() );
+  return res;
+}
+
+NC::VectD NC::HymanInterp::uniformCubics( Span<const double> y, double h )
+{
+#ifndef NDEBUG
+  nc_assert_always( y.size() >= 4 );
+  nc_assert_always( h > 0.0 && std::isfinite( h ) );
+  for ( auto e : y )
+    nc_assert_always( std::isfinite( e ) );
+#endif
+  VectD res( 4 * ( y.size() - 1 ) );
+  NCRYSTAL_APPLY_C_NAMESPACE(detail_hymanCubicsUniform)( y.data(), y.size(),
+                                                        h, res.data() );
+  return res;
 }
 
 double NC::HymanInterp::eval( double x ) const

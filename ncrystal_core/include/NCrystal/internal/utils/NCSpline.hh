@@ -174,6 +174,11 @@ namespace NCRYSTAL_NAMESPACE {
     // Method: J. M. Hyman 1983, DOI: 10.1137/0904045 (fourth-order slopes with
     // a monotonicity filter). The interpolation never leaves the range of the
     // two node values of an interval, and is monotone where the data is.
+    //
+    // Use an object for evaluation at arbitrary x. For data on a uniform grid
+    // which the caller stores and indexes itself (e.g. for fast array
+    // evaluation), the static uniformSlopes/uniformCubics functions give the
+    // same interpolation much cheaper.
   public:
     HymanInterp( Span<const double> x, Span<const double> y );
 
@@ -183,9 +188,18 @@ namespace NCRYSTAL_NAMESPACE {
     // The derivatives at all nodes, as used by eval():
     Span<const double> nodeSlopes() const { return m_m; }
 
+    // The node slopes for y on a uniform grid with spacing h (at least 4
+    // values):
+    static VectD uniformSlopes( Span<const double> y, double h );
+
+    // The same as coefficients of c0+u*(c1+u*(c2+u*c3)) in each interval (4 per
+    // interval, u in [0,1] the relative position in it), for evalCubicU:
+    static VectD uniformCubics( Span<const double> y, double h );
+
   private:
     VectD m_x, m_y, m_m;
   };
+
 
   //Utility for fitting piecewise cubics to a smooth, non-zero f(x) on [a,b]
   //(0<a<b, finite) to a relative precision of about tol, with adaptively placed
