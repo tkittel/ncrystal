@@ -65,12 +65,12 @@ double NC::evalIsoXS( const IsoXSTable& t, double e )
   double exs = 0.0;
   if ( !t.p.empty() ) {
     const double * c = t.p.data() + 4 * i;
-    exs = ncfma( u, ncfma( u, ncfma( u, c[3], c[2] ), c[1] ), c[0] );
+    exs = evalCubicU( c, u );
   }
   if ( !t.q.empty() ) {
     const double * d = t.q.data() + 4 * i;
     exs = ncfma( std::sqrt( e ),
-                 ncfma( u, ncfma( u, ncfma( u, d[3], d[2] ), d[1] ), d[0] ),
+                 evalCubicU( d, u ),
                  exs );
   }
   if ( t.r.empty() )
@@ -94,7 +94,7 @@ double NC::evalIsoXSDerivative( const IsoXSTable& t, double e )
   const double u = ( e - vectAt( E, i ) ) * invw;
   auto poly = [u]( const double * c )
   {
-    return ncfma( u, ncfma( u, ncfma( u, c[3], c[2] ), c[1] ), c[0] );
+    return evalCubicU( c, u );
   };
   auto dpoly = [u,invw]( const double * c )
   {
