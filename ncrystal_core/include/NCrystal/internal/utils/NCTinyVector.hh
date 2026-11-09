@@ -80,8 +80,8 @@ namespace NCRYSTAL_NAMESPACE {
     ncnodiscard17 ncconstexpr17 value_type& at( size_type );//checks and throws std::out_of_range
     ncnodiscard17 ncconstexpr17 TValue& front() noexcept { return *begin(); }
     ncnodiscard17 constexpr const TValue& front() const noexcept { return *begin(); }
-    ncnodiscard17 ncconstexpr17 TValue& back() noexcept { return *std::prev(end()); }
-    ncnodiscard17 constexpr const TValue& back() const noexcept { return *std::prev(end()); }
+    ncnodiscard17 ncconstexpr17 TValue& back() noexcept { return begin()[m_size-1]; }
+    ncnodiscard17 constexpr const TValue& back() const noexcept { return begin()[m_size-1]; }
 
     ///////////////////////////////////////////////////////////////////////////
     //Various standard methods:
@@ -183,7 +183,7 @@ namespace NCRYSTAL_NAMESPACE {
   TinyVector<TValue,NMAX>::operator[]( size_type i ) const noexcept
   {
     assert(i<m_size);
-    return *std::next(data(),i);
+    return data()[i];
   }
 
   template<class TValue, std::size_t NMAX>
@@ -191,7 +191,7 @@ namespace NCRYSTAL_NAMESPACE {
   TinyVector<TValue,NMAX>::operator[]( size_type i ) noexcept
   {
     assert(i<m_size);
-    return *std::next(data(),i);
+    return data()[i];
   }
 
   template<class TValue, std::size_t NMAX>
@@ -200,7 +200,7 @@ namespace NCRYSTAL_NAMESPACE {
   {
     if ( i >= m_size )
       throw std::out_of_range("TinyVector::at(): index out of out of range");
-    return *std::next(data(),i);
+    return data()[i];
   }
 
   template<class TValue, std::size_t NMAX>
@@ -209,7 +209,7 @@ namespace NCRYSTAL_NAMESPACE {
   {
     if ( i >= m_size )
       throw std::out_of_range("TinyVector::at(): index out of out of range");
-    return *std::next(data(),i);
+    return data()[i];
   }
 
   template<class TValue, std::size_t NMAX>
@@ -256,7 +256,7 @@ namespace NCRYSTAL_NAMESPACE {
   inline void TinyVector<TValue,NMAX>::pop_back() ncnoexceptndebug
   {
     nc_assert( m_size > 0 );
-    auto it = std::prev(end());
+    auto it = data() + ( m_size - 1 );
     static_assert(std::is_nothrow_destructible<TValue>::value,
                   "TinyVector can only keep objects with noexcept destructors");
     --m_size;
