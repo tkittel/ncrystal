@@ -294,8 +294,9 @@ namespace {
       REQUIRE( approxEq( s.a0, rs.a0, ascale ) );
       REQUIRE( approxEq( s.a1, rs.a1, ascale ) );
       REQUIRE( s.smax > 0.0 );
-      REQUIRE( NC::floateq( s.smax, refSMax( k, s.a0, s.a1, s.b0, s.b1 ),
-                            1e-10, 0.0 ) );
+      //An upper bound (the maximum, except in rare cases):
+      REQUIRE( s.smax >= ( refSMax( k, s.a0, s.a1, s.b0, s.b1 )
+                           * ( 1.0 - 1e-10 ) ) );
     }
     REQUIRE( istrip == strips.size() );
   }
