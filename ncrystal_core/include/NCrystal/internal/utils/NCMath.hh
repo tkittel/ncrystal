@@ -50,20 +50,20 @@ namespace NCRYSTAL_NAMESPACE {
   constexpr double constant_ekin2v = constexpr_sqrt(2.0/const_neutron_mass_evc2);//multiply this with sqrt(ekin[eV]) to get velocity in Aa/s
 
   //Our own min/max/abs to make sure only double versions are used:
-  double ncmin(double, double);
-  double ncmax(double, double);
-  double ncclamp(double val, double low, double up);//returns val, clamped to interval [low,up]
+  ncforceinline double ncmin(double, double);
+  ncforceinline double ncmax(double, double);
+  ncforceinline double ncclamp(double val, double low, double up);//returns val, clamped to interval [low,up]
   double ncclamp(double val, PairDD low_and_up);
-  double ncabs(double);
-  bool ncisnan(double);
-  bool ncisinf(double);
-  bool ncisnanorinf(double);
+  ncforceinline double ncabs(double);
+  ncforceinline bool ncisnan(double);
+  ncforceinline bool ncisinf(double);
+  ncforceinline bool ncisnanorinf(double);
 
   //Versions with multiple parameters:
-  double ncmin(double, double, double);
-  double ncmax(double, double, double);
-  double ncmin(double, double, double, double);
-  double ncmax(double, double, double, double);
+  ncforceinline double ncmin(double, double, double);
+  ncforceinline double ncmax(double, double, double);
+  ncforceinline double ncmin(double, double, double, double);
+  ncforceinline double ncmax(double, double, double, double);
 
   //Various constexpr versions (not efficient for runtime usage):
   //NB: See NCDefs.hh for max/gdc/lcm functions:
@@ -396,12 +396,14 @@ namespace NCRYSTAL_NAMESPACE {
 //switching of parameters passed to those functions is rather important, as it
 //has to be just like this in order to end with minimal set of instructions (in
 //any clang or gcc-trunk April-2020: just 1 per std::min/std::max call, no more):
-inline double NCrystal::ncmin(double a, double b) { return std::min(b,a); }
-inline double NCrystal::ncmax(double a, double b) { return std::max(b,a); }
-inline double NCrystal::ncmax(double a, double b, double c) { return std::max(c,std::max(b,a)); }
-inline double NCrystal::ncmin(double a, double b, double c) { return std::min(c,std::min(b,a)); }
-inline double NCrystal::ncmin(double a, double b, double c, double d) { return std::min(std::min(d,c),std::min(b,a)); }
-inline double NCrystal::ncmax(double a, double b, double c, double d) { return std::max(std::max(d,c),std::max(b,a)); }
+//NB: the expressions below are exactly those of std::min(b,a)/std::max(b,a),
+//written out so debug builds do not pay for an extra call:
+ncforceinline double NCrystal::ncmin(double a, double b) { return a < b ? a : b; }
+ncforceinline double NCrystal::ncmax(double a, double b) { return b < a ? a : b; }
+ncforceinline double NCrystal::ncmax(double a, double b, double c) { return ncmax(ncmax(a,b),c); }
+ncforceinline double NCrystal::ncmin(double a, double b, double c) { return ncmin(ncmin(a,b),c); }
+ncforceinline double NCrystal::ncmin(double a, double b, double c, double d) { return ncmin(ncmin(a,b),ncmin(c,d)); }
+ncforceinline double NCrystal::ncmax(double a, double b, double c, double d) { return ncmax(ncmax(a,b),ncmax(c,d)); }
 inline double NCrystal::ncclamp(double val, PairDD low_and_up) { return ncclamp(val,low_and_up.first,low_and_up.second); }
 
 inline constexpr unsigned NCrystal::ncconstexpr_log10ceil( unsigned val )
@@ -430,17 +432,36 @@ constexpr TInt NCrystal::ncconstexpr_roundupnextpow2( TInt a )
   return ncconstexpr_ispow2(a) ? a : ncconstexpr_roundupnextpow2( a + 1 );
 }
 
-inline double NCrystal::ncabs(double a)
+//Builtins where available, so debug builds do not pay for extra calls:
+ncforceinline double NCrystal::ncabs(double a)
 {
+#if defined(__GNUC__) || defined(__clang__)
+  return __builtin_fabs(a);
+#else
   static_assert(std::is_same<decltype(std::abs(0.0)), double>::value,
                 "header issues detected: std::abs not returning a double");
   return std::abs(a);
+#endif
 }
-inline bool NCrystal::ncisnan(double a) { return std::isnan(a); }
-inline bool NCrystal::ncisinf(double a) { return std::isinf(a); }
-inline bool NCrystal::ncisnanorinf(double a) { return std::isnan(a) || std::isinf(a); }
+ncforceinline bool NCrystal::ncisnan(double a)
+{
+#if defined(__GNUC__) || defined(__clang__)
+  return __builtin_isnan(a);
+#else
+  return std::isnan(a);
+#endif
+}
+ncforceinline bool NCrystal::ncisinf(double a)
+{
+#if defined(__GNUC__) || defined(__clang__)
+  return __builtin_isinf(a);
+#else
+  return std::isinf(a);
+#endif
+}
+ncforceinline bool NCrystal::ncisnanorinf(double a) { return ncisnan(a) || ncisinf(a); }
 
-inline double NCrystal::ncclamp(double val, double low, double up)
+ncforceinline double NCrystal::ncclamp(double val, double low, double up)
 {
   nc_assert(up>=low);
   //NB: C++17 has std::clamp, not sure if it is more efficient. The version here
