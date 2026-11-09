@@ -479,7 +479,7 @@ namespace NCRYSTAL_NAMESPACE {
                             0.5 * ( -9.0 * fa + 27.0 * y1 - 27.0 * y2 + 9.0 * fb ) };
       bool ok = true;
       for ( double u : { 1.0 / 6.0, 0.5, 5.0 / 6.0 } ) {
-        const double v = ncfma( u, ncfma( u, ncfma( u, c[3], c[2] ), c[1] ), c[0] );
+        const double v = evalCubicU( c, u );
         const double ref = f( a + u * h );
         if ( !( ncabs( v - ref ) <= 0.5 * tol * ncabs( ref ) ) )
           ok = false;
