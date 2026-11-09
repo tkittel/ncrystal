@@ -176,7 +176,8 @@ NCS::SABBetaStripSampler::calcStripBound( double b0, double b1,
   const auto ia1 = static_cast<std::uint32_t>( clampIdx( ia_hi, 1, na-1 ) - 1 );
   //S is convex along alpha and linear along beta within each cell, so its
   //maximum in the strip is at a corner of a strip/cell intersection. First the
-  //strip corners (S=0 outside the alpha grid):
+  //strip corners (S=0 outside the alpha grid), then the alpha grid points
+  //inside (with a slightly looser bound, avoiding an interpolation at each):
   auto smaxAtAlpha = [&]( double a, std::size_t ia )
   {
     return ( a >= ag.front() && a <= ag.back()
@@ -184,18 +185,24 @@ NCS::SABBetaStripSampler::calcStripBound( double b0, double b1,
              : 0.0 );
   };
   double smax = ncmax( smaxAtAlpha( a0, ia0 ), smaxAtAlpha( a1, ia1 ) );
-  //Then the alpha grid points inside, where S is linear in beta between the
-  //stored values:
   {
     const double bb0 = vectAt( bg, ib );
     const double inv_db = 1.0 / ( vectAt( bg, ib + 1 ) - bb0 );
     const double t0 = ( b0 - bb0 ) * inv_db;
     const double t1 = ( b1 - bb0 ) * inv_db;
-    for ( std::size_t ia = ia_lo; ia < ia_hi; ++ia ) {
-      const double s_lo = vectAt( sab, ib * na + ia );
-      const double s_hi = vectAt( sab, ( ib + 1 ) * na + ia );
-      smax = ncmax( smax, ncmax( nclerp( s_lo, s_hi, t0 ),
-                                 nclerp( s_lo, s_hi, t1 ) ) );
+    //S is linear in beta between the two stored rows, so it is at most
+    //(1-t)*max(S_lo)+t*max(S_hi), with the maxima over these alpha points:
+    if ( ia_lo < ia_hi ) {
+      nc_assert( ia_hi <= na && ( ib + 2 ) * na <= sab.size() );
+      const double * row_lo = sab.data() + ib * na;
+      const double * row_hi = row_lo + na;
+      double m_lo = row_lo[ia_lo], m_hi = row_hi[ia_lo];
+      for ( std::size_t ia = ia_lo + 1; ia < ia_hi; ++ia ) {
+        m_lo = ncmax( m_lo, row_lo[ia] );
+        m_hi = ncmax( m_hi, row_hi[ia] );
+      }
+      smax = ncmax( smax, ncmax( nclerp( m_lo, m_hi, t0 ),
+                                 nclerp( m_lo, m_hi, t1 ) ) );
     }
   }
   return { { b0, b1, a0, a1, smax }, ia0, ia1 };
