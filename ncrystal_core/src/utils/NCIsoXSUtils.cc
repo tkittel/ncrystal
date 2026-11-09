@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/utils/NCIsoXSUtils.hh"
+#include "NCIsoXSUtils_FMA.hh"
 #include "NCrystal/internal/utils/NCFastSearch.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 
@@ -62,21 +63,10 @@ double NC::evalIsoXS( const IsoXSTable& t, double e )
     return t.tail[3] + ( t.tail[2] + t.tail[4] / e ) / e;
   const std::size_t i = fastUpperBoundIdx( E.data(), E.size(), e ) - 1;
   const double u = ( e - vectAt( E, i ) ) * ( 1.0 / ( vectAt( E, i + 1 ) - vectAt( E, i ) ) );
-  double exs = 0.0;
-  if ( !t.p.empty() ) {
-    const double * c = t.p.data() + 4 * i;
-    exs = evalCubicU( c, u );
-  }
-  if ( !t.q.empty() ) {
-    const double * d = t.q.data() + 4 * i;
-    exs = ncfma( std::sqrt( e ),
-                 evalCubicU( d, u ),
-                 exs );
-  }
-  if ( t.r.empty() )
-    return exs / e;
-  const double inv = 1.0 / e;
-  return ncfma( vectAt( t.r, i ), inv, exs ) * inv;
+  return NCRYSTAL_APPLY_C_NAMESPACE(detail_isoXSEvalInterval)
+    ( t.p.empty() ? nullptr : t.p.data() + 4 * i,
+      t.q.empty() ? nullptr : t.q.data() + 4 * i,
+      t.r.empty() ? nullptr : t.r.data() + i, e, u );
 }
 
 double NC::evalIsoXSDerivative( const IsoXSTable& t, double e )

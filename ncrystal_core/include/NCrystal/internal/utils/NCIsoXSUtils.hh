@@ -120,6 +120,12 @@ namespace NCRYSTAL_NAMESPACE {
 // Inline implementations //
 ////////////////////////////
 
+//The cross section at energy e in an interval of a table (u the relative
+//position in it), given the interval's p, q (4 coefficients each) and r values
+//(nullptr where the table has none). FMA-dispatched:
+extern "C" double NCRYSTAL_APPLY_C_NAMESPACE(detail_isoXSEvalInterval)
+  ( const double* p, const double* q, const double* r, double e, double u );
+
 inline double NCrystal::IsoXSEvaluator::eval( double e ) const ncnoexceptndebug
 {
   nc_assert( e >= 0.0 );
@@ -134,22 +140,11 @@ inline double NCrystal::IsoXSEvaluator::eval( double e ) const ncnoexceptndebug
   if ( !( e < E.back() ) )
     return t.tail[3] + ( t.tail[2] + t.tail[4] / e ) / e;
   const std::size_t i = m_guide.upperBoundIdxScan( E.data(), E.size(), e ) - 1;
-  const double u = ( e - E[i] ) * m_invw[i];
-  double exs = 0.0;
-  if ( !t.p.empty() ) {
-    const double * c = t.p.data() + 4 * i;
-    exs = evalCubicU( c, u );
-  }
-  if ( !t.q.empty() ) {
-    const double * d = t.q.data() + 4 * i;
-    exs = ncfma( std::sqrt( e ),
-                 evalCubicU( d, u ),
-                 exs );
-  }
-  if ( t.r.empty() )
-    return exs / e;
-  const double inv = 1.0 / e;
-  return ncfma( t.r[i], inv, exs ) * inv;
+  return NCRYSTAL_APPLY_C_NAMESPACE(detail_isoXSEvalInterval)
+    ( t.p.empty() ? nullptr : t.p.data() + 4 * i,
+      t.q.empty() ? nullptr : t.q.data() + 4 * i,
+      t.r.empty() ? nullptr : t.r.data() + i,
+      e, ( e - E[i] ) * m_invw[i] );
 }
 
 inline double NCrystal::IsoXSEvaluator::
