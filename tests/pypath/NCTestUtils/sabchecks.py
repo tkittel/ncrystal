@@ -66,12 +66,16 @@ class _AB:
     def __init__( self, d ):
         self.alpha, self.beta = np.asarray(d['alpha']), np.asarray(d['beta'])
 
-def compare_with_ref( cfg, lbl, ekin, nsample, seed ):
-    #Worst KS p-value of the 1D projections of (alpha,beta) samples from
-    #SABProcessor and the reference sampler:
-    n, e = str(nsample), str(ekin)
+def compare_with_ref( cfg, lbl, ekins, nsample, seed ):
+    #Worst KS p-values of the 1D projections of (alpha,beta) samples from
+    #SABProcessor and the reference sampler, at each of the energies (one
+    #query each, so the samplers are only initialised once):
+    n, e = str(nsample), ','.join( str(x) for x in ekins )
     proc = ncquery( ['sab','proc',cfg,lbl,n,str(seed),e],
                     huge_arrays = True )['sample']
     ref = ncquery( ['sab','refsample',cfg,lbl,n,str(seed+1),e,'ref'],
                    huge_arrays = True )['refsample']
-    return pval_from_samples( _AB(proc), _AB(ref) )[1]
+    if len( ekins ) == 1:
+        proc, ref = [ proc ], [ ref ]
+    return [ pval_from_samples( _AB(p), _AB(r) )[1]
+             for p, r in zip( proc, ref ) ]

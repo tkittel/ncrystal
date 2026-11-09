@@ -34,8 +34,8 @@ from NCTestUtils.sabchecks import check_method_choice, compare_with_ref
 synthdir = get_named_test_data_dir('synth')
 for name in [ 'minimal', 'diagonal_sliver', 'alpha_far', 'tiny_values' ]:
     cfg = f'{synthdir}/sabsynth_{name}.ncmat;knllux=3'
-    for ekin in [ 1e-5, 0.05 ]:
-        assert compare_with_ref( cfg, '', ekin, 5000, 1000 ) > 1e-3
+    pvals = compare_with_ref( cfg, '', [ 1e-5, 0.05 ], 5000, 1000 )
+    assert min( pvals ) > 1e-3, pvals
     check_method_choice( cfg, '', nperpt = 100, name = name )
 
 #Cross sections below the energy grid, sigma(E)*sqrt(E) being constant there
