@@ -218,6 +218,101 @@ namespace NCRYSTAL_NAMESPACE {
         return res;
       }
 
+      //Linear (first) and 4-point Lagrange cubic (second) interpolation of
+      //the curve (x,y) at xx, with x strictly ascending, at least 4 points,
+      //and x.front()<xx<x.back():
+      PairDD interpLinCubic( const VectD& x, const VectD& y, double xx )
+      {
+#ifndef NDEBUG
+        nc_assert_always( x.size() == y.size() && x.size() >= 4 );
+        nc_assert_always( xx > x.front() && xx < x.back() );
+#endif
+        const std::size_t n = x.size();
+        const std::size_t i = static_cast<std::size_t>
+          ( std::upper_bound( x.begin(), x.end(), xx ) - x.begin() );
+        const double x0 = vectAt( x, i-1 );
+        const double y0 = vectAt( y, i-1 );
+        const double lin = y0 + ( xx - x0 ) / ( vectAt( x, i ) - x0 )
+          * ( vectAt( y, i ) - y0 );
+        const std::size_t i0 = ( i < 2 ? 0 : ncmin( i - 2, n - 4 ) );
+        double cub = 0.0;
+        for ( auto k : ncrange( i0, i0 + 4 ) ) {
+          double l = 1.0;
+          for ( auto m : ncrange( i0, i0 + 4 ) )
+            if ( m != k )
+              l *= ( xx - vectAt( x, m ) ) / ( vectAt( x, k ) - vectAt( x, m ) );
+          cub += l * vectAt( y, k );
+        }
+        return { lin, cub };
+      }
+
+      //Detailed balance deviation of an alpha row. Detailed balance means
+      //log(S(alpha,-x)) = x + log(S(alpha,x)). The two curves are compared
+      //at the x>0 grid points of each, interpolating the other curve both
+      //linearly and with a cubic and keeping the smaller relative
+      //deviation, to limit the impact of interpolation errors. Returns the
+      //integral of S times that deviation, relative to the integral of S
+      //over the whole row (so deviations in far tails count little), or -1
+      //if the curves do not overlap. Only points above the floor are used.
+      double calcRowDetailedBalanceDev( const VectD& beta, const VectD& sab,
+                                        std::size_t nalpha, std::size_t ia,
+                                        double floor )
+      {
+#ifndef NDEBUG
+        nc_assert_always( ia < nalpha );
+        nc_assert_always( sab.size() == nalpha * beta.size() );
+#endif
+        VectD xa, ya, xb, yb;//curves (-beta,log(S)) and (beta,beta+log(S))
+        for ( auto j : ncrange( beta.size() ) ) {
+          const double w = vectAt( sab, j*nalpha + ia );
+          if ( !( w > floor ) )
+            continue;
+          const double b = vectAt( beta, j );
+          const double lw = std::log( w );
+          xa.push_back( -b );
+          ya.push_back( lw );
+          xb.push_back( b );
+          yb.push_back( b + lw );
+        }
+        if ( xa.size() < 4 )
+          return -1.0;
+        std::reverse( xa.begin(), xa.end() );
+        std::reverse( ya.begin(), ya.end() );
+        const double lo = ncmax( 0.0, ncmax( xa.front(), xb.front() ) );
+        const double hi = ncmin( xa.back(), xb.back() );
+        if ( !( lo < hi ) )
+          return -1.0;
+        //Trapezoidal integrals, nodes weighted by half the adjacent spacings:
+        auto trapw = []( const VectD& x, std::size_t i )
+        {
+          const std::size_t n = x.size();
+          return 0.5 * ( vectAt( x, i + 1 < n ? i + 1 : i )
+                         - vectAt( x, i > 0 ? i - 1 : i ) );
+        };
+        StableSum total;
+        for ( auto i : ncrange( xa.size() ) )
+          total.add( trapw( xa, i ) * std::exp( vectAt( ya, i ) ) );
+        StableSum num;
+        auto compare = [lo,hi,&num,&trapw]( const VectD& xn, const VectD& yn,
+                                            const VectD& xo, const VectD& yo )
+        {
+          for ( auto i : ncrange( xn.size() ) ) {
+            const double x = vectAt( xn, i );
+            if ( !( x > lo && x < hi ) )
+              continue;
+            const double y = vectAt( yn, i );
+            const PairDD o = interpLinCubic( xo, yo, x );
+            const double d = ncmin( ncabs( std::expm1( o.first - y ) ),
+                                    ncabs( std::expm1( o.second - y ) ) );
+            num.add( trapw( xn, i ) * std::exp( y ) * d );
+          }
+        };
+        compare( xa, ya, xb, yb );
+        compare( xb, yb, xa, ya );
+        //Each side covers the overlap once, hence the factor 2:
+        return num.sum() / ( 2.0 * total.sum() );
+      }
+
     }
   }
 }
@@ -259,6 +354,7 @@ NC::SABAnalyser::analyse( const SABData& sab, const Options& opt )
     diag->variance.resize( na, -1.0 );
     diag->teff_row.resize( na, -1.0 );
     diag->msd_row.resize( na, -1.0 );
+    diag->detailed_balance_dev.resize( na, -1.0 );
     diag->teff_row_status.resize( na, RowStatus::NoData );
     diag->msd_row_status.resize( na, RowStatus::NoData );
     diag->floor_value = floor;
@@ -277,6 +373,9 @@ NC::SABAnalyser::analyse( const SABData& sab, const Options& opt )
   for ( auto ia : ncrange( na ) ) {
     const double a = vectAt( agrid, ia );
     auto rm = calcRowMoments( bgrid, S, na, ia, floor, -a / massratio );
+    if ( diag != nullptr )
+      vectAt( diag->detailed_balance_dev, ia )
+        = calcRowDetailedBalanceDev( bgrid, S, na, ia, floor );
     auto setstat = [&diag,ia]( RowStatus st, bool for_teff )
     {
       if ( diag != nullptr ) {
