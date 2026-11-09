@@ -68,7 +68,6 @@ stdlib::void.ncmat
    first: (0 Aa, 0/cm) last: (500 Aa, 0/cm)
 Caught expected NCBadInput('IsoMacroXSTable: only isotropic materials are supported')
 NCrystal WARNING: Loading NCMAT data which has @CUSTOM_ section(s). This is OK if intended.
-NCrystal WARNING: IsoMacroXSTable: the physics process "SANSSphereScatter" has not been validated for IsoMacroXSTable (features of its cross section might be missed)
 Al_sans.ncmat
    ndiscontinuities=126 tol=0.0001 wlmax=500 maxrelerr<tol: OK
    processes: AbsOOV ElIncScatter PowderBragg SABScatterNG SANSSphereScatter
