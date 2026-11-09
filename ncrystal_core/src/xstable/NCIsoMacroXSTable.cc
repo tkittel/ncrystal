@@ -78,7 +78,8 @@ namespace NCRYSTAL_NAMESPACE {
       //warning, and must be studied before being added here.
       bool isValidatedUntabulated( const std::string& name )
       {
-        static const std::set<std::string> validated = { "SABScatter", "AbsOOV" };
+        static const std::set<std::string> validated = { "SABScatter", "AbsOOV",
+                                                        "SANSSphereScatter" };
         return validated.count( name ) > 0;
       }
 
