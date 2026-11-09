@@ -187,6 +187,9 @@ namespace NCRYSTAL_NAMESPACE {
   //t outside [0,1] simply extrapolates). Is inlined and uses ncfma.
   double nclerp(double a, double b, double t);
 
+  //Evaluates the cubic c0+u*(c1+u*(c2+u*c3)) from its 4 coefficients:
+  double evalCubicU( const double* c, double u );
+
   class Fct1D {
   public:
     //A very basic function object based on dynamic polymorphism (we can replace
@@ -597,6 +600,11 @@ inline double NCrystal::intervalPos01(double a, double b, double relpos)
   nc_assert( 0.0 <= relpos );
   nc_assert( relpos <= 1.0 );
   return ncclamp(ncfma(relpos, b, (1.0-relpos)*a),a,b);
+}
+
+ncforceinline double NCrystal::evalCubicU( const double* c, double u )
+{
+  return ncfma( ncfma( ncfma( c[3], u, c[2] ), u, c[1] ), u, c[0] );
 }
 
 inline double NCrystal::nclerp(double a, double b, double t)
