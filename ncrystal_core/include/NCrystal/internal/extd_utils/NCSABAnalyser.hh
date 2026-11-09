@@ -92,6 +92,13 @@ namespace NCRYSTAL_NAMESPACE {
       VectD variance; //central second moments
       VectD teff_row; //per-row Teff estimate in K (-1 where inadmissible)
       VectD msd_row;  //per-row msd estimate in Aa^2 (-1 where inadmissible)
+      //Per-row violation of detailed balance,
+      //S(alpha,-beta)=exp(beta)*S(alpha,beta): the integral of S times the
+      //relative deviation, relative to the row integral. The two sides are
+      //compared at their grid points, with the smaller deviation from a
+      //linear and a cubic interpolation of the other side (-1 where the
+      //sides do not overlap):
+      VectD detailed_balance_dev;
       std::vector<RowStatus> teff_row_status;
       std::vector<RowStatus> msd_row_status;
       double floor_value = -1.0;
