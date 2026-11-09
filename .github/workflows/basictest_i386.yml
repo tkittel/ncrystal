@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       matrix:
@@ -28,10 +28,10 @@ jobs:
 
     - name: Build and test in i386 container
       run: |
-        docker run --rm --platform linux/386 -v "${{ github.workspace }}:/ws" -w /ws \
+        docker run --rm --network host --platform linux/386 -v "${{ github.workspace }}:/ws" -w /ws \
           i386/debian:trixie bash -euxc '
-            apt-get update -qq
-            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            apt-get update -qq -o Acquire::Retries=5
+            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq -o Acquire::Retries=5 \
               g++ cmake make python3 python3-numpy python3-mpmath python3-yaml > /dev/null
             uname -m
             python3 -c "import struct,sys; print(\"python pointer bits:\",8*struct.calcsize(\"P\")); assert struct.calcsize(\"P\")==4"
