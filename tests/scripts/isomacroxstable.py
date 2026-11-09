@@ -154,8 +154,8 @@ def main():
     with ensure_error(NCBadInput,'IsoMacroXSTable: only isotropic materials are'
                       ' supported'):
         ncquery(['isomacroxstable',oriented])
-    #Processes which have not been validated for IsoMacroXSTable give a warning
-    #(here the SANS of Al with spherical voids):
+    #The SANS of Al with spherical voids (validated for IsoMacroXSTable, see
+    #also sanshardsphere.py):
     NC.registerInMemoryFileData( 'Al_sans.ncmat', """NCMAT v8
 @CELL
   cubic 4.04958
