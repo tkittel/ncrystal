@@ -57,8 +57,9 @@ namespace NCRYSTAL_NAMESPACE {
     //        specifically, beta is split into strips (nStripsPerBetaCell equal
     //        subdivisions of each beta cell of the kernel), and each beta strip
     //        is then chopped along alpha so the resulting rectangular region
-    //        fits KB(emax) as tightly as possible. The maximum S value within
-    //        this rectangular area, Smax, is then cached, as is a strip weight
+    //        fits KB(emax) as tightly as possible. An upper bound of the S
+    //        values within this rectangular area, Smax (in almost all cases
+    //        the maximum), is then cached, as is a strip weight
     //        which takes both Smax and the shape of KB(emax) across the strip
     //        into account. During sampling, a strip is first picked according
     //        to the weight, then beta is sampled uniformly in the strip and
