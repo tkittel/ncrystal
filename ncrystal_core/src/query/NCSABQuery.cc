@@ -241,6 +241,8 @@ namespace NCRYSTAL_NAMESPACE {
           streamJSONHugeDblVect( os, VectD(d.teff_row) );
           os << ",\"msd_row\":";
           streamJSONHugeDblVect( os, VectD(d.msd_row) );
+          os << ",\"detailed_balance_dev\":";
+          streamJSONHugeDblVect( os, VectD(d.detailed_balance_dev) );
           os << ",\"teff_row_status\":";
           stream_statuses( d.teff_row_status );
           os << ",\"msd_row_status\":";

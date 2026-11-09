@@ -21,4 +21,12 @@ NCrystal WARNING: Discarding 52 edges of provided kernel data due to missing S v
 ==> explicit effective_temperature honoured: OK
 ==> JENDL benzene fixtures: 100K C teff+msd: OK, 100K H teff, no msd: OK, 20K C teff+msd: OK
 ==> diagnostics: 280 rows, aligned arrays and valid status codes: OK
+==> detailed balance stdlib::Al_sg225.ncmat//mono: OK
+==> detailed balance stdlib::Be_sg194.ncmat//mono: OK
+==> detailed balance stdlib::Polyethylene_CH2.ncmat//H: OK
+==> detailed balance stdlib::UO2_sg225_UraniumDioxide.ncmat//O: OK
+NCrystal WARNING: Discarding 204 edges of provided kernel data due to missing S values.
+==> detailed balance stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat//D: OK
+==> detailed balance benzene_solid_100K_sabsmall.ncmat//C: 0.1
+==> detailed balance benzene_solid_100K_sabsmall.ncmat//H: 0.3
 ==> direct-kernel extension methods: knllux=1 -> sct, freegas query -> freegas
