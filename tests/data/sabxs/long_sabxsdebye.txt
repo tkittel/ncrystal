@@ -1,5 +1,5 @@
-# Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxs_debye".
-# Regenerate with: long_sabxs_debye.py --update
+# Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxsdebye".
+# Regenerate with: long_sabxsdebye.py --update
 @cfg stdlib::Ca_sg229_Calcium-gamma.ncmat;temp=5;vdoslux=0;knllux=0
 1e-10 0.05492836
 4.308665e-10 0.02646216

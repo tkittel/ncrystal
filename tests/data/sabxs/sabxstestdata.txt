@@ -1,5 +1,5 @@
-# Reference cross sections [barn/atom] vs. energy [eV] for the test "sabxs_testdata".
-# Regenerate with: sabxs_testdata.py --update
+# Reference cross sections [barn/atom] vs. energy [eV] for the test "sabxstestdata".
+# Regenerate with: sabxstestdata.py --update
 @cfg vdos_paraH2.ncmat;temp=5;vdoslux=0;knllux=0
 1e-10 620.7582
 4.308665e-10 299.0552
