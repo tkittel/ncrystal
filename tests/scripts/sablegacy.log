@@ -3,6 +3,9 @@ benzene_solid_100K_sabsmall.ncmat;knllux=-1:
    E=0.025eV: xs=30.3b, 1000 scatterings sampled
    E=2eV: xs=12.8b, 1000 scatterings sampled
    E=50eV: xs=12.6b, 1000 scatterings sampled
+NCrystal WARNING: Discarding 52 edges of provided kernel data due to missing S values.
+stdlib::LiquidWaterH2O_T293.6K.ncmat;knllux=-1:
+   E=2.5e-12eV: xs=5.96e+05b, 1000 scatterings sampled
 stdlib::Al_sg225.ncmat;vdoslux=1003;knllux=-1:
    E=1e-07eV: xs=17.3b, 1000 scatterings sampled
    E=0.025eV: xs=0.229b, 1000 scatterings sampled
