@@ -201,5 +201,6 @@ def get_scatxs_from_endf(endf_fn, *, E ):
                                 trim_edges = True )
 
     c_test.set_density(1.0,'g/cm3')
+    c_test.set_state_of_matter('liquid')#(only the inelastic kernel)
     m = c_test.load()
     return m.scatter.xsect(E)
