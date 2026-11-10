@@ -26,6 +26,8 @@
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/phys_utils/NCEqRefl.hh"
 #include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
+#include "NCrystal/internal/phys_utils/NCUijUtils.hh"
+#include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 
 namespace NC = NCrystal;
 
@@ -154,10 +156,57 @@ namespace NCRYSTAL_NAMESPACE {
       SmallVector<SmallVector<Vector,32>,4> atomic_pos;//atomic coordinates
       SmallVectD csl;//coherent scattering length
       SmallVectD msd;//mean squared displacement
+      //Anisotropic displacements (fractional form) at each position, for
+      //species with uij (otherwise empty):
+      SmallVector<std::vector<UijUtils::Uij>,4> ufrac;
       int max_h, max_k, max_l;
       PairDD ksq_preselect_interval;
       PairDD dcut_interval;
     };
+
+    //Anisotropic displacements (fractional form) at the unit cell positions
+    //of an AtomInfo, transformed from those of the sites (empty if the
+    //sites have no uij):
+    std::vector<UijUtils::Uij> positionTensors( const StructureInfo& si,
+                                                const AtomInfo& ai )
+    {
+      std::vector<UijUtils::Uij> res;
+      const auto& sites = ai.sites();
+      if ( sites.empty() || !sites.front().uij.has_value() )
+        return res;
+      const SGSymmetry& sym
+        = SGSymmetry::get( InfoUtils::getSpaceGroupFromStructureInfo( si ) );
+      const auto metric = UijUtils::cellMetric( si.lattice_a, si.lattice_b,
+                                                si.lattice_c, si.alpha,
+                                                si.beta, si.gamma );
+      auto same = []( const Vector& a, const AtomInfo::Pos& b )
+      {
+        for ( auto k : ncrange( 3 ) ) {
+          const double d = a[k] - b[k];
+          if ( ncabs( d - std::round( d ) ) > 1e-4 )
+            return false;
+        }
+        return true;
+      };
+      for ( auto& p : ai.unitCellPositions() ) {
+        Optional<UijUtils::Uij> u;
+        for ( auto& site : sites ) {
+          nc_assert_always( site.uij.has_value() );
+          for ( auto& op : sym.operations() ) {
+            if ( same( op.apply( site.position.as<Vector>() ), p ) ) {
+              u = UijUtils::transformFrac(
+                op, UijUtils::cifToFrac( site.uij.value(), metric ) );
+              break;
+            }
+          }
+          if ( u.has_value() )
+            break;
+        }
+        nc_assert_always( u.has_value() );
+        res.push_back( u.value() );
+      }
+      return res;
+    }
 
     PreCalc fillHKLPreCalc( const StructureInfo& si,
                             const AtomInfoList& atomList,
@@ -176,6 +225,7 @@ namespace NCRYSTAL_NAMESPACE {
         for ( const auto& p : ai.unitCellPositions() )
           pos.push_back( p.as<Vector>() );
         res.atomic_pos.push_back( std::move(pos) );
+        res.ufrac.push_back( positionTensors( si, ai ) );
       }
 
       {
@@ -218,14 +268,31 @@ namespace NCRYSTAL_NAMESPACE {
           m_fsquarecut(fsquarecut),
           m_use_dw(no_forceunitdebyewallerfactor)
       {
-        m_cache_factors.resize(m_pc.csl.size(),0.0);
         //init with unit factors in case of forceunitdebyewallerfactor:
         m_whkl.resize(m_pc.msd.size(),1.0);
-        //Prepare position-array view for detail_fillhkl_fsq:
-        for ( auto& pv : m_pc.atomic_pos ) {
-          m_posptrs.push_back( &pv[0] );
-          m_npos.push_back( pv.size() );
+        //Prepare position-array view for detail_fillhkl_fsq, with one entry
+        //per species, except for species with anisotropic displacements
+        //which get one entry per position (their factors depend on hkl):
+        for ( auto i : ncrange( m_pc.atomic_pos.size() ) ) {
+          auto& pv = m_pc.atomic_pos[i];
+          auto& uf = m_pc.ufrac[i];
+          if ( uf.empty() ) {
+            m_posptrs.push_back( &pv[0] );
+            m_npos.push_back( pv.size() );
+            m_species.push_back( static_cast<unsigned>( i ) );
+            m_uptrs.push_back( nullptr );
+            continue;
+          }
+          nc_assert_always( uf.size() == pv.size() );
+          for ( auto j : ncrange( pv.size() ) ) {
+            m_posptrs.push_back( &pv[j] );
+            m_npos.push_back( 1 );
+            m_species.push_back( static_cast<unsigned>( i ) );
+            m_uptrs.push_back( &uf[j] );
+            m_anyaniso = true;
+          }
         }
+        m_cache_factors.resize(m_posptrs.size(),0.0);
       }
 
       bool empty() const { return m_whkl.empty(); }//all elements have bcoh=0?
@@ -239,23 +306,47 @@ namespace NCRYSTAL_NAMESPACE {
         //NB: All species are always included (skipping heavily damped ones
         //would bias |F|^2 at first order, for no measurable speedup).
         double real_or_imag_upper_limit(0.0);
-        for( unsigned i=0; i < m_whkl.size(); ++i ) {
+        for( unsigned i=0; i < m_posptrs.size(); ++i ) {
+          const double csl = m_pc.csl[m_species[i]];
+          if ( m_uptrs[i] ) {
+            //Factor set in calc(..), bounded by |csl|:
+            real_or_imag_upper_limit += ncabs( csl );
+            continue;
+          }
           //stable_exp rather than std::exp to avoid libm platform issues:
-          double factor = m_pc.csl[i]*stable_exp(-m_whkl[i]);
+          double factor = csl*stable_exp(-m_whkl[m_species[i]]);
           m_cache_factors[i] = factor;
           //Assuming cos(phase)*factor=sin(phase)*factor=|factor| gives us a
           //cheap upper limit on fsquared:
           real_or_imag_upper_limit
-            = ncfma( double( m_pc.atomic_pos[i].size() ),
-                        ncabs( factor ), real_or_imag_upper_limit );
+            = ncfma( double( m_npos[i] ), ncabs( factor ),
+                     real_or_imag_upper_limit );
         }
         //If the upper limit on fsq is below fsquarecut, we can skip already and
         //avoid needless calculations further down:
         return !(real_or_imag_upper_limit*real_or_imag_upper_limit*2.0<m_fsquarecut);
       }
 
-      double calc( const Vector& hkl ) const
+      double calc( const Vector& hkl )
       {
+        //Debye-Waller factors exp(-2pi^2 h^T U_frac h) of positions with
+        //anisotropic displacements:
+        if ( m_anyaniso ) {
+          const double h = hkl[0], k = hkl[1], l = hkl[2];
+          for( unsigned i=0; i < m_posptrs.size(); ++i ) {
+            const UijUtils::Uij* u = m_uptrs[i];
+            if ( !u )
+              continue;
+            const auto& U = *u;
+            const double w
+              = ( m_use_dw
+                  ? 2.0 * kPiSq * ( U[0]*h*h + U[1]*k*k + U[2]*l*l
+                                    + 2.0 * ( U[3]*h*k + U[4]*h*l
+                                              + U[5]*k*l ) )
+                  : 1.0 );
+            m_cache_factors[i] = m_pc.csl[m_species[i]] * stable_exp( -w );
+          }
+        }
         //The actual phase calculations.
         return NCRYSTAL_APPLY_C_NAMESPACE(detail_fillhkl_fsq)(
           &hkl, &m_cache_factors[0], &m_posptrs[0], &m_npos[0],
@@ -280,6 +371,9 @@ namespace NCRYSTAL_NAMESPACE {
       SmallVectD m_whkl;
       SmallVector<const Vector*,4> m_posptrs;//fixme: keep Vector values instead?
       SmallVector<std::size_t,4> m_npos;
+      SmallVector<unsigned,4> m_species;
+      SmallVector<const UijUtils::Uij*,4> m_uptrs;
+      bool m_anyaniso = false;
     };
 
     //Estimated number of hkl points (in the half-space) with dspacing in
