@@ -666,8 +666,10 @@ void NC::NCMATParser::handleSectionData_ATOMSITES(const Parts& parts, unsigned l
     return;
   }
   validateElementName(parts.at(0),lineno);
-  if (parts.size()!=4)
-    NCRYSTAL_THROW2(BadInput,descr()<<": wrong number of data entries after element name \""<<parts.at(0)<<"\" in line "<<lineno<<" (expected three numbers)");
+  if ( parts.size()==11 && parts.at(4)!="uij" )
+    NCRYSTAL_THROW2(BadInput,descr()<<": expected the keyword \"uij\" instead of \""<<parts.at(4)<<"\" after the position of element \""<<parts.at(0)<<"\" in line "<<lineno);
+  if ( parts.size()!=4 && parts.size()!=11 )
+    NCRYSTAL_THROW2(BadInput,descr()<<": wrong number of data entries after element name \""<<parts.at(0)<<"\" in line "<<lineno<<" (expected three numbers, optionally followed by \"uij\" and six numbers)");
   std::array<double,3> v;
   for (unsigned i = 0; i<3; ++i) {
     try {
@@ -676,7 +678,16 @@ void NC::NCMATParser::handleSectionData_ATOMSITES(const Parts& parts, unsigned l
       NCRYSTAL_THROW2(BadInput,descr()<<": problem while decoding site position parameter #"<<i+1<<" for element \""<<parts.at(0)<<"\" in line "<<lineno<<" : "<<e.what());
     }
   }
+  Optional<std::array<double,6>> uij;
+  if ( parts.size()==11 ) {
+    uij.emplace();
+    for (unsigned i = 0; i<6; ++i) {
+      if ( !safe_str2dbl( parts.at(i+5), uij.value()[i] ) )
+        NCRYSTAL_THROW2(BadInput,descr()<<": invalid uij value \""<<parts.at(i+5)<<"\" for element \""<<parts.at(0)<<"\" in line "<<lineno);
+    }
+  }
   m_data.atomsites.emplace_back(parts.at(0),v);
+  m_data.atomsites_uij.push_back(uij);
 }
 
 void NC::NCMATParser::handleSectionData_ATOMOCCUPANCIES( const Parts& parts,

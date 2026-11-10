@@ -1,0 +1,17 @@
+Mg 2c, uij: (0.0188101, 0.0188101, 0.0225721, 0.00940505, 0, 0)
+Mg 2c (rounded input), uij: (0.0189034, 0.0189034, 0.0223856, 0.00945168, 0, 0)
+Broken site symmetry: The uij values of the site Mg (0.33333333333333331, 0.66666666666666663, 0.25) do not obey the site symmetry
+Broken site symmetry: The uij values of the site Mg (0.33333333333333331, 0.66666666666666663, 0.25) do not obey the site symmetry
+O in 14:b1 at (0.21, 0.13, 0.37) uij: (0.0277071, 0.0207803, 0.0346338, 0.00461784, -0.00692676, 0.00230892)
+Mg x2 uij: (0.0133761, 0.0133761, 0.0133761, 0.00668803, 0, 0)
+Mg x2 uij: (0.0267521, 0.0267521, 0.0267521, 0.0133761, 0, 0)
+Zn x2 uij: (0.00991111, 0.00991111, 0.0297333, 0.00495556, 0, 0)
+Not positive definite: The uij values of the site Al (0, 0, 0) do not form a positive definite matrix
+Not positive definite: The uij values of the site Al (0, 0, 0) do not form a positive definite matrix
+Only some sites: Anisotropic displacements (uij) are given for some but not all sites of Al
+Too few numbers: "uijtest15.ncmat": wrong number of data entries after element name "Al" in line 8 (expected three numbers, optionally followed by "uij" and six numbers)
+Bad keyword: "uijtest16.ncmat": expected the keyword "uij" instead of "uji" after the position of element "Al" in line 8
+Bad number: "uijtest17.ncmat": invalid uij value "abc" for element "Al" in line 8
+Not finite: uijtest18.ncmat invalid uij values for site of element "Al" (problem in the @ATOMSITES section ending in line 8)
+Atomic sites:
+     Mg          1/3          2/3          1/4   (x2)   uij=(0.0188101, 0.0188101, 0.0225721, 0.00940505, 0, 0)

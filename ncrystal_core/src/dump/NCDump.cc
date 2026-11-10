@@ -263,7 +263,17 @@ void NCrystal::dump( std::ostream& os, const Info&c, DumpVerbosity verbosityVal 
             for ( auto& site : ai.sites() ) {
               nc_assert( vectAt( positions, ipos ) == site.position );
               streamPos( str_ljust(lbl,longestDisplayLabel), site.position );
-              os<<"   (x"<<site.multiplicity<<")"<<( verbose ? ":" : "" )<<'\n';
+              os<<"   (x"<<site.multiplicity<<")";
+              if ( site.uij.has_value() ) {
+                os<<"   uij=";
+                const char * sep = "(";
+                for ( auto e : site.uij.value() ) {
+                  os<<sep<<fmtg(e);
+                  sep = ", ";
+                }
+                os<<")";
+              }
+              os<<( verbose ? ":" : "" )<<'\n';
               const std::size_t iend = ipos + site.multiplicity;
               if ( verbose )
                 for ( auto i : ncrange( ipos + 1, iend ) ) {

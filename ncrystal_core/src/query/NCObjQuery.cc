@@ -77,7 +77,8 @@ namespace NCRYSTAL_NAMESPACE {
     void queryimpl_sites( std::ostream& os, const Info& info )
     {
       //["sites"]: per AtomInfo (in order), the crystallographic sites as a
-      //list of {position,multiplicity} dicts, or null if unknown:
+      //list of {position,multiplicity,uij} dicts (uij null if not
+      //available), or null if unknown:
       if ( !info.hasAtomInfo() ) {
         os << "null";
         return;
@@ -104,7 +105,9 @@ namespace NCRYSTAL_NAMESPACE {
           streamJSON( os, site.position[1] );
           os << ',';
           streamJSON( os, site.position[2] );
-          os << "],\"multiplicity\":" << site.multiplicity << '}';
+          os << "],\"multiplicity\":" << site.multiplicity << ",\"uij\":";
+          streamJSON( os, site.uij );
+          os << '}';
         }
         os << ']';
       }

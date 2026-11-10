@@ -21,6 +21,7 @@
 #include "NCInfoBldStructure.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
+#include "NCrystal/internal/phys_utils/NCUijUtils.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/utils/NCStrView.hh"
@@ -331,6 +332,104 @@ namespace NCRYSTAL_NAMESPACE {
         return ntot;
       }
 
+      bool symOpMaps( const SymOp& op, const AtomInfo::Pos& a,
+                      const AtomInfo::Pos& b )
+      {
+        return details::samePosition( op.apply( a.as<Vector>() )
+                                      .as<AtomInfo::Pos>(), b );
+      }
+
+      //Anisotropic displacement tensor (CIF form) of a site, mapped from the
+      //(symmetrised) input position sympos to the orbit representative rep:
+      UijUtils::Uij uijAtRepresentative( const SGSymmetry& sym,
+                                         const UijUtils::CellMetric& metric,
+                                         const AtomInfo::Pos& sympos,
+                                         const AtomInfo::Pos& rep,
+                                         const UijUtils::Uij& uij )
+      {
+        for ( auto& op : sym.operations() )
+          if ( symOpMaps( op, sympos, rep ) )
+            return UijUtils::fracToCif(
+              UijUtils::transformFrac( op, UijUtils::cifToFrac( uij, metric ) ),
+              metric );
+        nc_assert_always( false );
+        return uij;
+      }
+
+      //Validate the uij of the sites of an AtomInfo and complete them: they
+      //must be given for all or none of the sites, are snapped to the site
+      //symmetry (averaged over the operations leaving the site position
+      //invariant), must then be positive definite, and are finally scaled
+      //so their equivalent isotropic displacements, averaged over the
+      //positions, equal the msd. Clear breaks of the site symmetry
+      //(deviations above 5% of the largest component, lenient enough for
+      //rounded input values) are rejected:
+      void processSiteUij( const StructureInfo& si, AtomInfo& ai )
+      {
+        auto& sites = ai.detail_accessSites();
+        const auto nuij = std::count_if( sites.begin(), sites.end(),
+                                         []( const AtomInfo::Site& s )
+                                         { return s.uij.has_value(); } );
+        if ( nuij == 0 )
+          return;
+        const std::string elem = ai.atomData().description(false);
+        if ( static_cast<std::size_t>( nuij ) != sites.size() )
+          NCRYSTAL_THROW2(BadInput,"Anisotropic displacements (uij) are"
+                          " given for some but not all sites of "<<elem);
+        if ( !ai.msd().has_value() )
+          NCRYSTAL_THROW2(BadInput,"Anisotropic displacements (uij) of "
+                          <<elem<<" require a mean-squared-displacement");
+        if ( si.spacegroup == 0 )
+          NCRYSTAL_THROW2(BadInput,"Anisotropic displacements (uij) of "
+                          <<elem<<" require a space group");
+        const SGSymmetry& sym
+          = SGSymmetry::get( InfoUtils::getSpaceGroupFromStructureInfo( si ) );
+        const auto metric = UijUtils::cellMetric( si.lattice_a, si.lattice_b,
+                                                  si.lattice_c, si.alpha,
+                                                  si.beta, si.gamma );
+        StableSum sum;
+        unsigned npos = 0;
+        for ( auto& site : sites ) {
+          const auto descr = details::posDescr( ai, site.position );
+          const auto uf = UijUtils::cifToFrac( site.uij.value(), metric );
+          std::array<StableSum,6> sums;
+          unsigned nstab = 0;
+          for ( auto& op : sym.operations() ) {
+            if ( !symOpMaps( op, site.position, site.position ) )
+              continue;
+            ++nstab;
+            const auto t = UijUtils::transformFrac( op, uf );
+            for ( auto i : ncrange( 6 ) )
+              sums[i].add( t[i] );
+          }
+          nc_assert_always( nstab > 0 );
+          UijUtils::Uij ufsnap;
+          for ( auto i : ncrange( 6 ) )
+            ufsnap[i] = sums[i].sum() / nstab;
+          const auto snapped = UijUtils::fracToCif( ufsnap, metric );
+          UijUtils::Uij diff;
+          for ( auto i : ncrange( 6 ) )
+            diff[i] = snapped[i] - site.uij.value()[i];
+          if ( UijUtils::maxAbs( diff )
+               > 0.05 * UijUtils::maxAbs( site.uij.value() ) )
+            NCRYSTAL_THROW2(BadInput,"The uij values of the site "<<descr
+                            <<" do not obey the site symmetry");
+          if ( !UijUtils::isPositiveDefinite( snapped ) )
+            NCRYSTAL_THROW2(BadInput,"The uij values of the site "<<descr
+                            <<" do not form a positive definite matrix");
+          site.uij = snapped;
+          nc_assert_always( site.multiplicity > 0 );
+          sum.add( site.multiplicity * UijUtils::ueqFromFrac( ufsnap, metric ) );
+          npos += site.multiplicity;
+        }
+        const double ueq_avg = sum.sum() / npos;
+        nc_assert_always( ueq_avg > 0.0 );
+        const double scale = ai.msd().value() / ueq_avg;
+        for ( auto& site : sites )
+          for ( auto& e : site.uij.value() )
+            e *= scale;
+      }
+
       //Fill in the unit cell positions of AtomInfo objects given as sites
       //(one position per orbit of the space group setting):
       void expandSitesToPositions( const StructureInfo& si, AtomInfoList& atomlist )
@@ -340,6 +439,9 @@ namespace NCRYSTAL_NAMESPACE {
                          " space group");
         const SpaceGroup sg = InfoUtils::getSpaceGroupFromStructureInfo( si );
         const SGSymmetry& sym = SGSymmetry::get( sg );
+        const auto metric = UijUtils::cellMetric( si.lattice_a, si.lattice_b,
+                                                  si.lattice_c, si.alpha,
+                                                  si.beta, si.gamma );
         //The sites expanded so far, to reject a site given twice:
         struct ExpandedSite {
           const AtomInfo* ai;
@@ -394,6 +496,12 @@ namespace NCRYSTAL_NAMESPACE {
             std::stable_sort( orbitpos.begin(), orbitpos.end(),
                               details::atominfo_pos_compare );
             checkNew( ai, input, orbitpos.front() );
+            if ( site.uij.has_value() )
+              site.uij = uijAtRepresentative( sym, metric,
+                                              orbit.positions.front()
+                                              .as<AtomInfo::Pos>(),
+                                              orbitpos.front(),
+                                              site.uij.value() );
             site.position = orbitpos.front();
             site.multiplicity = static_cast<unsigned>( orbitpos.size() );
             for ( auto& p : orbitpos )
@@ -614,10 +722,7 @@ namespace NCRYSTAL_NAMESPACE {
             if ( ai.msd().has_value() != uc_atomlist.front().msd().has_value() )
               NCRYSTAL_THROW(BadInput,"Inconsistency: MSD values specified for some but not all AtomInfo objects.");
 
-            for ( auto& site : ai.sites() )
-              if ( site.uij.has_value() )
-                NCRYSTAL_THROW(BadInput,"Anisotropic displacements (uij) of"
-                               " atom sites are not supported yet.");
+            processSiteUij( si, ai );
           }
 
           //Ensure only one atom exists at a given position, within a tolerance:
