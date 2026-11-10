@@ -1,3 +1,4 @@
+integrateGaussLegendre8 tests OK
 
 Test integral of f(x)=x^2+1/10 over [-1, 2]:
   Exact                : 3.3
