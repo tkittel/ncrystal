@@ -17,3 +17,8 @@ Atomic sites:
      Mg          1/3          2/3          1/4   (x2)   uij=(0.0188101, 0.0188101, 0.0225721, 0.00940505, 0, 0)
 Bragg |F|^2 with anisotropic displacements: 233 families agree with independent calculation
 Bragg |F|^2 with isotropic tensors: same as without tensors
+Incoherent elastic, moderately anisotropic: agrees with fine-grid average to 1e-5
+  mean sampled mu at 0.3 Aa as expected (0.859)
+Incoherent elastic, strongly anisotropic: agrees with fine-grid average to 1e-3
+  mean sampled mu at 0.3 Aa as expected (0.672)
+Incoherent elastic with isotropic tensors: same as without tensors

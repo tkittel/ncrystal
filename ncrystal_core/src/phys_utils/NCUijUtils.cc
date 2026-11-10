@@ -127,3 +127,63 @@ double NCU::maxAbs( const Uij& u )
     res = ncmax( res, ncabs( e ) );
   return res;
 }
+
+std::array<double,3> NCU::cartEigenvalues( const Uij& u, const CellMetric& m )
+{
+  //Eigenvalues of U_frac*G (similar to U_cart), from the characteristic
+  //polynomial (all roots real and positive for positive definite U_frac):
+  std::array<double,9> M;
+  for ( unsigned i = 0; i < 3; ++i )
+    for ( unsigned j = 0; j < 3; ++j )
+      M[3*i+j] = ( u[uijIdx(i,0)] * m.g[j] + u[uijIdx(i,1)] * m.g[3+j]
+                   + u[uijIdx(i,2)] * m.g[6+j] );
+  const double tr = M[0] + M[4] + M[8];
+  const double c2 = ( M[0]*M[4] - M[1]*M[3] ) + ( M[0]*M[8] - M[2]*M[6] )
+    + ( M[4]*M[8] - M[5]*M[7] );
+  const double det = M[0]*( M[4]*M[8] - M[5]*M[7] )
+    - M[1]*( M[3]*M[8] - M[5]*M[6] ) + M[2]*( M[3]*M[7] - M[4]*M[6] );
+  //Depressed cubic t^3+p*t+q=0 for lambda=t+tr/3, solved trigonometrically:
+  const double s = tr / 3.0;
+  const double p = c2 - tr * s;
+  const double q = -( 2.0 * s * s * s - c2 * s + det );
+  std::array<double,3> res;
+  if ( !( p < -1e-12 * s * s ) ) {
+    res = { s, s, s };//(numerically) isotropic
+    return res;
+  }
+  const double r = std::sqrt( -p / 3.0 );
+  const double arg = ncclamp( ( 3.0 * q ) / ( 2.0 * p * r ), -1.0, 1.0 );
+  const double phi = std::acos( arg ) / 3.0;
+  for ( unsigned k = 0; k < 3; ++k )
+    res[k] = s + 2.0 * r * std::cos( phi - k * ( 2.0 * kPi / 3.0 ) );
+  std::sort( res.begin(), res.end() );
+  return res;
+}
+
+std::vector<NC::PairDD> NCU::directionalMSDs( const Uij& u,
+                                              const CellMetric& m )
+{
+  //6 point Gauss-Legendre on [-1,1]:
+  static constexpr double x[6] = { -0.9324695142031521, -0.6612093864662645,
+                                   -0.2386191860831969, 0.2386191860831969,
+                                   0.6612093864662645, 0.9324695142031521 };
+  static constexpr double w[6] = { 0.1713244923791704, 0.3607615730481386,
+                                   0.4679139345726910, 0.4679139345726910,
+                                   0.3607615730481386, 0.1713244923791704 };
+  const auto ev = cartEigenvalues( u, m );
+  std::vector<PairDD> res;
+  res.reserve( 36 );
+  for ( unsigned i = 0; i < 6; ++i ) {
+    const double ct = 0.5 * ( x[i] + 1.0 );//cos(theta) in [0,1]
+    const double st2 = 1.0 - ct * ct;
+    for ( unsigned j = 0; j < 6; ++j ) {
+      const double ph = 0.25 * kPi * ( x[j] + 1.0 );//phi in [0,pi/2]
+      const double cp = std::cos( ph );
+      const double cp2 = cp * cp;
+      const double msd = ( ev[0] * st2 * cp2 + ev[1] * st2 * ( 1.0 - cp2 )
+                           + ev[2] * ct * ct );
+      res.emplace_back( msd, 0.25 * w[i] * w[j] );
+    }
+  }
+  return res;
+}

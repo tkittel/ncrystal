@@ -52,7 +52,8 @@ def load( cell, sg, sitelines, debye_temps = None, fractions = None ):
   {sg}
 @ATOMSITES
 {sites}{dyninfo}""" )
-    return NC.createInfo( f'{fn};inelas=0;dcutoff=1' )
+    load.last_cfg = f'{fn};dcutoff=1'
+    return NC.createInfo( f'{load.last_cfg};inelas=0' )
 
 def require_error( descr, *args, **kwargs ):
     try:
@@ -269,6 +270,106 @@ def test_bragg():
     print( 'Bragg |F|^2 with isotropic tensors: same as without tensors' )
     assert maxrd < 1e-10, maxrd
 
+def cart_tensor( si, u ):
+    #U_cart = A U_frac A^T (A: lattice vectors as columns, a along x):
+    a, b, c = ( si[k] for k in ('a','b','c') )
+    ca, cb, cg = ( np.cos( np.radians( si[k] ) )
+                   for k in ('alpha','beta','gamma') )
+    sg = np.sin( np.radians( si['gamma'] ) )
+    cy = c * ( ca - cb * cg ) / sg
+    lat = np.array( [ [ a, b*cg, c*cb ], [ 0.0, b*sg, cy ],
+                      [ 0.0, 0.0, np.sqrt( c*c - (c*cb)**2 - cy*cy ) ] ] )
+    _, r = metric( si )
+    return lat @ ( np.outer( r, r ) * to_mat( u ) ) @ lat.T
+
+def elinc_python( info, wl ):
+    #Incoherent elastic cross section per atom: sigma_inc times the average
+    #over directions n of (1-exp(-X*a))/(X*a), a = n^T U_cart n, X = 4k^2
+    #(fine grid over the sphere):
+    x, w = np.polynomial.legendre.leggauss( 200 )
+    nphi = 400
+    phi = ( np.arange( nphi ) + 0.5 ) * 2 * np.pi / nphi
+    ct = np.repeat( x, nphi )
+    st = np.sqrt( 1 - ct**2 )
+    n = np.stack( [ st * np.tile( np.cos(phi), len(x) ),
+                    st * np.tile( np.sin(phi), len(x) ), ct ], axis = 1 )
+    wn = np.repeat( w, nphi ) / ( 2.0 * nphi )
+    X = 4.0 * ( 2 * np.pi / wl )**2
+    si = info.structure_info
+    tot = 0.0
+    for ai in info.atominfos:
+        sig = ai.atomData.incoherentXS()
+        for s in ai.sites:
+            a = np.einsum( 'ij,jk,ik->i', n, cart_tensor( si, s['uij'] ), n )
+            g = -np.expm1( -X * a ) / ( X * a )
+            tot += s['multiplicity'] * sig * np.sum( wn * g )
+    return tot / sum( len(ai.positions) for ai in info.atominfos )
+
+def elinc_dxs_python( info, wl, mu ):
+    #Integrand (in mu) of the cross section, averaged over directions:
+    x, w = np.polynomial.legendre.leggauss( 60 )
+    nphi = 120
+    phi = ( np.arange( nphi ) + 0.5 ) * 2 * np.pi / nphi
+    ct = np.repeat( x, nphi )
+    st = np.sqrt( 1 - ct**2 )
+    n = np.stack( [ st * np.tile( np.cos(phi), len(x) ),
+                    st * np.tile( np.sin(phi), len(x) ), ct ], axis = 1 )
+    wn = np.repeat( w, nphi ) / ( 2.0 * nphi )
+    qsq = 2.0 * ( 2 * np.pi / wl )**2 * ( 1.0 - mu )
+    si = info.structure_info
+    tot = 0.0
+    for ai in info.atominfos:
+        sig = ai.atomData.incoherentXS()
+        for s in ai.sites:
+            a = np.einsum( 'ij,jk,ik->i', n, cart_tensor( si, s['uij'] ), n )
+            tot += s['multiplicity'] * sig * np.sum( wn * np.exp( -qsq * a ) )
+    return tot
+
+def test_elinc():
+    setting = '14:b1'
+    cell = 'lengths 5.1 6.3 7.2\n  angles 90 105 90'
+    fr = { 'V' : '2/3', 'Ti' : '1/3' }
+    for descr, sites in [
+            ( 'moderately anisotropic',
+              [ 'V 0.21 0.13 0.37 uij 0.012 0.009 0.015 0.002 -0.003 0.001',
+                'Ti 0 0 0 uij 0.006 0.010 0.008 0.001 0.002 -0.001' ] ),
+            ( 'strongly anisotropic',
+              [ 'V 0.21 0.13 0.37 uij 0.002 0.010 0.05 0 0 0',
+                'Ti 0 0 0 uij 0.002 0.010 0.04 0 0 0' ] ) ]:
+        info = load( cell, setting, sites, fractions = fr )
+        sc = NC.createScatter( f'{load.last_cfg};inelas=0;coh_elas=0' )
+        maxrd = 0.0
+        for wl in ( 0.1, 0.3, 0.5, 1.0, 2.0, 5.0 ):
+            ref = elinc_python( info, wl )
+            maxrd = max( maxrd, abs( sc.xsect( wl = wl ) / ref - 1.0 ) )
+        print( f'Incoherent elastic, {descr}: agrees with fine-grid'
+               f' average to {"1e-5" if maxrd < 1e-5 else "1e-3"}' )
+        assert maxrd < 1e-3, maxrd
+        #Mean scattering cosine (the mu distribution is the cross section
+        #integrand, i.e. the xs at wavelength wl as function of mu):
+        wl, nsample = 0.3, 200000
+        mu_grid, mu_w = np.polynomial.legendre.leggauss( 200 )
+        dens = np.array( [ elinc_dxs_python( info, wl, m ) for m in mu_grid ] )
+        mu_expected = np.sum( mu_w * dens * mu_grid ) / np.sum( mu_w * dens )
+        _, mu = sc.sampleScatterIsotropic( NC.wl2ekin( wl ), repeat = nsample )
+        err = np.std( mu ) / np.sqrt( nsample )
+        assert abs( np.mean( mu ) - mu_expected ) < 5 * err
+        print( f'  mean sampled mu at {wl} Aa as expected ({mu_expected:.3f})' )
+    #Isotropic tensors give the same results as no tensors:
+    si = info.structure_info
+    _, r = metric( si )
+    uiso = from_mat( np.linalg.inv( metric( si )[0] ) / np.outer( r, r ) )
+    base = [ 'V 0.21 0.13 0.37', 'Ti 0 0 0' ]
+    def xs( sitelines ):
+        load( cell, setting, sitelines, fractions = fr )
+        return NC.createScatter( f'{load.last_cfg};inelas=0;coh_elas=0' )
+    s1 = xs( base )
+    s2 = xs( [ ll + ' uij ' + ' '.join( repr(float(x)) for x in uiso )
+               for ll in base ] )
+    for wl in ( 0.1, 0.5, 2.0 ):
+        assert abs( s1.xsect( wl = wl ) / s2.xsect( wl = wl ) - 1.0 ) < 1e-12
+    print( 'Incoherent elastic with isotropic tensors: same as without tensors' )
+
 def main():
     test_hexagonal()
     test_transformation()
@@ -276,6 +377,7 @@ def main():
     test_errors()
     test_dump()
     test_bragg()
+    test_elinc()
 
 if __name__ == '__main__':
     main()
