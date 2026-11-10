@@ -21,5 +21,6 @@ Na occupancy 0.5: incoherent elastic xs per cell at E->0 = 26.0959 barn
 Na occupancy 0.1: incoherent elastic xs per cell at E->0 = 22.4441 barn
 Na occupancy 1: powder Bragg normalisation OK
 Na occupancy 0.7: powder Bragg normalisation OK
-uij: BadInput: Anisotropic displacements (uij) of atom sites are not supported yet.
+uij: scaled to msd OK
+uij: BadInput: The uij values of the site Na (0, 0, 0) do not form a positive definite matrix
 All OK

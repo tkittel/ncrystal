@@ -2,5 +2,6 @@ atomdb
 cfgutils
 extd_utils
 interfaces
+phys_utils
 sgsym
 utils

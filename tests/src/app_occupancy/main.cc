@@ -36,10 +36,11 @@ namespace {
 
   //Rock salt rebuilt from the stdlib NaCl file via InfoBuilder, with the given
   //occupancies of the Na and Cl roles (and optionally explicit dynamics with
-  //the given fractions, or a uij value on the first site of the first role):
+  //the given fractions, or isotropic uij values u on the first site of the
+  //first role):
   NC::InfoPtr buildNaCl( double occ_na, double occ_cl,
                          NC::Optional<NC::PairDD> dynfracs = NC::NullOpt,
-                         bool set_uij = false )
+                         NC::Optional<double> u = NC::NullOpt )
   {
     auto ref = NC::createInfo( "stdlib::NaCl_sg225_SodiumChloride.ncmat"
                                ";inelas=0" );
@@ -57,12 +58,12 @@ namespace {
       uc.atomlist.value().emplace_back( ai.indexedAtomData(), std::move(pos),
                                         ai.debyeTemp(), ai.msd(),
                                         is_na ? occ_na : occ_cl );
-      if ( set_uij && uc.atomlist.value().size() == 1 ) {
+      if ( u.has_value() && uc.atomlist.value().size() == 1 ) {
         NC::AtomInfo::Site site;
         site.position = ai.unitCellPositions().front();
         site.multiplicity = ai.numberOfPositions();
-        site.uij.emplace();
-        site.uij.value().fill( 0.0 );
+        site.uij = std::array<double,6>{ { u.value(), u.value(), u.value(),
+                                           0.0, 0.0, 0.0 } };
         uc.atomlist.value().back().detail_accessSites().push_back(site);
       }
     }
@@ -235,8 +236,19 @@ int main()
               << ": powder Bragg normalisation OK\n";
   }
 
-  //Anisotropic displacements are reserved:
-  expectBadInput( "uij", []() { buildNaCl( 1.0, 1.0, NC::NullOpt, true ); } );
+  //Anisotropic displacements (given with positions and sites), scaled to the
+  //msd, and required to be positive definite:
+  {
+    auto info = buildNaCl( 1.0, 1.0, NC::NullOpt, 1.0 );
+    const auto& ai = info->getAtomInfos().front();
+    const auto& uij = ai.sites().front().uij.value();
+    for ( auto i : NC::ncrange( 3 ) ) {
+      REQUIRE( NC::floateq( uij[i], ai.msd().value(), 1e-14, 0.0 ) );
+      REQUIRE( uij[i+3] == 0.0 );
+    }
+    std::cout << "uij: scaled to msd OK\n";
+  }
+  expectBadInput( "uij", []() { buildNaCl( 1.0, 1.0, NC::NullOpt, 0.0 ); } );
 
   std::cout << "All OK" << std::endl;
   return 0;

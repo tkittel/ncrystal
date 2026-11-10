@@ -399,6 +399,16 @@ void NC::NCMATData::validateAtomSites() const
          || !(e.second[2]>=-1.0) || !(e.second[2]<=1.0) )
       NCRYSTAL_THROW2(BadInput,sourceDescription<<" invalid site position detected for element \""<<e.first<<"\" (all position coordinates must be in [-1.0,1.0]");
   }
+  nc_assert_always( atomsites_uij.size() == atomsites.size() );
+  for ( auto i : ncrange( atomsites.size() ) ) {
+    const auto& uij = vectAt( atomsites_uij, i );
+    if ( !uij.has_value() )
+      continue;
+    for ( auto e : uij.value() )
+      if ( !std::isfinite( e ) )
+        NCRYSTAL_THROW2(BadInput,sourceDescription<<" invalid uij values for"
+                        " site of element \""<<vectAt(atomsites,i).first<<"\"");
+  }
 }
 
 void NC::NCMATData::validateAtomOccupancies() const
@@ -884,8 +894,10 @@ void NC::NCMATData::toJSON( std::ostream& ss ) const
       ss << "]]";
     }
     ss << ']';
+    streamJSONDictEntry( ss, "atomsites_uij", data.atomsites_uij );
   } else {
     streamJSONDictEntry( ss, "atomsites", json_null_t{} );
+    streamJSONDictEntry( ss, "atomsites_uij", json_null_t{} );
   }
   if ( data.hasAtomOccupancies() ) {
     ss << ",\"atomoccupancies\":[";

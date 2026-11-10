@@ -763,10 +763,13 @@ class Info(RCBase):
         @property
         def sites(self):
             """The crystallographic sites of this atom: one per orbit of the space
-            group setting, as a list like [{'position':(x,y,z),'multiplicity':n},...]
-            where 'position' is one position of the orbit in fractional coordinates
-            and the multiplicities add up to .numberOfPositions. None if not
-            available."""
+            group setting, as a list like
+            [{'position':(x,y,z),'multiplicity':n,'uij':uij},...] where
+            'position' is one position of the orbit in fractional coordinates
+            and the multiplicities add up to .numberOfPositions. The 'uij' are
+            the anisotropic displacements at that position (Aa^2, CIF
+            convention: U11,U22,U33,U12,U13,U23), or None if not available.
+            None if not available."""
             _info = self._info_wr()
             nc_assert(_info is not None,
                       ("AtomInfo.sites can not be used after"

@@ -710,21 +710,41 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
 
     //==> Get sorted list of atom positions (so adjacant entries have same element name):
     const bool data_hasAtomSites = data.hasAtomSites();
-    decltype(data.atompos) atompos = std::move( data_hasAtomSites ? data.atomsites : data.atompos );
+    //(sites keep their uij, sorted along with them):
+    using UijOpt = Optional<std::array<double,6>>;
+    std::vector<std::pair<std::pair<std::string,NCMATData::Pos>,UijOpt>> atompos;
+    {
+      auto& src = data_hasAtomSites ? data.atomsites : data.atompos;
+      atompos.reserve( src.size() );
+      for ( auto i : ncrange( src.size() ) )
+        atompos.emplace_back( std::move( vectAt( src, i ) ),
+                              data_hasAtomSites
+                              ? vectAt( data.atomsites_uij, i )
+                              : UijOpt() );
+    }
     nc_assert_always(!atompos.empty());
-    std::stable_sort(atompos.begin(),atompos.end());
+    std::stable_sort( atompos.begin(), atompos.end(),
+                      []( const decltype(atompos)::value_type& a,
+                          const decltype(atompos)::value_type& b )
+                      { return a.first < b.first; } );
     //Convert to elementname->positions map (the positions are sites for
     //@ATOMSITES data, expanded by InfoBuilder):
     std::map<AtomIndex,std::vector<AtomInfo::Pos>> elem2pos;
+    std::map<AtomIndex,std::vector<UijOpt>> elem2uij;
     auto itAPE = atompos.end();
     for (auto itAP = atompos.begin() ; itAP != itAPE; ) {
-      const std::string current_elementname = itAP->first;
+      const std::string current_elementname = itAP->first.first;
       std::vector<AtomInfo::Pos> positions;
-      for ( ; itAP!=itAPE && itAP->first == current_elementname; ++itAP )
-        positions.emplace_back(itAP->second[0],itAP->second[1],itAP->second[2]);
+      std::vector<UijOpt> uijs;
+      for ( ; itAP!=itAPE && itAP->first.first == current_elementname; ++itAP ) {
+        const auto& p = itAP->first.second;
+        positions.emplace_back( p[0], p[1], p[2] );
+        uijs.push_back( itAP->second );
+      }
       positions.shrink_to_fit();
       const auto& iad = elementname_2_indexedatomdata(current_elementname);
       elem2pos[iad.index] = std::move(positions);
+      elem2uij[iad.index] = std::move(uijs);
     }
     //Occupancies (1 unless listed in @ATOMOCCUPANCIES):
     std::map<AtomIndex,double> elem2occu;
@@ -811,9 +831,13 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
       }
       if ( data_hasAtomSites ) {
         AtomInfo::AtomSites sites;
-        for ( auto& p : elem2pos.at(ef.first) ) {
+        const auto& positions = elem2pos.at(ef.first);
+        const auto& uijs = elem2uij.at(ef.first);
+        nc_assert_always( uijs.size() == positions.size() );
+        for ( auto i : ncrange( positions.size() ) ) {
           AtomInfo::Site site;
-          site.position = p;
+          site.position = vectAt( positions, i );
+          site.uij = vectAt( uijs, i );
           sites.push_back( std::move( site ) );
         }
         bldr_atomlist.emplace_back( std::move(iad), std::move(sites),
