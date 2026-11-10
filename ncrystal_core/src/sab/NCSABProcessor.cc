@@ -27,10 +27,8 @@
 #include "NCrystal/internal/utils/NCMixedDataVector.hh"
 #include "NCrystal/internal/utils/NCTinyVector.hh"
 #include "NCrystal/internal/utils/NCFastSearch.hh"
-#include "NCrystal/internal/utils/NCFileUtils.hh"
 #include "NCrystal/internal/utils/NCSpline.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
-#include <fstream>
 
 namespace NC = NCrystal;
 namespace NCS = NCrystal::SABUtils;
@@ -524,147 +522,134 @@ namespace NCRYSTAL_NAMESPACE {
       }
 
 
-      //Given f(e) = Sintegral(e)/sqrt(e), and a search range [e1,e2] find in as
-      //few f(e) evaluations as possible, the highest possible emin value where
-      //f(emin)~=f(e1). It is assumed that [e1,e2] is already narrow enough that
-      //f(e) is a monotonic function over the interval.
-      double determineEMinDivKT( const SABCfg::Cfg& cfg,
-                                 const PairDD& e_search_range,
-                                 const std::function<double(double)>& f_of_e )
-      {
-        //fixme: this function could use some luxury parameters
-        const double root_acc = cfg.egrid_emin_accuracy;
+    }//anon namespace
 
-        const double e1 = e_search_range.first;
-        const double e2 = e_search_range.second;
-        const double logf1 = std::log(f_of_e( e1 ));
-        const double logf2 = std::log(f_of_e( e2 ));
-        //f usually increases, but can decrease (e.g. for kernels where S falls
-        //off quickly along the diagonal), so the target is a small change in
-        //either direction (flat or non-finite: no low-energy regime found):
-        const double logS_raise_target = 1e-3*(logf2-logf1);//fixme: lux?
-        if ( !( logS_raise_target != 0.0 && std::isfinite(logS_raise_target) ) )
-          return e2;
-        const double sgn = ( logS_raise_target > 0.0 ? 1.0 : -1.0 );
-        const double logf1pluseps = logf1 + logS_raise_target;
-        const double loge1 = std::log(e1);
-        const double loge2 = std::log(e2);
-        unsigned long ncalls = 2;
-        auto froot = [&f_of_e,logf1pluseps,&ncalls,sgn,
-                      logf1,logf2,loge1,loge2]( double loge )
-        {
-          ++ncalls;
-          nc_assert(std::isfinite(loge));
-          double val;
-          if ( !(loge>loge1) ) {
-            val = logf1;
-          } else if ( !(loge<loge2) ) {
-            val = logf2;
-          } else {
-            val = std::log(f_of_e(std::exp(loge)));
-          }
-          return sgn * ( val - logf1pluseps );
-        };
-        if ( false ) {//fixme
-          std::string fn = "ncrystal_logemin_info.txt";
-          NCRYSTAL_WARN("Writing to "<<fn
-                        <<" if it does not already exist");
-          if (!file_exists(fn)) {
-            std::ofstream ofs(fn.c_str(), std::ofstream::out);
-            ofs << "#ncrystal_xycurve\n";
-            ofs << "#colnames = loge;deltalogf\n";
-            for ( auto loge : linspace(loge1,loge2,100000) )
-              ofs<<fmt(loge)<<" "<<fmt(froot(loge))<<"\n";
-            ofs.close();
-          }
-        }
+    namespace detail {
+      //(NCRYSTAL_API and not in the anonymous namespace, for unit tests)
 
-        //Rough narrowing with exponential steps before the fine root refinement
-        //below (the general root finder can not know like we do that the root
-        //often sits very near one edge):
-        double bracket_lo = loge1, bracket_hi = loge2;
-        {
-          //fixme: stepFactor of 10.0 might be better?
-          constexpr double stepFactor = 100.0;//~2 decades per step
-          const double logStep = std::log(stepFactor);
-          double cand = bracket_lo;
-          while ( cand + logStep < bracket_hi ) {
-            cand += logStep;
-            if ( froot(cand) >= 0.0 ) {
-              bracket_hi = cand;
-              break;
-            }
-            bracket_lo = cand;
-          }
-        }
+      //The E->0 limit of Sint(E)/sqrt(E), f0=4*int_0^inf sqrt(b)S(b,b)db, and
+      //the mean of sqrt(alpha) along alpha=beta, weighted by that integrand.
+      NCRYSTAL_API PairDD diagonalLowEnergyLimit( const SABData& );
 
-        double logemin;
-        try {
-          logemin = findRoot2(froot,bracket_lo,bracket_hi, root_acc);
-        } catch ( NC::Error::CalcError& e ) {
-          logemin = -1.0;
-          //Write fct to file for debugging:
-          std::string fn = "ncrystal_logemin_fail_info.txt";
-          NCRYSTAL_WARN("Failed to find emin via root-finding. Will attempt"
-                        " to write debugging info to "<<fn
-                        <<" if it does not already exist");
-          if (!file_exists(fn)) {
-            std::ofstream ofs(fn.c_str(), std::ofstream::out);
-            ofs << "#ncrystal_xycurve\n";
-            ofs << "#colnames = loge;deltalogf\n";
-            for ( auto loge : linspace(loge1,loge2,100000) )
-              ofs<<fmt(loge)<<" "<<fmt(froot(loge))<<"\n";
-            ofs.close();
-          }
-          throw;
-        }
+      //Find Emin/kT, the lowest point of the energy grid. Below Emin, the cross
+      //section is extrapolated as 1/sqrt(E), so Emin is the lowest E where
+      //f(E)=Sint(E)/sqrt(E) deviates from its E->0 value (by 1e-3 of its total
+      //change up to Emax). Scans upwards in steps of 2 from the lowest E where
+      //Sint is numerically reliable, so dips and peaks are not skipped.
+      //diaglimit comes from diagonalLowEnergyLimit, f_of_e takes E/kT.
+      NCRYSTAL_API double determineEMinDivKT( const SABCfg::Cfg&, double emax,
+                                              const std::function<double(double)>& f_of_e,
+                                              const PairDD& diaglimit );
+    }
+  }
+}
 
-        return ncclamp(std::exp(logemin),e1,e2);
-      }
+NC::PairDD NCS::detail::diagonalLowEnergyLimit( const SABData& sab )
+{
+  const auto& A = sab.alphaGrid();
+  const auto& B = sab.betaGrid();
+  const auto& S = sab.sab();
+  const std::size_t na = A.size();
+  auto sAt = [&A,&B,&S,na]( std::size_t ia, std::size_t ib, double x )
+  {
+    auto atRow = [&]( std::size_t jb ) {
+      const double s1 = vectAt( S, jb*na + ia );
+      const double s2 = vectAt( S, jb*na + ia + 1 );
+      const double t = ( x - vectAt(A,ia) )
+        / ( vectAt(A,ia+1) - vectAt(A,ia) );
+      return ( s1 > 0.0 && s2 > 0.0
+               ? s1 * std::pow( s2 / s1, t )
+               : nclerp( s1, s2, t ) );
+    };
+    const double u = ( x - vectAt(B,ib) )
+      / ( vectAt(B,ib+1) - vectAt(B,ib) );
+    return nclerp( atRow(ib), atRow(ib+1), u );
+  };
+  //Contributions c(x)=4*sqrt(x)*S(x,x), and c(x)*sqrt(x) for the mean:
+  StableSum tot, totsq;
+  for ( auto ib : ncrange( B.size() - 1 ) ) {
+    const double lo = ncmax( vectAt(B,ib), 0.0, A.front() );
+    const double hi = ncmin( vectAt(B,ib+1), A.back() );
+    if ( !( hi > lo ) )
+      continue;
+    //Split at the alpha grid points within [lo,hi]:
+    std::size_t ia = static_cast<std::size_t>
+      ( std::upper_bound( A.begin(), A.end(), lo ) - A.begin() ) - 1;
+    double x0 = lo;
+    while ( x0 < hi && ia + 1 < na ) {
+      const double x1 = ncmin( hi, vectAt(A,ia+1) );
+      auto c = [&sAt,ia,ib]( double x )
+      { return 4.0 * std::sqrt( x ) * sAt( ia, ib, x ); };
+      tot.add( integrateGaussLegendre8( c, x0, x1 ) );
+      totsq.add( integrateGaussLegendre8( [&c]( double x )
+                                          { return c(x) * std::sqrt(x); },
+                                          x0, x1 ) );
+      x0 = x1;
+      ++ia;
+    }
+  }
+  const double f0 = tot.sum();
+  return { f0, f0 > 0.0 ? totsq.sum() / f0 : 0.0 };
+}
 
-      //Based on full-cell integrals, determine range in which a more refined
-      //search for EMin/kT should take place.
-      PairDD determineEMinDivKTminRange( const VectD& cumulFullCellIntegral,
-                                         const VectD& cellTouch_E_div_kT,
-                                         const double EMax_div_kT )
-      {
-        const VectD& e = cellTouch_E_div_kT;
-        const VectD& s = cumulFullCellIntegral;
+double NCS::detail::determineEMinDivKT( const SABCfg::Cfg& cfg, double emax,
+                                        const std::function<double(double)>& f_of_e,
+                                        const PairDD& diaglimit )
+{
+#ifndef NDEBUG
+  nc_assert_always( emax > 0.0 && std::isfinite(emax) );
+#endif
+  const double f0 = diaglimit.first;
+  const double logf2 = std::log( f_of_e( emax ) );
+  if ( !( f0 > 0.0 && std::isfinite(f0) && std::isfinite(logf2) ) )
+    return emax;
+  //Rounding noise relative to the strip width at alpha is
+  //eps*sqrt(alpha)/(4*sqrt(e)); keep it below 1e-3 of the target (f0
+  //only provides the weights and a rough target here):
+  constexpr double eps = std::numeric_limits<double>::epsilon();
+  const double target0 = 1e-3 * ncabs( logf2 - std::log(f0) );
+  if ( !( target0 > 0.0 ) )
+    return emax;
+  const double e1 = ncsquare( eps * diaglimit.second
+                              / ( 4.0 * 1e-3 * target0 ) );
+  if ( !( e1 < emax ) )
+    return emax;
+  const double loge1 = std::log( e1 );
+  const double loge2 = std::log( emax );
+  const double logref = std::log( f_of_e( e1 ) );
+  const double target = 1e-3 * ncabs( logf2 - logref );
+  if ( !( target > 0.0 && std::isfinite(target) ) )
+    return emax;
+  auto froot = [&f_of_e,logref,target,loge2,logf2]( double loge )
+  {
+    const double v = ( loge < loge2
+                       ? std::log( f_of_e( std::exp(loge) ) )
+                       : logf2 );
+    return ncabs( v - logref ) - target;
+  };
+  constexpr double logStep = 0.69314718055994530942;//log(2)
+  nc_assert( floateq( logStep, std::log(2.0) ) );
+  double bracket_lo = loge1;
+  double bracket_hi = loge2;
+  for ( double cand = loge1 + logStep; cand < loge2; cand += logStep ) {
+    if ( froot( cand ) >= 0.0 ) {
+      if ( cand == loge1 + logStep )
+        NCRYSTAL_THROW2(CalcError,"No low-energy regime found in the"
+                        " S(alpha,beta) integral (it already changes at"
+                        " E/kT="<<fmtg(std::exp(cand))<<")");
+      bracket_hi = cand;
+      break;
+    }
+    bracket_lo = cand;
+  }
+  const double logemin = findRoot2( froot, bracket_lo, bracket_hi,
+                                    cfg.egrid_emin_accuracy );
+  return ncclamp( std::exp( logemin ), e1, emax );
+}
 
-        //We check for the point where the S-integral has increased some amount
-        //from the initial value.
-
-        nc_assert_always(s.size()==e.size());
-        nc_assert_always(s.size()>=16);
-        const double s1(s.front());
-        const double s2(s.back());
-        nc_assert_always( s2>s1 && s1>=0.0 && std::isfinite(s2) );
-        const std::size_t ns = s.size();
-
-        std::size_t i1 = 0;
-        {
-          constexpr double eps_emin1 = 1e-6;
-          const double tgt_s1 = (s1?s1*std::pow(s2/s1,eps_emin1):s2*eps_emin1);
-          while ( i1<ns && vectAt(s,i1)<tgt_s1 )
-            ++i1;
-          nc_assert_always( i1+8 < ns );
-        }
-
-        //Upper reference point: use EMax_div_kT directly rather than a
-        //touched-cell-array crossing index (near-degenerate cell "touch"
-        //energies can swap order under FMA-contraction noise, perturbing the
-        //Emin found downstream). EMax_div_kT is most often a single
-        //well-defined energy, and the real S-integral is still evaluated there
-        //via f_of_e:
-        constexpr double safety1 = 0.001;
-        PairDD res( vectAt(e,i1)*safety1, EMax_div_kT );
-        nc_assert_always( std::isfinite(res.first) );
-        nc_assert_always( std::isfinite(res.second) );
-        nc_assert_always( std::isfinite(res.first) );
-        nc_assert_always( res.second >= res.first );
-        return res;
-      }
-
+namespace NCRYSTAL_NAMESPACE {
+  namespace SABUtils {
+    namespace {
       struct SIntByETouch final : private MoveOnly {
         VectD sint, e;
       };
@@ -810,9 +795,6 @@ namespace NCRYSTAL_NAMESPACE {
         if ( suggestedEMin.has_value() ) {
           E_min_max.first = suggestedEMin.value();
         } else {
-          auto r = determineEMinDivKTminRange( sIntByEtouch.sint, sIntByEtouch.e,
-                                               E_min_max.second.get()/kT );
-
           sIntegralAtE_Result tmp_result;
           auto f = [&cellmgr, &surv, &tmp_result,scheme]( double E_div_kT ) {
             nc_assert(E_div_kT>0.0);
@@ -822,7 +804,10 @@ namespace NCRYSTAL_NAMESPACE {
                           tmp_result );
             return tmp_result.integralWithinKB / se;
           };
-          E_min_max.first = NeutronEnergy{ kT*determineEMinDivKT( cfg, r, f ) };
+          E_min_max.first
+            = NeutronEnergy{ kT * detail::determineEMinDivKT( cfg,
+                                                      E_min_max.second.get()/kT,
+                                                      f, detail::diagonalLowEnergyLimit(sab) ) };
 
         }
         if ( E_min_max.first >= E_min_max.second ) {
