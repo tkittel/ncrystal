@@ -361,8 +361,6 @@ namespace NCRYSTAL_NAMESPACE {
         const double prev_E = ( ( prev.E_div_kT >= 0.0
                                   && prev.E_div_kT <= e.dbl() )
                                 ? prev.E_div_kT : -1.0 );
-        const double prev_contrib( prev_E >= 0.0
-                                   ? prev.sumFullyCoveredCells.sum() : 0.0 );
 
 
         nc_assert(e.dbl()>0&&std::isfinite(e.dbl()));
@@ -419,50 +417,51 @@ namespace NCRYSTAL_NAMESPACE {
                        survCells.begin()
                        + ( prev_E >= 0.0 ? prev.nLastTouched : 0 ),
                        itLastTouchedE );
+        //Cells fully covered at e (incl. those already covered at prev_E):
+        for ( auto& c : active )
+          if ( e.dbl() >= c.e_cover )
+            sumCoveredCells.add( mgr.getCellIntegral( c.cellidx ) );
+        if ( prev_E >= 0.0 )
+          sumCoveredCells.add( prev.sumFullyCoveredCells );
+        //Cutoff for negligible crossed cells, from quantities at e only (so
+        //the result does not depend on the previously evaluated energy):
+        const double cutoffref = sumCoveredCells.sum() * threshold;
         for ( auto it = active.begin(); it != active.end(); ++it ) {
           nc_assert( e.dbl() >= it->e_touch );
           nc_assert( prev_E < it->e_cover );
-
+          if ( e.dbl() >= it->e_cover )
+            continue;//fully covered (summed above)
           const double fullCellIntegral = mgr.getCellIntegral( it->cellidx );
-          if ( e.dbl() >= it->e_cover ) {
-            //fully covers cells:
-            sumCoveredCells.add(fullCellIntegral);
+          double contrib;
+          sumFullCells.add(fullCellIntegral);
+          //We want to apply a "don't waste time on irrelevant cell" short
+          //cut, but it becomes too sensitive to FFT-convolution noise in the
+          //input SAB if we use a hard threshold. So we instead use a smooth
+          //tapering.
+          if ( fullCellIntegral < cutoffref*invTaperBand ) {
+            contrib = 0.0;//safely below threshold, don't waste time
           } else {
-            double contrib;
-            const double cutoffref = prev_contrib * threshold;
-            sumFullCells.add(fullCellIntegral);
-            //We want to apply a "don't waste time on irrelevant cell" short
-            //cut, but it becomes too sensitive to FFT-convolution noise in the
-            //input SAB if we use a hard threshold. So we instead use a smooth
-            //tapering.
-            if ( fullCellIntegral < cutoffref*invTaperBand ) {
-              contrib = 0.0;//safely below threshold, don't waste time
-            } else {
-              CellData cellData = mgr.lookupCellInfo( it->cellidx );
-              StableSumKahan crossedRes;
-              StdLogLinCellIntegrator::integrateWithinKB( cellData, e,
-                                                          scheme, crossedRes );
-              contrib = crossedRes.sum();
-              if ( fullCellIntegral < cutoffref*taperBand ) {
-                //fixme replace /twoLogTaperBand with *invTwoLogTaperBand
-                const double t = ncclamp( ( std::log(fullCellIntegral/cutoffref)
-                                            + logTaperBand )
-                                          / twoLogTaperBand, 0.0, 1.0 );
-                //Quintic smootherstep (Ken Perlin): 0 and 1 derivatives
-                //vanish at both ends, so no kink at the band edges either.
-                //FIXME: Code duplicated with NCVDOSUtils.cc, need common NCMath
-                //util fct.
-                //Explicit ncfma for the inner Horner steps:
-                const double s = t*t*t*ncfma( t, ncfma(t,6.0,-15.0), 10.0 );
-                contrib *= s;
-              }
-              sum.add( contrib );
+            CellData cellData = mgr.lookupCellInfo( it->cellidx );
+            StableSumKahan crossedRes;
+            StdLogLinCellIntegrator::integrateWithinKB( cellData, e,
+                                                        scheme, crossedRes );
+            contrib = crossedRes.sum();
+            if ( fullCellIntegral < cutoffref*taperBand ) {
+              //fixme replace /twoLogTaperBand with *invTwoLogTaperBand
+              const double t = ncclamp( ( std::log(fullCellIntegral/cutoffref)
+                                          + logTaperBand )
+                                        / twoLogTaperBand, 0.0, 1.0 );
+              //Quintic smootherstep (Ken Perlin): 0 and 1 derivatives
+              //vanish at both ends, so no kink at the band edges either.
+              //FIXME: Code duplicated with NCVDOSUtils.cc, need common NCMath
+              //util fct.
+              //Explicit ncfma for the inner Horner steps:
+              const double s = t*t*t*ncfma( t, ncfma(t,6.0,-15.0), 10.0 );
+              contrib *= s;
             }
+            sum.add( contrib );
           }
         }
-        //Handle interactions with prev_E cache:
-        if ( prev_E >= 0.0 )
-          sumCoveredCells.add(prev.sumFullyCoveredCells);
 
         //Prepare cache for next:
         active.erase( std::remove_if( active.begin(), active.end(),
