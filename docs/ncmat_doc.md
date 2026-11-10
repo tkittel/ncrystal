@@ -946,6 +946,37 @@ As an example, diamond silicon can be given by its single site:
 
 Here the site is expanded to the 8 atoms of the unit cell.
 
+### Anisotropic displacements ###
+
+A line in the @ATOMSITES section can optionally end with the keyword `uij`
+followed by six numbers, U11, U22, U33, U12, U13 and U23. These values determine
+the shape of the uij tensor of mean-squared displacements of the site, defined
+relative to the reciprocal lattice vectors (as for the `_atom_site_aniso_U_ij`
+fields of CIF files). For example, an atom whose displacements are stretched out
+along the c axis, and correlated between the a and c directions:
+
+```
+@ATOMSITES
+  O 0.12 1/4 0.34 uij 0.006 0.006 0.018 0 0.004 0
+```
+
+The provided uij values are only used to define the shape of the site
+displacements, while the magnitude of the displacements will be determined by
+the @DYNINFO section of the element. Therefore, only the relative magnitudes of
+the 6 uij numbers matter, and the above example could equally well be written as
+`0.6 0.6 1.8 0 0.4 0`. Specifically, each uij tensor is scaled before usage so
+that its mean-squared displacement (one third of the trace of the tensor in
+Cartesian coordinates) equals the mean-squared displacement provided by the
+@DYNINFO section. In case different sites of a given element have different
+mean-squared displacement values, one must use generic labels defined in the
+@ATOMDB section to separate the roles and subsequently assign separate @DYNINFO
+to each role.
+
+Either all sites of an element must have a uij tensor, or none of them. Each
+tensor must be positive definite, and must have the symmetry of its site in the
+@SPACEGROUP setting. Values almost satisfying the symmetry might be used after
+being symmetrised, while values clearly breaking it will always be rejected.
+
 ## The @ATOMOCCUPANCIES section ##
 
 The new optional @ATOMOCCUPANCIES section allows the description of crystals in
