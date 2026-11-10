@@ -318,7 +318,12 @@ namespace NCRYSTAL_NAMESPACE {
       };
 
       class R17Adaptive final : public Romberg {
-        mutable IntegrandOfA m_iofa;
+        //NB: The Romberg interface is const, so state which changes during
+        //integrate() must be mutable. This is acceptable here, since the class
+        //is local to this file, and each object is used for a single
+        //integration only:
+        mutable IntegrandOfA m_iofa;//integrand points, growing with the level
+        mutable bool m_prevSmall = false;//last change was small (see accept)
         unsigned m_minlvl;
         unsigned m_maxlvl;
         double m_prec;
@@ -349,9 +354,13 @@ namespace NCRYSTAL_NAMESPACE {
         bool accept( unsigned level, double prev_est, double est,
                      double, double ) const override
         {
-          return ( level==m_maxlvl
-                   || ( level>=m_minlvl
-                        && ncabs(prev_est-est) <= est*m_prec ) );
+          //Converged only after two consecutive small changes (a single one
+          //can be accidental):
+          const bool small = ncabs(prev_est-est) <= est*m_prec;
+          const bool ok = ( level == m_maxlvl
+                            || ( level >= m_minlvl && small && m_prevSmall ) );
+          m_prevSmall = small;
+          return ok;
         }
 
       };
