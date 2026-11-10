@@ -26,6 +26,8 @@
 #sampled scattering angles against independent high precision evaluations, and
 #the tabulation of the cross sections (IsoMacroXSTable).
 
+#Before enable_fpe (mpmath 1.3 computes inf-inf when imported):
+import mpmath # noqa F401
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
 from NCrystalDev.xstable import IsoMacroXSTable
