@@ -1,5 +1,5 @@
-# Reference cross sections [barn/atom] vs. energy [eV] for the test "sabxs_legacy".
-# Regenerate with: sabxs_legacy.py --update
+# Reference cross sections [barn/atom] vs. energy [eV] for the test "sabxslegacy".
+# Regenerate with: sabxslegacy.py --update
 @cfg stdlib::Polyethylene_CH2.ncmat;temp=20;vdoslux=1000;knllux=-1
 1e-10 15.106092
 1.723466e-09 3.6387378

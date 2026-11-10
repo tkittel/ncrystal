@@ -304,16 +304,16 @@ def _list_legacy():
     yield f'{_sl("Al_sg225")};temp=293.15;vdoslux=2002;knllux=-1'
 
 _tests = {
-    'sabxs_legacy' : lambda : list(_list_legacy()),
-    'sabxs_trouble' : lambda : list(_list_trouble()),
-    'sabxs_testdata' : lambda : list(_list_testdata()),
-    'long_sabxs_light' : lambda : list(_list_light()),
-    'long_sabxs_heavy' : lambda : list(_list_heavy()),
-    'long_sabxs_highdebye' : lambda : list(_list_highdebye()),
-    'long_sabxs_simple' : lambda : list(_list_simple()),
-    'long_sabxs_debye' : lambda : list(_list_debye()),
-    'long_sabxs_lowtemp' : lambda : list(_list_lowtemp()),
-    'long_sabxs_vdoslux6' : lambda : list(_list_vdoslux6()),
-    'long_sabxs_knllux6' : lambda : list(_list_knllux6()),
-    'long_sabxs_maxlux' : lambda : list(_list_maxlux()),
+    'sabxslegacy' : lambda : list(_list_legacy()),
+    'sabxstrouble' : lambda : list(_list_trouble()),
+    'sabxstestdata' : lambda : list(_list_testdata()),
+    'long_sabxslight' : lambda : list(_list_light()),
+    'long_sabxsheavy' : lambda : list(_list_heavy()),
+    'long_sabxshighdebye' : lambda : list(_list_highdebye()),
+    'long_sabxssimple' : lambda : list(_list_simple()),
+    'long_sabxsdebye' : lambda : list(_list_debye()),
+    'long_sabxslowtemp' : lambda : list(_list_lowtemp()),
+    'long_sabxsvdlux6' : lambda : list(_list_vdoslux6()),
+    'long_sabxsknlux6' : lambda : list(_list_knllux6()),
+    'long_sabxsmaxlux' : lambda : list(_list_maxlux()),
 }

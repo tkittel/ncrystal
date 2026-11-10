@@ -25,4 +25,4 @@
 import NCTestUtils.sabxs
 
 if __name__ == '__main__':
-    NCTestUtils.sabxs.run( 'sabxs_testdata' )
+    NCTestUtils.sabxs.run( 'sabxslegacy' )
