@@ -1,0 +1,21 @@
+=====> stdlib::Polyethylene_CH2.ncmat;temp=20;vdoslux=0;knllux=0
+=====> stdlib::Polyethylene_CH2.ncmat;temp=293.15;vdoslux=2;knllux=2
+=====> stdlib::Polyethylene_CH2.ncmat;temp=306.27;vdoslux=4;knllux=4
+=====> stdlib::Polyethylene_CH2.ncmat;temp=1000;vdoslux=0;knllux=1
+=====> stdlib::LiH_sg225_LithiumHydride.ncmat;temp=5;vdoslux=2;knllux=3
+=====> stdlib::LiH_sg225_LithiumHydride.ncmat;temp=1000;vdoslux=4;knllux=5
+=====> stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=20;vdoslux=0;knllux=2
+=====> stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=3000;vdoslux=2;knllux=4
+=====> stdlib::MgH2_sg136_MagnesiumHydride.ncmat;temp=293.15;vdoslux=4;knllux=0
+=====> stdlib::MgD2_sg136_MagnesiumDeuteride.ncmat;temp=5;vdoslux=0;knllux=3
+=====> stdlib::MgD2_sg136_MagnesiumDeuteride.ncmat;temp=1000;vdoslux=2;knllux=5
+=====> stdlib::CaO2H2_sg164_CalciumHydroxide.ncmat;temp=700;vdoslux=4;knllux=1
+=====> stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=0;knllux=4
+NCrystal WARNING: Discarding 52 edges of provided kernel data due to missing S values.
+=====> stdlib::LiquidWaterH2O_T293.6K.ncmat;vdoslux=2;knllux=0
+=====> stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat;vdoslux=4;knllux=2
+NCrystal WARNING: Discarding 204 edges of provided kernel data due to missing S values.
+NCrystal WARNING: Discarding 120 edges of provided kernel data due to missing S values.
+=====> solid::H2O/1gcm3;temp=5;vdoslux=0;knllux=5
+=====> solid::H2O/1gcm3;temp=1000;vdoslux=2;knllux=1
+ALL OK
