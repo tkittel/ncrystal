@@ -189,10 +189,10 @@ def test_refine_corrections():
 
 def test_v8_scatknl_keywords():
     #The effective_temperature/msd/debye_temp parameters of
-    #set_dyninfo_scatknl emit NCMAT v8 keywords (switching the header
-    #to v8), flowing to the extension/elastic machinery on load. A
-    #non-crystalline v8 material without a declared state of matter is
-    #refused already at create_ncmat time:
+    #set_dyninfo_scatknl emit NCMAT v8 keywords, flowing to the
+    #extension/elastic machinery on load. A non-crystalline material
+    #without a declared state of matter is refused already at
+    #create_ncmat time (NCMAT v8 requires it):
     import NCrystalDev as NC
     import numpy as np
     from NCrystalDev.misc import evaluate_query as q
@@ -220,10 +220,11 @@ def test_v8_scatknl_keywords():
     r = r['sabanalyse']
     assert r['teff_extender'] == 450.0
     print('=> v8 keywords roundtrip (teff_extender=450): OK')
-    #no keywords -> still v7:
+    #no keywords -> also v8 (the composer only emits NCMAT v8):
     c2 = mkc()
-    assert c2.create_ncmat().startswith('NCMAT v7')
-    print('=> plain scatknl composer output remains NCMAT v7: OK')
+    c2.set_state_of_matter('liquid')
+    assert c2.create_ncmat().startswith('NCMAT v8')
+    print('=> plain scatknl composer output is NCMAT v8: OK')
 
 if __name__ == '__main__':
     main()

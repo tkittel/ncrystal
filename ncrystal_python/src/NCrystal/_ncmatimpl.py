@@ -566,8 +566,7 @@ class NCMATComposerImpl:
                              effective_temperature = None, msd = None,
                              msd_at_temperature = None, debye_temp = None ):
         #The effective_temperature/msd/msd_at_temperature/debye_temp
-        #parameters emit the corresponding NCMAT v8 @DYNINFO keywords
-        #(and their usage switches the output to NCMAT v8):
+        #parameters emit the corresponding NCMAT v8 @DYNINFO keywords:
         if msd is not None and debye_temp is not None:
             raise _nc_core.NCBadInput('Do not specify both msd and debye_temp')
         if msd_at_temperature is not None and msd is None:
@@ -918,8 +917,7 @@ class NCMATComposerImpl:
                 pass
             elif ditype == 'scatknl':
                 lines += f'temperature {_fmtprecisenum(dyninfo["temperature"])}\n'
-                #NCMAT v8 keywords (their presence makes create_ncmat
-                #emit an NCMAT v8 header):
+                #NCMAT v8 keywords:
                 if dyninfo.get('effective_temperature') is not None:
                     _ = _fmtprecisenum(dyninfo['effective_temperature'])
                     lines += f'effective_temperature {_}\n'
@@ -1171,18 +1169,11 @@ class NCMATComposerImpl:
                             'atoms/Aa3': 'atoms_per_aa3' }[_dunit]
             ll+=f'@DENSITY\n{_dval} {_ncmat_dunit}\n'
 
-        #NCMAT v8 is needed (and produced) when v8-only dyninfo keywords are
-        #used. The msd keyword (and debye_temp on scatknl) implies a solid,
-        #which v8 requires non-crystalline materials to declare:
+        #The Debye model and the msd keyword (and debye_temp on scatknl) imply
+        #a solid, which NCMAT v8 requires non-crystalline materials to
+        #declare:
         dyninfos_all = self.__params.get('dyninfos',{}).values()
-        _needs_v8 = atomsites is not None or any(
-            di.get('ditype')=='msd'
-            or ( di.get('ditype')=='scatknl'
-                 and any( di.get(k) is not None
-                          for k in ('effective_temperature','v8msd',
-                                    'v8debye_temp') ) )
-            for di in dyninfos_all )
-        _implies_solid = any( di.get('ditype')=='msd'
+        _implies_solid = any( di.get('ditype') in ('msd','vdosdebye')
                               or ( di.get('ditype')=='scatknl'
                                    and any( di.get(k) is not None
                                             for k in ('v8msd','v8debye_temp') ) )
@@ -1193,7 +1184,7 @@ class NCMATComposerImpl:
                                       ' describe atomic displacements in a'
                                       ' solid, which is inconsistent with the'
                                       f' declared state of matter "{som}"')
-        if som is None and _needs_v8 and _implies_solid and not is_crystal:
+        if som is None and _implies_solid and not is_crystal:
             som = 'solid'
         if som is not None:
             assert som in ('solid','liquid','gas')
@@ -1247,13 +1238,11 @@ class NCMATComposerImpl:
         )
         ll += ld
 
-        if _needs_v8 and not is_crystal and som is None:
-            raise _nc_core.NCBadInput('The effective_temperature parameter'
-                                      ' produces NCMAT v8 data, where'
-                                      ' non-crystalline materials must declare'
-                                      ' a state of matter: call'
-                                      ' .set_state_of_matter(..) first')
-        out=["NCMAT v8" if _needs_v8 else "NCMAT v7"]
+        if not is_crystal and som is None:
+            raise _nc_core.NCBadInput('Non-crystalline materials must declare'
+                                      ' a state of matter in NCMAT v8 data:'
+                                      ' call .set_state_of_matter(..) first')
+        out=["NCMAT v8"]
         comments = copy.deepcopy(self.__params.get('top_comments',[]))
 
         if natoms_with_fallback_dyninfo:
