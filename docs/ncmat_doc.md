@@ -891,7 +891,7 @@ rather than relying on the automatic estimation of these quantities directly
 from the kernels. Additionally, rules concerning the @STATEOFMATTER and
 @SPACEGROUP sections have been updated, the @DEBYETEMPERATURE section is no
 longer allowed, and new @ATOMSITES and @ATOMOCCUPANCIES sections are
-introduced.
+introduced (the former with optional anisotropic displacement tensors).
 
 ## The @SPACEGROUP section accepts a setting ##
 
@@ -945,6 +945,35 @@ As an example, diamond silicon can be given by its single site:
 ```
 
 Here the site is expanded to the 8 atoms of the unit cell.
+
+### Anisotropic displacements ###
+
+A line in the @ATOMSITES section can optionally end with the keyword `uij`
+followed by six numbers, the anisotropic displacement tensor of the site:
+U11, U22, U33, U12, U13 and U23, in the convention of the CIF format (i.e. the
+values of the `_atom_site_aniso_U_ij` fields, defined relative to the
+reciprocal lattice vectors normalised to unit length). For example:
+
+```
+@ATOMSITES
+  Si 1/8 1/8 1/8 uij 0.0071 0.0071 0.0071 0 0 0
+```
+
+The tensors only define the shapes and relative sizes of the displacements of
+the sites of an element, so any normalisation of the values is accepted (like
+for VDOS curves). The overall magnitude of the displacements still comes from
+the @DYNINFO section of the element, as for materials without tensors: at a
+given temperature, all the tensors of an element are scaled by the same factor,
+so their average mean-squared displacement (one third of the trace of the
+tensor in Cartesian coordinates, weighted by the multiplicities of the sites)
+equals the mean-squared displacement provided by the @DYNINFO section.
+
+Either all sites of an element must have a tensor, or none of them. Each tensor
+must be positive definite, and must have the symmetry of its site in the space
+group setting (for instance U11=U22 for sites on certain axes). Values which are
+only close to having that symmetry (as typical for values given with limited
+precision, e.g. U12=0.0071 instead of half of U22=0.0143) are symmetrised,
+while values clearly breaking the site symmetry are rejected.
 
 ## The @ATOMOCCUPANCIES section ##
 
