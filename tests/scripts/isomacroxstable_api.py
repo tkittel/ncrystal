@@ -77,7 +77,9 @@ def test( cfg ):
     for v, t in zip( w, tab ):
         ref = lookup( wl, macroxs, slope, float(v) )
         assert t == ref or abs( t - ref ) <= 1e-14 * max( abs(ref), floor ), (v, t, ref)
-        assert f.xsect( wl = float(v) ) == t
+        s = f.xsect( wl = float(v) )
+        #(not always bit-identical, e.g. with a numpy using x87 for some cases)
+        assert s == t or abs( s - t ) <= 1e-14 * max( abs(t), floor ), (v, s, t)
     #Energies instead of wavelengths, and scalars:
     np.testing.assert_allclose( f.xsect( ekin = wl2ekin( w[:500] ) ), tab[:500],
                                 rtol = 1e-12, atol = 1e-12 * floor )
