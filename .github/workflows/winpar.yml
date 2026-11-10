@@ -1,0 +1,56 @@
+name: winpar
+#Throwaway: how does the ctest wall time scale with -j on the runners?
+on: push
+jobs:
+  winpar:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-2022,  buildtype: Release, re: 'long_sabxs' }
+          - { os: windows-2025,  buildtype: Release, re: 'long_sabxs' }
+          - { os: windows-2022,  buildtype: Debug,   re: 'long_sabxs(highdebye|simple|lowtemp|debyea)' }
+          - { os: windows-2025,  buildtype: Debug,   re: 'long_sabxs(highdebye|simple|lowtemp|debyea)' }
+          - { os: ubuntu-latest, buildtype: Release, re: 'long_sabxs' }
+    name: ${{ matrix.os }}-${{ matrix.buildtype }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 240
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        path: src
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: '3.14'
+    - name: CPU info
+      run: |
+        python ./src/devel/bin/ncdevtool nprocs
+        python -c "import os; print('os.cpu_count():',os.cpu_count())"
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          powershell -Command "Get-CimInstance Win32_Processor | Select-Object Name,NumberOfCores,NumberOfLogicalProcessors | Format-List"
+        else
+          lscpu | head -20
+        fi
+    - name: Pip install dependencies
+      run: python -mpip install -r ./src/devel/reqs/requirements_all_and_devel.txt
+    - name: Configure and build
+      run: |
+        cmake -S src -B build -DNCRYSTAL_ENABLE_EXAMPLES=ON -DNCRYSTAL_BUILD_STRICT=ON \
+          -DNCRYSTAL_ENABLE_TESTING=ON -DMCTOOLS_REQUIRE_ALL_TEST_DEPS=ON \
+          -DNCRYSTAL_TEST_ENABLE_LONG=ON -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }}
+        cmake --build build --config ${{ matrix.buildtype }} --parallel 4
+    - name: CTest at several parallelism levels
+      run: |
+        ctest --test-dir build -C ${{ matrix.buildtype }} -R '${{ matrix.re }}' -N | tail -2
+        for j in 1 2 3 4; do
+          t0=$(date +%s)
+          ctest --test-dir build -C ${{ matrix.buildtype }} -R '${{ matrix.re }}' \
+            --no-tests=error --timeout 6000 -j $j > ctest_j$j.log 2>&1 && rc=0 || rc=$?
+          t1=$(date +%s)
+          echo "WINPAR ${{ matrix.os }} ${{ matrix.buildtype }} j=$j wall=$((t1-t0))s rc=$rc" | tee -a summary.txt
+          grep -E 'Test +#' ctest_j$j.log | sed "s/^/  j=$j /"
+        done
+        cat summary.txt >> $GITHUB_STEP_SUMMARY
