@@ -69,7 +69,7 @@ namespace NCRYSTAL_NAMESPACE {
           const double* ncrestrict Sb1_arr,
           const double* ncrestrict Sb2_arr,
           const double* ncrestrict alpha_arr,
-          double foure, double E_div_kT,
+          double E_div_kT,
           double cs_b1, double cs_b2, double invdb,
           bool is_bounded_by_betaminus,
           bool is_bounded_by_betaplus,
@@ -96,14 +96,16 @@ namespace NCRYSTAL_NAMESPACE {
           contribImpl,
           (fourE,b1,b2,invdb,is_bounded_by_both,alpha,s_at_b1,s_at_b2) );
         nc_assert(b2>b1);
-        //bl/bu via the robust getBetaMinus/getBetaPlus
-        //(the naive a-+dbpm formula cancels catastrophically for a~=4E):
-        const double bl = ncclamp( detail::raw_getBetaMinus(fourE*0.25,alpha),
-                                   b1, b2 );
-        const double bu = ncclamp( detail::raw_getBetaPlus(fourE*0.25,alpha),
-                                   b1, b2 );
-        const double dbpm = std::sqrt( fourE * alpha );
-        //FIXME: ^^^ This calculates sqrt(4E*a) thrice instead of just once!
+        //bl/bu as in getBetaMinus/getBetaPlus (incl. the Taylor expansion
+        //which avoids catastrophic cancellation for a~=4E), with a single sqrt
+        //(dbpm=sqrt(4E*a)=2*sqrt(E*a) exactly):
+        const double e = fourE * 0.25;
+        nc_assert( e * alpha >= 0.0 );
+        const double dbpm = 2.0 * std::sqrt( e * alpha );
+        const double bl = ncclamp( ( detail::betaMinusNeedsTaylor( e, alpha )
+                                     ? detail::betaMinusTaylor( e, alpha )
+                                     : alpha - dbpm ), b1, b2 );
+        const double bu = ncclamp( alpha + dbpm, b1, b2 );
 
         //To find the contribution we integrate S(a,b) over [bl,bu]. This is
         //easy, since we always interpolate linearly in b:
@@ -121,7 +123,7 @@ namespace NCRYSTAL_NAMESPACE {
         const double* ncrestrict Sb1_arr,
         const double* ncrestrict Sb2_arr,
         const double* ncrestrict alpha_arr,
-        double foure, double E_div_kT,
+        double E_div_kT,
         double cs_b1, double cs_b2, double invdb,
         bool is_bounded_by_betaminus,
         bool is_bounded_by_betaplus,
@@ -129,7 +131,7 @@ namespace NCRYSTAL_NAMESPACE {
       {
         NCRYSTAL_FMADISPATCH_WINFMA_FORWARD(
           fillContribAtAlpha,
-          (contrib_out,npts,Sb1_arr,Sb2_arr,alpha_arr,foure,E_div_kT,
+          (contrib_out,npts,Sb1_arr,Sb2_arr,alpha_arr,E_div_kT,
            cs_b1,cs_b2,invdb,is_bounded_by_betaminus,is_bounded_by_betaplus,
            is_bounded_on_both_sides) );
         //contrib_out/Sb1_arr/Sb2_arr/alpha_arr are ncrestrict: at the call
@@ -149,13 +151,16 @@ namespace NCRYSTAL_NAMESPACE {
           double Sb1 = Sb1_arr[i];
           double Sb2 = Sb2_arr[i];
           double a = alpha_arr[i];
-          //bl/bu via the robust getBetaMinus/getBetaPlus
-          //(fixme: calculating expensive sqrt(4E*a) thrice instead of once!)
-          double dbpm = std::sqrt( foure * a );//nb: expensive
+          //bl/bu as in getBetaMinus/getBetaPlus, with a single sqrt
+          //(dbpm=sqrt(4E*a)=2*sqrt(E*a) exactly):
+          nc_assert( E_div_kT * a >= 0.0 );
+          const double dbpm = 2.0 * std::sqrt( E_div_kT * a );
           if ( is_bounded_by_betaminus )
-            bl = detail::raw_getBetaMinus(E_div_kT,a);
+            bl = ( detail::betaMinusNeedsTaylor( E_div_kT, a )
+                   ? detail::betaMinusTaylor( E_div_kT, a )
+                   : a - dbpm );
           if ( is_bounded_by_betaplus ) //ncmax as a safeguard against FP issues:
-            bu = ncmax(bl,detail::raw_getBetaPlus(E_div_kT,a));
+            bu = ncmax( bl, a + dbpm );
           //To find the contribution we integrate S(a,b) over [bl,bu]. This is
           //easy, since we always interpolate linearly in b:
           const double bmiddle( is_bounded_on_both_sides ? a : (bu+bl)*0.5 );
