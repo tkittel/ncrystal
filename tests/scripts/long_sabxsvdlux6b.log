@@ -1,8 +1,4 @@
 =====> stdlib::Polyethylene_CH2.ncmat;temp=293.15;vdoslux=6;knllux=1
-NCrystal WARNING: Discarding 2 edges of provided kernel data due to missing S values.
-NCrystal WARNING: Discarding 2 edges of provided kernel data due to missing S values.
 =====> Li_from_Li2O.ncmat;temp=10;vdoslux=6;knllux=3
 =====> stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=293.15;vdoslux=6;knllux=1
-NCrystal WARNING: Discarding 1 edges of provided kernel data due to missing S values.
-NCrystal WARNING: Discarding 2 edges of provided kernel data due to missing S values.
 ALL OK
