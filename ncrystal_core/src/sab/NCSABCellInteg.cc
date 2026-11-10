@@ -530,7 +530,7 @@ namespace NCRYSTAL_NAMESPACE {
           case 33: prec = 1e-9; minlvl=5; maxlvl=12; break;
           default:
             nc_assert(false);
-          case 65: prec = 1e-12; minlvl=6; maxlvl=14; break;
+          case 65: prec = 1e-10; minlvl=6; maxlvl=14; break;//knllux=6 E-grid tolerance is 1e-8
           };
           R17Adaptive r17adapt(i,minlvl,maxlvl,prec);
           contrib = r17adapt.integrate(0.0,1.0);
