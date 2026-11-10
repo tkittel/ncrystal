@@ -477,10 +477,9 @@ namespace NCRYSTAL_NAMESPACE {
                                    scheme.npts );
           const bool is_bounded_on_both_sides ( is_bounded_by_betaminus
                                                 && is_bounded_by_betaplus );
-          const double foure = 4.0*e.dbl();
           fillContribAtAlpha( contrib_at_a, scheme.npts,
                               sofa_at_b1.S, sofa_at_b2.S, sofa_at_b2.a,
-                              foure, e.dbl(), cs.b1, cs.b2, invdb,
+                              e.dbl(), cs.b1, cs.b2, invdb,
                               is_bounded_by_betaminus, is_bounded_by_betaplus,
                               is_bounded_on_both_sides );
         }
