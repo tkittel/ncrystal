@@ -106,6 +106,7 @@ def test_vdos():
 
     mat = NCMATComposer()
     mat.set_density(2.0,'g/cm3')
+    mat.set_state_of_matter('solid')
     mat.set_dyninfo_vdos('Al', *dosana.dos('vdos2'), fraction=0.3 )
     mat.set_dyninfo_vdos('O', *vdos1, fraction=0.7 )
     info = mat.loadInfo()
