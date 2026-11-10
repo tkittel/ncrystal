@@ -309,3 +309,20 @@ same site with origin choice 1: 8.0 atoms
 with occupancy 0.9: 7.2 atoms
 all positions with 227:2: 8.0 atoms
 => correctly refused positions in wrong setting: The atom positions do not have the symmetry of space group 227:1: Atom positions are not consistent with space group 227:1 (largest deviation of a symmetry image from an atom of the same type: 0.25 in fractional coordinates)
+
+
+  ================> set_atomsites with uij
+
+
+@ATOMSITES
+  Mg 1/3 2/3 1/4 uij 0.01 0.01 0.012 0.005 0 0
+loaded uij: 0.0108069, 0.0108069, 0.0129682, 0.00540343, 0, 0 (msd=0.0115273)
+@ATOMSITES
+  Mg 1/3 2/3 1/4 uij 0.01 0.01 0.012 0.005 0 0
+@ATOMOCCUPANCIES
+  Mg .9
+loaded uij: 0.0108069, 0.0108069, 0.0129682, 0.00540343, 0, 0 (msd=0.0115273)
+=> correctly refused uij for only some sites: Anisotropic displacements (uij) must be given for all or none of the sites of "Mg"
+=> correctly refused too few uij values: Invalid uij values (expected six finite numbers): (0.01, 0.01, 0.012, 0.005, 0.0)
+=> correctly refused non-finite uij: Invalid uij values (expected six finite numbers): (0.01, 0.01, 0.012, 0.005, 0.0, nan)
+=> correctly refused refinement: Crystal structures with anisotropic displacements (uij) can not be refined

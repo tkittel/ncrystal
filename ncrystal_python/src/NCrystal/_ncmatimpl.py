@@ -738,10 +738,12 @@ class NCMATComposerImpl:
             for w in d['warnings']:
                 _nc_common.warn(w)
         if mode_refine:
-            #NB: We do not (yet) have anisotropic atomic properties (like
-            #anisotropic displacements), so we can simply update just the
-            #positions. This is different from the case in cifutils.py where
-            #d['can_keep_anisotropic_properties'] is important!
+            #NB: Only the positions are updated, so anisotropic displacements
+            #(which would need transforming too) are not supported:
+            if atompos.get('uij'):
+                raise _nc_core.NCBadInput('Crystal structures with anisotropic'
+                                          ' displacements (uij) can not be'
+                                          ' refined')
             new_cellsg = dict(d['cellparams_snapped'].items())
             new_cellsg['spacegroup'] = d['sgno']#NB: ignoring sgsymb_hm here!
                                                 #Could we have spacegroup_hm as
@@ -757,7 +759,7 @@ class NCMATComposerImpl:
             ll.sort()
             new_atompos = { k: copy.deepcopy(v)
                             for k,v in atompos.items()
-                            if k not in ('pos','sites') }
+                            if k not in ('pos','sites','uij') }
             new_atompos['pos'] = ll
             self.__dirty()
             self.__params['cellsg'] = new_cellsg
@@ -782,12 +784,21 @@ class NCMATComposerImpl:
         self.__set_atompos_or_sites( atomsites, is_sites = True )
 
     def __set_atompos_or_sites( self, atompos, is_sites ):
-        pos,occumap = [],{}
+        pos,occumap,uijs = [],{},[]
         for e in atompos:
-            assert len(e) in (4,5)
+            e = list(e)
+            uij = None
+            if is_sites and len(e) in (5,6) and _is_sequence( e[-1] ):
+                uij = tuple( float(u) for u in e.pop() )
+                if len(uij) != 6 or not all( math.isfinite(u) for u in uij ):
+                    raise _nc_core.NCBadInput('Invalid uij values (expected six'
+                                              f' finite numbers): {uij}')
+            if len(e) not in (4,5):
+                raise _nc_core.NCBadInput(f'Invalid entry: {e}')
             lbl,x,y,z = str(e[0]),_remap_fract_pos(e[1]),_remap_fract_pos(e[2]),_remap_fract_pos(e[3])
             _checklabel(lbl)
             pos.append( (lbl,x,y,z) )
+            uijs.append( uij )
             occu = float(e[4]) if len(e)==5 else 1.0
             if not ( 0.0 < occu <= 1.0 ):
                 raise _nc_core.NCBadInput('site_occupancy values must be in (0.0,1.0]')
@@ -797,6 +808,14 @@ class NCMATComposerImpl:
                 if not occumap[lbl] == occu:
                     raise _nc_core.NCBadInput(f'All site occupancies for label "{lbl}" are not identical')
 
+        #uij must be given for all or none of the sites of a label:
+        for lbl in { p[0] for p in pos }:
+            has = { u is not None for p,u in zip(pos,uijs) if p[0]==lbl }
+            if len(has) > 1:
+                raise _nc_core.NCBadInput('Anisotropic displacements (uij)'
+                                          ' must be given for all or none of'
+                                          f' the sites of "{lbl}"')
+
         #remove occu==1.0 entries from map (and sort):
         occumap = dict( sorted( (k,v) for k,v in occumap.items() if v!=1.0 ) )
         self.__dirty()
@@ -805,6 +824,8 @@ class NCMATComposerImpl:
             #space group setting):
             self.__params['atompos'] = { 'pos': None, 'sites': pos,
                                          'occumap': occumap }
+            if any( u is not None for u in uijs ):
+                self.__params['atompos']['uij'] = uijs
         else:
             self.__params['atompos'] = { 'pos': pos, 'occumap': occumap }
 
@@ -843,7 +864,7 @@ class NCMATComposerImpl:
             s.add(lbl)
         return s
 
-    def __lines_atompos(self, lbl_map, atompos, sites = None ):
+    def __lines_atompos(self, lbl_map, atompos, sites = None, uij = None ):
         if not atompos:
             return ''
         ll=[]
@@ -860,15 +881,18 @@ class NCMATComposerImpl:
             return float(p[0]) / float(p[1])
         entries = ( [ ( lbl, p[0], p[1], p[2] ) for lbl, p, mult in sites ]
                     if sites is not None else atompos['pos'] )
-        for lbl,x,y,z in entries:
+        uijs = ( uij or [ None ] * len(entries) )
+        for (lbl,x,y,z),u in zip(entries,uijs):
             fx,fy,fz = fmt(x), fmt(y), fmt(z)
+            fu = ( ' uij ' + ' '.join( f'{v:.14g}' for v in u )
+                   if u is not None else '' )
             ll.append( ( lbl_map.get(lbl,lbl),
                          extractval(fx), extractval(fy), extractval(fz),
-                         fx, fy, fz ) )
+                         fx, fy, fz, fu ) )
         ll.sort()
         out = "@ATOMSITES\n" if sites is not None else "@ATOMPOSITIONS\n"
-        for lbl,_,_,_,fx,fy,fz in ll:
-            out += f'{lbl} {fx} {fy} {fz}\n'
+        for lbl,_,_,_,fx,fy,fz,fu in ll:
+            out += f'{lbl} {fx} {fy} {fz}{fu}\n'
         return out
 
     def __atomsites( self, cellsg, atompos ):
@@ -889,7 +913,8 @@ class NCMATComposerImpl:
                                               f'{lbl},{x!r},{y!r},{z!r}' ] ) )
                 sites.append( ( lbl, ( x, y, z ), mult ) )
             return { 'spacegroup_setting': setting['spacegroup'],
-                     'sites': sites }
+                     'sites': sites,
+                     'uij': atompos.get('uij') }
         sg = cellsg['spacegroup']
         sgsetting = cellsg.get('spacegroup_setting')
         if sgsetting:
@@ -1226,7 +1251,8 @@ class NCMATComposerImpl:
         atomsites = self.__atomsites( cellsg, atompos )
         ll  = self.__lines_cellsg( cellsg, atomsites )
         ll += self.__lines_atompos( lbl_map, atompos,
-                                    sites = atomsites['sites'] if atomsites else None )
+                                    sites = atomsites['sites'] if atomsites else None,
+                                    uij = atomsites.get('uij') if atomsites else None )
         if atompos and atompos.get('occumap'):
             ll += '@ATOMOCCUPANCIES\n'
             for lbl,occu in sorted( (lbl_map.get(k,k),v)
@@ -1645,6 +1671,9 @@ def _sgspec_for_sites( cellsg ):
         raise _nc_core.NCBadInput('Atom sites (set_atomsites) require a space'
                                   ' group setting (set_cellsg)')
     return cellsg.get('spacegroup_setting') or str(cellsg['spacegroup'])
+
+def _is_sequence( e ):
+    return not isinstance( e, (str,bytes) ) and hasattr( e, '__len__' )
 
 def _checklabel(lbl):
     if not lbl:
