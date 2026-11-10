@@ -216,8 +216,7 @@ NC::VDOS::determineAlphaBetaGridFromGn( const GnExpansion& gnexpn,
     bvals_view = bvals_view.subspan(i);
     gnprojvals_view = gnprojvals_view.subspan(i);
     if ( bvals_view.back() > betaRange.second + etol ) {
-      //Do the same for the upper limit, although this is expected to happen
-      //only extremely rarely in usual operations.
+      //Do the same for the upper limit:
       auto newsize = bvals_view.size();
       nc_assert_always( bvals_view.size() >= 5 );
       while ( newsize > 2
@@ -233,6 +232,51 @@ NC::VDOS::determineAlphaBetaGridFromGn( const GnExpansion& gnexpn,
     nc_assert_always( bvals_view.front() < 0.0 );
     nc_assert_always( bvals_view.back() > 0.0 );
     nc_assert_always( bvals_view.size() == gnprojvals_view.size() );
+  }
+
+  //Beyond the last Gn node with a nonzero value, S is 0 for all alpha. Drop
+  //such points and end the beta grid just below that node instead (a zero
+  //row at the edge would be trimmed later, leaving fewer points than
+  //requested):
+  VectD bvals_cut, gnprojvals_cut;
+  {
+    const auto& Gn = gnexpn.Gn;
+    const double invkT = 1.0 / Gn.kT();
+    double bnode = -kInfinity;
+    for ( auto nm1 : ncrange( Gn.maxOrder().value() ) ) {
+      const auto n = nm1 + 1;
+      const auto& spec = Gn.getRawSpectrum(n);
+      for ( std::size_t k = spec.size(); k-- > 0; ) {
+        if ( spec[k] > 0.0 ) {
+          bnode = ncmax( bnode, equidistantGridPoint( Gn.eRange(n).first,
+                                                      Gn.binWidth(n), k )
+                                * invkT );
+          break;
+        }
+      }
+    }
+    //Slightly inside, so rounding in unit conversions can not move it past
+    //the node:
+    bnode *= ( 1.0 - 1e-12 );
+    std::size_t nkeep = bvals_view.size();
+    while ( nkeep > 5 && bvals_view[nkeep-1] > bnode )
+      --nkeep;
+    if ( nkeep < bvals_view.size() ) {
+      bvals_cut.assign( bvals_view.begin(), bvals_view.begin() + nkeep );
+      gnprojvals_cut.assign( gnprojvals_view.begin(),
+                             gnprojvals_view.begin() + nkeep );
+      if ( bvals_cut.back() < bnode ) {
+        //Value of the piecewise linear combinedGnFct at bnode:
+        const double b0 = bvals_view[nkeep-1];
+        const double b1 = bvals_view[nkeep];
+        bvals_cut.push_back( bnode );
+        gnprojvals_cut.push_back( nclerp( gnprojvals_view[nkeep-1],
+                                          gnprojvals_view[nkeep],
+                                          ( bnode - b0 ) / ( b1 - b0 ) ) );
+      }
+      bvals_view = bvals_cut;
+      gnprojvals_view = gnprojvals_cut;
+    }
   }
 
   //Reduce number of points. Values usually originate in FFT-based convolutions,

@@ -1,7 +1,4 @@
 =====> stdlib::Al_sg225.ncmat;temp=293.15;vdoslux=6;knllux=0
-NCrystal WARNING: Discarding 1 edges of provided kernel data due to missing S values.
 =====> stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=1000;vdoslux=6;knllux=2
-NCrystal WARNING: Discarding 2 edges of provided kernel data due to missing S values.
-NCrystal WARNING: Discarding 1 edges of provided kernel data due to missing S values.
 =====> stdlib::Be_sg194.ncmat;temp=20;vdoslux=6;knllux=0
 ALL OK
