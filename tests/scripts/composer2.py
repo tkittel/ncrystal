@@ -226,8 +226,51 @@ def test_v8_scatknl_keywords():
     assert c2.create_ncmat().startswith('NCMAT v8')
     print('=> plain scatknl composer output is NCMAT v8: OK')
 
+def test_atomsites():
+    #set_atomsites lists one position per site, expanded with the given space
+    #group setting (which must be unambiguous), and the NCMAT data lists
+    #exactly the given sites:
+    import NCrystalDev as NC
+    print('\n\n  ================> set_atomsites\n\n')
+    def mk( sg, sites, *, use_sites = True ):
+        c = NC.NCMATComposer()
+        c.set_cellsg_cubic( 5.43, spacegroup = sg )
+        if use_sites:
+            c.set_atomsites( sites )
+        else:
+            c.set_atompos( sites )
+        c.set_dyninfo_debyetemp( 'Si', 400 )
+        return c
+    def natoms( c ):
+        return c.load().info.structure_info['n_atoms_average']
+    c = mk( '227:2', [ ('Si',1/8,1/8,1/8) ] )
+    txt = c.create_ncmat()
+    assert '@SPACEGROUP\n  227:2\n@ATOMSITES\n  Si 1/8 1/8 1/8\n' in txt
+    print('diamond Si from a single site (227:2):',natoms(c),'atoms')
+    print('same site with origin choice 1:',
+          natoms( mk( '227:1', [ ('Si',0,0,0) ] ) ),'atoms')
+    try:
+        mk( 227, [ ('Si',0,0,0) ] ).create_ncmat()
+    except NC.NCBadInput as e:
+        print(f'=> correctly refused ambiguous setting: {e}')
+    try:
+        mk( '227:3', [ ('Si',0,0,0) ] )
+    except NC.NCBadInput as e:
+        print(f'=> correctly refused invalid setting: {e}')
+    #set_atompos with a given setting checks exactly that setting:
+    allpos = [ (lbl,p[0],p[1],p[2]) for lbl,p in
+               NC.misc.evaluate_query(['util','atompositions','strict',
+                                       '227:2','Si,0.125,0.125,0.125']) ]
+    print('all positions with 227:2:',
+          natoms( mk( '227:2', allpos, use_sites = False ) ),'atoms')
+    try:
+        mk( '227:1', allpos, use_sites = False ).create_ncmat()
+    except NC.NCBadInput as e:
+        print(f'=> correctly refused positions in wrong setting: {e}')
+
 if __name__ == '__main__':
     main()
     test_verify_origin_and_triclinic()
     test_refine_corrections()
     test_v8_scatknl_keywords()
+    test_atomsites()
