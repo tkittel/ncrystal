@@ -1,0 +1,6 @@
+diagonalLowEnergyLimit OK
+monotonic: Emin/kT = 0.002401 (dense scan agrees)
+dip: Emin/kT = 6.022e-07 (dense scan agrees)
+peak: Emin/kT = 6.024e-07 (dense scan agrees)
+f0=0: returns Emax
+f changing at the first scan point: CalcError
