@@ -1,0 +1,31 @@
+Input for the CHANGELOG from the tk_aniso branch (anisotropic displacements),
+in the same spirit as changes_for_changelog.txt (to be curated into the real
+CHANGELOG at release time, after which this file is dropped).
+
+### Anisotropic displacements
+
+     * NCMAT v8 @ATOMSITES lines can end with "uij" and six numbers, the
+       anisotropic displacement tensor of the site in the CIF convention
+       (U11,U22,U33,U12,U13,U23). Any normalisation is accepted: the tensors
+       of an element are scaled so their multiplicity-weighted Ueq equals the
+       msd from @DYNINFO. Tensors must be given for all or none of the sites
+       of an element, must be positive definite, and are snapped to the site
+       symmetry (clear breaks are rejected).
+     * Bragg structure factors use anisotropic Debye-Waller factors, and the
+       incoherent elastic model the powder average over directions of the
+       projected msd. Inelastic scattering stays isotropic. No change for
+       materials without tensors.
+     * AtomInfo::Site::uij holds the tensors (mapped to the representative
+       position, symmetrised and scaled), also available in the "sites" JSON
+       query, the Python AtomInfo.sites, and the dumps.
+     * NCMATComposer always writes NCMAT v8 data (non-crystalline materials
+       therefore need set_state_of_matter, unless implied by the dynamics),
+       set_cellsg accepts space group settings like "227:2", and the new
+       set_atomsites takes one position per site, optionally with an
+       occupancy and/or a uij tensor. Site occupancies are written to
+       @ATOMOCCUPANCIES.
+     * cif2ncmat keeps the CIF sites and their anisotropic displacements
+       (dropped with a warning if spglib changed the sites), and warns when a
+       Uiso differs from the Ueq of the tensor by more than 5%. The Ueq of
+       tensors without Uiso is now correct for non-orthogonal cells (it was
+       the mean of the diagonal).
