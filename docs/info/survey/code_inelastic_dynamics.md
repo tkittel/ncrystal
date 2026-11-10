@@ -348,7 +348,7 @@ Related elastic switches: `incoh_elas`, `coh_elas`, `sans`.
 - `app_gasmix`: gas mixtures and water vapour pressure.
 
 **Python scripts (tests/scripts):**
-- `sabxs_testdata`, `sabxs_trouble`, and `long_sabxs_{simple,light,heavy,debye,highdebye,lowtemp,maxlux,vdoslux6,knllux6}`: next-gen cross-section reference monitoring. Driver: tests/pypath/NCTestUtils/sabxs.py; references: tests/data/sabxs/*.txt; vdoslux 2000-2006 cycled with knllux 0-5.
+- `sabxstestdata`, `sabxstrouble`, and `long_sabxs{simple,light{a,b},heavy,debye{a,b},highdebye,lowtemp,maxlux,vdlux6{a,b},knlux6{a,b}}`: next-gen cross-section reference monitoring. Driver: tests/pypath/NCTestUtils/sabxs.py; references: tests/data/sabxs/*.txt; vdoslux 2000-2006 cycled with knllux 0-5.
 - `sabsample`: kernel sampling.
 - `sabcellsample`, `sabcelleval`: cell samplers and evaluation.
 - `sabsurvey`: surveyor plots.
