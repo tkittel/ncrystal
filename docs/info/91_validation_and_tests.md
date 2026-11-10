@@ -31,7 +31,7 @@
 
 - Reference-value tests: `sabxs` (cross sections of many materials over
   all `vdoslux`/`knllux` levels against stored references with
-  level-dependent tolerances; `long_sabxs_*` for low temperatures, light and
+  level-dependent tolerances; `long_sabxs*` for low temperatures, light and
   heavy atoms, high Debye temperatures, `knllux` 6), `vdosgn.py` and
   `kinutils.py` against mpmath, `app_gnconvnoisefloor`, `app_gnerange`,
   `app_sctext` (SCT against quadrature and the free-gas limit),
