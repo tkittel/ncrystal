@@ -664,7 +664,27 @@ namespace {
 
 
 
+void testGaussLegendre8()
+{
+  //Exact for polynomials up to degree 15:
+  for ( auto k : NC::ncrange(16) ) {
+    auto f = [k]( double x ) { return std::pow( x, k ); };
+    const double a = -0.7, b = 1.3;
+    const double expected = ( std::pow(b,k+1) - std::pow(a,k+1) ) / ( k + 1 );
+    nc_assert_always( NC::floateq( NC::integrateGaussLegendre8(f,a,b),
+                                   expected, 1e-14, 1e-15 ) );
+  }
+  //Smooth function:
+  auto f = []( double x ) { return std::exp(-x*x)*x*x*x; };
+  const double expected = 0.5-2.5*std::exp(-4.0);
+  nc_assert_always( NC::floateq( NC::integrateGaussLegendre8(f,0.0,2.0),
+                                 expected, 1e-8, 0.0 ) );//actual: 3.3e-9
+  std::cout<<"integrateGaussLegendre8 tests OK"<<std::endl;
+}
+
 int main() {
+
+  testGaussLegendre8();
 
   testIntegration([](double x){return x*x+0.1;}, -1,2, 3.3, "x^2+1/10", true);
   testIntegration([](double x){return std::exp(-x*x)*x*x*x;}, 0,2,0.5-2.5*std::exp(-4.0), "exp(-x^2)*x^3 ", false);
