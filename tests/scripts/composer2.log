@@ -297,3 +297,14 @@ fcc, displaced atom: SG-225 warnings=['Structure received minor corrections by s
 => correctly refused stateless v8: Non-crystalline materials must declare a state of matter in NCMAT v8 data: call .set_state_of_matter(..) first
 => v8 keywords roundtrip (teff_extender=450): OK
 => plain scatknl composer output is NCMAT v8: OK
+
+
+  ================> set_atomsites
+
+
+diamond Si from a single site (227:2): 8.0 atoms
+same site with origin choice 1: 8.0 atoms
+=> correctly refused ambiguous setting: Invalid space group specification: "227" (space group 227 has several settings, so one of them must be specified: 227:1 (default), 227:2)
+=> correctly refused invalid setting: Invalid space group specification: "227:3" (not a setting of space group 227, the settings are: 227:1 (default), 227:2)
+all positions with 227:2: 8.0 atoms
+=> correctly refused positions in wrong setting: The atom positions do not have the symmetry of space group 227:1: Atom positions are not consistent with space group 227:1 (largest deviation of a symmetry image from an atom of the same type: 0.25 in fractional coordinates)

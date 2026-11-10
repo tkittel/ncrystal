@@ -444,16 +444,19 @@ class NCMATComposerImpl:
 
     def set_cellsg( self, *, a,b,c, alpha,beta,gamma, spacegroup ):
         #TODO: input validation! Also ensure high precision in numbers below
+        sgnumber, sgsetting = _parse_sgsetting( spacegroup )
         self.__dirty()
         self.__params['cellsg'] = { 'a': a, 'b': b, 'c': c, 'alpha': alpha,
                                     'beta': beta, 'gamma': gamma,
-                                    'spacegroup': spacegroup }
+                                    'spacegroup': sgnumber,
+                                    'spacegroup_setting': sgsetting }
 
     def set_cellsg_cubic( self, a, *, spacegroup ):
-        if not (spacegroup is None or 195<=int(spacegroup)<=230):
-            raise _nc_core.NCBadInput(f'Spacegroup {spacegroup} is not a cubic spacegroup (must be integer in range 195..230)')
+        sgnumber, _ = _parse_sgsetting( spacegroup )
+        if not (sgnumber is None or 195<=sgnumber<=230):
+            raise _nc_core.NCBadInput(f'Spacegroup {spacegroup} is not a cubic spacegroup (must be in range 195..230)')
         self.set_cellsg( a=a,b=a,c=a,alpha=90.,beta=90.,gamma=90.,
-                         spacegroup = ( int(spacegroup) if spacegroup else None ) )
+                         spacegroup = spacegroup or None )
 
     def set_density( self, value, unit ):
         allowed = ['g/cm3','kg/m3','atoms/Aa3']
@@ -690,7 +693,7 @@ class NCMATComposerImpl:
 
     def as_spglib_cell( self ):
         cellsg = self.__params.get('cellsg',None)
-        atomposlist = self.__params.get('atompos',{}).get('pos',[])
+        atomposlist = ( self.__atompos() or {} ).get('pos',[])
         if not cellsg or not atomposlist:
             return None, None
         lattice = _cellparams_to_spglib_lattice(cellsg)
@@ -712,8 +715,7 @@ class NCMATComposerImpl:
 
     def _impl_refine( self, *, mode_refine, symprec, quiet ):
         cellsg = self.__params.get('cellsg',None)
-        atompos = self.__params.get('atompos',None)
-        #atomposlist = atompos.get('pos',None) if atompos else None
+        atompos = self.__atompos()
         if not cellsg and not atompos:
             return#do nothing if not crystal
         if int(bool(cellsg))+int(bool(atompos)) == 1:
@@ -755,7 +757,7 @@ class NCMATComposerImpl:
             ll.sort()
             new_atompos = { k: copy.deepcopy(v)
                             for k,v in atompos.items()
-                            if k!='pos' }
+                            if k not in ('pos','sites') }
             new_atompos['pos'] = ll
             self.__dirty()
             self.__params['cellsg'] = new_cellsg
@@ -774,6 +776,12 @@ class NCMATComposerImpl:
             #determines and verifies it when the data is loaded)
 
     def set_atompos( self, atompos ):
+        self.__set_atompos_or_sites( atompos, is_sites = False )
+
+    def set_atomsites( self, atomsites ):
+        self.__set_atompos_or_sites( atomsites, is_sites = True )
+
+    def __set_atompos_or_sites( self, atompos, is_sites ):
         pos,occumap = [],{}
         for e in atompos:
             assert len(e) in (4,5)
@@ -795,11 +803,38 @@ class NCMATComposerImpl:
             _nc_common.warn('Support for site_occupancy is highly experimental. Do *not* attempt to directly override'
                             +' value with the "density" cfg-parameter for this material (unless it is to simply scale it)')
         self.__dirty()
-        self.__params['atompos'] = { 'pos': pos, 'occumap': occumap }
+        if is_sites:
+            #Positions are expanded from the sites when needed (requiring the
+            #space group setting):
+            self.__params['atompos'] = { 'pos': None, 'sites': pos,
+                                         'occumap': occumap }
+        else:
+            self.__params['atompos'] = { 'pos': pos, 'occumap': occumap }
+
+    def __atompos( self ):
+        """The atompos parameters, with all positions expanded from the
+        sites if given via set_atomsites."""
+        atompos = self.__params.get('atompos')
+        if not atompos or atompos.get('pos') is not None:
+            return atompos
+        sgspec = _sgspec_for_sites( self.__params.get('cellsg') )
+        from .misc import evaluate_query
+        query = [ 'util', 'atompositions', 'strict', sgspec ]
+        query += [ f'{lbl},{x!r},{y!r},{z!r}'
+                   for lbl,x,y,z in atompos['sites'] ]
+        pos = [ ( lbl, _remap_fract_pos(p[0]), _remap_fract_pos(p[1]),
+                  _remap_fract_pos(p[2]) )
+                for lbl, p in evaluate_query( query ) ]
+        res = dict( atompos.items() )
+        res['pos'] = sorted( pos )
+        return res
     def get_labels( self ):
         #from positions:
         atompos = self.__params.get('atompos',None)
-        s = { lbl for lbl,x,y,z in atompos['pos'] } if atompos else set()
+        s = ( { lbl for lbl,x,y,z in ( atompos['pos']
+                                        if atompos['pos'] is not None
+                                        else atompos['sites'] ) }
+              if atompos else set() )
         #from dyninfo:
         for lbl in self.__params.get('dyninfos',{}):
             s.add(lbl)
@@ -843,20 +878,40 @@ class NCMATComposerImpl:
         """Crystallographic sites (and the space group setting) of the atom
         positions, from the sgsym atomsites query, or None if there is no
         space group. The positions must have the symmetry of the space
-        group."""
+        group setting. Sites given via set_atomsites are used as given."""
         if not ( cellsg and cellsg.get('spacegroup') and atompos ):
             return None
-        sg = cellsg['spacegroup']
-        sgspec = f'{sg}:r' if _uses_rhombohedral_axes( sg, cellsg['alpha'] ) else str(sg)
         from .misc import evaluate_query
-        #(relaxed: the setting is deduced among those of the number)
-        query = [ 'util', 'atomsites', 'relaxed', sgspec ]
+        if atompos.get('sites') is not None:
+            sgspec = _sgspec_for_sites( cellsg )
+            setting = evaluate_query(['util','sgsym','strict',sgspec])
+            sites = []
+            for lbl,x,y,z in atompos['sites']:
+                mult = len( evaluate_query( [ 'util', 'atompositions',
+                                              'strict', sgspec,
+                                              f'{lbl},{x!r},{y!r},{z!r}' ] ) )
+                sites.append( ( lbl, ( x, y, z ), mult ) )
+            return { 'spacegroup_setting': setting['spacegroup'],
+                     'sites': sites }
+        sg = cellsg['spacegroup']
+        sgsetting = cellsg.get('spacegroup_setting')
+        if sgsetting:
+            #(strict: the positions must have the symmetry of the given
+            #setting)
+            mode, sgspec = 'strict', sgsetting
+        else:
+            #(relaxed: the setting is deduced among those of the number)
+            mode = 'relaxed'
+            sgspec = ( f'{sg}:r' if _uses_rhombohedral_axes( sg, cellsg['alpha'] )
+                       else str(sg) )
+        query = [ 'util', 'atomsites', mode, sgspec ]
         query += [ f'{lbl},{x!r},{y!r},{z!r}' for lbl,x,y,z in atompos['pos'] ]
         try:
             return evaluate_query( query )
         except _nc_core.NCBadInput as e:
             raise _nc_core.NCBadInput( 'The atom positions do not have the'
-                                       f' symmetry of space group {sg}: {e}' )
+                                       ' symmetry of space group'
+                                       f' {sgsetting or sg}: {e}' )
 
     def __lines_dyninfo(self,lbl_map,fractions):
         dyninfos = self.__params.get('dyninfos',{})
@@ -1021,7 +1076,7 @@ class NCMATComposerImpl:
         return out
 
     def get_chemical_composition( self, as_str ):
-        atompos = self.__params.get('atompos')
+        atompos = self.__atompos()
         _lbl_counts = None
         if atompos:
             _afr = self.__determine_atompos_fractions( atompos )
@@ -1090,7 +1145,7 @@ class NCMATComposerImpl:
         md = {} if meta_data else None
 
         cellsg = self.__params.get('cellsg')
-        atompos = self.__params.get('atompos')
+        atompos = self.__atompos()
 
         is_crystal = bool(cellsg or atompos)
         did_verify_xtal_struct = False
@@ -1154,7 +1209,9 @@ class NCMATComposerImpl:
             if abs( 1.0 - _fracsum ) > 1e-10:
                 raise _nc_core.NCBadInput(f'Invalid material - sum of dyninfo fractions is not 1 (it is {_fracsum})')
 
-        lbl_map,atomdb_lines = determine_labels_and_atomdb( self.__params, fractions = fractions )
+        lbl_map,atomdb_lines = determine_labels_and_atomdb( dict( self.__params,
+                                                                  atompos = atompos ),
+                                                            fractions = fractions )
 
         #Crystals with a space group are written with their crystallographic
         #sites (NCMAT v8 @ATOMSITES) rather than all positions:
@@ -1548,6 +1605,33 @@ def _composerimpl_from_info( infoobj ):
         o.set_custom_section_data(nm,cnt)
 
     return o
+
+def _parse_sgsetting( spacegroup ):
+    """Space group setting (an int like 225, or a string like "225" or
+    "227:2") -> ( number, canonical setting string or None ). The setting
+    string is only kept when a choice code is given."""
+    if spacegroup is None:
+        return None, None
+    s = str(spacegroup).strip()
+    if ':' not in s:
+        try:
+            n = int(s)
+        except ValueError:
+            n = None
+        if n is None or not ( 1 <= n <= 230 ) or str(n) != s:
+            raise _nc_core.NCBadInput(f'Invalid space group setting: "{spacegroup}"')
+        return n, None
+    from .misc import evaluate_query
+    canonical = evaluate_query(['util','sgsym','strict',s])['spacegroup']
+    return int(canonical.split(':')[0]), canonical
+
+def _sgspec_for_sites( cellsg ):
+    """The space group setting used to expand sites into positions (a plain
+    number only works for numbers with a single setting)."""
+    if not cellsg or not cellsg.get('spacegroup'):
+        raise _nc_core.NCBadInput('Atom sites (set_atomsites) require a space'
+                                  ' group setting (set_cellsg)')
+    return cellsg.get('spacegroup_setting') or str(cellsg['spacegroup'])
 
 def _checklabel(lbl):
     if not lbl:
