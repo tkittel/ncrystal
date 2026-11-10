@@ -1,5 +1,5 @@
-# Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxs_light".
-# Regenerate with: long_sabxs_light.py --update
+# Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxslight".
+# Regenerate with: long_sabxslight.py --update
 @cfg stdlib::Polyethylene_CH2.ncmat;temp=20;vdoslux=0;knllux=0
 1e-10 47.20132
 1.723466e-09 11.3698

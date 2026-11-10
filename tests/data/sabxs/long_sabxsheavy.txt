@@ -1,5 +1,5 @@
-# Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxs_heavy".
-# Regenerate with: long_sabxs_heavy.py --update
+# Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxsheavy".
+# Regenerate with: long_sabxsheavy.py --update
 @cfg stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=5;vdoslux=0;knllux=0
 1e-10 0.002515159
 4.308665e-10 0.001211697
