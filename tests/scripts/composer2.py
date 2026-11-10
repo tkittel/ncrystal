@@ -272,9 +272,50 @@ def test_atomsites():
     except NC.NCBadInput as e:
         print(f'=> correctly refused positions in wrong setting: {e}')
 
+def test_atomsites_uij():
+    #Anisotropic displacements given with set_atomsites:
+    import NCrystalDev as NC
+    print('\n\n  ================> set_atomsites with uij\n\n')
+    def mk( sites ):
+        c = NC.NCMATComposer()
+        c.set_cellsg( a = 3.21, b = 3.21, c = 5.21, alpha = 90, beta = 90,
+                      gamma = 120, spacegroup = 194 )
+        c.set_atomsites( sites )
+        c.set_dyninfo_debyetemp( 'Mg', 400 )
+        return c
+    u = ( 0.0100, 0.0100, 0.0120, 0.0050, 0, 0 )
+    for sites in ( [ ('Mg',1/3,2/3,1/4,u) ], [ ('Mg',1/3,2/3,1/4,0.9,u) ] ):
+        c = mk( sites )
+        txt = c.create_ncmat()
+        i = txt.index('@ATOMSITES')
+        print( txt[i:txt.index('@DYNINFO')], end = '' )
+        info = c.load().info
+        ai = info.atominfos[0]
+        print( 'loaded uij:', ', '.join( f'{x:.6g}' for x in ai.sites[0]['uij'] ),
+               f'(msd={ai.msd:.6g})' )
+    for descr, sites in [
+            ( 'uij for only some sites',
+              [ ('Mg',1/3,2/3,1/4,u), ('Mg',0,0,0) ] ),
+            ( 'too few uij values', [ ('Mg',1/3,2/3,1/4,u[:5]) ] ),
+            ( 'non-finite uij', [ ('Mg',1/3,2/3,1/4,u[:5]+(float('nan'),)) ] ) ]:
+        try:
+            mk( sites )
+        except NC.NCBadInput as e:
+            print(f'=> correctly refused {descr}: {e}')
+        else:
+            raise SystemExit(f'{descr}: not refused')
+    c = mk( [ ('Mg',1/3,2/3,1/4,u) ] )
+    try:
+        c.refine_crystal_structure( quiet = True )
+    except NC.NCBadInput as e:
+        print(f'=> correctly refused refinement: {e}')
+    else:
+        raise SystemExit('refinement not refused')
+
 if __name__ == '__main__':
     main()
     test_verify_origin_and_triclinic()
     test_refine_corrections()
     test_v8_scatknl_keywords()
     test_atomsites()
+    test_atomsites_uij()
