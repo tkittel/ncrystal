@@ -77,6 +77,9 @@ namespace NCRYSTAL_NAMESPACE {
 
     //@ATOMSITES (v8+):
     std::vector<std::pair<std::string,Pos> > atomsites;
+    //Optional anisotropic displacements (CIF form, U11,U22,U33,U12,U13,U23)
+    //of each entry in atomsites (same length):
+    std::vector<Optional<std::array<double,6>>> atomsites_uij;
     bool hasAtomSites() const { return !atomsites.empty(); }
     void validateAtomSites() const;
 
