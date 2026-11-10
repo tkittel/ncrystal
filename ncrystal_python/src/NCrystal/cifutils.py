@@ -862,6 +862,31 @@ def _impl_create_ncmat_composer( cifloader, *,
                                add_empty_line_divider = True )
         return composer
 
+def _cif_uij_ueq( aniso, cellsg ):
+    """Equivalent isotropic displacement, Ueq = trace(U_cart)/3, of CIF uij
+    values (dict with keys u11,...,u23, relative to the normalised reciprocal
+    axes), in the cell given by a dict with keys a,b,c,alpha,beta,gamma (in
+    angstrom and degrees)."""
+    import math
+    a, b, c = ( cellsg[k] for k in 'abc' )
+    ca, cb, cg = ( 0.0 if cellsg[k] == 90 else math.cos(math.radians(cellsg[k]))
+                   for k in ('alpha','beta','gamma') )
+    g = [ [ a*a, a*b*cg, a*c*cb ],
+          [ a*b*cg, b*b, b*c*ca ],
+          [ a*c*cb, b*c*ca, c*c ] ]
+    #Reciprocal axis lengths from the diagonal of the inverse metric:
+    cof = [ g[1][1]*g[2][2] - g[1][2]**2,
+            g[0][0]*g[2][2] - g[0][2]**2,
+            g[0][0]*g[1][1] - g[0][1]**2 ]
+    det = ( g[0][0]*cof[0] - g[0][1]*( g[0][1]*g[2][2] - g[1][2]*g[0][2] )
+            + g[0][2]*( g[0][1]*g[1][2] - g[1][1]*g[0][2] ) )
+    r = [ math.sqrt( x / det ) for x in cof ]
+    u = [ [ aniso['u11'], aniso['u12'], aniso['u13'] ],
+          [ aniso['u12'], aniso['u22'], aniso['u23'] ],
+          [ aniso['u13'], aniso['u23'], aniso['u33'] ] ]
+    return math.fsum( u[i][j] * r[i] * r[j] * g[i][j]
+                      for i in range(3) for j in range(3) ) / 3.0
+
 def _aniso_nontrivial( aniso_dict ):
     return aniso_dict and ( any( abs(aniso_dict[e])>1e-13 for e in ('u12','u13','u23') )
                             or ( aniso_dict['u11'] != aniso_dict['u22'] )
@@ -1677,9 +1702,15 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib, merg
         if not u_iso > 0.0:
             u_iso = None
 
-        if aniso and not u_iso:
-            #this logic might already exist on the gemmi-side, but to be safe we add it here as well:
-            u_iso = ( aniso['u11'] + aniso['u22'] + aniso['u33'] ) / 3
+        if aniso:
+            ueq = _cif_uij_ueq( aniso, cellsg )
+            if not u_iso:
+                u_iso = ueq
+            elif abs( ueq - u_iso ) > 0.05 * u_iso:
+                _nc_common.warn(f'CIF site "{site.label}" has Uiso={u_iso:g}'
+                                ' which differs by more than 5% from the'
+                                f' Ueq={ueq:g} of its anisotropic'
+                                ' displacements')
 
         site_en = str(site.element.name).strip()
         if site_en == 'X' or not site_en:
