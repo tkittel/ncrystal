@@ -1,5 +1,5 @@
-# Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxs_vdoslux6".
-# Regenerate with: long_sabxs_vdoslux6.py --update
+# Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxsvdlux6".
+# Regenerate with: long_sabxsvdlux6.py --update
 @cfg stdlib::Al_sg225.ncmat;temp=293.15;vdoslux=6;knllux=0
 1e-10 544.466489
 2.782559e-09 103.216461

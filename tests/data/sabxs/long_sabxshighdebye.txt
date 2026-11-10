@@ -1,5 +1,5 @@
-# Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxs_highdebye".
-# Regenerate with: long_sabxs_highdebye.py --update
+# Reference cross sections [barn/atom] vs. energy [eV] for the test "long_sabxshighdebye".
+# Regenerate with: long_sabxshighdebye.py --update
 @cfg stdlib::C_sg227_Diamond.ncmat;temp=5;vdoslux=0;knllux=0
 1e-10 0.0001526251
 4.308665e-10 7.352832e-05

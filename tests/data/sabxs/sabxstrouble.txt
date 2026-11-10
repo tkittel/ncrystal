@@ -1,5 +1,5 @@
-# Reference cross sections [barn/atom] vs. energy [eV] for the test "sabxs_trouble".
-# Regenerate with: sabxs_trouble.py --update
+# Reference cross sections [barn/atom] vs. energy [eV] for the test "sabxstrouble".
+# Regenerate with: sabxstrouble.py --update
 @cfg Li_from_Li2O.ncmat;temp=10;vdoslux=0;knllux=0
 1e-10 0.008306836
 8.61733e-10 0.002829758
