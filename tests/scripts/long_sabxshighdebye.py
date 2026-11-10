@@ -25,4 +25,4 @@
 import NCTestUtils.sabxs
 
 if __name__ == '__main__':
-    NCTestUtils.sabxs.run( 'long_sabxs_vdoslux6' )
+    NCTestUtils.sabxs.run( 'long_sabxshighdebye' )
