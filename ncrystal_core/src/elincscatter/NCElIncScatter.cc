@@ -23,6 +23,7 @@
 #include "NCrystal/internal/dyninfoutils/NCDynInfoUtils.hh"
 #include "NCrystal/interfaces/NCInfo.hh"
 #include "NCrystal/internal/phys_utils/NCElIncXS.hh"
+#include "NCrystal/internal/phys_utils/NCUijUtils.hh"
 #include "NCrystal/internal/phys_utils/NCDebyeMSD.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
 #include "NCrystal/internal/utils/NCSpan.hh"
@@ -88,14 +89,50 @@ namespace NCRYSTAL_NAMESPACE {
           //(use_sigma_coherent, i.e. coherent elastic scattering treated in
           //the incoherent approximation, which already contains it):
           const double o = ai.occupancy();
-          scale.push_back( ( StableDbl( double(ai.numberOfPositions()) ) * o
-                             * cfg.scale_factor ).value() / ntot );
           const double disorder
             = ( cfg.use_sigma_incoherent && !cfg.use_sigma_coherent
                 ? ( ( StableDbl( 1.0 ) - StableDbl( o ) )
                     * ai.atomData().coherentXS().get() ).value()
                 : 0.0 );
-          bixs.push_back( getSigma(ai.atomData()) + disorder );
+          const double sigma = getSigma(ai.atomData()) + disorder;
+          if ( !ai.sites().empty() && ai.sites().front().uij.has_value() ) {
+            //Anisotropic displacements: the powder average of a site is the
+            //average over directions of the isotropic model, with the msd
+            //projected on the direction (added as weighted components):
+            if ( capOnly ) {
+              scale.push_back( 1.0 );
+              bixs.push_back( sigma );
+              continue;
+            }
+            const auto& si = info.getStructureInfo();
+            const auto metric = UijUtils::cellMetric( si.lattice_a,
+                                                      si.lattice_b,
+                                                      si.lattice_c, si.alpha,
+                                                      si.beta, si.gamma );
+            //(components with identical msd are merged, e.g. for sites
+            //with identical tensors):
+            std::map<double,std::size_t> msd2idx;
+            for ( auto& site : ai.sites() ) {
+              const double sitescale = ( StableDbl( double(site.multiplicity) )
+                                         * o * cfg.scale_factor ).value() / ntot;
+              const auto uf = UijUtils::cifToFrac( site.uij.value(), metric );
+              for ( auto& e : UijUtils::directionalMSDs( uf, metric ) ) {
+                auto it = msd2idx.find( e.first );
+                if ( it != msd2idx.end() ) {
+                  scale[it->second] += sitescale * e.second;
+                  continue;
+                }
+                msd2idx[e.first] = msd.size();
+                msd.push_back( e.first );
+                scale.push_back( sitescale * e.second );
+                bixs.push_back( sigma );
+              }
+            }
+            continue;
+          }
+          scale.push_back( ( StableDbl( double(ai.numberOfPositions()) ) * o
+                             * cfg.scale_factor ).value() / ntot );
+          bixs.push_back( sigma );
           //msd:
           if ( ai.msd().has_value() ) {
             msd.push_back( ai.msd().value() );
