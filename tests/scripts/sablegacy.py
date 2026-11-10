@@ -49,6 +49,11 @@ def main():
     #sampling far above that Emax and at very low energies:
     xs_and_sampling( 'benzene_solid_100K_sabsmall.ncmat;knllux=-1',
                      [ 1e-7, 0.025, 2.0, 50.0 ] )
+    #At E/kT~1e-10 the kinematic range near beta=0 is below the first alpha
+    #point, so the first sampled beta bin has no alpha sampler at its lower
+    #edge (once a crash):
+    xs_and_sampling( 'stdlib::LiquidWaterH2O_T293.6K.ncmat;knllux=-1',
+                     [ 2.5e-12 ] )
     #VDOS-based kernel:
     xs_and_sampling( 'stdlib::Al_sg225.ncmat;vdoslux=1003;knllux=-1',
                      [ 1e-7, 0.025, 20.0 ] )
