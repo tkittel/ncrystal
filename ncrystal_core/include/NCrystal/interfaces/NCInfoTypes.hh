@@ -172,8 +172,12 @@ namespace NCRYSTAL_NAMESPACE {
     struct NCRYSTAL_API Site {
       Pos position;              //orbit representative (fractional coordinates)
       unsigned multiplicity = 0; //number of positions in the orbit
-      //Reserved for future anisotropic displacements (not supported yet, so
-      //always NullOpt and rejected by InfoBuilder if set):
+      //Optional anisotropic displacements (U11,U22,U33,U12,U13,U23) at the
+      //position, in CIF convention (relative to the normalised reciprocal
+      //axes). Given for all or none of the sites. InfoBuilder transforms them
+      //to the representative position, symmetrises them, and scales them so
+      //the equivalent isotropic displacement averaged over all positions is
+      //msd():
       Optional<std::array<double,6>> uij;
     };
     using AtomSites = std::vector<Site>;
