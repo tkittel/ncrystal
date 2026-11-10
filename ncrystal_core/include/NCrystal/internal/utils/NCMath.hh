@@ -314,6 +314,9 @@ namespace NCRYSTAL_NAMESPACE {
   double integrateSimpsons(const Func& f, double a, double b, unsigned n);
   template <class Func>
   double integrateTrapezoidal(const Func& f, double a, double b, unsigned n);
+  //8-point Gauss-Legendre quadrature (exact for polynomials up to degree 15):
+  template <class Func>
+  double integrateGaussLegendre8(const Func& f, double a, double b);
   template <class Func>
   double integrateRomberg17(Func&& f, double a, double b);
   template <class Func>
@@ -841,6 +844,22 @@ inline double NCrystal::integrateTrapezoidal(const Func& f, double a, double b, 
     res.add(f(a + i * dx));
   res.add(f(b)*0.5);
   return res.sum()*dx;
+}
+
+template <class Func>
+inline double NCrystal::integrateGaussLegendre8(const Func& f, double a, double b)
+{
+  //Positive nodes on [-1,1] and their weights:
+  static constexpr double x[4] = { 0.18343464249564980494, 0.52553240991632898582,
+                                   0.79666647741362673959, 0.96028985649753623168 };
+  static constexpr double w[4] = { 0.36268378337836198297, 0.31370664587788728734,
+                                   0.22238103445337447054, 0.10122853629037625915 };
+  const double h = 0.5 * ( b - a );
+  const double m = 0.5 * ( a + b );
+  double sum = 0.0;
+  for ( auto i : ncrange(4) )
+    sum += w[i] * ( f( m - h * x[i] ) + f( m + h * x[i] ) );
+  return sum * h;
 }
 
 template <class Func>
