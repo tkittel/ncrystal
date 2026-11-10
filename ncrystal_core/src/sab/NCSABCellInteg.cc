@@ -327,10 +327,18 @@ namespace NCRYSTAL_NAMESPACE {
         unsigned m_minlvl;
         unsigned m_maxlvl;
         double m_prec;
+        double m_noise;
       public:
         R17Adaptive( const IntegrandOfA::Input& inp,
                      unsigned minlvl, unsigned maxlvl, double prec)
-          : m_iofa(inp), m_minlvl(minlvl), m_maxlvl(maxlvl), m_prec(prec) {}
+          : m_iofa(inp), m_minlvl(minlvl), m_maxlvl(maxlvl), m_prec(prec),
+            //Rounding noise of the integrand values (bu-bl)*S, with bu-bl from
+            //differences of beta values up to max(|b1|,|b2|,a2) (x16 margin):
+            m_noise( 16.0 * std::numeric_limits<double>::epsilon()
+                     * ncmax( ncmax( ncabs(inp.b1), ncabs(inp.b2) ), inp.a2 )
+                     * ncmax( inp.s11, inp.s12, inp.s21, inp.s22 ) )
+        {
+        }
 
         double evalFunc(double) const override
         {
@@ -355,8 +363,9 @@ namespace NCRYSTAL_NAMESPACE {
                      double, double ) const override
         {
           //Converged only after two consecutive small changes (a single one
-          //can be accidental):
-          const bool small = ncabs(prev_est-est) <= est*m_prec;
+          //can be accidental). Changes below the rounding noise of the
+          //integrand count as small (otherwise tiny regions run to maxlvl):
+          const bool small = ncabs(prev_est-est) <= ncmax( est*m_prec, m_noise );
           const bool ok = ( level == m_maxlvl
                             || ( level >= m_minlvl && small && m_prevSmall ) );
           m_prevSmall = small;
