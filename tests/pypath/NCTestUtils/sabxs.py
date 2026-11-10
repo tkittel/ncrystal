@@ -303,17 +303,25 @@ def _list_legacy():
     yield f'{_sl("Al_sg225")};temp=293.15;vdoslux=1002;knllux=3'
     yield f'{_sl("Al_sg225")};temp=293.15;vdoslux=2002;knllux=-1'
 
+def _half( entries, k ):
+    #Every second entry (k=0,1), to split a slow test into two:
+    return list(entries)[k::2]
+
 _tests = {
     'sabxslegacy' : lambda : list(_list_legacy()),
     'sabxstrouble' : lambda : list(_list_trouble()),
     'sabxstestdata' : lambda : list(_list_testdata()),
-    'long_sabxslight' : lambda : list(_list_light()),
+    'long_sabxslighta' : lambda : _half(_list_light(),0),
+    'long_sabxslightb' : lambda : _half(_list_light(),1),
     'long_sabxsheavy' : lambda : list(_list_heavy()),
     'long_sabxshighdebye' : lambda : list(_list_highdebye()),
     'long_sabxssimple' : lambda : list(_list_simple()),
-    'long_sabxsdebye' : lambda : list(_list_debye()),
+    'long_sabxsdebyea' : lambda : _half(_list_debye(),0),
+    'long_sabxsdebyeb' : lambda : _half(_list_debye(),1),
     'long_sabxslowtemp' : lambda : list(_list_lowtemp()),
-    'long_sabxsvdlux6' : lambda : list(_list_vdoslux6()),
-    'long_sabxsknlux6' : lambda : list(_list_knllux6()),
+    'long_sabxsvdlux6a' : lambda : _half(_list_vdoslux6(),0),
+    'long_sabxsvdlux6b' : lambda : _half(_list_vdoslux6(),1),
+    'long_sabxsknlux6a' : lambda : _half(_list_knllux6(),0),
+    'long_sabxsknlux6b' : lambda : _half(_list_knllux6(),1),
     'long_sabxsmaxlux' : lambda : list(_list_maxlux()),
 }

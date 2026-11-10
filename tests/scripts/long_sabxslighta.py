@@ -25,4 +25,4 @@
 import NCTestUtils.sabxs
 
 if __name__ == '__main__':
-    NCTestUtils.sabxs.run( 'long_sabxsdebye' )
+    NCTestUtils.sabxs.run( 'long_sabxslighta' )
