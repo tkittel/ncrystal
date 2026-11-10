@@ -306,5 +306,6 @@ diamond Si from a single site (227:2): 8.0 atoms
 same site with origin choice 1: 8.0 atoms
 => correctly refused ambiguous setting: Invalid space group specification: "227" (space group 227 has several settings, so one of them must be specified: 227:1 (default), 227:2)
 => correctly refused invalid setting: Invalid space group specification: "227:3" (not a setting of space group 227, the settings are: 227:1 (default), 227:2)
+with occupancy 0.9: 7.2 atoms
 all positions with 227:2: 8.0 atoms
 => correctly refused positions in wrong setting: The atom positions do not have the symmetry of space group 227:1: Atom positions are not consistent with space group 227:1 (largest deviation of a symmetry image from an atom of the same type: 0.25 in fractional coordinates)
