@@ -125,6 +125,18 @@ NC::PairDD NC::SAB::SABSamplerAtE_Alg1::sampleAlphaBeta(EDivKT e,
     if (beta <= ncmax(-e.dbl(),betaGrid.front()))
       continue;//reject
 
+    if ( ibetaSampled == 0 ) {
+      //First bin, not starting at the kinematic endpoint: the integrator moved
+      //its lower edge up to the grid point below the first beta with alpha
+      //samplers (no S there in the kinematic range). With no alpha sampler
+      //at the lower edge, sample alpha from the one at the upper edge:
+      const double alpha = sampleAlpha( m_ibetaOffset, rng.generate() );
+      auto alimits = getAlphaLimits( e, beta );
+      if ( valueInInterval( alimits.first, alimits.second, alpha ) )
+        return { alpha, beta };//accept
+      continue;//reject
+    }
+
     double alphal(-1.0), bl;
     std::size_t ibeta;
 
