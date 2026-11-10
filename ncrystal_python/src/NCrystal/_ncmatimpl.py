@@ -799,9 +799,6 @@ class NCMATComposerImpl:
 
         #remove occu==1.0 entries from map (and sort):
         occumap = dict( sorted( (k,v) for k,v in occumap.items() if v!=1.0 ) )
-        if occumap:
-            _nc_common.warn('Support for site_occupancy is highly experimental. Do *not* attempt to directly override'
-                            +' value with the "density" cfg-parameter for this material (unless it is to simply scale it)')
         self.__dirty()
         if is_sites:
             #Positions are expanded from the sites when needed (requiring the
@@ -1063,16 +1060,27 @@ class NCMATComposerImpl:
         return plot_xsect( ms, **kwargs_plot_xsect )
 
     def __determine_atompos_fractions( self, atompos ):
+        #Fractions are the average numbers of atoms (i.e. weighted by the site
+        #occupancies), as exact fractions when all occupancies are 1:
         natoms = len(atompos['pos']) if atompos else 0
         if not natoms:
             return
         out = {}
         from collections import Counter as _collections_Counter
         counts = _collections_Counter([e[0] for e in atompos['pos']])
+        occumap = atompos.get('occumap') or {}
+        wtot = math.fsum( count * occumap.get(lbl,1.0)
+                          for lbl,count in sorted(counts.items()) )
         for lbl,count in counts.items():
-            frac = float(count) / natoms
-            gcd = math.gcd(count,natoms)
-            out[ lbl ] = ( frac, ( '1' if count==natoms else f'{count//gcd}/{natoms//gcd}' ), count )
+            if occumap:
+                frac = count * occumap.get(lbl,1.0) / wtot
+                fracstr = _fmtprecisenum( frac )
+            else:
+                frac = float(count) / natoms
+                gcd = math.gcd(count,natoms)
+                fracstr = ( '1' if count==natoms
+                            else f'{count//gcd}/{natoms//gcd}' )
+            out[ lbl ] = ( frac, fracstr, count )
         return out
 
     def get_chemical_composition( self, as_str ):
@@ -1219,6 +1227,11 @@ class NCMATComposerImpl:
         ll  = self.__lines_cellsg( cellsg, atomsites )
         ll += self.__lines_atompos( lbl_map, atompos,
                                     sites = atomsites['sites'] if atomsites else None )
+        if atompos and atompos.get('occumap'):
+            ll += '@ATOMOCCUPANCIES\n'
+            for lbl,occu in sorted( (lbl_map.get(k,k),v)
+                                    for k,v in atompos['occumap'].items() ):
+                ll += f'{lbl} {_fmtprecisenum(occu)}\n'
         if density:
             _dval,_dunit = density
             _ncmat_dunit = {'g/cm3': 'g_per_cm3',
@@ -1729,12 +1742,11 @@ def _decode_composition(label,*composition):
             ll.append( ( -mfr, nme ) )
     return label, ll
 
-def determine_labels_and_atomdb( _self_params, *, fractions, allow_siteoccu_ncmatv5_hack = True ):
+def determine_labels_and_atomdb( _self_params, *, fractions ):
     compositions = _self_params.get('compositions',{})
     #compositions = copy.deepcopy(compositions)#we will modify a bit below and need to retain immutability
     atomdb = _self_params.get('atomdb',{})
     atompos = _self_params.get('atompos',None)
-    occumap = atompos['occumap'] if atompos else None
     dyninfos = _self_params.get('dyninfos',{})
     param_fallback_debye_temp = _self_params.get('fallback_debye_temp',None)
 
@@ -1771,34 +1783,7 @@ def determine_labels_and_atomdb( _self_params, *, fractions, allow_siteoccu_ncma
         if (dyninfo_lbls-fractions_lbls):
             raise _nc_core.NCBadInput('Some atoms with dynamic information are missing fractions: "{}"'.format('", "'.join(dyninfo_lbls - fractions_lbls)))
 
-    lbls_with_nonunit_occu = { lbl for lbl,occu in occumap.items() if occu != 1.0 } if occumap else set()
-
-    #SPECIAL HACK BEGIN
-    if lbls_with_nonunit_occu and not allow_siteoccu_ncmatv5_hack:
-        raise _nc_core.NCBadInput('Can not support site occupancies != 1.0 without the special hack for NCMAT v5 (and allow_siteoccu_ncmatv5_hack was set to False)')
-
-    if lbls_with_nonunit_occu:
-        #Handle via (non-persistent) modifications of compositions + atomdb:
-        atomdb = copy.deepcopy(atomdb)
-    atomdb_hack_comments = []
-    for i,lbl in enumerate(sorted(lbls_with_nonunit_occu)):
-        origelem_mass = calc_mass(lbl,compositions[lbl])
-        compos = compositions[lbl][:]
-        origelem_lbl = lbl if compos is None else _nc_fmt.format_chemform([(v,k) for k,v in compos])
-        assert 0.0 < origelem_mass < 2000.0
-        #In principle I should check this is not already used, but if anyone
-        #actually needs Og999 or thereabouts, they are obviously just trying
-        #to break our hack by being smartasses :-)
-        hijackedIsotope = f'Og{299-i}'
-        assert hijackedIsotope not in atomdb
-        atomdb[hijackedIsotope] = _nc_core.AtomData.fmt_atomdb_str( origelem_mass, 0.0, 0.0, 0.0 )
-        occu = occumap[lbl]
-        compositions[ lbl ] = [ (occu*frac,elem) for frac,elem in compos ] + [ ( 1.0 - occu, hijackedIsotope ) ]
-        atomdb_hack_comments.append ( f'#Note: Emulating site_occupancy={occu:g} for {origelem_lbl} by hijacking {hijackedIsotope} to play the role as "sterile {origelem_lbl}".' )
-    #SPECIAL HACK END
-
     atomdb_lines = []
-    atomdb_lines += atomdb_hack_comments
     for lbl,paramstr in sorted( atomdb.items() ):
         atomdb_lines.append(f'{lbl} {paramstr}')
 

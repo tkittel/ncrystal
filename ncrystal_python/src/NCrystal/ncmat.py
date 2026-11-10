@@ -305,18 +305,8 @@ class NCMATComposer:
         """The atompos parameter must be list of entries
         (label,x,y,z) or (label,x,y,z,site_occupancy).
 
-        If provided, the site_occupancy value (a number in (0,1] must be the
+        If provided, the site_occupancy value (a number in (0,1]) must be the
         same for all identical labels.
-
-        The site_occupancy parameter is for now highly experimental and will
-        result in generated NCMAT files with fake sterile atoms inserted for
-        technical reasons (resulting in a higher density but hopefully correct
-        physics as long as the user does not subsequently try to override the
-        density directly via the cfg-string parameters). This is perfectly fine
-        for usage in a MC simulation context where NCrystal provides the entire
-        physics of the material (e.g. McStas), but in a context where a base
-        material must be created using the composition from NCrystal
-        (e.g. Geant4 or OpenMC), it most likely will result in an error.
         """
         return self.__impl.set_atompos( atompos = atompos )
 

@@ -257,6 +257,10 @@ def test_atomsites():
         mk( '227:3', [ ('Si',0,0,0) ] )
     except NC.NCBadInput as e:
         print(f'=> correctly refused invalid setting: {e}')
+    #A site occupancy (written in @ATOMOCCUPANCIES):
+    c = mk( '227:2', [ ('Si',1/8,1/8,1/8,0.9) ] )
+    assert '@ATOMOCCUPANCIES\n  Si .9\n' in c.create_ncmat()
+    print('with occupancy 0.9:',natoms(c),'atoms')
     #set_atompos with a given setting checks exactly that setting:
     allpos = [ (lbl,p[0],p[1],p[2]) for lbl,p in
                NC.misc.evaluate_query(['util','atompositions','strict',
