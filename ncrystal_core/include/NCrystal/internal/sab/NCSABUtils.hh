@@ -64,9 +64,6 @@ namespace NCRYSTAL_NAMESPACE {
     PairDD interpLogLinWCL(double a, double fa, double b, double fb, double x, double logfa, double logfb);
     PairDD interpLogLinOrLinWCL(double a, double fa, double b, double fb, double x, double logfa, double logfb);
 
-    //Log-linear interpolation, or linear if fa or fb is 0, without cached logs:
-    double interpolate_loglin_fallbacklinlin(double a, double fa, double b, double fb, double x);
-
     //S(alpha,beta) at (alpha,beta) inside grid cell (ia,ib), i.e.
     //alphaGrid[ia]<=alpha<=alphaGrid[ia+1] and similarly for beta: log-linear
     //in alpha (linear if a corner is 0), then linear in beta. Exact at the
@@ -87,9 +84,8 @@ namespace NCRYSTAL_NAMESPACE {
 
     //S(alpha,beta) of the table at any point, with the interpolation used for
     //kernels (log-linear in alpha, linear if a corner value is 0, then linear
-    //in beta). Returns 0 outside the grid. Locates the cell by binary search
-    //at each call, so not efficient for many evaluations. Subnormal S values
-    //are handled by scaling the cell corners by a power of two:
+    //in beta, as evalSABCell). Returns 0 outside the grid. Locates the cell by
+    //binary search at each call, so not efficient for many evaluations:
     double evalSABOneShot( const SABData&, double alpha, double beta );
 
     //The next two functions can be used to evaluate a SAB integral over a bin
@@ -137,23 +133,6 @@ inline NCrystal::Span<double> NCrystal::SABUtils::sliceSABAtBetaIdxMutable( NCry
 inline std::size_t NCrystal::SABUtils::calcSABIdx( std::size_t nalpha, std::size_t alpha_idx, std::size_t beta_idx)
 {
   return beta_idx * nalpha + alpha_idx;
-}
-
-inline double NCrystal::SABUtils::interpolate_loglin_fallbacklinlin(double a, double fa, double b, double fb, double x)
-{
-  nc_assert ( fa>=0.0 && fb >= 0.0 );
-  nc_assert ( x >= a && x <= b );
-  const double midpoint = 0.5 * ( b + a );
-  const bool linlin_mode = !( fa > 0.0 && fb > 0.0 );
-  if ( x < midpoint ) {
-    //choose form most numerically stable for x near a
-    const double r = (x-a) / (b-a);
-    return ( linlin_mode ? nclerp(fa,fb,r) : fa * std::pow(fb/fa,r) );
-  } else {
-    //choose form most numerically stable for x near b
-    const double s = (b-x) / (b-a);
-    return ( linlin_mode ? nclerp(fb,fa,s) : fb * std::pow(fa/fb,s) );
-  }
 }
 
 inline double NCrystal::SABUtils::interpLin(double a, double fa,
