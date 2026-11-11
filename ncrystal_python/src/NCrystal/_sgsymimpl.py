@@ -783,7 +783,9 @@ def _refine_sites( cellsg, sites, tols ):
         e = { 'index': r, 'members': o['members'],
               'pos': tuple( _remap_fract_pos( v ) for v in pos ),
               'aniso': None, 'aniso_dropped': o['aniso_ok'] is False }
-        if o['aniso_ok']:
+        if o['aniso_ok'] and _np_is_identity( tr[0] ):
+            e['aniso'] = dict( sites[r]['aniso'] )
+        elif o['aniso_ok']:
             uf = _transform_frac_tensor( tr[0], _cif_to_frac(
                 sites[r]['aniso'], cellsg ) )
             u = _frac_to_cif( uf, newcell )
