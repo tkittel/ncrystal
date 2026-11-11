@@ -1,0 +1,31 @@
+== rutile, P42/mnm: sg=136 natoms=2
+   Ti1                      mult=2 occu=1 uiso=0.00533333 aniso=0.006 0.006 0.004 0.0005 0 0
+   O1                       mult=4 occu=1 uiso=0.008 aniso=0.009 0.009 0.006 -0.003 0 0
+== rutile, P1: sg=136 natoms=2
+   Ti1_0,Ti1_1              mult=2 occu=1 uiso=0.00533333 aniso=0.006 0.006 0.004 0.0005 0 0
+   O1_0,O1_1,O1_2,O1_3      mult=4 occu=1 uiso=0.008 aniso=0.009 0.009 0.006 -0.003 0 0
+   Bragg reflections identical to P42/mnm
+== rutile, P1, unrotated tensor copies: sg=136 natoms=2
+   Ti1_0,Ti1_1              mult=2 occu=1 uiso=0.00533333
+   O1_0,O1_1,O1_2,O1_3      mult=4 occu=1 uiso=0.008
+   warning: Anisotropic displacements of CIF sites O1_0, O1_1, O1_2, O1_3, Ti1_0, Ti1_1 dropped, since those of equivalent sites are not symmetry images of each other [warn#1]
+== rutile, P1, Ti occupancies 0.46/0.54: sg=65 natoms=3
+   Ti1_0                    mult=2 occu=0.46 uiso=0.00533333 aniso=0.0055 0.0065 0.004 0 0 0
+   Ti1_1                    mult=2 occu=0.54 uiso=0.00533333 aniso=0.0065 0.0055 0.004 0 0 0
+   O1_0,O1_1                mult=4 occu=1 uiso=0.008 aniso=0.012 0.006 0.006 0 0 0
+   O1_2,O1_3                mult=4 occu=1 uiso=0.008 aniso=0.006 0.012 0.006 0 0 0
+== rutile, P1, Ti occupancies 1/0.9997, tol=None: sg=136 natoms=2
+   Ti1_0,Ti1_1              mult=2 occu=1 uiso=0.00533333 aniso=0.006 0.006 0.004 0.0005 0 0
+   O1_0,O1_1,O1_2,O1_3      mult=4 occu=1 uiso=0.008 aniso=0.009 0.009 0.006 -0.003 0 0
+== rutile, P1, Ti occupancies 1/0.9997, tol=0.0001: sg=65 natoms=3
+   Ti1_0                    mult=2 occu=1 uiso=0.00533333 aniso=0.0055 0.0065 0.004 0 0 0
+   Ti1_1                    mult=2 occu=0.9997 uiso=0.00533333 aniso=0.0065 0.0055 0.004 0 0 0
+   O1_0,O1_1                mult=4 occu=1 uiso=0.008 aniso=0.012 0.006 0.006 0 0 0
+   O1_2,O1_3                mult=4 occu=1 uiso=0.008 aniso=0.006 0.012 0.006 0 0 0
+== C2/c: sg=15 natoms=2
+   Si1                      mult=8 occu=1 uiso=0.0126586 aniso=0.012 0.016 0.01 0.002 0.003 -0.0015
+   O1                       mult=4 occu=1 uiso=0.0171884 aniso=0.02 0.014 0.017 0 0.004 0
+== C2/c given in P1 in a primitive cell: sg=15 natoms=2
+   Si1_0,Si1_1,Si1_2,Si1_3  mult=8 occu=1 uiso=0.0126586 aniso=0.012 0.016 0.01 0.002 0.003 -0.0015
+   O1_0,O1_1                mult=4 occu=1 uiso=0.0171884 aniso=0.02 0.014 0.017 0 0.004 0
+   Bragg reflections identical to C2/c

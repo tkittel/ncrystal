@@ -249,7 +249,9 @@ class CIFLoader:
     """
 
     def __init__( self, cifsrc, quiet = False, mp_apikey = None,
-                  refine_with_spglib = True, merge_equiv = True, override_spacegroup = None ):
+                  refine_with_spglib = True, merge_equiv = True,
+                  override_spacegroup = None, *, tol = None,
+                  tol_symprec = None, tol_uij = None, tol_occu = None ):
         """Initialise from cifsrc which can either be a CIFSource object, or any
         sort of data which can be used to initialise a CIFSource object (cf. the
         CIFSource class documentation)
@@ -277,19 +279,37 @@ class CIFLoader:
 
         If quiet=True, no informative messages will be emitted.
 
+        Tolerances: CIF data might give symmetry equivalent sites separately
+        (e.g. with space group P1), in which case the symmetry is detected by
+        spglib. Sites are then only considered equivalent if their positions
+        (within tol_symprec, in Aa) as well as their compositions, occupancies
+        (within the relative tolerance tol_occu), Uiso values and the
+        eigenvalues of their anisotropic displacement tensors (both within the
+        relative tolerance tol_uij) agree. Additionally, sites of the same
+        composition, with occupancies and Uiso values agreeing within the
+        tolerances, are given the same NCMAT label (unless merge_equiv=False).
+        Unless given, the tolerances follow from the overall tolerance tol:
+        tol_uij and tol_occu equal tol, and tol_symprec scales with tol, being
+        0.01Aa for the default tol.
+
         Finally, the mp_apikey can be used to specify an API key in case the
         cifsrc is an entry for the materialsproject.org. To avoid having to
         specify the key here, one can instead provide the key in the environment
         variable MATERIALSPROJECT_USER_API_KEY.
         """
+        tols = _nc_sgsymimpl._resolve_tolerances( tol,
+                                                  tol_symprec = tol_symprec,
+                                                  tol_uij = tol_uij,
+                                                  tol_occu = tol_occu )
         with _nc_common.WarningSpy( block = quiet ) as warnlist:
             load, gemmi, struct = _actual_init_gemmicif( cifsrc,
                                                          quiet = quiet,
                                                          mp_apikey = mp_apikey,
                                                          refine_with_spglib = refine_with_spglib,
                                                          merge_equiv = merge_equiv,
-                                                         override_spacegroup = override_spacegroup )
-        assert len(load)==9
+                                                         override_spacegroup = override_spacegroup,
+                                                         tols = tols )
+        assert len(load)==12
         self.__cifsrc = load['cifsrc']
         self.__actual_codid = load['actual_codid']
         self.__actual_mpid = load['actual_mpid']
@@ -298,6 +318,9 @@ class CIFLoader:
         self.__cif_raw = load['cif_raw']
         self.__cellsg = load['cellsg']
         self.__atoms = load['atoms']
+        self.__sites = load['sites']
+        self._site2atom = load['site2atom']
+        self._sgsetting = load['sgsetting']
         self.__cifdescr = load['cifdescr']
         self.__warnlist = tuple( warnlist )
 
@@ -347,27 +370,43 @@ class CIFLoader:
         """A tuple of all atoms in the crystal structure, including positions in
         the unit cell. The format of each atom is essentially a dictionary
         similar to:
-               {'aniso': None,
-                'cif_labels': ['Al'],
+               {'cif_labels': ('Al',),
                 'composition': ((1.0, 'Al'),),
-                'equivalent_positions': [(0.0, 0.0, 0.0),
+                'equivalent_positions': ((0.0, 0.0, 0.0),
                                          (0.0, 0.5, 0.5),
                                          (0.5, 0.0, 0.5),
-                                         (0.5, 0.5, 0.0)],
+                                         (0.5, 0.5, 0.0)),
                 'occupancy': 1.0,
-                'site_positions': [(0.0, 0.0, 0.0)],
-                'uiso': None})
+                'uiso': None}
 
-        Here 'aniso' might provide information about
-        anisotropic displacements, 'uiso' (Uiso) about isotropic displacements,
-        and occupancy is the site occupancy. The 'cif_labels' are the
-        corresponding labels in the CIF data, and the 'composition' +
-        'equivalent_positions' should be self-explanatory. The
-        'site_positions' are the positions of the CIF sites (one per orbit),
-        as given in the CIF data (so they might not be among the
-        'equivalent_positions' if those were modified by spglib).
+        Here 'uiso' (Uiso) provides information about isotropic displacements
+        (or the Ueq of anisotropic ones), and occupancy is the site
+        occupancy. The 'cif_labels' are the corresponding labels in the CIF
+        data, and the 'composition' + 'equivalent_positions' should be
+        self-explanatory. Each atom corresponds to one or more of the .sites.
         """
         return self.__atoms
+
+    @property
+    def sites( self ):
+        """A tuple of the crystallographic sites of the structure, one per
+        orbit of the space group (in the setting of the final unit cell). The
+        format of each site is a dictionary similar to:
+               {'cif_labels': ('Al',),
+                'composition': ((1.0, 'Al'),),
+                'occupancy': 1.0,
+                'position': (0.0, 0.0, 0.0),
+                'multiplicity': 4,
+                'uiso': 0.0123,
+                'aniso': {'u11': 0.0123, 'u22': 0.0123, 'u33': 0.0123,
+                          'u12': 0.0, 'u13': 0.0, 'u23': 0.0}}
+
+        Here 'aniso' is either None or the anisotropic displacement tensor in
+        the CIF convention (relative to the normalised reciprocal axes) of the
+        final unit cell, 'uiso' its Ueq or the Uiso value of the CIF data, and
+        the 'cif_labels' those of the CIF sites corresponding to the site.
+        """
+        return self.__sites
 
     @property
     def cellsg( self ):
@@ -866,59 +905,6 @@ def _impl_create_ncmat_composer( cifloader, *,
                                add_empty_line_divider = True )
         return composer
 
-def _find_site_positions( atom ):
-    """The positions among the equivalent_positions of the atom which are the
-    CIF site_positions (or None if they are not all found)."""
-    res = []
-    for sp in atom.get('site_positions') or []:
-        found = [ p for p in atom['equivalent_positions']
-                  if _nc_sgsymimpl._unit_cell_point_dist( p, sp ) < 1e-6 ]
-        if not found:
-            return None
-        res.append( found[0] )
-    return res or None
-
-def _cif_setting_and_sites( cellsg, all_atompos, cif_sites ):
-    """The space group setting of the positions, and the entries for
-    NCMATComposer.set_atomsites: the CIF sites with their uij values if
-    possible (i.e. if the CIF sites are still the sites of the positions),
-    otherwise the sites chosen by NCrystal (without uij values)."""
-    from .misc import evaluate_query
-    sg = cellsg['spacegroup']['number']
-    sgspec = ( f'{sg}:r' if _nc_sgsymimpl._uses_rhombohedral_axes( sg, cellsg['alpha'] )
-               else str(sg) )
-    query = [ 'util', 'atomsites', 'relaxed', sgspec ]
-    query += [ f'{lbl},{float(x)!r},{float(y)!r},{float(z)!r}'
-               for lbl,x,y,z,_ in all_atompos ]
-    try:
-        res = evaluate_query( query )
-    except _nc_core.NCBadInput as e:
-        raise _nc_core.NCBadInput( 'The atom positions do not have the'
-                                   f' symmetry of space group {sg}: {e}' )
-    setting = res['spacegroup_setting']
-    #The CIF sites can be used if found, and one per orbit (not the case if
-    #the space group was changed by spglib):
-    nsites = {}
-    for lbl, _, _ in res['sites']:
-        nsites[lbl] = nsites.get(lbl,0) + 1
-    if all( sp is not None and len(sp) == nsites.get(lbl)
-            for lbl,_,_,sp,_ in cif_sites ):
-        sites = []
-        for lbl, occu, uij, sitepos, _ in cif_sites:
-            for p in sitepos:
-                e = ( lbl, p[0], p[1], p[2] )
-                e += ( occu, ) if occu != 1.0 else ()
-                e += ( uij, ) if uij else ()
-                sites.append( e )
-        return setting, sites
-    for _, _, uij, _, composstr in cif_sites:
-        if uij:
-            _nc_common.warn( f'Anisotropic displacement for {composstr} ignored'
-                             ' (CIF sites modified by spglib)' )
-    occumap = { lbl: occu for lbl, occu, _, _, _ in cif_sites }
-    return setting, [ ( lbl, p[0], p[1], p[2], occumap[lbl] )
-                      for lbl, p, _ in res['sites'] ]
-
 def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature, skip_dyninfo, top_comments, remap, no_formula_check ):
 
     src = cifloader
@@ -965,8 +951,6 @@ def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature, skip_d
     #DYNINFO analysis can only be done now, where we know the skip_dyninfo and uiso_temperature values:
 
     ncmat = _nc_ncmat.NCMATComposer()
-    all_atompos = []
-    cif_sites = []
     for idx, a in enumerate( src_atoms ):
         lbl = f'cif_species_{idx}'
         compos = [ (fr,e) for fr,e in a['composition'] ]
@@ -984,20 +968,31 @@ def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature, skip_d
                 else:
                     ncmat.set_dyninfo_msd( lbl, msd=uiso, temperature=uiso_temperature )
 
-        occu = a.get('occupancy',1.0)
-        for c in a['equivalent_positions']:
-            all_atompos.append( ( lbl, c[0], c[1], c[2], occu ) )
-        aniso = a.get('aniso',None)
-        uij = ( tuple( aniso[k] for k in ('u11','u22','u33','u12','u13','u23') )
-                if aniso else None )
-        cif_sites.append( ( lbl, occu, uij,
-                            _find_site_positions( a ), composstr ) )
+
+    #Sites (uij must be given for all or none of the sites of a label):
+    site2atom = src._site2atom
+    lbl_has_uij = {}
+    for s, iatom in zip( src.sites, site2atom ):
+        lbl_has_uij.setdefault( iatom, set() ).add( s['aniso'] is not None )
+    sites = []
+    for s, iatom in zip( src.sites, site2atom ):
+        e = ( f'cif_species_{iatom}', ) + tuple( s['position'] )
+        occu = src_atoms[iatom].get('occupancy',1.0)
+        e += ( occu, ) if occu != 1.0 else ()
+        if s['aniso'] and lbl_has_uij[iatom] == { True }:
+            e += ( tuple( s['aniso'][k] for k in _uij_keys ), )
+        sites.append( e )
+    for iatom, has in sorted( lbl_has_uij.items() ):
+        if len( has ) > 1:
+            _nc_common.warn( 'Anisotropic displacements ignored for CIF sites'
+                             f' {", ".join( src_atoms[iatom]["cif_labels"] )},'
+                             ' since they are not available for all sites'
+                             ' with the same NCMAT label' )
 
     st = src.cellsg
-    setting, sites = _cif_setting_and_sites( st, all_atompos, cif_sites )
     ncmat.set_cellsg( a=st['a'], b=st['b'], c=st['c'],
                       alpha=st['alpha'], beta=st['beta'], gamma=st['gamma'],
-                      spacegroup=setting )
+                      spacegroup=src._sgsetting )
     ncmat.set_atomsites( sites )
 
     if top_comments is not None:
@@ -1142,35 +1137,6 @@ def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature, skip_d
     return ncmat
 
 
-def _impl_merge_atoms( atoms ):
-    ll = []
-    for a in atoms:
-        pos = list(a['equivalent_positions'])
-        cif_labels = list( a['cif_labels'] )
-        sitepos = list( a['site_positions'] )
-        other_metadata = sorted( (k,v) for k,v in a.items()
-                                       if k not in ('equivalent_positions',
-                                                    'cif_labels',
-                                                    'site_positions') )
-        found = False
-        for k,v in ll:
-            if k == other_metadata:
-                v[0] += list( pos )
-                v[1] += list( cif_labels )
-                v[2] += sitepos
-                found = True
-                break
-        if not found:
-            ll.append( (other_metadata,[list(pos),list(cif_labels),sitepos]) )
-    res = []
-    for other_metadata, ( pos, cif_labels, sitepos ) in ll:
-        d = { k: v for k,v in sorted(other_metadata) }
-        d['equivalent_positions'] = sorted( pos )
-        d['cif_labels'] = sorted( cif_labels )
-        d['site_positions'] = sorted( sitepos )
-        res.append( d )
-    return res
-
 def _suggest_filename( ncmat_metadata, cifloader ):
     ll = ['autogen']
     ll.append( ncmat_metadata['chemform'] )
@@ -1183,41 +1149,160 @@ def _suggest_filename( ncmat_metadata, cifloader ):
         ll.append( f'mp{cifloader.actual_mpid}' )
     return '_'.join(ll) + '.ncmat'
 
-def _format_spglib_cell( cellsg, atoms ):
-    lattice = _nc_sgsymimpl._cellparams_to_spglib_lattice(cellsg)
-    atomic_points = []
-    atomic_types = []
-    for i,a in enumerate(atoms):
-        for p in a['equivalent_positions']:
-            atomic_points.append( p )
-            atomic_types.append( i )
-    return ( lattice, atomic_points, atomic_types )
+_uij_keys = ( 'u11', 'u22', 'u33', 'u12', 'u13', 'u23' )
 
-def _impl_refine_cell( cellsg, atoms ):
-    orig_cell = _format_spglib_cell( cellsg, atoms )
+def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, quiet ):
+    """Sites (one per orbit) of the CIF atoms (dicts with 'positions' and the
+    'rotations' of the symmetry operations producing them from the first),
+    after refining the structure with spglib if requested. Returns the
+    (possibly refined) cellsg, the sites, and the space group setting."""
+    from .misc import evaluate_query
+    sgs = _nc_sgsymimpl
+    def sgspec_of( c ):
+        sg = c['spacegroup']['number']
+        rhomb = sgs._uses_rhombohedral_axes( sg, c['alpha'] )
+        return f'{sg}:r' if rhomb else str(sg)
+    def query_sites( c, labelled_positions ):
+        q = [ 'util', 'atomsites', 'relaxed', sgspec_of(c) ]
+        q += [ f'{lbl},{float(x)!r},{float(y)!r},{float(z)!r}'
+               for lbl,(x,y,z) in labelled_positions ]
+        try:
+            return evaluate_query( q )
+        except _nc_core.NCBadInput as e:
+            raise _nc_core.NCBadInput( 'The atom positions do not have the'
+                                       ' symmetry of space group'
+                                       f' {c["spacegroup"]["number"]}: {e}' )
+    def orbit_positions( setting, pos ):
+        x, y, z = ( float(v) for v in pos )
+        q = [ 'util', 'atompositions', 'strict', setting, f'X,{x!r},{y!r},{z!r}' ]
+        return [ tuple( sgs._remap_fract_pos(v) for v in p )
+                 for _, p in evaluate_query( q ) ]
+    def mksite( a, cif_labels, pos, setting, aniso ):
+        allpos = orbit_positions( setting, pos )
+        return { 'cif_labels': tuple( sorted( set( cif_labels ) ) ),
+                 'composition': tuple( a['composition'] ),
+                 'occupancy': a['occupancy'],
+                 'position': tuple( sgs._remap_fract_pos(v) for v in pos ),
+                 'multiplicity': len( allpos ),
+                 'uiso': a['uiso'],
+                 'aniso': aniso,
+                 '_positions': allpos }
 
-    d = _nc_sgsymimpl._spglib_refine_cell( orig_cell )#, symprec = 0.01, allow_axis_swap = True )
-    assert len(d)==9
+    if not refine:
+        q = query_sites( cellsg, [ ( f'a{i}', p )
+                                   for i, a in enumerate( cif_atoms )
+                                   for p in a['positions'] ] )
+        setting = q['spacegroup_setting']
+        return cellsg, [ mksite( a, a['cif_labels'], a['positions'][0], setting,
+                                 a['aniso'] ) for a in cif_atoms ], setting
 
-    refined_cell = d['refined_cell']
-    new_atom_pos = { i: [] for i in range(max(refined_cell[2])+1) }
-    for pos, atomidx in zip(refined_cell[1],refined_cell[2]):
-        new_atom_pos[ atomidx ] += [ (pos[0],pos[1],pos[2]) ]
+    #All positions, with tensors rotated accordingly:
+    entries = []
+    for i, a in enumerate( cif_atoms ):
+        uf = sgs._cif_to_frac( a['aniso'], cellsg ) if a['aniso'] else None
+        for x, R in zip( a['positions'], a['rotations'] ):
+            u = ( sgs._frac_to_cif( sgs._transform_frac_tensor( R, uf ),
+                                    cellsg )
+                  if uf is not None else None )
+            entries.append( { 'key': tuple( a['composition'] ), 'pos': x,
+                              'occu': a['occupancy'], 'uiso': a['uiso'],
+                              'aniso': u, 'src': i } )
+    r = sgs._refine_sites( cellsg, entries, tols )
+    for w in r['warnings']:
+        _nc_common.warn(w)
+    if not quiet:
+        for m in r['msgs']:
+            _nc_common.print(m)
+    nc = r['cellsg']
+    cellsg = { k: nc[k] for k in ('a','b','c','alpha','beta','gamma') }
+    cellsg['spacegroup'] = { 'number': nc['spacegroup'], 'hm': r['sgsymb_hm'] }
+    q = query_sites( cellsg, [ ( f't{i}', p ) for i, p in r['allpos'] ] )
+    setting = q['spacegroup_setting']
+    def labels_of( indices ):
+        return [ lbl for i in indices
+                 for lbl in cif_atoms[ entries[i]['src'] ]['cif_labels'] ]
+    types = r['types']
+    def count( ll ):
+        res = {}
+        for e in ll:
+            res[e] = res.get( e, 0 ) + 1
+        return res
+    rsites = r['sites']
+    if rsites is not None:
+        #Check that the sites are one per orbit of the final setting:
+        type2rep = { types[i]: i for i, _ in r['allpos'] }
+        if ( count( lbl for lbl, _, _ in q['sites'] )
+             != count( f't{type2rep[ types[e["index"]] ]}' for e in rsites ) ):
+            rsites = None
+    has_aniso = any( e['aniso'] for e in entries )
+    if rsites is None:
+        if has_aniso:
+            _nc_common.warn( 'Anisotropic displacements dropped, since the'
+                             ' sites could not be followed through the'
+                             ' refinement by spglib' )
+        res = []
+        for lbl, pos, _ in q['sites']:
+            irep = int( lbl[1:] )
+            members = [ i for i in range( len( entries ) )
+                        if types[i] == types[irep] ]
+            res.append( mksite( cif_atoms[ entries[irep]['src'] ],
+                                labels_of( members ), pos, setting, None ) )
+        return cellsg, res, setting
+    res, dropped = [], []
+    for e in rsites:
+        a = cif_atoms[ entries[ e['index'] ]['src'] ]
+        if e['aniso_dropped']:
+            dropped += labels_of( e['members'] )
+        res.append( mksite( a, labels_of( e['members'] ), e['pos'], setting,
+                            e['aniso'] ) )
+    if dropped:
+        _nc_common.warn( 'Anisotropic displacements of CIF sites'
+                         f' {", ".join( sorted( set( dropped ) ) )} dropped,'
+                         ' since those of equivalent sites are not symmetry'
+                         ' images of each other' )
+    return cellsg, res, setting
 
-    new_atoms = [ { k: v if k!='equivalent_positions' else new_atom_pos[idx]
-                    for k,v in e.items() } for idx,e in enumerate(atoms) ]
-    if not d['can_keep_anisotropic_properties']:
-        new_atoms = [ { k: v if k!='aniso' else None
-                        for k,v in e.items() } for e in new_atoms ]
-
-
-
-
-    new_cellsg = dict( d['cellparams_snapped'].items() )
-    new_cellsg['spacegroup'] = { 'number': d['sgno'],
-                                 'hm': d['sgsymb_hm'] }
-
-    return new_cellsg, new_atoms, d['warnings'], d['msgs']
+def _impl_group_sites( sites, *, tols, merge_equiv ):
+    """Group sites into atoms (with merge_equiv, sites with equal composition
+    and occupancies and uiso values within the tolerances are merged). Returns
+    the atoms (sorted) and the atom index of each site."""
+    sgs = _nc_sgsymimpl
+    def opt_close( a, b, tol ):
+        return ( ( a is None ) == ( b is None )
+                 and ( a is None or sgs._relclose( a, b, tol ) ) )
+    def same( s1, s2 ):
+        return ( s1['composition'] == s2['composition']
+                 and sgs._relclose( s1['occupancy'], s2['occupancy'],
+                                    tols['occu'] )
+                 and opt_close( s1['uiso'], s2['uiso'], tols['uij'] ) )
+    groups = ( sgs._group_by_tol( sites, same ) if merge_equiv
+               else list( range( len( sites ) ) ) )
+    atoms = {}
+    for g, s in zip( groups, sites ):
+        if g not in atoms:
+            atoms[g] = { 'cif_labels': [], 'composition': s['composition'],
+                         'equivalent_positions': [],
+                         'occupancy': s['occupancy'], 'uiso': s['uiso'] }
+        atoms[g]['cif_labels'] += list( s['cif_labels'] )
+        atoms[g]['equivalent_positions'] += list( s['_positions'] )
+    def finalise( a ):
+        return { 'cif_labels': tuple( sorted( set( a['cif_labels'] ) ) ),
+                 'composition': a['composition'],
+                 'equivalent_positions':
+                 tuple( sorted( a['equivalent_positions'] ) ),
+                 'occupancy': a['occupancy'], 'uiso': a['uiso'] }
+    def _atom_sort( a ):
+        #well-defined sort order for reproducible output
+        return ( tuple(sorted(a['composition'])),
+                 len(a['equivalent_positions']),
+                 a['uiso'] if a['uiso'] is not None else -1.0,
+                 a['cif_labels'], a['equivalent_positions'] )
+    order = sorted( atoms, key = lambda g : _atom_sort( finalise( atoms[g] ) ) )
+    newidx = { g: i for i, g in enumerate( order ) }
+    for s in sites:
+        del s['_positions']
+    return ( [ finalise( atoms[g] ) for g in order ],
+             [ newidx[g] for g in groups ] )
 
 def _gemmi_wrap_to_unit( gemmi_fractional ):
     #gemmi's wrap_to_unit() can return 1.0, but we want those to be 0.0 (so
@@ -1548,7 +1633,8 @@ def _update_spacegroup_in_cifblock( cifblock, sg, use_xhm = True ):
     cifblock.set_pair('_space_group_crystal_system', sg.crystal_system_str() )
 
 
-def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib, merge_equiv, override_spacegroup = None ):
+def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
+                           merge_equiv, tols, override_spacegroup = None ):
 
     from itertools import chain
     from math import fsum as _math_fsum
@@ -1719,6 +1805,23 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib, merg
         return _expand_coord_to_all_other_images( gemmi.Fractional(pos0_new[0],pos0_new[1],pos0_new[2]), allow_finetune = (allow_finetune-1) )
 
 
+    def _image_rotations( coords ):
+        #Rotation parts of the operations mapping coords[0] to each coord:
+        ops = [ None ] + list( struct.cell.images )
+        res = []
+        for x in coords:
+            for img in ops:
+                y = coords[0] if img is None else _gemmi_wrap_to_unit(
+                    img.apply( coords[0] ) )
+                if _nc_sgsymimpl._unit_cell_point_dist( y, x ) < 1e-6:
+                    res.append( ( ( 1, 0, 0 ), ( 0, 1, 0 ), ( 0, 0, 1 ) )
+                                if img is None else img.mat.tolist() )
+                    break
+            else:
+                raise _nc_core.NCLogicError('Could not find symmetry'
+                                            ' operation of image')
+        return res
+
     for site in struct.sites:
         if not float( site.occ ) > 0.0:
             continue
@@ -1803,6 +1906,8 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib, merg
                                       f' for element "{elem_name}"')
 
         collected_atoms.append( { 'expanded_coords': expanded_coords,
+                                  'rotations':
+                                  _image_rotations( expanded_coords ),
                                   'element_marker': elem_marker,
                                   'occupancy': float(site.occ),
                                   'cif_label': str(site.label),
@@ -1847,21 +1952,18 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib, merg
                 raise _nc_core.NCBadInput(m)
             occupancy = min( 1.0, occupancy )
 
-        final_atom_info = { 'cif_labels': list_ro( cif_labels ),
-                            'equivalent_positions': list_ro( (c.x,c.y,c.z) for c in atoms_with_same_pos[0]['expanded_coords'] ),
-                            'site_positions': list_ro( [ tuple( atoms_with_same_pos[0]['expanded_coords'][0] ) ] ),
-                            'composition': list_ro( sorted( composition ) ),
-                            'occupancy': occupancy,
-                            'uiso': atoms_with_same_pos[0]['uiso'],
-                            'aniso': atoms_with_same_pos[0]['aniso'] }
-        final_atoms.append( dict_ro( final_atom_info )  )
+        final_atoms.append( { 'cif_labels': list_ro( cif_labels ),
+                              'positions': [ (c.x,c.y,c.z) for c in
+                                             atoms_with_same_pos[0]['expanded_coords'] ],
+                              'rotations': atoms_with_same_pos[0]['rotations'],
+                              'composition': list_ro( sorted( composition ) ),
+                              'occupancy': occupancy,
+                              'uiso': atoms_with_same_pos[0]['uiso'],
+                              'aniso': atoms_with_same_pos[0]['aniso'] } )
         atoms_to_process = atoms_with_different_pos
 
-    if merge_equiv:
-        final_atoms = list_ro( dict_ro(a) for a in _impl_merge_atoms( final_atoms ) )
-
     if expected_tot_atom_in_orig_cell:
-        n_actual = sum( len(a['equivalent_positions']) for a in final_atoms )
+        n_actual = sum( len(a['positions']) for a in final_atoms )
         def rd( x,y ):
             return abs(x-y)/(max(1e-300,abs(x)+abs(y)))
         if rd( n_actual, expected_tot_atom_in_orig_cell ) > 0.01:
@@ -1870,15 +1972,13 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib, merg
                                       f' ({expected_tot_atom_in_orig_cell}). Wrong spacegroup (or'
                                       ' choice/setting improperly specified)?')
 
-    if refine_with_spglib:
-        cellsg, final_atoms, warnings, msgs = _impl_refine_cell( cellsg, final_atoms )
-        for w in warnings:
-            _nc_common.warn(w)
-        if not quiet:
-            for m in msgs:
-                _nc_common.print(m)
-    else:
+    if not refine_with_spglib:
         _nc_common.warn('Structure refinement and verification with spglib was disabled due to explicit request.')
+
+    cellsg, sites, setting = _impl_find_sites( cellsg, final_atoms,
+                                               tols = tols,
+                                               refine = refine_with_spglib,
+                                               quiet = quiet )
 
     if int(cellsg['spacegroup']['number']) == 1:
         #The following warning might be a bit obsolete now that we usually
@@ -1886,11 +1986,13 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib, merg
         _nc_common.warn('Space-group number 1 ("P1") detected in CIF input. A lot (but not all) of CIF data'
                        ' with this space group listed is in a non-conventional format not suitable for NCrystal. Be wary!')
 
+    atoms, site2atom = _impl_group_sites( sites, tols = tols,
+                                          merge_equiv = merge_equiv )
     result['cellsg'] = dict_ro( cellsg )
-    def _atom_sort( a ):
-        #well-defined sort order for reproducible output
-        return ( tuple(sorted(a.get('composition',[]))), len(a.get('equivalent_positions')),a.get('uiso',None),a.get('cif_labels',None), tuple(a.items()) )
-    result['atoms'] = list_ro( dict_ro(a) for a in sorted(final_atoms,key = _atom_sort) )
+    result['atoms'] = list_ro( dict_ro(a) for a in atoms )
+    result['sites'] = list_ro( dict_ro(e) for e in sites )
+    result['site2atom'] = tuple( site2atom )
+    result['sgsetting'] = setting
 
     result['cifdescr'], result['actual_codid'],result['actual_mpid'],result['cif_chemformula'] =_extract_descr_from_cif( result['cif_raw'], result['cifsrc'], result['cifdata'] )
     return result, gemmi, struct
