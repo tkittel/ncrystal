@@ -79,12 +79,12 @@ namespace NCRYSTAL_NAMESPACE {
 #endif
         const double f = 0.5 * (c.b2-c.b1);
         nc_assert( f >= 0.0 );
-        const double c1 = integrateAlphaInterval_fast(c.a1,c.S[0],c.a2,c.S[1],
-                                                      c.logS[0],c.logS[1]);
+        const double c1 = integrateLogLinOrLinWCL(c.a1,c.S[0],c.a2,c.S[1],
+                                                  c.logS[0],c.logS[1]);
         nc_assert( c1 >= 0.0 );
         tgt.add( f * c1 );
-        const double c2 = integrateAlphaInterval_fast(c.a1,c.S[2],c.a2,c.S[3],
-                                                      c.logS[2],c.logS[3]);
+        const double c2 = integrateLogLinOrLinWCL(c.a1,c.S[2],c.a2,c.S[3],
+                                                  c.logS[2],c.logS[3]);
         nc_assert( c2 >= 0.0 );
         tgt.add( f * c2 );
       }
