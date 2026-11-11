@@ -18,7 +18,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/internal/sab/NCSABSampler.hh"
+#include "NCrystal/internal/sablegacy/NCSABSampler.hh"
 #include "NCrystal/internal/sab/NCSABUtils.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCString.hh"

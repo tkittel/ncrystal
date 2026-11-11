@@ -1,5 +1,5 @@
-#ifndef NCrystal_SABScatterHelper_hh
-#define NCrystal_SABScatterHelper_hh
+#ifndef NCrystal_SABLegacyFactory_hh
+#define NCrystal_SABLegacyFactory_hh
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -21,39 +21,34 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/internal/sab/NCSABSampler.hh"
-#include "NCrystal/internal/sab/NCSABXSProvider.hh"
+#include "NCrystal/internal/sablegacy/NCSABScatterHelper.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
   namespace SAB {
 
-    //Convenience struct and helper class for when both sampler and xsprovider
-    //are both needed and with similar lifetimes. Should normally be constructed
-    //by using either the SABFactory functions or a SABIntegrator.
-    //
-    //For reference it can optionally hold a JSON descriptive dictionary (in a
-    //format suitable for ProcImpl::specificJSONDescription, but not closed with
-    //final '}').
+    ///////////////////////
+    // Legacy algorithms //
+    ///////////////////////
 
-    class SABScatterHelper final : public UniqueID {
-    public:
-      SABScatterHelper( SABXSProvider&& xp,
-                        SABSampler&&sp,
-                        Optional<std::string> json = NullOpt )
-        : xsprovider(std::move(xp)),
-          sampler(std::move(sp)),
-          specificJSONDescriptionOpen(std::move(json))
-      {
-      }
-      SABScatterHelper() = default;//incomplete
-      SABScatterHelper( SABScatterHelper&& ) = default;
-      SABScatterHelper& operator=( SABScatterHelper&& ) = default;
-      SABXSProvider xsprovider;
-      SABSampler sampler;
-      Optional<std::string> specificJSONDescriptionOpen;
+    //The legacy algorithm is selected with knllux=-1. For reference and
+    //validation work (the "legacy_oversample" type of the ["sab","refsample",...]
+    //query), sampling artifacts can be reduced by sampling at higher energies
+    //(increasing SABSampler::EGridMargin):
 
-    };
+    enum class LegacySABAlgOpts { DEFAULT, OVERSAMPLE10 };
+
+    //Direct factory function with no caching:
+    std::unique_ptr<const SABScatterHelper>
+    createScatterHelper( shared_obj<const SABData>,
+                         std::shared_ptr<const VectD> energyGrid = nullptr,
+                         LegacySABAlgOpts = LegacySABAlgOpts::DEFAULT );
+
+    //Same with caching:
+    shared_obj<const SABScatterHelper>
+    createScatterHelperWithCache( shared_obj<const SABData>,
+                                  std::shared_ptr<const VectD> egrid = nullptr,
+                                  LegacySABAlgOpts = LegacySABAlgOpts::DEFAULT );
 
   }
 
