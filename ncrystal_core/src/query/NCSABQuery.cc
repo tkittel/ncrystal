@@ -28,7 +28,7 @@
 #include "NCrystal/internal/sab/NCSABExtender.hh"
 #include "NCrystal/internal/extd_utils/NCSABAnalyser.hh"
 #include "NCrystal/internal/vdos/NCVDOSEval.hh"
-#include "NCrystal/internal/sab/NCSABFactory.hh"
+#include "NCrystal/internal/sab/NCSABLegacyFactory.hh"
 #include "NCrystal/internal/sab/NCSABIntegrator.hh"
 #include "NCrystal/internal/dyninfoutils/NCDynInfoUtils.hh"
 #include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
