@@ -20,7 +20,7 @@
 
 #include "NCrystal/internal/sablegacy/NCSABIntegrator.hh"
 #include "NCrystal/internal/sablegacy/NCSABSamplerModels.hh"
-#include "NCrystal/internal/sab/NCSABUtils.hh"
+#include "NCrystal/internal/sablegacy/NCSABLegacyUtils.hh"
 #include "NCrystal/internal/fact_utils/NCFactoryUtils.hh"
 #include "NCrystal/internal/utils/NCIter.hh"
 #include "NCrystal/internal/utils/NCString.hh"

@@ -73,10 +73,6 @@ namespace NCRYSTAL_NAMESPACE {
     double interpolate_linlin_NEW(double a, double fa, double b, double fb, double x);
     PairDD interpolate_loglin_fast2_NEW(double a, double fa, double b, double fb, double x, double logfa, double logfb);
 
-    //Sample log-linear distribution on [a,b] with values fa, fb at a, b (and
-    //their logs logfa, logfb):
-    double sampleLogLinDist_fast(double a, double fa, double b, double fb, double rand, double logfa, double logfb);
-
     //The next two functions can be used to evaluate a SAB integral over a bin
     //of alpha-values, assuming a linear relationship in log(s).  The analytical
     //solution when s1,s2 are both nonzero is (a2-a1)*(s2-s1)/log(s2/s1), but
@@ -98,32 +94,6 @@ namespace NCRYSTAL_NAMESPACE {
     //indexing as SABData::sab()), to be shared by all users of a kernel:
     shared_obj<const VectD> createLogSTable( const SABData& );
 
-    //Expand kinematic alpha-limits for ekin_div_kt = ekin/kT at each beta point
-    //outwards to nearest points in the alpha-grid. Ranges are limited to the
-    //extent of the alpha grid, and start at beta index ibeta_low. Empty ranges
-    //are marked by indices both equal to alphaGrid.size() in the
-    //out_alpharanges vector.
-    void activeGridRanges( const SABData& data,
-                           EDivKT,
-                           std::vector<std::pair<uint16_t,uint16_t>>& out_alpharanges,
-                           std::size_t& ibeta_low );
-
-    //Break down how XS contributions falls over whole grid cells, as well as
-    //front and back tails covering partial cells.
-    struct TailedBreakdown {
-      double xs_front=0.0, xs_middle=0.0, xs_back=0.0;
-      unsigned imiddle_low=0, imiddle_upp=0;
-      struct TailPoint {
-        double alpha=0.0, sval=0.0, logsval=0.0;
-      } front, back;
-      bool narrow = false;//if range inside single grid bin
-    };
-    TailedBreakdown createTailedBreakdown( const Span<const double>& alphaGrid,
-                                           const Span<const double>& sab,
-                                           const Span<const double>& logsab,
-                                           const Span<const double>& alphaIntegrals_cumul,
-                                           double alpha_low, double alpha_upp,
-                                           const unsigned aidx_low, const unsigned aidx_upp );
 
   }
 }
@@ -374,29 +344,6 @@ inline double NCrystal::SABUtils::integrateAlphaInterval_fast(double a1,double s
   p = ncfma( ysq, p, c2 );
   p = ncfma( ysq, p, c1 );
   return da*ps*ncfma( -ysq, p, 0.5 );
-}
-
-inline double NCrystal::SABUtils::sampleLogLinDist_fast(double a, double fa, double b, double fb, double rand, double logfa, double logfb)
-{
-  //fixme: new LogLinDistSampler class is better.
-  nc_assert(b>a);
-  nc_assert(fa>=0.);
-  nc_assert(fb>=0.);
-  double df = fb-fa;
-  if ( fa > 0.0 && fb > 0.0 && df != 0.0 ) {
-    //usual, non-degenerate case:
-    double a_sub_b = a-b;
-    double logfa_fb = logfb-logfa;
-    if ( a_sub_b * logfa_fb != 0.0 )
-      return a_sub_b*std::log(fa*std::exp(a*logfa_fb/a_sub_b)/(fa+rand*df))/logfa_fb;
-    df = 0.0;
-  }
-  if (!df)
-    return nclerp(a,b,rand);//fa=fb, select uniformly in [a,b]
-  //exactly one of fa and fb is 0:
-  nc_assert(fa||fb);
-  double x = (b-a)*std::sqrt(rand);
-  return (fa ? b-x : a + x);
 }
 
 #endif
