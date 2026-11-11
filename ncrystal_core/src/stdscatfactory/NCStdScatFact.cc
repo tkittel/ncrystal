@@ -33,6 +33,7 @@
 #include "NCrystal/internal/sabscatter/NCSABScatterLegacy.hh"
 #include "NCrystal/internal/sabscatter/NCSABScatter.hh"
 #include "NCrystal/internal/sab/NCSABFactory.hh"
+#include "NCrystal/internal/sab/NCSABLegacyFactory.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/extd_utils/NCProcCompBldr.hh"
 

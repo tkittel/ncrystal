@@ -22,7 +22,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/interfaces/NCSABData.hh"
-#include "NCrystal/internal/sab/NCSABScatterHelper.hh"
 #include "NCrystal/internal/sab/NCSABExtended.hh"
 
 namespace NCRYSTAL_NAMESPACE {
@@ -62,29 +61,6 @@ namespace NCRYSTAL_NAMESPACE {
     UniqueIDValue egridToUniqueID(const VectD& egrid);
     UniqueIDValue egridToUniqueID(const std::shared_ptr<const VectD>& egrid);
     std::shared_ptr<const VectD> egridFromUniqueID(UniqueIDValue);
-
-    ///////////////////////
-    // Legacy algorithms //
-    ///////////////////////
-
-    //The legacy algorithm is selected with knllux=-1. For reference and
-    //validation work (the "legacy_oversample" type of the ["sab","refsample",...]
-    //query), sampling artifacts can be reduced by sampling at higher energies
-    //(increasing SABSampler::EGridMargin):
-
-    enum class LegacySABAlgOpts { DEFAULT, OVERSAMPLE10 };
-
-    //Direct factory function with no caching:
-    std::unique_ptr<const SABScatterHelper>
-    createScatterHelper( shared_obj<const SABData>,
-                         std::shared_ptr<const VectD> energyGrid = nullptr,
-                         LegacySABAlgOpts = LegacySABAlgOpts::DEFAULT );
-
-    //Same with caching:
-    shared_obj<const SABScatterHelper>
-    createScatterHelperWithCache( shared_obj<const SABData>,
-                                  std::shared_ptr<const VectD> egrid = nullptr,
-                                  LegacySABAlgOpts = LegacySABAlgOpts::DEFAULT );
 
   }
 
