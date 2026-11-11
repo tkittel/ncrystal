@@ -21,7 +21,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/internal/sab/NCSABScatterHelper.hh"
+#include "NCrystal/internal/sablegacy/NCSABScatterHelper.hh"
 #include "NCrystal/internal/sab/NCSABExtender.hh"
 
 namespace NCRYSTAL_NAMESPACE {

@@ -18,9 +18,9 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/internal/sab/NCSABLegacyFactory.hh"
+#include "NCrystal/internal/sablegacy/NCSABLegacyFactory.hh"
 #include "NCrystal/internal/sab/NCSABFactory.hh"
-#include "NCrystal/internal/sab/NCSABIntegrator.hh"
+#include "NCrystal/internal/sablegacy/NCSABIntegrator.hh"
 #include "NCrystal/internal/fact_utils/NCFactoryUtils.hh"
 
 namespace NC = NCrystal;
