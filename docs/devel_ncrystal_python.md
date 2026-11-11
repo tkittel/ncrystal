@@ -87,6 +87,8 @@ must contain only this file, with the message
 - `ncmat.py` + `_ncmatimpl.py` (2.2k): `NCMATComposer`, the builder behind
   `cif2ncmat`, `hfg2ncmat`, `vdos2ncmat` etc. (`from_cif/from_info/...`,
   `set_*`, `create_ncmat`, `write`, `register_as`, `load`).
+- `_sgsymimpl.py`: spglib refinement, cell geometry and displacement tensor
+  helpers shared by `NCMATComposer` and `CIFLoader`.
 - `vdos.py` (1.1k): Debye VDOS/MSD helpers, `analyseVDOS`, `extractGn`,
   `extractKnl` (-> C `ncrystal_raw_vdos2kernel`), `PhononDOSAnalyser`.
 - `cifutils.py` (1.8k): `CIFSource`, `CIFLoader` (gemmi, spglib, ase;
