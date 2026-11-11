@@ -24,6 +24,15 @@ CHANGELOG at release time, after which this file is dropped).
        set_atomsites takes one position per site, optionally with an
        occupancy and/or a uij tensor. Site occupancies are written to
        @ATOMOCCUPANCIES.
+     * NCMATComposer.refine_crystal_structure keeps sites with uij tensors
+       (transformed to the refined cell). Site tensors enter the symmetry
+       detection via their eigenvalues, and are dropped with a warning if
+       those of equivalent sites are not each other's symmetry images.
+     * NCMATComposer.refine_crystal_structure and .verify_crystal_structure
+       have new tolerance parameters tol, tol_symprec (and tol_uij for
+       refinement), limited to 5% (relative) and 0.5Aa. The symprec
+       parameter is an obsolete alias of tol_symprec, and all parameters
+       are now keyword-only.
      * cif2ncmat keeps the CIF sites and their anisotropic displacements
        (dropped with a warning if spglib changed the sites), and warns when a
        Uiso differs from the Ueq of the tensor by more than 5%. The Ueq of
