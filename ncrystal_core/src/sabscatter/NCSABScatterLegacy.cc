@@ -19,9 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/sabscatter/NCSABScatterLegacy.hh"
-#include "NCrystal/internal/sab/NCSABFactory.hh"
+#include "NCrystal/internal/sab/NCSABLegacyFactory.hh"
 #include "NCrystal/internal/dyninfoutils/NCDynInfoUtils.hh"
-#include "NCrystal/internal/sab/NCSABFactory.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/vdos/NCVDOSToScatKnl.hh"
