@@ -323,7 +323,7 @@ The curated change notes are in `/workspace/docs/changes_for_changelog.txt` (sec
   - Midpoint refinement, at most 100 iterations, built with tolerance x 0.98.
   - Final check at random points.
   - Throws on an unknown discontinuity (relative spacing < 1e-9), on non-finite values, or if sigma does not converge as lambda -> 0.
-- **Supported processes:** NullScatter, NullAbsorption, FreeGas, ElIncScatter, SABScatter, PowderBragg, AbsOOV. Any other process triggers a warning. Notably `SABScatterNG` is not in the list.
+- **Supported processes:** NullScatter, NullAbsorption, FreeGas, ElIncScatter, SABScatterLegacy, PowderBragg, AbsOOV. Any other process triggers a warning. Notably `SABScatter` (next-gen) is not in the list.
 - **Open item:** FIXME "revisit the name 'filter' ... CrossSectionTable might be more appropriate" and check for duplicated utilities.
 
 ## 12. Extinction
