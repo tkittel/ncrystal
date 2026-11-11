@@ -30,7 +30,8 @@ namespace NCRYSTAL_NAMESPACE {
     namespace {
       std::size_t detail_trimZeroEdgesFromKernel(ScatKnlData& input)
       {
-        //trims edges but does NOT validate in this internal function
+        //Some input kernels do not fill the entire grid on which they are
+        //specified. Detect and remove such parts of the grid (no validation).
         const auto nalpha = input.alphaGrid.size();
         const auto nbeta = input.betaGrid.size();
 
@@ -129,14 +130,6 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-
-NC::ScatKnlData NC::SABUtils::trimZeroEdgesFromKernel(ScatKnlData&& input)
-{
-  validateScatKnlData(input);
-  ScatKnlData res{ std::move(input) };
-  detail_trimZeroEdgesFromKernel(res);
-  return res;
-}
 
 double NC::SABUtils::evalSABOneShot( const SABData& sd,
                                      double alpha, double beta )
@@ -455,78 +448,6 @@ void NC::SABUtils::expandBetaAndSABToAllBetas( Span<const double> halfbetagrid,
   nc_assert_always( complete_betagrid.size() == nbeta_new );
   nc_assert_always( complete_sab.size() == nalpha * nbeta_new );
 
-}
-
-void NC::SABUtils::activeGridCells( const SABData& data,
-                                    EDivKT e,
-                                    std::vector<std::pair<std::uint16_t,std::uint16_t>>& out_alpharanges,
-                                    std::size_t& ibeta_low  )
-{
-  out_alpharanges.clear();
-  ibeta_low = data.betaGrid().size();
-
-  //We want to find the active 2D cells. First we find the 1D active ranges:
-  std::vector<std::pair<std::uint16_t,std::uint16_t>> alpha1dranges;
-  std::size_t ibeta_low1d;
-  activeGridRanges( data, e, alpha1dranges, ibeta_low1d );
-
-  //Special case, nothing active:
-  if ( alpha1dranges.empty() )
-    return;
-
-  nc_assert( ibeta_low1d < data.betaGrid().size() );
-
-  ibeta_low = ibeta_low1d;
-  std::size_t nexpected_cell_ranges = alpha1dranges.size();
-  nc_assert( nexpected_cell_ranges > 0 );
-  if ( ibeta_low1d > 0 ) {
-    //Cells start 1 bin below ranges in this case, the first cell has only
-    //ranges on the right.
-    --ibeta_low;
-    out_alpharanges.reserve(nexpected_cell_ranges);
-    out_alpharanges.push_back(alpha1dranges.front());
-    //Special case: Cells including beta=0.0 must always extend to lowest alpha
-    //cell (see also below where we treat the same special case).
-    nc_assert(ibeta_low+1<data.betaGrid().size());
-    if ( valueInInterval( vectAt(data.betaGrid(),ibeta_low),
-                          vectAt(data.betaGrid(),ibeta_low+1),
-                          0.0 ) )
-      out_alpharanges.back().first = 0;
-  } else {
-    --nexpected_cell_ranges;
-    out_alpharanges.reserve(nexpected_cell_ranges);
-  }
-
-  nc_assert(alpha1dranges.size()>0);
-  const std::size_t nnn = alpha1dranges.size()-1;
-
-  auto itBeta = std::next(data.betaGrid().begin(),ibeta_low1d);
-
-  const uint16_t nalpha_uint16 = data.alphaGrid().size();
-
-  for ( std::size_t i = 0; i < nnn; ++i, ++itBeta ) {
-    const auto& r0 = vectAt(alpha1dranges,i);
-    const auto& r1 = vectAt(alpha1dranges,i+1);
-    const bool r0Empty = r0.first >= nalpha_uint16;
-    const bool r1Empty = r1.first >= nalpha_uint16;
-    if ( r0Empty ) {
-      out_alpharanges.emplace_back(r1);//even if r1 is also empty, this is correct (both empty => empty cells)
-    } else if ( r1Empty ) {
-      out_alpharanges.emplace_back(r0);
-    } else {
-      out_alpharanges.emplace_back(std::min<uint16_t>(r0.first,r1.first),
-                                   std::max<uint16_t>(r0.second,r1.second));
-    }
-    //Special case: Cell including beta=0.0 must always extend to lowest alpha
-    //cell (the code above might have missed exactly this, because the slope of
-    //alpha-(beta) changes sign at beta=0.
-    nc_assert(std::next(itBeta)<data.betaGrid().end());
-    if ( valueInInterval( *itBeta, *std::next(itBeta), 0.0 ) )
-      out_alpharanges.back().first = 0;
-  }
-
-  nc_assert( out_alpharanges.size() == nexpected_cell_ranges );
-  return;
 }
 
 void NC::SABUtils::activeGridRanges( const SABData& data,
