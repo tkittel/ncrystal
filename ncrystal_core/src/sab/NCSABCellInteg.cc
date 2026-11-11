@@ -56,16 +56,16 @@ namespace NCRYSTAL_NAMESPACE {
         if ( method_b1 == M::LIN )
           c1 = halfda*(c.S[0]+c.S[1]);
         else
-          c1 = integrateAlphaInterval_fast(c.a1,c.S[0],c.a2,c.S[1],
-                                           c.logS[0],c.logS[1]);
+          c1 = integrateLogLinOrLinWCL(c.a1,c.S[0],c.a2,c.S[1],
+                                       c.logS[0],c.logS[1]);
         nc_assert( c1 >= 0.0 );
         tgt.add( f * c1 );
 
         if ( method_b2 == M::LIN )
           c2 = halfda*(c.S[2]+c.S[3]);
         else
-          c2 = integrateAlphaInterval_fast(c.a1,c.S[2],c.a2,c.S[3],
-                                           c.logS[2],c.logS[3]);
+          c2 = integrateLogLinOrLinWCL(c.a1,c.S[2],c.a2,c.S[3],
+                                       c.logS[2],c.logS[3]);
         nc_assert( c2 >= 0.0 );
         tgt.add( f * c2 );
       }
@@ -80,7 +80,7 @@ namespace NCRYSTAL_NAMESPACE {
         int m_soffset;
         void calcUpdateSlogS() {
           auto& c = *m_cell;
-          auto s_and_logs = interpolate_loglin_fallbacklinlin_fast2
+          auto s_and_logs = interpLogLinOrLinWCL
             ( c.a1, c.S[m_soffset], c.a2, c.S[m_soffset+1], m_a,
               c.logS[m_soffset], c.logS[m_soffset+1]);
           m_S = s_and_logs.first;
