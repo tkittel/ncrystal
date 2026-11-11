@@ -135,8 +135,8 @@ NC::SABUtils::TailedBreakdown NC::SABUtils::createTailedBreakdown( const Span<co
                       const double alpha1(alphaGrid[alphaidx_lowedge+1]);
                       nc_assert( valueInInterval(alpha0,alpha1,alpha) );
                       auto i0(alphaidx_lowedge), i1(alphaidx_lowedge+1);
-                      return interpolate_loglin_fallbacklinlin_fast(alpha0,sab[i0],alpha1,sab[i1],alpha,
-                                                                    logsab[i0],logsab[i1]);
+                      return interpLogLinOrLinWCL( alpha0, sab[i0], alpha1, sab[i1], alpha,
+                                                   logsab[i0], logsab[i1] ).first;
                     };
   auto setTailPoint = [&interpSVal](TailedBreakdown::TailPoint& tp,unsigned aidx,double alpha)
                       {

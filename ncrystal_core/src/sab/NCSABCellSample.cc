@@ -188,14 +188,10 @@ namespace NCRYSTAL_NAMESPACE {
         {
           auto& S = m_cell.S;
           auto& logS = m_cell.logS;
-          double s1 = interpolate_loglin_fallbacklinlin_fast( m_cell.a1, S[0],
-                                                              m_cell.a2, S[1],
-                                                              a,
-                                                              logS[0], logS[1]);
-          double s2 = interpolate_loglin_fallbacklinlin_fast( m_cell.a1, S[2],
-                                                              m_cell.a2, S[3],
-                                                              a,
-                                                              logS[2], logS[3]);
+          double s1 = interpLogLinOrLinWCL( m_cell.a1, S[0], m_cell.a2, S[1],
+                                            a, logS[0], logS[1] ).first;
+          double s2 = interpLogLinOrLinWCL( m_cell.a1, S[2], m_cell.a2, S[3],
+                                            a, logS[2], logS[3] ).first;
           return {s1,s2};
         }
 
