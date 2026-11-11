@@ -83,8 +83,8 @@ namespace NCRYSTAL_NAMESPACE {
               const double a_low = *itA++;
               const double s_low = *itS++;
               const double logS_low = *itLogS++;
-              e = integrateAlphaInterval_fast(a_low,s_low,*itA,*itS,
-                                              logS_low, *itLogS);
+              e = integrateLogLinOrLinWCL(a_low,s_low,*itA,*itS,
+                                          logS_low, *itLogS);
             }
           }
 
@@ -114,8 +114,8 @@ namespace NCRYSTAL_NAMESPACE {
               const double s_low = *itS++;
               const double logS_low = *itLogS++;
               // nc_assert_always( logS_low == *itLogS++);
-              double aint = integrateAlphaInterval_fast(a_low,s_low,*itA,*itS,
-                                                        logS_low, *itLogS);
+              double aint = integrateLogLinOrLinWCL(a_low,s_low,*itA,*itS,
+                                                    logS_low, *itLogS);
               //combine linearly with previous edge integration to get full cell
               //integral:
               nc_assert( m_cellIntegral.size()

@@ -181,32 +181,32 @@ void NCS::BoundedCellSampler::initEdge( EdgeData& edge, unsigned offset ) const
   if ( edge.islinlin ) {
     edge.lns_low = edge.lns_up = 0.0;
     if ( m_restrict_a1[offset/2] > m_cell.a1 )
-      edge.s_low = interpolate_linlin_NEW(m_cell.a1, c.S[offset],
-                                          m_cell.a2, c.S[offset+1],
-                                          m_restrict_a1[offset/2]);
+      edge.s_low = interpLin(m_cell.a1, c.S[offset],
+                             m_cell.a2, c.S[offset+1],
+                             m_restrict_a1[offset/2]);
     if ( m_restrict_a2[offset/2] < m_cell.a2 )
-      edge.s_up = interpolate_linlin_NEW(m_cell.a1, c.S[offset],
-                                         m_cell.a2, c.S[offset+1],
-                                         m_restrict_a2[offset/2]);
+      edge.s_up = interpLin(m_cell.a1, c.S[offset],
+                            m_cell.a2, c.S[offset+1],
+                            m_restrict_a2[offset/2]);
   } else {
     edge.lns_low = c.logS[offset];
     edge.lns_up = c.logS[offset+1];
     if ( m_restrict_a1[offset/2] > m_cell.a1 ) {
-      auto rs = interpolate_loglin_fast2_NEW(m_cell.a1, c.S[offset],
-                                             m_cell.a2, c.S[offset+1],
-                                             m_restrict_a1[offset/2],
-                                             c.logS[offset],
-                                             c.logS[offset+1]);
+      auto rs = interpLogLinWCL(m_cell.a1, c.S[offset],
+                                m_cell.a2, c.S[offset+1],
+                                m_restrict_a1[offset/2],
+                                c.logS[offset],
+                                c.logS[offset+1]);
       edge.s_low = rs.first;
       edge.lns_low = rs.second;
     }
 
     if ( m_restrict_a2[offset/2] < m_cell.a2 ) {
-      auto rs = interpolate_loglin_fast2_NEW(m_cell.a1, c.S[offset],
-                                             m_cell.a2, c.S[offset+1],
-                                             m_restrict_a2[offset/2],
-                                             c.logS[offset],
-                                             c.logS[offset+1]);
+      auto rs = interpLogLinWCL(m_cell.a1, c.S[offset],
+                                m_cell.a2, c.S[offset+1],
+                                m_restrict_a2[offset/2],
+                                c.logS[offset],
+                                c.logS[offset+1]);
       edge.s_up = rs.first;
       edge.lns_up = rs.second;
     }
@@ -250,15 +250,15 @@ NCS::BoundedCellSampler::prepareBCSData( double probability_b1_edge,
       //Only one edge might need large k treatment, the other might have S=0
       //values and thus linear interpolation (with logS=0 where S=0):
       if ( !( ncmin( cell.S[offset], cell.S[offset+1] ) > 0.0 ) ) {
-        const double s = interpolate_linlin_NEW( cell.a1, cell.S[offset],
-                                                 cell.a2, cell.S[offset+1],
-                                                 a );
+        const double s = interpLin( cell.a1, cell.S[offset],
+                                    cell.a2, cell.S[offset+1],
+                                    a );
         return PairDD{ s, ( s > 0.0 ? std::log( s ) : 0.0 ) };
       }
-      return interpolate_loglin_fast2_NEW( cell.a1, cell.S[offset],
-                                           cell.a2, cell.S[offset+1],
-                                           a,
-                                           cell.logS[offset], cell.logS[offset+1] );
+      return interpLogLinWCL( cell.a1, cell.S[offset],
+                              cell.a2, cell.S[offset+1],
+                              a,
+                              cell.logS[offset], cell.logS[offset+1] );
     };
     if ( region_restricts_a1 ) {
       auto sls1 = s_interp(regions.back().alpha_low,0);

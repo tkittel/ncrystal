@@ -179,9 +179,9 @@ double NC::SAB::SABSamplerAtE_Alg1::sampleAlpha(std::size_t ibeta, double rand_p
 
   const auto& cd = m_common->data;
   auto nalpha = cd->alphaGrid().size();
-  auto cumul = SABUtils::sliceSABAtBetaIdx_const(m_common->alphaintegrals_cumul,nalpha,ibeta);
-  auto sab = SABUtils::sliceSABAtBetaIdx_const(cd->sab(),nalpha,ibeta);
-  auto logsab = SABUtils::sliceSABAtBetaIdx_const(m_common->logsab,nalpha,ibeta);
+  auto cumul = SABUtils::sliceSABAtBetaIdx(m_common->alphaintegrals_cumul,nalpha,ibeta);
+  auto sab = SABUtils::sliceSABAtBetaIdx(cd->sab(),nalpha,ibeta);
+  auto logsab = SABUtils::sliceSABAtBetaIdx(m_common->logsab,nalpha,ibeta);
   auto clampRandNum = [](double r) { return ncclamp( r, std::numeric_limits<double>::min(), 1.0 ); };//ensure r is in (0,1]
   auto clampUnitInterval = [](double r) { return ncclamp( r, 0.0, 1.0 ); };//ensure r is in [0,1]
 
