@@ -203,7 +203,7 @@ All files start with `NCMAT vN`, are ASCII or UTF-8 (non-ASCII only in comments)
   - `config`.
 - **JSON query machinery** (`src/query/`, Delta38, many NEW files). Top-level keys: `version`, `list`, `mmc`, `util`, `sab`, `vdos`, `filtertable`.
   - `util` subkeys: wl2ekin, ekin2wl, mathval, fmadiagnose, kinutils, browsedb, browsefactories, factorythreads, atomdb, eqrefl, atomsites, atompositions, sgsym (most NEW).
-  - `sab` subkeys: refeval, samplepb, surveyor, sglcell, integschemes, proc, refsample, analyse.
+  - `sab` subkeys: samplepb, surveyor, sglcell, integschemes, proc, refsample, analyse.
   - `vdos`: expand.
   - NEW per-object queries via `ncrystal_info_jsonquery`: keys list, structure, sites.
 

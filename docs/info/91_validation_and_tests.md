@@ -37,7 +37,7 @@
   `app_sctext` (SCT against quadrature and the free-gas limit),
   `sabanalyse.py` (kernel analyser against VDOS truth),
   `sabcelleval.py`/`sabcellsample.py`/`sabsample.py` (processor against
-  `SABRefEval`), `app_symchecks`, `app_eqrefltables`, `app_cellconstraints`,
+  mpmath cell integrals and reference samplers), `app_symchecks`, `app_eqrefltables`, `app_cellconstraints`,
   `latticecells.py` (cells against metric tensors and spglib), `sgsym.py`
   (against spglib and gemmi), `cif2ncmatgen.py` (synthetic CIFs in all 230
   groups).
