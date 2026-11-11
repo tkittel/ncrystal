@@ -110,7 +110,7 @@ namespace NCRYSTAL_NAMESPACE {
       nc_assert( c.a2 > c.a1 );
       nc_assert( c.a1 >= 0.0 );
       nc_assert( c.b2 > c.b1 );
-      std::size_t i = na*ib+ia;
+      std::size_t i = SABUtils::calcSABIdx( na, ia, ib );
       c.S[0] = vectAt(sab,i++);
       c.S[1] = vectAt(sab,i);
       i += (na-1);

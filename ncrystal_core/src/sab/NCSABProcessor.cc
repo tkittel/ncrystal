@@ -553,8 +553,8 @@ NC::PairDD NCS::detail::diagonalLowEnergyLimit( const SABData& sab )
   auto sAt = [&A,&B,&S,na]( std::size_t ia, std::size_t ib, double x )
   {
     auto atRow = [&]( std::size_t jb ) {
-      const double s1 = vectAt( S, jb*na + ia );
-      const double s2 = vectAt( S, jb*na + ia + 1 );
+      const double s1 = vectAt( S, SABUtils::calcSABIdx( na, ia, jb ) );
+      const double s2 = vectAt( S, SABUtils::calcSABIdx( na, ia + 1, jb ) );
       const double t = ( x - vectAt(A,ia) )
         / ( vectAt(A,ia+1) - vectAt(A,ia) );
       return ( s1 > 0.0 && s2 > 0.0
