@@ -110,16 +110,16 @@ Draft changelog text exists in /workspace/docs/changes_for_changelog.txt (lines 
 
 ---
 
-## 2. sab / sabscatter (kernels, integration, sampling)
+## 2. sab / sabscatter / sablegacy (kernels, integration, sampling)
 
 ### 2.1 Data, conversion and helpers
-- **Files:** inc/sab/NCScatKnlData.hh, NCSABUtils.hh, NCSABEval.hh, NCSABIdx.hh (new); src/sab/NCScatKnlData.cc, NCSABUtils.cc.
-- **`transformKernelToStdFormat`:** converts SAB, SCALED_SAB, SCALED_SYM_SAB (betagrid starting at 0, expanded with S'(alpha,-beta)=S'(alpha,beta)) and SQW to the standard asymmetric, unscaled S (`validateScatKnlData`). It calls `trimZeroEdgesFromKernel` (with a WARNING).
-- **Interpolation:** log-linear in alpha (linear fallback where S=0), linear in beta. `integrateAlphaInterval(_fast)` uses the analytic (a2-a1)(s2-s1)/log(s2/s1).
+- **Files:** inc/sab/NCScatKnlData.hh, NCSABUtils.hh, NCSABIdx.hh (new); src/sab/NCScatKnlData.cc, NCSABUtils.cc.
+- **`transformKernelToStdFormat`:** converts SAB, SCALED_SAB, SCALED_SYM_SAB (betagrid starting at 0, expanded with S'(alpha,-beta)=S'(alpha,beta)) and SQW to the standard asymmetric, unscaled S (`validateScatKnlData`). It trims unfilled grid edges (with a WARNING).
+- **Interpolation:** log-linear in alpha (linear fallback where S=0), linear in beta. `integrateLogLinOrLin(WCL)` uses the analytic (a2-a1)(s2-s1)/log(s2/s1).
 - **NCSABIdx:** packed uint16 (ialpha, ibeta) indices in a uint32, so grids are limited to 65534 points.
 
 ### 2.2 Legacy path (knllux -1..-6; also all vdosdebye and ucnmode)
-- **Files:** NCSABIntegrator, NCSABSampler, NCSABSamplerModels, NCSABXSProvider, NCSABScatterHelper, NCSABFactory (`createScatterHelper(WithCache)`), sabscatter/NCSABScatter.
+- **Files** (all in sablegacy/): NCSABIntegrator, NCSABSampler, NCSABSamplerModels, NCSABXSProvider, NCSABScatterHelper, NCSABLegacyFactory (`createScatterHelper(WithCache)`), NCSABLegacyUtils, NCSABScatterLegacy (process `SABScatterLegacy`).
 - **Energy grid:** geomspace with 300 points by default. Emax comes from `suggestedEmax` or `determineEMax`; Emin from `determineEMin`. The NCMAT `egrid` field is honoured.
 - **Cross section:** linear interpolation on the grid, 1/sqrt(E) ("1/v") extrapolation below the grid, and k/E + extender_xs(E) above Emax (continuity-anchored).
 - **Sampling:**
@@ -168,7 +168,7 @@ Draft changelog text exists in /workspace/docs/changes_for_changelog.txt (lines 
   - `create()` picks SCT when Teff is available and cfg allows, otherwise free gas. The comment requires SigmaBound = 1 ("fixme").
   - "Fixme: duplicated ... is it technically correct that we end up isotropic??"
 - **Factory** (inc/sab/NCSABFactory.hh): `createSABExtendedNoCache` / `WithCache`. Cache key is (sab uid, egrid uid, knllux, teff bits).
-- **SABScatterNG** (inc/sabscatter/NCSABScatterNG.hh, .cc, new): Process wrapper scaled by SigmaBound ("fixme: rename NG<->Legacy?").
+- **SABScatter** (inc/sabscatter/NCSABScatter.hh, .cc, new): Process wrapper scaled by SigmaBound.
 
 ### 2.4 Extenders (beyond the kernel's Emax)
 - **File:** inc/sab/NCSABExtender.hh.
@@ -192,7 +192,7 @@ Draft changelog text exists in /workspace/docs/changes_for_changelog.txt (lines 
 - **Diagnostics:** `RowStatus`, `Diagnostics`; query `["sab","analyse",cfg,label,"diag"]`.
 
 ### 2.6 Queries and filter tables
-- **src/query/NCSABQuery.cc subcommands:** analyse, refeval, refsample, samplepb, sglcell, surveyor, fc, proc, list, integschemes, legacy, legacy_oversample. It notes "SABCellEval is not trustworthy".
+- **src/query/NCSABQuery.cc subcommands:** analyse, refsample, samplepb, sglcell, surveyor, fc, proc, list, integschemes, legacy, legacy_oversample.
 - **Filter tables** (inc/filter/NCFilterTable.hh, new): total-cross-section-versus-wavelength piecewise-linear tables with duplicated points at discontinuities (Bragg edges), for McStas GPU filters. Not inelastic-specific.
   - "FIXME ... revisit the name 'filter' ... CrossSectionTable".
   - HEAD commit: "Add the study behind the design of the filter tables".
@@ -276,8 +276,8 @@ Values `none`, `0`, `false` and `sterile` disable inelastic scattering.
 
 **inelas=dyninfo, per DI entry** (entries with zero scattering XS are skipped):
 - **DI_ScatKnl (VDOS, VDOSDebye or direct):**
-  - With knllux in -6..-1 (legacy): `createScatterHelperWithCache` then `SABScatter`, plus the optional UCN split (Refine, Remove, Only).
-  - Otherwise (next-gen): Teff = `extractTeffFromDynInfo`, then `createSABExtendedWithCache(knllux, sab, teff, egrid)`, then `SABScatterNG`. Direct kernels without Teff fall back to the free-gas extender.
+  - With knllux in -6..-1 (legacy): `createScatterHelperWithCache` then `SABScatterLegacy`, plus the optional UCN split (Refine, Remove, Only).
+  - Otherwise (next-gen): Teff = `extractTeffFromDynInfo`, then `createSABExtendedWithCache(knllux, sab, teff, egrid)`, then `SABScatter`. Direct kernels without Teff fall back to the free-gas extender.
 - **DI_Sterile:** skipped.
 - **DI_FreeGas:** `FreeGas` (not allowed together with ucnmode).
 
@@ -285,7 +285,7 @@ Values `none`, `0`, `false` and `sterile` disable inelastic scattering.
 
 **inelas=vdosdebye:**
 - requires knllux = -1 (legacy only, "fixme"), no ucnmode, a Debye temperature, and a crystalline material with atom info;
-- builds `extractSABDataFromVDOSDebyeModel` per AtomInfo, then legacy `SABScatter`.
+- builds `extractSABDataFromVDOSDebyeModel` per AtomInfo, then `SABScatterLegacy`.
 
 **Elastic gating related to dynamics:**
 - Crystalline materials get ElIncScatter when `incoh_elas` is set.
@@ -348,7 +348,7 @@ Related elastic switches: `incoh_elas`, `coh_elas`, `sans`.
 - `app_gasmix`: gas mixtures and water vapour pressure.
 
 **Python scripts (tests/scripts):**
-- `sabxstestdata`, `sabxstrouble`, and `long_sabxs{simple,light{a,b},heavy,debye{a,b},highdebye,lowtemp,maxlux,vdlux6{a,b},knlux6{a,b}}`: next-gen cross-section reference monitoring. Driver: tests/pypath/NCTestUtils/sabxs.py; references: tests/data/sabxs/*.txt; vdoslux 2000-2006 cycled with knllux 0-5.
+- `sabxstestdata`, `sabxstrouble`, and `long_sabxs{simple,light{a,b},heavy,debye{a,b},highdebye,lowtemp,v5k6,vdlux6{a,b},knlux6{a,b}}`: next-gen cross-section reference monitoring. Driver: tests/pypath/NCTestUtils/sabxs.py; references: tests/data/sabxs/*.txt; vdoslux 2000-2006 cycled with knllux 0-5.
 - `sabsample`: kernel sampling.
 - `sabcellsample`, `sabcelleval`: cell samplers and evaluation.
 - `sabsurvey`: surveyor plots.
@@ -370,7 +370,7 @@ Related elastic switches: `incoh_elas`, `coh_elas`, `sans`.
 
 - **New files:**
   - phys_utils/NCSCTUtils; SABSCTExtender (in NCSABExtender); extd_utils/NCSABAnalyser; dyninfoutils/NCDynInfoWithTeffMSD;
-  - sab/NCSABCfg, NCSABProcessor, NCSABExtended, NCSABSurveyor, NCSABCellInteg(+FMA), NCSABCellSample, NCSABKBCellSmpl, NCSABRefSampler, NCSABIdx; sabscatter/NCSABScatterNG;
+  - sab/NCSABCfg, NCSABProcessor, NCSABExtended, NCSABSurveyor, NCSABCellInteg(+FMA), NCSABCellSample, NCSABKBCellSmpl, NCSABRefSampler, NCSABIdx; sabscatter/NCSABScatter (next-gen); sablegacy/ (moved legacy code);
   - vdos/NCVDOSExpand, NCVDOSKnlGrid, NCVDOSLux, NCVDOSUtils(+FMA), and FMA variants of Gn and ToScatKnl;
   - filter/NCFilterTable;
   - cfg var `knllux`.

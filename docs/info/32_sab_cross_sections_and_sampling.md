@@ -21,8 +21,8 @@ mode. Above the last energy of the table the extension models of chapter 33
 take over.
 
 Code: `ncrystal_core/src/sab/` (`NCSABProcessor`, `NCSABSurveyor`,
-`NCSABCellSample`, `NCSABExtended`; legacy `NCSABIntegrator`, `NCSABSampler`),
-`ncrystal_core/src/sabscatter/`, kinematics in
+`NCSABCellSample`, `NCSABExtended`), `ncrystal_core/src/sabscatter/`, the
+legacy code in `ncrystal_core/src/sablegacy/`, kinematics in
 `ncrystal_core/include/NCrystal/internal/phys_utils/NCKinUtils.hh`.
 
 ## Physics
@@ -186,9 +186,8 @@ all cells touched at $E_h$:
   and stored compactly per grid point. Cells whose possible contribution is
   negligible (the tapered shortcut above) are left out.
 
-A slow reference implementation of both the cross section and the sampling
-at any energy exists for tests and is exposed through the JSON query
-`["sab","refeval",...]`.
+Slow reference samplers exist for tests and are exposed through the JSON
+query `["sab","refsample",...]`.
 
 ### Process wrapping
 
@@ -219,8 +218,9 @@ for biased simulations.
 
 ## Validation
 
-- The processor against the reference implementation at every grid energy
-  and in between, including sampled distributions
+- The processor against independent references (cell integrals in mpmath,
+  reference samplers) at every grid energy and in between, including sampled
+  distributions
   (`tests/scripts/sabcelleval.py`, `sabcellsample.py`, `sabsample.py`).
 - The `sabxs` reference cross sections over all levels for the stdlib and
   synthetic materials.

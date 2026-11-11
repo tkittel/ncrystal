@@ -10,7 +10,7 @@ are meant to be removed from the history before anything is merged into
 
 | File | Covers |
 |---|---|
-| `code_inelastic_dynamics.md` | vdos, sab, sabscatter, phys_utils, freegas, gasmix, dyninfoutils, stdscatfactory (inelastic side), cfg vars, tests |
+| `code_inelastic_dynamics.md` | vdos, sab, sabscatter, sablegacy, phys_utils, freegas, gasmix, dyninfoutils, stdscatfactory (inelastic side), cfg vars, tests |
 | `code_elastic_crystallography.md` | powderbragg, scbragg, lcbragg, elincscatter, FillHKL, sgsym, infobld, lazlau, filter tables, cfg vars, tests |
 | `code_other_tooling.md` | absorption, SANS, atom database, multiphase/density/temperature, NCMAT format by version, quick factories, plugins, Python tooling, MiniMC, data library, integrations |
 | `papers_core.md` | CPC 2020 framework paper, JCP 2019 sampling paper, URANOS preprint (not an NCrystal paper), Davis 1993 multinomial (irrelevant), Seeger 2002 mosaic algorithm, Willendrup 2006 PowderN |
