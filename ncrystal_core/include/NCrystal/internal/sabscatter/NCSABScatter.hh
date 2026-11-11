@@ -1,5 +1,5 @@
-#ifndef NCrystal_SABScatterNG_hh
-#define NCrystal_SABScatterNG_hh
+#ifndef NCrystal_SABScatter_hh
+#define NCrystal_SABScatter_hh
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -31,29 +31,29 @@ namespace NCRYSTAL_NAMESPACE {
     class SABExtended;
   }
 
-  class SABScatterNG final : public ProcImpl::ScatterIsotropicMat {
+  class SABScatter final : public ProcImpl::ScatterIsotropicMat {
   public:
 
     //Provides cross-sections and samplings based on an S(alpha,beta) scattering
     //kernel.
 
-    //Technically, a SABScatterNG instance essentially just wraps a SABExtended
+    //Technically, a SABScatter instance essentially just wraps a SABExtended
     //instance as a Process, and applies a scale to it. The SABExtended instance
     //provides cross sections for a hypothetical SigmaBound=1barn, so the scale
     //should include the actual SigmaBound. Additionally it can include factors
     //related to composition, etc.
 
-    const char * name() const noexcept override { return "SABScatterNG"; }
+    const char * name() const noexcept override { return "SABScatter"; }
 
     using SABExtended = SABUtils::SABExtended;
 
-    SABScatterNG( shared_obj<const SABExtended>, double scale );
+    SABScatter( shared_obj<const SABExtended>, double scale );
 
     //Strongly typed SigmaBound (actual scale will become SigmaBound*scale):
-    SABScatterNG( shared_obj<const SABExtended>,
-                  SigmaBound, double scale = 1.0 );
+    SABScatter( shared_obj<const SABExtended>,
+                SigmaBound, double scale = 1.0 );
 
-    virtual ~SABScatterNG();
+    virtual ~SABScatter();
 
     CrossSect crossSectionIsotropic(CachePtr&, NeutronEnergy ) const override;
 
