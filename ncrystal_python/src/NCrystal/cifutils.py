@@ -1306,6 +1306,142 @@ def _impl_group_sites( sites, *, tols, merge_equiv ):
     return ( [ finalise( atoms[g] ) for g in order ],
              [ newidx[g] for g in groups ] )
 
+class _SiteView:
+    #Stand-in for a gemmi site at another position (and tensor):
+    class _Aniso:
+        def __init__( self, u ):
+            self.nonzero = u is not None
+            for k in _uij_keys:
+                setattr( self, k, u[k] if u else 0.0 )
+    def __init__( self, site, fract, aniso ):
+        self.label, self.element = site.label, site.element
+        self.occ, self.u_iso = site.occ, site.u_iso
+        self.fract, self.aniso = fract, _SiteView._Aniso( aniso )
+
+def _listed_ops( gemmi, cifblock ):
+    """The symmetry operations listed in the CIF block: None if there are none,
+    ('unparsable', why) if they can not be parsed, ('incomplete', ops) if they
+    do not form a group, or ('group', ops, GroupOps)."""
+    vals = []
+    for tag in ( '_space_group_symop_operation_xyz',
+                 '_symmetry_equiv_pos_as_xyz' ):
+        vals = [ gemmi.cif.as_string( v ) for v in cifblock.find_values( tag ) ]
+        if vals:
+            break
+    if not vals:
+        return None
+    try:
+        ops = [ gemmi.Op( v ) for v in vals ]
+    except (RuntimeError, ValueError) as e:
+        return ( 'unparsable', str( e ).strip() )
+    #Remove duplicates (as written by pymatgen for some files):
+    seen, uops = set(), []
+    for o in ops:
+        if _op_key( o ) not in seen:
+            seen.add( _op_key( o ) )
+            uops.append( o )
+    ops = uops
+    go = gemmi.GroupOps( ops )
+    go.add_missing_elements()
+    #(GroupOps factorises into rotations and centring translations, so the
+    #number of distinct listed operations must be compared with its order):
+    if len( ops ) != len( go.sym_ops ) * len( go.cen_ops ):
+        return ( 'incomplete', ops )
+    return ( 'group', ops, go )
+
+def _op_key( op ):
+    #Symmetry operation with translations wrapped into [0,1), for comparisons:
+    fs = op.float_seitz()
+    return ( tuple( round( fs[i][j], 6 ) for i in range(3) for j in range(3) )
+             + tuple( round( fs[i][3] % 1.0, 6 ) % 1.0 for i in range(3) ) )
+
+def _symbol_spacegroup( gemmi, struct, cifblock ):
+    """Space group from the symbol (H-M name, or else the number) alone."""
+    hm = ' '.join( str( struct.spacegroup_hm ).split() )
+    sg = ( gemmi.find_spacegroup_by_name( hm, struct.cell.alpha,
+                                          struct.cell.gamma ) if hm else None )
+    if not sg:
+        for tag in ( '_space_group_IT_number', '_symmetry_Int_Tables_number' ):
+            v = [ gemmi.cif.as_string( e ) for e in cifblock.find_values( tag ) ]
+            if len( v ) == 1 and v[0].isdigit() and 1 <= int( v[0] ) <= 230:
+                sg = gemmi.find_spacegroup_by_number( int( v[0] ) )
+                break
+    return sg or None
+
+def _cif_multiplicities( gemmi, cifblock ):
+    """Site label -> multiplicity, from the CIF block (empty if absent)."""
+    lbls = [ gemmi.cif.as_string(v)
+             for v in cifblock.find_values( '_atom_site_label' ) ]
+    mults = list( cifblock.find_values( '_atom_site_symmetry_multiplicity' ) )
+    res = {}
+    if len( mults ) == len( lbls ):
+        for lbl, m in zip( lbls, mults ):
+            try:
+                res[lbl] = int( gemmi.cif.as_string( m ) )
+            except ValueError:
+                pass
+    return res
+
+def _check_multiplicity( label, mult, n ):
+    if mult is not None and mult != n:
+        raise _nc_core.NCBadInput(
+            f'CIF site "{label}" has multiplicity {mult}, but its symmetry'
+            f' operations give {n} positions (inconsistent symmetry'
+            ' information in the CIF data?)' )
+
+def _expand_sites_with_ops( gemmi, struct, ops, mult, symprec ):
+    """All positions of the sites of struct under the symmetry operations ops,
+    with tensors rotated accordingly (merging images within symprec), checked
+    against the multiplicities (label -> int)."""
+    cell = struct.cell
+    cellsg = { k: getattr( cell, k )
+               for k in ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' ) }
+    sgs = _nc_sgsymimpl
+    latt = sgs._cellparams_to_spglib_lattice( cellsg )
+    def dist( x, y ):
+        d = [ ( a - b + 0.5 ) % 1.0 - 0.5 for a, b in zip( x, y ) ]
+        v = [ sum( d[i] * latt[i][k] for i in range(3) ) for k in range(3) ]
+        return sum( e * e for e in v ) ** 0.5
+    res = []
+    for site in struct.sites:
+        x0 = ( site.fract.x, site.fract.y, site.fract.z )
+        u = None
+        if site.aniso.nonzero():
+            u = { k: float( getattr( site.aniso, k ) ) for k in _uij_keys }
+        uf = sgs._cif_to_frac( u, cellsg ) if u else None
+        found = []
+        for op in ops:
+            fs = op.float_seitz()
+            R = [ row[:3] for row in fs[:3] ]
+            x = [ ( sum( R[i][j] * x0[j] for j in range(3) ) + fs[i][3] ) % 1.0
+                  for i in range(3) ]
+            if any( dist( x, f ) < symprec for f, _ in found ):
+                continue
+            ui = u
+            if uf is not None and not sgs._np_is_identity( R ):
+                ui = sgs._frac_to_cif( sgs._transform_frac_tensor( R, uf ),
+                                       cellsg )
+            found.append( ( x, ui ) )
+        if float( site.occ ) > 0.0:
+            _check_multiplicity( str( site.label ), mult.get( str( site.label ) ),
+                                 len( found ) )
+        res += [ _SiteView( site, gemmi.Fractional( *x ), ui )
+                 for x, ui in found ]
+    return res
+
+def _symop_error( why, cifdata ):
+    msg = ( f'The symmetry operations listed in the CIF data {why}. Please use'
+            ' a CIF file that either lists all atoms of the unit cell with'
+            ' space group P 1, or lists the symmetry operations of a standard'
+            ' space group setting consistent with its space group symbol.' )
+    if 'pymatgen' in cifdata.lower():
+        msg += ( ' This file was written by pymatgen, as are Materials Project'
+                 ' downloads. For Materials Project entries, the "Conventional'
+                 ' Standard" CIF download from the website works, or pass the'
+                 ' ID as "mpid::<number>" instead of a file name to have'
+                 ' NCrystal download that itself.' )
+    return _nc_core.NCBadInput( msg )
+
 def _gemmi_wrap_to_unit( gemmi_fractional ):
     #gemmi's wrap_to_unit() can return 1.0, but we want those to be 0.0 (so
     #(a,b,1.0) and (a,b,0.0) does not appear to be two different
@@ -1710,6 +1846,38 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
     if not struct:
         raise _nc_core.NCBadInput('Could not load structure with Gemmi')
 
+    #Symmetry operations listed in the CIF data, forming a group which is not
+    #that of any tabulated setting (e.g. in a primitive cell of a centred
+    #lattice, as written by pymatgen), are used to expand the sites, giving a
+    #P1 structure. They must have as many rotations as the space group of
+    #the symbol (otherwise the symbol is used, as before):
+    blk = cif_block_with_structure
+    listed_ops_error, p1_sites = None, None
+    listed = None if override_spacegroup else _listed_ops( gemmi, blk )
+    if listed and listed[0] == 'unparsable':
+        listed_ops_error = f'could not be parsed ({listed[1]})'
+    elif listed and listed[0] == 'incomplete':
+        listed_ops_error = 'are incomplete (they do not form a group)'
+    elif listed and gemmi.find_spacegroup_by_ops( listed[2] ) is None:
+        _, ops, go = listed
+        symsg = _symbol_spacegroup( gemmi, struct, blk )
+        nrot = len( symsg.operations().sym_ops ) if symsg else None
+        if nrot != len( go.sym_ops ):
+            listed_ops_error = ( f'have {len(go.sym_ops)} rotations, but space'
+                                 f' group {symsg.xhm()} has {nrot}' if symsg
+                                 else 'can not be checked against a space'
+                                 ' group symbol' )
+        else:
+            p1_sites = _expand_sites_with_ops( gemmi, struct, ops,
+                                               _cif_multiplicities( gemmi, blk ),
+                                               tols['symprec'] )
+            sg = gemmi.find_spacegroup_by_number( 1 )
+            if not quiet:
+                _nc_common.print('Expanded sites with the symmetry operations'
+                                 ' listed in the CIF data, since they do not'
+                                 ' correspond to a tabulated space group'
+                                 ' setting')
+
     if not sg:
         raise _nc_core.NCBadInput('Could not determine space group from CIF data')
 
@@ -1743,6 +1911,8 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
     sgnumber = int(sg.number)
 
     if not struct.cell.is_compatible_with_spacegroup( sg ):
+        if listed_ops_error:
+            raise _symop_error( listed_ops_error, _cifdata )
         raise _nc_core.NCBadInput('Loaded unit cell is not compatible with deduced space group (according to Gemmi).')
 
     cellsg = { 'a': struct.cell.a, 'b': struct.cell.b, 'c': struct.cell.c,
@@ -1759,13 +1929,14 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
                                       'hm': sg.xhm() } )
 
     collected_atoms = []
+    cell_images = [] if p1_sites is not None else struct.cell.images
 
     def _expand_coord_to_all_other_images( coord, allow_finetune = 3 ):
         pos0 = _gemmi_wrap_to_unit(coord)
         #First find all brute-force expanded coords (ignore those within machine
         #precision of each other!):
         ll = [ pos0 ]
-        for candidate in ( _gemmi_wrap_to_unit(img.apply( pos0 )) for img in struct.cell.images):
+        for candidate in ( _gemmi_wrap_to_unit(img.apply( pos0 )) for img in cell_images):
             use = True
             for c in ll:
                 if _nc_sgsymimpl._unit_cell_point_dist(candidate,c) < 1e-10:
@@ -1809,7 +1980,7 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
 
     def _image_rotations( coords ):
         #Rotation parts of the operations mapping coords[0] to each coord:
-        ops = [ None ] + list( struct.cell.images )
+        ops = [ None ] + list( cell_images )
         res = []
         for x in coords:
             for img in ops:
@@ -1824,7 +1995,7 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
                                             ' operation of image')
         return res
 
-    for site in struct.sites:
+    for site in ( p1_sites if p1_sites is not None else struct.sites ):
         if not float( site.occ ) > 0.0:
             continue
         pos0 = _gemmi_wrap_to_unit( site.fract )
