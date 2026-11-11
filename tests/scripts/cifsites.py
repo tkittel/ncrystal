@@ -76,6 +76,14 @@ def expand( setting, cell, asym ):
 def load( txt, **kw ):
     return CIFLoader( txt, quiet = True, **kw )
 
+def expect_error( descr, txt, **kw ):
+    try:
+        load( txt, **kw )
+    except NC.NCBadInput as e:
+        print( f'   {descr}: rejected: {e}' )
+    else:
+        raise SystemExit( f'{descr}: not rejected' )
+
 def bragg( lc ):
     info = lc.create_ncmat_composer( uiso_temperature = 300,
                                      quiet = True ).load( 'dcutoff=0.5' ).info
@@ -127,8 +135,10 @@ def test_rutile():
     #Unrotated copies (as in some exported files):
     p1b = [ ( lbl, el, p, occ, uiso, ( u_ti if el == 'Ti' else u_o ) )
             for lbl, el, p, occ, uiso, _ in p1 ]
-    lc = load( cif_text( rutile, 'P 1', p1b ) )
-    show( 'rutile, P1, unrotated tensor copies', lc )
+    txt = cif_text( rutile, 'P 1', p1b )
+    expect_error( 'rutile, P1, unrotated tensor copies', txt )
+    lc = load( txt, permissive = True )
+    show( 'rutile, P1, unrotated tensor copies, permissive', lc )
     for w, _ in lc.warnings:
         print( '   warning:', w )
     assert not any( s['aniso'] for s in lc.sites )
@@ -145,6 +155,38 @@ def test_rutile():
     for tol in ( None, 1e-4 ):
         lc = load( cif_text( rutile, 'P 1', p1d ), tol = tol )
         show( f'rutile, P1, Ti occupancies 1/0.9997, tol={tol}', lc )
+
+def test_symmetry_information():
+    #Listed operations and multiplicities, consistent or not:
+    ops = evaluate_query( [ 'util', 'sgsym', 'strict', '136' ] )['ops']
+    good = cif_text( rutile, 'P 42/m n m', asym_rutile, ops = ops,
+                     mults = [ 2, 4 ] )
+    lc = load( good )
+    show( 'rutile, with listed operations and multiplicities', lc )
+    expect_error( 'wrong multiplicity', cif_text( rutile, 'P 42/m n m',
+                                                  asym_rutile, ops = ops,
+                                                  mults = [ 2, 2 ] ) )
+    #An unparsable operation: rejected, but in permissive mode the symbol is
+    #used:
+    bad = good.replace( f"'{ops[1]}'", "'x+500/999,y,z'" )
+    expect_error( 'unparsable operation', bad )
+    lc = load( bad, permissive = True )
+    show( 'rutile, unparsable operation, permissive', lc )
+    for w, _ in lc.warnings:
+        print( '   warning:', w )
+    #Cell slightly inconsistent with the space group (accepted since spglib
+    #finds the same space group), or more than that (rejected):
+    for gamma in ( 90.002, 90.5 ):
+        c = dict( rutile, gamma = gamma )
+        txt = cif_text( c, 'P 42/m n m', asym_rutile )
+        if gamma < 90.1:
+            lc = load( txt )
+            show( f'rutile, gamma={gamma}', lc )
+            for w, _ in lc.warnings:
+                print( '   warning:', w )
+            assert lc.cellsg['spacegroup']['number'] == 136
+        else:
+            expect_error( f'rutile, gamma={gamma}', txt )
 
 def test_primitive():
     #C2/c with tensors on both sites, given in P1 in a primitive cell:
@@ -232,13 +274,14 @@ def test_primitive():
                           'unparsable operation' ),
                         ( txt.replace( f"'{ops[1]}'\n", '' ).replace(
                               f"'{ops[3]}'\n", '' ),
-                          'operations of a smaller group' ) ):
-        try:
-            load( bad )
-        except NC.NCBadInput as e:
-            print( f'   {descr}: {e}' )
-        else:
-            raise SystemExit( f'{descr} not refused' )
+                          'operations of a smaller group' ),
+                        ( txt.replace( f"'{ops[2]}'\n", '' ).replace(
+                              f"'{ops[3]}'\n", '' ),
+                          'operations of a tabulated smaller group' ) ):
+        for permissive in ( False, True ):
+            expect_error( f'{descr}, permissive={permissive}', bad,
+                          permissive = permissive )
 
 test_rutile()
+test_symmetry_information()
 test_primitive()
