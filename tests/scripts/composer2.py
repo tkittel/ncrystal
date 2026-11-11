@@ -157,7 +157,7 @@ def test_refine_corrections():
     #reduction, primitive to centred cells) or origin shifts. Anisotropic
     #properties can only be kept if the basis is unchanged.
     print('\n\n  ================> refine corrections\n\n')
-    from NCrystalDev._ncmatimpl import _spglib_refine_cell
+    from NCrystalDev._sgsymimpl import _spglib_refine_cell
     def refine( cell, atoms ):
         c = NC.NCMATComposer()
         a, b, cc, al, be, ga = cell
