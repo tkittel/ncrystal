@@ -84,7 +84,7 @@ scattering at 4 Aa from (1, 0.15, 0.6) happens at 100.186 deg and delta-E 0.0209
 [ 143.65079  70.642951  120.98913 ... 80.882186  88.445867  82.446771 ]
 [ 22.105541  19.542004  26.77745 ... 23.086883  54.866998  18.976117 ]
 ===> Testing potentially vanishing scatter: "Be_sg194.ncmat;dcutoff=10.0":
-    xs@1Aa : 1.20376
+    xs@1Aa : 1.20377
     xs@5Aa : 0.429148
     mean scat@1Aa : 1.8 rad, de=-0.015eV
 ===> Testing potentially vanishing scatter: "Be_sg194.ncmat;dcutoff=10.0;inelas=0;incoh_elas=0":
@@ -92,7 +92,7 @@ scattering at 4 Aa from (1, 0.15, 0.6) happens at 100.186 deg and delta-E 0.0209
     xs@5Aa : 0
     mean scat@1Aa : 0 rad, de=0eV
 ===> Testing potentially vanishing scatter: "Be_sg194.ncmat;dcutoff=10.0;coh_elas=0":
-    xs@1Aa : 1.20376
+    xs@1Aa : 1.20377
     xs@5Aa : 0.429148
     mean scat@1Aa : 1.9 rad, de=-0.015eV
 ===> Testing potentially vanishing scatter: "Al_sg225.ncmat;dcutoff=10.0":

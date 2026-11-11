@@ -36,7 +36,7 @@ test_kernel_boundary (H in polyethylene, 293.15K):
   Teff = 1208.1K (Teff/T = 4.121)
   At Emax=5eV: xs(table)=0.2501barn, xs(freegas)=0.2505barn, xs(sct)=0.2485barn
   Rel. mismatch to table: freegas 0.16%, sct 0.63%
-  Ridge width statistic W at Emax: table 4.01, freegas 1, sct 4.03 (Teff/T=4.12)
+  Ridge width statistic W at Emax: table 4.02, freegas 1, sct 4.03 (Teff/T=4.12)
 test_cryogenic (H in polyethylene, 20K):
   Teff/T = 59.3 ; sampled W at 6eV: freegas 1, sct 57.9
 test_estimateTeffMSD:
