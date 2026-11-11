@@ -20,7 +20,7 @@
 ################################################################################
 
 def extract_scathelper_uids( proc ):
-    #Search process for any SABScatter (legacy) or SABScatterNG instances and
+    #Search process for any SABScatterLegacy or SABScatterNG instances and
     #return the UIDs of their SABScatterHelper or SABProcessor objects in a list.
     if isinstance( proc, dict ):
         #already a summary dict
@@ -36,7 +36,7 @@ def extract_scathelper_uids( proc ):
     if s['name'] == 'ProcComposition':
         for frac, comp in s['specific']['components']:
             uids += extract_scathelper_uids( comp )
-    if s['name'] == 'SABScatter':
+    if s['name'] == 'SABScatterLegacy':
         uids.append( s['specific']['sabhelper_uid'] )
     if s['name'] == 'SABScatterNG':
         uids.append( s['specific']['sabprocessor_uid'] )
