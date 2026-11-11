@@ -1,0 +1,20 @@
+{}                                                 -> occu=0.001, symprec=0.01, uij=0.001
+{'tol': 0.005}                                     -> occu=0.005, symprec=0.05, uij=0.005
+{'tol': 0.005, 'tol_symprec': 0.003}               -> occu=0.005, symprec=0.003, uij=0.005
+{'tol_uij': 0.02, 'tol_occu': 0.03}                -> occu=0.03, symprec=0.01, uij=0.02
+{}                                                 -> occu=0.02, symprec=0.01, uij=0.02
+{'tol': 0.04}                                      -> occu=0.04, symprec=0.02, uij=0.04
+Caught expected NCBadInput('Invalid tol value: 0.0 (must be a positive number)')
+Caught expected NCBadInput('Invalid tol value: -0.001 (must be a positive number)')
+Caught expected NCBadInput('Invalid tol value: 1.0 (a relative tolerance must be less than 1)')
+Caught expected NCBadInput('Invalid tol value: nan (must be a positive number)')
+Caught expected NCBadInput("Invalid tol value: 'abc' (must be a positive number)")
+Caught expected NCBadInput('Invalid tol_symprec value: 0.0 (must be a positive number)')
+Caught expected NCBadInput('Invalid tol_symprec value: inf (must be a positive number)')
+Caught expected NCBadInput('Invalid tol_uij value: 2.0 (a relative tolerance must be less than 1)')
+Caught expected NCBadInput('Invalid tol_occu value: -0.1 (must be a positive number)')
+{'tol_symprec': 1.5}                               -> occu=0.001, symprec=1.5, uij=0.001
+compare OK
+[0, 0, 1, 2, 0, 1]
+[]
+[0, 1, 0]
