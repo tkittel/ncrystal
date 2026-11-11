@@ -88,10 +88,10 @@ NCS::FullCellSampler::FullCellSampler( const CellData* cellptr )
   //already know it?
   nc_assert(m_cellptr!=nullptr);
   const CellData& c = *m_cellptr;
-  const double W1 = integrateAlphaInterval_fast(c.a1,c.S[0],c.a2 , c.S[1],
-                                                c.logS[0], c.logS[1]);
-  const double W2 = integrateAlphaInterval_fast(c.a1,c.S[2], c.a2 , c.S[3],
-                                                c.logS[2], c.logS[3]);
+  const double W1 = integrateLogLinOrLinWCL(c.a1,c.S[0],c.a2 , c.S[1],
+                                            c.logS[0], c.logS[1]);
+  const double W2 = integrateLogLinOrLinWCL(c.a1,c.S[2], c.a2 , c.S[3],
+                                            c.logS[2], c.logS[3]);
   nc_assert_always(W1>0.0||W2>0.0);
   m_prob1 = W1/(W1+W2);
 }

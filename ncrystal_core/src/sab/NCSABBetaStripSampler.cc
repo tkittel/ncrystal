@@ -235,16 +235,16 @@ double NCS::SABBetaStripSampler::evalSCell( double alpha, double beta,
     const double s1 = vectAt( sab, i );
     const double s2 = vectAt( sab, i + 1 );
     if ( s1 > 0.0 && s2 > 0.0 )
-      return interpolate_loglin_fast2_NEW( a1, s1, a2, s2, alpha,
-                                           vectAt( *m_logS, i ),
-                                           vectAt( *m_logS, i + 1 ) ).first;
-    return interpolate_linlin_NEW( a1, s1, a2, s2, alpha );
+      return interpLogLinWCL( a1, s1, a2, s2, alpha,
+                              vectAt( *m_logS, i ),
+                              vectAt( *m_logS, i + 1 ) ).first;
+    return interpLin( a1, s1, a2, s2, alpha );
   };
   //Along beta: linear.
-  return interpolate_linlin_NEW( vectAt( bg, ib ),
-                                 edge( calcSABIdx( na, ia, ib ) ),
-                                 vectAt( bg, ib + 1 ),
-                                 edge( calcSABIdx( na, ia, ib + 1 ) ), beta );
+  return interpLin( vectAt( bg, ib ),
+                    edge( calcSABIdx( na, ia, ib ) ),
+                    vectAt( bg, ib + 1 ),
+                    edge( calcSABIdx( na, ia, ib + 1 ) ), beta );
 }
 
 NCS::SABBetaStripSampler::Result

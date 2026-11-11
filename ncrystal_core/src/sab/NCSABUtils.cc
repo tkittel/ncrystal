@@ -227,7 +227,7 @@ NC::SABData NC::SABUtils::transformKernelToStdFormat( ScatKnlData&& input_orig )
     //Unscale, i.e. calculate S=S_scaled*exp(-beta/2):
 
     for ( auto&& beta : enumerate(input.betaGrid) ) {
-      auto slice = sliceSABAtBetaIdx( input.sab, input.alphaGrid.size(), beta.idx );
+      auto slice = sliceSABAtBetaIdxMutable( input.sab, input.alphaGrid.size(), beta.idx );
       const double exparg = -0.5*beta.val;
       if ( exparg < 700.0 ) {
         //Straightforward, when beta is not below -1400, we can safely and
@@ -344,8 +344,8 @@ NC::SABData NC::SABUtils::transformKernelToStdFormat( ScatKnlData&& input_orig )
     std::size_t ibeta(0);
     for ( ; itB != itBLast; ++itB, ++ibeta ) {
       auto itBNext = std::next(itB);
-      auto alphaSlice = sliceSABAtBetaIdx_const( input.sab, nalpha, ibeta );
-      auto alphaSliceNext = sliceSABAtBetaIdx_const( input.sab, nalpha, ibeta+1 );
+      auto alphaSlice = sliceSABAtBetaIdx( input.sab, nalpha, ibeta );
+      auto alphaSliceNext = sliceSABAtBetaIdx( input.sab, nalpha, ibeta+1 );
       //First copy over existing row:
       newb.push_back(*itB);
       std::copy(alphaSlice.begin(), alphaSlice.end(), std::back_inserter(newS));
@@ -364,7 +364,7 @@ NC::SABData NC::SABUtils::transformKernelToStdFormat( ScatKnlData&& input_orig )
       }
     }
     //Add last slide as well:
-    auto alphaSliceLast = sliceSABAtBetaIdx_const( input.sab, nalpha, ibeta );
+    auto alphaSliceLast = sliceSABAtBetaIdx( input.sab, nalpha, ibeta );
     std::copy(alphaSliceLast.begin(), alphaSliceLast.end(), std::back_inserter(newS));
     newb.push_back(*itBLast);
     nc_assert_always( newS.size() == newNBeta * nalpha );

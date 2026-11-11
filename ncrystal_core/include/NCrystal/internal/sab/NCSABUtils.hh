@@ -48,9 +48,9 @@ namespace NCRYSTAL_NAMESPACE {
                                      VectD& complete_betagrid,
                                      VectD& complete_sab );
 
-    //Access S(alpha|beta_i) slice (const and non-const version):
-    Span<const double> sliceSABAtBetaIdx_const( Span<const double> sab, std::size_t nalpha, std::size_t beta_idx);
-    Span<double> sliceSABAtBetaIdx( Span<double> sab, std::size_t nalpha, std::size_t beta_idx);
+    //Access S(alpha|beta_i) slice (const and mutable version):
+    Span<const double> sliceSABAtBetaIdx( Span<const double> sab, std::size_t nalpha, std::size_t beta_idx);
+    Span<double> sliceSABAtBetaIdxMutable( Span<double> sab, std::size_t nalpha, std::size_t beta_idx);
 
     //Or just calculate the index:
     std::size_t calcSABIdx( std::size_t nalpha, std::size_t alpha_idx, std::size_t beta_idx);
@@ -66,12 +66,13 @@ namespace NCRYSTAL_NAMESPACE {
     //are handled by scaling the cell corners by a power of two:
     double evalSABOneShot( const SABData&, double alpha, double beta );
 
-    //Version which returns both f and logf:
-    PairDD interpolate_loglin_fallbacklinlin_fast2(double a, double fa, double b, double fb, double x, double logfa, double logfb);
+    //Version with cached logs (WCL), returning both f and logf:
+    PairDD interpLogLinOrLinWCL(double a, double fa, double b, double fb, double x, double logfa, double logfb);
 
-    //Versions with a forced interpolation (loglin requires fa>0 and fb>0): (fixme naming)
-    double interpolate_linlin_NEW(double a, double fa, double b, double fb, double x);
-    PairDD interpolate_loglin_fast2_NEW(double a, double fa, double b, double fb, double x, double logfa, double logfb);
+    //Versions with a forced interpolation (loglin requires fa>0 and fb>0, WCL
+    //means with cached logs):
+    double interpLin(double a, double fa, double b, double fb, double x);
+    PairDD interpLogLinWCL(double a, double fa, double b, double fb, double x, double logfa, double logfb);
 
     //The next two functions can be used to evaluate a SAB integral over a bin
     //of alpha-values, assuming a linear relationship in log(s).  The analytical
@@ -81,10 +82,10 @@ namespace NCRYSTAL_NAMESPACE {
     //trapezoidal integral.
 
     //Version without pre-calculated logs. Returns full (better than 1e-15) precision results.
-    double integrateAlphaInterval(double a1,double s1, double a2 , double s2 );
+    double integrateLogLinOrLin(double a1,double s1, double a2 , double s2 );
 
-    //Faster version with pre-calculated logs. Returns slightly reduced (better than 1e-14) precision results.
-    double integrateAlphaInterval_fast(double a1,double s1, double a2 , double s2 , double logs1, double logs2);
+    //Faster version with cached logs (WCL). Returns slightly reduced (better than 1e-14) precision results.
+    double integrateLogLinOrLinWCL(double a1,double s1, double a2 , double s2 , double logs1, double logs2);
 
     //log(s) if s>0.0 else valueIfNonPositive. Use instead of the naive
     //ternary: unsafe under clang, see definition below.
@@ -103,13 +104,13 @@ namespace NCRYSTAL_NAMESPACE {
 // Inline implementations //
 ////////////////////////////
 
-inline NCrystal::Span<const double> NCrystal::SABUtils::sliceSABAtBetaIdx_const( NCrystal::Span<const double> sab, std::size_t nalpha, std::size_t beta_idx)
+inline NCrystal::Span<const double> NCrystal::SABUtils::sliceSABAtBetaIdx( NCrystal::Span<const double> sab, std::size_t nalpha, std::size_t beta_idx)
 {
   nc_assert( (beta_idx+1) * nalpha <= static_cast<std::size_t>(sab.size()) );
   return {sab.begin() + beta_idx*nalpha, sab.begin() + (beta_idx+1)*nalpha};
 }
 
-inline NCrystal::Span<double> NCrystal::SABUtils::sliceSABAtBetaIdx( NCrystal::Span<double> sab, std::size_t nalpha, std::size_t beta_idx)
+inline NCrystal::Span<double> NCrystal::SABUtils::sliceSABAtBetaIdxMutable( NCrystal::Span<double> sab, std::size_t nalpha, std::size_t beta_idx)
 {
   nc_assert( (beta_idx+1) * nalpha <= static_cast<std::size_t>(sab.size()) );
   return {sab.begin() + beta_idx*nalpha, sab.begin() + (beta_idx+1)*nalpha};
@@ -158,9 +159,9 @@ inline double NCrystal::SABUtils::interpolate_loglin_fallbacklinlin_fast(double 
   }
 }
 
-inline double NCrystal::SABUtils::interpolate_linlin_NEW(double a, double fa,
-                                                         double b, double fb,
-                                                         double x)
+inline double NCrystal::SABUtils::interpLin(double a, double fa,
+                                            double b, double fb,
+                                            double x)
 {
   nc_assert( fa >= 0.0 && fb >= 0.0 );
   nc_assert( x >= a && x <= b );
@@ -180,9 +181,9 @@ inline double NCrystal::SABUtils::interpolate_linlin_NEW(double a, double fa,
 }
 
 inline NCrystal::PairDD
-NCrystal::SABUtils::interpolate_loglin_fast2_NEW(double a, double fa,
-                                                 double b, double fb, double x,
-                                                 double logfa, double logfb)
+NCrystal::SABUtils::interpLogLinWCL(double a, double fa,
+                                    double b, double fb, double x,
+                                    double logfa, double logfb)
 {
   nc_assert( fa > 0.0 && fb > 0.0 );
   nc_assert( x >= a && x <= b );
@@ -220,7 +221,7 @@ NCrystal::SABUtils::interpolate_loglin_fast2_NEW(double a, double fa,
 }
 
 inline NCrystal::PairDD
-NCrystal::SABUtils::interpolate_loglin_fallbacklinlin_fast2
+NCrystal::SABUtils::interpLogLinOrLinWCL
 (double a, double fa, double b, double fb, double x, double logfa, double logfb)
 {
   //fixme: duplicated from interpolate_loglin_fallbacklinlin_fast (just
@@ -257,7 +258,7 @@ NCrystal::SABUtils::interpolate_loglin_fallbacklinlin_fast2
   return res;
 }
 
-inline double NCrystal::SABUtils::integrateAlphaInterval(double a1,double s1, double a2 , double s2 )
+inline double NCrystal::SABUtils::integrateLogLinOrLin(double a1,double s1, double a2 , double s2 )
 {
   nc_assert( s1 >= 0.0 && s2 >= 0.0 );
   nc_assert( a2 > a1 );
@@ -315,9 +316,9 @@ inline double NCrystal::SABUtils::safeLogOrElse( double s, double valueIfNonPosi
 #endif
 }
 
-inline double NCrystal::SABUtils::integrateAlphaInterval_fast(double a1,double s1, double a2 , double s2 , double logs1, double logs2)
+inline double NCrystal::SABUtils::integrateLogLinOrLinWCL(double a1,double s1, double a2 , double s2 , double logs1, double logs2)
 {
-  //Similar implementation as integrateAlphaInterval, but due to the
+  //Similar implementation as integrateLogLinOrLin, but due to the
   //precalculated logs, the Taylor expansion will be used more rarely and
   //with fewer terms (it is not needed for speed reasons, just numerical
   //stability). We also reorder, to put the most likely code first:

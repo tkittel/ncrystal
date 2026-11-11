@@ -136,9 +136,9 @@ namespace NCRYSTAL_NAMESPACE {
           double cumul = 0.0;
           for (std::size_t ai = 0; ai < nalpham1; ++ai, ++global_idx) {
             auto next_idx = global_idx + 1;
-            double integ = SABUtils::integrateAlphaInterval_fast( vectAt( alphaGrid, ai ), vectAt( sab, global_idx ),
-                                                                  vectAt( alphaGrid, ai+1 ), vectAt( sab,  next_idx ),
-                                                                  vectAt( logsab, global_idx ), vectAt( logsab,  next_idx ) );
+            double integ = SABUtils::integrateLogLinOrLinWCL( vectAt( alphaGrid, ai ), vectAt( sab, global_idx ),
+                                                              vectAt( alphaGrid, ai+1 ), vectAt( sab,  next_idx ),
+                                                              vectAt( logsab, global_idx ), vectAt( logsab,  next_idx ) );
             vectAt( alphaintegrals_cumul, next_idx ) = (cumul += integ);
           }
         }

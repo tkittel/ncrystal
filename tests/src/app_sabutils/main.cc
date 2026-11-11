@@ -144,13 +144,13 @@ void test_alpha_integrals() {
     const double refval = e.second;
     const double s1 = (1.0-y)/2.0;
     const double s2 = (1.0+y)/2.0;
-    const double res = NS::integrateAlphaInterval(0.0, s1, 1.0, s2);//claims precision better than 1e-15
-    const double resfast = NS::integrateAlphaInterval_fast(0.0, s1, 1.0, s2, std::log(s1), std::log(s2) );//claims precision better than 1e-14
+    const double res = NS::integrateLogLinOrLin(0.0, s1, 1.0, s2);//claims precision better than 1e-15
+    const double resfast = NS::integrateLogLinOrLinWCL(0.0, s1, 1.0, s2, std::log(s1), std::log(s2) );//claims precision better than 1e-14
     if (!NC::floateq(res,refval,1e-15,0.0))
-      NCRYSTAL_THROW2(LogicError,"problem with integrateAlphaInterval for y="
+      NCRYSTAL_THROW2(LogicError,"problem with integrateLogLinOrLin for y="
                       <<NC::fmt(y)<<" : "<<res<<" differs too much from expected "<<refval);
     if (!NC::floateq(resfast,refval,1e-14,0.0))
-      NCRYSTAL_THROW2(LogicError,"problem with integrateAlphaInterval_fast for y="
+      NCRYSTAL_THROW2(LogicError,"problem with integrateLogLinOrLinWCL for y="
                       <<NC::fmt(y)<<" : "<<resfast<<" differs too much from expected "<<refval);
   }
 }

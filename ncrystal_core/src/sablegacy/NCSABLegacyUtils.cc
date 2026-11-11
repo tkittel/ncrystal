@@ -163,9 +163,9 @@ NC::SABUtils::TailedBreakdown NC::SABUtils::createTailedBreakdown( const Span<co
     tb.narrow = true;
     setTailPoint(tb.front,aidx_low,alpha_low);
     setTailPoint(tb.back,aidx_low,alpha_upp);
-    tb.xs_front = integrateAlphaInterval_fast( tb.front.alpha, tb.front.sval,
-                                               tb.back.alpha, tb.back.sval,
-                                               tb.front.logsval, tb.back.logsval );
+    tb.xs_front = integrateLogLinOrLinWCL( tb.front.alpha, tb.front.sval,
+                                           tb.back.alpha, tb.back.sval,
+                                           tb.front.logsval, tb.back.logsval );
     return tb;
   }
 
@@ -177,9 +177,9 @@ NC::SABUtils::TailedBreakdown NC::SABUtils::createTailedBreakdown( const Span<co
   if ( alpha_low >= alphaGrid[aidx_low] ) {
     nc_assert( alpha_low <= alphaGrid[aidx_low + 1] );
     setTailPoint(tb.front,aidx_low,alpha_low);
-    tb.xs_front = integrateAlphaInterval_fast( tb.front.alpha, tb.front.sval,
-                                               alphaGrid[aidx_low+1], sab[aidx_low+1],
-                                               tb.front.logsval, logsab[aidx_low+1] );
+    tb.xs_front = integrateLogLinOrLinWCL( tb.front.alpha, tb.front.sval,
+                                           alphaGrid[aidx_low+1], sab[aidx_low+1],
+                                           tb.front.logsval, logsab[aidx_low+1] );
     ++tb.imiddle_low;
   }
   //Back (not there if alpha_upp is outside the grid range):
@@ -187,9 +187,9 @@ NC::SABUtils::TailedBreakdown NC::SABUtils::createTailedBreakdown( const Span<co
     nc_assert( aidx_upp != 0 );
     nc_assert( alpha_upp >= alphaGrid[aidx_upp-1] );
     setTailPoint(tb.back,aidx_upp-1,alpha_upp);
-    tb.xs_back = integrateAlphaInterval_fast( alphaGrid[aidx_upp-1], sab[aidx_upp-1],
-                                              tb.back.alpha, tb.back.sval,
-                                              logsab[aidx_upp-1], tb.back.logsval );
+    tb.xs_back = integrateLogLinOrLinWCL( alphaGrid[aidx_upp-1], sab[aidx_upp-1],
+                                          tb.back.alpha, tb.back.sval,
+                                          logsab[aidx_upp-1], tb.back.logsval );
     --tb.imiddle_upp;
   }
   tb.xs_middle = ( tb.imiddle_upp > tb.imiddle_low ?
