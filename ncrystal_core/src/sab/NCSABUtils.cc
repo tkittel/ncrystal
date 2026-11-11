@@ -149,40 +149,8 @@ double NC::SABUtils::evalSABOneShot( const SABData& sd,
       ( std::upper_bound( g.begin(), g.end(), x ) - g.begin() );
     return ncmin( i, g.size() - 1 ) - 1;
   };
-  const std::size_t ia = cellIdx( A, alpha );
-  const std::size_t ib = cellIdx( B, beta );
-  const std::size_t na = A.size();
-  const auto& S = sd.sab();
-  double s[4] = { vectAt( S, calcSABIdx( na, ia, ib ) ),
-                  vectAt( S, calcSABIdx( na, ia + 1, ib ) ),
-                  vectAt( S, calcSABIdx( na, ia, ib + 1 ) ),
-                  vectAt( S, calcSABIdx( na, ia + 1, ib + 1 ) ) };
-  const double smax = ncmax( s[0], s[1], s[2], s[3] );
-  if ( !( smax > 0.0 ) )
-    return 0.0;
-  //Scale by 2^k so the largest corner is in [0.5,1), keeping the others out
-  //of the subnormal range where possible (those still subnormal are set to
-  //0, as when integrating kernels):
-  int k;
-  std::frexp( smax, &k );
-  for ( auto& v : s ) {
-    v = std::ldexp( v, -k );
-    if ( v < std::numeric_limits<double>::min() )
-      v = 0.0;
-  }
-  const double a0 = vectAt( A, ia );
-  const double a1 = vectAt( A, ia + 1 );
-  const double s0 = interpolate_loglin_fallbacklinlin( a0, s[0], a1, s[1],
-                                                       alpha );
-  const double s1 = interpolate_loglin_fallbacklinlin( a0, s[2], a1, s[3],
-                                                       alpha );
-  const double b0 = vectAt( B, ib );
-  const double b1 = vectAt( B, ib + 1 );
-  //Linear in beta, from the nearest edge (exact at both):
-  const double res = ( beta - b0 <= b1 - beta
-                       ? nclerp( s0, s1, ( beta - b0 ) / ( b1 - b0 ) )
-                       : nclerp( s1, s0, ( b1 - beta ) / ( b1 - b0 ) ) );
-  return std::ldexp( res, k );
+  return evalSABCell( sd, cellIdx( A, alpha ), cellIdx( B, beta ),
+                      alpha, beta );
 }
 
 double NC::SABUtils::evalSABCell( const SABData& sd,
