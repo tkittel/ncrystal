@@ -138,6 +138,59 @@ NC::ScatKnlData NC::SABUtils::trimZeroEdgesFromKernel(ScatKnlData&& input)
   return res;
 }
 
+double NC::SABUtils::evalSABOneShot( const SABData& sd,
+                                     double alpha, double beta )
+{
+#ifndef NDEBUG
+  nc_assert_always( !ncisnan( alpha ) && !ncisnan( beta ) );
+#endif
+  const auto& A = sd.alphaGrid();
+  const auto& B = sd.betaGrid();
+  if ( !( alpha >= A.front() && alpha <= A.back()
+          && beta >= B.front() && beta <= B.back() ) )
+    return 0.0;
+  //Index of the cell containing x (the last cell at the upper edge):
+  auto cellIdx = []( const VectD& g, double x )
+  {
+    const auto i = static_cast<std::size_t>
+      ( std::upper_bound( g.begin(), g.end(), x ) - g.begin() );
+    return ncmin( i, g.size() - 1 ) - 1;
+  };
+  const std::size_t ia = cellIdx( A, alpha );
+  const std::size_t ib = cellIdx( B, beta );
+  const std::size_t na = A.size();
+  const auto& S = sd.sab();
+  double s[4] = { vectAt( S, ib * na + ia ), vectAt( S, ib * na + ia + 1 ),
+                  vectAt( S, ( ib + 1 ) * na + ia ),
+                  vectAt( S, ( ib + 1 ) * na + ia + 1 ) };
+  const double smax = ncmax( s[0], s[1], s[2], s[3] );
+  if ( !( smax > 0.0 ) )
+    return 0.0;
+  //Scale by 2^k so the largest corner is in [0.5,1), keeping the others out
+  //of the subnormal range where possible (those still subnormal are set to
+  //0, as when integrating kernels):
+  int k;
+  std::frexp( smax, &k );
+  for ( auto& v : s ) {
+    v = std::ldexp( v, -k );
+    if ( v < std::numeric_limits<double>::min() )
+      v = 0.0;
+  }
+  const double a0 = vectAt( A, ia );
+  const double a1 = vectAt( A, ia + 1 );
+  const double s0 = interpolate_loglin_fallbacklinlin( a0, s[0], a1, s[1],
+                                                       alpha );
+  const double s1 = interpolate_loglin_fallbacklinlin( a0, s[2], a1, s[3],
+                                                       alpha );
+  const double b0 = vectAt( B, ib );
+  const double b1 = vectAt( B, ib + 1 );
+  //Linear in beta, from the nearest edge (exact at both):
+  const double res = ( beta - b0 <= b1 - beta
+                       ? nclerp( s0, s1, ( beta - b0 ) / ( b1 - b0 ) )
+                       : nclerp( s1, s0, ( b1 - beta ) / ( b1 - b0 ) ) );
+  return std::ldexp( res, k );
+}
+
 NC::shared_obj<const NC::VectD>
 NC::SABUtils::createLogSTable( const SABData& sd )
 {
