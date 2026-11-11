@@ -202,6 +202,18 @@ def test_primitive():
                sgs._cif_uij_ueq( u_o, conv ), u_o ) ]
     ref = load( cif_text( conv, 'C 1 2/c 1', asym ) )
     show( 'C2/c', ref )
+    #Site multiplicities, either the number of positions (as in the CIF
+    #dictionary) or the order of the site symmetry (as written by SHELXL), but
+    #consistently so:
+    for mults, ok in ( ( [ 8, 4 ], True ), ( [ 1, 2 ], True ),
+                       ( [ 1, 4 ], False ), ( [ 8, 2 ], False ),
+                       ( [ 4, 4 ], False ) ):
+        txt = cif_text( conv, 'C 1 2/c 1', asym, mults = mults )
+        if ok:
+            load( txt )
+            print( f'   multiplicities {mults}: accepted' )
+        else:
+            expect_error( f'multiplicities {mults}', txt )
     allc = expand( '15:b1', conv, asym )
     L = np.array( sgs._cellparams_to_spglib_lattice( conv ) ).T
     M = np.array( [ [ 0.5, 0.5, 0 ], [ -0.5, 0.5, 0 ], [ 0, 0, 1 ] ] )
