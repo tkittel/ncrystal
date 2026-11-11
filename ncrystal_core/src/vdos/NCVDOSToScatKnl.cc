@@ -219,7 +219,8 @@ NCV::detail::fillSABFromVDOS( const VDOSGn& Gn_asym,
       if ( !(Gn_asym_eval>0.0) ) {
         continue;
       }
-      vdosScatKnlAccumulate( &sab[ibeta*nalpha+ialphaB],
+      vdosScatKnlAccumulate( &sab[SABUtils::calcSABIdx( nalpha, ialphaB,
+                                                        ibeta )],
                              alpha_factors.data() + ialphaB,
                              Gn_asym_eval, ialphaE - ialphaB );
     }//beta loop

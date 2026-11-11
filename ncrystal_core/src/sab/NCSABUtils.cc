@@ -153,9 +153,10 @@ double NC::SABUtils::evalSABOneShot( const SABData& sd,
   const std::size_t ib = cellIdx( B, beta );
   const std::size_t na = A.size();
   const auto& S = sd.sab();
-  double s[4] = { vectAt( S, ib * na + ia ), vectAt( S, ib * na + ia + 1 ),
-                  vectAt( S, ( ib + 1 ) * na + ia ),
-                  vectAt( S, ( ib + 1 ) * na + ia + 1 ) };
+  double s[4] = { vectAt( S, calcSABIdx( na, ia, ib ) ),
+                  vectAt( S, calcSABIdx( na, ia + 1, ib ) ),
+                  vectAt( S, calcSABIdx( na, ia, ib + 1 ) ),
+                  vectAt( S, calcSABIdx( na, ia + 1, ib + 1 ) ) };
   const double smax = ncmax( s[0], s[1], s[2], s[3] );
   if ( !( smax > 0.0 ) )
     return 0.0;
