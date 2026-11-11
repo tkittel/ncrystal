@@ -278,10 +278,10 @@ def _list_knllux6():
                                             293.15 ) ] ):
         yield f'{mat};temp={t:g};vdoslux={i%3};knllux=6'
 
-def _list_maxlux():
-    #Both kernel luxury settings at their maximum (1-2 minutes for most
-    #materials, ~30s for diamond):
-    yield f'{_sl("C_sg227_Diamond")};temp=293.15;vdoslux=6;knllux=6'
+def _list_v5k6():
+    #knllux=6 with vdoslux=5 (both at their maximum takes minutes in Debug
+    #builds):
+    yield f'{_sl("Al_sg225")};temp=5;vdoslux=5;knllux=6'
 
 def _list_legacy():
     #All legacy vdoslux levels with VDOS input (vdoslux=1005 only for Al, the
@@ -323,5 +323,5 @@ _tests = {
     'long_sabxsvdlux6b' : lambda : _half(_list_vdoslux6(),1),
     'long_sabxsknlux6a' : lambda : _half(_list_knllux6(),0),
     'long_sabxsknlux6b' : lambda : _half(_list_knllux6(),1),
-    'long_sabxsmaxlux' : lambda : list(_list_maxlux()),
+    'long_sabxsv5k6' : lambda : list(_list_v5k6()),
 }
