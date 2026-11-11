@@ -132,6 +132,11 @@ present script.  """,descrw)+f"""\n\nExample invocations:
                                   ' eigenvalues of anisotropic displacements.'))
     parser.add_argument("--tol-occu",default=None,type=float,metavar='VALUE',
                         help=wrap('Relative tolerance for site occupancies.'))
+    parser.add_argument('--permissive',default=False,action='store_true',
+                        help=wrap('Load some CIF data with inconsistent'
+                                  ' information anyway (with warnings), e.g.'
+                                  ' by discarding anisotropic displacements.'
+                                  ' Use with care.'))
     parser.add_argument('--showcif',default=False,action='store_true',
                         help=wrap('Simply show the input CIF data (mostly useful with mpid:: or codid:: sources).'))
     parser.add_argument("--valplot",nargs='*',metavar="FILE",
@@ -260,7 +265,8 @@ def _main_impl( args, do_quiet ):
                                     tol = args.tol,
                                     tol_symprec = args.tol_symprec,
                                     tol_uij = args.tol_uij,
-                                    tol_occu = args.tol_occu )
+                                    tol_occu = args.tol_occu,
+                                    permissive = args.permissive )
         composer = lc.create_ncmat_composer( top_comments=['<<disableautogennotice>>'],
                                              uiso_temperature = args.uisotemp,
                                              quiet = do_quiet,
