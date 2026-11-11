@@ -30,7 +30,7 @@
 #include "NCrystal/internal/bkgdextcurve/NCBkgdExtCurve.hh"
 #include "NCrystal/internal/freegas/NCFreeGas.hh"
 #include "NCrystal/internal/elincscatter/NCElIncScatter.hh"
-#include "NCrystal/internal/sabscatter/NCSABScatter.hh"
+#include "NCrystal/internal/sabscatter/NCSABScatterLegacy.hh"
 #include "NCrystal/internal/sabscatter/NCSABScatterNG.hh"
 #include "NCrystal/internal/sab/NCSABFactory.hh"
 #include "NCrystal/internal/utils/NCString.hh"
@@ -284,7 +284,7 @@ namespace NCRYSTAL_NAMESPACE {
                   auto sabhelper
                     = SAB::createScatterHelperWithCache( sabdata,
                                                          di_scatknl->energyGrid() );
-                  complist.emplace_back(scale,makeSO<SABScatter>( std::move(sabhelper) ));
+                  complist.emplace_back(scale,makeSO<SABScatterLegacy>( std::move(sabhelper) ));
                   return complist;
                 });
               } else {
@@ -360,7 +360,7 @@ namespace NCRYSTAL_NAMESPACE {
               if ( knllux == -1 ) {
                 //legacy:
                 auto scathelper = SAB::createScatterHelperWithCache( std::move(sabdata) );
-                complist.emplace_back(scale,makeSO<SABScatter>(std::move(scathelper)));
+                complist.emplace_back(scale,makeSO<SABScatterLegacy>(std::move(scathelper)));
                 return complist;
               }
               const auto teff = NCDI::debyeEffectiveTemperature( ai.debyeTemp().value(),
