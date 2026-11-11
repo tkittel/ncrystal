@@ -590,3 +590,88 @@ def _group_by_tol( items, same ):
             res.append( len( reps ) )
             reps.append( it )
     return res
+
+################################################################################
+#Orbits of sites with symmetry detection based on positions and site data.
+
+def _find_site_orbits( cellsg, sites, tols ):
+    """Orbits of sites under the symmetry found by spglib (in the basis of the
+    input cell, given as dict with keys a,b,c,alpha,beta,gamma). Each site is a
+    dict with keys 'key' (exact, hashable, e.g. the element), 'pos'
+    (fractional), and the optional 'occu', 'uiso' and 'aniso' (CIF uij dict).
+    Sites are only equivalent if their keys are equal and their occupancies,
+    uiso values and tensor eigenvalues agree within the tolerances (dict from
+    _resolve_tolerances). Returns dict with the space group number, and the
+    orbits as list of dicts with 'members' (site indices, the first being the
+    representative) and 'aniso_ok' (False if a tensor is not the symmetry
+    image of the representative tensor within tols['uij'], None if the orbit
+    has no tensors)."""
+    from ._numpy import _ensure_numpy
+    np = _ensure_numpy()
+    spglib = _import_spglib()
+    lattice = np.asarray( _cellparams_to_spglib_lattice( cellsg ),
+                          dtype = float )
+    ufrac = [ ( _cif_to_frac( s['aniso'], cellsg ) if s.get('aniso') else None )
+              for s in sites ]
+    eigs = [ ( _cart_eigenvalues( u, cellsg ) if u is not None else None )
+             for u in ufrac ]
+    tu, to = tols['uij'], tols['occu']
+    def opt_same( a, b, cmp ):
+        return ( a is None ) == ( b is None ) and ( a is None or cmp( a, b ) )
+    def same( i, j ):
+        si, sj = sites[i], sites[j]
+        return ( si['key'] == sj['key']
+                 and opt_same( si.get('occu'), sj.get('occu'),
+                               lambda a, b : _relclose( a, b, to ) )
+                 and opt_same( si.get('uiso'), sj.get('uiso'),
+                               lambda a, b : _relclose( a, b, tu ) )
+                 and opt_same( eigs[i], eigs[j],
+                               lambda a, b : _eigclose( a, b, tu ) ) )
+    types = _group_by_tol( list( range( len( sites ) ) ), same )
+    positions = [ tuple( float( x ) for x in s['pos'] ) for s in sites ]
+    ds = spglib.get_symmetry_dataset( ( lattice, positions, types ),
+                                      symprec = tols['symprec'] )
+    if not ds:
+        raise _nc_core.NCBadInput( 'Could not determine symmetry of'
+                                   ' structure with spglib' )
+    def get( k ):
+        return getattr( ds, k ) if hasattr( ds, k ) else ds[k]
+    rots = np.asarray( get('rotations'), dtype = float )
+    trans = np.asarray( get('translations'), dtype = float )
+    orbits = {}
+    for i, e in enumerate( get('equivalent_atoms') ):
+        orbits.setdefault( int( e ), [] ).append( i )
+    orbitlist = sorted( orbits.values(), key = lambda m : m[0] )
+    def distsq( x, y ):
+        d = np.asarray( x, dtype = float ) - np.asarray( y, dtype = float )
+        d = np.dot( lattice.T, d - np.round( d ) )
+        return float( np.dot( d, d ) )
+    def deviation( r, i ):
+        #Smallest deviation of tensor i from the images of tensor r under the
+        #operations mapping position r onto position i, as the largest
+        #(absolute) Cartesian eigenvalue of the difference relative to the
+        #largest eigenvalue of tensor r. Basis independent, and bounding the
+        #eigenvalue differences.
+        scale = max( abs( e ) for e in eigs[r] )
+        def dev( R ):
+            d = _transform_frac_tensor( R, ufrac[r] ) - ufrac[i]
+            return max( abs( e ) for e in _cart_eigenvalues( d, cellsg ) )
+        devs, dmin = [], None
+        for R, t in zip( rots, trans ):
+            dsq = distsq( np.dot( R, positions[r] ) + t, positions[i] )
+            if dmin is None or dsq < dmin[0]:
+                dmin = ( dsq, R )
+            if dsq <= ( 2.0 * tols['symprec'] )**2:
+                devs.append( dev( R ) )
+        if not devs:
+            #Should not happen, but use the nearest image just in case:
+            devs.append( dev( dmin[1] ) )
+        return min( devs ) / scale
+    res = []
+    for members in orbitlist:
+        r = members[0]
+        aniso_ok = None
+        if ufrac[r] is not None:
+            aniso_ok = all( deviation( r, i ) <= tu for i in members[1:] )
+        res.append( { 'members': members, 'aniso_ok': aniso_ok } )
+    return { 'sgno': int( get('number') ), 'orbits': res }
