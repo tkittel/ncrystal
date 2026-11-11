@@ -273,10 +273,12 @@ double NCV::VDOSGnData::interpolateDensity(double energy) const
     return 0.0;
   double a = (energy-m_egrid_lower)*m_egrid_invbinwidth;
   double floor_a = std::floor(a);
-  //clamp to safe-guard against numerical errors.:
+  //The index is only clamped at the upper edge (a=npts-1), where f=1 then
+  //gives the last value:
   std::size_t index = std::min<std::size_t>(m_spec_size_minus_2,
                                             static_cast<std::size_t>(floor_a));
-  double f = a - floor_a;//a-index instead would mix int and double => slower.
+  const double f = ( floor_a > static_cast<double>(m_spec_size_minus_2)
+                     ? 1.0 : a - floor_a );
   nc_assert( index+1 < m_spec.size() );
   if ( !m_cubic.empty() )
     return evalCubicU( &m_cubic[4*index], f );
@@ -345,7 +347,8 @@ void NCV::VDOSGnData::interpolateDensityMany( Span<const double> energy,
     const double fa = std::floor(a);
     const std::size_t ix = ncmin( m_spec_size_minus_2,
                                   static_cast<std::size_t>(fa) );
-    buf_f[i] = a - fa;
+    //f=1 at the upper edge, as in interpolateDensity:
+    buf_f[i] = ( fa > static_cast<double>(m_spec_size_minus_2) ? 1.0 : a - fa );
     buf_ix[i] = static_cast<double>(ix);
   }
 
