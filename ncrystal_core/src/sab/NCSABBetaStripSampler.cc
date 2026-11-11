@@ -241,9 +241,10 @@ double NCS::SABBetaStripSampler::evalSCell( double alpha, double beta,
     return interpolate_linlin_NEW( a1, s1, a2, s2, alpha );
   };
   //Along beta: linear.
-  return interpolate_linlin_NEW( vectAt( bg, ib ), edge( ib * na + ia ),
+  return interpolate_linlin_NEW( vectAt( bg, ib ),
+                                 edge( calcSABIdx( na, ia, ib ) ),
                                  vectAt( bg, ib + 1 ),
-                                 edge( ( ib + 1 ) * na + ia ), beta );
+                                 edge( calcSABIdx( na, ia, ib + 1 ) ), beta );
 }
 
 NCS::SABBetaStripSampler::Result
