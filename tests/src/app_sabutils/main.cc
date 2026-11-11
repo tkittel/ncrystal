@@ -202,8 +202,88 @@ namespace {
   }
 }
 
+namespace {
+  NC::SABData makeSAB( NC::VectD sab )
+  {
+    return NC::SABData( NC::VectD{ 0.5, 1.0, 2.0, 4.0 },
+                        NC::VectD{ -1.0, 0.0, 1.5 },
+                        std::move( sab ), NC::Temperature{ 300.0 },
+                        NC::SigmaBound{ 1.0 }, NC::AtomMass{ 1.0 } );
+  }
+
+  //Expected value: log-linear in alpha (linear if a corner is 0), then
+  //linear in beta, within cell (ia,ib):
+  double expectedSAB( const NC::SABData& sd, std::size_t ia, std::size_t ib,
+                      double alpha, double beta )
+  {
+    const auto& A = sd.alphaGrid();
+    const auto& B = sd.betaGrid();
+    auto s = [&sd,&A]( std::size_t i, std::size_t j )
+    { return sd.sab().at( j * A.size() + i ); };
+    auto inA = [&]( std::size_t j ) {
+      const double fa = s( ia, j ), fb = s( ia + 1, j );
+      const double r = ( alpha - A.at(ia) ) / ( A.at(ia+1) - A.at(ia) );
+      return ( fa > 0.0 && fb > 0.0
+               ? std::exp( std::log(fa) + r * std::log( fb / fa ) )
+               : fa + r * ( fb - fa ) );
+    };
+    const double u = ( beta - B.at(ib) ) / ( B.at(ib+1) - B.at(ib) );
+    return inA( ib ) + u * ( inA( ib + 1 ) - inA( ib ) );
+  }
+
+  void test_evalSABOneShot()
+  {
+    //4x3 grid, one cell with zero corners (alpha 2..4, beta 0..1.5):
+    NC::VectD sab = { 0.3, 0.5, 0.2, 0.1,
+                      1.0, 2.0, 0.7, 0.0,
+                      0.4, 0.9, 0.0, 0.0 };
+    const auto sd = makeSAB( sab );
+    const auto& A = sd.alphaGrid();
+    const auto& B = sd.betaGrid();
+    //Exact at all grid points (incl. the upper edges):
+    for ( auto ib : NC::ncrange( B.size() ) )
+      for ( auto ia : NC::ncrange( A.size() ) )
+        nc_assert_always( NS::evalSABOneShot( sd, A.at(ia), B.at(ib) )
+                          == sab.at( ib * A.size() + ia ) );
+    //Inside each cell:
+    for ( auto ib : NC::ncrange( B.size() - 1 ) )
+      for ( auto ia : NC::ncrange( A.size() - 1 ) )
+        for ( double ra : { 0.1, 0.5, 0.77 } )
+          for ( double rb : { 0.2, 0.5, 0.9 } ) {
+            const double a = A.at(ia) + ra * ( A.at(ia+1) - A.at(ia) );
+            const double b = B.at(ib) + rb * ( B.at(ib+1) - B.at(ib) );
+            const double v = NS::evalSABOneShot( sd, a, b );
+            nc_assert_always( NC::floateq( v, expectedSAB( sd, ia, ib, a, b ),
+                                           1e-13, 0.0 ) );
+          }
+    //Outside the grid:
+    for ( auto ab : { NC::PairDD{ 0.49, 0.0 }, NC::PairDD{ 4.01, 0.0 },
+                      NC::PairDD{ 1.0, -1.01 }, NC::PairDD{ 1.0, 1.51 } } )
+      nc_assert_always( NS::evalSABOneShot( sd, ab.first, ab.second ) == 0.0 );
+    //Subnormal S: same as the table scaled up by 2^1040 (exact), scaled down
+    //again (to within the precision of the subnormal result):
+    NC::VectD sab_sub, sab_up;
+    for ( auto v : sab ) {
+      sab_sub.push_back( std::ldexp( v, -1040 ) );
+      sab_up.push_back( std::ldexp( sab_sub.back(), 1040 ) );
+    }
+    const auto sd_sub = makeSAB( sab_sub );
+    const auto sd_up = makeSAB( sab_up );
+    for ( double a : { 0.5, 0.7, 1.9, 3.0 } )
+      for ( double b : { -1.0, -0.3, 0.9, 1.5 } ) {
+        const double v = NS::evalSABOneShot( sd_sub, a, b );
+        nc_assert_always( v == 0.0 || v < std::numeric_limits<double>::min() );
+        nc_assert_always( NC::floateq( std::ldexp( v, 1040 ),
+                                       NS::evalSABOneShot( sd_up, a, b ),
+                                       1e-8, 0.0 ) );
+      }
+    std::cout << "evalSABOneShot tests OK" << std::endl;
+  }
+}
+
 int main()
 {
+  test_evalSABOneShot();
   testScatKnlDirect( NC::Temperature{ 300.0 }, NC::Temperature{ 300.0 } );
   testScatKnlDirect( NC::Temperature{ 300.0 }, NC::Temperature{ 200.0 } );
 
