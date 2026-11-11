@@ -8,6 +8,7 @@ interfaces
 lcbragg
 powderbragg
 sab
+sablegacy
 sabscatter
 scbragg
 utils
