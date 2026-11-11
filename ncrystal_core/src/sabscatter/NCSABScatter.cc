@@ -18,60 +18,60 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/internal/sabscatter/NCSABScatterNG.hh"
+#include "NCrystal/internal/sabscatter/NCSABScatter.hh"
 #include "NCrystal/internal/sab/NCSABExtended.hh"
 #include "NCrystal/internal/utils/NCIsoXSUtils.hh"
 namespace NC = NCrystal;
 
-NC::SABScatterNG::~SABScatterNG() = default;
+NC::SABScatter::~SABScatter() = default;
 
-NC::SABScatterNG::SABScatterNG( shared_obj<const SABExtended> sh, double scale )
+NC::SABScatter::SABScatter( shared_obj<const SABExtended> sh, double scale )
   : m_sh(std::move(sh)), m_scale(scale)
 {
   nc_assert( m_sh!=nullptr);
   if ( !( m_scale > 0.0 && std::isfinite( m_scale ) ) )
-    NCRYSTAL_THROW2(BadInput,"SABScatterNG: invalid scale (must be positive"
+    NCRYSTAL_THROW2(BadInput,"SABScatter: invalid scale (must be positive"
                     " and finite): "<<m_scale);
 }
 
-NC::SABScatterNG::SABScatterNG( shared_obj<const SABExtended> sh,
-                                SigmaBound sb, double scale )
-  : SABScatterNG( std::move(sh), sb.dbl() * scale )
+NC::SABScatter::SABScatter( shared_obj<const SABExtended> sh,
+                            SigmaBound sb, double scale )
+  : SABScatter( std::move(sh), sb.dbl() * scale )
 {
 }
 
 NC::CrossSect
-NC::SABScatterNG::crossSectionIsotropic( CachePtr&, NeutronEnergy ekin ) const
+NC::SABScatter::crossSectionIsotropic( CachePtr&, NeutronEnergy ekin ) const
 {
   return CrossSect{ m_sh->xsEvaluator().evalScaled( ekin.dbl(), 1.0, m_scale ) };
 }
 
 NC::Optional<NC::IsoXSTable>
-NC::SABScatterNG::createIsoXSTable() const
+NC::SABScatter::createIsoXSTable() const
 {
   return scaleIsoXSTable( m_sh->xsEvaluator().table(), 1.0, m_scale );
 }
 
-NC::VectD NC::SABScatterNG::createIsoXSBreakpoints() const
+NC::VectD NC::SABScatter::createIsoXSBreakpoints() const
 {
   return m_sh->xsBreakpoints();
 }
 
 NC::ScatterOutcomeIsotropic
-NC::SABScatterNG::sampleScatterIsotropic( CachePtr&,
-                                          RNG& rng, NeutronEnergy ekin ) const
+NC::SABScatter::sampleScatterIsotropic( CachePtr&,
+                                        RNG& rng, NeutronEnergy ekin ) const
 {
   return m_sh->sampleScatter( rng, ekin );
 }
 
 std::shared_ptr<NC::ProcImpl::Process>
-NC::SABScatterNG::createMerged( const Process& oraw,
-                                double scale_self,
-                                double scale_other ) const
+NC::SABScatter::createMerged( const Process& oraw,
+                              double scale_self,
+                              double scale_other ) const
 {
   nc_assert(scale_other>0.0);
   nc_assert(scale_self>0.0);
-  auto optr = dynamic_cast<const SABScatterNG*>(&oraw);
+  auto optr = dynamic_cast<const SABScatter*>(&oraw);
   if (!optr)
     return nullptr;
   auto& o = *optr;
@@ -80,10 +80,10 @@ NC::SABScatterNG::createMerged( const Process& oraw,
     return nullptr;
 
   const double newscale = scale_self*m_scale + scale_other*o.m_scale;
-  return std::make_shared<SABScatterNG>( m_sh, newscale );
+  return std::make_shared<SABScatter>( m_sh, newscale );
 }
 
-NC::Optional<std::string> NC::SABScatterNG::specificJSONDescription() const
+NC::Optional<std::string> NC::SABScatter::specificJSONDescription() const
 {
   std::string extension_method
     = m_sh->extender().shortName().value_or("custom");
