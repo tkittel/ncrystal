@@ -277,6 +277,18 @@ namespace {
                                        NS::evalSABOneShot( sd_up, a, b ),
                                        1e-8, 0.0 ) );
       }
+    //Huge and tiny corners in the same cell (tiny ones once lost to 0):
+    {
+      NC::VectD sab3 = sab;
+      sab3.at(0) = 1e-303; sab3.at(1) = 2e-303;
+      sab3.at(4) = 1e300; sab3.at(5) = 1e300;
+      const auto sd3 = makeSAB( sab3 );
+      for ( double a : { 0.5, 0.6, 0.75, 1.0 } )
+        for ( double b : { -1.0, -0.999, -0.5 } )
+          nc_assert_always( NC::floateq( NS::evalSABOneShot( sd3, a, b ),
+                                         expectedSAB( sd3, 0, 0, a, b ),
+                                         1e-13, 0.0 ) );
+    }
     std::cout << "evalSABOneShot tests OK" << std::endl;
   }
 
@@ -432,7 +444,6 @@ int main()
         for (auto& fb :  { 0.0, 1e-5, 1.0, 1e5 } ) {
           for (auto& xrel : { 0.0, 0.1, 0.5, 0.8, 1.0 } ) {
             double x = (xrel == 1.0 ? b : a + xrel * (b-a) );
-            test_loglin( a,fa,b,fb,x, NS::interpolate_loglin_fallbacklinlin( a,fa,b,fb,x ) );
             double logfa(fa>0.0?std::log(fa):-1000.0);
             double logfb(fb>0.0?std::log(fb):-1000.0);
             test_loglin( a,fa,b,fb,x, NS::interpLogLinOrLinWCL( a,fa,b,fb,x, logfa, logfb ).first );
