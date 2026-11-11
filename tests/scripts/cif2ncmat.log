@@ -78,6 +78,9 @@ options:
   --tol-uij VALUE       Relative tolerance for Uiso values and eigenvalues of
                         anisotropic displacements.
   --tol-occu VALUE      Relative tolerance for site occupancies.
+  --permissive          Load some CIF data with inconsistent information anyway
+                        (with warnings), e.g. by discarding anisotropic
+                        displacements. Use with care.
   --showcif             Simply show the input CIF data (mostly useful with mpid:: or
                         codid:: sources).
   --valplot [FILE ...]  List of existing NCMAT files which should be compared to
