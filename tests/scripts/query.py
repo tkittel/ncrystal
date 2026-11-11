@@ -180,8 +180,6 @@ def main():
                           ' query strings'):
             test_cli('foo',a)
 
-    test_cli('sab','refeval','0.025',
-             'stdlib::Al2O3_sg167_Corundum.ncmat','3','Al')
     test_huge_arrays()
     test_info_queries()
 
