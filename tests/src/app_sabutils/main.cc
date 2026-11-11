@@ -280,6 +280,62 @@ namespace {
     std::cout << "evalSABOneShot tests OK" << std::endl;
   }
 
+  //evalSABCell and evalSABCellWCL: exact at all grid points, as expectedSAB
+  //inside the cells, identical to each other, and finite and within the
+  //corner range for extreme corner values:
+  void test_evalSABCell()
+  {
+    NC::VectD sab = { 0.3, 0.5, 0.2, 0.1,
+                      1.0, 2.0, 0.7, 0.0,
+                      0.4, 0.9, 0.0, 0.0 };
+    {
+      const auto sd = makeSAB( sab );
+      const auto logS = NS::createLogSTable( sd );
+      const auto& A = sd.alphaGrid();
+      const auto& B = sd.betaGrid();
+      for ( auto ib : NC::ncrange( B.size() - 1 ) ) {
+        for ( auto ia : NC::ncrange( A.size() - 1 ) ) {
+          for ( double ra : { 0.0, 0.1, 0.5, 0.77, 1.0 } ) {
+            for ( double rb : { 0.0, 0.2, 0.5, 0.9, 1.0 } ) {
+              const double a = ( ra == 1.0 ? A.at(ia+1)
+                                 : A.at(ia) + ra * ( A.at(ia+1) - A.at(ia) ) );
+              const double b = ( rb == 1.0 ? B.at(ib+1)
+                                 : B.at(ib) + rb * ( B.at(ib+1) - B.at(ib) ) );
+              const double v = NS::evalSABCell( sd, ia, ib, a, b );
+              nc_assert_always( v == NS::evalSABCellWCL( sd, *logS,
+                                                         ia, ib, a, b ) );
+              if ( ( ra == 0.0 || ra == 1.0 ) && ( rb == 0.0 || rb == 1.0 ) )
+                nc_assert_always( v == sab.at( ( ib + ( rb == 1.0 ) ) * A.size()
+                                               + ia + ( ra == 1.0 ) ) );
+              else
+                nc_assert_always( NC::floateq( v, expectedSAB( sd, ia, ib,
+                                                               a, b ),
+                                               1e-13, 0.0 ) );
+            }
+          }
+        }
+      }
+    }
+    const double vals[] = { 0.0, 4.9406564584124654e-324, 1e-310, 1e-300,
+                            1.0, 1e300, 1.7e308 };
+    for ( double s0 : vals )
+      for ( double s1 : vals )
+        for ( double s2 : vals )
+          for ( double s3 : { 0.0, 1e-310, 1.0, 1.7e308 } ) {
+            NC::VectD sab2 = sab;
+            sab2.at(0) = s0; sab2.at(1) = s1; sab2.at(4) = s2; sab2.at(5) = s3;
+            const auto sd = makeSAB( sab2 );
+            for ( double a : { 0.5, 0.6, 0.75, 0.9, 1.0 } )
+              for ( double b : { -1.0, -0.7, -0.5, -0.1, 0.0 } ) {
+                const double v = NS::evalSABCell( sd, 0, 0, a, b );
+                nc_assert_always( std::isfinite( v ) );
+                nc_assert_always( v >= NC::ncmin( s0, s1, s2, s3 ) );
+                nc_assert_always( v <= NC::ncmax( s0, s1, s2, s3 ) );
+              }
+          }
+    std::cout << "evalSABCell tests OK" << std::endl;
+  }
+
   //interpLogLinWCL for extreme ratios fb/fa (where exp(dl*r) alone would
   //overflow or become subnormal): finite, exact at the nodes, within
   //[fa,fb], and accurate (long double reference):
@@ -324,6 +380,7 @@ int main()
 {
   test_evalSABOneShot();
   test_interpLogLinWCL_extreme();
+  test_evalSABCell();
   testScatKnlDirect( NC::Temperature{ 300.0 }, NC::Temperature{ 300.0 } );
   testScatKnlDirect( NC::Temperature{ 300.0 }, NC::Temperature{ 200.0 } );
 
