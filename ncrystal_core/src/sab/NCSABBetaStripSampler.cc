@@ -181,7 +181,8 @@ NCS::SABBetaStripSampler::calcStripBound( double b0, double b1,
   auto smaxAtAlpha = [&]( double a, std::size_t ia )
   {
     return ( a >= ag.front() && a <= ag.back()
-             ? ncmax( evalSCell( a, b0, ia, ib ), evalSCell( a, b1, ia, ib ) )
+             ? ncmax( evalSABCellWCL( *m_sab, *m_logS, ia, ib, a, b0 ),
+                      evalSABCellWCL( *m_sab, *m_logS, ia, ib, a, b1 ) )
              : 0.0 );
   };
   double smax = ncmax( smaxAtAlpha( a0, ia0 ), smaxAtAlpha( a1, ia1 ) );
@@ -216,35 +217,6 @@ NCS::SABBetaStripSampler::stripBounds() const
   for ( auto& s : m_strips )
     res.push_back( calcStripBound( s.b0, s.b1, s.ib ).bound );
   return res;
-}
-
-double NCS::SABBetaStripSampler::evalSCell( double alpha, double beta,
-                                            std::size_t ia,
-                                            std::size_t ib ) const
-{
-  const auto& ag = m_sab->alphaGrid();
-  const auto& bg = m_sab->betaGrid();
-  const std::size_t na = ag.size();
-  nc_assert( vectAt( ag, ia ) <= alpha && alpha <= vectAt( ag, ia + 1 ) );
-  nc_assert( vectAt( bg, ib ) <= beta && beta <= vectAt( bg, ib + 1 ) );
-  const auto& sab = m_sab->sab();
-  const double a1 = vectAt( ag, ia );
-  const double a2 = vectAt( ag, ia + 1 );
-  //Along alpha: log-linear, or linear if a value is zero:
-  auto edge = [&]( std::size_t i ) {
-    const double s1 = vectAt( sab, i );
-    const double s2 = vectAt( sab, i + 1 );
-    if ( s1 > 0.0 && s2 > 0.0 )
-      return interpLogLinWCL( a1, s1, a2, s2, alpha,
-                              vectAt( *m_logS, i ),
-                              vectAt( *m_logS, i + 1 ) ).first;
-    return interpLin( a1, s1, a2, s2, alpha );
-  };
-  //Along beta: linear.
-  return interpLin( vectAt( bg, ib ),
-                    edge( calcSABIdx( na, ia, ib ) ),
-                    vectAt( bg, ib + 1 ),
-                    edge( calcSABIdx( na, ia, ib + 1 ) ), beta );
 }
 
 NCS::SABBetaStripSampler::Result
@@ -287,7 +259,8 @@ NCS::SABBetaStripSampler::sample( RNG& rng, EDivKT e ) const
     const std::size_t ia = std::size_t( strip.ia0 ) - 1
       + clampIdx( fastUpperBoundIdx( ag.data() + strip.ia0, na_strip, alpha ),
                   1, na_strip - 1 );
-    const double s = evalSCell( alpha, beta, ia, strip.ib );
+    const double s = evalSABCellWCL( *m_sab, *m_logS, ia, strip.ib,
+                                     alpha, beta );
     //Accept with probability (S/Smax)*sqrt((beta+e)/(b1+emax)), compared
     //squared. With r=S/Smax<=1 nothing can overflow, and r^2 only underflows
     //for r<~1e-154, where acceptance is anyway negligible:

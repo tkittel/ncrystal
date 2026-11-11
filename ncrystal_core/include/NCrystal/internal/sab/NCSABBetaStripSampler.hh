@@ -108,8 +108,6 @@ namespace NCRYSTAL_NAMESPACE {
         double b0, b1, smax, b1plusemax;
         std::uint32_t ib, ia0, ia1;
       };
-      double evalSCell( double alpha, double beta,
-                        std::size_t ia, std::size_t ib ) const;
       //Strip bound, plus the alpha cells containing a0 and a1:
       struct StripCalc { StripBound bound; std::uint32_t ia0, ia1; };
       StripCalc calcStripBound( double b0, double b1, std::uint32_t ib ) const;
