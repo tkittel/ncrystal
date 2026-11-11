@@ -30,18 +30,13 @@ namespace NCRYSTAL_NAMESPACE {
 
   namespace SABUtils {
 
-    //Some input kernels are not properly filling the entire grid on which they
-    //are specified. The following function detects and removes such parts of
-    //the grid:
-    ScatKnlData trimZeroEdgesFromKernel(ScatKnlData&&);
-
     //Transform ScatKnlData to the standard unscaled and asymmetric
     //S(alpha,beta) format. Internally this calls validateScatKnlData(...) on
     //the input and, in debug builds only, also on the output. Thus, creating
     //SABData objects via this function alleviates the need for littering code
-    //elsewhere with validate calls. The function also invokes
-    //trimZeroEdgesFromKernel if needed, but will trigger a WARNING message in
-    //case anything is trimmed.
+    //elsewhere with validate calls. Parts of the grid not filled by the input
+    //kernel are trimmed away, with a WARNING message in case anything is
+    //trimmed.
     SABData transformKernelToStdFormat(ScatKnlData&&);
 
     //If beta grid is defined as [0,b1,b2,..,bn] it is assumed that it is a
@@ -63,7 +58,6 @@ namespace NCRYSTAL_NAMESPACE {
     //interpolate "loglin" (linear in log(f), fallback to linear when undefined)
     double interpolate_loglin_fallbacklinlin(double a, double fa, double b, double fb, double x);
     double interpolate_loglin_fallbacklinlin_fast(double a, double fa, double b, double fb, double x, double logfa, double logfb);
-    double interpolate_linear(double a, double fa, double b, double fb, double x);
 
     //S(alpha,beta) of the table at any point, with the interpolation used for
     //kernels (log-linear in alpha, linear if a corner value is 0, then linear
@@ -79,13 +73,8 @@ namespace NCRYSTAL_NAMESPACE {
     double interpolate_linlin_NEW(double a, double fa, double b, double fb, double x);
     PairDD interpolate_loglin_fast2_NEW(double a, double fa, double b, double fb, double x, double logfa, double logfb);
 
-    //Templated selection based on enum:
-    enum class InterpolationScheme { LOGLIN, LINLIN };
-    template<InterpolationScheme scheme>
-    double interpolate(double a, double fa, double b, double fb, double x);
-
-    //Functions for sampling:
-    double sampleLogLinDist(double a, double fa, double b, double fb, double rand);
+    //Sample log-linear distribution on [a,b] with values fa, fb at a, b (and
+    //their logs logfa, logfb):
     double sampleLogLinDist_fast(double a, double fa, double b, double fb, double rand, double logfa, double logfb);
 
     //The next two functions can be used to evaluate a SAB integral over a bin
@@ -109,28 +98,11 @@ namespace NCRYSTAL_NAMESPACE {
     //indexing as SABData::sab()), to be shared by all users of a kernel:
     shared_obj<const VectD> createLogSTable( const SABData& );
 
-    //Find the grid cells touched by the kinematically accessible region for
-    //ekin_div_kt = ekin/kT. The ibeta_low index will indicate the lowest
-    //beta-bin, which will span [ibeta_low,ibeta_low+1], and the alpha-values
-    //indices in the out_alpharanges vector will donate the upper and lower
-    //edges of the touched grid cells at the corresponding beta indices
-    //(starting from ibeta_low of course, no need to lead with a number of empty
-    //entries). For some grids it is possible that the allowed alpha-range will
-    //fall above alpha_max at very high beta values, or that there are other
-    //reasons (such as numerically alpha+=alpha- for extremely low energies) for
-    //empty cells. Such are marked by having the indices set to invalid values
-    //(alphaGrid.size()).
-    void activeGridCells( const SABData& data,
-                          EDivKT,
-                          std::vector<std::pair<uint16_t,uint16_t>>& out_alpharanges,
-                          std::size_t& ibeta_low );
-
-    //Expand kinematic alpha-limits at each beta point outwards to nearest
-    //points in the alpha-grid.  Thus, this function appears similar to the
-    //activeGridCells function, but concerns 1D ranges at each beta-grid point,
-    //rather than the range of 2D cells. Of course, ranges are limited to the
-    //extent of the alpha grid. Empty ranges are marked by indices both equal to
-    //alphaGrid.size() in the out_alpharanges vector.
+    //Expand kinematic alpha-limits for ekin_div_kt = ekin/kT at each beta point
+    //outwards to nearest points in the alpha-grid. Ranges are limited to the
+    //extent of the alpha grid, and start at beta index ibeta_low. Empty ranges
+    //are marked by indices both equal to alphaGrid.size() in the
+    //out_alpharanges vector.
     void activeGridRanges( const SABData& data,
                            EDivKT,
                            std::vector<std::pair<uint16_t,uint16_t>>& out_alpharanges,
@@ -404,34 +376,9 @@ inline double NCrystal::SABUtils::integrateAlphaInterval_fast(double a1,double s
   return da*ps*ncfma( -ysq, p, 0.5 );
 }
 
-inline double NCrystal::SABUtils::sampleLogLinDist(double a, double fa, double b, double fb, double rand)
-{
-  //(NB: Code duplicated below!)
-  nc_assert(b>a);
-  nc_assert(fa>=0.);
-  nc_assert(fb>=0.);
-  double df = fb-fa;
-  if ( fa > 0.0 && fb > 0.0 && df != 0.0 ) {
-    //usual, non-degenerate case:
-    double a_sub_b = a-b;
-    double logfa_fb = std::log(fb/fa);
-    if ( a_sub_b * logfa_fb != 0.0 )
-      return a_sub_b*std::log(fa*std::exp(a*logfa_fb/a_sub_b)/(fa+rand*df))/logfa_fb;
-    df = 0.0;
-  }
-  if (!df)
-    return nclerp(a,b,rand);//fa=fb, select uniformly in [a,b]
-  //exactly one of fa and fb is 0:
-  nc_assert(fa||fb);
-  double x = (b-a)*std::sqrt(rand);
-  return (fa ? b-x : a + x);
-}
-
 inline double NCrystal::SABUtils::sampleLogLinDist_fast(double a, double fa, double b, double fb, double rand, double logfa, double logfb)
 {
   //fixme: new LogLinDistSampler class is better.
-  //(NB: Code duplicated above!)
-  //Slightly faster. Although, still log+exp remains so not sure that it is really worth the extra caching overhead.
   nc_assert(b>a);
   nc_assert(fa>=0.);
   nc_assert(fb>=0.);
@@ -450,22 +397,6 @@ inline double NCrystal::SABUtils::sampleLogLinDist_fast(double a, double fa, dou
   nc_assert(fa||fb);
   double x = (b-a)*std::sqrt(rand);
   return (fa ? b-x : a + x);
-}
-
-inline double NCrystal::SABUtils::interpolate_linear(double a, double fa, double b, double fb, double x)
-{
-  nc_assert( b > a );
-  nc_assert( !ncisnanorinf(x) );
-  nc_assert( x >= a && x <= b );
-  double r = ( x - a ) / ( b - a );
-  return nclerp(fa,fb,r);
-}
-
-template<NCrystal::SABUtils::InterpolationScheme scheme>
-inline double NCrystal::SABUtils::interpolate(double a, double fa, double b, double fb, double x) {
-  return ( scheme == InterpolationScheme::LOGLIN
-           ? interpolate_loglin_fallbacklinlin(a, fa, b, fb, x)
-           : interpolate_linear(a, fa, b, fb, x) );
 }
 
 #endif
