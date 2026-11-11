@@ -181,7 +181,7 @@ def main():
     s = NC.load( cfgstr ).scatter.getSummary()
     #NB: only H has a kernel (the O component is plain free gas):
     c = [ c for _,c in s['specific']['components']
-          if c['name'] == 'SABScatterNG' ]
+          if c['name'] == 'SABScatter' ]
     assert len(c) == 1
     m_sct = c[0]['specific']['extension_method']
     m_fg = q( [ 'sab', 'xs', cfgstr, 'H', 'freegas', '1.0' ] )['extension_method']

@@ -181,7 +181,7 @@ Dynamic info for H (100%):
 ==> Scattering process (code level objects):
                            ProcComposition(2 components, isotropic)
                               |-- ElIncScatter(nelements=1;max_contrib=82.0168barn)
-                              \-- SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=1.00798u;extend=sct;sigma_free=20.4902barn)
+                              \-- SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=1.00798u;extend=sct;sigma_free=20.4902barn)
 ===========================================
 ============= CLI >>'dummyAl.ncmat;temp=300K' --cfg<< ====================
 ==> Debugging cfg-string: "dummyAl.ncmat;temp=300K"
@@ -191,7 +191,7 @@ Dynamic info for H (100%):
 ==> Scattering process (code level objects):
                            ProcComposition(2 components, isotropic)
                               |-- ElIncScatter(nelements=1;max_contrib=82.0168barn)
-                              \-- SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=300K;M=1.00798u;extend=sct;sigma_free=20.4902barn)
+                              \-- SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=300K;M=1.00798u;extend=sct;sigma_free=20.4902barn)
 ===========================================
 ============= CLI >>--test<< ====================
 Tests completed succesfully
@@ -560,7 +560,7 @@ Testing work_in_tmpdir()
 ==> Scattering process (code level objects):
                            ProcComposition(2 components, isotropic)
                               |-- ElIncScatter(nelements=1;max_contrib=82.0168barn)
-                              \-- SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=300K;M=1.00798u;extend=sct;sigma_free=20.4902barn)
+                              \-- SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=300K;M=1.00798u;extend=sct;sigma_free=20.4902barn)
 ===========================================
 ============= CLI >>--extract dummyAl.ncmat<< ====================
 NCMAT v5
@@ -582,7 +582,7 @@ NCMAT v5
                            ProcComposition(3 components, isotropic)
                               |-- ElIncScatter(nelements=1;max_contrib=0.0082barn)
                               |-- PowderBragg(nplanes=169;2dmax=4.67605Aa;max_contrib=1.67034barn)
-                              \-- SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=300K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
+                              \-- SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=300K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
 ===========================================
 ============= CLI >>'missing.ncmat;temp=300K' --cfg<< ====================
 ==> Debugging cfg-string: "missing.ncmat;temp=300K"
@@ -595,7 +595,7 @@ Caught expected NCFileNotFound('Could not find data: "missing.ncmat"')
 ==> Scattering process (code level objects):
                            ProcComposition(2 components, isotropic)
                               |-- ElIncScatter(nelements=1;max_contrib=82.0168barn)
-                              \-- SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=300K;M=1.00798u;extend=sct;sigma_free=20.4902barn)
+                              \-- SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=300K;M=1.00798u;extend=sct;sigma_free=20.4902barn)
 ===========================================
 ============= CLI >>'missing.ncmat;temp=300K' --cfg<< ====================
 ==> Debugging cfg-string: "missing.ncmat;temp=300K"
@@ -612,7 +612,7 @@ Caught expected NCFileNotFound('Could not find data: "missing.ncmat"')
                            ProcComposition(3 components, isotropic)
                               |-- ElIncScatter(nelements=1;max_contrib=0.0082barn)
                               |-- PowderBragg(nplanes=22;2dmax=4.67605Aa;max_contrib=1.67315barn)
-                              \-- SABScatterNG(nalpha=170;nbeta=400;Emax=5eV;T=293.15K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
+                              \-- SABScatter(nalpha=170;nbeta=400;Emax=5eV;T=293.15K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
 ===========================================
 ============= CLI >>'Al_sg225.ncmat;dcutoff=0.5;vdoslux=2' -a --energy -x 1e-3:1e2<< ====================
 ==> Debugging cfg-string: "Al_sg225.ncmat;dcutoff=0.5;vdoslux=2"
@@ -623,7 +623,7 @@ Caught expected NCFileNotFound('Could not find data: "missing.ncmat"')
                            ProcComposition(3 components, isotropic)
                               |-- ElIncScatter(nelements=1;max_contrib=0.0082barn)
                               |-- PowderBragg(nplanes=22;2dmax=4.67605Aa;max_contrib=1.67315barn)
-                              \-- SABScatterNG(nalpha=170;nbeta=400;Emax=5eV;T=293.15K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
+                              \-- SABScatter(nalpha=170;nbeta=400;Emax=5eV;T=293.15K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
 ===========================================
 ============= CLI >>--mc<< ====================
 Caught expected ArgumentError('argument --mc: expected 2 arguments')
@@ -735,7 +735,7 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
 ==> Absorption process (code level objects):
                            AbsOOV(sigma_2200=0.231barn)
 ==> Scattering process (code level objects):
-                           SABScatterNG(nalpha=170;nbeta=400;Emax=5eV;T=293.15K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
+                           SABScatter(nalpha=170;nbeta=400;Emax=5eV;T=293.15K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
 ===========================================
 ============= CLI >>'Al_sg225.ncmat;vdoslux=1;temp=1000K' 'Al_sg225.ncmat;vdoslux=1;temp=10K' --logy<< ====================
 ===========================================
@@ -750,7 +750,7 @@ Caught expected RuntimeError('Obsolete --mc syntax detected. Please use the new 
                            ProcComposition(3 components, isotropic)
                               |-- ElIncScatter(nelements=1;max_contrib=0.0082barn)
                               |-- PowderBragg(nplanes=53;2dmax=4.67605Aa;max_contrib=1.39782barn)
-                              \-- SABScatterNG(nalpha=110;nbeta=240;Emax=5eV;T=1000K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
+                              \-- SABScatter(nalpha=110;nbeta=240;Emax=5eV;T=1000K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
 Caught expected RuntimeError('Currently we do not support switching back and forth between pdf plotting in the same process (see also https://github.com/mctools/ncrystal/issues/202)')
 ============= CLI >>--cfg 'phases<0.65*Al_sg225.ncmat&0.35*MgO_sg225_Periclase.ncmat>;temp=100K'<< ====================
 ==> Debugging cfg-string: "phases<0.65*Al_sg225.ncmat&0.35*MgO_sg225_Periclase.ncmat>;temp=100K"
@@ -761,9 +761,9 @@ Caught expected RuntimeError('Currently we do not support switching back and for
                            ProcComposition(5 components, isotropic)
                               |-- ElIncScatter(nelements=3;max_contrib=0.0239527barn)
                               |-- PowderBragg(nplanes=969;2dmax=4.86244Aa;max_contrib=2.6496barn)
-                              |-- 0.244607 * SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=15.9993u;extend=sct;sigma_free=3.74537barn)
-                              |-- 0.244607 * SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=24.3051u;extend=sct;sigma_free=3.42069barn)
-                              \-- 0.510787 * SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
+                              |-- 0.244607 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=15.9993u;extend=sct;sigma_free=3.74537barn)
+                              |-- 0.244607 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=24.3051u;extend=sct;sigma_free=3.42069barn)
+                              \-- 0.510787 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
 ===========================================
 ============= CLI >>--phases 'phases<0.65*Al_sg225.ncmat&0.35*MgO_sg225_Periclase.ncmat>;temp=100K'<< ====================
 ==> Debugging cfg-string: "phases<0.65*Al_sg225.ncmat&0.35*MgO_sg225_Periclase.ncmat>;temp=100K"
@@ -774,9 +774,9 @@ Caught expected RuntimeError('Currently we do not support switching back and for
                            ProcComposition(5 components, isotropic)
                               |-- ElIncScatter(nelements=3;max_contrib=0.0239527barn)
                               |-- PowderBragg(nplanes=969;2dmax=4.86244Aa;max_contrib=2.6496barn)
-                              |-- 0.244607 * SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=15.9993u;extend=sct;sigma_free=3.74537barn)
-                              |-- 0.244607 * SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=24.3051u;extend=sct;sigma_free=3.42069barn)
-                              \-- 0.510787 * SABScatterNG(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
+                              |-- 0.244607 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=15.9993u;extend=sct;sigma_free=3.74537barn)
+                              |-- 0.244607 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=24.3051u;extend=sct;sigma_free=3.42069barn)
+                              \-- 0.510787 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=100K;M=26.9815u;extend=sct;sigma_free=1.39667barn)
 ===========================================
 ============= CLI >>'Al_sg225.ncmat;temp=10 K;vdoslux=1' 'Al_sg225.ncmat;vdoslux=1;temp=10K' --common dcutoff=1.0Aa --liny<< ====================
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Configuration specified more than once: "Al_sg225.ncmat;dcutoff=1;temp=10;vdoslux=1" [warn#1]

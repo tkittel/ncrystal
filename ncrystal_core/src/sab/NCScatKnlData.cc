@@ -40,7 +40,7 @@ void NC::validateScatKnlData( const ScatKnlDataView& data )
   if ( !(data.boundXS.get()>=0.0) ) {
     //NB: We allow ==0.0 since ppl might make species sterile with @ATOMDB
     //syntax (the stdscat factory checks that boundXS>0 before instantiating
-    //SABScatter objects).
+    //SABScatterLegacy or SABScatter objects).
     NCRYSTAL_THROW(BadInput,"Scatter kernel data has invalid boundXS");
   }
 

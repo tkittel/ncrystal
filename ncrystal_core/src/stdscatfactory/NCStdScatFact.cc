@@ -31,7 +31,7 @@
 #include "NCrystal/internal/freegas/NCFreeGas.hh"
 #include "NCrystal/internal/elincscatter/NCElIncScatter.hh"
 #include "NCrystal/internal/sabscatter/NCSABScatterLegacy.hh"
-#include "NCrystal/internal/sabscatter/NCSABScatterNG.hh"
+#include "NCrystal/internal/sabscatter/NCSABScatter.hh"
 #include "NCrystal/internal/sab/NCSABFactory.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/extd_utils/NCProcCompBldr.hh"
@@ -307,8 +307,8 @@ namespace NCRYSTAL_NAMESPACE {
                     auto sabext =
                       SAB::createSABExtendedWithCache(knllux, sabdata, teff,
                                                       di_scatknl->energyGrid());
-                    auto scat = makeSO<SABScatterNG>(std::move(sabext),
-                                                     sabdata->boundXS());
+                    auto scat = makeSO<SABScatter>(std::move(sabext),
+                                                   sabdata->boundXS());
                     complist.emplace_back(scale,std::move(scat));
                   }
                   return complist;
@@ -367,8 +367,8 @@ namespace NCRYSTAL_NAMESPACE {
                                                                  info.getTemperature() );
               auto sabext = SAB::createSABExtendedWithCache( knllux, sabdata,
                                                              teff, nullptr );
-              complist.emplace_back(scale,makeSO<SABScatterNG>(std::move(sabext),
-                                                               sabdata->boundXS()));
+              complist.emplace_back(scale,makeSO<SABScatter>(std::move(sabext),
+                                                             sabdata->boundXS()));
               return complist;
             });
           }

@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#include "NCrystal/internal/sabscatter/NCSABScatterNG.hh"
+#include "NCrystal/internal/sabscatter/NCSABScatter.hh"
 #include "NCrystal/internal/sab/NCSABExtended.hh"
 #include "NCrystal/internal/dyninfoutils/NCDynInfoUtils.hh"
 #include "NCrystal/internal/utils/NCIsoXSUtils.hh"
@@ -33,19 +33,19 @@ namespace NCS = NCrystal::SABUtils;
 
 namespace {
 
-  std::vector<const NC::SABScatterNG*> findSAB( const NC::ProcImpl::Process& p )
+  std::vector<const NC::SABScatter*> findSAB( const NC::ProcImpl::Process& p )
   {
-    std::vector<const NC::SABScatterNG*> res;
-    if ( auto s = dynamic_cast<const NC::SABScatterNG*>( &p ) )
+    std::vector<const NC::SABScatter*> res;
+    if ( auto s = dynamic_cast<const NC::SABScatter*>( &p ) )
       res.push_back( s );
     if ( auto c = dynamic_cast<const NC::ProcImpl::ProcComposition*>( &p ) )
       for ( auto& comp : c->components() )
-        if ( auto s = dynamic_cast<const NC::SABScatterNG*>( &*comp.process ) )
+        if ( auto s = dynamic_cast<const NC::SABScatter*>( &*comp.process ) )
           res.push_back( s );
     return res;
   }
 
-  void testSAB( const NC::SABScatterNG* s )
+  void testSAB( const NC::SABScatter* s )
   {
     //The tabulated SAB cross section against the direct evaluation it
     //replaces: SABProcessor::crossSectionUnitSigmaBound up to Emax, and
@@ -118,7 +118,7 @@ namespace {
                                                          sabdata,
                                                          di_knl->energyGrid() );
       nc_assert_always( ext->extender().shortName().value_or("") == "freegas" );
-      NC::SABScatterNG s( std::move( ext ), sabdata->boundXS() );
+      NC::SABScatter s( std::move( ext ), sabdata->boundXS() );
       testSAB( &s );
     }
   }
