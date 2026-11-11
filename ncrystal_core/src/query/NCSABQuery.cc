@@ -18,7 +18,6 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/internal/sab/NCSABRefEval.hh"
 #include "NCrystal/internal/sab/NCSABKBCellSmpl.hh"
 #include "NCrystal/internal/sab/NCSABSurveyor.hh"
 #include "NCrystal/internal/sab/NCSABProcessor.hh"
@@ -556,20 +555,6 @@ namespace NCRYSTAL_NAMESPACE {
         os<<",\"E_div_kT_cover\":";
         streamJSON(os,surv.data().front().e_cover);
 
-        {
-          //Fixme: SABCellEval is not trustworthy -> replace eventually with new
-          //code!
-          double s[4] = {s11, s12, s21, s22};//fixme check order
-          using CellEval = SABCellEval<InterpolationScheme::LOGLIN,
-                                       SABInterpolationOrder::ALPHA_FIRST>;
-          CellEval ce( alpha, beta, s );
-          os<<"},\"celleval_OBSOLETE\":{\"full_integral\":";//fixme: remove this obsolete class
-          streamJSON(os,ce.integral());
-          os<<",\"phasespace_integral\":";
-          streamJSON(os,ce.integralWithinKinematicBounds( e ));
-          os<<",\"phasespace_E_div_kT\":";
-          streamJSON(os,e.dbl());
-        }
         os<<"},\"cellintegral\":{\"full_integral\":";
         streamJSON(os,cellinteg_full);
         os<<",\"phasespace_E_div_kT\":";
@@ -672,26 +657,6 @@ namespace NCRYSTAL_NAMESPACE {
         os<<'}';
       }
 
-      void query_impl_SABRefEval( std::ostream& os,
-                                  const std::string& matcfg,
-                                  NeutronEnergy eval,
-                                  Optional<std::string> atomDisplayLabel,
-                                  std::uint64_t nsample )
-      {
-        //Fixme: is this obsolete? Should we remove ths option + the
-        //NCSABRefEval header again?
-        auto sabdata = query_impl_extractSabData( matcfg,
-                                                  atomDisplayLabel ).sab;
-        SABRefEval<> refeval( sabdata, eval );
-        RNG* rngptr = nullptr;
-        std::shared_ptr<RNGStream> rngholder;
-        if ( nsample > 0 ) {
-          rngholder = getRNG();
-          rngptr = rngholder.get();
-        }
-        refeval.toJSON( os, nsample, rngptr );
-      }
-
       class RNGSpy final : public NC::RNGStream {
         shared_obj<RNGStream> m_realrng;
         std::uint64_t m_count = 0;
@@ -770,7 +735,6 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
   const std::size_t nargs = static_cast<std::size_t>(query.size()-2);
 
   constexpr auto sv_list = StrView::make("list");
-  constexpr auto sv_refeval = StrView::make("refeval");
   constexpr auto sv_samplepb = StrView::make("samplepb");
   constexpr auto sv_surveyor = StrView::make("surveyor");
   constexpr auto sv_sglcell = StrView::make("sglcell");
@@ -781,27 +745,7 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
   constexpr auto sv_analyse = StrView::make("analyse");
   constexpr auto sv_xs = StrView::make("xs");
 
-  if ( key == sv_refeval ) {
-    //query like: ncrystal_query sab refeval 0.025 'bla.ncmat' 1000 ['Al']
-    if ( nargs != 4 && nargs != 3 )
-      invalid("correct usage: [\"sab\",\"refeval\","
-              "ENERGY_EV,MATCFGSTR,NSAMPLE,ATOMDISPLAYLABEL]"
-              " (the ATOMDISPLAYLABEL can be left out for monoatomic materials)");
-    auto opt_eval = arg(0).toDbl();
-    if ( !opt_eval.has_value() || !(opt_eval.value()>0.0) )
-      invalid("invalid ENERGY_EV value");
-    auto opt_nsample = arg(2).toUInt64();
-    if ( !opt_nsample.has_value() )
-      invalid("invalid NSAMPLE value");
-    Optional<std::string> atomDisplayLabel;
-    if ( nargs == 4 )
-      atomDisplayLabel = argstr(3);
-    query_impl_SABRefEval( os,
-                           argstr(1),
-                           NeutronEnergy{ DoValidate, opt_eval.value() },
-                           atomDisplayLabel,
-                           opt_nsample.value() );
-  } else if ( key == sv_samplepb ) {
+  if ( key == sv_samplepb ) {
     //sab samplepb x0 y0 x1 y1 nsample
     if ( nargs != 5 )
       invalid("correct usage: [\"sab\",\"samplepb\",X0,Y0,X1,Y1,NSAMPLE");
@@ -1044,16 +988,15 @@ void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
   } else if ( key == sv_list ) {
     if ( nargs != 0 )
       invalid("no arguments should come after: [\"sab\",\"list\"]");
-    streamJSON( os, std::array<StrView,10>{ sv_analyse,
-                                            sv_integschemes,
-                                            sv_proc,
-                                            sv_proctries,
-                                            sv_refeval,
-                                            sv_refsample,
-                                            sv_samplepb,
-                                            sv_sglcell,
-                                            sv_surveyor,
-                                            sv_xs } );
+    streamJSON( os, std::array<StrView,9>{ sv_analyse,
+                                           sv_integschemes,
+                                           sv_proc,
+                                           sv_proctries,
+                                           sv_refsample,
+                                           sv_samplepb,
+                                           sv_sglcell,
+                                           sv_surveyor,
+                                           sv_xs } );
   } else {
     invalid(nullptr);
   }
