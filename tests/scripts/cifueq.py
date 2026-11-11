@@ -23,12 +23,12 @@
 
 # NEEDS: numpy
 
-# Ueq of CIF anisotropic displacements (cifutils._cif_uij_ueq), against an
+# Ueq of CIF anisotropic displacements (_sgsymimpl._cif_uij_ueq), against an
 # independent calculation via the Cartesian tensor.
 
 import NCTestUtils.enable_fpe # noqa F401
 import numpy as np
-from NCrystalDev.cifutils import _cif_uij_ueq
+from NCrystalDev._sgsymimpl import _cif_uij_ueq
 
 def lattice( a, b, c, alpha, beta, gamma ):
     #Columns are the lattice vectors (a along x, b in the xy plane):

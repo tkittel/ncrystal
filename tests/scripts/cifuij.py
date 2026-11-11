@@ -29,7 +29,8 @@
 import NCTestUtils.enable_fpe # noqa F401
 import NCTestUtils.reprint_escaped_warnings # noqa F401
 import NCrystalDev as NC
-from NCrystalDev.cifutils import CIFLoader, _cif_uij_ueq
+from NCrystalDev.cifutils import CIFLoader
+from NCrystalDev._sgsymimpl import _cif_uij_ueq
 
 cell = { 'a': 5.1, 'b': 6.3, 'c': 7.2,
          'alpha': 90.0, 'beta': 105.0, 'gamma': 90.0 }
