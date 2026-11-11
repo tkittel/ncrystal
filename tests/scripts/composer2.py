@@ -21,6 +21,7 @@
 ################################################################################
 
 # NEEDS: numpy spglib
+import NCTestUtils.reprint_escaped_warnings # noqa F401
 import NCrystalDev as NC
 from NCTestUtils.common import ensure_error
 
@@ -304,13 +305,126 @@ def test_atomsites_uij():
             print(f'=> correctly refused {descr}: {e}')
         else:
             raise SystemExit(f'{descr}: not refused')
+    #Refinement keeps sites and tensors (here unchanged):
     c = mk( [ ('Mg',1/3,2/3,1/4,u) ] )
-    try:
-        c.refine_crystal_structure( quiet = True )
-    except NC.NCBadInput as e:
-        print(f'=> correctly refused refinement: {e}')
-    else:
-        raise SystemExit('refinement not refused')
+    c.refine_crystal_structure( quiet = True )
+    txt = c.create_ncmat()
+    print( txt[txt.index('@CELL'):txt.index('@DYNINFO')], end = '' )
+
+def test_symprec_alias():
+    #symprec is an obsolete alias of tol_symprec (warning on first use):
+    c = NC.NCMATComposer()
+    c.set_cellsg_cubic( 4.05, spacegroup = 225 )
+    c.set_atompos( [ ('Al',0,0,0), ('Al',0,1/2,1/2), ('Al',1/2,0,1/2),
+                     ('Al',1/2,1/2,0) ] )
+    c.refine_crystal_structure( tol_symprec = 0.02, quiet = True )
+    c.verify_crystal_structure( tol_symprec = 0.02, quiet = True )
+    c.verify_crystal_structure( tol = 2e-3, quiet = True )
+    for i in range(2):
+        c.refine_crystal_structure( symprec = 0.02, quiet = True )
+        c.verify_crystal_structure( symprec = 0.02, quiet = True )
+    with ensure_error( NC.NCBadInput,
+                       'Do not specify both symprec and tol_symprec' ):
+        c.verify_crystal_structure( symprec = 0.02, tol_symprec = 0.02 )
+    #All parameters are keyword-only:
+    for f in ( c.refine_crystal_structure, c.verify_crystal_structure ):
+        try:
+            f( 0.02 )
+        except TypeError:
+            pass
+        else:
+            raise SystemExit('positional parameter accepted')
+    with ensure_error( NC.NCBadInput, 'Invalid tol_symprec value: 0.6 (must'
+                       ' not exceed 0.5Aa)' ):
+        c.refine_crystal_structure( tol_symprec = 0.6 )
+    print( 'symprec alias OK' )
+
+def bragg( info ):
+    return sorted( ( round( h.d, 9 ), round( h.f2 * h.mult, 6 ) )
+                   for h in info.hklObjects() )
+
+def test_refine_uij():
+    #A C2/c structure with tensors given as P1 in a primitive cell (so spglib
+    #must change the basis) is refined to C2/c sites with tensors, giving the
+    #same Bragg reflections (d, mult*F^2, which depend on the tensors) as the
+    #structure given directly in C2/c:
+    import NCrystalDev._sgsymimpl as sgs
+    import numpy as np
+    from NCrystalDev.misc import evaluate_query
+    conv = { 'a': 9.7, 'b': 8.9, 'c': 5.3, 'alpha': 90, 'beta': 105.6,
+             'gamma': 90 }
+    u_si = ( 0.012, 0.016, 0.010, 0.002, 0.003, -0.0015 )
+    u_o = ( 0.020, 0.014, 0.017, 0.0, 0.004, 0.0 )
+    asym = [ ( 'Si', ( 0.11, 0.23, 0.37 ), u_si ),
+             ( 'O', ( 0.0, 0.41, 0.25 ), u_o ) ]
+    keys = ( 'u11', 'u22', 'u33', 'u12', 'u13', 'u23' )
+    def mk( cellsg, sites ):
+        c = NC.NCMATComposer()
+        c.set_cellsg( **cellsg )
+        c.set_atomsites( sites )
+        c.set_dyninfo_debyetemp( 'Si', 500 )
+        c.set_dyninfo_debyetemp( 'O', 400 )
+        return c
+    ref = mk( dict( conv, spacegroup = '15:b1' ),
+              [ ( lbl, *p, u ) for lbl, p, u in asym ] )
+    ref = ref.load( 'dcutoff=0.5' ).info
+    #All positions in the conventional cell:
+    ops = evaluate_query( [ 'util', 'sgsym', 'strict', '15:b1' ] )['ops']
+    allc = sgs._expand_sites( ops, conv,
+                              [ { 'key': lbl, 'pos': p,
+                                  'aniso': dict( zip( keys, u ) ) }
+                                for lbl, p, u in asym ] )
+    #Primitive cell (a-b)/2, (a+b)/2, c:
+    def latt( c ):
+        return np.array( sgs._cellparams_to_spglib_lattice( c ) ).T
+    M = np.array( [ [ 0.5, 0.5, 0 ], [ -0.5, 0.5, 0 ], [ 0, 0, 1 ] ] )
+    Lp = latt( conv ) @ M
+    v = [ Lp[:,i] for i in range(3) ]
+    n = [ float( np.linalg.norm( e ) ) for e in v ]
+    def ang( i, j ):
+        return float( np.degrees( np.arccos( np.dot( v[i], v[j] )
+                                             / ( n[i] * n[j] ) ) ) )
+    prim = { 'a': n[0], 'b': n[1], 'c': n[2], 'alpha': ang(1,2),
+             'beta': ang(0,2), 'gamma': ang(0,1) }
+    Minv = np.linalg.inv( M )
+    def to_prim( e, unrotated = None ):
+        x = tuple( float( q ) % 1.0 for q in Minv @ np.array( e['pos'] ) )
+        a = unrotated or e['aniso']
+        uf = Minv @ sgs._cif_to_frac( a, conv ) @ Minv.T
+        u = sgs._frac_to_cif( uf, prim )
+        return ( e['key'], *x, tuple( u[k] for k in keys ) )
+    def same( s, q ):
+        return s[0] == q[0] and max( min( abs( a - b ), 1 - abs( a - b ) )
+                                     for a, b in zip( s[1:4], q[1:4] ) ) < 1e-9
+    def prim_sites( unrotated = False ):
+        res = []
+        for e in allc:
+            s = to_prim( e, dict( zip( keys, u_si ) ) if ( unrotated and
+                                                          e['key'] == 'Si' )
+                         else None )
+            if not any( same( s, q ) for q in res ):
+                res.append( s )
+        return res
+    sites = prim_sites()
+    print( f'P1 primitive cell: {len(sites)} sites' )
+    c = mk( dict( prim, spacegroup = 1 ), sites )
+    c.refine_crystal_structure( quiet = True )
+    txt = c.create_ncmat()
+    print( txt[txt.index('@CELL'):txt.index('@DYNINFO')], end = '' )
+    b1, b2 = bragg( ref ), bragg( c.load( 'dcutoff=0.5' ).info )
+    assert len( b1 ) == len( b2 ) and len( b1 ) > 100
+    assert all( abs( x[0] - y[0] ) < 1e-6
+                and abs( x[1] - y[1] ) < 1e-6 * max( 1.0, x[1] )
+                for x, y in zip( b1, b2 ) )
+    print( f'Bragg reflections identical to direct C2/c: {len(b1)} families' )
+
+    #Unrotated copies of the Si tensor (general position, so images under
+    #the 2-fold axis have U12 and U23 of opposite sign): those are dropped
+    #(with a warning), the O tensors are kept:
+    c = mk( dict( prim, spacegroup = 1 ), prim_sites( unrotated = True ) )
+    c.refine_crystal_structure( quiet = False )
+    txt = c.create_ncmat()
+    print( txt[txt.index('@CELL'):txt.index('@DYNINFO')], end = '' )
 
 if __name__ == '__main__':
     main()
@@ -319,3 +433,5 @@ if __name__ == '__main__':
     test_v8_scatknl_keywords()
     test_atomsites()
     test_atomsites_uij()
+    test_refine_uij()
+    test_symprec_alias()

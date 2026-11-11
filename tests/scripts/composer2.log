@@ -325,4 +325,35 @@ loaded uij: 0.0108069, 0.0108069, 0.0129682, 0.00540343, 0, 0 (msd=0.0115273)
 => correctly refused uij for only some sites: Anisotropic displacements (uij) must be given for all or none of the sites of "Mg"
 => correctly refused too few uij values: Invalid uij values (expected six finite numbers): (0.01, 0.01, 0.012, 0.005, 0.0)
 => correctly refused non-finite uij: Invalid uij values (expected six finite numbers): (0.01, 0.01, 0.012, 0.005, 0.0, nan)
-=> correctly refused refinement: Crystal structures with anisotropic displacements (uij) can not be refined
+@CELL
+  lengths 3.21 !! 5.21
+  angles 90 90 120
+@SPACEGROUP
+  194
+@ATOMSITES
+  Mg 1/3 2/3 1/4 uij 0.01 0.01 0.012 0.005 0 0
+P1 primitive cell: 6 sites
+@CELL
+  lengths 9.7 8.9 5.3
+  angles 90 105.6 90
+@SPACEGROUP
+  15:b1
+@ATOMSITES
+  O 1/2 .91 1/4 uij 0.02 0.014 0.017 0 0.004 0
+  Si .61 .73 .37 uij 0.012 0.016 0.01 0.002 0.003 -0.0015
+Bragg reflections identical to direct C2/c: 1857 families
+Unit cell was transformed to the standard setting by spglib
+Self-consistency of structure was verified by spglib
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Anisotropic displacements (uij) dropped for Si, since tensors of equivalent sites are not symmetry images of each other [warn#1]
+@CELL
+  lengths 9.7 8.9 5.3
+  angles 90 105.6 90
+@SPACEGROUP
+  15:b1
+@ATOMSITES
+  O 1/2 .91 1/4 uij 0.02 0.014 0.017 0 0.004 0
+  Si .61 .73 .37
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The symprec parameter of NCMATComposer.refine_crystal_structure and .verify_crystal_structure is obsolete. Please use tol_symprec instead. [warn#2]
+Caught expected NCBadInput('Do not specify both symprec and tol_symprec')
+Caught expected NCBadInput('Invalid tol_symprec value: 0.6 (must not exceed 0.5Aa)')
+symprec alias OK

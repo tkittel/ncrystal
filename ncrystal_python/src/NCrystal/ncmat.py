@@ -332,27 +332,50 @@ class NCMATComposer:
         """
         return self.__impl.set_atomsites( atomsites = atomsites )
 
-    def refine_crystal_structure( self, symprec = 0.01, quiet = False ):
+    def refine_crystal_structure( self, *, quiet = False, tol = None,
+                                  tol_symprec = None, tol_uij = None,
+                                  symprec = None ):
         """Attempt to refine the crystal structure (does nothing if not a
         crystalline material). This ignores the spacegroup number (if any), and
         uses spglib to refine and standardise the crystal structure based on the
         provided unit cell parameters and atomic positions. The unit cell
         parameters, spacegroup number, and atomic positions, are all updated
         accordingly.
-        """
-        return self.__impl.refine_crystal_structure( symprec = symprec,
-                                                     quiet = quiet )
 
-    def verify_crystal_structure( self, symprec = 0.01, quiet = False ):
+        Sites with anisotropic displacements (set_atomsites) are kept as sites,
+        with tensors transformed to the refined cell. Sites are only
+        considered equivalent if their tensors have the same eigenvalues.
+        Tensors are dropped (with a warning) if those of equivalent sites are
+        not each other's symmetry images, or if they can not be transformed
+        to the refined cell.
+
+        The tolerances are tol_symprec (positions, in Aa) and tol_uij
+        (relative, for tensors). Unless given, both follow from the overall
+        tolerance tol: tol_uij equals tol, and tol_symprec scales with tol,
+        being 0.01Aa for the default tol. The symprec parameter is an obsolete
+        alias of tol_symprec.
+        """
+        return self.__impl.refine_crystal_structure(
+            quiet = quiet, tol = tol,
+            tol_symprec = _symprec_alias( symprec, tol_symprec ),
+            tol_uij = tol_uij )
+
+    def verify_crystal_structure( self, *, quiet = False, tol = None,
+                                  tol_symprec = None, symprec = None ):
         """Attempt to verify the crystal structure (does nothing if not a
         crystalline material). This requires a spacegroup number to be
         available, and uses spglib to verify that the crystal structure (unit
         cell and atom positions) is consistent with that spacegroup
         number. Raises an exception in case the structure could not be verified,
         otherwise does nothing.
+
+        The position tolerance is tol_symprec (in Aa), which unless given
+        scales with the overall tolerance tol, being 0.01Aa for the default
+        tol. The symprec parameter is an obsolete alias of tol_symprec.
         """
-        return self.__impl.verify_crystal_structure( symprec = symprec,
-                                                     quiet = quiet )
+        return self.__impl.verify_crystal_structure(
+            quiet = quiet, tol = tol,
+            tol_symprec = _symprec_alias( symprec, tol_symprec ) )
 
     def set_density( self, value, unit = 'g/cm3' ):
         """
@@ -852,3 +875,16 @@ def _rawParseNCMAT(text_data_name,*,asJSONStr=False):
         return _js
     import json
     return json.loads(_js)
+
+def _symprec_alias( symprec, tol_symprec ):
+    #symprec is the obsolete name of tol_symprec:
+    if symprec is None:
+        return tol_symprec
+    from ._common import warn_once
+    warn_once( 'The symprec parameter of NCMATComposer.refine_crystal_structure'
+               ' and .verify_crystal_structure is obsolete. Please use'
+               ' tol_symprec instead.' )
+    if tol_symprec is not None:
+        from .exceptions import NCBadInput
+        raise NCBadInput( 'Do not specify both symprec and tol_symprec' )
+    return symprec
