@@ -32,15 +32,16 @@
 import NCTestUtils.enable_fpe # noqa F401
 import NCTestUtils.reprint_escaped_warnings # noqa F401
 import numpy as np
+import NCrystalDev as NC
 import NCrystalDev._sgsymimpl as sgs
 from NCrystalDev.cifutils import CIFLoader
 from NCrystalDev.misc import evaluate_query
 
 keys = ( 'u11', 'u22', 'u33', 'u12', 'u13', 'u23' )
 
-def cif_text( cell, hm, sites, ops = None ):
+def cif_text( cell, hm, sites, ops = None, mults = None, header = '' ):
     #sites: (label, element, pos, occu, uiso, aniso dict or None)
-    ll = [ 'data_test' ]
+    ll = ( [ header ] if header else [] ) + [ 'data_test' ]
     ll += [ f'_cell_length_{k} {cell[k]!r}' for k in 'abc' ]
     ll += [ f'_cell_angle_{k} {cell[k]!r}' for k in ('alpha','beta','gamma') ]
     ll += [ f"_symmetry_space_group_name_H-M '{hm}'" ]
@@ -50,8 +51,10 @@ def cif_text( cell, hm, sites, ops = None ):
     ll += [ 'loop_', '_atom_site_label', '_atom_site_type_symbol',
             '_atom_site_fract_x', '_atom_site_fract_y', '_atom_site_fract_z',
             '_atom_site_occupancy', '_atom_site_U_iso_or_equiv' ]
-    for lbl, el, p, occ, uiso, _ in sites:
-        ll.append( f'{lbl} {el} {p[0]!r} {p[1]!r} {p[2]!r} {occ!r} {uiso!r}' )
+    ll += [ '_atom_site_symmetry_multiplicity' ] if mults else []
+    for i, ( lbl, el, p, occ, uiso, _ ) in enumerate( sites ):
+        ll.append( f'{lbl} {el} {p[0]!r} {p[1]!r} {p[2]!r} {occ!r} {uiso!r}'
+                   + ( f' {mults[i]}' if mults else '' ) )
     if any( s[5] for s in sites ):
         ll += [ 'loop_', '_atom_site_aniso_label' ]
         ll += [ f'_atom_site_aniso_U_{k[1:]}' for k in keys ]
@@ -182,8 +185,60 @@ def test_primitive():
     show( 'C2/c given in P1 in a primitive cell', lc )
     assert lc.cellsg['spacegroup']['number'] == 15
     assert all( s['aniso'] for s in lc.sites )
-    assert same_bragg( bragg( ref ), bragg( lc ) )
+    bref = bragg( ref )
+    assert same_bragg( bref, bragg( lc ) )
     print( '   Bragg reflections identical to C2/c' )
+
+    #As written by pymatgen for primitive cells: the asymmetric unit with
+    #symmetry operations in the primitive basis, but the standard symbol:
+    from fractions import Fraction
+    def fmtop( R, t ):
+        comps = []
+        for i in range(3):
+            c = ''
+            for j, v in enumerate( 'xyz' ):
+                k = round( R[i][j] )
+                if k:
+                    c += ( '+' if k > 0 and c else '' ) + ( '-' if k < 0 else '' )
+                    c += ( f'{abs(k)}*' if abs(k) != 1 else '' ) + v
+            f = Fraction( float( t[i] ) % 1.0 ).limit_denominator( 12 )
+            c += f'+{f}' if f else ''
+            comps.append( c )
+        return ','.join( comps )
+    ops = []
+    for o in evaluate_query( [ 'util', 'sgsym', 'strict', '15:b1' ] )['ops']:
+        R, t = sgs._parse_xyz_op( o )
+        Rp, tp = Minv @ R @ M, ( Minv @ t ) % 1.0
+        s = fmtop( Rp, tp )
+        if s not in ops:
+            ops.append( s )
+    asym_p = []
+    for lbl, el, p, occ, uiso, u in asym:
+        x = tuple( float( q ) % 1.0 for q in Minv @ np.array( p ) )
+        uf = Minv @ sgs._cif_to_frac( u, conv ) @ Minv.T
+        asym_p.append( ( lbl, el, x, occ, uiso, sgs._frac_to_cif( uf, prim ) ) )
+    txt = cif_text( prim, 'C 1 2/c 1', asym_p, ops = ops, mults = [ 4, 2 ],
+                    header = '# generated using pymatgen' )
+    lc = load( txt )
+    show( f'C2/c, primitive cell with {len(ops)} listed operations', lc )
+    assert lc.cellsg['spacegroup']['number'] == 15
+    assert same_bragg( bref, bragg( lc ) )
+    print( '   Bragg reflections identical to C2/c' )
+    #Operations missing (caught by the multiplicities):
+    for bad, descr in ( ( txt.replace( f"'{ops[1]}'\n", '' ),
+                          'missing operation' ),
+                        ( txt.replace( f"'{ops[1]}'\n",
+                                       "'x+500/999,y,z'\n" ),
+                          'unparsable operation' ),
+                        ( txt.replace( f"'{ops[1]}'\n", '' ).replace(
+                              f"'{ops[3]}'\n", '' ),
+                          'operations of a smaller group' ) ):
+        try:
+            load( bad )
+        except NC.NCBadInput as e:
+            print( f'   {descr}: {e}' )
+        else:
+            raise SystemExit( f'{descr} not refused' )
 
 test_rutile()
 test_primitive()
