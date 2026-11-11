@@ -118,6 +118,20 @@ present script.  """,descrw)+f"""\n\nExample invocations:
 
     parser.add_argument('--nomerge',default=False,action='store_true',
                         help=wrap('Do not use same label for different non-equivalent positions of the same atom species.'))
+    parser.add_argument("--tol",default=None,type=float,metavar='VALUE',
+                        help=wrap('Overall tolerance (relative) used when'
+                                  ' detecting symmetries and merging sites,'
+                                  ' which sets the defaults of the --tol-xxx'
+                                  ' options (--tol-uij and --tol-occu equal'
+                                  ' it, --tol-symprec scales with it, being'
+                                  ' 0.01Aa for the default --tol value).'))
+    parser.add_argument("--tol-symprec",default=None,type=float,metavar='VALUE',
+                        help=wrap('Tolerance for positions (in Aa).'))
+    parser.add_argument("--tol-uij",default=None,type=float,metavar='VALUE',
+                        help=wrap('Relative tolerance for Uiso values and'
+                                  ' eigenvalues of anisotropic displacements.'))
+    parser.add_argument("--tol-occu",default=None,type=float,metavar='VALUE',
+                        help=wrap('Relative tolerance for site occupancies.'))
     parser.add_argument('--showcif',default=False,action='store_true',
                         help=wrap('Simply show the input CIF data (mostly useful with mpid:: or codid:: sources).'))
     parser.add_argument("--valplot",nargs='*',metavar="FILE",
@@ -242,7 +256,11 @@ def _main_impl( args, do_quiet ):
         lc = nc_cifutils.CIFLoader( cifsrc,
                                     merge_equiv = not args.nomerge,
                                     quiet = do_quiet,
-                                    override_spacegroup = args.spacegroup )
+                                    override_spacegroup = args.spacegroup,
+                                    tol = args.tol,
+                                    tol_symprec = args.tol_symprec,
+                                    tol_uij = args.tol_uij,
+                                    tol_occu = args.tol_occu )
         composer = lc.create_ncmat_composer( top_comments=['<<disableautogennotice>>'],
                                              uiso_temperature = args.uisotemp,
                                              quiet = do_quiet,
