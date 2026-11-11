@@ -65,6 +65,13 @@ namespace NCRYSTAL_NAMESPACE {
     double interpolate_loglin_fallbacklinlin_fast(double a, double fa, double b, double fb, double x, double logfa, double logfb);
     double interpolate_linear(double a, double fa, double b, double fb, double x);
 
+    //S(alpha,beta) of the table at any point, with the interpolation used for
+    //kernels (log-linear in alpha, linear if a corner value is 0, then linear
+    //in beta). Returns 0 outside the grid. Locates the cell by binary search
+    //at each call, so not efficient for many evaluations. Subnormal S values
+    //are handled by scaling the cell corners by a power of two:
+    double evalSABOneShot( const SABData&, double alpha, double beta );
+
     //Version which returns both f and logf:
     PairDD interpolate_loglin_fallbacklinlin_fast2(double a, double fa, double b, double fb, double x, double logfa, double logfb);
 
