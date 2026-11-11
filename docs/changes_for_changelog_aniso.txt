@@ -33,8 +33,16 @@ CHANGELOG at release time, after which this file is dropped).
        refinement), limited to 5% (relative) and 0.5Aa. The symprec
        parameter is an obsolete alias of tol_symprec, and all parameters
        are now keyword-only.
-     * cif2ncmat keeps the CIF sites and their anisotropic displacements
-       (dropped with a warning if spglib changed the sites), and warns when a
-       Uiso differs from the Ueq of the tensor by more than 5%. The Ueq of
-       tensors without Uiso is now correct for non-orthogonal cells (it was
-       the mean of the diagonal).
+     * cif2ncmat and CIFLoader keep anisotropic displacements, also when
+       spglib refines the structure (e.g. from P1 or primitive cells), with
+       the tensors transformed accordingly. Sites given separately are only
+       considered equivalent if their compositions, occupancies, Uiso values
+       and tensor eigenvalues agree within tolerances (new CIFLoader
+       parameters tol, tol_symprec, tol_uij, tol_occu, and cif2ncmat options
+       --tol, --tol-symprec, --tol-uij, --tol-occu), and tensors are dropped
+       with a warning if those of equivalent sites are not each other's
+       symmetry images. CIFLoader.atoms no longer has an 'aniso' key, and the
+       new CIFLoader.sites gives one entry per site, with the tensor.
+     * cif2ncmat warns when a Uiso differs from the Ueq of the tensor by more
+       than 5%. The Ueq of tensors without Uiso is now correct for
+       non-orthogonal cells (it was the mean of the diagonal).
