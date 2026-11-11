@@ -67,6 +67,24 @@ namespace NCRYSTAL_NAMESPACE {
     //Log-linear interpolation, or linear if fa or fb is 0, without cached logs:
     double interpolate_loglin_fallbacklinlin(double a, double fa, double b, double fb, double x);
 
+    //S(alpha,beta) at (alpha,beta) inside grid cell (ia,ib), i.e.
+    //alphaGrid[ia]<=alpha<=alphaGrid[ia+1] and similarly for beta: log-linear
+    //in alpha (linear if a corner is 0), then linear in beta. Exact at the
+    //corners, and robust for any finite S values (incl. subnormal ones). The
+    //WCL version takes the createLogSTable(sd) table, the other computes the
+    //logs of the 4 corners:
+    double evalSABCellWCL( const SABData& sd, const VectD& logS,
+                           std::size_t ia, std::size_t ib,
+                           double alpha, double beta );
+    double evalSABCell( const SABData& sd, std::size_t ia, std::size_t ib,
+                        double alpha, double beta );
+
+    //Same, given the cell edges and the S and log(S) values s[i], ls[i] at
+    //the 4 corners (alpha,beta) = (a0,b0), (a1,b0), (a0,b1), (a1,b1):
+    double evalSABCellCorners( double a0, double a1, double b0, double b1,
+                               const double* s, const double* ls,
+                               double alpha, double beta );
+
     //S(alpha,beta) of the table at any point, with the interpolation used for
     //kernels (log-linear in alpha, linear if a corner value is 0, then linear
     //in beta). Returns 0 outside the grid. Locates the cell by binary search
@@ -305,6 +323,44 @@ inline double NCrystal::SABUtils::integrateLogLinOrLinWCL(double a1,double s1, d
   p = ncfma( ysq, p, c2 );
   p = ncfma( ysq, p, c1 );
   return da*ps*ncfma( -ysq, p, 0.5 );
+}
+
+inline double NCrystal::SABUtils::evalSABCellCorners
+( double a0, double a1, double b0, double b1, const double* s,
+  const double* ls, double alpha, double beta )
+{
+  const double e0 = interpLogLinOrLinWCL( a0, s[0], a1, s[1], alpha,
+                                          ls[0], ls[1] ).first;
+  const double e1 = interpLogLinOrLinWCL( a0, s[2], a1, s[3], alpha,
+                                          ls[2], ls[3] ).first;
+  return interpLin( b0, e0, b1, e1, beta );
+}
+
+inline double NCrystal::SABUtils::evalSABCellWCL( const SABData& sd,
+                                                  const VectD& logS,
+                                                  std::size_t ia,
+                                                  std::size_t ib,
+                                                  double alpha, double beta )
+{
+  const auto& ag = sd.alphaGrid();
+  const auto& bg = sd.betaGrid();
+  const auto& S = sd.sab();
+  const std::size_t na = ag.size();
+#ifndef NDEBUG
+  nc_assert_always( logS.size() == S.size() );
+  nc_assert_always( ia + 1 < na && ib + 1 < bg.size() );
+  nc_assert_always( ag[ia] <= alpha && alpha <= ag[ia+1] );
+  nc_assert_always( bg[ib] <= beta && beta <= bg[ib+1] );
+#endif
+  const std::size_t i0 = calcSABIdx( na, ia, ib );
+  const std::size_t i1 = calcSABIdx( na, ia, ib + 1 );
+  const double s[4] = { vectAt( S, i0 ), vectAt( S, i0 + 1 ),
+                        vectAt( S, i1 ), vectAt( S, i1 + 1 ) };
+  const double ls[4] = { vectAt( logS, i0 ), vectAt( logS, i0 + 1 ),
+                         vectAt( logS, i1 ), vectAt( logS, i1 + 1 ) };
+  return evalSABCellCorners( vectAt( ag, ia ), vectAt( ag, ia + 1 ),
+                             vectAt( bg, ib ), vectAt( bg, ib + 1 ),
+                             s, ls, alpha, beta );
 }
 
 #endif
