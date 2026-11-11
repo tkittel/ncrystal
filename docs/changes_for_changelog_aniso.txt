@@ -43,6 +43,9 @@ CHANGELOG at release time, after which this file is dropped).
        with a warning if those of equivalent sites are not each other's
        symmetry images. CIFLoader.atoms no longer has an 'aniso' key, and the
        new CIFLoader.sites gives one entry per site, with the tensor.
+     * CIF data listing symmetry operations which form a group, but not
+       that of a tabulated space group setting (e.g. symmetrised primitive
+       cells written by pymatgen), are expanded with those operations.
      * cif2ncmat warns when a Uiso differs from the Ueq of the tensor by more
        than 5%. The Ueq of tensors without Uiso is now correct for
        non-orthogonal cells (it was the mean of the diagonal).
