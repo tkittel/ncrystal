@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/sablegacy/NCSABSamplerModels.hh"
-#include "NCrystal/internal/sab/NCSABUtils.hh"
+#include "NCrystal/internal/sablegacy/NCSABLegacyUtils.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 namespace NC = NCrystal;
