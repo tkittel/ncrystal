@@ -99,18 +99,20 @@ def valid_variants( s, all_variants = True ):
                   ( '--uisotemp', str(_uiso_temp) ), uiso )
     return v
 
-def tolerated_variants( s ):
-    """Inconsistent but recoverable CIF data (the explicitly listed symmetry
-    operations must be used, and are expected to be completed if needed)."""
-    dt = ( '--debyetemp', '300' )
+def inconsistent_variants( s ):
+    """Inconsistent CIF data, as dict name -> ( cif, loads in permissive mode
+    ). These are rejected by default, and in permissive mode either rejected
+    or recovered correctly."""
     cif = cifgen.to_cif( s )
     ops = [ ll for ll in cif.splitlines() if ll.startswith("'") ]
     v = {}
     if len(ops) > 2:#(with only 2, the result is just P1 and not recoverable)
-        v['incomplete-symops'] = ( cif.replace( ops[-1]+'\n', '' ), dt )
+        #The space group symbol completes the listed operations:
+        v['incomplete-symops'] = ( cif.replace( ops[-1]+'\n', '' ), True )
+    #Listed operations and symbol disagree (and there are no multiplicities):
     v['wrong-HM-symbol'] = ( cif.replace(
         cif.split("_space_group_name_H-M_alt ")[1].split('\n')[0],
-        "'P 1'" if s.spacegroup != 1 else "'P -1'" ), dt )
+        "'P 1'" if s.spacegroup != 1 else "'P -1'" ), False )
     return v
 
 def check_structure( s, *, all_variants, tolerated ):
@@ -122,10 +124,19 @@ def check_structure( s, *, all_variants, tolerated ):
                             if uiso else ref, physics( ncmat ), s.spacegroup )
     ntol = 0
     if tolerated:
-        for name, ( cif, args ) in tolerated_variants( s ).items():
-            check_same_physics( name, ref, physics( convert(cif,args) ),
-                                s.spacegroup )
-            ntol += 1
+        dt = ( '--debyetemp', '300' )
+        for name, ( cif, permissive_ok ) in inconsistent_variants( s ).items():
+            for args in ( dt, dt + ( '--permissive', ) ):
+                if args == dt or not permissive_ok:
+                    try:
+                        convert( cif, args )
+                    except NC.NCBadInput:
+                        continue
+                    raise RuntimeError(f'inconsistent CIF "{name}" was not'
+                                       f' rejected (args: {args})')
+                check_same_physics( name, ref, physics( convert(cif,args) ),
+                                    s.spacegroup )
+                ntol += 1
     return len(variants), ntol
 
 def check_invalid( s ):
@@ -139,7 +150,7 @@ def check_invalid( s ):
 
 def run( spacegroups, *, seed, full_for = None, invalid_for = () ):
     """Check a random structure in each space group. For those in full_for
-    (default: all), all valid and tolerated CIF variants are checked,
+    (default: all), all valid and inconsistent CIF variants are checked,
     otherwise just the asymmetric unit + symops style."""
     ncsetenv( 'CIF2NCMAT_UNITTEST_NOPLOT', '1' )
     ncsetenv( 'ONLINEDB_FORBID_NETWORK', '1' )
@@ -157,7 +168,7 @@ def run( spacegroups, *, seed, full_for = None, invalid_for = () ):
                                       tolerated = full )
             nconv += nv + nt
             print(f'SG-{sg:<3} ({len(s.atoms)} atoms): {nv} valid'
-                  f' and {nt} tolerated CIF variants OK')
+                  f' and {nt} permissively loaded CIF variants OK')
             if sg in invalid_for:
                 check_invalid( s )
     print(f'All OK ({nconv} conversions)')

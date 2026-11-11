@@ -251,7 +251,8 @@ class CIFLoader:
     def __init__( self, cifsrc, quiet = False, mp_apikey = None,
                   refine_with_spglib = True, merge_equiv = True,
                   override_spacegroup = None, *, tol = None,
-                  tol_symprec = None, tol_uij = None, tol_occu = None ):
+                  tol_symprec = None, tol_uij = None, tol_occu = None,
+                  permissive = False ):
         """Initialise from cifsrc which can either be a CIFSource object, or any
         sort of data which can be used to initialise a CIFSource object (cf. the
         CIFSource class documentation)
@@ -292,6 +293,14 @@ class CIFLoader:
         tol_uij and tol_occu equal tol, and tol_symprec scales with tol, being
         0.01Aa for the default tol.
 
+        CIF data with inconsistent information (e.g. symmetry operations not
+        matching the space group symbol, site multiplicities not matching the
+        symmetry, or anisotropic displacements of equivalent sites which are
+        not each other's symmetry images) is rejected. With permissive=True,
+        some such data is loaded anyway, with warnings, if the information
+        needed can be recovered (e.g. by discarding anisotropic
+        displacements). Use this with care.
+
         Finally, the mp_apikey can be used to specify an API key in case the
         cifsrc is an entry for the materialsproject.org. To avoid having to
         specify the key here, one can instead provide the key in the environment
@@ -308,7 +317,8 @@ class CIFLoader:
                                                          refine_with_spglib = refine_with_spglib,
                                                          merge_equiv = merge_equiv,
                                                          override_spacegroup = override_spacegroup,
-                                                         tols = tols )
+                                                         tols = tols,
+                                                         permissive = permissive )
         assert len(load)==12
         self.__cifsrc = load['cifsrc']
         self.__actual_codid = load['actual_codid']
@@ -1151,7 +1161,7 @@ def _suggest_filename( ncmat_metadata, cifloader ):
 
 _uij_keys = ( 'u11', 'u22', 'u33', 'u12', 'u13', 'u23' )
 
-def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, quiet ):
+def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, permissive, quiet ):
     """Sites (one per orbit) of the CIF atoms (dicts with 'positions' and the
     'rotations' of the symmetry operations producing them from the first),
     after refining the structure with spglib if requested. Returns the
@@ -1238,9 +1248,13 @@ def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, quiet ):
     has_aniso = any( e['aniso'] for e in entries )
     if rsites is None:
         if has_aniso:
-            _nc_common.warn( 'Anisotropic displacements dropped, since the'
-                             ' sites could not be followed through the'
-                             ' refinement by spglib' )
+            msg = ( 'The CIF sites could not be followed through the'
+                    ' refinement of the structure by spglib, so their'
+                    ' anisotropic displacements can not be used' )
+            if not permissive:
+                raise _nc_core.NCBadInput( msg + ' (try permissive mode to'
+                                           ' discard them)' )
+            _nc_common.warn( msg + ' (discarded due to permissive mode)' )
         res = []
         for lbl, pos, _ in q['sites']:
             irep = int( lbl[1:] )
@@ -1257,10 +1271,13 @@ def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, quiet ):
         res.append( mksite( a, labels_of( e['members'] ), e['pos'], setting,
                             e['aniso'] ) )
     if dropped:
-        _nc_common.warn( 'Anisotropic displacements of CIF sites'
-                         f' {", ".join( sorted( set( dropped ) ) )} dropped,'
-                         ' since those of equivalent sites are not symmetry'
-                         ' images of each other' )
+        msg = ( 'The anisotropic displacements of the symmetry equivalent CIF'
+                f' sites {", ".join( sorted( set( dropped ) ) )} are not'
+                ' symmetry images of each other' )
+        if not permissive:
+            raise _nc_core.NCBadInput( msg + ' (try permissive mode to'
+                                       ' discard them)' )
+        _nc_common.warn( msg + ' (discarded due to permissive mode)' )
     return cellsg, res, setting
 
 def _impl_group_sites( sites, *, tols, merge_equiv ):
@@ -1429,11 +1446,13 @@ def _expand_sites_with_ops( gemmi, struct, ops, mult, symprec ):
                  for x, ui in found ]
     return res
 
-def _symop_error( why, cifdata ):
+def _symop_error( why, cifdata, permissive_hint ):
     msg = ( f'The symmetry operations listed in the CIF data {why}. Please use'
             ' a CIF file that either lists all atoms of the unit cell with'
             ' space group P 1, or lists the symmetry operations of a standard'
             ' space group setting consistent with its space group symbol.' )
+    if permissive_hint:
+        msg += ( ' Alternatively, try permissive mode (at your own risk).' )
     if 'pymatgen' in cifdata.lower():
         msg += ( ' This file was written by pymatgen, as are Materials Project'
                  ' downloads. For Materials Project entries, the "Conventional'
@@ -1772,7 +1791,8 @@ def _update_spacegroup_in_cifblock( cifblock, sg, use_xhm = True ):
 
 
 def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
-                           merge_equiv, tols, override_spacegroup = None ):
+                           merge_equiv, tols, permissive,
+                           override_spacegroup = None ):
 
     from itertools import chain
     from math import fsum as _math_fsum
@@ -1846,30 +1866,67 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
     if not struct:
         raise _nc_core.NCBadInput('Could not load structure with Gemmi')
 
-    #Symmetry operations listed in the CIF data, forming a group which is not
-    #that of any tabulated setting (e.g. in a primitive cell of a centred
-    #lattice, as written by pymatgen), are used to expand the sites, giving a
-    #P1 structure. They must have as many rotations as the space group of
-    #the symbol (otherwise the symbol is used, as before):
+    #Decide which symmetry to use, from the listed symmetry operations and the
+    #space group symbol. Inconsistent information is an error, unless
+    #permissive (and even then some evidence is required):
     blk = cif_block_with_structure
-    listed_ops_error, p1_sites = None, None
+    mult = _cif_multiplicities( gemmi, blk )
+    p1_sites, require_mult, expect_sgno = None, False, None
     listed = None if override_spacegroup else _listed_ops( gemmi, blk )
-    if listed and listed[0] == 'unparsable':
-        listed_ops_error = f'could not be parsed ({listed[1]})'
-    elif listed and listed[0] == 'incomplete':
-        listed_ops_error = 'are incomplete (they do not form a group)'
-    elif listed and gemmi.find_spacegroup_by_ops( listed[2] ) is None:
+    symsg = _symbol_spacegroup( gemmi, struct, blk ) if listed else None
+    def permissive_warn( what ):
+        _nc_common.warn( f'{what} (accepted due to permissive mode)' )
+    if listed is None:
+        pass#symbol only (or override), as determined by _load_with_gemmi
+    elif listed[0] == 'unparsable':
+        why = f'could not be parsed ({listed[1]})'
+        if not permissive or not symsg:
+            raise _symop_error( why, _cifdata, symsg and not permissive )
+        permissive_warn( f'The symmetry operations listed in the CIF data {why}'
+                         f', so the space group symbol ({symsg.xhm()}) is used' )
+        sg = symsg
+    elif listed[0] == 'incomplete':
+        why = 'are incomplete (they do not form a group)'
+        ok = symsg and { _op_key( o ) for o in listed[1] } <= {
+            _op_key( o ) for o in symsg.operations() }
+        if not permissive or not ok:
+            raise _symop_error( why, _cifdata, ok and not permissive )
+        permissive_warn( f'The symmetry operations listed in the CIF data {why}'
+                         ' but belong to the group of the space group symbol'
+                         f' ({symsg.xhm()}), which is used' )
+        sg = symsg
+    else:
         _, ops, go = listed
-        symsg = _symbol_spacegroup( gemmi, struct, blk )
-        nrot = len( symsg.operations().sym_ops ) if symsg else None
-        if nrot != len( go.sym_ops ):
-            listed_ops_error = ( f'have {len(go.sym_ops)} rotations, but space'
-                                 f' group {symsg.xhm()} has {nrot}' if symsg
-                                 else 'can not be checked against a space'
-                                 ' group symbol' )
+        tab = gemmi.find_spacegroup_by_ops( go )
+        if tab:
+            sg = tab
+            if symsg and symsg.number != tab.number:
+                why = ( f'are those of space group {tab.xhm()}, but the space'
+                        f' group symbol is {symsg.xhm()}' )
+                if not permissive:
+                    raise _symop_error( why, _cifdata, True )
+                permissive_warn( f'The symmetry operations listed in the CIF'
+                                 f' data {why}. The listed operations are used' )
+                require_mult = True
         else:
-            p1_sites = _expand_sites_with_ops( gemmi, struct, ops,
-                                               _cif_multiplicities( gemmi, blk ),
+            nrot = len( symsg.operations().sym_ops ) if symsg else None
+            if nrot != len( go.sym_ops ):
+                why = ( f'have {len(go.sym_ops)} rotations, but space group'
+                        f' {symsg.xhm()} has {nrot}' if symsg else
+                        'are not those of a tabulated space group setting, and'
+                        ' can not be checked against a space group symbol' )
+                if not permissive:
+                    raise _symop_error( why, _cifdata, True )
+                permissive_warn( f'The symmetry operations listed in the CIF'
+                                 f' data {why}. The listed operations are used' )
+                require_mult = True
+            #Not a tabulated setting (e.g. a primitive cell of a centred
+            #lattice, as written by pymatgen), so expand the sites with them:
+            if require_mult and not mult:
+                raise _nc_core.NCBadInput( 'Using the listed symmetry'
+                                           ' operations requires site'
+                                           ' multiplicities in the CIF data' )
+            p1_sites = _expand_sites_with_ops( gemmi, struct, ops, mult,
                                                tols['symprec'] )
             sg = gemmi.find_spacegroup_by_number( 1 )
             if not quiet:
@@ -1877,6 +1934,13 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
                                  ' listed in the CIF data, since they do not'
                                  ' correspond to a tabulated space group'
                                  ' setting')
+    if require_mult and not mult:
+        raise _nc_core.NCBadInput( 'Using the listed symmetry operations'
+                                   ' requires site multiplicities in the CIF'
+                                   ' data' )
+    if sg and p1_sites is None and struct.spacegroup != sg:
+        struct.spacegroup = sg
+        struct.setup_cell_images()
 
     if not sg:
         raise _nc_core.NCBadInput('Could not determine space group from CIF data')
@@ -1911,9 +1975,16 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
     sgnumber = int(sg.number)
 
     if not struct.cell.is_compatible_with_spacegroup( sg ):
-        if listed_ops_error:
-            raise _symop_error( listed_ops_error, _cifdata )
-        raise _nc_core.NCBadInput('Loaded unit cell is not compatible with deduced space group (according to Gemmi).')
+        #The cell does not quite have the symmetry of the space group (e.g. due
+        #to rounding). Expand the sites with its operations and refine. This is
+        #only accepted if spglib then finds the same space group:
+        if not refine_with_spglib:
+            raise _nc_core.NCBadInput('Loaded unit cell is not compatible with deduced space group (according to Gemmi).')
+        expect_sgno = int( sg.number )
+        p1_sites = _expand_sites_with_ops( gemmi, struct, list( sg.operations() ),
+                                           mult, tols['symprec'] )
+        sg = gemmi.find_spacegroup_by_number( 1 )
+        sgnumber = 1
 
     cellsg = { 'a': struct.cell.a, 'b': struct.cell.b, 'c': struct.cell.c,
                'alpha': struct.cell.alpha,
@@ -2090,6 +2161,12 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
     if not collected_atoms:
         raise _nc_core.NCBadInput('No atom sites found in CIF data.')
 
+    if p1_sites is None:
+        #(already checked when expanding p1_sites)
+        for a in collected_atoms:
+            _check_multiplicity( a['cif_label'], mult.get( a['cif_label'] ),
+                                 len( a['expanded_coords'] ) )
+
     #Now merge collected atoms which occupy the same sites:
     def has_same_sites( atom1, atom2 ):
         l1,l2 = atom1['expanded_coords'],atom2['expanded_coords']
@@ -2151,7 +2228,21 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
     cellsg, sites, setting = _impl_find_sites( cellsg, final_atoms,
                                                tols = tols,
                                                refine = refine_with_spglib,
+                                               permissive = permissive,
                                                quiet = quiet )
+    if expect_sgno is not None:
+        sgno = int( cellsg['spacegroup']['number'] )
+        if sgno != expect_sgno:
+            raise _nc_core.NCBadInput(
+                'The unit cell parameters are not compatible with the space'
+                f' group of the CIF data ({expect_sgno}), and refining the'
+                f' structure gives space group {sgno}. If the declared'
+                ' symmetry is trusted, try again with a larger tolerance'
+                ' (tol).' )
+        _nc_common.warn( 'The unit cell parameters do not exactly fit the'
+                         f' space group of the CIF data ({expect_sgno}), so'
+                         ' the structure was refined to exactly consistent'
+                         ' cell parameters' )
 
     if int(cellsg['spacegroup']['number']) == 1:
         #The following warning might be a bit obsolete now that we usually
