@@ -185,6 +185,31 @@ double NC::SABUtils::evalSABOneShot( const SABData& sd,
   return std::ldexp( res, k );
 }
 
+double NC::SABUtils::evalSABCell( const SABData& sd,
+                                  std::size_t ia, std::size_t ib,
+                                  double alpha, double beta )
+{
+  const auto& ag = sd.alphaGrid();
+  const auto& bg = sd.betaGrid();
+  const auto& S = sd.sab();
+  const std::size_t na = ag.size();
+#ifndef NDEBUG
+  nc_assert_always( ia + 1 < na && ib + 1 < bg.size() );
+  nc_assert_always( ag[ia] <= alpha && alpha <= ag[ia+1] );
+  nc_assert_always( bg[ib] <= beta && beta <= bg[ib+1] );
+#endif
+  const std::size_t i0 = calcSABIdx( na, ia, ib );
+  const std::size_t i1 = calcSABIdx( na, ia, ib + 1 );
+  const double s[4] = { vectAt( S, i0 ), vectAt( S, i0 + 1 ),
+                        vectAt( S, i1 ), vectAt( S, i1 + 1 ) };
+  double ls[4];
+  for ( auto i : ncrange( 4 ) )
+    ls[i] = safeLogOrElse( s[i], 0.0 );
+  return evalSABCellCorners( vectAt( ag, ia ), vectAt( ag, ia + 1 ),
+                             vectAt( bg, ib ), vectAt( bg, ib + 1 ),
+                             s, ls, alpha, beta );
+}
+
 NC::shared_obj<const NC::VectD>
 NC::SABUtils::createLogSTable( const SABData& sd )
 {
