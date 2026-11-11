@@ -55,9 +55,17 @@ namespace NCRYSTAL_NAMESPACE {
     //Or just calculate the index:
     std::size_t calcSABIdx( std::size_t nalpha, std::size_t alpha_idx, std::size_t beta_idx);
 
-    //interpolate "loglin" (linear in log(f), fallback to linear when undefined)
+    //Interpolation between (a,fa) and (b,fb) at x in [a,b], exact at a and b.
+    //interpLin is linear, interpLogLinWCL linear in log(f) (requires fa,fb>0)
+    //and interpLogLinOrLinWCL is log-linear, or linear if fa or fb is 0. WCL
+    //(with cached logs) versions take logfa=log(fa), logfb=log(fb) and return
+    //{f,log(f)} (log(f)=0 when linear):
+    double interpLin(double a, double fa, double b, double fb, double x);
+    PairDD interpLogLinWCL(double a, double fa, double b, double fb, double x, double logfa, double logfb);
+    PairDD interpLogLinOrLinWCL(double a, double fa, double b, double fb, double x, double logfa, double logfb);
+
+    //Log-linear interpolation, or linear if fa or fb is 0, without cached logs:
     double interpolate_loglin_fallbacklinlin(double a, double fa, double b, double fb, double x);
-    double interpolate_loglin_fallbacklinlin_fast(double a, double fa, double b, double fb, double x, double logfa, double logfb);
 
     //S(alpha,beta) of the table at any point, with the interpolation used for
     //kernels (log-linear in alpha, linear if a corner value is 0, then linear
@@ -65,14 +73,6 @@ namespace NCRYSTAL_NAMESPACE {
     //at each call, so not efficient for many evaluations. Subnormal S values
     //are handled by scaling the cell corners by a power of two:
     double evalSABOneShot( const SABData&, double alpha, double beta );
-
-    //Version with cached logs (WCL), returning both f and logf:
-    PairDD interpLogLinOrLinWCL(double a, double fa, double b, double fb, double x, double logfa, double logfb);
-
-    //Versions with a forced interpolation (loglin requires fa>0 and fb>0, WCL
-    //means with cached logs):
-    double interpLin(double a, double fa, double b, double fb, double x);
-    PairDD interpLogLinWCL(double a, double fa, double b, double fb, double x, double logfa, double logfb);
 
     //The next two functions can be used to evaluate a SAB integral over a bin
     //of alpha-values, assuming a linear relationship in log(s).  The analytical
@@ -138,27 +138,6 @@ inline double NCrystal::SABUtils::interpolate_loglin_fallbacklinlin(double a, do
   }
 }
 
-inline double NCrystal::SABUtils::interpolate_loglin_fallbacklinlin_fast(double a, double fa, double b, double fb, double x, double logfa, double logfb)
-{
-  nc_assert( fa>=0.0 && fb >= 0.0 );
-  nc_assert( x >= a && x <= b );
-  nc_assert( !ncisnan(logfa) && !ncisnan(logfb) );
-  nc_assert( ( b-a ) > 0.0 );
-  const double bma = b - a;
-  nc_assert( bma > 0.0 );
-  const double midpoint = 0.5 * ( b + a );
-  const bool linlin_mode = !( fa > 0.0 && fb > 0.0 );
-  if ( x < midpoint ) {
-    //choose form most numerically stable for x near a
-    const double r = (x-a) / bma;
-    return ( linlin_mode ? nclerp(fa,fb,r) : std::exp(nclerp(logfa,logfb,r)) );
-  } else {
-    //choose form most numerically stable for x near b
-    const double s = (b-x) / bma;
-    return ( linlin_mode ? nclerp(fb,fa,s) : std::exp(nclerp(logfb,logfa,s)) );
-  }
-}
-
 inline double NCrystal::SABUtils::interpLin(double a, double fa,
                                             double b, double fb,
                                             double x)
@@ -199,6 +178,14 @@ NCrystal::SABUtils::interpLogLinWCL(double a, double fa,
     //(libm implementations), consider stable_exp (check speed):
     return ncabs(xx)<0.02 ? exp_smallarg_approx(xx) : std::exp(xx);
   };
+  //f = f0*exp(dlf), or exp(log f) when exp(dlf) could overflow or become
+  //subnormal (only for extreme ratios fb/fa, above ~e^1400):
+  auto fval = [&flexexp]( double f0, double dlf, double logf )
+  {
+    if ( ncabs( dlf ) < 700.0 )
+      return f0 * flexexp( dlf );
+    return std::exp( logf );
+  };
   PairDD res;
   if ( x < midpoint ) {
     //choose forms most numerically stable (and with smallest flexexp arg) for x
@@ -206,56 +193,29 @@ NCrystal::SABUtils::interpLogLinWCL(double a, double fa,
     const double r = (x-a) / bma;
     const double dl = logfb-logfa;
     const double dlf = dl*r;
-    res.first = fa * flexexp(dlf);
     res.second = ncfma( dl, r, logfa );
+    res.first = fval( fa, dlf, res.second );
   } else {
     //choose forms most numerically stable (and with smallest flexexp arg) for x
     //near b
     const double s = (b-x) / bma;
     const double dl = logfa-logfb;
     const double dlf = dl*s;
-    res.first = fb * flexexp(dlf);
     res.second = ncfma( dl, s, logfb );
+    res.first = fval( fb, dlf, res.second );
   }
   return res;
 }
 
 inline NCrystal::PairDD
-NCrystal::SABUtils::interpLogLinOrLinWCL
-(double a, double fa, double b, double fb, double x, double logfa, double logfb)
+NCrystal::SABUtils::interpLogLinOrLinWCL( double a, double fa, double b,
+                                          double fb, double x,
+                                          double logfa, double logfb )
 {
-  //fixme: duplicated from interpolate_loglin_fallbacklinlin_fast (just
-  //reimplement that fct to use this fct).
-
-  nc_assert( fa>=0.0 && fb >= 0.0 );
-  nc_assert( x >= a && x <= b );
-  nc_assert( !ncisnan(logfa) && !ncisnan(logfb) );
-  nc_assert( ( b-a ) > 0.0 );
-  const double bma = b - a;
-  nc_assert( bma > 0.0 );
-  const double midpoint = 0.5 * ( b + a );
-  const bool loglin_mode = bool( ncmin(fa,fb) );
-  PairDD res;
-  if ( x < midpoint ) {
-    //choose forms most numerically stable for x near a
-    const double r = (x-a) / bma;
-    if ( loglin_mode )
-      res.second = nclerp(logfa,logfb,r);
-    else
-      res.first = nclerp(fa,fb,r);
-  } else {
-    //choose form most numerically stable for x near b
-    const double s = (b-x) / bma;
-    if ( loglin_mode )
-      res.second = nclerp(logfb,logfa,s);
-    else
-      res.first = nclerp(fb,fa,s);
-  }
-  if ( loglin_mode )
-    res.first = std::exp(res.second);
-  else
-    res.second = 0.0;//"N/A"
-  return res;
+  nc_assert( fa >= 0.0 && fb >= 0.0 );
+  if ( fa > 0.0 && fb > 0.0 )
+    return interpLogLinWCL( a, fa, b, fb, x, logfa, logfb );
+  return { interpLin( a, fa, b, fb, x ), 0.0 };
 }
 
 inline double NCrystal::SABUtils::integrateLogLinOrLin(double a1,double s1, double a2 , double s2 )

@@ -279,11 +279,51 @@ namespace {
       }
     std::cout << "evalSABOneShot tests OK" << std::endl;
   }
+
+  //interpLogLinWCL for extreme ratios fb/fa (where exp(dl*r) alone would
+  //overflow or become subnormal): finite, exact at the nodes, within
+  //[fa,fb], and accurate (long double reference):
+  void test_interpLogLinWCL_extreme()
+  {
+    const double vals[] = { 4.9406564584124654e-324, 1e-310, 2.5e-308, 1e-300,
+                            1.0, 1e250, 1e300, 1.7e308 };
+    for ( double fa : vals ) {
+      for ( double fb : vals ) {
+        const double la = std::log( fa );
+        const double lb = std::log( fb );
+        for ( double r : { 0.0, 1e-9, 0.1, 0.3, 0.4999, 0.5, 0.7, 1.0 } ) {
+          const double a = 2.0;
+          const double b = 3.0;
+          const double x = ( r == 1.0 ? b : a + r * ( b - a ) );
+          const auto res = NS::interpLogLinWCL( a, fa, b, fb, x, la, lb );
+          nc_assert_always( std::isfinite( res.first ) );
+          nc_assert_always( std::isfinite( res.second ) );
+          nc_assert_always( res.first >= NC::ncmin( fa, fb ) );
+          nc_assert_always( res.first <= NC::ncmax( fa, fb ) );
+          if ( x == a )
+            nc_assert_always( res.first == fa );
+          if ( x == b )
+            nc_assert_always( res.first == fb );
+          const long double t = ( (long double)x - a ) / ( (long double)b - a );
+          const long double ref = std::exp( (long double)la
+                                            + ( (long double)lb - la ) * t );
+          const double refd = static_cast<double>( ref );
+          if ( refd >= std::numeric_limits<double>::min() )
+            nc_assert_always( NC::floateq( res.first, refd, 1e-12, 0.0 ) );
+          else//subnormal results: absolute precision of the subnormal range
+            nc_assert_always( NC::ncabs( res.first - refd ) <= 1e-12
+                              * std::numeric_limits<double>::min() );
+        }
+      }
+    }
+    std::cout << "interpLogLinWCL extreme tests OK" << std::endl;
+  }
 }
 
 int main()
 {
   test_evalSABOneShot();
+  test_interpLogLinWCL_extreme();
   testScatKnlDirect( NC::Temperature{ 300.0 }, NC::Temperature{ 300.0 } );
   testScatKnlDirect( NC::Temperature{ 300.0 }, NC::Temperature{ 200.0 } );
 
@@ -338,7 +378,7 @@ int main()
             test_loglin( a,fa,b,fb,x, NS::interpolate_loglin_fallbacklinlin( a,fa,b,fb,x ) );
             double logfa(fa>0.0?std::log(fa):-1000.0);
             double logfb(fb>0.0?std::log(fb):-1000.0);
-            test_loglin( a,fa,b,fb,x, NS::interpolate_loglin_fallbacklinlin_fast( a,fa,b,fb,x, logfa, logfb ) );
+            test_loglin( a,fa,b,fb,x, NS::interpLogLinOrLinWCL( a,fa,b,fb,x, logfa, logfb ).first );
           }
         }
       }
