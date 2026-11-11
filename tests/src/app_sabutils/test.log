@@ -1,4 +1,5 @@
 evalSABOneShot tests OK
+interpLogLinWCL extreme tests OK
 DI_ScatKnlDirect: Got kernel at T=300K
 DI_ScatKnlDirect: Got kernel at T=300K
 DI_ScatKnlDirect: Got kernel at T=300K
