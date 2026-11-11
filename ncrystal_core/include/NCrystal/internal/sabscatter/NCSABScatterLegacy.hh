@@ -1,5 +1,5 @@
-#ifndef NCrystal_SABScatter_hh
-#define NCrystal_SABScatter_hh
+#ifndef NCrystal_SABScatterLegacy_hh
+#define NCrystal_SABScatterLegacy_hh
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -32,38 +32,38 @@ namespace NCRYSTAL_NAMESPACE {
     class SABScatterHelper;
   }
 
-  class SABScatter final : public ProcImpl::ScatterIsotropicMat {
+  class SABScatterLegacy final : public ProcImpl::ScatterIsotropicMat {
   public:
 
     //Provides cross-sections and samplings based on an S(alpha,beta) scattering
     //kernel.
 
-    const char * name() const noexcept override { return "SABScatter"; }
+    const char * name() const noexcept override { return "SABScatterLegacy"; }
 
     //Construct from SABData and (optionally) an energy grid. The first
     //constructor takes a DI_ScatKnl object from the DynamicInfo list on an an
     //Info object, along with (optionally) the unique id of the Info object. If
     //an energy grid is not supplied, a reasonable default value will be
     //used. When possible, caching will be enabled by default - making sure that
-    //multiple SABScatter instances based on the same input object will avoid
-    //duplicated resource consumption.
+    //multiple SABScatterLegacy instances based on the same input object will
+    //avoid duplicated resource consumption.
     //
     //The vdoslux parameter has no effect if input is not a VDOS. The same goes
     //for the special vdos2sabExcludeFlag parameter (the meaning of which is
     //documented in NCDynInfoUtils.hh).
-    SABScatter( const DI_ScatKnl&,
-                VDOS::VDOSLux vdoslux = {},
-                bool useCache = true,
-                uint32_t vdos2sabExcludeFlag = 0 );
-    SABScatter( SABData &&,
-                const VectD& energyGrid = VectD() );
-    SABScatter( shared_obj<const SABData>,
-                std::shared_ptr<const VectD> energyGrid = nullptr );
-    explicit SABScatter( shared_obj<const SAB::SABScatterHelper> );
-    explicit SABScatter( std::unique_ptr<const SAB::SABScatterHelper> );
-    SABScatter( SAB::SABScatterHelper&& );
+    SABScatterLegacy( const DI_ScatKnl&,
+                      VDOS::VDOSLux vdoslux = {},
+                      bool useCache = true,
+                      uint32_t vdos2sabExcludeFlag = 0 );
+    SABScatterLegacy( SABData &&,
+                      const VectD& energyGrid = VectD() );
+    SABScatterLegacy( shared_obj<const SABData>,
+                      std::shared_ptr<const VectD> energyGrid = nullptr );
+    explicit SABScatterLegacy( shared_obj<const SAB::SABScatterHelper> );
+    explicit SABScatterLegacy( std::unique_ptr<const SAB::SABScatterHelper> );
+    SABScatterLegacy( SAB::SABScatterHelper&& );
 
-    virtual ~SABScatter();
+    virtual ~SABScatterLegacy();
 
     CrossSect crossSectionIsotropic(CachePtr&, NeutronEnergy ) const override;
     ScatterOutcomeIsotropic

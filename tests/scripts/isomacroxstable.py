@@ -175,7 +175,7 @@ def main():
 """ )
     test('Al_sans.ncmat')
     #Discontinuities which are not known in advance are detected (here by
-    #disabling the known ones). The legacy SABScatter (knllux=-1) provides no
+    #disabling the known ones). SABScatterLegacy (knllux=-1) provides no
     #table, so the cross section is sampled. Currently (Nov 2026), this is the
     #simplest way to test that code path with standard materials:
     with ensure_error(NCCalcError,'IsoMacroXSTable: the cross section has an'
