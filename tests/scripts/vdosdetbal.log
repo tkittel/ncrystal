@@ -1,0 +1,5 @@
+h_zrhvdos.ncmat vdoslux=1003 T=293.6K: detailed balance exact at all 158 mirror nodes
+vdoslux=3 T=293.6K: detailed balance holds at alpha>=100, beta>=5 (median over interpolated mirrors)
+h_zrhvdos.ncmat vdoslux=1003 T=1200.0K: detailed balance exact at all 332 mirror nodes
+vdoslux=3 T=1200.0K: detailed balance holds at alpha>=100, beta>=5 (median over interpolated mirrors)
+al_debye.ncmat vdoslux=3 T=200.0K: detailed balance exact at all 52 mirror nodes

@@ -108,13 +108,29 @@ NCV::detail::fillSABFromVDOS( const VDOSGn& Gn_asym,
   const auto nbeta = betaGrid.size();
   const auto nalpha = alphaGrid.size();
   VectD sab( nalpha * nbeta, 0.0);
-  VectD beta_kT( betaGrid );
-  for ( auto& e : beta_kT )
-    e *= kT;
-  nc_assert( nc_is_grid( beta_kT ) );
+
+  //Gn is only evaluated at energies E<=0, where it is never truncated, and
+  //the gain side follows from detailed balance, S(alpha,+beta) =
+  //exp(-beta)*S(alpha,-beta). Rows [0,ipos) have beta<=0 and are evaluated
+  //at beta*kT, rows [ipos,nbeta) at -beta*kT (stored in reverse order, so
+  //both are increasing grids):
+  const std::size_t ipos = static_cast<std::size_t>
+    ( std::upper_bound( betaGrid.begin(), betaGrid.end(), 0.0 )
+      - betaGrid.begin() );
+  VectD energies_nonpos, energies_mirrored, expmbeta;
+  energies_nonpos.reserve( ipos );
+  energies_mirrored.reserve( nbeta - ipos );
+  expmbeta.reserve( nbeta - ipos );
+  for ( auto i : ncrange( ipos ) )
+    energies_nonpos.push_back( vectAt( betaGrid, i ) * kT );
+  for ( std::size_t i = nbeta; i-- > ipos; )
+    energies_mirrored.push_back( -vectAt( betaGrid, i ) * kT );
+  for ( auto i : ncrange( ipos, nbeta ) )
+    expmbeta.push_back( std::exp( -vectAt( betaGrid, i ) ) );
+  nc_assert( nc_is_grid( energies_nonpos ) );
+  nc_assert( energies_mirrored.empty() || nc_is_grid( energies_mirrored ) );
   VectD workbuf_gneval;
-  VectD gneval;
-  gneval.reserve(nbeta);
+  VectD gneval_nonpos, gneval_mirrored;
 
 
   //Alpha-dependency is contained in f(x,n)=exp(-x)*x^n/n! where
@@ -209,13 +225,20 @@ NCV::detail::fillSABFromVDOS( const VDOSGn& Gn_asym,
             && vectAt(alpha_factors,ialphaE-1) <= alpha_factor_floor  )
       --ialphaE;
 
-    //Evaluate Gn function:
-    nc_assert( nc_is_grid( beta_kT ) );
-    Gn_asym.evalMany( n, beta_kT, gneval, workbuf_gneval );
+    //Evaluate Gn function (see above):
+    Gn_asym.evalMany( n, energies_nonpos, gneval_nonpos, workbuf_gneval );
+    if ( !energies_mirrored.empty() )
+      Gn_asym.evalMany( n, energies_mirrored, gneval_mirrored,
+                        workbuf_gneval );
 
     for ( std::size_t ibeta = 0; ibeta < nbeta; ++ibeta ) {
       //fixme: skip earlier if contribScaleFactor is 0
-      const double Gn_asym_eval = contribScaleFactor * vectAt(gneval,ibeta);
+      const double gn
+        = ( ibeta < ipos
+            ? vectAt( gneval_nonpos, ibeta )
+            : vectAt( gneval_mirrored, nbeta - 1 - ibeta )
+              * vectAt( expmbeta, ibeta - ipos ) );
+      const double Gn_asym_eval = contribScaleFactor * gn;
       if ( !(Gn_asym_eval>0.0) ) {
         continue;
       }
