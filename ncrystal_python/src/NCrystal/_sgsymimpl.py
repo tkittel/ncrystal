@@ -536,6 +536,11 @@ def _cart_eigenvalues( ufrac, cellsg ):
 
 _TOL_DEFAULT = 1e-3
 _TOL_SYMPREC_AT_DEFAULT = 0.01 #Aa (symprec for tol=_TOL_DEFAULT)
+_TOL_MAX = 0.05 #max relative tolerance
+_TOL_SYMPREC_MAX = 0.5 #Aa
+#The largest tol must give the largest symprec:
+assert abs( _TOL_SYMPREC_AT_DEFAULT * _TOL_MAX / _TOL_DEFAULT
+            - _TOL_SYMPREC_MAX ) < 1e-12
 
 def _resolve_tolerances( tol = None, *, tol_symprec = None, tol_uij = None,
                          tol_occu = None ):
@@ -543,7 +548,7 @@ def _resolve_tolerances( tol = None, *, tol_symprec = None, tol_uij = None,
     (displacements, uiso values included) and occu (occupancies). The latter
     two are relative. Values not given follow from tol (default _TOL_DEFAULT):
     uij=occu=tol, and symprec=0.01Aa*tol/_TOL_DEFAULT."""
-    def check( name, v, relative ):
+    def check( name, v, vmax, unit ):
         try:
             v = float( v )
         except (TypeError, ValueError):
@@ -551,18 +556,19 @@ def _resolve_tolerances( tol = None, *, tol_symprec = None, tol_uij = None,
         if not ( isinstance( v, float ) and math.isfinite( v ) and v > 0.0 ):
             raise _nc_core.NCBadInput( f'Invalid {name} value: {v!r} (must be'
                                        ' a positive number)' )
-        if relative and not v < 1.0:
-            raise _nc_core.NCBadInput( f'Invalid {name} value: {v!r} (a'
-                                       ' relative tolerance must be less'
-                                       ' than 1)' )
+        if not v <= vmax:
+            raise _nc_core.NCBadInput( f'Invalid {name} value: {v!r} (must'
+                                       f' not exceed {vmax:g}{unit})' )
         return v
-    tol = _TOL_DEFAULT if tol is None else check( 'tol', tol, True )
-    def get( name, v, relative, default ):
-        return default if v is None else check( name, v, relative )
-    return { 'symprec': get( 'tol_symprec', tol_symprec, False,
-                             _TOL_SYMPREC_AT_DEFAULT * ( tol / _TOL_DEFAULT ) ),
-             'uij': get( 'tol_uij', tol_uij, True, tol ),
-             'occu': get( 'tol_occu', tol_occu, True, tol ) }
+    def rel( name, v, default ):
+        return default if v is None else check( name, v, _TOL_MAX, '' )
+    tol = rel( 'tol', tol, _TOL_DEFAULT )
+    return { 'symprec': ( _TOL_SYMPREC_AT_DEFAULT * ( tol / _TOL_DEFAULT )
+                          if tol_symprec is None
+                          else check( 'tol_symprec', tol_symprec,
+                                      _TOL_SYMPREC_MAX, 'Aa' ) ),
+             'uij': rel( 'tol_uij', tol_uij, tol ),
+             'occu': rel( 'tol_occu', tol_occu, tol ) }
 
 def _relclose( a, b, tol ):
     """Whether a and b agree within the relative tolerance tol."""
@@ -674,4 +680,113 @@ def _find_site_orbits( cellsg, sites, tols ):
         if ufrac[r] is not None:
             aniso_ok = all( deviation( r, i ) <= tu for i in members[1:] )
         res.append( { 'members': members, 'aniso_ok': aniso_ok } )
-    return { 'sgno': int( get('number') ), 'orbits': res }
+    return { 'sgno': int( get('number') ), 'orbits': res, 'types': types }
+
+def _parse_xyz_op( op ):
+    """Rotation (3x3 numpy array) and translation of a symmetry operation in
+    the form produced by NCrystal (e.g. "-y+1/2,x-y,z+1/3")."""
+    from fractions import Fraction
+
+    from ._numpy import _ensure_numpy
+    np = _ensure_numpy()
+    R, t = np.zeros( ( 3, 3 ) ), np.zeros( 3 )
+    comps = op.replace( ' ', '' ).split( ',' )
+    if len( comps ) != 3:
+        raise _nc_core.NCBadInput( f'Invalid symmetry operation: "{op}"' )
+    for i, comp in enumerate( comps ):
+        for term in comp.replace( '-', '+-' ).split( '+' ):
+            if not term:
+                continue
+            sign = -1.0 if term.startswith( '-' ) else 1.0
+            term = term.lstrip( '-' )
+            if term in ( 'x', 'y', 'z' ):
+                R[i][ 'xyz'.index( term ) ] += sign
+            else:
+                t[i] += sign * float( Fraction( term ) )
+    return R, t
+
+def _expand_sites( ops, cellsg, sites ):
+    """All positions of sites, with their tensors rotated accordingly. The ops
+    are strings as from _parse_xyz_op, and each site a dict with 'pos' and
+    optionally 'aniso' (CIF uij dict). Returns list of dicts like the sites
+    (other keys copied), one per position."""
+    from ._numpy import _ensure_numpy
+    np = _ensure_numpy()
+    ops = [ _parse_xyz_op( o ) for o in ops ]
+    res = []
+    for s in sites:
+        x0 = np.asarray( s['pos'], dtype = float )
+        uf = _cif_to_frac( s['aniso'], cellsg ) if s.get('aniso') else None
+        found = []
+        for R, t in ops:
+            x = ( np.dot( R, x0 ) + t ) % 1.0
+            if any( _unit_cell_point_distsq( x, f ) < 1e-12 for f in found ):
+                continue
+            found.append( x )
+            e = dict( s )
+            e['pos'] = tuple( _remap_fract_pos( v ) for v in x )
+            if uf is not None:
+                e['aniso'] = _frac_to_cif( _transform_frac_tensor( R, uf ),
+                                           cellsg )
+            res.append( e )
+    return res
+
+def _refine_sites( cellsg, sites, tols ):
+    """Refine a structure with site data (sites as for _find_site_orbits, one
+    per position) with spglib. Returns dict with the refined cell parameters
+    ('cellsg', with 'spacegroup' number), spglib messages ('warnings',
+    'msgs'), all refined positions ('allpos' as (site index of
+    representative, pos)), and one entry per orbit in 'sites': dicts with
+    the representative 'index', its refined 'pos', and the 'aniso' tensor
+    mapped to the refined cell (None if the orbit has no tensors, or if
+    they failed the orientation check, as indicated by 'aniso_dropped').
+    The 'sites' are None if spglib's basis change could not be tracked."""
+    from ._numpy import _ensure_numpy
+    np = _ensure_numpy()
+    orb = _find_site_orbits( cellsg, sites, tols )
+    types = orb['types']
+    lattice = _cellparams_to_spglib_lattice( cellsg )
+    cell = ( lattice, [ tuple( float( v ) for v in s['pos'] ) for s in sites ],
+             types )
+    d = _spglib_refine_cell( cell, symprec = tols['symprec'] )
+    newcell = dict( d['cellparams_snapped'] )
+    newcell['spacegroup'] = d['sgno']
+    tr = d['transform']
+    newlatt = np.asarray( _cellparams_to_spglib_lattice( newcell ),
+                          dtype = float )
+    refpos = list( zip( d['refined_cell'][1], d['refined_cell'][2] ) )
+    def distsq( x, y ):
+        dd = np.asarray( x, dtype = float ) - np.asarray( y, dtype = float )
+        dd = np.dot( newlatt.T, dd - np.round( dd ) )
+        return float( np.dot( dd, dd ) )
+    #Representative index of each type (orbits might share a type, but then
+    #their positions differ, which is used below):
+    type2rep = {}
+    for o in orb['orbits']:
+        type2rep.setdefault( types[ o['members'][0] ], o['members'][0] )
+    allpos = [ ( type2rep[ typ ], tuple( _remap_fract_pos( v ) for v in x ) )
+               for x, typ in refpos ]
+    if tr is None:
+        return { 'cellsg': newcell, 'warnings': d['warnings'],
+                 'msgs': d['msgs'], 'allpos': allpos, 'sites': None }
+    res = []
+    for o in orb['orbits']:
+        r = o['members'][0]
+        #The refined position of the representative is the one of its type
+        #nearest to its transformed input position:
+        xr = _transform_position( tr, sites[r]['pos'] )
+        cands = [ x for x, typ in refpos if typ == types[r] ]
+        pos = min( cands, key = lambda x : distsq( x, xr ) )
+        e = { 'index': r, 'pos': tuple( _remap_fract_pos( v ) for v in pos ),
+              'aniso': None, 'aniso_dropped': o['aniso_ok'] is False }
+        if o['aniso_ok']:
+            uf = _transform_frac_tensor( tr[0], _cif_to_frac(
+                sites[r]['aniso'], cellsg ) )
+            u = _frac_to_cif( uf, newcell )
+            #Remove numerical noise (from components which should be zero):
+            umax = max( abs( v ) for v in u.values() )
+            e['aniso'] = { k: ( 0.0 if abs( v ) < 1e-12 * umax else v )
+                           for k, v in u.items() }
+        res.append( e )
+    return { 'cellsg': newcell, 'warnings': d['warnings'], 'msgs': d['msgs'],
+             'allpos': allpos, 'sites': res }

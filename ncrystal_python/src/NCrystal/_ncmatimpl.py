@@ -708,11 +708,107 @@ class NCMATComposerImpl:
             atomic_types.append( lbl2atomidx[lbl] )
         return ( lattice, atomic_points, atomic_types ), { v: k for k,v in lbl2atomidx.items() }
 
-    def refine_crystal_structure( self, symprec, quiet ):
-        self._impl_refine( mode_refine = True, symprec = symprec, quiet=quiet )
+    def refine_crystal_structure( self, quiet, tol = None, tol_symprec = None,
+                                  tol_uij = None ):
+        tols = _nc_sgsymimpl._resolve_tolerances( tol,
+                                                  tol_symprec = tol_symprec,
+                                                  tol_uij = tol_uij )
+        atompos = self.__params.get('atompos')
+        if atompos and atompos.get('uij') and self.__params.get('cellsg'):
+            self.__refine_sites_with_uij( tols, quiet )
+        else:
+            self._impl_refine( mode_refine = True, symprec = tols['symprec'],
+                               quiet = quiet )
 
-    def verify_crystal_structure( self, symprec, quiet ):
-        self._impl_refine( mode_refine = False, symprec = symprec, quiet=quiet )
+    def __refine_sites_with_uij( self, tols, quiet ):
+        #Refine sites with anisotropic displacements: all positions are
+        #expanded with their tensors, equivalent sites found (with site data
+        #in the symmetry detection), and one site per orbit is kept with its
+        #tensor mapped to the refined cell.
+        from .misc import evaluate_query
+        cellsg, atompos = self.__params['cellsg'], self.__params['atompos']
+        occumap = atompos.get('occumap',{})
+        keys = ( 'u11', 'u22', 'u33', 'u12', 'u13', 'u23' )
+        sites = [ { 'key': lbl, 'pos': ( x, y, z ),
+                    'occu': occumap.get( lbl, 1.0 ),
+                    'aniso': dict( zip( keys, u ) ) if u else None }
+                  for ( lbl, x, y, z ), u in zip( atompos['sites'],
+                                                  atompos['uij'] ) ]
+        ops = evaluate_query( [ 'util', 'sgsym', 'strict',
+                                _sgspec_for_sites( cellsg ) ] )['ops']
+        expanded = _nc_sgsymimpl._expand_sites( ops, cellsg, sites )
+        r = _nc_sgsymimpl._refine_sites( cellsg, expanded, tols )
+        if not quiet:
+            for m in r['msgs']:
+                _nc_common.print(m)
+            for w in r['warnings']:
+                _nc_common.warn(w)
+        newcell = r['cellsg']
+        allpos = sorted( ( expanded[i]['key'], x[0], x[1], x[2] )
+                         for i, x in r['allpos'] )
+        new_atompos = { 'pos': None, 'sites': None,
+                        'occumap': copy.deepcopy( occumap ) }
+        res_sites, setting, bad = r['sites'], None, []
+        if res_sites is None:
+            _nc_common.warn( 'Anisotropic displacements (uij) dropped since'
+                             ' the basis change by spglib could not be'
+                             ' tracked' )
+        else:
+            #Tensors are dropped for all sites of labels with a failed
+            #orientation check (uij must be given for all or none):
+            bad = sorted( { expanded[e['index']]['key'] for e in res_sites
+                            if e['aniso_dropped'] } )
+            if bad:
+                _nc_common.warn( 'Anisotropic displacements (uij) dropped for'
+                                 f' {", ".join(bad)}, since tensors of'
+                                 ' equivalent sites are not symmetry images'
+                                 ' of each other' )
+            sg = newcell['spacegroup']
+            sgspec = ( f'{sg}:r' if _nc_sgsymimpl._uses_rhombohedral_axes(
+                sg, newcell['alpha'] ) else str(sg) )
+            q = evaluate_query( [ 'util', 'atomsites', 'relaxed', sgspec ]
+                                + [ f'{lbl},{x!r},{y!r},{z!r}'
+                                    for lbl, x, y, z in allpos ] )
+            def count( ll ):
+                res = {}
+                for lbl in ll:
+                    res[lbl] = res.get( lbl, 0 ) + 1
+                return res
+            if ( count( lbl for lbl, _, _ in q['sites'] )
+                 != count( expanded[e['index']]['key'] for e in res_sites ) ):
+                _nc_common.warn( 'Anisotropic displacements (uij) dropped'
+                                 ' since the refined sites could not be'
+                                 ' matched' )
+                res_sites = None
+            else:
+                setting = q['spacegroup_setting']
+        if res_sites is None:
+            new_atompos['pos'] = allpos
+            del new_atompos['sites']
+        else:
+            ll = []
+            for e in res_sites:
+                lbl = expanded[e['index']]['key']
+                u = ( tuple( e['aniso'][k] for k in keys )
+                      if e['aniso'] and lbl not in bad else None )
+                ll.append( ( ( lbl, ) + tuple( e['pos'] ), u ) )
+            ll.sort()
+            new_atompos['sites'] = [ e for e, _ in ll ]
+            if any( u for _, u in ll ):
+                new_atompos['uij'] = [ u for _, u in ll ]
+        self.__dirty()
+        self.__params['cellsg'] = {
+            k: newcell[k] for k in ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma',
+                                     'spacegroup' ) }
+        self.__params['cellsg']['spacegroup_setting'] = (
+            _parse_sgsetting( setting )[1] if setting else None )
+        self.__params['atompos'] = new_atompos
+
+    def verify_crystal_structure( self, quiet, tol = None, tol_symprec = None ):
+        tols = _nc_sgsymimpl._resolve_tolerances( tol,
+                                                  tol_symprec = tol_symprec )
+        self._impl_refine( mode_refine = False, symprec = tols['symprec'],
+                           quiet = quiet )
 
     def _impl_refine( self, *, mode_refine, symprec, quiet ):
         cellsg = self.__params.get('cellsg',None)
@@ -739,12 +835,7 @@ class NCMATComposerImpl:
             for w in d['warnings']:
                 _nc_common.warn(w)
         if mode_refine:
-            #NB: Only the positions are updated, so anisotropic displacements
-            #(which would need transforming too) are not supported:
-            if atompos.get('uij'):
-                raise _nc_core.NCBadInput('Crystal structures with anisotropic'
-                                          ' displacements (uij) can not be'
-                                          ' refined')
+            assert not atompos.get('uij')
             new_cellsg = dict(d['cellparams_snapped'].items())
             new_cellsg['spacegroup'] = d['sgno']#NB: ignoring sgsymb_hm here!
                                                 #Could we have spacegroup_hm as
@@ -1184,7 +1275,7 @@ class NCMATComposerImpl:
         is_crystal = bool(cellsg or atompos)
         did_verify_xtal_struct = False
         if verify_crystal_structure and cellsg and atompos:
-            self.verify_crystal_structure(symprec = 0.01, quiet = False)
+            self.verify_crystal_structure( quiet = False )
             did_verify_xtal_struct = True
 
         if verify_crystal_structure and cellsg and cellsg.get('spacegroup',None):
