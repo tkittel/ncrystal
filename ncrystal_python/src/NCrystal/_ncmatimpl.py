@@ -732,7 +732,7 @@ class NCMATComposerImpl:
         d =  _nc_sgsymimpl._spglib_refine_cell( spglib_cell, symprec = symprec ) if spglib_cell else None
         if not d:
             raise _nc_core.NCBadInput(f'Failed to {"refine" if mode_refine else "verify"} crystal structure with spglib.')
-        assert len(d)==8
+        assert len(d)==9
         if mode_refine and not quiet:
             for m in d['msgs']:
                 _nc_common.print(m)
