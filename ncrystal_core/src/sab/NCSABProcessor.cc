@@ -529,7 +529,9 @@ namespace NCRYSTAL_NAMESPACE {
 
       //The E->0 limit of Sint(E)/sqrt(E), f0=4*int_0^inf sqrt(b)S(b,b)db, and
       //the mean of sqrt(alpha) along alpha=beta, weighted by that integrand.
-      NCRYSTAL_API PairDD diagonalLowEnergyLimit( const SABData& );
+      //logS is the createLogSTable table of the SABData.
+      NCRYSTAL_API PairDD diagonalLowEnergyLimit( const SABData&,
+                                                  const VectD& logS );
 
       //Find Emin/kT, the lowest point of the energy grid. Below Emin, the cross
       //section is extrapolated as 1/sqrt(E), so Emin is the lowest E where
@@ -544,28 +546,31 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-NC::PairDD NCS::detail::diagonalLowEnergyLimit( const SABData& sab )
+NC::PairDD NCS::detail::diagonalLowEnergyLimit( const SABData& sab,
+                                                const VectD& logS )
 {
+  //Integrates c(x)=4*sqrt(x)*S(x,x) and c(x)*sqrt(x) along the diagonal, per
+  //segment within one grid cell. There S(x,x) blends two log-linear rows, so
+  //it is smooth apart from its log-slope: segments are split into m equal
+  //pieces, each with a log change of S of at most 0.5, where Gauss-Legendre-8
+  //is accurate to ~1e-14 (3e-14 for a piece starting at x=0). Each piece is
+  //integrated in t=sqrt(x), as dx=2t*dt removes the sqrt(x) singularity.
   const auto& A = sab.alphaGrid();
   const auto& B = sab.betaGrid();
   const auto& S = sab.sab();
   const std::size_t na = A.size();
-  auto sAt = [&A,&B,&S,na]( std::size_t ia, std::size_t ib, double x )
+  //Log change of S along alpha over [x0,x1] in cell (ia,ib), in rows ib and
+  //ib+1 (none if a row has a zero corner, being linear there):
+  auto logChange = [&]( std::size_t ia, std::size_t ib, double x0, double x1 )
   {
-    auto atRow = [&]( std::size_t jb ) {
-      const double s1 = vectAt( S, SABUtils::calcSABIdx( na, ia, jb ) );
-      const double s2 = vectAt( S, SABUtils::calcSABIdx( na, ia + 1, jb ) );
-      const double t = ( x - vectAt(A,ia) )
-        / ( vectAt(A,ia+1) - vectAt(A,ia) );
-      return ( s1 > 0.0 && s2 > 0.0
-               ? s1 * std::pow( s2 / s1, t )
-               : nclerp( s1, s2, t ) );
-    };
-    const double u = ( x - vectAt(B,ib) )
-      / ( vectAt(B,ib+1) - vectAt(B,ib) );
-    return nclerp( atRow(ib), atRow(ib+1), u );
+    double q = 0.0;
+    for ( auto jb : { ib, ib + 1 } ) {
+      const std::size_t i = SABUtils::calcSABIdx( na, ia, jb );
+      if ( vectAt( S, i ) > 0.0 && vectAt( S, i + 1 ) > 0.0 )
+        q = ncmax( q, ncabs( vectAt( logS, i + 1 ) - vectAt( logS, i ) ) );
+    }
+    return q * ( x1 - x0 ) / ( vectAt( A, ia + 1 ) - vectAt( A, ia ) );
   };
-  //Contributions c(x)=4*sqrt(x)*S(x,x), and c(x)*sqrt(x) for the mean:
   StableSum tot, totsq;
   for ( auto ib : ncrange( B.size() - 1 ) ) {
     const double lo = ncmax( vectAt(B,ib), 0.0, A.front() );
@@ -578,12 +583,31 @@ NC::PairDD NCS::detail::diagonalLowEnergyLimit( const SABData& sab )
     double x0 = lo;
     while ( x0 < hi && ia + 1 < na ) {
       const double x1 = ncmin( hi, vectAt(A,ia+1) );
-      auto c = [&sAt,ia,ib]( double x )
-      { return 4.0 * std::sqrt( x ) * sAt( ia, ib, x ); };
-      tot.add( integrateGaussLegendre8( c, x0, x1 ) );
-      totsq.add( integrateGaussLegendre8( [&c]( double x )
-                                          { return c(x) * std::sqrt(x); },
-                                          x0, x1 ) );
+      constexpr double kkk = 1.0 / 0.5;
+      const auto m = static_cast<unsigned>
+        ( std::ceil( logChange( ia, ib, x0, x1 ) * kkk ) );
+      const unsigned npieces = ( m > 1 ? m : 1 );
+      double y0 = x0;
+      for ( auto k : ncrange( 1u, npieces + 1 ) ) {
+        const double y1 = ( k == npieces ? x1
+                            : x0 + ( x1 - x0 ) * k / npieces );
+        //S(x,x) at x=t^2 (clamped, as t^2 can round outside the piece):
+        auto sAt = [&]( double t )
+        {
+          const double x = ncclamp( t * t, y0, y1 );
+          return SABUtils::evalSABCellWCL( sab, logS, ia, ib, x, x );
+        };
+        //c(x)dx = 8*t^2*S dt, and c(x)*sqrt(x)dx = 8*t^3*S dt:
+        const double t0 = std::sqrt( y0 );
+        const double t1 = std::sqrt( y1 );
+        tot.add( integrateGaussLegendre8( [&sAt]( double t )
+                                          { return 8.0 * t * t * sAt( t ); },
+                                          t0, t1 ) );
+        totsq.add( integrateGaussLegendre8( [&sAt]( double t )
+                                            { return 8.0*t*t*t * sAt( t ); },
+                                            t0, t1 ) );
+        y0 = y1;
+      }
       x0 = x1;
       ++ia;
     }
@@ -804,10 +828,12 @@ namespace NCRYSTAL_NAMESPACE {
                           tmp_result );
             return tmp_result.integralWithinKB / se;
           };
+          const auto diaglimit
+            = detail::diagonalLowEnergyLimit( sab, *cellmgr.logSTable() );
           E_min_max.first
             = NeutronEnergy{ kT * detail::determineEMinDivKT( cfg,
                                                       E_min_max.second.get()/kT,
-                                                      f, detail::diagonalLowEnergyLimit(sab) ) };
+                                                      f, diaglimit ) };
 
         }
         if ( E_min_max.first >= E_min_max.second ) {
