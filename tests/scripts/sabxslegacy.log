@@ -4,7 +4,6 @@
 =====> stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=20;vdoslux=1003;knllux=-1
 =====> stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=293.15;vdoslux=1004;knllux=-1
 =====> stdlib::Al_sg225.ncmat;temp=293.15;vdoslux=1005;knllux=-1
-NCrystal WARNING: Discarding 158 edges of provided kernel data due to missing S values.
 =====> stdlib::Ca_sg229_Calcium-gamma.ncmat;temp=293.15;vdoslux=1003;knllux=-1
 =====> stdlib::Ca_sg229_Calcium-gamma.ncmat;temp=293.15;vdoslux=1004;knllux=-1
 =====> stdlib::Ca_sg229_Calcium-gamma.ncmat;temp=293.15;vdoslux=1005;knllux=-1
