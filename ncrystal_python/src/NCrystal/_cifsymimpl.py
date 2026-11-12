@@ -145,8 +145,9 @@ def choose_symmetry( gemmi, listed_ops, symsg, load_sg, *, has_mult,
     the space group 'sg' to use, 'expand_ops' (listed operations to expand
     the sites with, if they are not a tabulated space group setting, else
     None), 'require_mult' (whether the site multiplicities must confirm the
-    choice). Warnings are passed to warn (a function taking a string). The
-    CIF data (text) is only used for hints in error messages."""
+    choice; an error if they are required but has_mult is False). Warnings
+    are passed to warn (a function taking a string). The CIF data (text) is
+    only used for hints in error messages."""
     sg = load_sg
     expand_ops, require_mult = None, False
     listed = _listed_ops( gemmi, listed_ops )
