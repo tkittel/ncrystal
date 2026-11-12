@@ -139,26 +139,25 @@ def _expand_sites_with_ops( gemmi, content, ops, symprec, strict ):
     _check_multiplicities( triples, len( ops ), strict )
     return res
 
-def decide_symmetry( content, *, permissive, tols, quiet, refine_with_spglib,
-                     override_spacegroup, cifdata ):
-    """Decide which symmetry to use for the CIF content (cf. read_cif), from
-    the listed symmetry operations and the space group symbol. Inconsistent
-    information is an error, unless permissive (and even then some evidence is
-    required). Returns a dict with the space group 'sg' (gemmi), its 'sgnumber'
-    and 'hm', the 'images' (gemmi operations other than the identity) to
-    expand the sites with, 'p1_sites' (sites already expanded, in which case
-    the space group is P1 and there are no images; otherwise None), and
-    'require_mult', 'expect_sgno' and 'nops' for later checks."""
-    gemmi = content['_gemmi']
-    struct, sg = content['_struct'], content['_sg']
-    mult = content['multiplicities']
-    p1_sites, require_mult, expect_sgno = None, False, None
-    listed = _listed_ops( gemmi, content['listed_ops'] )
-    symsg = _symbol_spacegroup( gemmi, content ) if listed else None
+def choose_symmetry( gemmi, listed_ops, symsg, load_sg, *, has_mult,
+                     permissive, cifdata, warn ):
+    """Decide which symmetry to use, from the listed symmetry operations
+    (strings, or None if absent), the space group of the symbol (symsg, only
+    needed if there are listed operations) and the one found when loading the
+    structure (load_sg). Inconsistent information is an error, unless
+    permissive (and even then some evidence is required). Returns a dict with
+    the space group 'sg' to use, 'expand_ops' (listed operations to expand
+    the sites with, if they are not a tabulated space group setting, else
+    None), 'require_mult' (whether the site multiplicities must confirm the
+    choice). Warnings are passed to warn (a function taking a string). The
+    CIF data (text) is only used for hints in error messages."""
+    sg = load_sg
+    expand_ops, require_mult = None, False
+    listed = _listed_ops( gemmi, listed_ops )
     def permissive_warn( what ):
-        _nc_common.warn( f'{what} (accepted due to permissive mode)' )
+        warn( f'{what} (accepted due to permissive mode)' )
     if listed is None:
-        pass#symbol only (or override), as determined by _load_with_gemmi
+        pass#symbol only (or override), as determined when loading
     elif listed[0] == 'unparsable':
         why = f'could not be parsed ({listed[1]})'
         if not permissive or not symsg:
@@ -202,20 +201,48 @@ def decide_symmetry( content, *, permissive, tols, quiet, refine_with_spglib,
                                  f' data {why}. The listed operations are used' )
                 require_mult = True
             #Not a tabulated setting (e.g. a primitive cell of a centred
-            #lattice, as written by pymatgen), so expand the sites with them:
-            if require_mult and not mult:
+            #lattice, as written by pymatgen), so the sites must be expanded
+            #with them:
+            if require_mult and not has_mult:
                 raise _nc_core.NCBadInput( 'Using the listed symmetry'
                                            ' operations requires site'
                                            ' multiplicities in the CIF data' )
-            #(the multiplicities must be true ones, as written by pymatgen):
-            p1_sites = _expand_sites_with_ops( gemmi, content, ops,
-                                               tols['symprec'], strict = True )
+            expand_ops = ops
             sg = gemmi.find_spacegroup_by_number( 1 )
-            if not quiet:
-                _nc_common.print('Expanded sites with the symmetry operations'
-                                 ' listed in the CIF data, since they do not'
-                                 ' correspond to a tabulated space group'
-                                 ' setting')
+    return { 'sg': sg, 'expand_ops': expand_ops,
+             'require_mult': require_mult }
+
+def decide_symmetry( content, *, permissive, tols, quiet, refine_with_spglib,
+                     override_spacegroup, cifdata ):
+    """Decide which symmetry to use for the CIF content (cf. read_cif and
+    choose_symmetry), and expand the sites with listed operations if needed.
+    Also checks the cell against the space group: if it does not quite fit,
+    the sites are expanded with its operations (and the space group must then
+    be confirmed after refinement, cf. 'expect_sgno'). Returns a dict with the
+    space group 'sg' (gemmi), its 'sgnumber' and 'hm', the 'images' (gemmi
+    operations other than the identity) to expand the sites with, 'p1_sites'
+    (sites already expanded, in which case the space group is P1 and there
+    are no images; otherwise None), and 'require_mult', 'expect_sgno' and
+    'nops' for later checks."""
+    gemmi = content['_gemmi']
+    struct = content['_struct']
+    mult = content['multiplicities']
+    p1_sites, expect_sgno = None, None
+    symsg = ( _symbol_spacegroup( gemmi, content )
+              if content['listed_ops'] else None )
+    c = choose_symmetry( gemmi, content['listed_ops'], symsg, content['_sg'],
+                         has_mult = bool( mult ), permissive = permissive,
+                         cifdata = cifdata, warn = _nc_common.warn )
+    sg, require_mult = c['sg'], c['require_mult']
+    if c['expand_ops'] is not None:
+        #(the multiplicities must be true ones, as written by pymatgen):
+        p1_sites = _expand_sites_with_ops( gemmi, content, c['expand_ops'],
+                                           tols['symprec'], strict = True )
+        if not quiet:
+            _nc_common.print('Expanded sites with the symmetry operations'
+                             ' listed in the CIF data, since they do not'
+                             ' correspond to a tabulated space group'
+                             ' setting')
     if require_mult and not mult:
         raise _nc_core.NCBadInput( 'Using the listed symmetry operations'
                                    ' requires site multiplicities in the CIF'
