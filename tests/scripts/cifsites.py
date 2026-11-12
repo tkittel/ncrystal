@@ -176,9 +176,8 @@ def test_symmetry_information():
         print( '   warning:', w )
     #Cell slightly inconsistent with the space group (accepted since spglib
     #finds the same space group), or more than that (rejected):
-    #(Uiso values are the Ueq of the tensors in the given cell. When clearly
-    #distorted, the tensors of the symmetry images no longer have that Ueq,
-    #which is rejected first, so it is also tested without tensors):
+    #(Uiso values are the Ueq of the tensors in the given cell; tested with
+    #and without tensors):
     for gamma, with_uij in ( ( 90.002, True ), ( 90.5, True ),
                              ( 90.5, False ) ):
         c = dict( rutile, gamma = gamma )

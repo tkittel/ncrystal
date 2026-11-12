@@ -37,7 +37,7 @@
    O1                       mult=4 occu=1 uiso=0.00800007 aniso=0.009 0.009 0.006 -0.003 0 0
    warning: Structure received minor corrections by spglib (at the 0.0011111% level) [warn#3]
    warning: The unit cell parameters do not exactly fit the space group of the CIF data (136), so the structure was refined to exactly consistent cell parameters [warn#4]
-   rutile, gamma=90.5: rejected: CIF site "Ti1" has Uiso=0.00533073 which differs from the Ueq=0.00533655 of its anisotropic displacements (try permissive mode to use the Uiso value)
+   rutile, gamma=90.5: rejected: The unit cell parameters are not compatible with the space group of the CIF data (136), and refining the structure gives space group 65. If the declared symmetry is trusted, try again with a larger tolerance (tol).
    rutile, gamma=90.5, no uij: rejected: The unit cell parameters are not compatible with the space group of the CIF data (136), and refining the structure gives space group 65. If the declared symmetry is trusted, try again with a larger tolerance (tol).
 == C2/c: sg=15 natoms=2
    Si1                      mult=8 occu=1 uiso=0.0126586 aniso=0.012 0.016 0.01 0.002 0.003 -0.0015
