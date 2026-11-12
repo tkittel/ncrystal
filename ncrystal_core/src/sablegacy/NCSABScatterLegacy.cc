@@ -26,30 +26,30 @@
 #include "NCrystal/internal/vdos/NCVDOSToScatKnl.hh"
 namespace NC = NCrystal;
 
-struct NC::SABScatterLegacy::Impl {
-  Impl(shared_obj<const SAB::SABScatterHelper> sp) : m_scathelper_shptr(std::move(sp)) {}
-  shared_obj<const SAB::SABScatterHelper> m_scathelper_shptr;
+struct NC::SABLegacy::SABScatterLegacy::Impl {
+  Impl(shared_obj<const SABLegacy::SABScatterHelper> sp) : m_scathelper_shptr(std::move(sp)) {}
+  shared_obj<const SABLegacy::SABScatterHelper> m_scathelper_shptr;
 };
 
-NC::SABScatterLegacy::~SABScatterLegacy() = default;
+NC::SABLegacy::SABScatterLegacy::~SABScatterLegacy() = default;
 
-NC::SABScatterLegacy::SABScatterLegacy( shared_obj<const SAB::SABScatterHelper> sh )
+NC::SABLegacy::SABScatterLegacy::SABScatterLegacy( shared_obj<const SABLegacy::SABScatterHelper> sh )
   : m_impl(std::move(sh)), m_sh(m_impl->m_scathelper_shptr.get())
 {
   //All other constructors delegate to this one.
 }
 
-NC::SABScatterLegacy::SABScatterLegacy( std::unique_ptr<const SAB::SABScatterHelper> upsh )
-  : SABScatterLegacy(shared_obj<const SAB::SABScatterHelper>{std::move(upsh)})
+NC::SABLegacy::SABScatterLegacy::SABScatterLegacy( std::unique_ptr<const SABLegacy::SABScatterHelper> upsh )
+  : SABScatterLegacy(shared_obj<const SABLegacy::SABScatterHelper>{std::move(upsh)})
 {
 }
 
-NC::SABScatterLegacy::SABScatterLegacy( SAB::SABScatterHelper&& sh )
-  : SABScatterLegacy( makeSO<const SAB::SABScatterHelper>(std::move(sh)) )
+NC::SABLegacy::SABScatterLegacy::SABScatterLegacy( SABLegacy::SABScatterHelper&& sh )
+  : SABScatterLegacy( makeSO<const SABLegacy::SABScatterHelper>(std::move(sh)) )
 {
 }
 
-NC::SABScatterLegacy::SABScatterLegacy( const DI_ScatKnl& di_sk, VDOS::VDOSLux vdoslux,
+NC::SABLegacy::SABScatterLegacy::SABScatterLegacy( const DI_ScatKnl& di_sk, VDOS::VDOSLux vdoslux,
                                         bool useCache, uint32_t vdos2sabExcludeFlag )
   : SABScatterLegacy( [&di_sk,vdoslux,useCache,vdos2sabExcludeFlag]()
                       {
@@ -58,40 +58,40 @@ NC::SABScatterLegacy::SABScatterLegacy( const DI_ScatKnl& di_sk, VDOS::VDOSLux v
                               &di_sk, vdoslux, useCache, vdos2sabExcludeFlag );
                         nc_assert_always(!!sabdata_ptr);
                         return ( useCache
-                                 ? SAB::createScatterHelperWithCache( std::move(sabdata_ptr),
+                                 ? SABLegacy::createScatterHelperWithCache( std::move(sabdata_ptr),
                                                                       di_sk.energyGrid() )
-                                 : SAB::createScatterHelper( std::move(sabdata_ptr),
+                                 : SABLegacy::createScatterHelper( std::move(sabdata_ptr),
                                                              di_sk.energyGrid() ) );
                       }() )
 {
 }
 
-NC::SABScatterLegacy::SABScatterLegacy( SABData && sabdata_, const VectD& energyGrid )
+NC::SABLegacy::SABScatterLegacy::SABScatterLegacy( SABData && sabdata_, const VectD& energyGrid )
   : SABScatterLegacy( [&energyGrid]( SABData&& sabdata)
                       {
                         auto sabdata_shptr = makeSO<const SABData>(std::move(sabdata));
                         std::shared_ptr<const VectD> egrid_shptr;
                         if (!energyGrid.empty())
                           egrid_shptr = std::make_shared<const VectD>(energyGrid);
-                        return SAB::createScatterHelperWithCache( std::move(sabdata_shptr),
+                        return SABLegacy::createScatterHelperWithCache( std::move(sabdata_shptr),
                                                                   std::move(egrid_shptr) );
                       }(std::move(sabdata_)) )
 {
 }
-NC::SABScatterLegacy::SABScatterLegacy( shared_obj<const SABData> sabdata_shptr,
+NC::SABLegacy::SABScatterLegacy::SABScatterLegacy( shared_obj<const SABData> sabdata_shptr,
                                         std::shared_ptr<const VectD> egrid_shptr )
-  : SABScatterLegacy( SAB::createScatterHelperWithCache( std::move(sabdata_shptr),
+  : SABScatterLegacy( SABLegacy::createScatterHelperWithCache( std::move(sabdata_shptr),
                                                          std::move(egrid_shptr) ) )
 {
 }
 
-NC::CrossSect NC::SABScatterLegacy::crossSectionIsotropic( CachePtr&, NeutronEnergy ekin ) const
+NC::CrossSect NC::SABLegacy::SABScatterLegacy::crossSectionIsotropic( CachePtr&, NeutronEnergy ekin ) const
 {
   return CrossSect{ m_sh->xsprovider.crossSection(ekin).dbl() * m_scale };
 }
 
 NC::ScatterOutcomeIsotropic
-NC::SABScatterLegacy::sampleScatterIsotropic( CachePtr&, RNG& rng,
+NC::SABLegacy::SABScatterLegacy::sampleScatterIsotropic( CachePtr&, RNG& rng,
                                               NeutronEnergy ekin ) const
 {
   double delta_e, mu;
@@ -100,7 +100,7 @@ NC::SABScatterLegacy::sampleScatterIsotropic( CachePtr&, RNG& rng,
   return { NeutronEnergy{ncmax(0.0,ekin.get()+delta_e)}, CosineScatAngle{mu} };
 }
 
-NC::Optional<std::string> NC::SABScatterLegacy::specificJSONDescription() const
+NC::Optional<std::string> NC::SABLegacy::SABScatterLegacy::specificJSONDescription() const
 {
   if ( !m_sh->specificJSONDescriptionOpen.has_value() )
     return NullOpt;
@@ -111,7 +111,7 @@ NC::Optional<std::string> NC::SABScatterLegacy::specificJSONDescription() const
 }
 
 std::shared_ptr<NC::ProcImpl::Process>
-NC::SABScatterLegacy::createMerged( const Process& oraw,
+NC::SABLegacy::SABScatterLegacy::createMerged( const Process& oraw,
                                     double scale_self,
                                     double scale_other ) const
 {

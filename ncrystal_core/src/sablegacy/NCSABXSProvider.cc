@@ -23,9 +23,9 @@
 
 namespace NC = NCrystal;
 
-NC::SABXSProvider::~SABXSProvider() = default;
+NC::SABLegacy::SABXSProvider::~SABXSProvider() = default;
 
-NC::SABXSProvider::SABXSProvider( VectD&& egrid,
+NC::SABLegacy::SABXSProvider::SABXSProvider( VectD&& egrid,
                                   VectD&& xsvals,
                                   std::shared_ptr<const SAB::SABExtender> extender )
   : m_kExtension(0.0)
@@ -33,7 +33,7 @@ NC::SABXSProvider::SABXSProvider( VectD&& egrid,
   setData(std::move(egrid),std::move(xsvals),std::move(extender));
 }
 
-void NC::SABXSProvider::setData( VectD&& egrid,
+void NC::SABLegacy::SABXSProvider::setData( VectD&& egrid,
                                  VectD&& xsvals,
                                  std::shared_ptr<const SAB::SABExtender> extender )
 {
@@ -52,7 +52,7 @@ void NC::SABXSProvider::setData( VectD&& egrid,
   m_kExtension = ( tableXS_emax - extenderXS_emax ) * emax;
 }
 
-NC::CrossSect NC::SABXSProvider::crossSection( NeutronEnergy ekin ) const
+NC::CrossSect NC::SABLegacy::SABXSProvider::crossSection( NeutronEnergy ekin ) const
 {
   nc_assert( ! m_xs.empty() && m_xs.size() == m_egrid.size() );
 

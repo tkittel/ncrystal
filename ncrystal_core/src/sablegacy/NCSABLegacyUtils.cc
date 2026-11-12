@@ -23,7 +23,7 @@
 
 namespace NC = NCrystal;
 
-void NC::SABUtils::activeGridRanges( const SABData& data,
+void NC::SABLegacy::activeGridRanges( const SABData& data,
                                      EDivKT e,
                                      std::vector<std::pair<std::uint16_t,std::uint16_t>>& out_alpharanges,
                                      std::size_t& ibeta_low  )
@@ -101,7 +101,7 @@ void NC::SABUtils::activeGridRanges( const SABData& data,
 
 }
 
-NC::SABUtils::TailedBreakdown NC::SABUtils::createTailedBreakdown( const Span<const double>& alphaGrid,
+NC::SABLegacy::TailedBreakdown NC::SABLegacy::createTailedBreakdown( const Span<const double>& alphaGrid,
                                                                    const Span<const double>& sab,
                                                                    const Span<const double>& logsab,
                                                                    const Span<const double>& alphaIntegrals_cumul,
@@ -135,7 +135,7 @@ NC::SABUtils::TailedBreakdown NC::SABUtils::createTailedBreakdown( const Span<co
                       const double alpha1(alphaGrid[alphaidx_lowedge+1]);
                       nc_assert( valueInInterval(alpha0,alpha1,alpha) );
                       auto i0(alphaidx_lowedge), i1(alphaidx_lowedge+1);
-                      return interpLogLinOrLinWCL( alpha0, sab[i0], alpha1, sab[i1], alpha,
+                      return SABUtils::interpLogLinOrLinWCL( alpha0, sab[i0], alpha1, sab[i1], alpha,
                                                    logsab[i0], logsab[i1] ).first;
                     };
   auto setTailPoint = [&interpSVal](TailedBreakdown::TailPoint& tp,unsigned aidx,double alpha)
@@ -163,7 +163,7 @@ NC::SABUtils::TailedBreakdown NC::SABUtils::createTailedBreakdown( const Span<co
     tb.narrow = true;
     setTailPoint(tb.front,aidx_low,alpha_low);
     setTailPoint(tb.back,aidx_low,alpha_upp);
-    tb.xs_front = integrateLogLinOrLinWCL( tb.front.alpha, tb.front.sval,
+    tb.xs_front = SABUtils::integrateLogLinOrLinWCL( tb.front.alpha, tb.front.sval,
                                            tb.back.alpha, tb.back.sval,
                                            tb.front.logsval, tb.back.logsval );
     return tb;
@@ -177,7 +177,7 @@ NC::SABUtils::TailedBreakdown NC::SABUtils::createTailedBreakdown( const Span<co
   if ( alpha_low >= alphaGrid[aidx_low] ) {
     nc_assert( alpha_low <= alphaGrid[aidx_low + 1] );
     setTailPoint(tb.front,aidx_low,alpha_low);
-    tb.xs_front = integrateLogLinOrLinWCL( tb.front.alpha, tb.front.sval,
+    tb.xs_front = SABUtils::integrateLogLinOrLinWCL( tb.front.alpha, tb.front.sval,
                                            alphaGrid[aidx_low+1], sab[aidx_low+1],
                                            tb.front.logsval, logsab[aidx_low+1] );
     ++tb.imiddle_low;
@@ -187,7 +187,7 @@ NC::SABUtils::TailedBreakdown NC::SABUtils::createTailedBreakdown( const Span<co
     nc_assert( aidx_upp != 0 );
     nc_assert( alpha_upp >= alphaGrid[aidx_upp-1] );
     setTailPoint(tb.back,aidx_upp-1,alpha_upp);
-    tb.xs_back = integrateLogLinOrLinWCL( alphaGrid[aidx_upp-1], sab[aidx_upp-1],
+    tb.xs_back = SABUtils::integrateLogLinOrLinWCL( alphaGrid[aidx_upp-1], sab[aidx_upp-1],
                                           tb.back.alpha, tb.back.sval,
                                           logsab[aidx_upp-1], tb.back.logsval );
     --tb.imiddle_upp;

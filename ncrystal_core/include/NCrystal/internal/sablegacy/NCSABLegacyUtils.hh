@@ -25,7 +25,7 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace SABUtils {
+  namespace SABLegacy {
 
     //Sample log-linear distribution on [a,b] with values fa, fb at a, b (and
     //their logs logfa, logfb):
@@ -65,7 +65,7 @@ namespace NCRYSTAL_NAMESPACE {
 // Inline implementations //
 ////////////////////////////
 
-inline double NCrystal::SABUtils::sampleLogLinDist_fast(double a, double fa, double b, double fb, double rand, double logfa, double logfb)
+inline double NCrystal::SABLegacy::sampleLogLinDist_fast(double a, double fa, double b, double fb, double rand, double logfa, double logfb)
 {
   //fixme: new LogLinDistSampler class is better.
   nc_assert(b>a);
