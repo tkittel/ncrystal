@@ -121,10 +121,7 @@ def _expand_sites_with_ops( gemmi, content, ops, symprec, strict ):
                   for i in range(3) ]
             if any( dist( x, f ) < symprec for f, _ in found ):
                 continue
-            ui = u
-            if uf is not None and not sgs._np_is_identity( R ):
-                ui = sgs._frac_to_cif( sgs._transform_frac_tensor( R, uf ),
-                                       cellsg )
+            ui = sgs._rotated_cif_tensor( R, u, uf, cellsg )
             found.append( ( x, ui ) )
         if site['occ'] > 0.0:
             triples.append( ( site['label'], mult.get( site['label'] ),
