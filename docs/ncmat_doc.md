@@ -959,14 +959,14 @@ reciprocal lattice vectors normalised to unit length). For example:
   Si 1/8 1/8 1/8 uij 0.0071 0.0071 0.0071 0 0 0
 ```
 
-The tensors only define the shapes and relative sizes of the displacements of
-the sites of an element, so any normalisation of the values is accepted (like
-for VDOS curves). The overall magnitude of the displacements still comes from
-the @DYNINFO section of the element, as for materials without tensors: at a
-given temperature, all the tensors of an element are scaled by the same factor,
-so their average mean-squared displacement (one third of the trace of the
-tensor in Cartesian coordinates, weighted by the multiplicities of the sites)
-equals the mean-squared displacement provided by the @DYNINFO section.
+A tensor only defines the shape of the displacements of its site, so any
+normalisation of its values is accepted (like for VDOS curves). The magnitude
+of the displacements still comes from the @DYNINFO section of the element, as
+for materials without tensors: at a given temperature, each tensor is scaled so
+that its mean-squared displacement (one third of the trace of the tensor in
+Cartesian coordinates) equals the mean-squared displacement provided by the
+@DYNINFO section. Sites with different mean-squared displacements must
+therefore use different elements, each with its own @DYNINFO section.
 
 Either all sites of an element must have a tensor, or none of them. Each tensor
 must be positive definite, and must have the symmetry of its site in the space
