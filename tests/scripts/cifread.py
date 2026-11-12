@@ -67,16 +67,20 @@ def show( descr, c ):
     for s in c['sites']:
         print( '   site:', s )
     for k in ( 'listed_ops', 'symbol_hm', 'symbol_itnumbers', 'orig_hm_alt',
-               'multiplicities', 'atom_type_number_in_cell', 'uiso_printed',
-               'ueq_printed' ):
+               'multiplicities', 'atom_type_number_in_cell' ):
         print( f'   {k}:', c[k] )
+    #(rounding errors with limited precision, as they involve trigonometry):
+    for k in ( 'uiso_printed', 'ueq_printed' ):
+        print( f'   {k}:', { lbl: ( f'{v:.6g}', f'{e:.4g}' )
+                             for lbl, ( v, e ) in c[k].items() } )
     assert c['_struct'] is not None and c['_gemmi'] is not None
 
-def expect_error( descr, txt, **kw ):
+def expect_error( descr, txt, detail = True, **kw ):
     try:
         read( txt, **kw )
     except NC.NCBadInput as e:
-        print( f'{descr}: rejected: {e}' )
+        #(without the details from gemmi, which might change between versions):
+        print( f'{descr}: rejected: {e if detail else str(e).split("(")[0]}' )
     else:
         raise SystemExit( f'{descr}: not rejected' )
 
@@ -100,9 +104,7 @@ def main():
     assert c['listed_ops'] == ops14 and c['symbol_itnumbers'][0] == [ '14' ]
     #No listed operations, symbol only:
     c = read( cif() )
-    #(NB: the value keeps the CIF quotes, which makes the check for an
-    #explicitly given setting fail; to be fixed separately):
-    assert c['listed_ops'] is None and c['orig_hm_alt'].strip( "'" ) == 'P 1 21/c 1'
+    assert c['listed_ops'] is None and c['orig_hm_alt'] == 'P 1 21/c 1'
     #Override: listed operations are then ignored:
     c = read( cif( ops = ops14 ), override = 'P 1 21/c 1' )
     assert c['listed_ops'] is None
@@ -118,8 +120,22 @@ def main():
     c = read( 'data_first\n_cell_length_a 1\n' + cif() )
     assert len( c['sites'] ) == 3
     print( 'block with the sites selected among two' )
+    #Biso instead of Uiso (Uiso = Biso/(8 pi^2)), and no cell angles (then 90):
+    c = read( cif( cell = '5.1 6.3 7.2 90 90 90',
+                   aniso = [ 'O1 0.012 0.009 0.015 0.002 -0.003 0.001' ],
+                   sites = [ 'O1 O 0.79 0.87 0.63 1 ? 4' ] ).replace(
+                       '_atom_site_U_iso_or_equiv', '_atom_site_B_iso_or_equiv' ).replace(
+                           'O1 O 0.79 0.87 0.63 1 ? 4', 'O1 O 0.79 0.87 0.63 1 0.95 4' ) )
+    ( u, e ), = c['uiso_printed'].values()
+    print( f'Biso 0.95: Uiso {u:.6g} with rounding error {e:.3g}' )
+    assert abs( u - 0.95 / ( 8 * 3.141592653589793**2 ) ) < 1e-15
+    noangles = '\n'.join( ln for ln in cif( aniso = [ 'O1 0.012 0.009 0.015 0.002 -0.003 0.001' ] ).splitlines()
+                          if not ln.startswith( '_cell_angle' ) )
+    c = read( noangles )
+    assert c['cell']['beta'] == 90.0 and set( c['ueq_printed'] ) == { 'O1' }
+    print( 'missing cell angles: 90 degrees, Ueq rounding errors available' )
     expect_error( 'two blocks with sites', cif() + cif().replace( 'data_test', 'data_b' ) )
-    expect_error( 'syntax error', 'data_x\n_a 1 2\n' )
+    expect_error( 'syntax error', 'data_x\n_a 1 2\n', detail = False )
     expect_error( 'no blocks', '# nothing\n' )
     expect_error( 'unknown override', cif(), override = 'Q 99' )
 

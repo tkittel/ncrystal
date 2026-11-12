@@ -79,6 +79,10 @@ def main():
     expect_error( 'different displacements at the same positions',
                   [ atom( 'A', 'Al', orbit_a, occ = 0.5 ),
                     atom( 'B', 'Cr', orbit_a, occ = 0.5, uiso = 0.02 ) ], None )
+    expect_error( 'different tensors at the same positions',
+                  [ atom( 'A', 'Al', orbit_a, occ = 0.5, aniso = { 'u11': 0.01 } ),
+                    atom( 'B', 'Cr', orbit_a, occ = 0.5, aniso = { 'u11': 0.02 } ) ],
+                  None )
     #Orbits of different sizes are never merged:
     a = merge_atoms( [ atom( 'A', 'Al', orbit_a ),
                        atom( 'B', 'Cr', orbit_a[:1] ) ], None )

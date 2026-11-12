@@ -1,0 +1,27 @@
+isotopes:
+   ('D1',) ((1.0, 'H2'),) occupancy 1.0 positions 1
+   ('T1',) ((1.0, 'H3'),) occupancy 1.0 positions 1
+   ('O1',) ((1.0, 'O'),) occupancy 1.0 positions 1
+element from label:
+   ('CaM1',) ((1.0, 'Ca'),) occupancy 1.0 positions 1
+   ('OA1',) ((1.0, 'O'),) occupancy 1.0 positions 1
+atom count "?":
+   ('Cl1',) ((1.0, 'Cl'),) occupancy 1.0 positions 1
+   ('Na1',) ((1.0, 'Na'),) occupancy 1.0 positions 1
+wrong atom count: rejected: Expanded number of atoms per cell (2) is different from what is stated explicitly in the CIF data (3.0). Wrong spacegroup (or choice/setting improperly specified)?
+mixed site:
+   ('Al1', 'Cr1') ((0.25, 'Cr'), (0.75, 'Al')) occupancy 1.0 positions 1
+   ('O1',) ((1.0, 'O'),) occupancy 1.0 positions 1
+# IMPORTANT NOTICE: This is a mostly automatic conversion which has not been
+#                   post-editing. Before distributing this file to other people,
+#                   anything done, and remove this notice.
+@CELL
+@SPACEGROUP
+@ATOMSITES
+  O 1/2 1/2 1/2
+  X1 0 0 0
+@ATOMDB
+  X1 is 0.75 Al 0.25 Fe
+@DYNINFO
+@DYNINFO
+atoms per cell after remap: 2.0

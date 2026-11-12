@@ -8,5 +8,6 @@ partially occupied mixed site:
 occupancy above 1: rejected: Error: Too high total occupancy (1.4 which is >1) for atoms with CIF labels: "A", "B"
 same site given twice (occupancy 2): rejected: Error: Too high total occupancy (2.0 which is >1) for atoms with CIF labels: "A", "B". A possible cause could be multiple entries in the CIF file using atomic positions that are actually symmetrically equivalent!
 different displacements at the same positions: rejected: atoms labelled "A" and "B" have same cell positions but different uiso information. This is not supported.
+different tensors at the same positions: rejected: atoms labelled "A" and "B" have same cell positions but different uiso information. This is not supported.
 wrong atom count: rejected: Expanded number of atoms per cell (2) is different from what is stated explicitly in the CIF data (3). Wrong spacegroup (or choice/setting improperly specified)?
 atom count checks done
