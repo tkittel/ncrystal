@@ -37,7 +37,7 @@ def rounded( x, ndigits ):
     return np.asarray( [ float( f'{v:.{ndigits}g}' )
                          for v in np.asarray( x, dtype=float ).flat ] )
 
-def write( outdir, name, descr, alpha, beta, s ):
+def write( outdir, name, descr, alpha, beta, s, scaled = True, egrid = None ):
     alpha = rounded( alpha, 6 )
     beta = rounded( beta, 6 )
     assert ( np.diff( alpha ) > 0 ).all() and ( np.diff( beta ) > 0 ).all()
@@ -50,9 +50,9 @@ def write( outdir, name, descr, alpha, beta, s ):
     c.set_composition( 'H', 'H' )
     c.set_density( 1.0, 'g/cm3' )
     c.set_state_of_matter( 'liquid' )
+    knl = { ( 'sab_scaled' if scaled else 'sab' ) : rounded( s, 4 ) }
     c.set_dyninfo_scatknl( 'H', alphagrid = alpha, betagrid = beta,
-                           temperature = 293.6,
-                           sab_scaled = rounded( s, 4 ) )
+                           temperature = 293.6, egrid = egrid, **knl )
     fn = outdir / f'sabsynth_{name}.ncmat'
     fn.write_text( c.create_ncmat( meta_data = False ) )
     print(f'{fn}: {len(alpha)}x{len(beta)}, {fn.stat().st_size//1024} kB')
@@ -122,6 +122,25 @@ def main( outdir ):
     b = np.concatenate(([0.0], geom(1e-6, 30.0, 999)))
     write( outdir, 'fine_beta_coarse_alpha', 'Fine beta grid (1000 points)'
            ' with a coarse alpha grid (5 points).', a, b, smooth(a, b) )
+
+    #A cell with S spanning 245 decades along alpha (so crossed parts of it are
+    #integrated with adaptive Romberg) and carrying most of the total integral,
+    #crossed by the kinematic boundary for E/kT in ~[16,21] (covered by the
+    #explicit energy grid). Insufficient integration precision there shows up
+    #as a decrease of the integral with E. The 500 beta points (all but the
+    #two cell rows far from the cell) avoid thickening of the beta grid:
+    kT = 8.617333262e-5 * 293.6
+    a = np.array([1e-3, 1.0, 3.0, 6.17218, 7.46504])
+    b = np.concatenate( ( [-30.0, -17.3375, -14.4413],
+                          np.linspace( 0.0, 30.0, 497 ) ) )
+    s = np.full( ( len(b), len(a) ), 1e-195 )
+    s[1, 3], s[1, 4], s[2, 3], s[2, 4] = 2.9e-192, 2.4e-61, 7.0e-195, 5.2e52
+    egrid = np.concatenate( ( np.geomspace( 1e-5, 15*kT, 10 )[:-1],
+                              np.linspace( 15*kT, 22*kT, 20 ), [ 30*kT ] ) )
+    write( outdir, 'crossed_dominant_cell', 'One dominant cell with S spanning'
+           ' 245 decades along alpha, crossed by the kinematic boundary within'
+           ' the explicit energy grid.', a, b, s, scaled = False,
+           egrid = rounded( egrid, 6 ) )
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser( description = 'Write synthetic kernels.' )
