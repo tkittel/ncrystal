@@ -95,6 +95,7 @@ Caught expected NCBadInput('Invalid JSON query key: "foo"')
 ['wl2ekin',
  'ekin2wl',
  'mathval',
+ 'sincosdeg',
  'fmadiagnose',
  'kinutils',
  'browsedb',

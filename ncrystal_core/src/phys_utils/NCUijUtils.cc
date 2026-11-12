@@ -44,9 +44,10 @@ NCU::CellMetric NCU::cellMetric( double a, double b, double c,
   nc_assert_always( beta > 0.0 && beta < 180.0 );
   nc_assert_always( gamma > 0.0 && gamma < 180.0 );
 #endif
-  //Exact zero for the (common) 90 degree angles:
-  auto cosd = []( double x ) { return x == 90.0 ? 0.0 : std::cos( x * kDeg ); };
-  const double ca = cosd( alpha ), cb = cosd( beta ), cg = cosd( gamma );
+  //(reproducible, and exact for common angles like 90 and 120 degrees):
+  const double ca = stable_sincos_deg( alpha ).cos;
+  const double cb = stable_sincos_deg( beta ).cos;
+  const double cg = stable_sincos_deg( gamma ).cos;
   CellMetric m;
   m.g = { a*a, a*b*cg, a*c*cb,
           a*b*cg, b*b, b*c*ca,

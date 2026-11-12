@@ -118,6 +118,13 @@ namespace NCRYSTAL_NAMESPACE {
   double stable_tanh(double);
   double stable_sinh(double);
   double stable_log(double);
+  sincosval_t stable_sincos( double );//Alias for sincos_fast (radians)
+
+  //Sine and cosine of an angle in degrees (cross platform reproducible):
+  //values at multiples of 30 and 45 degrees are the correctly rounded exact
+  //values (e.g. cos(90)=0, cos(60)=0.5, cos(30)=sqrt(3)/2). Other angles are
+  //reduced exactly to [0,45] degrees and evaluated with sincos_mpi2pi2:
+  sincosval_t stable_sincos_deg( double );
 
   //Fully cross platform reproducible error functions (and fast):
   double ncerf( double x );
@@ -503,6 +510,11 @@ inline NCrystal::sincosval_t NCrystal::sincos_2pix( double x )
 inline NCrystal::sincosval_t NCrystal::sincos_fast( double x )
 {
   return sincos_2pix( x * kInv2Pi );
+}
+
+inline NCrystal::sincosval_t NCrystal::stable_sincos( double x )
+{
+  return sincos_fast( x );
 }
 
 inline void NCrystal::sincos(double A,double&cosA, double& sinA)

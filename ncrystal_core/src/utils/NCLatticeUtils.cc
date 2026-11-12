@@ -65,11 +65,11 @@ NC::RotMatrix NC::getLatticeRot( double a, double b, double c,
   }
 #endif
 
-  if (cg==2) cg = std::cos(gamma);
-  if (sg==2) sg = std::sin(gamma);
-  if (ca==2) ca = std::cos(alpha);
-  if (cb==2) cb = std::cos(beta);
-  if (sb==2) sb = std::sin(beta);
+  if (cg==2) cg = stable_sincos(gamma).cos;
+  if (sg==2) sg = stable_sincos(gamma).sin;
+  if (ca==2) ca = stable_sincos(alpha).cos;
+  if (cb==2) cb = stable_sincos(beta).cos;
+  if (sb==2) sb = stable_sincos(beta).sin;
 
   nc_assert(sg>0);
   const double m57 = c*(ca-cb*cg)/sg;
@@ -131,10 +131,10 @@ NC::RotMatrix NC::getReciprocalLatticeRot( double a, double b, double c,
     //      also supporting the a-axis unique setting (beta=gamma=90) and the
     //      c-axis unique setting (alpha=beta=90).
 
-    const double sb = std::sin(beta);
-    const double tanb = std::tan(beta);
-    nc_assert(tanb!=0.0);
-    const double cotb = 1.0 / tanb;//slightly more accurate than cos(b)/sin(b)
+    const auto csb = stable_sincos(beta);
+    const double sb = csb.sin;
+    nc_assert(sb!=0.0);
+    const double cotb = csb.cos / sb;
     std::array<double,9> m{ k2Pi/a, 0., 0.,
                              0., k2Pi/b, 0.,
                             -cotb*k2Pi/a, 0., k2Pi/(c*sb) };
@@ -201,8 +201,6 @@ NC::KSqCalc::KSqCalc( double a, double b, double c,
   const bool beta90 = ncabs(beta-kPiHalf)<tol;
   const bool gamma90 = ncabs(gamma-kPiHalf)<tol;
   const bool gamma120 = ncabs(gamma-kPi*(2/3.))<tol;
-  //Fixme: Consider using our custom versions of std::sin and std::cos below,
-  //       for added reproducibility.
   if ( alpha90 && beta90 && gamma90 ) {
     //Orthogonal axes (cubic, tetragonal, orthorhombic): 1/d^2 = h^2/a^2 +
     //k^2/b^2 + l^2/c^2 (equal lengths give equal factors):
@@ -218,7 +216,8 @@ NC::KSqCalc::KSqCalc( double a, double b, double c,
   } else if ( a == b && b == c && alpha == beta && beta == gamma ) {
     //Rhombohedral axes: 1/d^2 = [ (h^2+k^2+l^2) sin^2(alpha)
     //+ 2(hk+hl+kl)(cos^2(alpha)-cos(alpha)) ] / [ a^2 (1-3cos^2(alpha)+2cos^3(alpha)) ]:
-    const double ca = std::cos(alpha), sa = std::sin(alpha);
+    const auto csa = stable_sincos(alpha);
+    const double ca = csa.cos, sa = csa.sin;
     const double denom = a*a*( 1.0 - 3.0*ca*ca + 2.0*ca*ca*ca );
     nc_assert( denom > 0.0 );
     F[0] = F[1] = F[2] = ncsquare(k2Pi) * sa*sa / denom;
@@ -226,14 +225,15 @@ NC::KSqCalc::KSqCalc( double a, double b, double c,
   } else {
     //General case (monoclinic, triclinic): the reciprocal metric G from the
     //cell, with exact sines/cosines for 90 and 120 degree angles:
-    const double ca = alpha90 ? 0.0 : std::cos(alpha);
-    const double cb = beta90 ? 0.0 : std::cos(beta);
-    const double cg = gamma90 ? 0.0 : ( gamma120 ? -0.5 : std::cos(gamma) );
-    const double sa = alpha90 ? 1.0 : std::sin(alpha);
-    const double sb = beta90 ? 1.0 : std::sin(beta);
+    const double ca = alpha90 ? 0.0 : stable_sincos(alpha).cos;
+    const double cb = beta90 ? 0.0 : stable_sincos(beta).cos;
+    const auto csg = stable_sincos(gamma);
+    const double cg = gamma90 ? 0.0 : ( gamma120 ? -0.5 : csg.cos );
+    const double sa = alpha90 ? 1.0 : stable_sincos(alpha).sin;
+    const double sb = beta90 ? 1.0 : stable_sincos(beta).sin;
     constexpr double sqrt3half
       = 0.86602540378443864676372317075293618347140262690519;
-    const double sg = gamma90 ? 1.0 : ( gamma120 ? sqrt3half : std::sin(gamma) );
+    const double sg = gamma90 ? 1.0 : ( gamma120 ? sqrt3half : csg.sin );
     const double vfact = 1.0 - ca*ca - cb*cb - cg*cg + 2.0*ca*cb*cg;//(V/abc)^2
     nc_assert( vfact > 0.0 );
     const double q = ncsquare(k2Pi) / vfact;

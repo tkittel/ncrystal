@@ -388,5 +388,81 @@ static const TestCase sinh_cases[] = {
   REQUIRE( NC::stable_expm1( -1000.0 ) == -1.0 );
   std::cout << "boundary checks passed" << std::endl;
 
+  //stable_sincos_deg: exact values at multiples of 30 and 45 degrees:
+  {
+    constexpr double s3 = 0.86602540378443864676372317075293618347140262690519;
+    constexpr double s2 = 0.70710678118654752440084436210484903928483593768847;
+    const double exact[][3] = {
+      { 0., 0., 1. }, { 30., 0.5, s3 }, { 45., s2, s2 }, { 60., s3, 0.5 },
+      { 90., 1., 0. }, { 120., s3, -0.5 }, { 135., s2, -s2 },
+      { 150., 0.5, -s3 }, { 180., 0., -1. }, { 210., -0.5, -s3 },
+      { 225., -s2, -s2 }, { 240., -s3, -0.5 }, { 270., -1., 0. },
+      { 300., -s3, 0.5 }, { 315., -s2, s2 }, { 330., -0.5, s3 },
+      { 360., 0., 1. }, { -30., -0.5, s3 }, { -90., -1., 0. },
+      { 450., 1., 0. }, { -720., 0., 1. } };
+    for ( auto& e : exact ) {
+      const auto sc = NC::stable_sincos_deg( e[0] );
+      REQUIRE( sc.sin == e[1] && sc.cos == e[2] );
+      //no negative zeros:
+      REQUIRE( !( sc.sin == 0.0 && std::signbit( sc.sin ) ) );
+      REQUIRE( !( sc.cos == 0.0 && std::signbit( sc.cos ) ) );
+    }
+  }
+  //stable_sincos_deg: within 2 ULP of the correctly rounded values (from
+  //80 digit decimal arithmetic on the exact angle), exact symmetries, and the
+  //results printed bitwise (reference log checks reproducibility):
+  {
+    const double cases[][3] = {
+      { 1e-09, 1.7453292519943298e-11, 1.0 },
+      { 0.5, 0.008726535498373935, 0.9999619230641713 },
+      { 7.25, 0.12619896913582976, 0.992004949679715 },
+      { 29.9999, 0.49999848849976825, 0.8660262764477457 },
+      { 30.0001, 0.5000015114987086, 0.8660245311184936 },
+      { 44.99, 0.7069833570023731, 0.7072301838310177 },
+      { 45.01, 0.7072301838310177, 0.7069833570023731 },
+      { 59.5, 0.8616291604415257, 0.5075383629607042 },
+      { 84.0, 0.9945218953682733, 0.10452846326765347 },
+      { 89.999999, 0.9999999999999999, 1.7453292475877967e-08 },
+      { 90.000001, 0.9999999999999999, -1.7453292475877967e-08 },
+      { 97.0, 0.992546151641322, -0.12186934340514748 },
+      { 105.0, 0.9659258262890683, -0.25881904510252074 },
+      { 109.47, 0.9428161427317178, -0.3333132475682374 },
+      { 119.9954, 0.8660655435661194, -0.4999304694130196 },
+      { 135.5, 0.7009092642998509, -0.7132504491541816 },
+      { 150.25, 0.4962165036752082, -0.8681988144891423 },
+      { 179.5, 0.008726535498373935, -0.9999619230641713 },
+      { 200.0, -0.3420201433256687, -0.9396926207859084 },
+      { 275.3, -0.9957246981845821, 0.09237058744656178 },
+      { 359.9, -0.0017453283658987056, 0.9999984769132877 },
+      { -45.7, -0.7156927337037359, 0.6984152854310058 },
+      { -97.0, -0.992546151641322, -0.12186934340514748 },
+      { 1000.0, -0.984807753012208, 0.17364817766693036 } };
+    for ( auto& e : cases ) {
+      const double x = e[0];
+      const auto sc = NC::stable_sincos_deg( x );
+      std::cout << "stable_sincos_deg(" << NC::fmt(x,"%.17g") << ") = { "
+                << NC::fmt(sc.sin,"%.17g") << ", "
+                << NC::fmt(sc.cos,"%.17g") << " }" << std::endl;
+      REQUIRE( withinUlps( sc.sin, e[1], 2 ) );
+      REQUIRE( withinUlps( sc.cos, e[2], 2 ) );
+      const auto scneg = NC::stable_sincos_deg( -x );
+      REQUIRE( scneg.sin == -sc.sin && scneg.cos == sc.cos );
+      //Shifting by -720 degrees, when exact (TwoSum rounding error is 0):
+      const double y = x - 720.0;
+      const double bb = y - x;
+      if ( ( x - ( y - bb ) ) + ( -720.0 - bb ) == 0.0 ) {
+        const auto scshift = NC::stable_sincos_deg( y );
+        REQUIRE( scshift.sin == sc.sin && scshift.cos == sc.cos );
+      }
+    }
+    //stable_sincos is an alias for sincos_fast:
+    for ( double x : { -7.0, -1.0, 0.0, 0.3, 1.0, 2.5, 100.0 } ) {
+      const auto a = NC::stable_sincos( x );
+      const auto b = NC::sincos_fast( x );
+      REQUIRE( a.sin == b.sin && a.cos == b.cos );
+    }
+  }
+  std::cout << "stable_sincos_deg checks passed" << std::endl;
+
   return 0;
 }
