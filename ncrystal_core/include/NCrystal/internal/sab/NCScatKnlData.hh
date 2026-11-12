@@ -55,7 +55,6 @@ namespace NCRYSTAL_NAMESPACE {
                            Unspecified };
       KnlType knltype = KnlType::Unspecified;
       double suggestedEmax = 0;//optional, 0 means not available.
-      bool betaGridOptimised = false;//set to true if beta grid is known to not require thickening before sampling.
     };
 
     struct ScatKnlDataView {

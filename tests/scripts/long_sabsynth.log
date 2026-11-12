@@ -3,6 +3,8 @@ diagonal_sliver []: sampling methods and tries OK
 fine_beta_coarse_alpha []: sampling methods and tries OK
 huge_values []: sampling methods and tries OK
 minimal []: sampling methods and tries OK
+NCrystal WARNING: S(alpha,beta) beta-strip sampling needed 10000 tries.
+NCrystal WARNING: S(alpha,beta) full-cell sampling needed 10000 tries.
 noise []: sampling methods and tries OK
 spike_alphamin []: sampling methods and tries OK
 NCrystal WARNING: Discarding 31 edges of provided kernel data due to missing S values.
