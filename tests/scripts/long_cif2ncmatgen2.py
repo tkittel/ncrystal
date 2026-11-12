@@ -22,12 +22,13 @@
 
 # NEEDS: numpy spglib gemmi
 
-# Comprehensive version of cif2ncmatgen.py: random structures in all 230 space
-# groups (with all CIF variants for every 5th space group).
+# Comprehensive version of cif2ncmatgen.py, part 2 of 4 (space groups 137-206;
+# the parts have similar run times): random structures in all 230 space groups
+# (with all CIF variants for every 5th space group).
 
 import NCTestUtils.cifgentests
 
 if __name__ == '__main__':
-    NCTestUtils.cifgentests.run( range( 1, 231 ), seed = 2026,
+    NCTestUtils.cifgentests.run( range( 137, 207 ), seed = 2026,
                                  full_for = range( 1, 231, 5 ),
                                  invalid_for = ( 1, 99, 166, 225 ) )
