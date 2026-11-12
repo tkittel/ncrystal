@@ -253,6 +253,11 @@ def _uses_rhombohedral_axes( sgnumber, alpha ):
     return ( int(sgnumber) in ( 146, 148, 155, 160, 161, 166, 167 )
              and alpha != 90 )
 
+def _sgspec( sgno, alpha ):
+    """Space group number as a setting string for the sgsym queries, e.g. "166"
+    or "166:r" (rhombohedral axes, judged from the cell angle alpha)."""
+    return f'{sgno}:r' if _uses_rhombohedral_axes( sgno, alpha ) else str(sgno)
+
 def _check_cell_sg_consistency( sgnumber, a, b, c, alpha, beta, gamma ):
     sgclass = _nc_common._classifySG(int(sgnumber))
     if sgclass in ( 'orthorhombic', 'tetragonal', 'cubic'):

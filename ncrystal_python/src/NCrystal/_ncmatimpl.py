@@ -763,19 +763,14 @@ class NCMATComposerImpl:
                                  f' {", ".join(bad)}, since tensors of'
                                  ' equivalent sites are not symmetry images'
                                  ' of each other' )
-            sg = newcell['spacegroup']
-            sgspec = ( f'{sg}:r' if _nc_sgsymimpl._uses_rhombohedral_axes(
-                sg, newcell['alpha'] ) else str(sg) )
+            sgspec = _nc_sgsymimpl._sgspec( newcell['spacegroup'],
+                                            newcell['alpha'] )
             q = evaluate_query( [ 'util', 'atomsites', 'relaxed', sgspec ]
                                 + [ f'{lbl},{x!r},{y!r},{z!r}'
                                     for lbl, x, y, z in allpos ] )
-            def count( ll ):
-                res = {}
-                for lbl in ll:
-                    res[lbl] = res.get( lbl, 0 ) + 1
-                return res
-            if ( count( lbl for lbl, _, _ in q['sites'] )
-                 != count( expanded[e['index']]['key'] for e in res_sites ) ):
+            from collections import Counter
+            if ( Counter( lbl for lbl, _, _ in q['sites'] )
+                 != Counter( expanded[e['index']]['key'] for e in res_sites ) ):
                 _nc_common.warn( 'Anisotropic displacements (uij) dropped'
                                  ' since the refined sites could not be'
                                  ' matched' )
