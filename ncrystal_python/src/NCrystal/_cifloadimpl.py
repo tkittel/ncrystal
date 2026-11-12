@@ -48,21 +48,17 @@ def _expected_atom_count( content ):
         return sum( e[0] for e in v )
     return None#(absent, or with values which are not numbers like "?")
 
-def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
-                           merge_equiv, tols, permissive,
-                           override_spacegroup = None ):
-    #Load CIF data: read it (gemmi), decide which symmetry to use, collect and
-    #merge the atoms of the sites, and find the final sites (spglib).
+def load_cif_data( cifsrc, _cifdata, *, quiet, refine_with_spglib,
+                   merge_equiv, tols, permissive, override_spacegroup = None ):
+    """Load CIF data (text, from the CIFSource cifsrc): read it (gemmi),
+    decide which symmetry to use, collect and merge the atoms of the sites,
+    and find the final sites (spglib). Returns the results for CIFLoader (a
+    dict), and the gemmi module and structure."""
     from types import MappingProxyType
-
-    from .cifutils import CIFSource
     dict_ro, list_ro = MappingProxyType, tuple
 
     result = {}
-    if not isinstance( cifsrc, CIFSource ):
-        cifsrc = CIFSource( cifsrc )
     result['cifsrc'] = cifsrc
-    _cifdata = cifsrc.load_data( quiet = quiet, mp_apikey = mp_apikey )
     result['cifdata'] = _cifdata
 
     content = read_cif( _cifdata, quiet = quiet,
@@ -83,7 +79,7 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
     cellsg['spacegroup'] = dict_ro( { 'number': choice['sgnumber'],
                                       'hm': choice['hm'] } )
 
-    collected_atoms = collect_atoms( content, choice, cellsg, tols = tols,
+    collected_atoms = collect_atoms( content, choice, tols = tols,
                                      permissive = permissive )
     final_atoms = merge_atoms( collected_atoms, expected_tot_atom_in_orig_cell )
 

@@ -295,7 +295,8 @@ def expand_position( choice, coord, fractcoord_approx_1angstrom,
                      allow_finetune = 3 ):
     """All positions (tuples) generated from coord (a fractional position) by
     the images of the symmetry choice (cf. decide_symmetry). A coord very
-    close to a special position (within 0.01 Aa) is moved onto it, with a
+    close to a special position (about 0.01 Aa, as a fractional distance
+    scaled by the mean cell length) is moved onto it, with a
     warning."""
     gemmi = choice['_gemmi']
     _ucpdist = _nc_sgsymimpl._unit_cell_point_dist

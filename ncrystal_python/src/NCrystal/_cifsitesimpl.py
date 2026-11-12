@@ -21,18 +21,20 @@
 
 """
 
-Internal implementation of finding and grouping the sites of CIF data, for
-the cifutils module.
+Internal implementation of the sites of CIF data, for the cifutils module:
+collecting the atoms of the sites (elements, positions, a single displacement
+magnitude from Uiso and Ueq), merging those at the same positions, and finding
+and grouping the final sites (refined with spglib).
 
 """
 
 __all__ = []
 
+from . import _cifsymimpl as _nc_cifsymimpl
 from . import _common as _nc_common
 from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
 
-_uij_keys = ( 'u11', 'u22', 'u33', 'u12', 'u13', 'u23' )
 
 def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, permissive, quiet ):
     """Sites (one per orbit) of the CIF atoms (dicts with 'positions' and the
@@ -156,7 +158,8 @@ def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, permissive, quiet ):
 def _impl_group_sites( sites, *, tols, merge_equiv ):
     """Group sites into atoms (with merge_equiv, sites with equal composition
     and occupancies and uiso values within the tolerances are merged). Returns
-    the atoms (sorted) and the atom index of each site."""
+    the atoms (sorted) and the atom index of each site. NB: removes the
+    '_positions' entries from the sites (as added by _impl_find_sites)."""
     sgs = _nc_sgsymimpl
     def opt_close( a, b, tol ):
         return ( ( a is None ) == ( b is None )
@@ -220,17 +223,89 @@ def _guess_elem_name( site_label ):
     if not leftover or leftover.isdigit():
         return c
 
-def collect_atoms( content, choice, cellsg, *, tols, permissive ):
+def _resolve_uiso_ueq( site, cell, uiso_printed, ueq_printed, *, tols,
+                       permissive ):
+    #Uiso and tensor of a CIF site (dict, cf. read_cif) with a single
+    #magnitude: if the site has a tensor, its Ueq is compared with the Uiso,
+    #accepting differences explained by the rounding errors of the printed
+    #values (cf. uiso_from_cif and ueq_from_cif) plus tol_uij, and the tensor is
+    #rescaled to the Uiso. Returns (uiso, aniso), uiso None if not available.
+    sgs = _nc_sgsymimpl
+    aniso = site['aniso']
+    u_iso = site['u_iso']
+    if not u_iso > 0.0:
+        u_iso = None
+    if not aniso:
+        return u_iso, aniso
+    ueq = sgs._cif_uij_ueq( aniso, cell )
+    lbl = site['label']
+    allow = ( uiso_printed.get( lbl, ( None, 0.0 ) )[1]
+              + ueq_printed.get( lbl, ( None, 0.0 ) )[1]
+              + tols['uij'] * max( ueq, u_iso or 0.0 ) )
+    if not u_iso:
+        u_iso = ueq
+    elif abs( ueq - u_iso ) > allow:
+        msg = ( f'CIF site "{lbl}" has Uiso={u_iso:g} which'
+                f' differs from the Ueq={ueq:g} of its anisotropic'
+                ' displacements by more than the rounding errors of'
+                ' the printed values explain' )
+        if not permissive:
+            raise _nc_core.NCBadInput( msg + ' (try permissive mode'
+                                       ' to use the Uiso value)' )
+        _nc_common.warn( msg + ' (using the Uiso value due to'
+                         ' permissive mode)' )
+    return u_iso, sgs._rescale_uij( aniso, ueq, u_iso )
+
+def _element_marker( site ):
+    #Element (or isotope, e.g. "H2" for deuterium) of a CIF site (dict, cf.
+    #read_cif), deduced from its label if the element is not given (with a
+    #warning). Checks the atomic number:
+    from .atomdata import elementNameToZValue
+    site_en = site['element_name']
+    if site_en == 'X' or not site_en:
+        #Issue seen in codid::9005777, which had no atomic symbols but
+        #labels like "CaM1", "CaM2", "OA1".."OA3", "OB1", "OB2", "OC1",
+        #"OC3",... Correct if beginning of string starts with exactly one
+        #element name, followed by either a digit or an upper case string
+        #followed by digits.
+        elem_name = _guess_elem_name( site['label'] )
+        if elem_name:
+            _nc_common.warn(f'Assuming atomic symbol "{elem_name}" based on CIF label "{site["label"]}"')
+        else:
+            raise _nc_core.NCBadInput(f'Neither Gemmi nor NCrystal\'s custom'
+                                      ' code could deduce an atomic symbol'
+                                      f' for the CIF label "{site["label"]}"')
+        elem_Z = None
+    else:
+        elem_name, elem_Z = site_en, site['element_Z']
+
+    elem_A = None
+    if elem_name == 'D':
+        elem_name, elem_Z, elem_A = 'H',1,2
+    if elem_name == 'T':
+        elem_name, elem_Z, elem_A = 'H',1,3
+    elem_marker = elem_name + ( str(elem_A) if elem_A else '' )
+
+    z2name = elementNameToZValue( elem_name, allow_isotopes = False )
+    if z2name is None:
+        raise _nc_core.NCBadInput(f'Not an element name: "{elem_name}"')
+    if elem_Z is None:
+        elem_Z = z2name
+    if elem_Z != z2name:
+        raise _nc_core.NCBadInput(f'Wrong atomic number ({elem_Z}) provided'
+                                  f' for element "{elem_name}"')
+    return elem_marker
+
+def collect_atoms( content, choice, *, tols, permissive ):
     """The CIF sites with positive occupancy (those of the symmetry choice if
     already expanded, else those of the content, cf. decide_symmetry and
-    read_cif), as dicts with all their positions in the cell ('expanded_coords',
-    'rotations'), element, occupancy, label, and a single magnitude of their
-    displacements ('uiso', with 'aniso' rescaled to it)."""
-    from . import _cifsymimpl as sym
-    sgs = _nc_sgsymimpl
+    read_cif), as dicts with all their positions in the cell
+    ('expanded_coords', and the 'rotations' of the operations producing them),
+    'element_marker' (e.g. "Al" or "H2"), 'occupancy', 'cif_label', and a single
+    magnitude of their displacements ('uiso', with 'aniso' rescaled to it)."""
+    sym = _nc_cifsymimpl
     cell = content['cell']
     fractcoord_approx_1angstrom = 1.0 / ( (cell['a']+cell['b']+cell['c'])/3.0 )
-    uiso_printed, ueq_printed = content['uiso_printed'], content['ueq_printed']
     p1_sites = choice['p1_sites']
     collected_atoms = []
     for site in ( p1_sites if p1_sites is not None else content['sites'] ):
@@ -239,72 +314,10 @@ def collect_atoms( content, choice, cellsg, *, tols, permissive ):
         pos0 = sym.wrap_position( choice, site['fract'] )
         expanded_coords = sym.expand_position( choice, pos0,
                                                fractcoord_approx_1angstrom )
-
-        aniso = site['aniso']
-        u_iso = site['u_iso']
-        if not u_iso > 0.0:
-            u_iso = None
-
-        if aniso:
-            #Resolve Uiso versus Ueq here, so each site carries one magnitude
-            #(the tensor is rescaled to it). Accepted differences are those
-            #explained by the rounding errors of the printed values, plus
-            #tol_uij:
-            ueq = sgs._cif_uij_ueq( aniso, cellsg )
-            lbl = site['label']
-            allow = ( uiso_printed.get( lbl, ( None, 0.0 ) )[1]
-                      + ueq_printed.get( lbl, ( None, 0.0 ) )[1]
-                      + tols['uij'] * max( ueq, u_iso or 0.0 ) )
-            if not u_iso:
-                u_iso = ueq
-            elif abs( ueq - u_iso ) > allow:
-                msg = ( f'CIF site "{site["label"]}" has Uiso={u_iso:g} which'
-                        f' differs from the Ueq={ueq:g} of its anisotropic'
-                        ' displacements by more than the rounding errors of'
-                        ' the printed values explain' )
-                if not permissive:
-                    raise _nc_core.NCBadInput( msg + ' (try permissive mode'
-                                               ' to use the Uiso value)' )
-                _nc_common.warn( msg + ' (using the Uiso value due to'
-                                 ' permissive mode)' )
-            aniso = sgs._rescale_uij( aniso, ueq, u_iso )
-
-        site_en = site['element_name']
-        if site_en == 'X' or not site_en:
-            #Issue seen in codid::9005777, which had no atomic symbols but
-            #labels like "CaM1", "CaM2", "OA1".."OA3", "OB1", "OB2", "OC1",
-            #"OC3",... Correct if beginning of string starts with exactly one
-            #element name, followed by either a digit or an upper case string
-            #followed by digits.
-            elem_name = _guess_elem_name( site['label'] )
-            if elem_name:
-                _nc_common.warn(f'Assuming atomic symbol "{elem_name}" based on CIF label "{site["label"]}"')
-            else:
-                raise _nc_core.NCBadInput(f'Neither Gemmi nor NCrystal\'s custom'
-                                          ' code could deduce an atomic symbol'
-                                          f' for the CIF label "{site["label"]}"')
-            elem_Z = None
-        else:
-            elem_name, elem_Z = site_en, site['element_Z']
-
-        elem_A = None
-        if elem_name == 'D':
-            elem_name, elem_Z, elem_A = 'H',1,2
-        if elem_name == 'T':
-            elem_name, elem_Z, elem_A = 'H',1,3
-        elem_marker = elem_name + ( str(elem_A) if elem_A else '' )
-
-        from .atomdata import elementNameToZValue
-        z2name = elementNameToZValue( elem_name, allow_isotopes = False )
-        if z2name is None:
-            raise _nc_core.NCBadInput(f'Not an element name: "{elem_name}"')
-
-        if elem_Z is None:
-            elem_Z = z2name
-        if elem_Z != z2name:
-            raise _nc_core.NCBadInput(f'Wrong atomic number ({elem_Z}) provided'
-                                      f' for element "{elem_name}"')
-
+        u_iso, aniso = _resolve_uiso_ueq( site, cell, content['uiso_printed'],
+                                          content['ueq_printed'], tols = tols,
+                                          permissive = permissive )
+        elem_marker = _element_marker( site )
         collected_atoms.append( { 'expanded_coords': expanded_coords,
                                   'rotations':
                                   sym.image_rotations( choice,

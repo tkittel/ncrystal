@@ -432,6 +432,9 @@ def _unit_cell_point_distsq( p1, p2 ):
     d = [ abs(remap(e1)-remap(e2)) for e1,e2 in zip(p1,p2)]
     return math.fsum(  min(e,1.0-e)**2 for e in d )
 
+#Keys of the CIF uij dicts:
+_uij_keys = ( 'u11', 'u22', 'u33', 'u12', 'u13', 'u23' )
+
 def _cell_metric( cellsg ):
     """Metric tensor (3x3 nested lists) and reciprocal axis lengths of the cell
     given by a dict with keys a,b,c,alpha,beta,gamma (angstrom and degrees)."""

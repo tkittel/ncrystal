@@ -33,8 +33,10 @@ import re as _re
 from fractions import Fraction as _Fraction
 
 from . import _common as _nc_common
+from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
-from ._cifsrcimpl import _codid2url, _mpid2url
+from ._cifsrcimpl import _codid2url, _mpid2url, mp_origin_note
+from ._sgsymimpl import _uij_keys
 
 
 def _extract_descr_from_cif( raw_cif_dict, cifsrc, ciftextdata ):
@@ -82,7 +84,7 @@ def _extract_descr_from_cif( raw_cif_dict, cifsrc, ciftextdata ):
         extracted_codid = int(extracted_codid) if extracted_codid.isdigit() else None
 
     extracted_mpid = None
-    _sp = 'Note from NCrystal.cifutils: Data from materialsproject.org / mp-'# NB this exact format is produced elsewhere in this file.
+    _sp = mp_origin_note
     for e in ciftextdata.splitlines():
         if _sp in e:
             _ = e.split(_sp,1)
@@ -314,7 +316,6 @@ def parse_cif_number( s ):
         return None#(e.g. "0.0e9999": rounding error not a finite double)
     return value, float( _Fraction( 10 ) ** k / 2 )
 
-_uij_keys = ( 'u11', 'u22', 'u33', 'u12', 'u13', 'u23' )
 
 def _cell_from_cif( gemmi, block ):
     #Cell parameters as (value,rounding_error), or None if not available:
@@ -358,7 +359,7 @@ def ueq_from_cif( gemmi, block ):
     cause (cf. parse_cif_number). Sites or cells with values which can not be
     parsed or used (e.g. an impossible cell, rejected elsewhere) are
     omitted."""
-    from . import _sgsymimpl as sgs
+    sgs = _nc_sgsymimpl
     cell = _cell_from_cif( gemmi, block )
     if cell is None:
         return {}
