@@ -1,0 +1,3 @@
+==> per-row Teff of C_from_benzene_solid_20K_sabsmall.ncmat unchanged by thickening the beta grid (16 rows): OK
+==> Li2O Li msd: refused for the coarse test kernel, within 0.5% of the VDOS value for the dense one: OK
+==> Li2O O msd: refused for the coarse test kernel, within 0.5% of the VDOS value for the dense one: OK
