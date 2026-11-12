@@ -89,6 +89,9 @@ must contain only this file, with the message
   `set_*`, `create_ncmat`, `write`, `register_as`, `load`).
 - `_sgsymimpl.py`: spglib refinement, cell geometry and displacement tensor
   helpers shared by `NCMATComposer` and `CIFLoader`.
+- `_stablemath.py`: cross-platform reproducible arithmetic (sine and cosine of
+  degrees from the C++ `stable_sincos_deg`, exact matrix products and scaling
+  via `fractions`).
 - `vdos.py` (1.1k): Debye VDOS/MSD helpers, `analyseVDOS`, `extractGn`,
   `extractKnl` (-> C `ncrystal_raw_vdos2kernel`), `PhononDOSAnalyser`.
 - `cifutils.py` (1.8k): `CIFSource`, `CIFLoader` (gemmi, spglib, ase;
