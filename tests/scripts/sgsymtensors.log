@@ -21,3 +21,9 @@ transforms OK
    primitive: u11=+0.012906 u22=+0.012906 u33=+0.025000 u12=+0.003851 u13=+0.000000 u23=+0.000000
    refined:   u11=+0.011000 u22=+0.019000 u33=+0.025000 u12=+0.000000 u13=+0.000000 u23=+0.000000
    refined cell: a=3.3, b=5.9, c=4.4, alpha=90, beta=90, gamma=90
+periodic distance (0.01, 0.5, 0.5) (0.99, 0.5, 0.5): 0.060000 Aa
+periodic distance (0.1, 0.2, 0.3) (0.3, 0.1, 0.9): 2.126029 Aa
+periodic distance (0.0, 0.0, 0.0) (1.0, -1.0, 2.0): 0.000000 Aa
+periodic distance (0.01, 0.5, 0.5) (0.99, 0.5, 0.5): 0.102000 Aa
+periodic distance (0.1, 0.2, 0.3) (0.3, 0.1, 0.9): 3.433403 Aa
+periodic distance (0.0, 0.0, 0.0) (1.0, -1.0, 2.0): 0.000000 Aa
