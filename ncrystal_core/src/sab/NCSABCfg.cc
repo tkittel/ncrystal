@@ -113,6 +113,20 @@ const char * NC::SABCfg::integSchemeToStr( IntegrationScheme v )
     return "";
   };
 }
+double NC::SABCfg::flexAdaptivePrecision( IntegrationScheme v )
+{
+  switch( v ) {
+  case IntegrationScheme::Flex5: return 2e-4;
+  case IntegrationScheme::Flex9: return 2e-5;
+  case IntegrationScheme::Flex17: return 2e-7;
+  case IntegrationScheme::Flex33: return 2e-9;
+  case IntegrationScheme::Flex65: return 2e-10;
+  default:
+    nc_assert_always(false&&"not a Flex IntegrationScheme");
+    return 0.0;
+  };
+}
+
 NC::SABCfg::Cfg NC::SABCfg::createConfig( int sablux )
 {
   Cfg c;
@@ -195,5 +209,9 @@ NC::SABCfg::Cfg NC::SABCfg::createConfig( int sablux )
     NCRYSTAL_THROW2(BadInput,"SABCfg::createConfig sablux="<<sablux
                     <<" outside the valid range (0 to 6)");
   }
+  //The integral within the kinematic boundary must increase with E, which is
+  //checked up to egrid_tolerance, so integration errors must be well below it:
+  nc_assert_always( flexAdaptivePrecision( c.integScheme )
+                    <= 0.2 * c.egrid_tolerance );
   return c;
 }
