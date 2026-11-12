@@ -21,7 +21,7 @@
 ################################################################################
 
 
-# NEEDS: gemmi
+# NEEDS: gemmi numpy
 
 # Tests of _cifsymimpl.decide_symmetry and of the expansion of positions with
 # the chosen symmetry (expand_position, image_rotations).
@@ -75,6 +75,7 @@ def test_setting_ambiguity():
     #R-3 (148) has hexagonal and rhombohedral settings:
     for descr, hm_alt in ( ( 'setting given (quoted)', "'R -3 :H'" ),
                            ( 'setting given (other spacing)', "'R -3:H'" ),
+                           ( 'setting given (unquoted)', "R-3:H" ),
                            ( 'setting not given', None ) ):
         _, c, ww = decide( cif( hexcell, hm_alt, 148, site_hex,
                                 hm_old = None if hm_alt else "'R -3'" ) )
@@ -97,6 +98,13 @@ def test_incompatible_cell():
     assert c['sgnumber'] == 1 and c['expect_sgno'] == 123
     assert c['images'] == [] and len( c['p1_sites'] ) == 1
 
+def maps( op, R, x0, x ):
+    #Whether the gemmi operation op has rotation R and maps x0 to x (mod 1):
+    if [ [ e / op.DEN for e in row ] for row in op.rot ] != [ list( r ) for r in R ]:
+        return False
+    y = op.apply_to_xyz( list( x0 ) )
+    return all( abs( d - round( d ) ) < 1e-9 for d in ( a - b for a, b in zip( y, x ) ) )
+
 def test_expand_and_rotations():
     content, c, _ = decide( cif( hexcell, "'R -3 :H'", 148,
                                  [ 'Fe1 Fe 0.3333 0.6667 0.1 1',
@@ -115,9 +123,9 @@ def test_expand_and_rotations():
         rots = sym.image_rotations( c, coords )
         assert len( rots ) == len( coords )
         assert rots[0] == ( ( 1, 0, 0 ), ( 0, 1, 0 ), ( 0, 0, 1 ) )
-        #Each rotation (with some translation) maps the first to its image:
-        for R in rots:
-            assert all( abs( sum( r ) ) <= 2 for r in R )
+        #Each rotation is that of an operation mapping the first to its image:
+        for R, x in zip( rots, coords ):
+            assert any( maps( op, R, coords[0], x ) for op in c['sg'].operations() )
     #Site 6c of R-3:H (on the 3-fold axis): 6 positions, snapped to 1/3,2/3:
     assert len( sym.expand_position( c, ( 1/3, 2/3, 0.1 ), f1a ) ) == 6
     assert len( sym.expand_position( c, ( 0.1, 0.2, 0.3 ), f1a ) ) == 18

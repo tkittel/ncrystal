@@ -37,3 +37,5 @@ invalid strings rejected
  '1e-1000000000' -> value 0.0, rounding error 0.0
       '1.5e-320' -> value 1.5e-320, rounding error 5e-322
          '1e300' -> value 1e+300, rounding error 5e+299
+       '0.0e308' -> value 0.0, rounding error 5e+306
+         '1e308' -> value 1e+308, rounding error 5e+307

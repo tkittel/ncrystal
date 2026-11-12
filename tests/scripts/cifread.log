@@ -43,7 +43,8 @@ Biso 0.95: Uiso 0.0120319 with rounding error 6.33e-05
 missing cell angles: 90 degrees, Ueq rounding errors available
 two blocks with sites: rejected: Could not automatically determine block in CIF data with structure info
 site without coordinates: rejected: CIF site "O1" has missing or invalid fractional coordinates
-syntax error: rejected: CIF parsing error 
+unoccupied site without coordinates: accepted with occupancies [1.0, 0.0]
+syntax error: rejected: CIF parsing error
 no blocks: rejected: CIF data had no blocks!
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Overriding spacegroup to "Q 99" due to explicit request [warn#2]
 unknown override: rejected: Unknown spacegroup: "Q 99"

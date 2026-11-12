@@ -55,6 +55,12 @@ def main():
                                       quiet = True, refine_with_spglib = False ) )
     comps = sorted( a['composition'][0][1] for a in lc.atoms )
     assert comps == [ 'H2', 'H3', 'O' ], comps
+    #Tritium from the type symbol alone (gemmi does not know it), with charge:
+    lc = show( 'tritium type symbol', CIFLoader( cif( [ 'H1 T 0 0 0 1',
+                                                        'H2 T+ 0.5 0.5 0.5 1' ] ),
+                                                 quiet = True,
+                                                 refine_with_spglib = False ) )
+    assert [ a['composition'] for a in lc.atoms ] == [ ( ( 1.0, 'H3' ), ) ]
     #Element deduced from the label when the type symbol is missing:
     lc = show( 'element from label', CIFLoader( cif( [ 'CaM1 . 0 0 0 1',
                                                        'OA1 . 0.5 0.5 0.5 1' ] ),
@@ -78,13 +84,16 @@ def main():
     #Mixed site, with one of its elements remapped: still one atom per site.
     lc = show( 'mixed site', CIFLoader( cif( [ 'Al1 Al 0 0 0 0.75',
                                                'Cr1 Cr 0 0 0 0.25',
-                                               'O1 O 0.5 0.5 0.5 1' ] ),
+                                               'O1 O 0.5 0.5 0.5 1' ],
+                                             "_publ_section_title 'Test'\n" ),
                                         quiet = True ) )
+    descr0 = list( lc.extracted_description )
     c = lc.create_ncmat_composer( quiet = True, remap = [ ( 'Cr', 'Fe' ) ] )
+    lc.create_ncmat_composer( quiet = True, remap = [ ( 'Cr', 'Fe' ) ] )
+    assert list( lc.extracted_description ) == descr0#(loader not modified)
     txt = c.create_ncmat()
     print( "\n".join( ln for ln in txt.splitlines()
-                      if ln.strip().startswith( ( 'X', 'Al', 'O ', 'Fe' ) )
-                      or ln.startswith( '@' ) or 'is ' in ln ) )
+                      if ln.startswith( ( '@', '  ' ) ) ) )
     info = NC.directLoad( txt ).info
     assert abs( sum( ai.averageNumberOfAtoms for ai in info.atominfos ) - 2.0 ) < 1e-12
     print( 'atoms per cell after remap:', sum( ai.averageNumberOfAtoms for ai in info.atominfos ) )

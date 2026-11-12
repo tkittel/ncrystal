@@ -31,6 +31,12 @@ import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
 from NCrystalDev._cifsymimpl import choose_symmetry
 import gemmi
+import re
+
+def no_gemmi_details( msg ):
+    #(without details from gemmi, which might change between versions):
+    return re.sub( r'could not be parsed \([^)]*\)',
+                   'could not be parsed (...)', msg )
 
 ops_p21c = [ 'x,y,z', '-x,y+1/2,-z+1/2', '-x,-y,-z', 'x,-y+1/2,z+1/2' ]
 ops_p1bar = [ 'x,y,z', '-x,-y,-z' ]
@@ -48,13 +54,9 @@ def run( descr, listed, symsg, *, load_sg = None, has_mult = True,
                              permissive = permissive, cifdata = cifdata,
                              warn = warnings.append )
     except NC.NCBadInput as e:
-        #(without details from gemmi, which might change between versions):
-        msg = str( e )
-        if 'could not be parsed (' in msg:
-            msg = msg.split( 'could not be parsed (' )[0] + 'could not be parsed (...)'
-        print( f'{descr}: rejected: {msg}' )
+        print( f'{descr}: rejected: {no_gemmi_details( str( e ) )}' )
         for w in warnings:
-            print( '     (warning before rejection:', w, ')' )
+            print( '     (warning before rejection:', no_gemmi_details( w ), ')' )
         assert expect == 'error', descr
         return None
     sg = c['sg']
@@ -62,7 +64,7 @@ def run( descr, listed, symsg, *, load_sg = None, has_mult = True,
            f' expand with {len(c["expand_ops"]) if c["expand_ops"] else 0}'
            f' listed operations, require_mult={c["require_mult"]}' )
     for w in warnings:
-        print( '     warning:', w )
+        print( '     warning:', no_gemmi_details( w ) )
     assert expect != 'error', descr
     if expect is not None:
         assert ( sg.number if sg else None, c['expand_ops'] is not None,
