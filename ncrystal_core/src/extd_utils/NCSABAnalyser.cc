@@ -113,9 +113,9 @@ namespace NCRYSTAL_NAMESPACE {
                                + w1*( d0*d0 + 2.0*dd + 3.0*d1*d1 ) ) / 12.0;
       }
 
-      //Row moments over the floor-masked polyline (exact integrals of the
-      //linear-in-beta interpolation, so independent of how densely a given
-      //curve is sampled):
+      //Row moments, with values at or below the floor set to 0 (exact integrals
+      //of the linear-in-beta interpolation, so independent of how densely a
+      //given curve is sampled):
       struct RowMoments {
         double m0 = -1.0, mean = -1.0, var = -1.0;
         unsigned npts = 0;
@@ -154,24 +154,27 @@ namespace NCRYSTAL_NAMESPACE {
       {
         RowMoments res;
         res.mu = mu;
-        //First pass: m0 and m1 over the masked polyline:
+        //First pass: m0 and m1:
         StableSum m0, m1;
         double bprev(0.0), wprev(0.0);
         bool have_prev = false;
         const std::size_t nb = beta.size();
         std::size_t j_first(nb), j_second(nb), j_last(nb), j_prevlast(nb);
         for ( std::size_t j = 0; j < nb; ++j ) {
-          const double w = vectAt( sab, j*nalpha + ia );
-          if ( !( w > floor ) )
-            continue;
+          const double wraw = vectAt( sab, j*nalpha + ia );
+          const bool isdata = wraw > floor;
+          const double w = ( isdata ? wraw : 0.0 );
           const double b = vectAt( beta, j );
-          if ( j_first == nb )
-            j_first = j;
-          else if ( j_second == nb )
-            j_second = j;
-          j_prevlast = j_last;
-          j_last = j;
-          if ( res.npts ) {
+          if ( isdata ) {
+            if ( j_first == nb )
+              j_first = j;
+            else if ( j_second == nb )
+              j_second = j;
+            j_prevlast = j_last;
+            j_last = j;
+            ++res.npts;
+          }
+          if ( have_prev ) {
             const double db = b - bprev;
             m0.add( 0.5*db*( w + wprev ) );
             m1.add( db*( wprev*( 2.0*bprev + b ) + w*( bprev + 2.0*b ) )
@@ -180,7 +183,6 @@ namespace NCRYSTAL_NAMESPACE {
           bprev = b;
           wprev = w;
           have_prev = true;
-          ++res.npts;
         }
         (void)have_prev;
         if ( res.npts < 10 || !( m0.sum() > 0.0 ) )
@@ -192,9 +194,8 @@ namespace NCRYSTAL_NAMESPACE {
         StableSum m2, m2mu;
         have_prev = false;
         for ( std::size_t j = 0; j < nb; ++j ) {
-          const double w = vectAt( sab, j*nalpha + ia );
-          if ( !( w > floor ) )
-            continue;
+          const double wraw = vectAt( sab, j*nalpha + ia );
+          const double w = ( wraw > floor ? wraw : 0.0 );
           const double b = vectAt( beta, j );
           const double d = b - res.mean;
           const double dmu = b - mu;

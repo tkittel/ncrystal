@@ -44,7 +44,7 @@
 //         N(alpha)~=1) correctly yield "not inferable".                     //
 //                                                                           //
 // Guards per row: kernels store tiny floor-marker placeholder values in     //
-// far wings (masked away), the part of the row beyond the beta grid         //
+// far wings (treated as 0), the part of the row beyond the beta grid         //
 // (estimated by extrapolating its edges) must be negligible, and the        //
 // recoil ridge must be resolved by the grid. Estimates are returned raw     //
 // together with robustness metrics                                          //
@@ -87,7 +87,7 @@ namespace NCRYSTAL_NAMESPACE {
       //moment entries are -1 where not computable), for inspection and
       //tuning scripts:
       VectD alpha;
-      VectD m0;       //zeroth beta-moments N(alpha) (floor-masked data)
+      VectD m0;       //zeroth beta-moments N(alpha) (sub-floor values as 0)
       VectD mean;     //first-moment row means
       VectD variance; //central second moments
       VectD teff_row; //per-row Teff estimate in K (-1 where inadmissible)
