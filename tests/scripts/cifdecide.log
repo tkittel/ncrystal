@@ -1,0 +1,9 @@
+setting given (quoted): space group 148 (R -3:H), 17 images, p1_sites: None, expect_sgno: None
+setting given (other spacing): space group 148 (R -3:H), 17 images, p1_sites: None, expect_sgno: None
+setting not given: space group 148 (R -3:H), 17 images, p1_sites: None, expect_sgno: None
+     warning: SG-148 available in multiple choices ("R -3:H", "R -3:R") and which one was not encoded explicitly in the _space_group_n
+incompatible cell, no refinement: rejected: Loaded unit cell is not compatible with deduced space group (according to Gemmi).
+incompatible cell: space group 1 (P 1), 0 images, p1_sites: 1, expect_sgno: 123
+Fe1: 6 positions, first (0.333333333333, 0.666666666667, 0.1)
+     warning: Fractional coordinate (0.3333,0.6667,0.1) interpreted as special position (0.333333333333333,0.666666666666667,0.1) to avoid numerical precision issues [warn#2]
+O1: 18 positions, first (0.1, 0.2, 0.3)
