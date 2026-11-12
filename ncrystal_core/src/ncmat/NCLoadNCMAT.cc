@@ -85,7 +85,7 @@ namespace NCRYSTAL_NAMESPACE {
     std::shared_ptr<const VectD> m_egrid;
   };
 
-  class DI_VDOSImpl final : public DI_VDOSShPtr {
+  class DI_VDOSImpl final : public VDOS::DI_VDOSShPtr {
   public:
     virtual ~DI_VDOSImpl() = default;
     DI_VDOSImpl( double fraction,
@@ -95,8 +95,8 @@ namespace NCRYSTAL_NAMESPACE {
                  VDOSData&& vdata,
                  VectD&& orig_vdos_egrid,
                  VectD&& orig_vdos_density)
-      : DI_VDOSShPtr(fraction,std::move(atom),temperature),
-        m_vdosdata(getCachedVDOSDataHashPtr(std::move(vdata))),
+      : VDOS::DI_VDOSShPtr(fraction,std::move(atom),temperature),
+        m_vdosdata(VDOS::getCachedVDOSDataHashPtr(std::move(vdata))),
         m_egrid(egrid),
         m_vdosOrigEgrid(orig_vdos_egrid),
         m_vdosOrigDensity(orig_vdos_density)
@@ -108,12 +108,18 @@ namespace NCRYSTAL_NAMESPACE {
     const VectD& vdosOrigEgrid() const override { return m_vdosOrigEgrid; }
     const VectD& vdosOrigDensity() const override { return m_vdosOrigDensity; }
 
-    const VDOSDataHashPtr& vdosDataHashPtr() const override { return m_vdosdata; }
-    const EnergyGridPtr& energyGridPtr() const override { return m_egrid; }
+    const VDOS::VDOSDataHashPtr& vdosDataHashPtr() const override
+    {
+      return m_vdosdata;
+    }
+    const VDOS::EnergyGridPtr& energyGridPtr() const override
+    {
+      return m_egrid;
+    }
 
   private:
-    VDOSDataHashPtr m_vdosdata;
-    EnergyGridPtr m_egrid;
+    VDOS::VDOSDataHashPtr m_vdosdata;
+    VDOS::EnergyGridPtr m_egrid;
     VectD m_vdosOrigEgrid;
     VectD m_vdosOrigDensity;
   };
@@ -481,7 +487,7 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
           nc_assert_always( vdos_density_orig.size() >= 5 );
 
           VectD vdos_egrid_reg, vdos_density_reg;
-          std::tie(vdos_egrid_reg, vdos_density_reg) = regulariseVDOSGrid( vdos_egrid_orig, vdos_density_orig);
+          std::tie(vdos_egrid_reg, vdos_density_reg) = VDOS::regulariseVDOSGrid( vdos_egrid_orig, vdos_density_orig);
 
           nc_assert_always(vdos_egrid_reg.size()==2);
           PairDD vdos_egrid_pair(vdos_egrid_reg.front(),vdos_egrid_reg.back());
@@ -501,7 +507,7 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
             } else {
 #if 0
               //Directly:
-              double msd = VDOSEval( static_cast<const DI_VDOS*>(di.get())->vdosData() ).getMSD();
+              double msd = VDOS::VDOSEval( static_cast<const DI_VDOS*>(di.get())->vdosData() ).getMSD();
               auto debye_temp = debyeTempFromIsotropicMSD( msd, cfgvars.temp, di->atomData().averageMassAMU() );
               perelemdebye_map[iad.index] = debye_temp;
               elem2msd[iad.index] = msd;//record so we don't have to convert back from Debye temp again below
@@ -518,7 +524,7 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
                                   res_msd_ptr,
                                   temp]()
               {
-                double msd = VDOSEval( di_raw_ptr->vdosData() ).getMSD();//NB: getMSD->calcGamma0 is significant (~10ms) work.
+                double msd = VDOS::VDOSEval( di_raw_ptr->vdosData() ).getMSD();//NB: getMSD->calcGamma0 is significant (~10ms) work.
                 auto debye_temp = debyeTempFromIsotropicMSD( msd, temp, di_raw_ptr->atomData().averageMassAMU() );
                 *res_debyetemp_ptr = debye_temp;
                 *res_msd_ptr = msd;
