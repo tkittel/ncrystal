@@ -252,7 +252,7 @@ NCV::detail::fillSABFromVDOS( const VDOSGn& Gn_asym,
   return sab;
 }
 
-NC::ScatKnlData
+NC::SAB::ScatKnlData
 NCV::createScatteringKernel( const VDOSData& vdosdata,
                              VDOSLux vdoslux,
                              Optional<NeutronEnergy> targetEmax_requested,
@@ -318,14 +318,14 @@ NCV::createScatteringKernel( const VDOSData& vdosdata,
                  <<"eV, nalpha="<<alphaGrid.size()
                  << " nbeta="<<betaGrid.size());
 
-  ScatKnlData out;
+  SAB::ScatKnlData out;
   out.alphaGrid = std::move(alphaGrid);
   out.betaGrid  = std::move(betaGrid);
   out.sab       = std::move(sab);
   out.temperature = vdosdata.temperature();
   out.boundXS = vdosdata.boundXS();
   out.elementMassAMU = vdosdata.elementMassAMU();
-  out.knltype = ScatKnlData::KnlType::SAB;
+  out.knltype = SAB::ScatKnlData::KnlType::SAB;
   out.suggestedEmax = suggestedEmax;
   //prevent beta-thickening code upon conversion to SABData: (fixme: revisit?)
   out.betaGridOptimised = true;

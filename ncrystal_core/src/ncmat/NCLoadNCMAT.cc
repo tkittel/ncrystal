@@ -53,12 +53,12 @@ namespace NCRYSTAL_NAMESPACE {
     DI_ScatKnlImpl( double fraction,
                     IndexedAtomData atom,
                     VectD&& egrid,
-                    ScatKnlData&& data,
+                    SAB::ScatKnlData&& data,
                     TeffMSDData teffmsd )
       : DI_ScatKnlDirectWithTeffMSD(fraction,std::move(atom),
                                     data.temperature,
                                     std::move(teffmsd)),
-        m_inputdata(ncmake_unique<ScatKnlData>(std::move(data)))
+        m_inputdata(ncmake_unique<SAB::ScatKnlData>(std::move(data)))
     {
       if (!egrid.empty())
         m_egrid = std::make_shared<const VectD>(std::move(egrid));
@@ -81,7 +81,7 @@ namespace NCRYSTAL_NAMESPACE {
       return std::make_shared<const SABData>(std::move(data));
     }
   private:
-    mutable std::unique_ptr<ScatKnlData> m_inputdata;
+    mutable std::unique_ptr<SAB::ScatKnlData> m_inputdata;
     std::shared_ptr<const VectD> m_egrid;
   };
 
@@ -538,7 +538,7 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
         {
           nc_assert( floateq( cfgvars.temp.get(), e.fields.at("temperature").at(0) ) );
           //Prepare scatter kernel object:
-          ScatKnlData knldata;
+          SAB::ScatKnlData knldata;
           knldata.temperature = cfgvars.temp;
           knldata.boundXS = iad.data().scatteringXS();//(full xs, incoherent approximation)
           knldata.elementMassAMU = iad.data().averageMassAMU();
@@ -547,21 +547,21 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
             knldata.alphaGrid = std::move(e.fields.at("alphagrid"));
             knldata.betaGrid = std::move(e.fields.at("betagrid"));
             knldata.sab = std::move(e.fields.at("sab"));
-            knldata.knltype = ScatKnlData::KnlType::SAB;
+            knldata.knltype = SAB::ScatKnlData::KnlType::SAB;
           } else if (e.fields.count("sab_scaled")) {
             knldata.alphaGrid = std::move(e.fields.at("alphagrid"));
             knldata.betaGrid = std::move(e.fields.at("betagrid"));
             knldata.sab = std::move(e.fields.at("sab_scaled"));
             nc_assert_always(knldata.betaGrid.size()>0);
             if (knldata.betaGrid.front()==0.0)
-              knldata.knltype = ScatKnlData::KnlType::SCALED_SYM_SAB;
+              knldata.knltype = SAB::ScatKnlData::KnlType::SCALED_SYM_SAB;
             else
-              knldata.knltype = ScatKnlData::KnlType::SCALED_SAB;
+              knldata.knltype = SAB::ScatKnlData::KnlType::SCALED_SAB;
           } else if (e.fields.count("sqw")) {
             knldata.alphaGrid = std::move(e.fields.at("qgrid"));
             knldata.betaGrid = std::move(e.fields.at("omegagrid"));
             knldata.sab = std::move(e.fields.at("sqw"));
-            knldata.knltype = ScatKnlData::KnlType::SQW;
+            knldata.knltype = SAB::ScatKnlData::KnlType::SQW;
           } else {
             NCRYSTAL_THROW(LogicError,"Unexpected SAB type in input data");//logic-error, since we should have caught this earlier.
           }

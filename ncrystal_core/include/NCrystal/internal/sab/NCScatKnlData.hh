@@ -24,7 +24,7 @@
 #include "NCrystal/interfaces/NCSABData.hh"
 #include "NCrystal/internal/utils/NCSpan.hh"
 
-///////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 //                                                                               //
 // Infrastructure for specifying, and performing basic validation on, scattering //
 // kernels in a variety of formats: S(alpha,beta), S(q,w), symmetric/asymmetric, //
@@ -35,44 +35,49 @@
 // algorithms working on scattering kernels are in general only required to work //
 // with SABData objects.                                                         //
 //                                                                               //
-///////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 namespace NCRYSTAL_NAMESPACE {
 
-  struct ScatKnlData : private MoveOnly {
-    VectD alphaGrid, betaGrid, sab;
-    Temperature temperature = Temperature{-1.0};
-    SigmaBound boundXS = SigmaBound{-1.0};
-    AtomMass elementMassAMU = AtomMass{-1.0};
-    enum class KnlType { SAB,        //Standard S(alpha,beta), fields have same meaning as on SABData.
-                         SCALED_SAB, //Values in sab table are actually S'(alpha,beta)=S(alpha,beta)*exp(beta/2)
-                         SCALED_SYM_SAB,//Same + S'(alpha,beta) is an even function in beta, and the kernel is
-                         //only specified directly for non-negative beta values.
-                         SQW,//alpha/beta/sab values are actually Q/omega/S(Q,omega) values.
-                         Unspecified };
-    KnlType knltype = KnlType::Unspecified;
-    double suggestedEmax = 0;//optional, 0 means not available.
-    bool betaGridOptimised = false;//set to true if beta grid is known to not require thickening before sampling.
-  };
+  namespace SAB {
 
-  struct ScatKnlDataView {
-    //Similar to ScatKnlData, but a read-only non-owning view which is able to
-    //wrap both ScatKnlData and SABData objects to look like ScatKnlData
-    //objects. That way, both ScatKnlData and SABData objects can be analysed
-    //using the same functions.
-    ScatKnlDataView(const ScatKnlData&);
-    ScatKnlDataView(const SABData&);
-    const Span<const double> alphaGrid, betaGrid, sab;
-    const Temperature temperature;
-    const SigmaBound boundXS;
-    const AtomMass elementMassAMU;
-    const ScatKnlData::KnlType knltype;
-    double suggestedEmax;
-  };
+    struct ScatKnlData : private MoveOnly {
+      VectD alphaGrid, betaGrid, sab;
+      Temperature temperature = Temperature{-1.0};
+      SigmaBound boundXS = SigmaBound{-1.0};
+      AtomMass elementMassAMU = AtomMass{-1.0};
+      enum class KnlType { SAB,        //Standard S(alpha,beta), fields have same meaning as on SABData.
+                           SCALED_SAB, //Values in sab table are actually S'(alpha,beta)=S(alpha,beta)*exp(beta/2)
+                           SCALED_SYM_SAB,//Same + S'(alpha,beta) is an even function in beta, and the kernel is
+                           //only specified directly for non-negative beta
+                           //values.
+                           SQW,//alpha/beta/sab values are actually Q/omega/S(Q,omega) values.
+                           Unspecified };
+      KnlType knltype = KnlType::Unspecified;
+      double suggestedEmax = 0;//optional, 0 means not available.
+      bool betaGridOptimised = false;//set to true if beta grid is known to not require thickening before sampling.
+    };
 
-  //Validate consistency of kernel's data fields. Throws BadInput exceptions
-  //if not ok. Skips most expensive checks if cheapOnly.
-  void validateScatKnlData( const ScatKnlDataView& );
+    struct ScatKnlDataView {
+      //Similar to ScatKnlData, but a read-only non-owning view which is able to
+      //wrap both ScatKnlData and SABData objects to look like ScatKnlData
+      //objects. That way, both ScatKnlData and SABData objects can be analysed
+      //using the same functions.
+      ScatKnlDataView(const ScatKnlData&);
+      ScatKnlDataView(const SABData&);
+      const Span<const double> alphaGrid, betaGrid, sab;
+      const Temperature temperature;
+      const SigmaBound boundXS;
+      const AtomMass elementMassAMU;
+      const ScatKnlData::KnlType knltype;
+      double suggestedEmax;
+    };
+
+    //Validate consistency of kernel's data fields. Throws BadInput exceptions
+    //if not ok. Skips most expensive checks if cheapOnly.
+    void validateScatKnlData( const ScatKnlDataView& );
+
+  }
 
 }
 
@@ -81,7 +86,7 @@ namespace NCRYSTAL_NAMESPACE {
 // Inline implementations //
 ////////////////////////////
 
-inline NCrystal::ScatKnlDataView::ScatKnlDataView(const NCrystal::ScatKnlData& o)
+inline NCrystal::SAB::ScatKnlDataView::ScatKnlDataView( const ScatKnlData& o )
   : alphaGrid(o.alphaGrid),
     betaGrid(o.betaGrid),
     sab(o.sab),
@@ -93,7 +98,7 @@ inline NCrystal::ScatKnlDataView::ScatKnlDataView(const NCrystal::ScatKnlData& o
 {
 }
 
-inline NCrystal::ScatKnlDataView::ScatKnlDataView(const NCrystal::SABData& o)
+inline NCrystal::SAB::ScatKnlDataView::ScatKnlDataView( const SABData& o )
   : alphaGrid(o.alphaGrid()),
     betaGrid(o.betaGrid()),
     sab(o.sab()),
