@@ -610,6 +610,18 @@ def _group_by_tol( items, same ):
 ################################################################################
 #Orbits of sites with symmetry detection based on positions and site data.
 
+def _periodic_distsq_fn( lattice ):
+    """Function giving the squared Cartesian distance between two fractional
+    positions, using the nearest periodic image along each axis (lattice: numpy
+    array with the cell vectors as rows)."""
+    from ._numpy import _ensure_numpy
+    np = _ensure_numpy()
+    def distsq( x, y ):
+        d = np.asarray( x, dtype = float ) - np.asarray( y, dtype = float )
+        d = np.dot( lattice.T, d - np.round( d ) )
+        return float( np.dot( d, d ) )
+    return distsq
+
 def _find_site_orbits( cellsg, sites, tols ):
     """Orbits of sites under the symmetry found by spglib (in the basis of the
     input cell, given as dict with keys a,b,c,alpha,beta,gamma). Each site is a
@@ -658,10 +670,7 @@ def _find_site_orbits( cellsg, sites, tols ):
     for i, e in enumerate( get('equivalent_atoms') ):
         orbits.setdefault( int( e ), [] ).append( i )
     orbitlist = sorted( orbits.values(), key = lambda m : m[0] )
-    def distsq( x, y ):
-        d = np.asarray( x, dtype = float ) - np.asarray( y, dtype = float )
-        d = np.dot( lattice.T, d - np.round( d ) )
-        return float( np.dot( d, d ) )
+    distsq = _periodic_distsq_fn( lattice )
     def deviation( r, i ):
         #Smallest deviation of tensor i from the images of tensor r under the
         #operations mapping position r onto position i, as the largest
@@ -767,10 +776,7 @@ def _refine_sites( cellsg, sites, tols ):
     newlatt = np.asarray( _cellparams_to_spglib_lattice( newcell ),
                           dtype = float )
     refpos = list( zip( d['refined_cell'][1], d['refined_cell'][2] ) )
-    def distsq( x, y ):
-        dd = np.asarray( x, dtype = float ) - np.asarray( y, dtype = float )
-        dd = np.dot( newlatt.T, dd - np.round( dd ) )
-        return float( np.dot( dd, dd ) )
+    distsq = _periodic_distsq_fn( newlatt )
     #Representative index of each type (orbits might share a type, but then
     #their positions differ, which is used below):
     type2rep = {}
