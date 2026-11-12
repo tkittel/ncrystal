@@ -911,7 +911,7 @@ namespace NCRYSTAL_NAMESPACE {
       nc_assert_always( vdos_egrid_orig.size()==2 || vdos_egrid_orig.size()==vdos_density_orig.size());
       nc_assert_always( vdos_density_orig.size() >= 5 );
       VectD vdos_egrid_reg, vdos_density_reg;
-      std::tie(vdos_egrid_reg, vdos_density_reg) = regulariseVDOSGrid( vdos_egrid_orig, vdos_density_orig);
+      std::tie(vdos_egrid_reg, vdos_density_reg) = VDOS::regulariseVDOSGrid( vdos_egrid_orig, vdos_density_orig);
       nc_assert_always(vdos_egrid_reg.size()==2);
       PairDD vdos_egrid_pair(vdos_egrid_reg.front(),vdos_egrid_reg.back());
       return VDOSData( vdos_egrid_pair,
@@ -944,7 +944,7 @@ void ncrystal_raw_vdos2gn( const double* vdos_egrid,
     auto vdosData = ncc::createVDOSDataFromRaw( vdos_egrid, vdos_density,
                                                 vdos_egrid_npts, vdos_density_npts,
                                                 scattering_xs, mass_amu, temperature );
-    NC::VDOSEval vdosEval( vdosData );
+    NC::VDOS::VDOSEval vdosEval( vdosData );
     NC::VDOS::VDOSGn vdosGn( vdosEval );
     NC::VDOS::VDOSGn::Order order{nvalue};
     vdosGn.growMaxOrder( order );
@@ -2573,7 +2573,7 @@ void ncrystal_vdoseval( double vdos_emin, double vdos_emax,
                      NC::Temperature{temperature},
                      NC::SigmaBound{1.0},//doesn't matter for VDOSEval
                      NC::AtomMass{atom_mass_amu} );
-    NC::VDOSEval ve(vd);
+    NC::VDOS::VDOSEval ve(vd);
     double res_oi = ve.originalIntegral();
     double res_te = ve.calcEffectiveTemperature();
     double res_g0 = ve.calcGamma0();

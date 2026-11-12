@@ -168,7 +168,7 @@ namespace {
   void realDataCase( const char* label, const NC::VDOSData& vdosdata,
                      double safetyFactor, double& worst )
   {
-    NC::VDOSEval ve(vdosdata);
+    NC::VDOS::VDOSEval ve(vdosdata);
     NCV::VDOSGn gn( ve, NCV::VDOSGn::Cfg::Default );
     const auto& g1 = gn.getRawSpectrum( NCV::VDOSGn::Order(1) );
     const double dt = gn.binWidth( NCV::VDOSGn::Order(1) );
