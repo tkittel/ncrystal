@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCEqReflTables.hh"
-#include "NCrystal/internal/utils/NCLatticeUtils.hh"
+#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 namespace NC = NCrystal;
 
 struct NC::EqReflTables::Helper {

@@ -2029,7 +2029,7 @@ def _spglib_extractsg( spglib_symdata ):
 
 def _uses_rhombohedral_axes( sgnumber, alpha ):
     #Rhombohedral (R) space groups in rhombohedral rather than hexagonal axes
-    #(like usesRhombohedralAxes in NCLatticeUtils.hh):
+    #(like usesRhombohedralAxes in NCSpaceGroup.hh):
     return ( int(sgnumber) in ( 146, 148, 155, 160, 161, 166, 167 )
              and alpha != 90 )
 

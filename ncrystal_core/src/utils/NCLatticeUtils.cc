@@ -169,18 +169,6 @@ NC::MaxHKL NC::estimateHKLRange( double dcutoff, double a, double b, double c )
   return { f( a ), f( b ), f( c ) };
 }
 
-bool NC::isRhombohedralSpaceGroup( int sg )
-{
-  return ( sg==146 || sg==148 || sg==155 || sg==160
-           || sg==161 || sg==166 || sg==167 );
-}
-
-bool NC::usesRhombohedralAxes( int sg, double alpha )
-{
-  //(an unspecified angle, i.e. alpha=0, means the default hexagonal axes)
-  return isRhombohedralSpaceGroup( sg ) && alpha > 0.0 && alpha != 90.0;
-}
-
 NC::KSqCalc::KSqCalc( double a, double b, double c,
                       double alpha, double beta, double gamma )
 {

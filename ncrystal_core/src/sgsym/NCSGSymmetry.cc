@@ -22,7 +22,7 @@
 #include "NCSGSymTable.hh"
 #include "NCrystal/internal/utils/NCStrView.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
-#include "NCrystal/internal/utils/NCLatticeUtils.hh"
+#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 #include "NCSGExactOrbit.hh"
 #include <set>
 #include <mutex>

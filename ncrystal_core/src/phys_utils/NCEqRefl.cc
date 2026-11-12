@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/phys_utils/NCEqRefl.hh"
-#include "NCrystal/internal/utils/NCLatticeUtils.hh"
+#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 
 namespace NC = NCrystal;

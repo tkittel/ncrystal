@@ -388,3 +388,15 @@ std::ostream& NC::operator<<( std::ostream& os, const SGSettingInfo& si )
             << ", originChoice=" << si.originChoice
             << ", axisPermutation=" << si.axisPermutation << "}";
 }
+
+bool NC::isRhombohedralSpaceGroup( int sg )
+{
+  return ( sg==146 || sg==148 || sg==155 || sg==160
+           || sg==161 || sg==166 || sg==167 );
+}
+
+bool NC::usesRhombohedralAxes( int sg, double alpha )
+{
+  //(an unspecified angle, i.e. alpha=0, means the default hexagonal axes)
+  return isRhombohedralSpaceGroup( sg ) && alpha > 0.0 && alpha != 90.0;
+}
