@@ -26,7 +26,7 @@
 #include "NCrystal/internal/utils/NCMath.hh"
 
 namespace NCRYSTAL_NAMESPACE {
-  namespace SAB {
+  namespace SABLegacy {
 
     class SABSamplerAtE_Alg1 final : public SABSamplerAtE {
       //A sampler which implements Algorithm1 of the Algorithm 1. of the

@@ -26,15 +26,15 @@
 #include "NCrystal/internal/utils/NCString.hh"
 
 namespace NC = NCrystal;
-namespace NS = NCrystal::SAB;
+namespace NS = NCrystal::SABLegacy;
 
-struct NC::SAB::SABIntegrator::Impl : private NoCopyMove {
+struct NC::SABLegacy::SABIntegrator::Impl : private NoCopyMove {
 
   using EGridMargin = SABSampler::EGridMargin;
 
   Impl( shared_obj<const SABData>,
         const VectD* egrid,
-        std::shared_ptr<const SABExtender>,
+        std::shared_ptr<const SAB::SABExtender>,
         Optional<SABSampler::EGridMargin>,
         bool disable_betafix );
   void doit(SABXSProvider *, SABSampler*, UniqueIDValue, Optional<std::string>*);
@@ -45,7 +45,7 @@ struct NC::SAB::SABIntegrator::Impl : private NoCopyMove {
   //Input data:
   shared_obj<const SABData> m_data;
   VectD m_egrid;
-  std::shared_ptr<const SABExtender> m_extender;
+  std::shared_ptr<const SAB::SABExtender> m_extender;
 
   //Data derived from m_data:
   std::shared_ptr<const SABSamplerAtE_Alg1::CommonCache> m_derivedData;
@@ -68,7 +68,7 @@ NS::SABIntegrator::~SABIntegrator() = default;
 
 NS::SABIntegrator::SABIntegrator( shared_obj<const SABData> data,
                                   const VectD* egrid,
-                                  std::shared_ptr<const SABExtender> sabextender,
+                                  std::shared_ptr<const SAB::SABExtender> sabextender,
                                   Optional<SABSampler::EGridMargin> egm,
                                   bool disable_betafix)
   : m_impl(std::move(data),egrid,std::move(sabextender),egm,disable_betafix)
@@ -85,12 +85,12 @@ void NS::SABIntegrator::doit(SABXSProvider * out_xs,
 
 NS::SABIntegrator::Impl::Impl( shared_obj<const SABData> data,
                                const VectD* egrid,
-                               std::shared_ptr<const SABExtender> sabextender,
+                               std::shared_ptr<const SAB::SABExtender> sabextender,
                                Optional<EGridMargin> egm,
                                bool disable_betafix )
   : m_data(std::move(data)),
     m_egrid((egrid&&!egrid->empty())?*egrid:VectD()),
-    m_extender(!sabextender?ncmake_unique<SABFGExtender>(m_data->temperature(),m_data->elementMassAMU(),m_data->boundXS()):std::move(sabextender)),
+    m_extender(!sabextender?ncmake_unique<SAB::SABFGExtender>(m_data->temperature(),m_data->elementMassAMU(),m_data->boundXS()):std::move(sabextender)),
     m_egridMargin{ egm.value_or(EGridMargin{EGridMargin::default_value}) },
     m_disable_betafix(disable_betafix)
 {
@@ -100,7 +100,7 @@ namespace NCRYSTAL_NAMESPACE {
   namespace {
     //Derived data factory:
     typedef std::pair<UniqueIDValue, shared_obj<const SABData>* > D2DDKey;
-    typedef SAB::SABSamplerAtE_Alg1::CommonCache DerivedData;
+    typedef SABLegacy::SABSamplerAtE_Alg1::CommonCache DerivedData;
     class SABData2DerivedDataFactory : public CachedFactoryBase<D2DDKey,DerivedData> {
     public:
       const char* factoryName() const final { return "SABData2DerivedDataFactory"; }
@@ -416,7 +416,7 @@ NS::SABIntegrator::Impl::analyseEnergyPoint(double ekin, bool doSampler ) const
   //NCSABUtils.hh for exactly what is extracted.:
   std::vector<std::pair<uint16_t,uint16_t>> alpharanges;
   std::size_t ibeta_low;
-  SABUtils::activeGridRanges( *m_data, e, alpharanges, ibeta_low );
+  SABLegacy::activeGridRanges( *m_data, e, alpharanges, ibeta_low );
 
   if ( ibeta_low >= betaGrid.size() ) {
     //No alpha ranges at all -> cross section is 0 here.
@@ -482,7 +482,7 @@ NS::SABIntegrator::Impl::analyseEnergyPoint(double ekin, bool doSampler ) const
     unsigned aidx_low(rangeidxs.first), aidx_upp(rangeidxs.second);//unpack shorts to more efficient types
 
 
-    SABUtils::TailedBreakdown tb;
+    SABLegacy::TailedBreakdown tb;
     if ( aidx_upp > aidx_low && aupp > alow ) {
       //There is non-empty range here and aupp>alow (which can fail for various
       //reasons, including numerical ones).
@@ -491,7 +491,7 @@ NS::SABIntegrator::Impl::analyseEnergyPoint(double ekin, bool doSampler ) const
       auto sab_slice = Span<const double>(&m_data->sab()[0]+slice_idx,&m_data->sab()[0]+slice_idx+nalpha);
       auto logsab_slice = Span<const double>(&logsab[0]+slice_idx,&logsab[0]+slice_idx+nalpha);
       auto alphaIntegrals_cumul_slice = Span<const double>(&alphaintegrals_cumul[0]+slice_idx,&alphaintegrals_cumul[0]+slice_idx+nalpha);
-      tb = SABUtils::createTailedBreakdown( alphaGrid_span, sab_slice, logsab_slice, alphaIntegrals_cumul_slice,
+      tb = SABLegacy::createTailedBreakdown( alphaGrid_span, sab_slice, logsab_slice, alphaIntegrals_cumul_slice,
                                             alow, aupp, aidx_low, aidx_upp );
       xs_at_this_beta = tb.xs_front + tb.xs_back + tb.xs_middle;
     } else {

@@ -26,7 +26,7 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace SAB {
+  namespace SABLegacy {
 
     //Convenience struct and helper class for when both sampler and xsprovider
     //are both needed and with similar lifetimes. Should normally be constructed

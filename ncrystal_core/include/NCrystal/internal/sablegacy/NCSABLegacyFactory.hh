@@ -25,7 +25,7 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace SAB {
+  namespace SABLegacy {
 
     ///////////////////////
     // Legacy algorithms //

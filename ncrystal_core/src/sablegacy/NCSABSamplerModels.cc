@@ -24,7 +24,7 @@
 #include "NCrystal/internal/utils/NCMsg.hh"
 namespace NC = NCrystal;
 
-NC::SAB::SABSamplerAtE_Alg1::SABSamplerAtE_Alg1( std::shared_ptr<const CommonCache> common,
+NC::SABLegacy::SABSamplerAtE_Alg1::SABSamplerAtE_Alg1( std::shared_ptr<const CommonCache> common,
                                                  VectD&& betaVals,
                                                  VectD&& betaWeights,
                                                  std::vector<AlphaSampleInfo>&& alphaSamplerInfos,
@@ -45,7 +45,7 @@ NC::SAB::SABSamplerAtE_Alg1::SABSamplerAtE_Alg1( std::shared_ptr<const CommonCac
   nc_assert( ibetaOffset+betaVals.size() == m_common->data->betaGrid().size()+1 );
 }
 
-NC::PairDD NC::SAB::SABSamplerAtE_Alg1::sampleAlphaBeta(EDivKT e,
+NC::PairDD NC::SABLegacy::SABSamplerAtE_Alg1::sampleAlphaBeta(EDivKT e,
                                                         RNG&rng,
                                                         std::int64_t loopmax ) const
 {
@@ -172,7 +172,7 @@ NC::PairDD NC::SAB::SABSamplerAtE_Alg1::sampleAlphaBeta(EDivKT e,
                   " (but please consider reporting the issue to the NCrystal developers nonetheless).");
 }
 
-double NC::SAB::SABSamplerAtE_Alg1::sampleAlpha(std::size_t ibeta, double rand_percentile) const
+double NC::SABLegacy::SABSamplerAtE_Alg1::sampleAlpha(std::size_t ibeta, double rand_percentile) const
 {
   nc_assert( ibeta >= m_ibetaOffset );
   const auto& info = vectAt(m_alphaSamplerInfos,ibeta-m_ibetaOffset);
@@ -194,14 +194,14 @@ double NC::SAB::SABSamplerAtE_Alg1::sampleAlpha(std::size_t ibeta, double rand_p
       return info.pt_front.alpha + rand_percentile*da;
     } else if ( info.prob_front == 1.0) {
       //Valid alpha range is narrow and contained within a single bin.
-      return SABUtils::sampleLogLinDist_fast( info.pt_front.alpha, info.pt_front.sval,
+      return SABLegacy::sampleLogLinDist_fast( info.pt_front.alpha, info.pt_front.sval,
                                               info.pt_back.alpha, info.pt_back.sval,
                                               rand_percentile,
                                               info.pt_front.logsval, info.pt_back.logsval );
     } else {
       //Sample front tail
       double percentile2 = clampRandNum( rand_percentile / info.prob_front );
-      return SABUtils::sampleLogLinDist_fast( info.pt_front.alpha, info.pt_front.sval,
+      return SABLegacy::sampleLogLinDist_fast( info.pt_front.alpha, info.pt_front.sval,
                                               vectAt(cd->alphaGrid(),info.pt_front.alpha_idx), sab[info.pt_front.alpha_idx],
                                               percentile2,
                                               info.pt_front.logsval, logsab[info.pt_front.alpha_idx] );
@@ -234,7 +234,7 @@ double NC::SAB::SABSamplerAtE_Alg1::sampleAlpha(std::size_t ibeta, double rand_p
     auto a0 = itCumul_selected_edgelow - cumul.begin();
     auto a1 = a0 + 1;
     //Interpolate in selected bin for alpha value:
-    return SABUtils::sampleLogLinDist_fast( vectAt(cd->alphaGrid(),a0), sab[a0],
+    return SABLegacy::sampleLogLinDist_fast( vectAt(cd->alphaGrid(),a0), sab[a0],
                                             vectAt(cd->alphaGrid(),a1), sab[a1],
                                             rand_rescaled,
                                             logsab[a0], logsab[a1] );
@@ -242,7 +242,7 @@ double NC::SAB::SABSamplerAtE_Alg1::sampleAlpha(std::size_t ibeta, double rand_p
     //Sample back tail
     nc_assert( 1.0 - info.prob_notback > 0.0 );
     double percentile2 = clampRandNum ( ( rand_percentile - info.prob_notback ) / ( 1.0 - info.prob_notback ) );
-    return SABUtils::sampleLogLinDist_fast( vectAt(cd->alphaGrid(),info.pt_back.alpha_idx), sab[info.pt_back.alpha_idx],
+    return SABLegacy::sampleLogLinDist_fast( vectAt(cd->alphaGrid(),info.pt_back.alpha_idx), sab[info.pt_back.alpha_idx],
                                             info.pt_back.alpha, info.pt_back.sval,
                                             percentile2,
                                             logsab[info.pt_back.alpha_idx], info.pt_back.logsval );
