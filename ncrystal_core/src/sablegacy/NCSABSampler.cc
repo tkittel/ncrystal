@@ -25,9 +25,9 @@
 
 namespace NC = NCrystal;
 
-NC::SABSampler::~SABSampler() = default;
+NC::SABLegacy::SABSampler::~SABSampler() = default;
 
-NC::SABSampler::SABSampler( Temperature temperature,
+NC::SABLegacy::SABSampler::SABSampler( Temperature temperature,
                             VectD&& egrid,
                             SABSamplerAtEList&& samplers,
                             std::shared_ptr<const SAB::SABExtender> extender,
@@ -40,7 +40,7 @@ NC::SABSampler::SABSampler( Temperature temperature,
 }
 
 
-void NC::SABSampler::setData( Temperature temperature,
+void NC::SABLegacy::SABSampler::setData( Temperature temperature,
                               VectD&& egrid,
                               SABSamplerAtEList&& samplers,
                               std::shared_ptr<const SAB::SABExtender> extender,
@@ -63,7 +63,7 @@ void NC::SABSampler::setData( Temperature temperature,
   m_egridMargin = egridMargin;
 }
 
-NC::PairDD NC::SABSampler::sampleHighE(NeutronEnergy ekin, RNG& rng) const
+NC::PairDD NC::SABLegacy::SABSampler::sampleHighE(NeutronEnergy ekin, RNG& rng) const
 {
   const double emax = m_egrid.back();
   nc_assert( ekin.get() >= emax );
@@ -162,7 +162,7 @@ NC::PairDD NC::SABSampler::sampleHighE(NeutronEnergy ekin, RNG& rng) const
   }
 }
 
-NC::PairDD NC::SABSampler::sampleAlphaBeta(NeutronEnergy ekin, RNG& rng) const
+NC::PairDD NC::SABLegacy::SABSampler::sampleAlphaBeta(NeutronEnergy ekin, RNG& rng) const
 {
   nc_assert( m_egrid.size()>1 && m_egrid.size()==m_samplers.size() );
   double alpha,beta;
@@ -237,7 +237,7 @@ NC::PairDD NC::SABSampler::sampleAlphaBeta(NeutronEnergy ekin, RNG& rng) const
   NCRYSTAL_THROW2(CalcError,"Infinite looping in sampleAlphaBeta(ekin="<<ekin<<")");
 }
 
-NC::PairDD NC::SABSampler::sampleDeltaEMu(NeutronEnergy ekin, RNG& rng) const
+NC::PairDD NC::SABLegacy::SABSampler::sampleDeltaEMu(NeutronEnergy ekin, RNG& rng) const
 {
   auto alphabeta = sampleAlphaBeta(ekin,rng);
   auto res = convertABToDeltaEMuWithIsotropicFallback( alphabeta.first,

@@ -445,11 +445,11 @@ namespace NCRYSTAL_NAMESPACE {
                                     bool legacy_oversample )
       {
         auto rng = createBuiltinRNG( seed );
-        auto scathelper = SAB::
+        auto scathelper = SABLegacy::
           createScatterHelperWithCache( sab, nullptr,
                                         ( legacy_oversample
-                                          ? SAB::LegacySABAlgOpts::OVERSAMPLE10
-                                          : SAB::LegacySABAlgOpts::DEFAULT ) );
+                                          ? SABLegacy::LegacySABAlgOpts::OVERSAMPLE10
+                                          : SABLegacy::LegacySABAlgOpts::DEFAULT ) );
         auto& sampler = scathelper->sampler;
         const double E_div_kT = sample_ekin.dbl() / sab->temperature().kT();
         VectD alpha, beta;
