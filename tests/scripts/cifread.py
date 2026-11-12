@@ -135,6 +135,7 @@ def main():
     assert c['cell']['beta'] == 90.0 and set( c['ueq_printed'] ) == { 'O1' }
     print( 'missing cell angles: 90 degrees, Ueq rounding errors available' )
     expect_error( 'two blocks with sites', cif() + cif().replace( 'data_test', 'data_b' ) )
+    expect_error( 'site without coordinates', cif( sites = [ 'O1 O ? ? ? 1 ? 4' ] ) )
     expect_error( 'syntax error', 'data_x\n_a 1 2\n', detail = False )
     expect_error( 'no blocks', '# nothing\n' )
     expect_error( 'unknown override', cif(), override = 'Q 99' )
