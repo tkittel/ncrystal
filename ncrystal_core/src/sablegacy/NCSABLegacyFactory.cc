@@ -26,7 +26,7 @@
 namespace NC = NCrystal;
 
 namespace NCRYSTAL_NAMESPACE {
-  namespace SAB {
+  namespace SABLegacy {
     namespace {
 
       //Cache key is (sabdata uid, egrid uid, legacy opts). The thick key also
@@ -95,7 +95,7 @@ namespace NCRYSTAL_NAMESPACE {
           nc_assert( key.sabdata_ptr != nullptr );
           nc_assert( key.sabdata_ptr->getUniqueID() == std::get<0>(key.thin_key) );
           return createScatterHelper( key.sabdata_ptr,
-                                      egridFromUniqueID(std::get<1>(key.thin_key)),
+                                      SAB::egridFromUniqueID(std::get<1>(key.thin_key)),
                                       std::get<2>(key.thin_key) );
         }
       };
@@ -110,8 +110,8 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-std::unique_ptr<const NC::SAB::SABScatterHelper>
-NC::SAB::createScatterHelper( shared_obj<const SABData> data,
+std::unique_ptr<const NC::SABLegacy::SABScatterHelper>
+NC::SABLegacy::createScatterHelper( shared_obj<const SABData> data,
                               std::shared_ptr<const VectD> energyGrid,
                               LegacySABAlgOpts opts_raw)
 {
@@ -125,14 +125,14 @@ NC::SAB::createScatterHelper( shared_obj<const SABData> data,
   return ncmake_unique<SABScatterHelper>(std::move(sh));
 }
 
-NC::shared_obj<const NC::SAB::SABScatterHelper>
-NC::SAB::createScatterHelperWithCache( shared_obj<const SABData> sabdataptr,
+NC::shared_obj<const NC::SABLegacy::SABScatterHelper>
+NC::SABLegacy::createScatterHelperWithCache( shared_obj<const SABData> sabdataptr,
                                        std::shared_ptr<const VectD> egrid,
                                        LegacySABAlgOpts opts )
 {
   ScatHelperCacheKey key;
   std::get<0>(key.thin_key) = sabdataptr->getUniqueID();
-  std::get<1>(key.thin_key) = egridToUniqueID(egrid);
+  std::get<1>(key.thin_key) = SAB::egridToUniqueID(egrid);
   std::get<2>(key.thin_key) = opts;
   key.sabdata_ptr = std::move(sabdataptr);
   return getScatterHelperFactory().create(key);

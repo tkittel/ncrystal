@@ -26,46 +26,56 @@
 #include "NCrystal/internal/utils/NCExtraTypes.hh"
 
 namespace NCRYSTAL_NAMESPACE {
+  namespace SABLegacy {
 
-  class SABSamplerAtE : private NoCopyMove {
-    //For sampling (alpha,beta) values at a given energy, Ei, or lower. This
-    //is intended to be implemented with the rejection method, taking
-    //advantage of the fact that the kinematically accessible region of the
-    //(alpha,beta)-plane, is a strictly expanding region with neutron
-    //energy. Due to acceptance-rate consideration of the MC rejection method,
-    //implementations are expected to be better performing when ekin is not
-    //too much lower than Ei (which is why we need a whole grid of Ei values,
-    //rather than just one with Ei=Emax).
-  public:
-    virtual PairDD sampleAlphaBeta( EDivKT, RNG&,
-                                    std::int64_t loopmax ) const = 0;
-    virtual ~SABSamplerAtE() = default;
-  };
-
-  class SABSampler final : private MoveOnly {
-  public:
-
-    //Fixme: we can use a high egridmargin to get the legacy code to provide a
-    //better sampling reference
-    struct EGridMargin {
-      //The value (typically 1 or a value a bit larger than 1, e.g. 1.05),
-      //specifies a safety margin for what egrid point to actually sample the
-      //overlay distribution. A value of 1.05 would indicate that Egrid must be
-      //at least 1.05*ekin. A value of 1.0 indicates no additional margin is
-      //required.
-      double value = 1.0;
-      constexpr EGridMargin(double vv = 1.0) noexcept : value(vv) {}//for C++11
-      constexpr static double default_value = 1.05;
-      bool is_default() const { return value == default_value; }
+    class SABSamplerAtE : private NoCopyMove {
+      //For sampling (alpha,beta) values at a given energy, Ei, or lower. This
+      //is intended to be implemented with the rejection method, taking
+      //advantage of the fact that the kinematically accessible region of the
+      //(alpha,beta)-plane, is a strictly expanding region with neutron
+      //energy. Due to acceptance-rate consideration of the MC rejection method,
+      //implementations are expected to be better performing when ekin is not
+      //too much lower than Ei (which is why we need a whole grid of Ei values,
+      //rather than just one with Ei=Emax).
+    public:
+      virtual PairDD sampleAlphaBeta( EDivKT, RNG&,
+                                      std::int64_t loopmax ) const = 0;
+      virtual ~SABSamplerAtE() = default;
     };
 
+    class SABSampler final : private MoveOnly {
+    public:
 
-    //Wanted to use std::vector, but because of (older?) VSCode not supporting
-    //move-only types in std::vector, we use SmallVector for this:
-    using SABSamplerAtEList = SmallVector<std::unique_ptr<SABSamplerAtE>,1>;
-    //using SABSamplerAtEList = std::vector<std::unique_ptr<SABSamplerAtE>>;
+      //Fixme: we can use a high egridmargin to get the legacy code to provide a
+      //better sampling reference
+      struct EGridMargin {
+        //The value (typically 1 or a value a bit larger than 1, e.g. 1.05),
+        //specifies a safety margin for what egrid point to actually sample the
+        //overlay distribution. A value of 1.05 would indicate that Egrid must
+        //be at least 1.05*ekin. A value of 1.0 indicates no additional margin
+        //is required.
+        double value = 1.0;
+        //for C++11:
+        constexpr EGridMargin(double vv = 1.0) noexcept : value(vv) {}
+        constexpr static double default_value = 1.05;
+        bool is_default() const { return value == default_value; }
+      };
 
-    void setData( Temperature temperature,
+
+      //Wanted to use std::vector, but because of (older?) VSCode not supporting
+      //move-only types in std::vector, we use SmallVector for this:
+      using SABSamplerAtEList = SmallVector<std::unique_ptr<SABSamplerAtE>,1>;
+      //using SABSamplerAtEList = std::vector<std::unique_ptr<SABSamplerAtE>>;
+
+      void setData( Temperature temperature,
+                    VectD&& egrid,
+                    SABSamplerAtEList&&,
+                    std::shared_ptr<const SAB::SABExtender>,
+                    double xsAtEmax,
+                    EGridMargin,
+                    Optional<std::int64_t> loopmax );
+
+      SABSampler( Temperature temperature,
                   VectD&& egrid,
                   SABSamplerAtEList&&,
                   std::shared_ptr<const SAB::SABExtender>,
@@ -73,37 +83,31 @@ namespace NCRYSTAL_NAMESPACE {
                   EGridMargin,
                   Optional<std::int64_t> loopmax );
 
-    SABSampler( Temperature temperature,
-                VectD&& egrid,
-                SABSamplerAtEList&&,
-                std::shared_ptr<const SAB::SABExtender>,
-                double xsAtEmax,
-                EGridMargin,
-                Optional<std::int64_t> loopmax );
+      SABSampler() = default;//invalid instance.
+      ~SABSampler();
 
-    SABSampler() = default;//invalid instance.
-    ~SABSampler();
+      //Sample (alpha,beta) values directly:
+      PairDD sampleAlphaBeta( NeutronEnergy, RNG&) const;
 
-    //Sample (alpha,beta) values directly:
-    PairDD sampleAlphaBeta( NeutronEnergy, RNG&) const;
+      //Convenience (calls sampleAlphaBeta, then converts):
+      PairDD sampleDeltaEMu( NeutronEnergy, RNG& rng) const;
 
-    //Convenience (calls sampleAlphaBeta, then converts):
-    PairDD sampleDeltaEMu( NeutronEnergy, RNG& rng) const;
+      //Move ok:
+      SABSampler( SABSampler&& ) = default;
+      SABSampler& operator=( SABSampler&& ) = default;
 
-    //Move ok:
-    SABSampler( SABSampler&& ) = default;
-    SABSampler& operator=( SABSampler&& ) = default;
+    private:
+      VectD m_egrid;
+      SABSamplerAtEList m_samplers;
+      double m_kT = 0.0;
+      std::shared_ptr<const SAB::SABExtender> m_extender;
+      double m_xsAtEmax = 0.0, m_k1 = 0.0, m_k2 = 0.0;
+      PairDD sampleHighE(NeutronEnergy, RNG&) const;
+      EGridMargin m_egridMargin;
+      std::int64_t m_ptloopmax = 100;
+    };
 
-  private:
-    VectD m_egrid;
-    SABSamplerAtEList m_samplers;
-    double m_kT = 0.0;
-    std::shared_ptr<const SAB::SABExtender> m_extender;
-    double m_xsAtEmax = 0.0, m_k1 = 0.0, m_k2 = 0.0;
-    PairDD sampleHighE(NeutronEnergy, RNG&) const;
-    EGridMargin m_egridMargin;
-    std::int64_t m_ptloopmax = 100;
-  };
+  }
 }
 
 #endif

@@ -283,9 +283,9 @@ namespace NCRYSTAL_NAMESPACE {
                     return complist;
 
                   auto sabhelper
-                    = SAB::createScatterHelperWithCache( sabdata,
+                    = SABLegacy::createScatterHelperWithCache( sabdata,
                                                          di_scatknl->energyGrid() );
-                  complist.emplace_back(scale,makeSO<SABScatterLegacy>( std::move(sabhelper) ));
+                  complist.emplace_back(scale,makeSO<SABLegacy::SABScatterLegacy>( std::move(sabhelper) ));
                   return complist;
                 });
               } else {
@@ -360,8 +360,8 @@ namespace NCRYSTAL_NAMESPACE {
               const double scale = ai.averageNumberOfAtoms() / ntot;
               if ( knllux == -1 ) {
                 //legacy:
-                auto scathelper = SAB::createScatterHelperWithCache( std::move(sabdata) );
-                complist.emplace_back(scale,makeSO<SABScatterLegacy>(std::move(scathelper)));
+                auto scathelper = SABLegacy::createScatterHelperWithCache( std::move(sabdata) );
+                complist.emplace_back(scale,makeSO<SABLegacy::SABScatterLegacy>(std::move(scathelper)));
                 return complist;
               }
               const auto teff = NCDI::debyeEffectiveTemperature( ai.debyeTemp().value(),

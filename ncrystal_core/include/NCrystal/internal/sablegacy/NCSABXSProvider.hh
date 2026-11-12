@@ -25,30 +25,32 @@
 #include "NCrystal/internal/sab/NCSABExtender.hh"
 
 namespace NCRYSTAL_NAMESPACE {
+  namespace SABLegacy {
 
-  class SABXSProvider final : private MoveOnly {
-  public:
-    SABXSProvider( VectD&& egrid, VectD&& xsvals,
-                   std::shared_ptr<const SAB::SABExtender> );
-    void setData( VectD&& egrid, VectD&& xsvals,
-                  std::shared_ptr<const SAB::SABExtender> );
-    SABXSProvider() = default;//default constructs invalid instance
-    ~SABXSProvider();
-    CrossSect crossSection(NeutronEnergy) const;
+    class SABXSProvider final : private MoveOnly {
+    public:
+      SABXSProvider( VectD&& egrid, VectD&& xsvals,
+                     std::shared_ptr<const SAB::SABExtender> );
+      void setData( VectD&& egrid, VectD&& xsvals,
+                    std::shared_ptr<const SAB::SABExtender> );
+      SABXSProvider() = default;//default constructs invalid instance
+      ~SABXSProvider();
+      CrossSect crossSection(NeutronEnergy) const;
 
-    //Move ok:
-    SABXSProvider( SABXSProvider&& ) = default;
-    SABXSProvider& operator=( SABXSProvider&& ) = default;
+      //Move ok:
+      SABXSProvider( SABXSProvider&& ) = default;
+      SABXSProvider& operator=( SABXSProvider&& ) = default;
 
-    //For reference:
-    const VectD & internalEGrid() const { return m_egrid; }
-    const VectD & internalXSGrid() const { return m_xs; }
-  private:
-    VectD m_egrid, m_xs;
-    std::shared_ptr<const SAB::SABExtender> m_extender;
-    double m_kExtension;
-  };
+      //For reference:
+      const VectD & internalEGrid() const { return m_egrid; }
+      const VectD & internalXSGrid() const { return m_xs; }
+    private:
+      VectD m_egrid, m_xs;
+      std::shared_ptr<const SAB::SABExtender> m_extender;
+      double m_kExtension;
+    };
 
+  }
 }
 
 #endif

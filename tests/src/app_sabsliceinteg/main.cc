@@ -51,7 +51,7 @@ namespace {
     return FakeSABSlice{alphaGrid_,std::move(sab),std::move(logsab),std::move(aic)};
   }
 
-  NC::SABUtils::TailedBreakdown
+  NC::SABLegacy::TailedBreakdown
   makeTailedBreakdown(const FakeSABSlice& fakesabslice,
                       const double alpha_low,
                       const double alpha_upp)
@@ -70,7 +70,7 @@ namespace {
     nc_assert_always(aidx_low<=aidx_upp && aidx_upp < ag.size());
     std::cout<<"makeTailedBreakdown DBG: aidx_low="
              <<aidx_low<<", aidx_upp="<<aidx_upp<<std::endl;
-    return NC::SABUtils::createTailedBreakdown( fakesabslice.alphaGrid,
+    return NC::SABLegacy::createTailedBreakdown( fakesabslice.alphaGrid,
                                                 fakesabslice.sab,
                                                 fakesabslice.logsab,
                                                 fakesabslice.alphaIntegrals_cumul,
