@@ -111,9 +111,9 @@ def fmtu( u ):
 def check_normalisation( info ):
     si = info.structure_info
     for ai in info.atominfos:
-        tot = sum( s['multiplicity'] * ueq( si, s['uij'] ) for s in ai.sites )
-        avg = tot / sum( s['multiplicity'] for s in ai.sites )
-        assert abs( avg - ai.msd ) < 1e-14 * ai.msd, ( avg, ai.msd )
+        for s in ai.sites:
+            u = ueq( si, s['uij'] )
+            assert abs( u - ai.msd ) < 1e-14 * ai.msd, ( u, ai.msd )
 
 def test_hexagonal():
     #Site 2c of P6_3/mmc (site symmetry -6m2): U11=U22=2*U12, U13=U23=0.
@@ -168,8 +168,8 @@ def test_transformation():
         assert np.allclose( s['uij'], ref['uij'], rtol = 1e-12, atol = 0 )
 
 def test_normalisation():
-    #Two sites of the same element: the multiplicity-weighted average Ueq
-    #equals the msd, and the ratio between the sites is kept:
+    #Two sites of the same element: each Ueq equals the msd, so the overall
+    #scale of a uij line does not matter:
     cell = 'lengths 3.21 3.21 5.21\n  angles 90 90 120'
     info = load( cell, 194, [ 'Mg 0 0 0 uij 1 1 1 0.5 0 0',
                               'Mg 1/3 2/3 1/4 uij 2 2 2 1 0 0',
@@ -183,7 +183,7 @@ def test_normalisation():
                    f' uij: {fmtu(s["uij"])}' )
     mg = info.atominfos[0] if info.atominfos[0].atomData.displayLabel() == 'Mg' else info.atominfos[1]
     u1, u2 = ( s['uij'] for s in mg.sites )
-    assert np.allclose( np.asarray(u2), 2 * np.asarray(u1), rtol = 1e-14, atol = 0 )
+    assert np.allclose( np.asarray(u2), np.asarray(u1), rtol = 1e-14, atol = 0 )
 
 def test_errors():
     cubic = 'lengths 4.05 4.05 4.05\n  angles 90 90 90'
