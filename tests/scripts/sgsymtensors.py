@@ -244,6 +244,30 @@ def test_primitive_to_conventional():
     for k in ( 'u12', 'u13', 'u23' ):
         assert abs( res[k] ) < 1e-6
 
+def test_periodic_distance():
+    #Squared Cartesian distance via the nearest periodic image:
+    for cell in ( { 'a': 3.0, 'b': 4.0, 'c': 5.0, 'alpha': 90.0, 'beta': 90.0,
+                    'gamma': 90.0 },
+                  { 'a': 5.1, 'b': 6.3, 'c': 7.2, 'alpha': 84.0, 'beta': 105.0,
+                    'gamma': 97.0 } ):
+        L = latt( cell )#(columns are the cell vectors)
+        d2 = sgs._periodic_distsq_fn( L.T )
+        for x, y in ( ( ( 0.01, 0.5, 0.5 ), ( 0.99, 0.5, 0.5 ) ),
+                      ( ( 0.1, 0.2, 0.3 ), ( 0.3, 0.1, 0.9 ) ),
+                      ( ( 0.0, 0.0, 0.0 ), ( 1.0, -1.0, 2.0 ) ) ):
+            d = ( np.asarray( x ) - np.asarray( y ) )
+            d = d - np.round( d )
+            ref = float( np.dot( L @ d, L @ d ) )
+            assert abs( d2( x, y ) - ref ) < 1e-12 and d2( x, y ) == d2( y, x )
+            print( f'periodic distance {x} {y}: {d2( x, y ) ** 0.5:.6f} Aa' )
+        assert d2( ( 0.2, 0.2, 0.2 ), ( 0.2, 0.2, 0.2 ) ) == 0.0
+    #Across the cell boundary along a (3 Aa): 0.02*3 Aa, not 0.98*3 Aa:
+    d2 = sgs._periodic_distsq_fn( latt( { 'a': 3.0, 'b': 4.0, 'c': 5.0,
+                                          'alpha': 90.0, 'beta': 90.0,
+                                          'gamma': 90.0 } ).T )
+    assert abs( d2( ( 0.01, 0, 0 ), ( 0.99, 0, 0 ) ) ** 0.5 - 0.06 ) < 1e-12
+
 test_basis_changes()
 test_transforms()
 test_primitive_to_conventional()
+test_periodic_distance()
