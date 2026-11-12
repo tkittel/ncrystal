@@ -27,6 +27,6 @@ Crystalline Li2O with scatknl sections at 10K:
   Li "msd 0.03 at_temperature 300": msd=0.0111124 Aa^2 Debye temperature=473.076 K
   Li "debye_temp 473.076": msd=0.0111124 Aa^2 Debye temperature=473.076 K
   Li "debye_temp 400": msd=0.0131579 Aa^2 Debye temperature=400 K
-  O without keywords: msd=0.00302 Aa^2 (from kernel)
+  O without keywords: msd=0.00319 Aa^2 (from kernel)
 Non-crystalline Li2O, elastic xs at 0.5, 1, 1.8, 4 Aa: 0.66516, 1.4927, 1.9951, 2.2521 barn
   identical for the equivalent msd and debye_temp entries

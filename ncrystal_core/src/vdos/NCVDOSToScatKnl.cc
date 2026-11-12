@@ -327,8 +327,6 @@ NCV::createScatteringKernel( const VDOSData& vdosdata,
   out.elementMassAMU = vdosdata.elementMassAMU();
   out.knltype = SAB::ScatKnlData::KnlType::SAB;
   out.suggestedEmax = suggestedEmax;
-  //prevent beta-thickening code upon conversion to SABData: (fixme: revisit?)
-  out.betaGridOptimised = true;
   return out;
 }
 
