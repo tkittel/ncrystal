@@ -42,97 +42,91 @@ def _impl_create_ncmat_composer( cifloader, *,
                                  skip_dyninfo,
                                  top_comments,
                                  fallback_debye_temp,
-                                 #merge_equiv,
                                  quiet,
                                  remap,
                                  no_formula_check ):
-        with _nc_common.WarningSpy( block = quiet ) as extra_ana_warnings:
-            composer = _impl_create_ncmat_composer_internal( cifloader = cifloader,
-                                                             #merge_equiv = merge_equiv,
-                                                             uiso_temperature = uiso_temperature,
-                                                             skip_dyninfo = skip_dyninfo,
-                                                             top_comments = top_comments,
-                                                             remap = remap,
-                                                             no_formula_check = no_formula_check )
-            if not skip_dyninfo and fallback_debye_temp and fallback_debye_temp > 0.0:
-                composer.allow_fallback_dyninfo( fallback_debye_temp )
+    with _nc_common.WarningSpy( block = quiet ) as extra_ana_warnings:
+        composer = _impl_create_ncmat_composer_internal( cifloader = cifloader,
+                                                         uiso_temperature = uiso_temperature,
+                                                         skip_dyninfo = skip_dyninfo,
+                                                         top_comments = top_comments,
+                                                         remap = remap,
+                                                         no_formula_check = no_formula_check )
+        if not skip_dyninfo and fallback_debye_temp and fallback_debye_temp > 0.0:
+            composer.allow_fallback_dyninfo( fallback_debye_temp )
 
-        def fmtwarnings( warnings, descrtxt, nwmax ):
-            ll=[]
-            if not warnings:
-                return ll
-            ll.append(f'Notice: The following WARNINGS were emitted {descrtxt}:')
-            ll.append('')
-
-            wleft=warnings[::-1]
-            while wleft:
-                w = wleft.pop()
-                ncount = 1 + wleft.count(w)
-                if ncount > 1:
-                    wleft = [e for e in wleft if e!=w]
-                wmsg,wcat = w
-                wmsg = [e.strip() for e in wmsg.splitlines() if e.strip()]
-                s0 = f'  {wcat} :' if ncount==1 else f'  ({ncount}x) {wcat} : '
-                for i,m in enumerate(wmsg):
-                    if i==nwmax:
-                        break
-                    pref=s0 if i==0 else ' '*(len(s0))
-                    if i+1==nwmax and len(wmsg)>nwmax:
-                        m=f'<{len(wmsg)-nwmax} lines of output hidden>'
-                    ll.append(f'{pref} {m}')
+    def fmtwarnings( warnings, descrtxt, nwmax ):
+        ll=[]
+        if not warnings:
             return ll
+        ll.append(f'Notice: The following WARNINGS were emitted {descrtxt}:')
+        ll.append('')
 
-        composer.add_comments( fmtwarnings( list(cifloader.warnings) + extra_ana_warnings,
-                                            'when loading the CIF data',nwmax=10),
-                               add_empty_line_divider = True )
-        return composer
+        wleft=warnings[::-1]
+        while wleft:
+            w = wleft.pop()
+            ncount = 1 + wleft.count(w)
+            if ncount > 1:
+                wleft = [e for e in wleft if e!=w]
+            wmsg,wcat = w
+            wmsg = [e.strip() for e in wmsg.splitlines() if e.strip()]
+            s0 = f'  {wcat} :' if ncount==1 else f'  ({ncount}x) {wcat} : '
+            for i,m in enumerate(wmsg):
+                if i==nwmax:
+                    break
+                pref=s0 if i==0 else ' '*(len(s0))
+                if i+1==nwmax and len(wmsg)>nwmax:
+                    m=f'<{len(wmsg)-nwmax} lines of output hidden>'
+                ll.append(f'{pref} {m}')
+        return ll
 
-def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature, skip_dyninfo, top_comments, remap, no_formula_check ):
+    composer.add_comments( fmtwarnings( list(cifloader.warnings) + extra_ana_warnings,
+                                        'when loading the CIF data',nwmax=10),
+                           add_empty_line_divider = True )
+    return composer
 
-    src = cifloader
+def _stdatomname( name ):
+    return {'D':'H2','T':'H3'}.get(name,name)
 
-    src_atoms = src.atoms
-
-    #Apply remap:
-    def _stdatomname( name ):
-        return {'D':'H2','T':'H3'}.get(name,name)
-
+def _apply_remap( src_atoms, remap ):
+    #Atoms with the element remapping (list of (element, composition) as for
+    #NCMATComposer.set_composition) applied to their compositions. Returns the
+    #atoms, the decoded remapping (element -> composition) and a description.
     remap_decoded = {}
     for elemiso, compos in (remap or []):
         elemiso, compos = _nc_ncmatimpl._decode_composition(elemiso,compos)
         elemiso = _stdatomname( elemiso )
         remap_decoded[ elemiso ] = compos
     remap = remap_decoded
-    remap_str = ''
+    if not remap:
+        return src_atoms, remap, ''
+    new_src_atoms = []
+    for atom in src_atoms:
+        if not any( e in remap for fr,e in atom['composition'] ):
+            new_src_atoms.append( atom )
+            continue
+        newcompos = []
+        for fr,e in atom['composition']:
+            remap_compos = remap.get(e,None)
+            if remap_compos is None:
+                newcompos.append( (fr,e) )
+            else:
+                for remap_fr, remap_elem in remap_compos:
+                    newcompos.append( ( fr*remap_fr, remap_elem ) )
+        d = { k: v for k,v in atom.items() if k!='composition' }
+        d['composition'] = newcompos
+        new_src_atoms.append( d )
+    #For the description:
+    remap_strs = []
+    for elemiso, compos in sorted(remap.items()):
+        compos_str = compos[0][1] if len(compos)==1 else ' '.join( f'{_f:g} {_n}' for _f,_n in compos)
+        remap_strs.append(f'{elemiso} -> {compos_str}')
+    return tuple( new_src_atoms ), remap, ', '.join(remap_strs)
 
-    if remap:
-        new_src_atoms = []
-        for atom in src_atoms:
-            if not any( e in remap for fr,e in atom['composition'] ):
-                new_src_atoms.append( atom )
-                continue
-            newcompos = []
-            for fr,e in atom['composition']:
-                remap_compos = remap.get(e,None)
-                if remap_compos is None:
-                    newcompos.append( (fr,e) )
-                else:
-                    for remap_fr, remap_elem in remap_compos:
-                        newcompos.append( ( fr*remap_fr, remap_elem ) )
-            d = { k: v for k,v in atom.items() if k!='composition' }
-            d['composition'] = newcompos
-            new_src_atoms.append( d )
-        src_atoms = tuple( new_src_atoms )
-        #For the description:
-        remap_strs = []
-        for elemiso, compos in sorted(remap.items()):
-            compos_str = compos[0][1] if len(compos)==1 else ' '.join( f'{_f:g} {_n}' for _f,_n in compos)
-            remap_strs.append(f'{elemiso} -> {compos_str}')
-        remap_str = ', '.join(remap_strs)
-
-    #DYNINFO analysis can only be done now, where we know the skip_dyninfo and uiso_temperature values:
-
-    ncmat = _nc_ncmat.NCMATComposer()
+def _add_compositions_and_dyninfo( ncmat, src_atoms, *, skip_dyninfo,
+                                   uiso_temperature ):
+    #Labels cif_species_<index> with the compositions of the atoms, and their
+    #msd values from Uiso (if uiso_temperature is given):
     for idx, a in enumerate( src_atoms ):
         lbl = f'cif_species_{idx}'
         compos = [ (fr,e) for fr,e in a['composition'] ]
@@ -150,8 +144,9 @@ def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature, skip_d
                 else:
                     ncmat.set_dyninfo_msd( lbl, msd=uiso, temperature=uiso_temperature )
 
-
-    #Sites (uij must be given for all or none of the sites of a label):
+def _add_sites( ncmat, src, src_atoms ):
+    #The cell and the sites (uij must be given for all or none of the sites of
+    #a label):
     site2atom = src._site2atom
     lbl_has_uij = {}
     for s, iatom in zip( src.sites, site2atom ):
@@ -177,6 +172,8 @@ def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature, skip_d
                       spacegroup=src._sgsetting )
     ncmat.set_atomsites( sites )
 
+def _add_description_comments( ncmat, src, *, top_comments, remap_str ):
+    #Comments describing the origin of the data, and a notice:
     if top_comments is not None:
         ncmat.add_comments(top_comments)
 
@@ -213,7 +210,79 @@ def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature, skip_d
     ncmat.add_comments('                  please review this, amend the comments here to document,')
     ncmat.add_comments('                  anything done, and remove this notice.')
 
-   #formula
+def _formula_to_dict( f ):
+    #A formula (string, list of (element,count), or dict) as a dict (element ->
+    #count), or None if not available or not decodable:
+    if not f:
+        return None
+    if isinstance(f,str):
+        return _formula_to_dict( _decode_formula(f) )
+    if isinstance(f,dict):
+        return f
+    res = {}
+    for lbl,count in f:
+        assert count>=0.0
+        if count==0:
+            continue
+        if lbl in res:
+            res[lbl] += count
+        else:
+            res[lbl] = count
+    return res or None
+
+def _decode_formula( s ):
+    #A formula string like "Al2 O3" as a dict, or None if not decodable:
+    from .atomdata import allElementNames
+    _all_elements = allElementNames()
+    l1 = [e for e in _all_elements if len(e)==1]+['D','T']
+    l2 = [e for e in _all_elements if len(e)==2]
+    res = []
+    while s.strip():
+        s=s.strip()
+        c = [ e for e in l2 if s.startswith(e) ]
+        if not c:
+            c = [ e for e in l1 if s.startswith(e) ]
+        if len(c)!=1:
+            return None
+        c = c[0]
+        s=s[len(c):].strip()
+        leaddigits = ''
+        while s and s[0].isdigit():
+            leaddigits += s[0]
+            s=s[1:]#nb: no strip here, we want to stop on a space!
+        n = int(leaddigits) if leaddigits else 1
+        res.append( (c,n) )
+    return _formula_to_dict(res)
+
+def _formulas_incompatible( formula1, formula2 ):
+    #Whether two formulas (cf. _formula_to_dict) clearly have different
+    #proportions (False if either is not available):
+    f1 = _formula_to_dict(formula1)
+    f2 = _formula_to_dict(formula2)
+    if not f1 or not f2:
+        return False
+    #map D,T,H2,H3 -> H to ensure fewer false positives:
+    def _tmp(d):
+        return { ('H' if k in ('D','T','H2','H3') else k): v
+                 for k,v in d.items() }
+    f1,f2 = _tmp(f1),_tmp(f2)
+    if f1 == f2:
+        return False
+    if set(f1.keys()) != set(f2.keys()):
+        return True
+    kref = next(iter(f1.keys()))
+    assert f1[kref] > 0.0 and f2[kref]>0.0
+    f2scale = f1[kref]/f2[kref]
+    tol = 1e-2#not tighter to avoid false positives!
+    for k,v1 in f1.items():
+        v2 = f2[k]*f2scale
+        if abs(v1-v2)>tol and abs(v1-v2)/(1e-300+abs(v1)+abs(v2)) > tol:
+            return True
+    return False
+
+def _check_formula( src_atoms, expected_formula, remap ):
+    #Check the formula of the atoms against the one of the CIF data (with the
+    #remapping applied to it, cf. _apply_remap):
     def _extract_atomcount( atom ):
         occu, npos = atom['occupancy'], len(atom['equivalent_positions'])
         return npos * ( int(occu) if occu == int(occu) else float(occu) )
@@ -224,98 +293,46 @@ def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature, skip_d
             total_composition.append( ( eleminfo, elemfrac * atomcount ) )
     formula = _nc_fmt.format_chemform( total_composition )
 
+    actual_expected_formula_dict = _formula_to_dict( expected_formula )
+    if remap:
+        newf = {}
+        def _collect( _name, _frac ):
+            _name = _stdatomname(_name)
+            if _name not in newf:
+                newf[_name] = _frac
+            else:
+                newf[_name] += _frac
+        for name, frac in actual_expected_formula_dict.items():
+            _remapped = remap.get(_stdatomname(name),None)
+            if _remapped is not None:
+                for remap_frac, remap_name in _remapped:
+                    _collect( remap_name, remap_frac * frac )
+            else:
+                _collect( name, frac )
+        actual_expected_formula_dict = newf
+    if _formulas_incompatible(total_composition,actual_expected_formula_dict):
+        s = f'"{expected_formula}"'
+        if remap:
+            _ = _nc_fmt.format_chemform( sorted(actual_expected_formula_dict.items() ) )
+            s += f' remapped to "{_}"'
+        raise _nc_core.NCBadInput(f'Formula encoded in CIF data ({s}) is not compatible with formula of loaded structure ("{formula}")')
 
+def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature,
+                                          skip_dyninfo, top_comments, remap,
+                                          no_formula_check ):
+    src = cifloader
+    src_atoms, remap, remap_str = _apply_remap( src.atoms, remap )
+    #DYNINFO analysis can only be done now, where we know the skip_dyninfo and
+    #uiso_temperature values:
+    ncmat = _nc_ncmat.NCMATComposer()
+    _add_compositions_and_dyninfo( ncmat, src_atoms, skip_dyninfo = skip_dyninfo,
+                                   uiso_temperature = uiso_temperature )
+    _add_sites( ncmat, src, src_atoms )
+    _add_description_comments( ncmat, src, top_comments = top_comments,
+                               remap_str = remap_str )
     expected_formula = cifloader.raw_cif_chemformula
-
-    if expected_formula:
-        def formula_to_dict( f ):
-            if not f:
-                return None
-            if isinstance(f,str):
-                return formula_to_dict( _decode_formula(f) )
-            if isinstance(f,dict):
-                return f
-            res = {}
-            for lbl,count in f:
-                assert count>=0.0
-                if count==0:
-                    continue
-                if lbl in res:
-                    res[lbl] += count
-                else:
-                    res[lbl] = count
-            return res or None
-        from .atomdata import allElementNames
-        _all_elements = allElementNames()
-        def _decode_formula( s ):
-            l1 = [e for e in _all_elements if len(e)==1]+['D','T']
-            l2 = [e for e in _all_elements if len(e)==2]
-            res = []
-            while s.strip():
-                s=s.strip()
-                c = [ e for e in l2 if s.startswith(e) ]
-                if not c:
-                    c = [ e for e in l1 if s.startswith(e) ]
-                if len(c)!=1:
-                    return None
-                c = c[0]
-                s=s[len(c):].strip()
-                leaddigits = ''
-                while s and s[0].isdigit():
-                    leaddigits += s[0]
-                    s=s[1:]#nb: no strip here, we want to stop on a space!
-                n = int(leaddigits) if leaddigits else 1
-                res.append( (c,n) )
-            return formula_to_dict(res)
-        def formulas_incompatible( formula1, formula2 ):
-            f1 = formula_to_dict(formula1)
-            f2 = formula_to_dict(formula2)
-            if not f1 or not f2:
-                return False
-            #map D,T,H2,H3 -> H to ensure fewer false positives:
-            def _tmp(d):
-                return { ('H' if k in ('D','T','H2','H3') else k): v
-                         for k,v in d.items() }
-            f1,f2 = _tmp(f1),_tmp(f2)
-            if f1 == f2:
-                return False
-            if set(f1.keys()) != set(f2.keys()):
-                return True
-            kref = next(iter(f1.keys()))
-            assert f1[kref] > 0.0 and f2[kref]>0.0
-            f2scale = f1[kref]/f2[kref]
-            tol = 1e-2#not tighter to avoid false positives!
-            for k,v1 in f1.items():
-                v2 = f2[k]*f2scale
-                if abs(v1-v2)>tol and abs(v1-v2)/(1e-300+abs(v1)+abs(v2)) > tol:
-                    return True
-            return False
-
-        if not no_formula_check and expected_formula:
-            actual_expected_formula_dict = formula_to_dict( expected_formula )
-            if remap:
-                newf = {}
-                def _collect( _name, _frac ):
-                    _name = _stdatomname(_name)
-                    if _name not in newf:
-                        newf[_name] = _frac
-                    else:
-                        newf[_name] += _frac
-                for name, frac in actual_expected_formula_dict.items():
-                    _remapped = remap.get(_stdatomname(name),None)
-                    if _remapped is not None:
-                        for remap_frac, remap_name in _remapped:
-                            _collect( remap_name, remap_frac * frac )
-                    else:
-                        _collect( name, frac )
-                actual_expected_formula_dict = newf
-            if formulas_incompatible(total_composition,actual_expected_formula_dict):
-                s = f'"{expected_formula}"'
-                if remap:
-                    _ = _nc_fmt.format_chemform( sorted(actual_expected_formula_dict.items() ) )
-                    s += f' remapped to "{_}"'
-                raise _nc_core.NCBadInput(f'Formula encoded in CIF data ({s}) is not compatible with formula of loaded structure ("{formula}")')
-
+    if expected_formula and not no_formula_check:
+        _check_formula( src_atoms, expected_formula, remap )
     return ncmat
 
 def _suggest_filename( ncmat_metadata, cifloader ):

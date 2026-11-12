@@ -1,0 +1,16 @@
+        'Al2 O3' -> {'Al': 2, 'O': 3}
+         'Fe2O3' -> {'Fe': 2, 'O': 3}
+  'C12 H19 N O2' -> {'C': 12, 'H': 19, 'N': 1, 'O': 2}
+       'H2 O H2' -> {'H': 4, 'O': 1}
+          'D2 O' -> {'D': 2, 'O': 1}
+        'Si O2 ' -> {'Si': 1, 'O': 2}
+           'Xq2' -> None
+              '' -> None
+'Al2 O3' versus 'Al4 O6': incompatible=False
+'Al2 O3' versus [('Al', 2), ('O', 3.015)]: incompatible=False
+'Al2 O3' versus [('Al', 2), ('O', 3.1)]: incompatible=True
+'Al2 O3' versus 'Al2 O4': incompatible=True
+'Al2 O3' versus 'Al2 Cr O3': incompatible=True
+'H2 O' versus 'D2 O': incompatible=False
+'H2 O' versus 'Xq': incompatible=False
+[('Na', 4.0), ('Cl', 4.0)] versus 'Na Cl': incompatible=False
