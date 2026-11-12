@@ -21,6 +21,7 @@
 #include "NCrystal/internal/sablegacy/NCSABLegacyFactory.hh"
 #include "NCrystal/internal/sab/NCSABFactory.hh"
 #include "NCrystal/internal/sablegacy/NCSABIntegrator.hh"
+#include "NCrystal/internal/sablegacy/NCSABLegacyUtils.hh"
 #include "NCrystal/internal/fact_utils/NCFactoryUtils.hh"
 
 namespace NC = NCrystal;
@@ -29,8 +30,8 @@ namespace NCRYSTAL_NAMESPACE {
   namespace SABLegacy {
     namespace {
 
-      //Cache key is (sabdata uid, egrid uid, legacy opts). The thick key also
-      //carries a reference to the SAB data.
+      //Cache key is (sabdata uid, egrid uid, legacy opts, beta thickening). The
+      //thick key also carries a reference to the SAB data.
 
       using EGridMargin = SABSampler::EGridMargin;
 
@@ -45,7 +46,8 @@ namespace NCRYSTAL_NAMESPACE {
 
       using ScatHelperCacheKey_Thin = std::tuple<UniqueIDValue,
                                                  UniqueIDValue,
-                                                 LegacySABAlgOpts>;
+                                                 LegacySABAlgOpts,
+                                                 BetaThickening>;
 
       struct ScatHelperCacheKey {
         ScatHelperCacheKey_Thin thin_key;
@@ -86,6 +88,8 @@ namespace NCRYSTAL_NAMESPACE {
             if ( o.egridMargin.value != odef.egridMargin.value )
               ss << ";egridmargin=" << o.egridMargin.value;
           }
+          if ( std::get<3>(key.thin_key) == BetaThickening::IfSparse )
+            ss << ";thickenSparseBeta";
           ss<<")";
           return ss.str();
         }
@@ -96,7 +100,8 @@ namespace NCRYSTAL_NAMESPACE {
           nc_assert( key.sabdata_ptr->getUniqueID() == std::get<0>(key.thin_key) );
           return createScatterHelper( key.sabdata_ptr,
                                       SAB::egridFromUniqueID(std::get<1>(key.thin_key)),
-                                      std::get<2>(key.thin_key) );
+                                      std::get<2>(key.thin_key),
+                                      std::get<3>(key.thin_key) );
         }
       };
 
@@ -113,9 +118,15 @@ namespace NCRYSTAL_NAMESPACE {
 std::unique_ptr<const NC::SABLegacy::SABScatterHelper>
 NC::SABLegacy::createScatterHelper( shared_obj<const SABData> data,
                               std::shared_ptr<const VectD> energyGrid,
-                              LegacySABAlgOpts opts_raw)
+                              LegacySABAlgOpts opts_raw,
+                              BetaThickening thickening )
 {
   nc_assert(!!data);
+  if ( thickening == BetaThickening::IfSparse ) {
+    auto thick = thickenSparseBetaGrid( *data );
+    if ( thick.has_value() )
+      data = makeSO<const SABData>( std::move( thick.value() ) );
+  }
   LegacyOptsDecoded opts(opts_raw);
   SABIntegrator si( data,
                     energyGrid.get(),
@@ -128,12 +139,14 @@ NC::SABLegacy::createScatterHelper( shared_obj<const SABData> data,
 NC::shared_obj<const NC::SABLegacy::SABScatterHelper>
 NC::SABLegacy::createScatterHelperWithCache( shared_obj<const SABData> sabdataptr,
                                        std::shared_ptr<const VectD> egrid,
-                                       LegacySABAlgOpts opts )
+                                       LegacySABAlgOpts opts,
+                                       BetaThickening thickening )
 {
   ScatHelperCacheKey key;
   std::get<0>(key.thin_key) = sabdataptr->getUniqueID();
   std::get<1>(key.thin_key) = SAB::egridToUniqueID(egrid);
   std::get<2>(key.thin_key) = opts;
+  std::get<3>(key.thin_key) = thickening;
   key.sabdata_ptr = std::move(sabdataptr);
   return getScatterHelperFactory().create(key);
 }

@@ -57,11 +57,18 @@ NC::SABLegacy::SABScatterLegacy::SABScatterLegacy( const DI_ScatKnl& di_sk, VDOS
                           = DynInfoUtils::extractSABDataFromDynInfo(
                               &di_sk, vdoslux, useCache, vdos2sabExcludeFlag );
                         nc_assert_always(!!sabdata_ptr);
+                        const auto thk
+                          = ( dynamic_cast<const DI_ScatKnlDirect*>( &di_sk )
+                              ? BetaThickening::IfSparse
+                              : BetaThickening::Off );
+                        const auto opts = LegacySABAlgOpts::DEFAULT;
                         return ( useCache
                                  ? SABLegacy::createScatterHelperWithCache( std::move(sabdata_ptr),
-                                                                      di_sk.energyGrid() )
+                                                                      di_sk.energyGrid(),
+                                                                      opts, thk )
                                  : SABLegacy::createScatterHelper( std::move(sabdata_ptr),
-                                                             di_sk.energyGrid() ) );
+                                                             di_sk.energyGrid(),
+                                                             opts, thk ) );
                       }() )
 {
 }
@@ -74,14 +81,18 @@ NC::SABLegacy::SABScatterLegacy::SABScatterLegacy( SABData && sabdata_, const Ve
                         if (!energyGrid.empty())
                           egrid_shptr = std::make_shared<const VectD>(energyGrid);
                         return SABLegacy::createScatterHelperWithCache( std::move(sabdata_shptr),
-                                                                  std::move(egrid_shptr) );
+                                                                  std::move(egrid_shptr),
+                                                                  LegacySABAlgOpts::DEFAULT,
+                                                                  BetaThickening::IfSparse );
                       }(std::move(sabdata_)) )
 {
 }
 NC::SABLegacy::SABScatterLegacy::SABScatterLegacy( shared_obj<const SABData> sabdata_shptr,
                                         std::shared_ptr<const VectD> egrid_shptr )
   : SABScatterLegacy( SABLegacy::createScatterHelperWithCache( std::move(sabdata_shptr),
-                                                         std::move(egrid_shptr) ) )
+                                                         std::move(egrid_shptr),
+                                                         LegacySABAlgOpts::DEFAULT,
+                                                         BetaThickening::IfSparse ) )
 {
 }
 
