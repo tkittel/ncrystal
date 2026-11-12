@@ -533,6 +533,15 @@ def _transform_frac_tensor( m, ufrac ):
     u = [ [ float( v ) for v in row ] for row in ufrac ]
     return np.asarray( sm.transform_sym( m, u ), dtype = float )
 
+def _rotated_cif_tensor( R, aniso, ufrac, cellsg ):
+    """CIF uij values (dict) of the tensor aniso, with fractional form ufrac
+    (cf. _cif_to_frac; None if there is no tensor), transformed by the matrix
+    R (a symmetry operation or basis change, cf. _transform_frac_tensor).
+    Returned unchanged for the identity, avoiding the noise of a round trip."""
+    if ufrac is None or _np_is_identity( R ):
+        return aniso
+    return _frac_to_cif( _transform_frac_tensor( R, ufrac ), cellsg )
+
 def _cart_eigenvalues( ufrac, cellsg ):
     """Sorted eigenvalues of the Cartesian form of a tensor, i.e. of
     U_frac.G (G being the metric). These do not depend on the basis."""
@@ -749,8 +758,7 @@ def _expand_sites( ops, cellsg, sites ):
             e = dict( s )
             e['pos'] = tuple( _remap_fract_pos( v ) for v in x )
             if uf is not None:
-                e['aniso'] = _frac_to_cif( _transform_frac_tensor( R, uf ),
-                                           cellsg )
+                e['aniso'] = _rotated_cif_tensor( R, s['aniso'], uf, cellsg )
             res.append( e )
     return res
 

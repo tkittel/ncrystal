@@ -86,10 +86,7 @@ def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, permissive, quiet ):
     for i, a in enumerate( cif_atoms ):
         uf = sgs._cif_to_frac( a['aniso'], cellsg ) if a['aniso'] else None
         for x, R in zip( a['positions'], a['rotations'] ):
-            u = a['aniso']
-            if uf is not None and not sgs._np_is_identity( R ):
-                u = sgs._frac_to_cif( sgs._transform_frac_tensor( R, uf ),
-                                      cellsg )
+            u = sgs._rotated_cif_tensor( R, a['aniso'], uf, cellsg )
             entries.append( { 'key': tuple( a['composition'] ), 'pos': x,
                               'occu': a['occupancy'], 'uiso': a['uiso'],
                               'aniso': u, 'src': i } )
