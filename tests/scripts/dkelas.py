@@ -131,21 +131,41 @@ def crystalline_scatknl_probe():
     li_part = [ p for p in '\n'.join(knl).split('@DYNINFO')
                 if 'element     Li' in p ]
     assert len(li_part) == 1
-    knl_li_only = ( '@DYNINFO' + li_part[0] ).splitlines()
-    for version, name, extra, theknl in (
-            ('v7','probe_cell_scatknl.ncmat', [], knl),
-            ('v7','probe_cell_scatknl_dt.ncmat',
+    #(the Li kernel is too coarse for msd estimation, so its msd is given):
+    knl_li_only = ( '@DYNINFO' + li_part[0] ).splitlines() + ['  msd 0.006']
+    #v8 wiring probe for the msd coming from kernel analysis: the Li2O kernels
+    #are too coarse for that, so use the C kernel of solid benzene at 20K on the
+    #diamond structure instead:
+    struct_c = []
+    take = False
+    for line in NC.createTextData( 'stdlib::C_sg227_Diamond.ncmat' ):
+        if line.startswith('@'):
+            take = line.startswith( ('@CELL','@SPACEGROUP',
+                                     '@ATOMPOSITIONS') )
+        if take:
+            #(v8 needs the setting explicitly, 227:1 is the v4 default):
+            struct_c.append( '  227:1' if line.strip() == '227' else line )
+    knl_c = []
+    take = False
+    for line in NC.createTextData( 'C_from_benzene_solid_20K_sabsmall.ncmat' ):
+        if line.startswith('@DYNINFO'):
+            take = True
+        if take:
+            knl_c.append(line)
+    for version, name, s, extra, theknl in (
+            ('v7','probe_cell_scatknl.ncmat', struct, [], knl),
+            ('v7','probe_cell_scatknl_dt.ncmat', struct,
              ['@DEBYETEMPERATURE','  Li 430','  O 430'], knl),
             #v8: loads WITHOUT Debye temperatures, the msd coming from
             #kernel analysis (feeding Bragg + elastic):
-            ('v8','probe_cell_scatknl_v8.ncmat', [], knl),
+            ('v8','probe_cell_scatknl_v8.ncmat', struct_c, [], knl_c),
             #v8 with an unanalysable (flat, liquid-like) O kernel:
             #per-atom load-time error naming O:
-            ('v8','probe_cell_badO_v8.ncmat', [],
+            ('v8','probe_cell_badO_v8.ncmat', struct, [],
              knl_li_only + flat_O) ):
         NC.registerInMemoryFileData(
             name,
-            '\n'.join( [f'NCMAT {version}'] + struct + extra + theknl )+'\n' )
+            '\n'.join( [f'NCMAT {version}'] + s + extra + theknl )+'\n' )
         print(f'==> load of virtual {name}:')
         try:
             inspect_info( f'virtual::{name}' )

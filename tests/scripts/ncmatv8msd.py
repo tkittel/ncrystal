@@ -108,13 +108,25 @@ def vdosdebye():
                        ' the declared state of matter "liquid"' ):
         c.create_ncmat()
 
+_li2o_secs = []
 def li2o_kernels( li, o ):
-    #The two 10K scatknl sections of the Li2O test file, with extra lines:
-    t = NC.createTextData( 'Li2O_sg225_LithiumOxide_sabsmall_temp10K.ncmat' )
-    t = t.rawData
-    sec_li, sec_o = t[t.index('@DYNINFO'):].split('@DYNINFO')[1:]
-    assert 'element     Li' in sec_li and 'element     O' in sec_o
-    return f'@DYNINFO{sec_li}  {li}\n@DYNINFO{sec_o}  {o}\n'
+    #10K scatknl sections for Li and O, expanded from the stdlib Li2O VDOS
+    #(dense enough for msd estimation from the kernels), with extra lines:
+    if not _li2o_secs:
+        info = NC.createInfo( 'stdlib::Li2O_sg225_LithiumOxide.ncmat;temp=10K' )
+        for di in info.dyninfos:
+            k = di.loadKernel( vdoslux = 1 )
+            el = di.atomData.displayLabel()
+            fmt = lambda v : ' '.join( repr(float(x)) for x in v )
+            _li2o_secs.append( f'  element {el}\n'
+                               f'  fraction {"2/3" if el=="Li" else "1/3"}\n'
+                               '  type scatknl\n  temperature 10\n'
+                               f'  alphagrid {fmt(k["alpha"])}\n'
+                               f'  betagrid {fmt(k["beta"])}\n'
+                               f'  sab {fmt(k["sab"])}\n' )
+    sec_li, sec_o = _li2o_secs
+    assert 'element Li' in sec_li and 'element O' in sec_o
+    return f'@DYNINFO\n{sec_li}  {li}\n@DYNINFO\n{sec_o}  {o}\n'
 
 def li2o_structure():
     lines, keep = [], False
