@@ -74,7 +74,7 @@ Draft changelog text exists in /workspace/docs/changes_for_changelog.txt (lines 
 - **Grids:**
   - Legacy: `setupLegacyAlphaGrid` / `setupLegacyBetaGrid` (region schemes, `reducePtsInDistribution` with gap filling, extra points near beta=0).
   - Next-gen: `determineAlphaBetaGridFromGn`.
-- **Output:** `ScatKnlData` (KnlType SAB, `betaGridOptimised=true`, suggestedEmax).
+- **Output:** `ScatKnlData` (KnlType SAB, suggestedEmax).
 
 ### 1.5 VDOSKnlGrid: next-gen (alpha, beta) grid (new)
 - **Files:** inc/vdos/NCVDOSKnlGrid.hh, src/vdos/NCVDOSKnlGrid.cc.
