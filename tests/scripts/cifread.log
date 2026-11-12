@@ -6,11 +6,11 @@ monoclinic, listed operations, one tensor:
    listed_ops: ['x, y, z', '-x, y+1/2, -z+1/2', '-x, -y, -z', 'x, -y+1/2, z+1/2']
    symbol_hm: P 1 21/c 1
    symbol_itnumbers: [['14'], []]
-   orig_hm_alt: 'P 1 21/c 1'
+   orig_hm_alt: P 1 21/c 1
    multiplicities: {'O1': 4, 'Si1': 4, 'Fe1': 2}
    atom_type_number_in_cell: []
-   uiso_printed: {'O1': (0.0123, 5e-05), 'Si1': (0.0071, 5e-05)}
-   ueq_printed: {'O1': (0.013200973760488533, 0.0006998805481635809)}
+   uiso_printed: {'O1': ('0.0123', '5e-05'), 'Si1': ('0.0071', '5e-05')}
+   ueq_printed: {'O1': ('0.013201', '0.0006999')}
 old operations tag, no symbol:
    cell: {'a': 5.1, 'b': 6.3, 'c': 7.2, 'alpha': 90.0, 'beta': 105.0, 'gamma': 90.0}
    site: {'label': 'O1', 'element_name': 'O', 'element_Z': 8, 'fract': (0.79, 0.87, 0.63), 'occ': 1.0, 'u_iso': 0.0123, 'aniso': None}
@@ -22,7 +22,7 @@ old operations tag, no symbol:
    orig_hm_alt: None
    multiplicities: {'O1': 4, 'Si1': 4, 'Fe1': 2}
    atom_type_number_in_cell: []
-   uiso_printed: {'O1': (0.0123, 5e-05), 'Si1': (0.0071, 5e-05)}
+   uiso_printed: {'O1': ('0.0123', '5e-05'), 'Si1': ('0.0071', '5e-05')}
    ueq_printed: {}
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Overriding spacegroup to "P 1 21/c 1" due to explicit request [warn#1]
 override ignores listed operations
@@ -33,14 +33,16 @@ atom counts, missing type symbol:
    listed_ops: None
    symbol_hm: P 1 21/c 1
    symbol_itnumbers: [['14'], []]
-   orig_hm_alt: 'P 1 21/c 1'
+   orig_hm_alt: P 1 21/c 1
    multiplicities: {'O1': 4, 'CaM1': 4}
    atom_type_number_in_cell: ['4', '2', '2']
-   uiso_printed: {'O1': (0.0123, 5e-05), 'CaM1': (0.0071, 5e-05)}
+   uiso_printed: {'O1': ('0.0123', '5e-05'), 'CaM1': ('0.0071', '5e-05')}
    ueq_printed: {}
 block with the sites selected among two
+Biso 0.95: Uiso 0.0120319 with rounding error 6.33e-05
+missing cell angles: 90 degrees, Ueq rounding errors available
 two blocks with sites: rejected: Could not automatically determine block in CIF data with structure info
-syntax error: rejected: CIF parsing error (from Gemmi): "string:2:5(12): parse error"
+syntax error: rejected: CIF parsing error 
 no blocks: rejected: CIF data had no blocks!
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Overriding spacegroup to "Q 99" due to explicit request [warn#2]
 unknown override: rejected: Unknown spacegroup: "Q 99"
