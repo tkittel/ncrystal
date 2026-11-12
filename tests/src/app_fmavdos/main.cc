@@ -93,7 +93,7 @@ namespace {
     //interpolation and must give bit-identical results. Also the upper edge of
     //the energy range is calculated in the constructor.
     auto vd = makeDebyeVDOS();
-    NC::VDOSEval ve(vd);
+    NC::VDOS::VDOSEval ve(vd);
     NCV::VDOSGn gn( ve, NCV::VDOSGn::Cfg::Default );
     gn.growMaxOrder( 6 );
     for ( unsigned n = 1; n <= 6; ++n ) {

@@ -62,7 +62,7 @@ namespace {
       NC::VDOS::detail::vdosGnInjectFailureForTests( failorder );
       bool got_error = false;
       try {
-        NC::VDOSEval ve( di->vdosData() );
+        NC::VDOS::VDOSEval ve( di->vdosData() );
         NC::VDOS::VDOSGn gn( ve );
         gn.growMaxOrder( maxorder );
       } catch ( NC::Error::CalcError& ) {

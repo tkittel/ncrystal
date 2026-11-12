@@ -116,7 +116,7 @@ namespace {
     //NCrystal.vdos.extractKnl / ncrystal_raw_vdos2kernel / ncmat2endf use:
     NC::VectD regEgrid, regDensity;
     std::tie( regEgrid, regDensity )
-      = NC::regulariseVDOSGrid( di_vdos.vdosOrigEgrid(), di_vdos.vdosOrigDensity() );
+      = NC::VDOS::regulariseVDOSGrid( di_vdos.vdosOrigEgrid(), di_vdos.vdosOrigDensity() );
     nc_assert_always( regEgrid.size() == 2 );
     NC::VDOSData vdosdata( NC::PairDD( regEgrid.front(), regEgrid.back() ),
                            std::move(regDensity), di.temperature(),

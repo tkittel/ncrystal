@@ -38,7 +38,7 @@ namespace {
   void checkEdges( const char* label, const NC::VDOSData& vdosdata,
                    NCV::VDOSGn::Cfg cfg, unsigned maxorder )
   {
-    NC::VDOSEval ve( vdosdata );
+    NC::VDOS::VDOSEval ve( vdosdata );
     NCV::VDOSGn gn( ve, cfg );
     gn.growMaxOrder( maxorder );
     NC::VectD out, workbuf;

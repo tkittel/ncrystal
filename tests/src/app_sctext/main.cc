@@ -411,7 +411,7 @@ namespace {
     }
     REQUIRE( di_h != nullptr );
     auto sab = NC::DynInfoUtils::extractSABDataFromDynInfo( di_h );
-    NC::VDOSEval ve( di_h->vdosData() );
+    NC::VDOS::VDOSEval ve( di_h->vdosData() );
     const NC::Temperature teff{ ve.calcEffectiveTemperature() };
     const NC::Temperature T = sab->temperature();
     const double r = teff.dbl() / T.dbl();
@@ -519,7 +519,7 @@ namespace {
         di_h = p;
     }
     REQUIRE( di_h != nullptr );
-    NC::VDOSEval ve( di_h->vdosData() );
+    NC::VDOS::VDOSEval ve( di_h->vdosData() );
     const NC::Temperature T{20.0};
     const NC::Temperature teff{ ve.calcEffectiveTemperature() };
     const double r = teff.dbl() / T.dbl();
@@ -564,7 +564,7 @@ namespace {
     }
     REQUIRE( di_h != nullptr );
     auto sab = NC::DynInfoUtils::extractSABDataFromDynInfo( di_h );
-    NC::VDOSEval ve( di_h->vdosData() );
+    NC::VDOS::VDOSEval ve( di_h->vdosData() );
     const double teff_true = ve.calcEffectiveTemperature();
     const double msd_true = ve.getMSD( ve.calcGamma0() );
     auto e = NC::SABAnalyser::estimateTeffMSD( *sab );

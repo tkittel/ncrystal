@@ -151,7 +151,7 @@ namespace NCRYSTAL_NAMESPACE {
 
 }
 
-void NC::VDOSEval::enableVerboseOutput(bool status)
+void NC::VDOS::VDOSEval::enableVerboseOutput(bool status)
 {
 #ifndef NDEBUG
   (void)dummy_val_xcothx;
@@ -159,13 +159,14 @@ void NC::VDOSEval::enableVerboseOutput(bool status)
   s_verbose_vdoseval() = status;
 }
 
-bool NC::VDOSEval::verboseOutputEnabled()
+bool NC::VDOS::VDOSEval::verboseOutputEnabled()
 {
   return s_verbose_vdoseval();
 }
 
 template <class Fct, class TStableSum>
-void NC::VDOSEval::integrateBinsWithFunction( Fct f, TStableSum& sum ) const
+void NC::VDOS::VDOSEval::integrateBinsWithFunction( Fct f,
+                                                    TStableSum& sum ) const
 {
   //////////////////////////////////////////////////////////////////////////////
   // With VDOS=rho(E), integrate rho(E)*f(E) over [emin,emax] (a.k.a. the "binned
@@ -210,9 +211,9 @@ void NC::VDOSEval::integrateBinsWithFunction( Fct f, TStableSum& sum ) const
   }
 }
 
-NC::VDOSEval::~VDOSEval() = default;
+NC::VDOS::VDOSEval::~VDOSEval() = default;
 
-NC::VDOSEval::VDOSEval(const VDOSData& vd)
+NC::VDOS::VDOSEval::VDOSEval(const VDOSData& vd)
   : m_density(vd.vdos_density()),
     m_emin(vd.vdos_egrid().first),
     m_emax(vd.vdos_egrid().second),
@@ -280,7 +281,7 @@ NC::VDOSEval::VDOSEval(const VDOSData& vd)
   m_k *= scalefact;
 }
 
-double NC::VDOSEval::eval(double energy) const
+double NC::VDOS::VDOSEval::eval(double energy) const
 {
   nc_assert(energy>=0.0);
   if (energy<=m_emin)
@@ -308,13 +309,13 @@ double NC::VDOSEval::eval(double energy) const
   return nclerp( m_density.at(ibin), m_density.at(ibin+1), relpos );
 }
 
-NC::VDOSEval::GridInfo NC::VDOSEval::getGridInfo() const
+NC::VDOS::VDOSEval::GridInfo NC::VDOS::VDOSEval::getGridInfo() const
 {
   nc_assert(std::numeric_limits<unsigned>::max()>m_density.size());
   return { m_emin, m_emax, static_cast<unsigned>(m_density.size()), m_nptsExtended };
 }
 
-double NC::VDOSEval::calcGamma0() const
+double NC::VDOS::VDOSEval::calcGamma0() const
 {
   //Evaluate Sjolander1958 eq. II.3 with t=0 (NB: Sjolander is missing a factor
   //of emax, since he uses unit-less energies).
@@ -356,7 +357,7 @@ double NC::VDOSEval::calcGamma0() const
   return m_emax * sum.sum();
 }
 
-double NC::VDOSEval::calcEffectiveTemperature() const
+double NC::VDOS::VDOSEval::calcEffectiveTemperature() const
 {
   //Defining the effective temperature Teff via
   //k*Teff=mean-energy-per-phonon-state, we can integrate over the energy per
@@ -434,7 +435,7 @@ double NC::VDOSEval::calcEffectiveTemperature() const
   return res.dbl();
 }
 
-double NC::VDOSEval::getMSD( double gamma0 ) const
+double NC::VDOS::VDOSEval::getMSD( double gamma0 ) const
 {
   //On p326 of Sjolander1958, he gives the formula Q*gamma0=2W, with W the
   //Debye-Waller function 2W=msd*q^2 and (eq II.1) Q=gamma0*hbar^2*q^2/2M (NB:
@@ -453,7 +454,7 @@ double NC::VDOSEval::getMSD( double gamma0 ) const
   return convfact * gamma0 / ( m_elementMassAMU.dbl() * m_emax );
 }
 
-NC::PairDD NC::VDOSEval::evalG1AsymmetricAtEPair( double energy, double gamma0 ) const
+NC::PairDD NC::VDOS::VDOSEval::evalG1AsymmetricAtEPair( double energy, double gamma0 ) const
 {
   nc_assert( ! ( energy < 0.0 ) );
   if ( energy < numericallySafeG1SymmetricELimitInUnitsOfKT * m_kT ) {
@@ -477,7 +478,8 @@ NC::PairDD NC::VDOSEval::evalG1AsymmetricAtEPair( double energy, double gamma0 )
   }
 }
 
-double NC::VDOSEval::evalG1Asymmetric( double energy, double gamma0 ) const
+double NC::VDOS::VDOSEval::evalG1Asymmetric( double energy,
+                                             double gamma0 ) const
 {
   const double absE = ncabs( energy );
   if ( absE > numericallySafeG1SymmetricELimitInUnitsOfKT * m_kT ) {
@@ -496,7 +498,7 @@ double NC::VDOSEval::evalG1Asymmetric( double energy, double gamma0 ) const
   return G1sym ? G1sym * stable_exp( -energy / (2*kT()) ) : 0.0;
 }
 
-double NC::VDOSEval::evalG1Symmetric( double energy, double gamma0 ) const
+double NC::VDOS::VDOSEval::evalG1Symmetric( double energy, double gamma0 ) const
 {
   if (energy<0)
     return evalG1Symmetric(-energy,gamma0);
@@ -534,7 +536,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-double NC::checkIsRegularVDOSGrid( const PairDD& egrid, const VectD& density, double tolerance )
+double NC::VDOS::checkIsRegularVDOSGrid( const PairDD& egrid, const VectD& density, double tolerance )
 {
   nc_assert_always(egrid.first>=1e-5);//checking 1e-5 threshold in VDOSEval constructor
 
@@ -558,7 +560,7 @@ double NC::checkIsRegularVDOSGrid( const PairDD& egrid, const VectD& density, do
   return emax_corrected;
 }
 
-double NC::checkIsRegularVDOSGrid( const VectD& egrid, const VectD& density, double tolerance )
+double NC::VDOS::checkIsRegularVDOSGrid( const VectD& egrid, const VectD& density, double tolerance )
 {
   nc_assert( nc_is_grid(egrid) );
   if ( egrid.size()!=2 && egrid.size() != density.size() )
@@ -568,7 +570,7 @@ double NC::checkIsRegularVDOSGrid( const VectD& egrid, const VectD& density, dou
   return checkIsRegularVDOSGrid( PairDD(egrid.front(),egrid.back()), density, tolerance );
 }
 
-std::pair<NC::VectD,NC::VectD> NC::regulariseVDOSGrid( const VectD& orig_egrid, const VectD& orig_density )
+std::pair<NC::VectD,NC::VectD> NC::VDOS::regulariseVDOSGrid( const VectD& orig_egrid, const VectD& orig_density )
 {
   static bool s_verbose_vdosregul = ncgetenv_bool("DEBUG_VDOSREGULARISATION");
   const bool extra_verbose = s_verbose_vdosregul;
@@ -589,7 +591,7 @@ std::pair<NC::VectD,NC::VectD> NC::regulariseVDOSGrid( const VectD& orig_egrid, 
 
   const double tolerance = 1e-6;//NB: Should be same as checkIsRegularVDOSGrid
                                 //    default value!
-  double emax_corrected = NC::checkIsRegularVDOSGrid( orig_egrid, orig_density, tolerance );
+  double emax_corrected = NC::VDOS::checkIsRegularVDOSGrid( orig_egrid, orig_density, tolerance );
   if ( emax_corrected ) {
     //Is already OK within tolerance! Return regularised egrid, with potential
     //slight correction to emax to correct for numerical imprecision within

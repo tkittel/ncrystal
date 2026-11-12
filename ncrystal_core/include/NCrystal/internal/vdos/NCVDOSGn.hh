@@ -26,9 +26,9 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  class VDOSEval;
-
   namespace VDOS {
+
+    class VDOSEval;
 
     class VDOSGn final : private MoveOnly {
 

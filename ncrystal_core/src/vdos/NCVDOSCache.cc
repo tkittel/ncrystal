@@ -25,7 +25,7 @@
 
 namespace NC = NCrystal;
 
-NC::DI_VDOSShPtr::~DI_VDOSShPtr() = default;
+NC::VDOS::DI_VDOSShPtr::~DI_VDOSShPtr() = default;
 
 namespace NCRYSTAL_NAMESPACE {
   namespace {
@@ -49,13 +49,16 @@ namespace NCRYSTAL_NAMESPACE {
       //Cache entry. In addition to the payload, we also keep track of when it
       //was last accessed. In case cache needs to be trimmed, this allows us to
       //remove those accessed furthest back in time first.
-      VDOSCacheEntry(VDOSDataHashPtr pl,  std::size_t la )
+      VDOSCacheEntry(VDOS::VDOSDataHashPtr pl,  std::size_t la )
         : payload( std::move(pl) ), last_accessed(la) {}
-      VDOSDataHashPtr payload;
+      VDOS::VDOSDataHashPtr payload;
       std::size_t last_accessed = 0;
       //Default comparisons are on payload only
       bool operator<(const VDOSCacheEntry&o) const { return payload < o.payload; }
-      bool operator<(const VDOSDataHashPtr&o) const { return payload < o; }
+      bool operator<(const VDOS::VDOSDataHashPtr&o) const
+      {
+        return payload < o;
+      }
     };
     struct VDOSCacheDB {
       std::mutex mtx;
@@ -81,13 +84,13 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-NC::VDOSDataHashPtr::VDOSDataHashPtr( shared_obj<const VDOSData> data )
+NC::VDOS::VDOSDataHashPtr::VDOSDataHashPtr( shared_obj<const VDOSData> data )
   : m_data( std::move(data) ),
     m_hash( vdosDataHash(m_data) )
 {
 }
 
-NC::VDOSDataHashPtr NC::getCachedVDOSDataHashPtr( VDOSData&& data )
+NC::VDOS::VDOSDataHashPtr NC::VDOS::getCachedVDOSDataHashPtr( VDOSData&& data )
 {
   VDOSDataHashPtr newobj( makeSO<VDOSData>(std::move(data)) );
 
@@ -125,7 +128,7 @@ NC::VDOSDataHashPtr NC::getCachedVDOSDataHashPtr( VDOSData&& data )
   return newobj;
 }
 
-NC::EnergyGridPtr::EnergyGridPtr( std::shared_ptr<const VectD> v )
+NC::VDOS::EnergyGridPtr::EnergyGridPtr( std::shared_ptr<const VectD> v )
 {
   if ( !v || v->empty() ) {
     static const UniqueIDValue empty_uid = SAB::egridToUniqueID(nullptr);
@@ -136,7 +139,7 @@ NC::EnergyGridPtr::EnergyGridPtr( std::shared_ptr<const VectD> v )
   }
 }
 
-NC::EnergyGridPtr::EnergyGridPtr( const VectD& v )
+NC::VDOS::EnergyGridPtr::EnergyGridPtr( const VectD& v )
 {
   if ( v.empty() ) {
     static const UniqueIDValue empty_uid = SAB::egridToUniqueID(nullptr);
