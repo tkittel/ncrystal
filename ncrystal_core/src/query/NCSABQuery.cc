@@ -81,7 +81,7 @@ namespace NCRYSTAL_NAMESPACE {
         Optional<Temperature> teff_vdos;
         Optional<double> msd_vdos;
         if ( auto di_vdos = dynamic_cast<const DI_VDOS*>( di_knl ) ) {
-          VDOSEval ve( di_vdos->vdosData() );
+          VDOS::VDOSEval ve( di_vdos->vdosData() );
           teff_vdos = Temperature{ DoValidate,
                                    ve.calcEffectiveTemperature() };
           msd_vdos = ve.getMSD( ve.calcGamma0() );

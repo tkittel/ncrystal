@@ -276,9 +276,9 @@ namespace NCRYSTAL_NAMESPACE {
           nc_assert_always( scalefact>=0.0 && scalefact<=1.0 );
           input.vdos2sabExcludeScaleFactor = scalefact;
         }
-        const DI_VDOSShPtr* di_vdosshptr
+        const VDOS::DI_VDOSShPtr* di_vdosshptr
           = ( try_use_cache
-              ? dynamic_cast<const DI_VDOSShPtr*>(&di_vdos) : nullptr );
+              ? dynamic_cast<const VDOS::DI_VDOSShPtr*>(&di_vdos) : nullptr );
         if (!di_vdosshptr)
           return extractFrom_VDOSNoCache(input);
 
@@ -399,7 +399,7 @@ NCDI::extractTeffFromDynInfo( const DI_ScatKnl* di )
     //NB: both VDOSEval and the DoValidate constructor here guard the
     //sanity of the value (as does the SCT code itself later):
     return Temperature{ DoValidate,
-                        VDOSEval( di_vdos->vdosData() )
+                        VDOS::VDOSEval( di_vdos->vdosData() )
                         .calcEffectiveTemperature() };
   }
   if ( auto di_tm = dynamic_cast<const DI_ScatKnlDirectWithTeffMSD*>( di ) ) {
@@ -419,7 +419,7 @@ NC::Optional<double>
 NCDI::extractMSDFromDynInfo( const DI_ScatKnl* di )
 {
   if ( auto di_vdos = dynamic_cast<const DI_VDOS*>( di ) )
-    return VDOSEval( di_vdos->vdosData() ).getMSD();
+    return VDOS::VDOSEval( di_vdos->vdosData() ).getMSD();
   if ( auto di_vdebye = dynamic_cast<const DI_VDOSDebye*>( di ) )
     return debyeIsotropicMSD( di_vdebye->debyeTemperature(),
                               di->temperature(),
@@ -444,7 +444,8 @@ NCDI::debyeEffectiveTemperature( DebyeTemperature debyeTemperature,
   //The scale of the VDOS and the atom mass do not affect the result:
   auto vdos = createVDOSDebye( debyeTemperature, temperature,
                                SigmaBound{ 1.0 }, AtomMass{ 1.0 } );
-  return Temperature{ DoValidate, VDOSEval( vdos ).calcEffectiveTemperature() };
+  return Temperature{ DoValidate,
+                      VDOS::VDOSEval( vdos ).calcEffectiveTemperature() };
 }
 
 NC::VDOSData NCDI::createVDOSDebye( DebyeTemperature debyeTemperature,

@@ -278,7 +278,7 @@ namespace {
                       NC::Span<const unsigned> orders,
                       NC::Span<const double> relcontriblvls )
   {
-    NC::VDOSEval ve(vdosdata);
+    NC::VDOS::VDOSEval ve(vdosdata);
     NCV::VDOSGn gn( ve, NCV::VDOSGn::Cfg::Default );
     unsigned maxorder = 0;
     for ( auto n : orders ) maxorder = std::max(maxorder,n);
