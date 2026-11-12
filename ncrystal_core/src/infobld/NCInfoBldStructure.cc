@@ -22,6 +22,7 @@
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
+#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/utils/NCStrView.hh"
 #include "NCrystal/internal/extd_utils/NCInfoUtils.hh"

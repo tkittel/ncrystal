@@ -48,7 +48,7 @@ namespace NCRYSTAL_NAMESPACE {
     //Initialise with space group number in 1..230. For the rhombohedral
     //(R) space groups, rhombohedral_axes indicates that the unit cell is
     //described in rhombohedral rather than hexagonal axes (see also
-    //usesRhombohedralAxes in NCLatticeUtils.hh):
+    //usesRhombohedralAxes in NCSpaceGroup.hh):
     EqReflTables( int spacegroup, bool rhombohedral_axes = false );
 
     class EquivReflList {

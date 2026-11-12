@@ -82,14 +82,6 @@ namespace NCRYSTAL_NAMESPACE {
     unsigned m_group_of_term[6] = {};
   };
 
-  //Whether the space group is one of the rhombohedral (R) ones, and whether
-  //a unit cell of such a space group with lattice angle alpha (degrees) is
-  //described in rhombohedral axes (a=b=c, alpha=beta=gamma) rather than in
-  //hexagonal axes (alpha=beta=90, gamma=120). An unspecified alpha (0) means
-  //hexagonal axes:
-  bool isRhombohedralSpaceGroup( int spacegroup );
-  bool usesRhombohedralAxes( int spacegroup, double alpha );
-
   //Try to estimate the HKL point based on normal + dspacing, essentially by hkl
   //= lattice_rot * normal / dspacing, but then returning the smallest of
   //(hkl,-hkl).  Will throw CalcError in case the normal does not actually

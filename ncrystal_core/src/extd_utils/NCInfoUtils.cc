@@ -20,7 +20,7 @@
 
 #include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
-#include "NCrystal/internal/utils/NCLatticeUtils.hh"
+#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 #include "NCrystal/internal/utils/NCStrView.hh"
 
 namespace NC = NCrystal;

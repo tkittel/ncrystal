@@ -20,7 +20,7 @@
 
 #include "NCLegacyLatticeChecks.hh"
 #include "NCrystal/internal/extd_utils/NCInfoUtils.hh"
-#include "NCrystal/internal/utils/NCLatticeUtils.hh"
+#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 #include <iostream>
 
 //Check that the legacy lattices completion and checks from NCrystal <= 4.4 and
