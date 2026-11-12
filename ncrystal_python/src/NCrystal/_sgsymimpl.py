@@ -422,7 +422,8 @@ def _remap_fract_pos(x):
         x += 1.0
     if 1.0<=x<2.0:
         x -= 1.0
-    return x
+    #Snap numerical noise near the cell edges (e.g. 7e-17 or 1-1e-16) to 0:
+    return 0.0 if ( abs( x ) < 1e-12 or abs( x - 1.0 ) < 1e-12 ) else x
 
 def _unit_cell_point_dist( p1, p2 ):
     return math.sqrt( _unit_cell_point_distsq( p1, p2 ) )
