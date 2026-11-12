@@ -115,7 +115,7 @@ namespace NCRYSTAL_NAMESPACE {
 
       class SEFactory final
         : public CachedFactoryBase<SECacheKey,
-                                   SABUtils::SABExtended,
+                                   SAB::SABExtended,
                                    factSE_nstrongrefskept,
                                    SECache_KeyThinner> {
       public:
@@ -223,20 +223,20 @@ NC::SAB::egridFromUniqueID( UniqueIDValue uidval )
   return *it->second;
 }
 
-NC::shared_obj<const NC::SABUtils::SABExtended>
+NC::shared_obj<const NC::SAB::SABExtended>
 NC::SAB::createSABExtendedNoCache( int knllux,
                                    shared_obj<const SABData> sab,
                                    Optional<Temperature> teff,
                                    std::shared_ptr<const VectD> egrid )
 {
   auto cfg = SABCfg::createConfig(knllux);
-  return SABUtils::SABExtended::create( cfg,
-                                        std::move(sab),
-                                        teff,
-                                        std::move(egrid) );
+  return SAB::SABExtended::create( cfg,
+                                   std::move(sab),
+                                   teff,
+                                   std::move(egrid) );
 }
 
-NC::shared_obj<const NC::SABUtils::SABExtended>
+NC::shared_obj<const NC::SAB::SABExtended>
 NC::SAB::createSABExtendedWithCache( int knllux,
                                      shared_obj<const SABData> sab,
                                      Optional<Temperature> teff,

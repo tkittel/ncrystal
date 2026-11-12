@@ -31,7 +31,7 @@
 namespace NC = NCrystal;
 
 namespace NCRYSTAL_NAMESPACE {
-  namespace SABUtils {
+  namespace SAB {
     namespace detail {
       //Defined in NCSABProcessor.cc:
       PairDD diagonalLowEnergyLimit( const SABData&, const VectD& logS );
@@ -50,8 +50,8 @@ namespace {
   double findEMin( const FctE& f, double f0 = 1.0 )
   {
     NC::SABCfg::Cfg cfg;
-    return NC::SABUtils::detail::determineEMinDivKT( cfg, kEMax, f,
-                                                     NC::PairDD( f0, 1.0 ) );
+    return NC::SAB::detail::determineEMinDivKT( cfg, kEMax, f,
+                                                NC::PairDD( f0, 1.0 ) );
   }
 
   //Reference: dense scan for the first E where |log(f(E)/f(0))| reaches 1e-3
@@ -106,8 +106,8 @@ namespace {
     NC::SABData data( std::move(a), std::move(b), std::move(sab),
                       NC::Temperature{ 293.15 }, NC::SigmaBound{ 1.0 },
                       NC::AtomMass{ 1.0 } );
-    const auto logS = NC::SABUtils::createLogSTable( data );
-    namespace NSD = NC::SABUtils::detail;
+    const auto logS = NC::SAB::createLogSTable( data );
+    namespace NSD = NC::SAB::detail;
     const auto res = NSD::diagonalLowEnergyLimit( data, *logS );
     const double expect_f0 = 4.0 * s * sqrtLinIntegral( 0.1, 4.0 );
     const double expect_msa = 0.5 * ( 16.0 - 0.01 ) / sqrtLinIntegral( 0.1, 4.0 );
@@ -151,8 +151,8 @@ namespace {
     NC::SABData data( std::move(a), std::move(b), std::move(sab),
                       NC::Temperature{ 293.15 }, NC::SigmaBound{ 1.0 },
                       NC::AtomMass{ 1.0 } );
-    const auto logS = NC::SABUtils::createLogSTable( data );
-    namespace NSD = NC::SABUtils::detail;
+    const auto logS = NC::SAB::createLogSTable( data );
+    namespace NSD = NC::SAB::detail;
     const auto res = NSD::diagonalLowEnergyLimit( data, *logS );
     nc_assert_always( std::isfinite( res.first ) );
     nc_assert_always( std::isfinite( res.second ) );
@@ -165,8 +165,8 @@ namespace {
     NC::SABData data( std::move(a), std::move(b), std::move(sab),
                       NC::Temperature{ 293.15 }, NC::SigmaBound{ 1.0 },
                       NC::AtomMass{ 1.0 } );
-    const auto logS = NC::SABUtils::createLogSTable( data );
-    return NC::SABUtils::detail::diagonalLowEnergyLimit( data, *logS );
+    const auto logS = NC::SAB::createLogSTable( data );
+    return NC::SAB::detail::diagonalLowEnergyLimit( data, *logS );
   }
 
   //Kernel with the same S(alpha) in all beta rows:

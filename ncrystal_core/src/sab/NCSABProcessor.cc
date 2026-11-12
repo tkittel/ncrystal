@@ -31,11 +31,11 @@
 #include "NCrystal/internal/utils/NCMsg.hh"
 
 namespace NC = NCrystal;
-namespace NCS = NCrystal::SABUtils;
+namespace NCS = NCrystal::SAB;
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace SABUtils {
+  namespace SAB {
 
     namespace {
 
@@ -565,7 +565,7 @@ NC::PairDD NCS::detail::diagonalLowEnergyLimit( const SABData& sab,
   {
     double q = 0.0;
     for ( auto jb : { ib, ib + 1 } ) {
-      const std::size_t i = SABUtils::calcSABIdx( na, ia, jb );
+      const std::size_t i = SAB::calcSABIdx( na, ia, jb );
       if ( vectAt( S, i ) > 0.0 && vectAt( S, i + 1 ) > 0.0 )
         q = ncmax( q, ncabs( vectAt( logS, i + 1 ) - vectAt( logS, i ) ) );
     }
@@ -595,7 +595,7 @@ NC::PairDD NCS::detail::diagonalLowEnergyLimit( const SABData& sab,
         auto sAt = [&]( double t )
         {
           const double x = ncclamp( t * t, y0, y1 );
-          return SABUtils::evalSABCellWCL( sab, logS, ia, ib, x, x );
+          return SAB::evalSABCellWCL( sab, logS, ia, ib, x, x );
         };
         //c(x)dx = 8*t^2*S dt, and c(x)*sqrt(x)dx = 8*t^3*S dt:
         const double t0 = std::sqrt( y0 );
@@ -672,7 +672,7 @@ double NCS::detail::determineEMinDivKT( const SABCfg::Cfg& cfg, double emax,
 }
 
 namespace NCRYSTAL_NAMESPACE {
-  namespace SABUtils {
+  namespace SAB {
     namespace {
       struct SIntByETouch final : private MoveOnly {
         VectD sint, e;

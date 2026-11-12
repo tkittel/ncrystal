@@ -187,7 +187,7 @@ namespace NCRYSTAL_NAMESPACE {
           };
         }
         SABData sabdata
-          = SABUtils::transformKernelToStdFormat
+          = SAB::transformKernelToStdFormat
           ( createScatteringKernel( vd,
                                     input.vdoslux,
                                     input.requestedEMax,
@@ -304,7 +304,7 @@ namespace NCRYSTAL_NAMESPACE {
                                                param.temperature,
                                                param.boundXS,
                                                param.elementMass );
-        SABData sabdata = SABUtils::transformKernelToStdFormat
+        SABData sabdata = SAB::transformKernelToStdFormat
           ( createScatteringKernel( vdosdata, param.vdoslux ) );
         return std::make_shared<const SABData>(std::move(sabdata));
       }

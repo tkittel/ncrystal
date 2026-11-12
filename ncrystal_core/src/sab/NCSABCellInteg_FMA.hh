@@ -26,7 +26,7 @@
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
 
 namespace NCRYSTAL_NAMESPACE {
-  namespace SABUtils {
+  namespace SAB {
 
     //Shared by contribImpl and fillContribAtAlpha below; not itself
     //fma-dispatched (no ncfma calls), so needs no #ifdef split:
