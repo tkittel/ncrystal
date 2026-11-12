@@ -34,7 +34,7 @@ import NCTestUtils.reprint_escaped_warnings # noqa F401
 import NCrystalDev as NC
 from NCrystalDev.cifutils import CIFLoader
 from NCrystalDev._sgsymimpl import _cif_uij_ueq, _relclose
-from NCrystalDev._cifimpl import uiso_from_cif, ueq_from_cif
+from NCrystalDev._cifreadimpl import uiso_from_cif, ueq_from_cif
 
 cell = { 'a': 5.1, 'b': 6.3, 'c': 7.2,
          'alpha': 90.0, 'beta': 105.0, 'gamma': 90.0 }

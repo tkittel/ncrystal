@@ -94,10 +94,13 @@ must contain only this file, with the message
   via `fractions`).
 - `vdos.py` (1.1k): Debye VDOS/MSD helpers, `analyseVDOS`, `extractGn`,
   `extractKnl` (-> C `ncrystal_raw_vdos2kernel`), `PhononDOSAnalyser`.
-- `cifutils.py` (1.8k): `CIFSource`, `CIFLoader` (gemmi, spglib, ase;
-  online DBs: COD, Materials Project via `MATERIALSPROJECT_USER_API_KEY`).
-- `_cifimpl.py`: helpers for `cifutils.py` (CIF numbers with their rounding
-  errors, and Uiso and Ueq values from printed CIF data).
+- `cifutils.py` (0.7k): public `CIFSource`, `CIFLoader` and validation plots
+  (gemmi, spglib, ase). Implemented in `_cifsrcimpl.py` (fetching from COD,
+  Materials Project via `MATERIALSPROJECT_USER_API_KEY`, local cache),
+  `_cifreadimpl.py` (reading with gemmi, CIF numbers with their rounding
+  errors), `_cifsymimpl.py` (which symmetry to use), `_cifsitesimpl.py`
+  (finding and grouping sites), `_cifloadimpl.py` (the loading steps) and
+  `_cifcomposerimpl.py` (creating the `NCMATComposer`).
 - `ncmat2endf.py` + `_ncmat2endf_impl.py` (1.6k): ENDF export via
   `endf_parserpy`.
 - `misc.py` + `_miscimpl.py`: type-erasure wrappers `MaterialSource`,

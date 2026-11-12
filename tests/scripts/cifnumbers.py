@@ -21,12 +21,12 @@
 ################################################################################
 
 
-# Tests of _cifimpl.parse_cif_number: values of CIF numeric strings and their
+# Tests of _cifreadimpl.parse_cif_number: values of CIF numeric strings and their
 # rounding errors (half the step of the last printed digit).
 
 import NCTestUtils.enable_fpe # noqa F401
 import math
-from NCrystalDev._cifimpl import parse_cif_number as vu
+from NCrystalDev._cifreadimpl import parse_cif_number as vu
 
 def check( s, value, rounding_error ):
     r = vu( s )

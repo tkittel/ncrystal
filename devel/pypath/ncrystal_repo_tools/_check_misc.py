@@ -48,7 +48,6 @@ def main():
         'ncrystal_core/src/sab/NCSABProcessor.cc' : 100,#fixme
         'ncrystal_python/src/NCrystal/_hfgdata.py' : 70,
         'ncrystal_python/src/NCrystal/_ncmatimpl.py' : 150,
-        'ncrystal_python/src/NCrystal/cifutils.py' : 110,#TEMPORARY (was 100)
         'ncrystal_python/src/NCrystal/_ncmat2endf_impl.py' : 80,
         'ncrystal_python/src/NCrystal/core.py' : 100,
         'tests/data/QE_pw_Al.out' : 2000,
