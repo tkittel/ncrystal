@@ -1,0 +1,6 @@
+stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=0.1 O: nbeta=240 betamax=268.9
+stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=0.1 Th: nbeta=240 betamax=621.3
+stdlib::CeO2_sg225_CeriumOxide.ncmat;temp=0.1 O: nbeta=240 betamax=249.9
+stdlib::CeO2_sg225_CeriumOxide.ncmat;temp=0.1 Ce: nbeta=240 betamax=447.9
+stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=1 O: nbeta=240 betamax=29.36
+stdlib::ThO2_sg225_ThoriumDioxide.ncmat;temp=1 Th: nbeta=240 betamax=126.1

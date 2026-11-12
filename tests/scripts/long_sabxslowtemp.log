@@ -8,7 +8,6 @@
 =====> stdlib::Polyethylene_CH2.ncmat;temp=1;vdoslux=1;knllux=2
 =====> stdlib::C_sg227_Diamond.ncmat;temp=0.1;vdoslux=2;knllux=3
 =====> stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=0.1;vdoslux=3;knllux=4
-NCrystal WARNING: Discarding 4 edges of provided kernel data due to missing S values.
 =====> stdlib::UO2_sg225_UraniumDioxide.ncmat;temp=1;vdoslux=4;knllux=5
 =====> Li_from_Li2O.ncmat;temp=0.1;vdoslux=5;knllux=0
 =====> Li_from_Li2O.ncmat;temp=1;vdoslux=0;knllux=2

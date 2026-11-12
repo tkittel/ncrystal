@@ -50,6 +50,39 @@ namespace NCRYSTAL_NAMESPACE {
         return ap1 / ((n.value()+a)*(n.value()+ap1));
       }
 
+      //Removes points from the upper end of a beta grid, where the VDOS
+      //kernel is S(alpha,beta)=exp(-beta)*S(alpha,-beta) and all S values are
+      //provably below 1e-300 (mostly 0 from underflow, at very low
+      //temperatures). With f(x,n)<=1, Gn contribution scale factors <=1 and Gn
+      //interpolated within the values at the two neighbouring nodes,
+      //S(alpha,beta)<=exp(-beta)*kT*sum_n(max of those two Gn node values at
+      //E=-beta*kT).
+      void trimUnderflowingBetaPoints( const VDOSGn& Gn, VectD& bvals )
+      {
+        const double kT = Gn.kT();
+        auto logMaxS = [&Gn,kT]( double beta )
+        {
+          const double e = -beta * kT;
+          double sum = 0.0;
+          for ( auto nm1 : ncrange( Gn.maxOrder().value() ) ) {
+            const auto n = nm1 + 1;
+            const auto& spec = Gn.getRawSpectrum(n);
+            const double x = ( e - Gn.eRange(n).first ) / Gn.binWidth(n);
+            if ( !( x >= 0.0 ) || spec.size() < 2
+                 || x > static_cast<double>( spec.size() - 1 ) )
+              continue;
+            const auto k = ncmin( static_cast<std::size_t>( x ),
+                                  spec.size() - 2 );
+            sum += ncmax( spec[k], spec[k+1] );
+          }
+          return sum > 0.0 ? std::log( kT * sum ) - beta : -kInfinity;
+        };
+        constexpr double kkk = -690.7755278982137;//log(1e-300)
+        while ( bvals.size() > 5 && bvals.back() > 0.0
+                && logMaxS( bvals.back() ) < kkk )
+          bvals.pop_back();
+      }
+
     }
   }
 }
@@ -382,6 +415,8 @@ NC::VDOS::determineAlphaBetaGridFromGn( const GnExpansion& gnexpn,
     bvals = mergeGridsWithTol( bvals, e0grid, rtol );
     nc_assert_always( bvals.size() >= bvals_size_withoute0 );
     nc_assert( nc_is_grid( bvals ) );
+    //Make room for points which will be useful:
+    trimUnderflowingBetaPoints( gnexpn.Gn, bvals );
     topOff(bvals, requested_nbeta );
   }
 
