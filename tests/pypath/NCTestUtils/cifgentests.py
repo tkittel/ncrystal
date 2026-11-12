@@ -140,13 +140,15 @@ def check_invalid( s ):
 def run( spacegroups, *, seed, full_for = None, invalid_for = () ):
     """Check a random structure in each space group. For those in full_for
     (default: all), all valid and tolerated CIF variants are checked,
-    otherwise just the asymmetric unit + symops style."""
+    otherwise just the asymmetric unit + symops style. Each space group gets
+    its own random stream (from seed and sg), so results do not depend on
+    which other space groups are tested."""
     ncsetenv( 'CIF2NCMAT_UNITTEST_NOPLOT', '1' )
     ncsetenv( 'ONLINEDB_FORBID_NETWORK', '1' )
-    rng = random.Random( seed )
     nconv = 0
     with work_in_tmpdir():
         for sg in spacegroups:
+            rng = random.Random( seed * 1000 + sg )
             try:
                 s = cifgen.random_structure( rng, sg, max_atoms = 100 )
             except RuntimeError:
