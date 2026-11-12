@@ -38,6 +38,10 @@ def _codid2url( codid ):
 def _mpid2url( mpid ):
     return f'https://www.materialsproject.org/materials/mp-{mpid}'
 
+#Note embedded in CIF data downloaded from materialsproject.org, followed by
+#the number of the mp-id:
+mp_origin_note = 'Note from NCrystal.cifutils: Data from materialsproject.org / mp-'
+
 def _getMaterialsProjectAPIKEY():
     import os
     apikey = os.environ.get('MATERIALSPROJECT_USER_API_KEY',None)
@@ -201,9 +205,8 @@ def _mp_get_cifdata( mpid, quiet = False, apikey = None ):
         raise _nc_core.NCBadInput(errmsg+' (no line with "_symmetry_Int_Tables_number" produced)')
 
     #Finally embed origin as a note (so we can extract it later for the ncmat
-    #header comments). Keep the format below synchronised with the reader
-    #elsewhere in this file!!
-    result += f'\n# Note from NCrystal.cifutils: Data from materialsproject.org / mp-{mpid}\n'
+    #header comments, cf. _extract_descr_from_cif):
+    result += f'\n# {mp_origin_note}{mpid}\n'
 
     #Update cache and return:
     if len( _mp_cache ) == 10:

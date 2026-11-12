@@ -33,8 +33,8 @@ from . import _fmt as _nc_fmt
 from . import _ncmatimpl as _nc_ncmatimpl
 from . import core as _nc_core
 from . import ncmat as _nc_ncmat
-from ._cifsitesimpl import _uij_keys
 from ._cifsrcimpl import _codid2url, _mpid2url
+from ._sgsymimpl import _uij_keys
 
 
 def _impl_create_ncmat_composer( cifloader, *,
