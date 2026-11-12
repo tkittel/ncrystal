@@ -38,17 +38,24 @@ namespace NCRYSTAL_NAMESPACE {
 
     enum class LegacySABAlgOpts { DEFAULT, OVERSAMPLE10 };
 
+    //Whether sparse beta grids are thickened first (see thickenSparseBetaGrid
+    //in NCSABLegacyUtils.hh). This is done for direct kernels, but not for
+    //kernels expanded from a VDOS:
+    enum class BetaThickening { Off, IfSparse };
+
     //Direct factory function with no caching:
     std::unique_ptr<const SABScatterHelper>
     createScatterHelper( shared_obj<const SABData>,
                          std::shared_ptr<const VectD> energyGrid = nullptr,
-                         LegacySABAlgOpts = LegacySABAlgOpts::DEFAULT );
+                         LegacySABAlgOpts = LegacySABAlgOpts::DEFAULT,
+                         BetaThickening = BetaThickening::Off );
 
     //Same with caching:
     shared_obj<const SABScatterHelper>
     createScatterHelperWithCache( shared_obj<const SABData>,
                                   std::shared_ptr<const VectD> egrid = nullptr,
-                                  LegacySABAlgOpts = LegacySABAlgOpts::DEFAULT );
+                                  LegacySABAlgOpts = LegacySABAlgOpts::DEFAULT,
+                                  BetaThickening = BetaThickening::Off );
 
   }
 

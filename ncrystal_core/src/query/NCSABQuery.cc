@@ -57,6 +57,8 @@ namespace NCRYSTAL_NAMESPACE {
         //Energy grid and fraction of the atom in the material:
         DI_ScatKnl::EGridShPtr egrid;
         double fraction;
+        //Whether the kernel is given directly (not expanded from a VDOS):
+        bool isDirect;
       };
 
       ExtractedSabData
@@ -92,7 +94,8 @@ namespace NCRYSTAL_NAMESPACE {
                  teff_vdos,
                  msd_vdos,
                  di_knl->energyGrid(),
-                 di_knl->fraction() };
+                 di_knl->fraction(),
+                 dynamic_cast<const DI_ScatKnlDirect*>( di_knl ) != nullptr };
       }
 
       struct SampleResult {
@@ -442,14 +445,18 @@ namespace NCRYSTAL_NAMESPACE {
                                     std::uint64_t nsample,
                                     std::uint64_t seed,
                                     NeutronEnergy sample_ekin,
-                                    bool legacy_oversample )
+                                    bool legacy_oversample,
+                                    bool isDirect )
       {
         auto rng = createBuiltinRNG( seed );
         auto scathelper = SABLegacy::
           createScatterHelperWithCache( sab, nullptr,
                                         ( legacy_oversample
                                           ? SABLegacy::LegacySABAlgOpts::OVERSAMPLE10
-                                          : SABLegacy::LegacySABAlgOpts::DEFAULT ) );
+                                          : SABLegacy::LegacySABAlgOpts::DEFAULT ),
+                                        ( isDirect
+                                          ? SABLegacy::BetaThickening::IfSparse
+                                          : SABLegacy::BetaThickening::Off ) );
         auto& sampler = scathelper->sampler;
         const double E_div_kT = sample_ekin.dbl() / sab->temperature().kT();
         VectD alpha, beta;
@@ -934,7 +941,8 @@ void NC::SAB::JSONQuery( std::ostream& os, const Query& query )
         if ( sample_ekins.size() != 1 )
           invalid(usage);
         query_impl_legacysample( os, std::move(sabdata), nsample, seed,
-                                 sample_ekins.front(), legacy_oversample );
+                                 sample_ekins.front(), legacy_oversample,
+                                 extracted.isDirect );
       } else {
         query_impl_refsample( os, std::move(sabdata), teff, nsample, seed,
                               sample_ekins, knllux );

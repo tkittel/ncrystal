@@ -51,6 +51,10 @@ namespace NCRYSTAL_NAMESPACE {
       //The vdoslux parameter has no effect if input is not a VDOS. The same
       //goes for the special vdos2sabExcludeFlag parameter (the meaning of which
       //is documented in NCDynInfoUtils.hh).
+      //
+      //Sparse beta grids of direct kernels are thickened (see
+      //thickenSparseBetaGrid in NCSABLegacyUtils.hh), and so are those of
+      //SABData given directly.
       SABScatterLegacy( const DI_ScatKnl&,
                         VDOS::VDOSLux vdoslux = {},
                         bool useCache = true,

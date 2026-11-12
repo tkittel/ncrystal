@@ -20,6 +20,7 @@
 
 #include "NCrystal/internal/sablegacy/NCSABLegacyUtils.hh"
 #include "NCrystal/internal/utils/NCIter.hh"
+#include "NCrystal/internal/utils/NCString.hh"
 
 namespace NC = NCrystal;
 
@@ -196,4 +197,59 @@ NC::SABLegacy::TailedBreakdown NC::SABLegacy::createTailedBreakdown( const Span<
                    alphaIntegrals_cumul[tb.imiddle_upp] - alphaIntegrals_cumul[tb.imiddle_low]
                    : 0.0 );
   return tb;
+}
+
+NC::Optional<NC::SABData>
+NC::SABLegacy::thickenSparseBetaGrid( const SABData& data )
+{
+  int nminbeta_int = ncgetenv_int("SAB_BETATHICKENING_MINNBETA",500);
+  nc_assert_always( nminbeta_int >=0 && nminbeta_int < 20000 );
+  const unsigned nminbeta = static_cast<unsigned>(nminbeta_int);
+  const auto& betaGrid = data.betaGrid();
+  if ( betaGrid.size() >= nminbeta )
+    return NullOpt;
+
+  const unsigned nextra = nminbeta / betaGrid.size();//Number of extra beta points
+                                                     //to insert between each point
+  nc_assert_always( nextra >= 1 );
+  auto newNBeta = 1 + ( betaGrid.size() -1 ) * ( 1 + nextra );
+  VectD newb;
+  newb.reserve( newNBeta );
+  VectD newS;
+  const std::size_t nalpha = data.alphaGrid().size();
+  newS.reserve( newNBeta * nalpha );
+  auto itB = betaGrid.begin();
+  auto itBLast = std::prev(betaGrid.end());
+  std::size_t ibeta(0);
+  for ( ; itB != itBLast; ++itB, ++ibeta ) {
+    auto itBNext = std::next(itB);
+    auto alphaSlice = SAB::sliceSABAtBetaIdx( data.sab(), nalpha, ibeta );
+    auto alphaSliceNext = SAB::sliceSABAtBetaIdx( data.sab(), nalpha, ibeta+1 );
+    //First copy over existing row:
+    newb.push_back(*itB);
+    std::copy(alphaSlice.begin(), alphaSlice.end(), std::back_inserter(newS));
+    //Then insert the new rows, one by one:
+    const double dBeta = (*itBNext - *itB)/(nextra+1);
+    for ( auto iextra : ncrange(nextra) ) {
+      double beta = *itB + (iextra+1)*dBeta;
+      newb.push_back(beta);
+      for ( auto ialpha : ncrange(nalpha) ) {
+        double S = alphaSlice.at(ialpha);
+        double SNext = alphaSliceNext.at(ialpha);
+        double kkk = ( beta - *itB) / (*itBNext - *itB);
+        newS.push_back( S * ( 1.0 - kkk) + kkk * SNext );
+      }
+    }
+  }
+  //Add last slice as well:
+  auto alphaSliceLast = SAB::sliceSABAtBetaIdx( data.sab(), nalpha, ibeta );
+  std::copy(alphaSliceLast.begin(), alphaSliceLast.end(), std::back_inserter(newS));
+  newb.push_back(*itBLast);
+  nc_assert_always( newS.size() == newNBeta * nalpha );
+  nc_assert_always( newb.size() == newNBeta );
+
+  VectD newa( data.alphaGrid() );
+  return SABData{ std::move(newa), std::move(newb), std::move(newS),
+                  data.temperature(), data.boundXS(),
+                  data.elementMassAMU(), data.suggestedEmax() };
 }

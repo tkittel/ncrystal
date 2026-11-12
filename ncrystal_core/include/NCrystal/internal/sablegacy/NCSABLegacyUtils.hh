@@ -27,6 +27,13 @@ namespace NCRYSTAL_NAMESPACE {
 
   namespace SABLegacy {
 
+    //Kernels with fewer than 500 beta points (configurable with the
+    //SAB_BETATHICKENING_MINNBETA env var) get extra beta rows, linearly
+    //interpolated in S, between each pair of existing rows. This reduces
+    //numerical artifacts of the legacy processing for direct kernels. Returns
+    //NullOpt if the kernel is not thickened:
+    Optional<SABData> thickenSparseBetaGrid( const SABData& );
+
     //Sample log-linear distribution on [a,b] with values fa, fb at a, b (and
     //their logs logfa, logfb):
     double sampleLogLinDist_fast(double a, double fa, double b, double fb, double rand, double logfa, double logfb);
