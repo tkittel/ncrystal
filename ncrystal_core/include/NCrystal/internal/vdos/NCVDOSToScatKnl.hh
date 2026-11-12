@@ -35,7 +35,7 @@ namespace NCRYSTAL_NAMESPACE {
     //////////////////////////////////////////////////////////////////
 
     using ScaleGnContributionFct = std::function<double(unsigned)>;
-    ScatKnlData
+    SAB::ScatKnlData
     createScatteringKernel( const VDOSData&,
                             VDOSLux vdoslux = VDOSLux(),
                             Optional<NeutronEnergy> targetEmax = NullOpt,
