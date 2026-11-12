@@ -106,8 +106,8 @@ namespace {
                                      const Func_DefIntegralOfF&  func_f_defintegral_)
   {
     double f0(func_f_(a0)),f1(func_f_(a1));
-    double calc = NC::SABUtils::integrateLogLinOrLin(a0,f0, a1, f1 );
-    double calc_fast = NC::SABUtils::integrateLogLinOrLinWCL(a0,f0, a1, f1, std::log(f0), std::log(f1) );
+    double calc = NC::SAB::integrateLogLinOrLin(a0,f0, a1, f1 );
+    double calc_fast = NC::SAB::integrateLogLinOrLinWCL(a0,f0, a1, f1, std::log(f0), std::log(f1) );
     double expect = func_f_defintegral_(a0,a1);
     auto rd_ok = [expect](double v)
     {

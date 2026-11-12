@@ -24,7 +24,7 @@
 #include "NCrystal/internal/utils/NCStrView.hh"
 
 namespace NCRYSTAL_NAMESPACE {
-  namespace SABUtils {
+  namespace SAB {
 
     //Generic JSON query for SAB related info:
     using Query = SmallVector<StrView,8>;

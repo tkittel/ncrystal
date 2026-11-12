@@ -33,7 +33,7 @@
 #define REQUIRE(x) nc_assert_always(x)
 
 namespace NC = NCrystal;
-namespace NS = NCrystal::SABUtils;
+namespace NS = NCrystal::SAB;
 
 namespace {
 

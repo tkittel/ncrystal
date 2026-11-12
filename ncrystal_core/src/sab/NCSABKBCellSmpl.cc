@@ -21,7 +21,7 @@
 #include "NCrystal/internal/sab/NCSABKBCellSmpl.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 namespace NC = NCrystal;
-namespace NCSU = NCrystal::SABUtils;
+namespace NCSU = NCrystal::SAB;
 
 NCSU::ParabolicBandBoxSampler::ParabolicBandBoxSampler( double x0, double y0,
                                                         double x1, double y1 )

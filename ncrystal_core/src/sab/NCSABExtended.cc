@@ -22,10 +22,10 @@
 #include "NCrystal/internal/utils/NCSpline.hh"
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
 namespace NC = NCrystal;
-namespace NCS = NCrystal::SABUtils;
+namespace NCS = NCrystal::SAB;
 
 namespace NCRYSTAL_NAMESPACE {
-  namespace SABUtils {
+  namespace SAB {
     namespace {
       inline double sIntegralFromXS( CrossSect xs,
                                      NeutronEnergy ekin,
@@ -189,8 +189,8 @@ NCS::SABExtended::sampleScatter( RNG& rng, NeutronEnergy ekin ) const
            CosineScatAngle{ r.mu } };
  }
 
-NC::shared_obj<const NC::SABUtils::SABExtended>
-NC::SABUtils::
+NC::shared_obj<const NC::SAB::SABExtended>
+NC::SAB::
 SABExtended::createWithFGExtender( shared_obj<const SABProcessor> processor )
 {
   //fixme: inconsistent namespaces
@@ -198,12 +198,12 @@ SABExtended::createWithFGExtender( shared_obj<const SABProcessor> processor )
   auto ext = makeSO<SAB::SABFGExtender>( sab->temperature(),
                                          sab->elementMassAMU(),
                                          SigmaBound{1.0} );
-  return makeSO<SABUtils::SABExtended>( std::move(processor), std::move(ext) );
+  return makeSO<SAB::SABExtended>( std::move(processor), std::move(ext) );
 }
 
 
-NC::shared_obj<const NC::SABUtils::SABExtended>
-NC::SABUtils::
+NC::shared_obj<const NC::SAB::SABExtended>
+NC::SAB::
 SABExtended::createWithSCTExtender( shared_obj<const SABProcessor> processor,
                                     Temperature teff,
                                     const SABCfg::Cfg& cfg )
@@ -213,32 +213,32 @@ SABExtended::createWithSCTExtender( shared_obj<const SABProcessor> processor,
                                           sab->elementMassAMU(),
                                           SigmaBound{1.0},
                                           cfg.sct_table_npts );
-  return makeSO<SABUtils::SABExtended>( std::move(processor),
-                                        std::move(ext) );
+  return makeSO<SAB::SABExtended>( std::move(processor),
+                                   std::move(ext) );
 }
 
-NC::shared_obj<const NC::SABUtils::SABExtended>
-NC::SABUtils::
+NC::shared_obj<const NC::SAB::SABExtended>
+NC::SAB::
 SABExtended::createWithFGExtender( const SABCfg::Cfg& cfg,
                                    shared_obj<const SABData> sab,
                                    std::shared_ptr<const VectD> egrid )
 {
   return
-    createWithFGExtender( makeSO<SABUtils::SABProcessor>( cfg,
-                                                          std::move(sab),
-                                                          std::move(egrid) ) );
+    createWithFGExtender( makeSO<SAB::SABProcessor>( cfg,
+                                                     std::move(sab),
+                                                     std::move(egrid) ) );
 }
 
-NC::shared_obj<const NC::SABUtils::SABExtended>
-NC::SABUtils::
+NC::shared_obj<const NC::SAB::SABExtended>
+NC::SAB::
 SABExtended::create( const SABCfg::Cfg& cfg,
                      shared_obj<const SABData> sab,
                      Optional<Temperature> teff,
                      std::shared_ptr<const VectD> egrid )
 {
-  auto processor = makeSO<SABUtils::SABProcessor>( cfg,
-                                                   std::move(sab),
-                                                   std::move(egrid) );
+  auto processor = makeSO<SAB::SABProcessor>( cfg,
+                                              std::move(sab),
+                                              std::move(egrid) );
   if ( cfg.extender_model == SABCfg::ExtenderModel::SCT
        && teff.has_value() )
     return createWithSCTExtender( std::move(processor),
