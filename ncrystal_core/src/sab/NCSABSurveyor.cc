@@ -24,12 +24,12 @@
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
 
 namespace NC = NCrystal;
-namespace NCS = NCrystal::SABUtils;
+namespace NCS = NCrystal::SAB;
 
 #define NCRYSTAL_USE_CELLINFO_RADIX_SORT
 
 namespace NCRYSTAL_NAMESPACE {
-  namespace SABUtils {
+  namespace SAB {
     namespace {
 
       using CellInfo = SABSurveyor::CellInfo;

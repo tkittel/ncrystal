@@ -26,7 +26,7 @@
 namespace NC = NCrystal;
 
 namespace NCRYSTAL_NAMESPACE {
-  namespace SABUtils {
+  namespace SAB {
     namespace {
       std::size_t detail_trimZeroEdgesFromKernel(ScatKnlData& input)
       {
@@ -131,8 +131,8 @@ namespace NCRYSTAL_NAMESPACE {
 }
 
 
-double NC::SABUtils::evalSABOneShot( const SABData& sd,
-                                     double alpha, double beta )
+double NC::SAB::evalSABOneShot( const SABData& sd,
+                                double alpha, double beta )
 {
 #ifndef NDEBUG
   nc_assert_always( !ncisnan( alpha ) && !ncisnan( beta ) );
@@ -153,9 +153,9 @@ double NC::SABUtils::evalSABOneShot( const SABData& sd,
                       alpha, beta );
 }
 
-double NC::SABUtils::evalSABCell( const SABData& sd,
-                                  std::size_t ia, std::size_t ib,
-                                  double alpha, double beta )
+double NC::SAB::evalSABCell( const SABData& sd,
+                             std::size_t ia, std::size_t ib,
+                             double alpha, double beta )
 {
   const auto& ag = sd.alphaGrid();
   const auto& bg = sd.betaGrid();
@@ -179,7 +179,7 @@ double NC::SABUtils::evalSABCell( const SABData& sd,
 }
 
 NC::shared_obj<const NC::VectD>
-NC::SABUtils::createLogSTable( const SABData& sd )
+NC::SAB::createLogSTable( const SABData& sd )
 {
   auto res = makeSO<VectD>();
   res->reserve( sd.sab().size() );
@@ -188,7 +188,7 @@ NC::SABUtils::createLogSTable( const SABData& sd )
   return res;
 }
 
-NC::SABData NC::SABUtils::transformKernelToStdFormat( ScatKnlData&& input_orig )
+NC::SABData NC::SAB::transformKernelToStdFormat( ScatKnlData&& input_orig )
 {
   validateScatKnlData(input_orig);
 
@@ -387,11 +387,11 @@ NC::SABData NC::SABUtils::transformKernelToStdFormat( ScatKnlData&& input_orig )
   return out;
 }
 
-void NC::SABUtils::expandBetaAndSABToAllBetas( Span<const double> halfbetagrid,
-                                               Span<const double> alphagrid,
-                                               Span<const double> sab_for_halfbetagrid,
-                                               VectD& complete_betagrid,
-                                               VectD& complete_sab )
+void NC::SAB::expandBetaAndSABToAllBetas( Span<const double> halfbetagrid,
+                                          Span<const double> alphagrid,
+                                          Span<const double> sab_for_halfbetagrid,
+                                          VectD& complete_betagrid,
+                                          VectD& complete_sab )
 {
   //Prepare and check:
   complete_betagrid.clear(  );

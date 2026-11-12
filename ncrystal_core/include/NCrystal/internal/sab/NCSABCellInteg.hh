@@ -28,7 +28,7 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace SABUtils {
+  namespace SAB {
 
     ////////////////////////////////////////
     // Utilities for SAB Cell integration //

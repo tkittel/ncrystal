@@ -27,7 +27,7 @@
 #include <iostream>
 
 namespace NC = NCrystal;
-namespace NCS = NCrystal::SABUtils;
+namespace NCS = NCrystal::SAB;
 
 int main()
 {

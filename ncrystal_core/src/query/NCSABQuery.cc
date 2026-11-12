@@ -42,7 +42,7 @@
 namespace NC = NCrystal;
 
 namespace NCRYSTAL_NAMESPACE {
-  namespace SABUtils {
+  namespace SAB {
 
     namespace {
 
@@ -503,7 +503,7 @@ namespace NCRYSTAL_NAMESPACE {
           cell.S[2] = s21;
           cell.S[3] = s22;
           for ( auto i : ncrange(4) )
-            cell.logS[i] = NC::SABUtils::safeLogOrElse( cell.S[i], 0.0 );
+            cell.logS[i] = NC::SAB::safeLogOrElse( cell.S[i], 0.0 );
         }
         {
           StableSumKahan sum_full;
@@ -713,7 +713,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-void NC::SABUtils::JSONQuery( std::ostream& os, const Query& query )
+void NC::SAB::JSONQuery( std::ostream& os, const Query& query )
 {
   auto invalid = [&query](const char * reason){
     std::ostringstream ss;

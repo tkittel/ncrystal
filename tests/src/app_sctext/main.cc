@@ -418,7 +418,7 @@ namespace {
     std::printf("  Teff = %.1fK (Teff/T = %.3f)\n", teff.dbl(), r );
     auto cfg = NC::SABCfg::createConfig(
       NC::SABCfg::sablux_default_luxury );
-    auto processor = NC::makeSO<NC::SABUtils::SABProcessor>(
+    auto processor = NC::makeSO<NC::SAB::SABProcessor>(
       cfg, sab, nullptr );
     const auto emaxinfo = processor->getEMaxInfo();
     const NC::NeutronEnergy emax = emaxinfo.ekin;

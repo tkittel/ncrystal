@@ -28,7 +28,7 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace SABUtils {
+  namespace SAB {
 
     //Utilities for sampling within a cell, respecting kinematic bounds.
     //Fixme: Is this actually used ultimately?

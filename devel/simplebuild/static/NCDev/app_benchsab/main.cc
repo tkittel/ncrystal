@@ -31,7 +31,7 @@ namespace NC = NCrystal;
 void doBenchmark( int knllux, NC::shared_obj<const NC::SABData> sab )
 {
   auto cfg = NC::SABCfg::createConfig(knllux);
-  using SABProcessor = NC::SABUtils::SABProcessor;
+  using SABProcessor = NC::SAB::SABProcessor;
   const auto do_sample = SABProcessor::SampleSupport::YES;
   const auto do_diagnostics = SABProcessor::StoreExtraDiagnostics::NO;
   std::shared_ptr<const NC::VectD> egrid = nullptr;

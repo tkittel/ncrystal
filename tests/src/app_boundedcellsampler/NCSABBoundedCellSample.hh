@@ -27,7 +27,7 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace SABUtils {
+  namespace SAB {
 
     class BoundedCellSampler final : private NoCopyMove {
 
@@ -119,7 +119,7 @@ namespace NCRYSTAL_NAMESPACE {
 // Inline implementations //
 ////////////////////////////
 
-inline NCrystal::SABUtils::BoundedCellSampler::
+inline NCrystal::SAB::BoundedCellSampler::
 BoundedCellSampler( const CellData& cell,
                     const BCSData& bcsdata,
                     EDivKT e )

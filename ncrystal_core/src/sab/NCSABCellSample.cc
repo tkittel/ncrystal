@@ -24,7 +24,7 @@
 #include "NCrystal/internal/utils/NCMath.hh"
 
 namespace NC = NCrystal;
-namespace NCS = NCrystal::SABUtils;
+namespace NCS = NCrystal::SAB;
 
 NCS::LogLinDistSampler::LogLinDistSampler( double a, double fa, double logfa,
                                            double b, double fb, double logfb,
@@ -120,7 +120,7 @@ NC::PairDD NCS::FullCellSampler::sampleAlphaBeta( RNG& rng )
 }
 
 namespace NCRYSTAL_NAMESPACE {
-  namespace SABUtils {
+  namespace SAB {
     namespace {
       Optional<PairDD> findActiveAlphaRange( const CellData& c, EDivKT e )
       {

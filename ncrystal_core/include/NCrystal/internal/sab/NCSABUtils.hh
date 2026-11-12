@@ -28,7 +28,7 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace SABUtils {
+  namespace SAB {
 
     //Transform ScatKnlData to the standard unscaled and asymmetric
     //S(alpha,beta) format. Internally this calls validateScatKnlData(...) on
@@ -118,26 +118,26 @@ namespace NCRYSTAL_NAMESPACE {
 // Inline implementations //
 ////////////////////////////
 
-inline NCrystal::Span<const double> NCrystal::SABUtils::sliceSABAtBetaIdx( NCrystal::Span<const double> sab, std::size_t nalpha, std::size_t beta_idx)
+inline NCrystal::Span<const double> NCrystal::SAB::sliceSABAtBetaIdx( NCrystal::Span<const double> sab, std::size_t nalpha, std::size_t beta_idx)
 {
   nc_assert( (beta_idx+1) * nalpha <= static_cast<std::size_t>(sab.size()) );
   return {sab.begin() + beta_idx*nalpha, sab.begin() + (beta_idx+1)*nalpha};
 }
 
-inline NCrystal::Span<double> NCrystal::SABUtils::sliceSABAtBetaIdxMutable( NCrystal::Span<double> sab, std::size_t nalpha, std::size_t beta_idx)
+inline NCrystal::Span<double> NCrystal::SAB::sliceSABAtBetaIdxMutable( NCrystal::Span<double> sab, std::size_t nalpha, std::size_t beta_idx)
 {
   nc_assert( (beta_idx+1) * nalpha <= static_cast<std::size_t>(sab.size()) );
   return {sab.begin() + beta_idx*nalpha, sab.begin() + (beta_idx+1)*nalpha};
 }
 
-inline std::size_t NCrystal::SABUtils::calcSABIdx( std::size_t nalpha, std::size_t alpha_idx, std::size_t beta_idx)
+inline std::size_t NCrystal::SAB::calcSABIdx( std::size_t nalpha, std::size_t alpha_idx, std::size_t beta_idx)
 {
   return beta_idx * nalpha + alpha_idx;
 }
 
-inline double NCrystal::SABUtils::interpLin(double a, double fa,
-                                            double b, double fb,
-                                            double x)
+inline double NCrystal::SAB::interpLin(double a, double fa,
+                                       double b, double fb,
+                                       double x)
 {
   nc_assert( fa >= 0.0 && fb >= 0.0 );
   nc_assert( x >= a && x <= b );
@@ -157,9 +157,9 @@ inline double NCrystal::SABUtils::interpLin(double a, double fa,
 }
 
 inline NCrystal::PairDD
-NCrystal::SABUtils::interpLogLinWCL(double a, double fa,
-                                    double b, double fb, double x,
-                                    double logfa, double logfb)
+NCrystal::SAB::interpLogLinWCL(double a, double fa,
+                               double b, double fb, double x,
+                               double logfa, double logfb)
 {
   nc_assert( fa > 0.0 && fb > 0.0 );
   nc_assert( x >= a && x <= b );
@@ -205,9 +205,9 @@ NCrystal::SABUtils::interpLogLinWCL(double a, double fa,
 }
 
 inline NCrystal::PairDD
-NCrystal::SABUtils::interpLogLinOrLinWCL( double a, double fa, double b,
-                                          double fb, double x,
-                                          double logfa, double logfb )
+NCrystal::SAB::interpLogLinOrLinWCL( double a, double fa, double b,
+                                     double fb, double x,
+                                     double logfa, double logfb )
 {
   nc_assert( fa >= 0.0 && fb >= 0.0 );
   if ( fa > 0.0 && fb > 0.0 )
@@ -215,7 +215,7 @@ NCrystal::SABUtils::interpLogLinOrLinWCL( double a, double fa, double b,
   return { interpLin( a, fa, b, fb, x ), 0.0 };
 }
 
-inline double NCrystal::SABUtils::integrateLogLinOrLin(double a1,double s1, double a2 , double s2 )
+inline double NCrystal::SAB::integrateLogLinOrLin(double a1,double s1, double a2 , double s2 )
 {
   nc_assert( s1 >= 0.0 && s2 >= 0.0 );
   nc_assert( a2 > a1 );
@@ -257,7 +257,7 @@ inline double NCrystal::SABUtils::integrateLogLinOrLin(double a1,double s1, doub
   return ncmin(s1,s2)<1e-300 ? 0.5*da*ps : da*ds/std::log(s2/s1);
 }
 
-inline double NCrystal::SABUtils::safeLogOrElse( double s, double valueIfNonPositive )
+inline double NCrystal::SAB::safeLogOrElse( double s, double valueIfNonPositive )
 {
 #if !defined(__clang__)
   return ( s > 0.0 ? std::log(s) : valueIfNonPositive );
@@ -273,7 +273,7 @@ inline double NCrystal::SABUtils::safeLogOrElse( double s, double valueIfNonPosi
 #endif
 }
 
-inline double NCrystal::SABUtils::integrateLogLinOrLinWCL(double a1,double s1, double a2 , double s2 , double logs1, double logs2)
+inline double NCrystal::SAB::integrateLogLinOrLinWCL(double a1,double s1, double a2 , double s2 , double logs1, double logs2)
 {
   //Similar implementation as integrateLogLinOrLin, but due to the
   //precalculated logs, the Taylor expansion will be used more rarely and
@@ -304,7 +304,7 @@ inline double NCrystal::SABUtils::integrateLogLinOrLinWCL(double a1,double s1, d
   return da*ps*ncfma( -ysq, p, 0.5 );
 }
 
-inline double NCrystal::SABUtils::evalSABCellCorners
+inline double NCrystal::SAB::evalSABCellCorners
 ( double a0, double a1, double b0, double b1, const double* s,
   const double* ls, double alpha, double beta )
 {
@@ -315,11 +315,11 @@ inline double NCrystal::SABUtils::evalSABCellCorners
   return interpLin( b0, e0, b1, e1, beta );
 }
 
-inline double NCrystal::SABUtils::evalSABCellWCL( const SABData& sd,
-                                                  const VectD& logS,
-                                                  std::size_t ia,
-                                                  std::size_t ib,
-                                                  double alpha, double beta )
+inline double NCrystal::SAB::evalSABCellWCL( const SABData& sd,
+                                             const VectD& logS,
+                                             std::size_t ia,
+                                             std::size_t ib,
+                                             double alpha, double beta )
 {
   const auto& ag = sd.alphaGrid();
   const auto& bg = sd.betaGrid();

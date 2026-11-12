@@ -27,7 +27,7 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace SABUtils {
+  namespace SAB {
 
     /////////////////////////////////////
     // Utilities for SAB Cell sampling //
@@ -128,7 +128,7 @@ namespace NCRYSTAL_NAMESPACE {
 // Inline implementations //
 ////////////////////////////
 
-inline double NCrystal::SABUtils::LogLinDistSampler::sample( RNG& rng ) const
+inline double NCrystal::SAB::LogLinDistSampler::sample( RNG& rng ) const
 {
   double val;
   if ( m_islinlin ) {

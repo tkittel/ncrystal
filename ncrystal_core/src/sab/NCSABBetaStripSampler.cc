@@ -25,10 +25,10 @@
 #include "NCrystal/internal/utils/NCMsg.hh"
 
 namespace NC = NCrystal;
-namespace NCS = NCrystal::SABUtils;
+namespace NCS = NCrystal::SAB;
 
 namespace NCRYSTAL_NAMESPACE {
-  namespace SABUtils {
+  namespace SAB {
     namespace {
 
       std::size_t clampIdx( std::size_t i, std::size_t lo, std::size_t hi )

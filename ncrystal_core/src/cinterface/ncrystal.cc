@@ -1033,7 +1033,7 @@ void ncrystal_raw_vdos2kernel( const double* vdos_egrid,
     auto knldata = NC::VDOS::createScatteringKernel( vdosData, vdoslux,
                                                      target_emax,
                                                      order_weight_fct );
-    auto sabdata = NC::SABUtils::transformKernelToStdFormat( std::move(knldata) );
+    auto sabdata = NC::SAB::transformKernelToStdFormat( std::move(knldata) );
     if ( !order_weight_fct ) {
       // Only set suggested_emax if not using order_weight_fct, since it makes
       // it unpredictable:

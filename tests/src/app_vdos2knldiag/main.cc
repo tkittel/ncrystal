@@ -169,7 +169,7 @@ namespace {
     std::cout << "knl suggestedEmax: "
               << NC::fmt(knldata.suggestedEmax,fmtprec()) << std::endl;
 
-    auto sabdata = NC::SABUtils::transformKernelToStdFormat( std::move(knldata) );
+    auto sabdata = NC::SAB::transformKernelToStdFormat( std::move(knldata) );
     dumpVectD( "std alphaGrid", sabdata.alphaGrid() );
     dumpVectD( "std betaGrid", sabdata.betaGrid() );
     dumpVectD( "std sab", sabdata.sab() );

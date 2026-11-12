@@ -135,7 +135,7 @@ NC::SABLegacy::TailedBreakdown NC::SABLegacy::createTailedBreakdown( const Span<
                       const double alpha1(alphaGrid[alphaidx_lowedge+1]);
                       nc_assert( valueInInterval(alpha0,alpha1,alpha) );
                       auto i0(alphaidx_lowedge), i1(alphaidx_lowedge+1);
-                      return SABUtils::interpLogLinOrLinWCL( alpha0, sab[i0], alpha1, sab[i1], alpha,
+                      return SAB::interpLogLinOrLinWCL( alpha0, sab[i0], alpha1, sab[i1], alpha,
                                                    logsab[i0], logsab[i1] ).first;
                     };
   auto setTailPoint = [&interpSVal](TailedBreakdown::TailPoint& tp,unsigned aidx,double alpha)
@@ -163,7 +163,7 @@ NC::SABLegacy::TailedBreakdown NC::SABLegacy::createTailedBreakdown( const Span<
     tb.narrow = true;
     setTailPoint(tb.front,aidx_low,alpha_low);
     setTailPoint(tb.back,aidx_low,alpha_upp);
-    tb.xs_front = SABUtils::integrateLogLinOrLinWCL( tb.front.alpha, tb.front.sval,
+    tb.xs_front = SAB::integrateLogLinOrLinWCL( tb.front.alpha, tb.front.sval,
                                            tb.back.alpha, tb.back.sval,
                                            tb.front.logsval, tb.back.logsval );
     return tb;
@@ -177,7 +177,7 @@ NC::SABLegacy::TailedBreakdown NC::SABLegacy::createTailedBreakdown( const Span<
   if ( alpha_low >= alphaGrid[aidx_low] ) {
     nc_assert( alpha_low <= alphaGrid[aidx_low + 1] );
     setTailPoint(tb.front,aidx_low,alpha_low);
-    tb.xs_front = SABUtils::integrateLogLinOrLinWCL( tb.front.alpha, tb.front.sval,
+    tb.xs_front = SAB::integrateLogLinOrLinWCL( tb.front.alpha, tb.front.sval,
                                            alphaGrid[aidx_low+1], sab[aidx_low+1],
                                            tb.front.logsval, logsab[aidx_low+1] );
     ++tb.imiddle_low;
@@ -187,7 +187,7 @@ NC::SABLegacy::TailedBreakdown NC::SABLegacy::createTailedBreakdown( const Span<
     nc_assert( aidx_upp != 0 );
     nc_assert( alpha_upp >= alphaGrid[aidx_upp-1] );
     setTailPoint(tb.back,aidx_upp-1,alpha_upp);
-    tb.xs_back = SABUtils::integrateLogLinOrLinWCL( alphaGrid[aidx_upp-1], sab[aidx_upp-1],
+    tb.xs_back = SAB::integrateLogLinOrLinWCL( alphaGrid[aidx_upp-1], sab[aidx_upp-1],
                                           tb.back.alpha, tb.back.sval,
                                           logsab[aidx_upp-1], tb.back.logsval );
     --tb.imiddle_upp;

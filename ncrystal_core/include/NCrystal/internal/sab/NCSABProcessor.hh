@@ -27,7 +27,7 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace SABUtils {
+  namespace SAB {
 
     class SABProcessor final : public UniqueID {
 

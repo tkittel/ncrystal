@@ -36,14 +36,14 @@ namespace NCRYSTAL_NAMESPACE {
     //extension model; without it (e.g. for direct kernels, where no
     //VDOS is available to derive it from) the free-gas extender is
     //used instead:
-    shared_obj<const SABUtils::SABExtended>
+    shared_obj<const SAB::SABExtended>
     createSABExtendedNoCache( int knllux,
                               shared_obj<const SABData>,
                               Optional<Temperature> teff = NullOpt,
                               std::shared_ptr<const VectD>
                               energyGrid = nullptr );
 
-    shared_obj<const SABUtils::SABExtended>
+    shared_obj<const SAB::SABExtended>
     createSABExtendedWithCache( int knllux,
                                 shared_obj<const SABData>,
                                 Optional<Temperature> teff = NullOpt,

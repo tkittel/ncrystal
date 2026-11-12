@@ -25,7 +25,7 @@
 #include "NCrystal/core/NCFmt.hh"
 #include <iostream>
 namespace NC = NCrystal;
-namespace NS = NC::SABUtils;
+namespace NS = NC::SAB;
 
 void printrange(NC::Span<double> v,bool eol = true) {
   //TODO: we should think about numpy-like adapters to print span's of values in

@@ -157,7 +157,7 @@ NCV::detail::fillSABFromVDOS( const VDOSGn& Gn_asym,
     logx_vals = vectorTrf(x_vals,
                           [](double x)
                           {
-                            return NC::SABUtils::safeLogOrElse( x, -kInfinity );
+                            return NC::SAB::safeLogOrElse( x, -kInfinity );
                           });
 
   auto fxn_cache = expmhalfx_vals;//We apply half of the exp(-x) factor before
@@ -242,8 +242,8 @@ NCV::detail::fillSABFromVDOS( const VDOSGn& Gn_asym,
       if ( !(Gn_asym_eval>0.0) ) {
         continue;
       }
-      vdosScatKnlAccumulate( &sab[SABUtils::calcSABIdx( nalpha, ialphaB,
-                                                        ibeta )],
+      vdosScatKnlAccumulate( &sab[SAB::calcSABIdx( nalpha, ialphaB,
+                                                   ibeta )],
                              alpha_factors.data() + ialphaB,
                              Gn_asym_eval, ialphaE - ialphaB );
     }//beta loop

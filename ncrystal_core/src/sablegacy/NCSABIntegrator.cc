@@ -126,7 +126,7 @@ namespace NCRYSTAL_NAMESPACE {
         VectD logsab;
         logsab.reserve(sab.size());
         for (auto e: sab)
-          logsab.push_back( NC::SABUtils::safeLogOrElse( e, -kInfinity ) );
+          logsab.push_back( NC::SAB::safeLogOrElse( e, -kInfinity ) );
 
         //For each beta-idx, integrate each grid cell along alpha:
         VectD alphaintegrals_cumul;
@@ -136,9 +136,9 @@ namespace NCRYSTAL_NAMESPACE {
           double cumul = 0.0;
           for (std::size_t ai = 0; ai < nalpham1; ++ai, ++global_idx) {
             auto next_idx = global_idx + 1;
-            double integ = SABUtils::integrateLogLinOrLinWCL( vectAt( alphaGrid, ai ), vectAt( sab, global_idx ),
-                                                              vectAt( alphaGrid, ai+1 ), vectAt( sab,  next_idx ),
-                                                              vectAt( logsab, global_idx ), vectAt( logsab,  next_idx ) );
+            double integ = SAB::integrateLogLinOrLinWCL( vectAt( alphaGrid, ai ), vectAt( sab, global_idx ),
+                                                         vectAt( alphaGrid, ai+1 ), vectAt( sab,  next_idx ),
+                                                         vectAt( logsab, global_idx ), vectAt( logsab,  next_idx ) );
             vectAt( alphaintegrals_cumul, next_idx ) = (cumul += integ);
           }
         }

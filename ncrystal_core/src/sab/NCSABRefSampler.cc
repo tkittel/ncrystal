@@ -103,14 +103,14 @@ namespace NCRYSTAL_NAMESPACE {
     //more than ~1e308 below the largest, which are set to 0 (log/exp of
     //subnormal values are unreliable, e.g. with MSVC or FTZ/DAZ modes, exp can
     //return 0). Sampling within the cell does not depend on the scale:
-    using CellData = SABUtils::CellData;
+    using CellData = SAB::CellData;
     int initCellDataSvals( CellData& c, const VectD& sab,
                            std::size_t na, std::size_t ia, std::size_t ib )
     {
       nc_assert( c.a2 > c.a1 );
       nc_assert( c.a1 >= 0.0 );
       nc_assert( c.b2 > c.b1 );
-      std::size_t i = SABUtils::calcSABIdx( na, ia, ib );
+      std::size_t i = SAB::calcSABIdx( na, ia, ib );
       c.S[0] = vectAt(sab,i++);
       c.S[1] = vectAt(sab,i);
       i += (na-1);
@@ -126,7 +126,7 @@ namespace NCRYSTAL_NAMESPACE {
         c.S[j] = std::ldexp( c.S[j], k );
         if ( c.S[j] < std::numeric_limits<double>::min() )
           c.S[j] = 0.0;
-        c.logS[j] = NC::SABUtils::safeLogOrElse( c.S[j], 0.0 );
+        c.logS[j] = NC::SAB::safeLogOrElse( c.S[j], 0.0 );
       }
       return k;
     }
@@ -271,12 +271,12 @@ namespace NCRYSTAL_NAMESPACE {
               //cell is fully inside boundary
               nc_assert(ptInsideKB( a2, b2 ));//fourth corner is also inside
               StableSumKahan sum;
-              SABUtils::StdLogLinCellIntegrator::integrateFullCell( cell, sum );
+              SAB::StdLogLinCellIntegrator::integrateFullCell( cell, sum );
               addContrib( sum.sum(), kscale, -cellidx );//-cellidx
             } else {
               //cell crosses boundary
               StableSumKahan sum;
-              SABUtils::StdLogLinCellIntegrator
+              SAB::StdLogLinCellIntegrator
                 ::integrateWithinKB( cell, e,
                                      SABCfg::IntegrationScheme::MaxPrec, sum );
               addContrib( sum.sum(), kscale, cellidx );//+cellidx
@@ -352,7 +352,7 @@ NC::SABRef::autodetectRefSampleEmax( const shared_obj<const SABData>& sab )
   if ( sab->suggestedEmax() > 0.0 )
     return NeutronEnergy( sab->suggestedEmax() );
   //The expensive way:
-  using SP = SABUtils::SABProcessor;
+  using SP = SAB::SABProcessor;
   auto cfg =  SABCfg::createConfig( 5 );//6 is too slow, and the focus
                                         //here is sampling, not xs.
   SP sp( cfg, sab, nullptr, SP::SampleSupport::NO );
@@ -429,7 +429,7 @@ NC::SABRef::refSampleAlphaBeta( RNG& rng,
     if ( fully_inside ) {
       //full cell sampling => just use simple alg even for this reference
       //(fixme: we could try to only use RecFellSampler as a check)
-      SABUtils::FullCellSampler fc(&cell);
+      SAB::FullCellSampler fc(&cell);
       while ( n ) {
         auto ab = fc.sampleAlphaBeta( rng );
         a.push_back(ab.first);
@@ -438,7 +438,7 @@ NC::SABRef::refSampleAlphaBeta( RNG& rng,
       }
     } else {
       //crossing => use RefCellSampler
-      SABUtils::RefCellSampler rcs( cell, E_div_kT_cell );
+      SAB::RefCellSampler rcs( cell, E_div_kT_cell );
       while ( n ) {
         auto ab = rcs.sampleAlphaBeta( rng );
         a.push_back(ab.alpha);

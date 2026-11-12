@@ -54,7 +54,7 @@ void NC::JSONQuery( std::ostream& os, const Query& query )
   } else if ( key == sv_util ) {
     queryimpl_util( os, query );
   } else if ( key == sv_sab ) {
-    SABUtils::JSONQuery( os, query );
+    SAB::JSONQuery( os, query );
   } else if ( key == sv_vdos ) {
     VDOS::JSONQuery( os, query );
   } else if ( key == sv_isomacroxstable ) {

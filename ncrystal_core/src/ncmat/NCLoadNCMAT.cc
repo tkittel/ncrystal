@@ -77,7 +77,7 @@ namespace NCRYSTAL_NAMESPACE {
       //
       //NB: Invocation of this method is protected by object-specific mutex lock.
       nc_assert_always(!!m_inputdata);
-      SABData data = SABUtils::transformKernelToStdFormat(std::move(*m_inputdata));
+      SABData data = SAB::transformKernelToStdFormat(std::move(*m_inputdata));
       return std::make_shared<const SABData>(std::move(data));
     }
   private:
