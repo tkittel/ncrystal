@@ -96,6 +96,8 @@ must contain only this file, with the message
   `extractKnl` (-> C `ncrystal_raw_vdos2kernel`), `PhononDOSAnalyser`.
 - `cifutils.py` (1.8k): `CIFSource`, `CIFLoader` (gemmi, spglib, ase;
   online DBs: COD, Materials Project via `MATERIALSPROJECT_USER_API_KEY`).
+- `_cifimpl.py`: helpers for `cifutils.py` (CIF numbers with their rounding
+  errors, and Uiso and Ueq values from printed CIF data).
 - `ncmat2endf.py` + `_ncmat2endf_impl.py` (1.6k): ENDF export via
   `endf_parserpy`.
 - `misc.py` + `_miscimpl.py`: type-erasure wrappers `MaterialSource`,

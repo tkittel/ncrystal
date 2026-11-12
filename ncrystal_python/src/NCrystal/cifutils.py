@@ -35,6 +35,7 @@ __all__ = [
     'produce_validation_plots',
 ]
 
+from . import _cifimpl as _nc_cifimpl
 from . import _common as _nc_common
 from . import _fmt as _nc_fmt
 from . import _ncmatimpl as _nc_ncmatimpl
@@ -2083,6 +2084,10 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
                                             ' operation of image')
         return res
 
+    #Uiso and Ueq from the printed values, with their rounding errors:
+    uiso_printed = _nc_cifimpl.uiso_from_cif( gemmi, blk )
+    ueq_printed = _nc_cifimpl.ueq_from_cif( gemmi, blk )
+
     for site in ( p1_sites if p1_sites is not None else struct.sites ):
         if not float( site.occ ) > 0.0:
             continue
@@ -2100,15 +2105,22 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
 
         if aniso:
             #Resolve Uiso versus Ueq here, so each site carries one magnitude
-            #(the tensor is rescaled to it):
+            #(the tensor is rescaled to it). Accepted differences are those
+            #explained by the rounding errors of the printed values, plus
+            #tol_uij:
             sgs = _nc_sgsymimpl
             ueq = sgs._cif_uij_ueq( aniso, cellsg )
+            lbl = str( site.label )
+            allow = ( uiso_printed.get( lbl, ( None, 0.0 ) )[1]
+                      + ueq_printed.get( lbl, ( None, 0.0 ) )[1]
+                      + tols['uij'] * max( ueq, u_iso or 0.0 ) )
             if not u_iso:
                 u_iso = ueq
-            elif not sgs._relclose( ueq, u_iso, tols['uij'] ):
+            elif abs( ueq - u_iso ) > allow:
                 msg = ( f'CIF site "{site.label}" has Uiso={u_iso:g} which'
                         f' differs from the Ueq={ueq:g} of its anisotropic'
-                        ' displacements' )
+                        ' displacements by more than the rounding errors of'
+                        ' the printed values explain' )
                 if not permissive:
                     raise _nc_core.NCBadInput( msg + ' (try permissive mode'
                                                ' to use the Uiso value)' )

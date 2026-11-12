@@ -34,6 +34,7 @@ import NCTestUtils.reprint_escaped_warnings # noqa F401
 import NCrystalDev as NC
 from NCrystalDev.cifutils import CIFLoader
 from NCrystalDev._sgsymimpl import _cif_uij_ueq, _relclose
+from NCrystalDev._cifimpl import uiso_from_cif, ueq_from_cif
 
 cell = { 'a': 5.1, 'b': 6.3, 'c': 7.2,
          'alpha': 90.0, 'beta': 105.0, 'gamma': 90.0 }
@@ -156,6 +157,13 @@ _atom_site_aniso_U_23
 
 def scenario( cellname, descr, uiso, expect_ok, **kw ):
     c = cells[cellname]
+    if uiso is not None:
+        import gemmi
+        blk = gemmi.cif.read_string( p1bar_cif( c, uiso ) ).sole_block()
+        ( ui, ui_err ), = uiso_from_cif( gemmi, blk ).values()
+        ( ue, ue_err ), = ueq_from_cif( gemmi, blk ).values()
+        print( f'  {descr}: printed Uiso {ui:.6g} (rounding error {ui_err:.3g}),'
+               f' Ueq {ue:.6g} (rounding error {ue_err:.3g})' )
     try:
         lc = CIFLoader( p1bar_cif( c, uiso ), quiet = True, **kw )
     except NC.NCBadInput as e:
@@ -180,18 +188,23 @@ def test_uiso_vs_ueq():
         def off( rel, ueq = ueq ):
             return float( f'{ueq*(1.0+rel):.6g}' )
         scenario( cellname, 'no Uiso', None, True )
+        #(differences explained by rounding of the printed values are fine):
         scenario( cellname, 'Uiso rounded to 4 decimals',
-                  float( f'{ueq:.4f}' ),
-                  _relclose( float( f'{ueq:.4f}' ), ueq, 1e-3 ) )
+                  float( f'{ueq:.4f}' ), True )
+        scenario( cellname, 'Uiso rounded to 3 decimals',
+                  float( f'{ueq:.3f}' ), True )
         scenario( cellname, 'Uiso 0.05% off', off( 5e-4 ), True )
-        scenario( cellname, 'Uiso 0.5% off', off( 5e-3 ), False )
-        scenario( cellname, 'Uiso 0.5% off, permissive', off( 5e-3 ), True,
+        #(the tensor components are printed with 4 decimals, so rounding
+        #explains differences of a few permille):
+        scenario( cellname, 'Uiso 0.5% off', off( 5e-3 ), True )
+        scenario( cellname, 'Uiso 2% off', off( 0.02 ), False )
+        scenario( cellname, 'Uiso 2% off, permissive', off( 0.02 ), True,
                   permissive = True )
-        scenario( cellname, 'Uiso 0.5% off, tol_uij=0.01', off( 5e-3 ), True,
-                  tol_uij = 0.01 )
+        scenario( cellname, 'Uiso 2% off, tol_uij=0.03', off( 0.02 ), True,
+                  tol_uij = 0.03 )
         scenario( cellname, 'Uiso 20% off', off( 0.2 ), False )
-        scenario( cellname, 'Uiso 20% off, tol_uij=0.01', off( 0.2 ), False,
-                  tol_uij = 0.01 )
+        scenario( cellname, 'Uiso 20% off, tol_uij=0.03', off( 0.2 ), False,
+                  tol_uij = 0.03 )
 
 if __name__ == '__main__':
     main()
