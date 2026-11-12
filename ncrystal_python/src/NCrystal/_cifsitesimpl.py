@@ -291,7 +291,7 @@ def collect_atoms( content, choice, cellsg, *, tols, permissive ):
         if elem_name == 'D':
             elem_name, elem_Z, elem_A = 'H',1,2
         if elem_name == 'T':
-            elem_name, elem_Z, elem_A = 'T',1,3
+            elem_name, elem_Z, elem_A = 'H',1,3
         elem_marker = elem_name + ( str(elem_A) if elem_A else '' )
 
         from .atomdata import elementNameToZValue

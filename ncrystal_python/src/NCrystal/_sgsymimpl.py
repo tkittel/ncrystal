@@ -52,7 +52,7 @@ def _lattice_params_to_vectors( a, b, c, alpha, beta, gamma ):
     assert sg > 0.0
     assert sg**2 > 0.0
     uy = (ca-cb*cg)/sg
-    uzsq = sb**2 - uy**2
+    uzsq = sb*sb - uy*uy#(x*x, not x**2 which uses libm pow)
     if uzsq < -1e-99:
         raise _nc_core.NCBadInput('Inconsistent cell parameters detected')
     vect_c = tuple( c*e for e in ( ux, uy, math.sqrt(max(0.0,uzsq)) ) )#sign of third component positive since we want the three vectors to form a right handed basis.
@@ -442,9 +442,10 @@ def _cell_metric( cellsg ):
           [ a*b*cg, b*b, b*c*ca ],
           [ a*c*cb, b*c*ca, c*c ] ]
     #Reciprocal axis lengths from the diagonal of the inverse metric:
-    cof = [ g[1][1]*g[2][2] - g[1][2]**2,
-            g[0][0]*g[2][2] - g[0][2]**2,
-            g[0][0]*g[1][1] - g[0][1]**2 ]
+    #(x*x, not x**2 which uses libm pow, for cross-platform reproducibility):
+    cof = [ g[1][1]*g[2][2] - g[1][2]*g[1][2],
+            g[0][0]*g[2][2] - g[0][2]*g[0][2],
+            g[0][0]*g[1][1] - g[0][1]*g[0][1] ]
     det = ( g[0][0]*cof[0] - g[0][1]*( g[0][1]*g[2][2] - g[1][2]*g[0][2] )
             + g[0][2]*( g[0][1]*g[1][2] - g[1][1]*g[0][2] ) )
     return g, [ math.sqrt( x / det ) for x in cof ]

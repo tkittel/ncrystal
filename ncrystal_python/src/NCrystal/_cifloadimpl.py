@@ -30,7 +30,7 @@ __all__ = []
 
 from . import _common as _nc_common
 from . import core as _nc_core
-from ._cifreadimpl import _extract_descr_from_cif, read_cif
+from ._cifreadimpl import _extract_descr_from_cif, parse_cif_number, read_cif
 from ._cifsitesimpl import (
     _impl_find_sites,
     _impl_group_sites,
@@ -42,10 +42,11 @@ from ._cifsymimpl import decide_symmetry
 
 def _expected_atom_count( content ):
     #Total number of atoms in the cell, if stated in the CIF data:
-    v = content['atom_type_number_in_cell']
+    v = [ ( parse_cif_number( e ) if e is not None else None )
+          for e in content['atom_type_number_in_cell'] ]
     if v and not any( e is None for e in v ):
-        return sum( float( e ) for e in v )
-    return None
+        return sum( e[0] for e in v )
+    return None#(absent, or with values which are not numbers like "?")
 
 def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
                            merge_equiv, tols, permissive,

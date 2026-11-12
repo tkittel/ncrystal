@@ -119,9 +119,9 @@ def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature, skip_d
                 else:
                     for remap_fr, remap_elem in remap_compos:
                         newcompos.append( ( fr*remap_fr, remap_elem ) )
-                d = { k: v for k,v in atom.items() if k!='composition' }
-                d['composition'] = newcompos
-                new_src_atoms.append( d )
+            d = { k: v for k,v in atom.items() if k!='composition' }
+            d['composition'] = newcompos
+            new_src_atoms.append( d )
         src_atoms = tuple( new_src_atoms )
         #For the description:
         remap_strs = []

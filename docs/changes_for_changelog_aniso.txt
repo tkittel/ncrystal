@@ -60,3 +60,10 @@ CHANGELOG at release time, after which this file is dropped).
        tensor and cell) explains, plus tol_uij (with permissive mode, the Uiso
        is used with a warning). The Ueq of tensors without Uiso is now correct
        for non-orthogonal cells (it was the mean of the diagonal).
+     * CIF fixes: tritium ("T") sites are loaded as H3 instead of rejected;
+       no spurious "available in multiple choices" warning when the setting
+       is given in a quoted _space_group_name_H-M_alt; remapping an element
+       of a mixed site no longer duplicates the site; an unparsable
+       _atom_type_number_in_cell (e.g. "?") is ignored instead of crashing;
+       Biso values are also considered in the Uiso versus Ueq check; a
+       missing Materials Project API key gives the intended error message.

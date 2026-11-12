@@ -28,6 +28,7 @@ module (including the numbers of the CIF data with their rounding errors).
 
 __all__ = []
 
+import math as _math
 import re as _re
 from fractions import Fraction as _Fraction
 
@@ -256,8 +257,8 @@ def _load_with_gemmi( cifblock, allow_fixup = True ):
             _nc_common.warn(f'Had to interpret spacegroup "{sg_hm}" as "{sg.hm}" before Gemmi could recognise it.')
         elif len(possible) > 1:
             poshm = [ (sgnum,gemmi.find_spacegroup_by_number(sgnum).hm) for sgnum in possible ]
-            poshm = ', '.join( '"%s"(number %i)'  for sgnum,sgstr in poshm )
-            _nc_common.warn(f'Failed to interpret spacegroup interpret spacegroup "{sg_hm}". Could be any of: {poshm}.')
+            poshm = ', '.join( f'"{sgstr}"(number {sgnum})' for sgnum,sgstr in poshm )
+            _nc_common.warn(f'Failed to interpret spacegroup "{sg_hm}". Could be any of: {poshm}.')
     if not sg:
         #manual intervention did not help:
         return struct, None
@@ -299,12 +300,18 @@ def parse_cif_number( s ):
         return None
     mant = ( ipart or '0' ) + ( '.' + fpart if point else '' )
     value = float( sign + mant + ( 'e' + exp if exp else '' ) )
+    if not _math.isfinite( value ):
+        return None
     if value == 0.0:
         value = 0.0#(no negative zero)
     if not point and su is None and not ipart.strip( '0' ):
         return value, 0.0
     #(exact power of ten, correctly rounded, unlike 10.0**k via libm pow):
     k = ( int( exp ) if exp else 0 ) - len( fpart )
+    if k < -400:
+        return value, 0.0#(below the smallest double)
+    if k > 400:
+        return None#(e.g. "0.0e9999": rounding error not a finite double)
     return value, float( _Fraction( 10 ) ** k / 2 )
 
 _uij_keys = ( 'u11', 'u22', 'u33', 'u12', 'u13', 'u23' )
@@ -317,6 +324,8 @@ def _cell_from_cif( gemmi, block ):
                 else '_cell_length_' ) + k
         s = block.find_value( tag )
         v = parse_cif_number( gemmi.cif.as_string( s ) ) if s else None
+        if v is None and k in ( 'alpha', 'beta', 'gamma' ) and s is None:
+            v = ( 90.0, 0.0 )#(missing angles are 90 degrees, as in gemmi)
         if v is None:
             return None
         res[k] = v
@@ -324,10 +333,19 @@ def _cell_from_cif( gemmi, block ):
 
 def uiso_from_cif( gemmi, block ):
     """Positive Uiso values of the sites of a CIF block (gemmi.cif.Block):
-    label -> (uiso, rounding_error), cf. parse_cif_number."""
+    label -> (uiso, rounding_error), cf. parse_cif_number. Biso values
+    (_atom_site_B_iso_or_equiv) are used for sites without a Uiso value, as
+    Uiso = Biso/(8 pi^2), as gemmi does."""
+    import math
     res = {}
-    for row in block.find( '_atom_site_', [ 'label', 'U_iso_or_equiv' ] ):
-        v = parse_cif_number( gemmi.cif.as_string( row[1] ) )
+    f = 1.0 / ( 8.0 * math.pi * math.pi )
+    for row in block.find( '_atom_site_', [ 'label', '?U_iso_or_equiv',
+                                            '?B_iso_or_equiv' ] ):
+        v = ( parse_cif_number( gemmi.cif.as_string( row[1] ) )
+              if row.has( 1 ) else None )
+        if ( v is None or not v[0] > 0.0 ) and row.has( 2 ):
+            b = parse_cif_number( gemmi.cif.as_string( row[2] ) )
+            v = ( b[0] * f, b[1] * f ) if b is not None else None
         if v is not None and v[0] > 0.0:
             res[ gemmi.cif.as_string( row[0] ) ] = v
     return res
@@ -470,7 +488,7 @@ def read_cif( cifdata, *, quiet, override_spacegroup ):
     orig_hm_alt = None
     _ = blk.find(['_space_group_name_H-M_alt'])
     if _ and len(_)==1 and len(_[0])==1:
-        orig_hm_alt = str(_[0][0]).strip()
+        orig_hm_alt = gemmi.cif.as_string(_[0][0]).strip()#(without quotes)
 
     struct, sg = _load_with_gemmi( blk )
 

@@ -41,13 +41,13 @@ def _mpid2url( mpid ):
 def _getMaterialsProjectAPIKEY():
     import os
     apikey = os.environ.get('MATERIALSPROJECT_USER_API_KEY',None)
-    if len(apikey.strip()) < 25:
-        raise _nc_core.NCException('ERROR: Legacy API key found in MATERIALSPROJECT_USER_API_KEY. Please instead provide a new API key from https://materialsproject.org/api (Keys for the new API are ~32 characters, whereas keys for the legacy API are ~16 characters).')
-    if not apikey:
+    if not apikey or not apikey.strip():
         raise _nc_core.NCException('ERROR: Missing API key for materialsproject.org access. To fix, '
                            +'please make sure the environment variable MATERIALSPROJECT_USER_API_KEY'
                            +' contains your personal access key that you see on'
                            +' https://www.materialsproject.org/dashboard (after logging in).')
+    if len(apikey.strip()) < 25:
+        raise _nc_core.NCException('ERROR: Legacy API key found in MATERIALSPROJECT_USER_API_KEY. Please instead provide a new API key from https://materialsproject.org/api (Keys for the new API are ~32 characters, whereas keys for the legacy API are ~16 characters).')
     return apikey
 
 def _use_local_cif_cache( fn, text_data = None, quiet = False ):

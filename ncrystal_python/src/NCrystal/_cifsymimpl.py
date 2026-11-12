@@ -203,12 +203,12 @@ def choose_symmetry( gemmi, listed_ops, symsg, load_sg, *, has_mult,
             #Not a tabulated setting (e.g. a primitive cell of a centred
             #lattice, as written by pymatgen), so the sites must be expanded
             #with them:
-            if require_mult and not has_mult:
-                raise _nc_core.NCBadInput( 'Using the listed symmetry'
-                                           ' operations requires site'
-                                           ' multiplicities in the CIF data' )
             expand_ops = ops
             sg = gemmi.find_spacegroup_by_number( 1 )
+    if require_mult and not has_mult:
+        raise _nc_core.NCBadInput( 'Using the listed symmetry operations'
+                                   ' requires site multiplicities in the CIF'
+                                   ' data' )
     return { 'sg': sg, 'expand_ops': expand_ops,
              'require_mult': require_mult }
 
@@ -243,10 +243,6 @@ def decide_symmetry( content, *, permissive, tols, quiet, refine_with_spglib,
                              ' listed in the CIF data, since they do not'
                              ' correspond to a tabulated space group'
                              ' setting')
-    if require_mult and not mult:
-        raise _nc_core.NCBadInput( 'Using the listed symmetry operations'
-                                   ' requires site multiplicities in the CIF'
-                                   ' data' )
     if sg and p1_sites is None and struct.spacegroup != sg:
         struct.spacegroup = sg
         struct.setup_cell_images()
@@ -268,7 +264,7 @@ def decide_symmetry( content, *, permissive, tols, quiet, refine_with_spglib,
                                 ' overriding the space group explicitly when'
                                 ' loading this file.')
 
-    if not ( isinstance(sg.number,int) or sg.number.isdigit() ) or not ( 1<=int(sg.number)<=230 ):
+    if not ( 1 <= int(sg.number) <= 230 ):
         raise _nc_core.NCBadInput(f'Could not determine space group from CIF data (it loaded with invalid SG number: {sg.number}')
     if not struct.cell.is_crystal():
         raise _nc_core.NCBadInput('Loaded structure is non-crystalline (according to Gemmi).')

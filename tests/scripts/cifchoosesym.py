@@ -48,7 +48,11 @@ def run( descr, listed, symsg, *, load_sg = None, has_mult = True,
                              permissive = permissive, cifdata = cifdata,
                              warn = warnings.append )
     except NC.NCBadInput as e:
-        print( f'{descr}: rejected: {e}' )
+        #(without details from gemmi, which might change between versions):
+        msg = str( e )
+        if 'could not be parsed (' in msg:
+            msg = msg.split( 'could not be parsed (' )[0] + 'could not be parsed (...)'
+        print( f'{descr}: rejected: {msg}' )
         for w in warnings:
             print( '     (warning before rejection:', w, ')' )
         assert expect == 'error', descr
@@ -77,6 +81,8 @@ def main():
     run( 'listed P-1, symbol P21/c', ops_p1bar, sg_p21c, expect = 'error' )
     run( 'listed P-1, symbol P21/c, permissive', ops_p1bar, sg_p21c,
          permissive = True, expect = ( 2, False, True, 1 ) )
+    run( 'listed P-1, symbol P21/c, permissive, no multiplicities', ops_p1bar,
+         sg_p21c, permissive = True, has_mult = False, expect = 'error' )
     #Not tabulated, same number of rotations as the symbol: expanded.
     run( 'shifted P-1, symbol P-1', ops_p1bar_shifted, sg_p1bar,
          expect = ( 1, True, False, 0 ) )
