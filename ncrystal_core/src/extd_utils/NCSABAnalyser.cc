@@ -102,7 +102,20 @@ namespace NCRYSTAL_NAMESPACE {
         return nkept >= 2 ? m0.sum() : -1.0;
       }
 
-      //Row moments over the floor-masked polyline (trapezoidal):
+      //Integrals over [b0,b1] of (b-c)^2*S(b) with S(b) linear between w0 and w1
+      //(d0=b0-c, d1=b1-c), i.e. the second moment of the kernel as it is
+      //interpolated between grid points:
+      double segmentM2( double b0, double b1, double w0, double w1,
+                        double d0, double d1 )
+      {
+        const double dd = d0*d1;
+        return ( b1 - b0 ) * ( w0*( 3.0*d0*d0 + 2.0*dd + d1*d1 )
+                               + w1*( d0*d0 + 2.0*dd + 3.0*d1*d1 ) ) / 12.0;
+      }
+
+      //Row moments over the floor-masked polyline (exact integrals of the
+      //linear-in-beta interpolation, so independent of how densely a given
+      //curve is sampled):
       struct RowMoments {
         double m0 = -1.0, mean = -1.0, var = -1.0;
         unsigned npts = 0;
@@ -159,9 +172,10 @@ namespace NCRYSTAL_NAMESPACE {
           j_prevlast = j_last;
           j_last = j;
           if ( res.npts ) {
-            const double halfdb = 0.5*( b - bprev );
-            m0.add( halfdb*( w + wprev ) );
-            m1.add( halfdb*( w*b + wprev*bprev ) );
+            const double db = b - bprev;
+            m0.add( 0.5*db*( w + wprev ) );
+            m1.add( db*( wprev*( 2.0*bprev + b ) + w*( bprev + 2.0*b ) )
+                    / 6.0 );
           }
           bprev = b;
           wprev = w;
@@ -187,9 +201,8 @@ namespace NCRYSTAL_NAMESPACE {
           if ( have_prev ) {
             const double dprev = bprev - res.mean;
             const double dmuprev = bprev - mu;
-            m2.add( 0.5*( b - bprev )*( w*d*d + wprev*dprev*dprev ) );
-            m2mu.add( 0.5*( b - bprev )*( w*dmu*dmu
-                                          + wprev*dmuprev*dmuprev ) );
+            m2.add( segmentM2( bprev, b, wprev, w, dprev, d ) );
+            m2mu.add( segmentM2( bprev, b, wprev, w, dmuprev, dmu ) );
           }
           bprev = b;
           wprev = w;
