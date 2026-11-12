@@ -80,7 +80,7 @@ def expect_error( descr, txt, detail = True, **kw ):
         read( txt, **kw )
     except NC.NCBadInput as e:
         #(without the details from gemmi, which might change between versions):
-        print( f'{descr}: rejected: {e if detail else str(e).split("(")[0]}' )
+        print( f'{descr}: rejected: {e if detail else str(e).split("(")[0].rstrip()}' )
     else:
         raise SystemExit( f'{descr}: not rejected' )
 
@@ -136,6 +136,10 @@ def main():
     print( 'missing cell angles: 90 degrees, Ueq rounding errors available' )
     expect_error( 'two blocks with sites', cif() + cif().replace( 'data_test', 'data_b' ) )
     expect_error( 'site without coordinates', cif( sites = [ 'O1 O ? ? ? 1 ? 4' ] ) )
+    #(unoccupied sites are ignored later, so their coordinates do not matter):
+    c = read( cif( sites = [ 'O1 O 0.1 0.2 0.3 1 ? 4', 'O2 O ? ? ? 0 ? 4' ] ) )
+    print( 'unoccupied site without coordinates: accepted with occupancies',
+           [ s['occ'] for s in c['sites'] ] )
     expect_error( 'syntax error', 'data_x\n_a 1 2\n', detail = False )
     expect_error( 'no blocks', '# nothing\n' )
     expect_error( 'unknown override', cif(), override = 'Q 99' )

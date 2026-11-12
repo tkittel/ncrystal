@@ -188,7 +188,7 @@ def _add_description_comments( ncmat, src, *, top_comments, remap_str ):
         ncmat.add_comments([('Structure converted (with NCrystal'
                              '.cifutils module) from:'),''])
 
-        _thedescr = _extracted_description
+        _thedescr = list( _extracted_description )#(do not modify the loader)
         if remap_str:
             _codidurl = _codid2url(src.actual_codid) if src.actual_codid else None
             _mpidurl = _mpid2url(src.actual_mpid) if src.actual_mpid else None
@@ -294,7 +294,7 @@ def _check_formula( src_atoms, expected_formula, remap ):
     formula = _nc_fmt.format_chemform( total_composition )
 
     actual_expected_formula_dict = _formula_to_dict( expected_formula )
-    if remap:
+    if remap and actual_expected_formula_dict:
         newf = {}
         def _collect( _name, _frac ):
             _name = _stdatomname(_name)

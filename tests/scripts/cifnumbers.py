@@ -80,7 +80,8 @@ def test_invalid():
     for s in ( '?', '.', '', ' ', '-', '+', 'e3', '.e3', '1,5', 'inf', '-inf',
                'nan', '0x10', '1.2.3', '1e', '1e+', '1.2(3)e-4', '(3)',
                '1.2(3', '1.2(a)', '1 2', 'abc', "'0.1'", '1.0d3',
-               '1e400', '-1e400', '0.0e9999', '1.5e999999' ):
+               '1e400', '-1e400', '0.0e9999', '1.5e999999',
+               '0.0e310', '0.00e400', '1e309' ):
         assert vu( s ) is None, s
     print( 'invalid strings rejected' )
 
@@ -88,8 +89,12 @@ def test_extreme_exponents():
     #(tiny values: below the smallest double, so no rounding error):
     check( '1e-500', 0.0, 0.0 )
     check( '1e-1000000000', 0.0, 0.0 )#(must not hang)
+    assert vu( '1e-' + '9' * 5000 ) == ( 0.0, 0.0 )#(beyond int() digit limit)
+    assert vu( '0.0e' + '9' * 5000 ) is None
     check( '1.5e-320', 1.5e-320, 5e-322 )#(subnormal)
     check( '1e300', 1e300, 5e299 )
+    check( '0.0e308', 0.0, 5e306 )
+    check( '1e308', 1e308, 5e307 )
 
 def main():
     test_decimal()

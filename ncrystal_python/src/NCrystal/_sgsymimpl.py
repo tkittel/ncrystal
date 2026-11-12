@@ -50,7 +50,7 @@ def _lattice_params_to_vectors( a, b, c, alpha, beta, gamma ):
     vect_b = tuple( b*e for e in ( cg, sg, 0.0 ) )
     ux = cb
     assert sg > 0.0
-    assert sg**2 > 0.0
+    assert sg*sg > 0.0
     uy = (ca-cb*cg)/sg
     uzsq = sb*sb - uy*uy#(x*x, not x**2 which uses libm pow)
     if uzsq < -1e-99:
@@ -60,7 +60,7 @@ def _lattice_params_to_vectors( a, b, c, alpha, beta, gamma ):
 
 def _lattice_vectors_to_params( vect_a, vect_b, vect_c, as_dict = True ):
     def mag( v ):
-        return math.sqrt( math.fsum(e**2 for e in v) )
+        return math.sqrt( math.fsum(e*e for e in v) )
     def dot( v1,v2 ):
         return math.fsum(e1*e2 for e1,e2 in zip(v1,v2))
     def ang( v1,v2 ):
@@ -435,7 +435,7 @@ def _unit_cell_point_distsq( p1, p2 ):
     def remap( x ):
         return x-math.floor(x)
     d = [ abs(remap(e1)-remap(e2)) for e1,e2 in zip(p1,p2)]
-    return math.fsum(  min(e,1.0-e)**2 for e in d )
+    return math.fsum( min(e,1.0-e)*min(e,1.0-e) for e in d )
 
 #Keys of the CIF uij dicts:
 _uij_keys = ( 'u11', 'u22', 'u33', 'u12', 'u13', 'u23' )
@@ -704,7 +704,7 @@ def _find_site_orbits( cellsg, sites, tols ):
             dsq = distsq( np.dot( R, positions[r] ) + t, positions[i] )
             if dmin is None or dsq < dmin[0]:
                 dmin = ( dsq, R )
-            if dsq <= ( 2.0 * tols['symprec'] )**2:
+            if dsq <= 4.0 * tols['symprec'] * tols['symprec']:
                 devs.append( dev( R ) )
         if not devs:
             #Should not happen, but use the nearest image just in case:

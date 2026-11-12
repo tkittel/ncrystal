@@ -36,7 +36,6 @@ from . import _common as _nc_common
 from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
 from ._cifsrcimpl import _codid2url, _mpid2url, mp_origin_note
-from ._sgsymimpl import _uij_keys
 
 
 def _extract_descr_from_cif( raw_cif_dict, cifsrc, ciftextdata ):
@@ -292,7 +291,8 @@ def parse_cif_number( s ):
     5e-7 for "3400e-6"). A zero without decimals ("0", "-0", "0e-3") is exact
     (rounding error 0.0), since it is in practice a constraint. The standard
     uncertainty in parentheses (e.g. "0.0283(4)") is ignored. Returns None if s
-    is not a number (e.g. "?", ".", "1,5" or "inf")."""
+    is not a number (e.g. "?", ".", "1,5" or "inf"), or if the value or rounding
+    error is not a finite double (e.g. "1e999" or "0.0e310")."""
     m = _re_cifnum.match( s.strip() )
     if not m:
         return None
@@ -309,11 +309,15 @@ def parse_cif_number( s ):
     if not point and su is None and not ipart.strip( '0' ):
         return value, 0.0
     #(exact power of ten, correctly rounded, unlike 10.0**k via libm pow):
-    k = ( int( exp ) if exp else 0 ) - len( fpart )
+    e = 0
+    if exp:
+        #(huge exponents are clamped, avoiding the digit limit of int()):
+        e = int( exp ) if len( exp ) < 12 else ( -1, 1 )[exp[0] != '-'] * 10**12
+    k = e - len( fpart )
     if k < -400:
         return value, 0.0#(below the smallest double)
-    if k > 400:
-        return None#(e.g. "0.0e9999": rounding error not a finite double)
+    if k > 308:
+        return None#(e.g. "0.0e310": rounding error not a finite double)
     return value, float( _Fraction( 10 ) ** k / 2 )
 
 
@@ -337,9 +341,8 @@ def uiso_from_cif( gemmi, block ):
     label -> (uiso, rounding_error), cf. parse_cif_number. Biso values
     (_atom_site_B_iso_or_equiv) are used for sites without a Uiso value, as
     Uiso = Biso/(8 pi^2), as gemmi does."""
-    import math
     res = {}
-    f = 1.0 / ( 8.0 * math.pi * math.pi )
+    f = 1.0 / ( 8.0 * _math.pi * _math.pi )
     for row in block.find( '_atom_site_', [ 'label', '?U_iso_or_equiv',
                                             '?B_iso_or_equiv' ] ):
         v = ( parse_cif_number( gemmi.cif.as_string( row[1] ) )
@@ -376,12 +379,12 @@ def ueq_from_cif( gemmi, block ):
     idx = ( (0,0), (1,1), (2,2), (0,1), (0,2), (1,2) )
     res = {}
     for row in block.find( '_atom_site_aniso_',
-                           [ 'label' ] + [ f'U_{k[1:]}' for k in _uij_keys ] ):
+                           [ 'label' ] + [ f'U_{k[1:]}' for k in _nc_sgsymimpl._uij_keys ] ):
         vals = [ parse_cif_number( gemmi.cif.as_string( row[i] ) )
                  for i in range( 1, 7 ) ]
         if any( v is None for v in vals ):
             continue
-        aniso = { k: v for k, ( v, _ ) in zip( _uij_keys, vals ) }
+        aniso = { k: v for k, ( v, _ ) in zip( _nc_sgsymimpl._uij_keys, vals ) }
         ueq = ueq_or_none( aniso, cellsg )
         if ueq is None:
             continue
@@ -420,16 +423,20 @@ def _cif_multiplicities( gemmi, cifblock ):
 def _plain_site( site ):
     #A gemmi small structure site as a plain dict:
     fract = ( site.fract.x, site.fract.y, site.fract.z )
-    if not all( _math.isfinite( x ) for x in fract ):
-        #(e.g. a site with "?" for its coordinates):
+    if site.occ > 0.0 and not all( _math.isfinite( x ) for x in fract ):
+        #(e.g. a site with "?" for its coordinates; unoccupied sites are
+        #ignored later):
         raise _nc_core.NCBadInput( f'CIF site "{site.label}" has missing or'
                                    ' invalid fractional coordinates' )
-    aniso = { k: float( getattr( site.aniso, k ) ) for k in _uij_keys }
+    aniso = { k: float( getattr( site.aniso, k ) ) for k in _nc_sgsymimpl._uij_keys }
     if all( v == 0.0 for v in aniso.values() ):
         aniso = None
+    en, Z = str( site.element.name ).strip(), int( site.element.atomic_number )
+    if en == 'X' and _re.sub( r'[^A-Za-z]', '', site.type_symbol ) == 'T':
+        en, Z = 'T', 1#(tritium, unknown to gemmi)
     return { 'label': str( site.label ),
-             'element_name': str( site.element.name ).strip(),
-             'element_Z': int( site.element.atomic_number ),
+             'element_name': en,
+             'element_Z': Z,
              'fract': fract,
              'occ': float( site.occ ),
              'u_iso': float( site.u_iso ),

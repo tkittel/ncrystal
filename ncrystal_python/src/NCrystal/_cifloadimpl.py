@@ -48,7 +48,7 @@ def _expected_atom_count( content ):
         return sum( e[0] for e in v )
     return None#(absent, or with values which are not numbers like "?")
 
-def load_cif_data( cifsrc, _cifdata, *, quiet, refine_with_spglib,
+def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
                    merge_equiv, tols, permissive, override_spacegroup = None ):
     """Load CIF data (text, from the CIFSource cifsrc): read it (gemmi),
     decide which symmetry to use, collect and merge the atoms of the sites,
@@ -59,9 +59,9 @@ def load_cif_data( cifsrc, _cifdata, *, quiet, refine_with_spglib,
 
     result = {}
     result['cifsrc'] = cifsrc
-    result['cifdata'] = _cifdata
+    result['cifdata'] = cifdata
 
-    content = read_cif( _cifdata, quiet = quiet,
+    content = read_cif( cifdata, quiet = quiet,
                         override_spacegroup = override_spacegroup )
     result['cif_raw'] = content['cif_raw']
 
@@ -69,7 +69,7 @@ def load_cif_data( cifsrc, _cifdata, *, quiet, refine_with_spglib,
                               quiet = quiet,
                               refine_with_spglib = refine_with_spglib,
                               override_spacegroup = override_spacegroup,
-                              cifdata = _cifdata )
+                              cifdata = cifdata )
     expected_tot_atom_in_orig_cell = _expected_atom_count( content )
     expect_sgno = choice['expect_sgno']
 
