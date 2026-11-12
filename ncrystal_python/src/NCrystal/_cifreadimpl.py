@@ -141,18 +141,7 @@ def _extract_descr_from_cif( raw_cif_dict, cifsrc, ciftextdata ):
 
     return normalise_result( ll ), _thecodid, _thempid, chemformsum
 
-def _gemmi_wrap_to_unit( gemmi_fractional ):
-    #gemmi's wrap_to_unit() can return 1.0, but we want those to be 0.0 (so
-    #(a,b,1.0) and (a,b,0.0) does not appear to be two different
-    #points). Update: I am not 100% sure about this, but keeping this function
-    #for added robustness.
-    c = gemmi_fractional.wrap_to_unit()
-    for i in range(3):
-        if c[i]==1.0:
-            c[i]=0.0
-    return c
-
-_import_gemmi_cache = [None,None]
+_import_gemmi_cache = [None, None]
 
 def _import_gemmi( *, sysexit = False ):
     if _import_gemmi_cache[0] is not None:
@@ -394,3 +383,124 @@ def ueq_from_cif( gemmi, block ):
         else:
             res[ gemmi.cif.as_string( row[0] ) ] = ( ueq, err )
     return res
+
+def _cif_multiplicities( gemmi, cifblock ):
+    """Site label -> multiplicity, from the CIF block (empty if absent)."""
+    lbls = [ gemmi.cif.as_string(v)
+             for v in cifblock.find_values( '_atom_site_label' ) ]
+    mults = list( cifblock.find_values( '_atom_site_symmetry_multiplicity' ) )
+    res = {}
+    if len( mults ) == len( lbls ):
+        for lbl, m in zip( lbls, mults ):
+            try:
+                res[lbl] = int( gemmi.cif.as_string( m ) )
+            except ValueError:
+                pass
+    return res
+
+def _plain_site( site ):
+    #A gemmi small structure site as a plain dict:
+    aniso = { k: float( getattr( site.aniso, k ) ) for k in _uij_keys }
+    if all( v == 0.0 for v in aniso.values() ):
+        aniso = None
+    return { 'label': str( site.label ),
+             'element_name': str( site.element.name ).strip(),
+             'element_Z': int( site.element.atomic_number ),
+             'fract': ( site.fract.x, site.fract.y, site.fract.z ),
+             'occ': float( site.occ ),
+             'u_iso': float( site.u_iso ),
+             'aniso': aniso }
+
+def read_cif( cifdata, *, quiet, override_spacegroup ):
+    """Read CIF data (text) with gemmi, into the plain content needed for
+    loading it. Returns a dict with:
+      'cif_raw': the document as a dict (None if not decodable),
+      'cell': dict with keys a,b,c,alpha,beta,gamma,
+      'sites': the sites as dicts with keys label, element_name, element_Z,
+               fract, occ, u_iso and aniso (CIF uij dict or None),
+      'listed_ops': the listed symmetry operation strings (None if absent,
+                    or if the space group is overridden),
+      'symbol_hm', 'symbol_itnumbers': the space group symbol and the values
+                    of the IT number fields (per tag),
+      'orig_hm_alt': the original _space_group_name_H-M_alt value (or None),
+      'multiplicities': site label -> multiplicity,
+      'atom_type_number_in_cell': the raw values of that field,
+      'uiso_printed', 'ueq_printed': cf. uiso_from_cif and ueq_from_cif.
+    The gemmi module, structure and space group are also included (keys
+    '_gemmi', '_struct' and '_sg') for the symmetry decisions."""
+    from itertools import chain
+    gemmi, gemmi_cif = _import_gemmi()
+    if not quiet:
+        _nc_common.print("Attempting to load CIF data with gemmi")
+    try:
+        cif_doc = gemmi_cif.read_string( cifdata )
+    except ValueError as e:
+        raise _nc_core.NCBadInput(f'CIF parsing error (from Gemmi): "{e}"')
+
+    cif_doc_as_json = cif_doc.as_json()
+    import json
+    try:
+        cif_doc_as_dict = json.loads( cif_doc_as_json )
+    except json.decoder.JSONDecodeError as e:
+        cif_doc_as_dict = None
+        _nc_common.warn(f'Could not decode raw CIF data to dictionary (Gemmi bug?): JSONDecodeError("{e}")')
+
+    if len(cif_doc) == 0:
+        raise _nc_core.NCBadInput('CIF data had no blocks!')
+    if len(cif_doc) == 1:
+        blk = cif_doc.sole_block()
+    else:
+        blk = None
+        for e in cif_doc:
+            if not len(e.find(['_atom_site_fract_x'])):
+                continue
+            if blk:
+                blk = None
+                break
+            blk = e
+        if not blk:
+            raise _nc_core.NCBadInput('Could not automatically determine block in CIF data with structure info')
+
+    if override_spacegroup:
+        assert isinstance(override_spacegroup,str)
+        _nc_common.warn(f'Overriding spacegroup to "{override_spacegroup}" due to explicit request')
+        _update_spacegroup_in_cifblock_from_name( gemmi, blk, override_spacegroup )
+
+    #record original h-m-alt entry:
+    orig_hm_alt = None
+    _ = blk.find(['_space_group_name_H-M_alt'])
+    if _ and len(_)==1 and len(_[0])==1:
+        orig_hm_alt = str(_[0][0]).strip()
+
+    struct, sg = _load_with_gemmi( blk )
+
+    if not struct:
+        raise _nc_core.NCBadInput('Could not load structure with Gemmi')
+
+    listed = None
+    if not override_spacegroup:
+        for tag in ( '_space_group_symop_operation_xyz',
+                     '_symmetry_equiv_pos_as_xyz' ):
+            listed = [ gemmi.cif.as_string( v )
+                       for v in blk.find_values( tag ) ]
+            if listed:
+                break
+        listed = listed or None
+    _ = blk.find(['_atom_type_number_in_cell'])
+    return { 'cif_raw': cif_doc_as_dict,
+             'cell': { k: getattr( struct.cell, k )
+                       for k in ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' ) },
+             'sites': [ _plain_site( s ) for s in struct.sites ],
+             'listed_ops': listed,
+             'symbol_hm': ' '.join( str( struct.spacegroup_hm ).split() ),
+             'symbol_itnumbers': [ [ gemmi.cif.as_string( e )
+                                     for e in blk.find_values( tag ) ]
+                                   for tag in ( '_space_group_IT_number',
+                                                '_symmetry_Int_Tables_number' ) ],
+             'orig_hm_alt': orig_hm_alt,
+             'multiplicities': _cif_multiplicities( gemmi, blk ),
+             'atom_type_number_in_cell': ( list(chain.from_iterable(_))
+                                           if _ else [] ),
+             'uiso_printed': uiso_from_cif( gemmi, blk ),
+             'ueq_printed': ueq_from_cif( gemmi, blk ),
+             '_gemmi': gemmi, '_struct': struct, '_sg': sg }

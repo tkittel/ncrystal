@@ -1,0 +1,46 @@
+monoclinic, listed operations, one tensor:
+   cell: {'a': 5.1, 'b': 6.3, 'c': 7.2, 'alpha': 90.0, 'beta': 105.0, 'gamma': 90.0}
+   site: {'label': 'O1', 'element_name': 'O', 'element_Z': 8, 'fract': (0.79, 0.87, 0.63), 'occ': 1.0, 'u_iso': 0.0123, 'aniso': {'u11': 0.012, 'u22': 0.009, 'u33': 0.015, 'u12': 0.002, 'u13': -0.003, 'u23': 0.001}}
+   site: {'label': 'Si1', 'element_name': 'Si', 'element_Z': 14, 'fract': (0.11, 0.22, 0.33), 'occ': 0.5, 'u_iso': 0.0071, 'aniso': None}
+   site: {'label': 'Fe1', 'element_name': 'Fe', 'element_Z': 26, 'fract': (0.0, 0.0, 0.0), 'occ': 1.0, 'u_iso': 0.0, 'aniso': None}
+   listed_ops: ['x, y, z', '-x, y+1/2, -z+1/2', '-x, -y, -z', 'x, -y+1/2, z+1/2']
+   symbol_hm: P 1 21/c 1
+   symbol_itnumbers: [['14'], []]
+   orig_hm_alt: 'P 1 21/c 1'
+   multiplicities: {'O1': 4, 'Si1': 4, 'Fe1': 2}
+   atom_type_number_in_cell: []
+   uiso_printed: {'O1': (0.0123, 5e-05), 'Si1': (0.0071, 5e-05)}
+   ueq_printed: {'O1': (0.013200973760488533, 0.0006998805481635809)}
+old operations tag, no symbol:
+   cell: {'a': 5.1, 'b': 6.3, 'c': 7.2, 'alpha': 90.0, 'beta': 105.0, 'gamma': 90.0}
+   site: {'label': 'O1', 'element_name': 'O', 'element_Z': 8, 'fract': (0.79, 0.87, 0.63), 'occ': 1.0, 'u_iso': 0.0123, 'aniso': None}
+   site: {'label': 'Si1', 'element_name': 'Si', 'element_Z': 14, 'fract': (0.11, 0.22, 0.33), 'occ': 0.5, 'u_iso': 0.0071, 'aniso': None}
+   site: {'label': 'Fe1', 'element_name': 'Fe', 'element_Z': 26, 'fract': (0.0, 0.0, 0.0), 'occ': 1.0, 'u_iso': 0.0, 'aniso': None}
+   listed_ops: ['x, y, z', '-x, y+1/2, -z+1/2', '-x, -y, -z', 'x, -y+1/2, z+1/2']
+   symbol_hm: 
+   symbol_itnumbers: [['14'], []]
+   orig_hm_alt: None
+   multiplicities: {'O1': 4, 'Si1': 4, 'Fe1': 2}
+   atom_type_number_in_cell: []
+   uiso_printed: {'O1': (0.0123, 5e-05), 'Si1': (0.0071, 5e-05)}
+   ueq_printed: {}
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Overriding spacegroup to "P 1 21/c 1" due to explicit request [warn#1]
+override ignores listed operations
+atom counts, missing type symbol:
+   cell: {'a': 5.1, 'b': 6.3, 'c': 7.2, 'alpha': 90.0, 'beta': 105.0, 'gamma': 90.0}
+   site: {'label': 'O1', 'element_name': 'O', 'element_Z': 8, 'fract': (0.79, 0.87, 0.63), 'occ': 1.0, 'u_iso': 0.0123, 'aniso': None}
+   site: {'label': 'CaM1', 'element_name': 'X', 'element_Z': 0, 'fract': (0.11, 0.22, 0.33), 'occ': 1.0, 'u_iso': 0.0071, 'aniso': None}
+   listed_ops: None
+   symbol_hm: P 1 21/c 1
+   symbol_itnumbers: [['14'], []]
+   orig_hm_alt: 'P 1 21/c 1'
+   multiplicities: {'O1': 4, 'CaM1': 4}
+   atom_type_number_in_cell: ['4', '2', '2']
+   uiso_printed: {'O1': (0.0123, 5e-05), 'CaM1': (0.0071, 5e-05)}
+   ueq_printed: {}
+block with the sites selected among two
+two blocks with sites: rejected: Could not automatically determine block in CIF data with structure info
+syntax error: rejected: CIF parsing error (from Gemmi): "string:2:5(12): parse error"
+no blocks: rejected: CIF data had no blocks!
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Overriding spacegroup to "Q 99" due to explicit request [warn#2]
+unknown override: rejected: Unknown spacegroup: "Q 99"

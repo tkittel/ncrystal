@@ -195,3 +195,198 @@ def _impl_group_sites( sites, *, tols, merge_equiv ):
         del s['_positions']
     return ( [ finalise( atoms[g] ) for g in order ],
              [ newidx[g] for g in groups ] )
+
+def _guess_elem_name( site_label ):
+    #Element name from a CIF label like "CaM1" or "OA1" (None if unclear):
+    from .atomdata import allElementNames
+    sl, traildigit = _nc_common._split_trailing_digit( site_label )
+    if traildigit is None:
+        return
+    #first check element names with 2 chars:
+    candidates = [ e for e in allElementNames() if ( sl.startswith(e) and len(e)==2 ) ]
+    if len(candidates) > 1:
+        return
+    #Then those with 1 char if no hit already (also check for 'D' and 'T'):
+    if not candidates:
+        candidates = [ e for e in allElementNames() if ( sl.startswith(e) and len(e)==1 ) ]
+        candidates += [ e for e in ('D','T') if ( sl.startswith(e) and len(e)==1 ) ]
+    if len(candidates)!=1:
+        return
+    c = candidates[0]
+    assert site_label.startswith(c)
+    leftover = site_label[len(c):].strip()
+    while leftover and leftover[0].isupper()  and leftover[0].isalpha():
+        leftover = leftover[1:].strip()
+    if not leftover or leftover.isdigit():
+        return c
+
+def collect_atoms( content, choice, cellsg, *, tols, permissive ):
+    """The CIF sites with positive occupancy (those of the symmetry choice if
+    already expanded, else those of the content, cf. decide_symmetry and
+    read_cif), as dicts with all their positions in the cell ('expanded_coords',
+    'rotations'), element, occupancy, label, and a single magnitude of their
+    displacements ('uiso', with 'aniso' rescaled to it)."""
+    from . import _cifsymimpl as sym
+    sgs = _nc_sgsymimpl
+    cell = content['cell']
+    fractcoord_approx_1angstrom = 1.0 / ( (cell['a']+cell['b']+cell['c'])/3.0 )
+    uiso_printed, ueq_printed = content['uiso_printed'], content['ueq_printed']
+    p1_sites = choice['p1_sites']
+    collected_atoms = []
+    for site in ( p1_sites if p1_sites is not None else content['sites'] ):
+        if not site['occ'] > 0.0:
+            continue
+        pos0 = sym.wrap_position( choice, site['fract'] )
+        expanded_coords = sym.expand_position( choice, pos0,
+                                               fractcoord_approx_1angstrom )
+
+        aniso = site['aniso']
+        u_iso = site['u_iso']
+        if not u_iso > 0.0:
+            u_iso = None
+
+        if aniso:
+            #Resolve Uiso versus Ueq here, so each site carries one magnitude
+            #(the tensor is rescaled to it). Accepted differences are those
+            #explained by the rounding errors of the printed values, plus
+            #tol_uij:
+            ueq = sgs._cif_uij_ueq( aniso, cellsg )
+            lbl = site['label']
+            allow = ( uiso_printed.get( lbl, ( None, 0.0 ) )[1]
+                      + ueq_printed.get( lbl, ( None, 0.0 ) )[1]
+                      + tols['uij'] * max( ueq, u_iso or 0.0 ) )
+            if not u_iso:
+                u_iso = ueq
+            elif abs( ueq - u_iso ) > allow:
+                msg = ( f'CIF site "{site["label"]}" has Uiso={u_iso:g} which'
+                        f' differs from the Ueq={ueq:g} of its anisotropic'
+                        ' displacements by more than the rounding errors of'
+                        ' the printed values explain' )
+                if not permissive:
+                    raise _nc_core.NCBadInput( msg + ' (try permissive mode'
+                                               ' to use the Uiso value)' )
+                _nc_common.warn( msg + ' (using the Uiso value due to'
+                                 ' permissive mode)' )
+            aniso = sgs._rescale_uij( aniso, ueq, u_iso )
+
+        site_en = site['element_name']
+        if site_en == 'X' or not site_en:
+            #Issue seen in codid::9005777, which had no atomic symbols but
+            #labels like "CaM1", "CaM2", "OA1".."OA3", "OB1", "OB2", "OC1",
+            #"OC3",... Correct if beginning of string starts with exactly one
+            #element name, followed by either a digit or an upper case string
+            #followed by digits.
+            elem_name = _guess_elem_name( site['label'] )
+            if elem_name:
+                _nc_common.warn(f'Assuming atomic symbol "{elem_name}" based on CIF label "{site["label"]}"')
+            else:
+                raise _nc_core.NCBadInput(f'Neither Gemmi nor NCrystal\'s custom'
+                                          ' code could deduce an atomic symbol'
+                                          f' for the CIF label "{site["label"]}"')
+            elem_Z = None
+        else:
+            elem_name, elem_Z = site_en, site['element_Z']
+
+        elem_A = None
+        if elem_name == 'D':
+            elem_name, elem_Z, elem_A = 'H',1,2
+        if elem_name == 'T':
+            elem_name, elem_Z, elem_A = 'T',1,3
+        elem_marker = elem_name + ( str(elem_A) if elem_A else '' )
+
+        from .atomdata import elementNameToZValue
+        z2name = elementNameToZValue( elem_name, allow_isotopes = False )
+        if z2name is None:
+            raise _nc_core.NCBadInput(f'Not an element name: "{elem_name}"')
+
+        if elem_Z is None:
+            elem_Z = z2name
+        if elem_Z != z2name:
+            raise _nc_core.NCBadInput(f'Wrong atomic number ({elem_Z}) provided'
+                                      f' for element "{elem_name}"')
+
+        collected_atoms.append( { 'expanded_coords': expanded_coords,
+                                  'rotations':
+                                  sym.image_rotations( choice,
+                                                       expanded_coords ),
+                                  'element_marker': elem_marker,
+                                  'occupancy': site['occ'],
+                                  'cif_label': site['label'],
+                                  'uiso': u_iso,
+                                  'aniso': aniso } )
+
+    if not collected_atoms:
+        raise _nc_core.NCBadInput('No atom sites found in CIF data.')
+
+    if p1_sites is None:
+        #(already checked when expanding p1_sites)
+        mult = content['multiplicities']
+        sym._check_multiplicities( [ ( a['cif_label'],
+                                       mult.get( a['cif_label'] ),
+                                       len( a['expanded_coords'] ) )
+                                     for a in collected_atoms ],
+                                   choice['nops'],
+                                   strict = choice['require_mult'] )
+    return collected_atoms
+
+def merge_atoms( collected_atoms, expected_tot_atom_in_orig_cell ):
+    """Merge the collected atoms (cf. collect_atoms) which occupy the same
+    positions into atoms with a composition (fractions of the total occupancy)
+    and occupancy, checking the total number of positions against the
+    expected one (if not None)."""
+    from math import fsum as _math_fsum
+    list_ro = tuple
+    pos_tolerance = 0.0001#NB: Best if value matches the one in NCInfoBuilder.cc
+    def has_same_sites( atom1, atom2 ):
+        l1,l2 = atom1['expanded_coords'],atom2['expanded_coords']
+        assert len(l1)>0 and len(l2)>0
+        return len(l1) == len(l2) and any( ( _nc_sgsymimpl._unit_cell_point_dist(c2,l1[0])<pos_tolerance) for c2 in l2 )
+
+    atoms_to_process, final_atoms = collected_atoms, []
+    while atoms_to_process:
+        atom1 = atoms_to_process[0]
+        atoms_with_same_pos = [ atom1 ]
+        atoms_with_different_pos = []
+        for atom2 in atoms_to_process[1:]:
+            if has_same_sites(atom1,atom2):
+                if atom1['uiso'] != atom2['uiso'] or atom1['aniso'] != atom2['aniso']:
+                    raise _nc_core.NCBadInput('atoms labelled "{}" and "{}" have same cell '.format(atom1['cif_label'],atom2['cif_label'])
+                                              +'positions but different uiso information. This is not supported.')
+                atoms_with_same_pos.append( atom2 )
+            else:
+                atoms_with_different_pos.append( atom2 )
+
+        cif_labels = [ a['cif_label'] for a in atoms_with_same_pos ]
+        cif_labels_str = '"{}"'.format('", "'.join(cif_labels))
+
+        composition = [ ( a['occupancy'], a['element_marker'] ) for a in atoms_with_same_pos ]
+        occupancy = _math_fsum( fr for fr, elem in composition )
+        assert occupancy > 0.0
+        if occupancy != 1.0:
+            composition = [ (fr/occupancy, elem) for fr, elem in composition ]
+            if occupancy > (1.0 + 1e-6) :
+                m=f'Error: Too high total occupancy ({occupancy} which is >1) for atoms with CIF labels: {cif_labels_str}'
+                if abs(int(occupancy+0.5)-occupancy)<1e-10:
+                    m+='. A possible cause could be multiple entries in the CIF file using atomic positions that are actually symmetrically equivalent!'
+                raise _nc_core.NCBadInput(m)
+            occupancy = min( 1.0, occupancy )
+
+        final_atoms.append( { 'cif_labels': list_ro( cif_labels ),
+                              'positions': list( atoms_with_same_pos[0]['expanded_coords'] ),
+                              'rotations': atoms_with_same_pos[0]['rotations'],
+                              'composition': list_ro( sorted( composition ) ),
+                              'occupancy': occupancy,
+                              'uiso': atoms_with_same_pos[0]['uiso'],
+                              'aniso': atoms_with_same_pos[0]['aniso'] } )
+        atoms_to_process = atoms_with_different_pos
+
+    if expected_tot_atom_in_orig_cell:
+        n_actual = sum( len(a['positions']) for a in final_atoms )
+        def rd( x,y ):
+            return abs(x-y)/(max(1e-300,abs(x)+abs(y)))
+        if rd( n_actual, expected_tot_atom_in_orig_cell ) > 0.01:
+            raise _nc_core.NCBadInput(f'Expanded number of atoms per cell ({n_actual}) is different '
+                                      'from what is stated explicitly in the CIF data'
+                                      f' ({expected_tot_atom_in_orig_cell}). Wrong spacegroup (or'
+                                      ' choice/setting improperly specified)?')
+    return final_atoms
