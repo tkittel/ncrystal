@@ -461,6 +461,16 @@ def _cif_uij_ueq( aniso, cellsg ):
     return math.fsum( u[i][j] * r[i] * r[j] * g[i][j]
                       for i in range(3) for j in range(3) ) / 3.0
 
+def _rescale_uij( aniso, ueq, target ):
+    """CIF uij values (dict) with Ueq=ueq rescaled to Ueq=target (exactly, for
+    cross-platform reproducibility). Returned unchanged if ueq==target (or ueq
+    is not positive, leaving the error for later)."""
+    if not ueq > 0.0 or ueq == target:
+        return aniso
+    keys = list( aniso )
+    return dict( zip( keys, _nc_stablemath.scale( [ aniso[k] for k in keys ],
+                                                  target, ueq ) ) )
+
 ################################################################################
 #Basis changes and displacement tensors. A transform is a pair (P,p) of numpy
 #arrays acting on fractional coordinates as x' = P.x + p (as from spglib). A

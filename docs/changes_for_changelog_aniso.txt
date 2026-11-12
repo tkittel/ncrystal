@@ -55,6 +55,7 @@ CHANGELOG at release time, after which this file is dropped).
        these anyway with warnings, when the needed information can be
        recovered. Cell parameters slightly off the declared symmetry are
        accepted (with a warning) if refinement confirms the space group.
-     * cif2ncmat warns when a Uiso differs from the Ueq of the tensor by more
-       than 5%. The Ueq of tensors without Uiso is now correct for
-       non-orthogonal cells (it was the mean of the diagonal).
+     * CIFLoader and cif2ncmat reject sites whose Uiso differs from the Ueq
+       of their tensor by more than tol_uij (with permissive mode, the Uiso is
+       used with a warning). The Ueq of tensors without Uiso is now correct
+       for non-orthogonal cells (it was the mean of the diagonal).

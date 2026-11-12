@@ -456,6 +456,9 @@ class CIFLoader:
         c = self.create_ncmat_composer(*args,**kwargs)
         return c.create_ncmat()
 
+    #FIXME: Discuss whether assuming uiso_temperature=300K when it is not
+    #given (so the CIF Uiso values still set the msds) would be better than
+    #the fallback to a Debye temperature of 300K.
     def create_ncmat_composer( self, *,
                                uiso_temperature = None,
                                skip_dyninfo = False,
@@ -2096,14 +2099,22 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib,
             u_iso = None
 
         if aniso:
-            ueq = _nc_sgsymimpl._cif_uij_ueq( aniso, cellsg )
+            #Resolve Uiso versus Ueq here, so each site carries one magnitude
+            #(the tensor is rescaled to it):
+            sgs = _nc_sgsymimpl
+            ueq = sgs._cif_uij_ueq( aniso, cellsg )
             if not u_iso:
                 u_iso = ueq
-            elif abs( ueq - u_iso ) > 0.05 * u_iso:
-                _nc_common.warn(f'CIF site "{site.label}" has Uiso={u_iso:g}'
-                                ' which differs by more than 5% from the'
-                                f' Ueq={ueq:g} of its anisotropic'
-                                ' displacements')
+            elif not sgs._relclose( ueq, u_iso, tols['uij'] ):
+                msg = ( f'CIF site "{site.label}" has Uiso={u_iso:g} which'
+                        f' differs from the Ueq={ueq:g} of its anisotropic'
+                        ' displacements' )
+                if not permissive:
+                    raise _nc_core.NCBadInput( msg + ' (try permissive mode'
+                                               ' to use the Uiso value)' )
+                _nc_common.warn( msg + ' (using the Uiso value due to'
+                                 ' permissive mode)' )
+            aniso = sgs._rescale_uij( aniso, ueq, u_iso )
 
         site_en = str(site.element.name).strip()
         if site_en == 'X' or not site_en:

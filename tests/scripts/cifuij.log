@@ -1,8 +1,28 @@
 Attempting to load CIF data with gemmi
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): CIF site "Si1" has Uiso=0.00858 which differs by more than 5% from the Ueq=0.00715012 of its anisotropic displacements [warn#1]
+Rejected: CIF site "Si1" has Uiso=0.00858 which differs from the Ueq=0.00715012 of its anisotropic displacements (try permissive mode to use the Uiso value)
+Attempting to load CIF data with gemmi
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): CIF site "Si1" has Uiso=0.00858 which differs from the Ueq=0.00715012 of its anisotropic displacements (using the Uiso value due to permissive mode) [warn#1]
 Self-consistency of structure was verified by spglib
 @ATOMSITES
-  O .79 .87 .63 uij 0.012 0.009 0.015 0.002 -0.003 0.001
-  Si .11 .22 .33 uij 0.006 0.007 0.008 0 0.001 0
+  O .79 .87 .63 uij 0.012000023852342 0.0090000178892563 0.015000029815427 0.0020000039753903 -0.0030000059630854 0.0010000019876951
+  Si .11 .22 .33 uij 0.0071998818671663 0.0083998621783607 0.0095998424895551 0 0.0011999803111944 0
 O loaded at (0.21, 0.13, 0.37), uij: 0.012, 0.009, 0.015, 0.002, -0.003, 0.001
 Si loaded at (0.11, 0.22, 0.33), uij: 0.0071999, 0.0083999, 0.0095998, 0, 0.0012, 0
+orthorhombic cell, Ueq of the CIF tensor: 0.012133333
+  no Uiso: uiso=0.012133333333333335 uij: 0.0123 0.0087 0.0154 0.0021 -0.0032 0.0011
+  Uiso rounded to 4 decimals: rejected: CIF site "Al1" has Uiso=0.0121 which differs from the Ueq=0.0121333 of its anisotropic displacements (try permissive mode to use the Uiso value)
+  Uiso 0.05% off: uiso=0.0121394 uij: 0.012306149999999998 0.008704349999999998 0.015407699999999998 0.0021010499999999997 -0.0032015999999999998 0.00110055
+  Uiso 0.5% off: rejected: CIF site "Al1" has Uiso=0.012194 which differs from the Ueq=0.0121333 of its anisotropic displacements (try permissive mode to use the Uiso value)
+  Uiso 0.5% off, permissive: uiso=0.012194 uij: 0.0123615 0.008743499999999998 0.015477 0.0021104999999999995 -0.0032159999999999997 0.0011055
+  Uiso 0.5% off, tol_uij=0.01: uiso=0.012194 uij: 0.0123615 0.008743499999999998 0.015477 0.0021104999999999995 -0.0032159999999999997 0.0011055
+  Uiso 20% off: rejected: CIF site "Al1" has Uiso=0.01456 which differs from the Ueq=0.0121333 of its anisotropic displacements (try permissive mode to use the Uiso value)
+  Uiso 20% off, tol_uij=0.01: rejected: CIF site "Al1" has Uiso=0.01456 which differs from the Ueq=0.0121333 of its anisotropic displacements (try permissive mode to use the Uiso value)
+triclinic cell, Ueq of the CIF tensor: 0.013429929
+  no Uiso: uiso=0.013429928638362558 uij: 0.012299999999999998 0.008699999999999996 0.015399999999999994 -0.0020999999999999994 0.0031999999999999993 0.0010999999999999994
+  Uiso rounded to 4 decimals: rejected: CIF site "Al1" has Uiso=0.0134 which differs from the Ueq=0.0134299 of its anisotropic displacements (try permissive mode to use the Uiso value)
+  Uiso 0.05% off: uiso=0.0134366 uij: 0.012306110065835058 0.00870432175388333 0.015407650001126818 -0.0021010431819718386 0.0032015896106237546 0.0011005464286519154
+  Uiso 0.5% off: rejected: CIF site "Al1" has Uiso=0.0134971 which differs from the Ueq=0.0134299 of its anisotropic displacements (try permissive mode to use the Uiso value)
+  Uiso 0.5% off, permissive: uiso=0.0134971 uij: 0.01236151989116163 0.008743514069358223 0.015477024904381223 -0.002110503396051985 0.0032160051749363584 0.0011055017788843729
+  Uiso 0.5% off, tol_uij=0.01: uiso=0.0134971 uij: 0.01236151989116163 0.008743514069358223 0.015477024904381223 -0.002110503396051985 0.0032160051749363584 0.0011055017788843729
+  Uiso 20% off: rejected: CIF site "Al1" has Uiso=0.0161159 which differs from the Ueq=0.0134299 of its anisotropic displacements (try permissive mode to use the Uiso value)
+  Uiso 20% off, tol_uij=0.01: rejected: CIF site "Al1" has Uiso=0.0161159 which differs from the Ueq=0.0134299 of its anisotropic displacements (try permissive mode to use the Uiso value)
