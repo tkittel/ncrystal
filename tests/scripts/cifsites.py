@@ -176,17 +176,25 @@ def test_symmetry_information():
         print( '   warning:', w )
     #Cell slightly inconsistent with the space group (accepted since spglib
     #finds the same space group), or more than that (rejected):
-    for gamma in ( 90.002, 90.5 ):
+    #(Uiso values are the Ueq of the tensors in the given cell. When clearly
+    #distorted, the tensors of the symmetry images no longer have that Ueq,
+    #which is rejected first, so it is also tested without tensors):
+    for gamma, with_uij in ( ( 90.002, True ), ( 90.5, True ),
+                             ( 90.5, False ) ):
         c = dict( rutile, gamma = gamma )
-        txt = cif_text( c, 'P 42/m n m', asym_rutile )
+        asym = [ ( lbl, el, pos, occ, sgs._cif_uij_ueq( u, c ),
+                   u if with_uij else None )
+                 for lbl, el, pos, occ, _, u in asym_rutile ]
+        txt = cif_text( c, 'P 42/m n m', asym )
+        descr = f'rutile, gamma={gamma}' + ( '' if with_uij else ', no uij' )
         if gamma < 90.1:
             lc = load( txt )
-            show( f'rutile, gamma={gamma}', lc )
+            show( descr, lc )
             for w, _ in lc.warnings:
                 print( '   warning:', w )
             assert lc.cellsg['spacegroup']['number'] == 136
         else:
-            expect_error( f'rutile, gamma={gamma}', txt )
+            expect_error( descr, txt )
 
 def test_primitive():
     #C2/c with tensors on both sites, given in P1 in a primitive cell:
