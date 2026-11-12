@@ -27,7 +27,7 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace SABUtils {
+  namespace SAB {
 
     class SABExtended final : private MoveOnly {
 
@@ -104,13 +104,13 @@ namespace NCRYSTAL_NAMESPACE {
 // Inline implementations //
 ////////////////////////////
 
-inline NCrystal::CrossSect NCrystal::SABUtils::
+inline NCrystal::CrossSect NCrystal::SAB::
 SABExtended::crossSectionUnitSigmaBound( NeutronEnergy ekin ) const
 {
   return CrossSect{ m_xs.eval( ekin.dbl() ) };
 }
 
-inline NCrystal::PairDD NCrystal::SABUtils::
+inline NCrystal::PairDD NCrystal::SAB::
 SABExtended::sampleScatterAlphaBeta( RNG& rng, NeutronEnergy ekin ) const
 {
   if ( ekin <= m_emax ) {

@@ -25,11 +25,11 @@
 #include "NCrystal/internal/utils/NCMath.hh"
 
 namespace NC = NCrystal;
-namespace NCS = NCrystal::SABUtils;
+namespace NCS = NCrystal::SAB;
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace SABUtils {
+  namespace SAB {
     namespace LargeKHandling {
       //For very small k=S2/S1 (or S1/S2, whichever is smaller), alpha sampling
       //will in practice only pick a relative alpha in [0,u] for some small

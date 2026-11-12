@@ -23,13 +23,13 @@
 #include "NCSABCellInteg_FMA.hh"
 
 namespace NC = NCrystal;
-namespace NCS = NCrystal::SABUtils;
+namespace NCS = NCrystal::SAB;
 
 //Fixme: A lot of cleanup and consolidation still to happen in this file, once
 //we are in a position to benchmark the effect in realistic usage conditions.
 
 namespace NCRYSTAL_NAMESPACE {
-  namespace SABUtils {
+  namespace SAB {
     namespace {
 
       enum class AlphaInterpMethod { LOG, LIN };

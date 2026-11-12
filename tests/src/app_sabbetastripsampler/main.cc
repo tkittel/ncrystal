@@ -33,7 +33,7 @@
 //extrema over strips are found numerically.
 
 namespace NC = NCrystal;
-namespace NS = NC::SABUtils;
+namespace NS = NC::SAB;
 
 #define REQUIRE(x) nc_assert_always(x)
 

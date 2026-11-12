@@ -29,7 +29,7 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace SABUtils {
+  namespace SAB {
 
     class SABSurveyor final : private MoveOnly {
 

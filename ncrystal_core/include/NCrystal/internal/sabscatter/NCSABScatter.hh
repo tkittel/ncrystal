@@ -27,7 +27,7 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
-  namespace SABUtils {
+  namespace SAB {
     class SABExtended;
   }
 
@@ -45,7 +45,7 @@ namespace NCRYSTAL_NAMESPACE {
 
     const char * name() const noexcept override { return "SABScatter"; }
 
-    using SABExtended = SABUtils::SABExtended;
+    using SABExtended = SAB::SABExtended;
 
     SABScatter( shared_obj<const SABExtended>, double scale );
 
