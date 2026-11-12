@@ -23,8 +23,6 @@
 
 #include "NCrystal/interfaces/NCProcImpl.hh"
 
-//fixme: rename NG<->Legacy? Or put all new stuff in new namespace?
-
 namespace NCRYSTAL_NAMESPACE {
 
   namespace SAB {
