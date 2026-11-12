@@ -3,8 +3,8 @@ Mg 2c (rounded input), uij: (0.0189034, 0.0189034, 0.0223856, 0.00945168, 0, 0)
 Broken site symmetry: The uij values of the site Mg (0.33333333333333331, 0.66666666666666663, 0.25) do not obey the site symmetry
 Broken site symmetry: The uij values of the site Mg (0.33333333333333331, 0.66666666666666663, 0.25) do not obey the site symmetry
 O in 14:b1 at (0.21, 0.13, 0.37) uij: (0.0277071, 0.0207803, 0.0346338, 0.00461784, -0.00692676, 0.00230892)
-Mg x2 uij: (0.0133761, 0.0133761, 0.0133761, 0.00668803, 0, 0)
-Mg x2 uij: (0.0267521, 0.0267521, 0.0267521, 0.0133761, 0, 0)
+Mg x2 uij: (0.0200641, 0.0200641, 0.0200641, 0.010032, 0, 0)
+Mg x2 uij: (0.0200641, 0.0200641, 0.0200641, 0.010032, 0, 0)
 Zn x2 uij: (0.00991111, 0.00991111, 0.0297333, 0.00495556, 0, 0)
 Not positive definite: The uij values of the site Al (0, 0, 0) do not form a positive definite matrix
 Not positive definite: The uij values of the site Al (0, 0, 0) do not form a positive definite matrix

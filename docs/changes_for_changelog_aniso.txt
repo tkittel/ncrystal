@@ -6,11 +6,11 @@ CHANGELOG at release time, after which this file is dropped).
 
      * NCMAT v8 @ATOMSITES lines can end with "uij" and six numbers, the
        anisotropic displacement tensor of the site in the CIF convention
-       (U11,U22,U33,U12,U13,U23). Any normalisation is accepted: the tensors
-       of an element are scaled so their multiplicity-weighted Ueq equals the
-       msd from @DYNINFO. Tensors must be given for all or none of the sites
-       of an element, must be positive definite, and are snapped to the site
-       symmetry (clear breaks are rejected).
+       (U11,U22,U33,U12,U13,U23). The tensors only give the shapes: each is
+       scaled so its Ueq equals the msd from @DYNINFO (sites with different
+       msds need separate labels). Tensors must be given for all or none of
+       the sites of an element, must be positive definite, and are snapped to
+       the site symmetry (clear breaks are rejected).
      * Bragg structure factors use anisotropic Debye-Waller factors, and the
        incoherent elastic model the powder average over directions of the
        projected msd. Inelastic scattering stays isotropic. No change for

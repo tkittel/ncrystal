@@ -359,9 +359,9 @@ namespace NCRYSTAL_NAMESPACE {
       //Validate the uij of the sites of an AtomInfo and complete them: they
       //must be given for all or none of the sites, are snapped to the site
       //symmetry (averaged over the operations leaving the site position
-      //invariant), must then be positive definite, and are finally scaled
-      //so their equivalent isotropic displacements, averaged over the
-      //positions, equal the msd. Clear breaks of the site symmetry
+      //invariant), must then be positive definite, and are finally each
+      //scaled so their equivalent isotropic displacement equals the msd (the
+      //uij only define the shapes). Clear breaks of the site symmetry
       //(deviations above 5% of the largest component, lenient enough for
       //rounded input values) are rejected:
       void processSiteUij( const StructureInfo& si, AtomInfo& ai )
@@ -387,8 +387,7 @@ namespace NCRYSTAL_NAMESPACE {
         const auto metric = UijUtils::cellMetric( si.lattice_a, si.lattice_b,
                                                   si.lattice_c, si.alpha,
                                                   si.beta, si.gamma );
-        StableSum sum;
-        unsigned npos = 0;
+        const double msd = ai.msd().value();
         for ( auto& site : sites ) {
           const auto descr = details::posDescr( ai, site.position );
           const auto uf = UijUtils::cifToFrac( site.uij.value(), metric );
@@ -417,17 +416,13 @@ namespace NCRYSTAL_NAMESPACE {
           if ( !UijUtils::isPositiveDefinite( snapped ) )
             NCRYSTAL_THROW2(BadInput,"The uij values of the site "<<descr
                             <<" do not form a positive definite matrix");
+          const double ueq = UijUtils::ueqFromFrac( ufsnap, metric );
+          nc_assert_always( ueq > 0.0 );
+          const double scale = msd / ueq;
           site.uij = snapped;
-          nc_assert_always( site.multiplicity > 0 );
-          sum.add( site.multiplicity * UijUtils::ueqFromFrac( ufsnap, metric ) );
-          npos += site.multiplicity;
-        }
-        const double ueq_avg = sum.sum() / npos;
-        nc_assert_always( ueq_avg > 0.0 );
-        const double scale = ai.msd().value() / ueq_avg;
-        for ( auto& site : sites )
           for ( auto& e : site.uij.value() )
             e *= scale;
+        }
       }
 
       //Fill in the unit cell positions of AtomInfo objects given as sites
