@@ -419,13 +419,18 @@ def _cif_multiplicities( gemmi, cifblock ):
 
 def _plain_site( site ):
     #A gemmi small structure site as a plain dict:
+    fract = ( site.fract.x, site.fract.y, site.fract.z )
+    if not all( _math.isfinite( x ) for x in fract ):
+        #(e.g. a site with "?" for its coordinates):
+        raise _nc_core.NCBadInput( f'CIF site "{site.label}" has missing or'
+                                   ' invalid fractional coordinates' )
     aniso = { k: float( getattr( site.aniso, k ) ) for k in _uij_keys }
     if all( v == 0.0 for v in aniso.values() ):
         aniso = None
     return { 'label': str( site.label ),
              'element_name': str( site.element.name ).strip(),
              'element_Z': int( site.element.atomic_number ),
-             'fract': ( site.fract.x, site.fract.y, site.fract.z ),
+             'fract': fract,
              'occ': float( site.occ ),
              'u_iso': float( site.u_iso ),
              'aniso': aniso }

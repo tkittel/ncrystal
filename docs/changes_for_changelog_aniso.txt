@@ -66,4 +66,6 @@ CHANGELOG at release time, after which this file is dropped).
        of a mixed site no longer duplicates the site; an unparsable
        _atom_type_number_in_cell (e.g. "?") is ignored instead of crashing;
        Biso values are also considered in the Uiso versus Ueq check; a
-       missing Materials Project API key gives the intended error message.
+       missing Materials Project API key gives the intended error message;
+       sites without coordinates ("?") are rejected with a clear error
+       (instead of a ValueError).
