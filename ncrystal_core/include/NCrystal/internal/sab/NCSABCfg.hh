@@ -54,17 +54,19 @@ namespace NCRYSTAL_NAMESPACE {
       Romberg9  = 0x010009,
       Romberg17 = 0x010011,
       Romberg33 = 0x010021,
-      //Flex schemes, based on potentially adaptive Romberg integration:
+      //Flex schemes, based on potentially adaptive Romberg integration (target
+      //precisions given by flexAdaptivePrecision):
       Flex5  = 0x100005,//mostly Romberg5, occasionally adaptive Romberg17+
-      //with target prec=1e-3
       Flex9  = 0x100009,//mostly Romberg9, occasionally adaptive Romberg17+
-      //with target prec=1e-4
       Flex17 = 0x100011,//mostly Romberg17, occasionally adaptive Romberg17+
-      //with target prec=1e-6
-      Flex33 = 0x100021,//Adaptive Romberg33+, target prec=1e-9
-      Flex65 = 0x100041,//Adaptive Romberg65+, target prec=1e-12
+      Flex33 = 0x100021,//Adaptive Romberg33+
+      Flex65 = 0x100041,//Adaptive Romberg65+
       MaxPrec = Flex65
     };
+
+    //Relative target precision of the adaptive Romberg integration of a Flex
+    //scheme (per crossed cell region):
+    double flexAdaptivePrecision( IntegrationScheme );
 
     //Utilities for encoding to/from strings
     const char * integSchemeToStr( IntegrationScheme );

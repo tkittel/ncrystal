@@ -1319,9 +1319,9 @@ Results from C++:
                                                              'is_bounded_by_beta+'],
                                           'regions': [[5.5, 5.5, True, False]]},
                   'phasespace_integral_format': ['scheme', 'value'],
-                  'phasespace_integral': [['Flex5', 1.9637323912e-15],
-                                          ['Flex9', 1.9313537487e-15],
-                                          ['Flex17', 1.930704193e-15],
+                  'phasespace_integral': [['Flex5', 1.9307008783e-15],
+                                          ['Flex9', 1.9307008783e-15],
+                                          ['Flex17', 1.9307008783e-15],
                                           ['Flex33', 1.9307008783e-15],
                                           ['Flex65', 1.9307008783e-15],
                                           ['Romberg5', 6.9153825401e-14],
@@ -1339,7 +1339,7 @@ Results from C++:
                                           ['Simpson9', 3.7046692179e-14],
                                           ['Simpson17', 1.852334609e-14],
                                           ['Simpson33', 9.2616938777e-15]]},
- 'sampling': {'fc_predicted_AR': 0.9828823887,
+ 'sampling': {'fc_predicted_AR': 0.96634953911,
               'fc_sampled_alpha': [],
               'fc_sampled_beta': [],
               'fc_sampled_ntries': 0,
@@ -1355,11 +1355,11 @@ mpmath reference phasespace integral: 1.93070087833542e-15
 mpmath reference full integral: 1.99793221830376e-15
 bruteforce/mpref precision (full integral): 0.15
 bruteforce/mpref precision (phasespace integral): 0.15
+     Flex17 : 1.9307008783e-15  [precision lvl <1e-14]
      Flex65 : 1.9307008783e-15  [precision lvl <1e-14]
      Flex33 : 1.9307008783e-15  [precision lvl 7e-13]
-     Flex17 : 1.930704193e-15  [precision lvl 2e-06]
-      Flex9 : 1.9313537487e-15  [precision lvl 0.0003]
-      Flex5 : 1.9637323912e-15  [precision lvl 0.02]
+      Flex5 : 1.9307008783e-15  [precision lvl 7e-13]
+      Flex9 : 1.9307008783e-15  [precision lvl 7e-13]
   Romberg33 : 8.4653968885e-15  [precision lvl 3]
   Simpson33 : 9.2616938777e-15  [precision lvl 4]
    Trapez33 : 1.3892525192e-14  [precision lvl 6]
@@ -1395,7 +1395,7 @@ Results from C++:
                                           'regions': [[5.5, 5.5, True, False]]},
                   'phasespace_integral_format': ['scheme', 'value'],
                   'phasespace_integral': [['Flex5', 1.9307008787e-14],
-                                          ['Flex9', 1.9307008787e-14],
+                                          ['Flex9', 1.9307008783e-14],
                                           ['Flex17', 1.9307008783e-14],
                                           ['Flex33', 1.9307008783e-14],
                                           ['Flex65', 1.9307008783e-14],
@@ -1430,11 +1430,11 @@ mpmath reference phasespace integral: 1.93070087833538e-14
 mpmath reference full integral: 1.99793221830376e-14
 bruteforce/mpref precision (full integral): 0.0188
 bruteforce/mpref precision (phasespace integral): 0.0191
+     Flex17 : 1.9307008783e-14  [precision lvl <1e-14]
      Flex33 : 1.9307008783e-14  [precision lvl <1e-14]
      Flex65 : 1.9307008783e-14  [precision lvl <1e-14]
-     Flex17 : 1.9307008783e-14  [precision lvl 4e-14]
+      Flex9 : 1.9307008783e-14  [precision lvl 4e-14]
       Flex5 : 1.9307008787e-14  [precision lvl 2e-10]
-      Flex9 : 1.9307008787e-14  [precision lvl 2e-10]
   Romberg33 : 1.9415738568e-14  [precision lvl 0.006]
   Simpson33 : 1.967400073e-14  [precision lvl 0.02]
   Romberg17 : 2.1580261126e-14  [precision lvl 0.1]
@@ -1470,7 +1470,7 @@ Results from C++:
                                           'regions': [[5.5, 5.5, True, False]]},
                   'phasespace_integral_format': ['scheme', 'value'],
                   'phasespace_integral': [['Flex5', 1.9307008787e-14],
-                                          ['Flex9', 1.9307008787e-14],
+                                          ['Flex9', 1.9307008783e-14],
                                           ['Flex17', 1.9307008783e-14],
                                           ['Flex33', 1.9307008783e-14],
                                           ['Flex65', 1.9307008783e-14],
@@ -1505,11 +1505,11 @@ mpmath reference phasespace integral: 1.93070087833345e-14
 mpmath reference full integral: 1.99793221830376e-14
 bruteforce/mpref precision (full integral): 0.0188
 bruteforce/mpref precision (phasespace integral): 0.0191
+     Flex17 : 1.9307008783e-14  [precision lvl <1e-14]
      Flex33 : 1.9307008783e-14  [precision lvl <1e-14]
      Flex65 : 1.9307008783e-14  [precision lvl <1e-14]
-     Flex17 : 1.9307008783e-14  [precision lvl 4e-14]
+      Flex9 : 1.9307008783e-14  [precision lvl 4e-14]
       Flex5 : 1.9307008787e-14  [precision lvl 2e-10]
-      Flex9 : 1.9307008787e-14  [precision lvl 2e-10]
   Romberg33 : 1.9415738568e-14  [precision lvl 0.006]
   Simpson33 : 1.967400073e-14  [precision lvl 0.02]
   Romberg17 : 2.1580261126e-14  [precision lvl 0.1]
@@ -1551,9 +1551,9 @@ Results from C++:
                                                        True,
                                                        True]]},
                   'phasespace_integral_format': ['scheme', 'value'],
-                  'phasespace_integral': [['Flex5', 0.0036059554362],
-                                          ['Flex9', 0.003604799341],
-                                          ['Flex17', 0.0036047867061],
+                  'phasespace_integral': [['Flex5', 0.0036047866712],
+                                          ['Flex9', 0.0036047866712],
+                                          ['Flex17', 0.0036047866712],
                                           ['Flex33', 0.0036047866712],
                                           ['Flex65', 0.0036047866712],
                                           ['Romberg5', 0.012014354285],
@@ -1571,7 +1571,7 @@ Results from C++:
                                           ['Simpson9', 0.0079555811169],
                                           ['Simpson17', 0.0056140824598],
                                           ['Simpson33', 0.0044434013718]]},
- 'sampling': {'fc_predicted_AR': 4.9405477546e-05,
+ 'sampling': {'fc_predicted_AR': 4.9389464206e-05,
               'fc_sampled_alpha': [],
               'fc_sampled_beta': [],
               'fc_sampled_ntries': 0,
@@ -1587,11 +1587,11 @@ mpmath reference phasespace integral: 0.00360478667121468
 mpmath reference full integral: 72.9869564125436
 bruteforce/mpref precision (full integral): 1.38e-05
 bruteforce/mpref precision (phasespace integral): 0.00128
+     Flex17 : 0.0036047866712  [precision lvl <1e-14]
      Flex33 : 0.0036047866712  [precision lvl <1e-14]
      Flex65 : 0.0036047866712  [precision lvl <1e-14]
-     Flex17 : 0.0036047867061  [precision lvl 1e-08]
-      Flex9 : 0.003604799341  [precision lvl 4e-06]
-      Flex5 : 0.0036059554362  [precision lvl 0.0003]
+      Flex5 : 0.0036047866712  [precision lvl 7e-12]
+      Flex9 : 0.0036047866712  [precision lvl 7e-12]
   Romberg33 : 0.0043427489245  [precision lvl 0.2]
   Simpson33 : 0.0044434013718  [precision lvl 0.2]
    Trapez33 : 0.0050273850426  [precision lvl 0.4]
@@ -1637,9 +1637,9 @@ Results from C++:
                                                        False,
                                                        True]]},
                   'phasespace_integral_format': ['scheme', 'value'],
-                  'phasespace_integral': [['Flex5', 0.81910987808],
+                  'phasespace_integral': [['Flex5', 0.81911026271],
                                           ['Flex9', 0.81911026271],
-                                          ['Flex17', 0.81911027567],
+                                          ['Flex17', 0.81911027586],
                                           ['Flex33', 0.81911027586],
                                           ['Flex65', 0.81911027586],
                                           ['Romberg5', 0.83634924741],
@@ -1657,7 +1657,7 @@ Results from C++:
                                           ['Simpson9', 0.82133851418],
                                           ['Simpson17', 0.8192678828],
                                           ['Simpson33', 0.81912006451]]},
- 'sampling': {'fc_predicted_AR': 0.0018315014289,
+ 'sampling': {'fc_predicted_AR': 0.0018315022889,
               'fc_sampled_alpha': [],
               'fc_sampled_beta': [],
               'fc_sampled_ntries': 0,
@@ -1675,9 +1675,9 @@ bruteforce/mpref precision (full integral): 5.85e-07
 bruteforce/mpref precision (phasespace integral): 0.0546
      Flex33 : 0.81911027586  [precision lvl <1e-14]
      Flex65 : 0.81911027586  [precision lvl <1e-14]
-     Flex17 : 0.81911027567  [precision lvl 2e-10]
+     Flex17 : 0.81911027586  [precision lvl 1e-12]
+      Flex5 : 0.81911026271  [precision lvl 2e-08]
       Flex9 : 0.81911026271  [precision lvl 2e-08]
-      Flex5 : 0.81910987808  [precision lvl 5e-07]
   Romberg33 : 0.81910987808  [precision lvl 5e-07]
   Romberg17 : 0.81911177949  [precision lvl 2e-06]
   Simpson33 : 0.81912006451  [precision lvl 1e-05]
@@ -2418,8 +2418,8 @@ Results from C++:
                                                        True,
                                                        False]]},
                   'phasespace_integral_format': ['scheme', 'value'],
-                  'phasespace_integral': [['Flex5', 2.1246866751e-28],
-                                          ['Flex9', 2.1246861765e-28],
+                  'phasespace_integral': [['Flex5', 2.1246861765e-28],
+                                          ['Flex9', 2.1246861761e-28],
                                           ['Flex17', 2.1246861761e-28],
                                           ['Flex33', 2.1246861761e-28],
                                           ['Flex65', 2.1246861761e-28],
@@ -2438,7 +2438,7 @@ Results from C++:
                                           ['Simpson9', 8.1588716337e-28],
                                           ['Simpson17', 4.1307460917e-28],
                                           ['Simpson33', 2.5119529937e-28]]},
- 'sampling': {'fc_predicted_AR': 0.04014728975,
+ 'sampling': {'fc_predicted_AR': 0.040147280328,
               'fc_sampled_alpha': [],
               'fc_sampled_beta': [],
               'fc_sampled_ntries': 0,
@@ -2454,11 +2454,11 @@ mpmath reference phasespace integral: 2.12468617607493e-28
 mpmath reference full integral: 5.29222940909789e-27
 bruteforce/mpref precision (full integral): 0.000353
 bruteforce/mpref precision (phasespace integral): 0.00455
+     Flex17 : 2.1246861761e-28  [precision lvl <1e-14]
      Flex33 : 2.1246861761e-28  [precision lvl <1e-14]
      Flex65 : 2.1246861761e-28  [precision lvl <1e-14]
-     Flex17 : 2.1246861761e-28  [precision lvl 4e-14]
-      Flex9 : 2.1246861765e-28  [precision lvl 2e-10]
-      Flex5 : 2.1246866751e-28  [precision lvl 2e-07]
+      Flex9 : 2.1246861761e-28  [precision lvl 4e-14]
+      Flex5 : 2.1246861765e-28  [precision lvl 2e-10]
   Romberg33 : 2.3739313165e-28  [precision lvl 0.1]
   Simpson33 : 2.5119529937e-28  [precision lvl 0.2]
    Trapez33 : 3.4233587139e-28  [precision lvl 0.6]

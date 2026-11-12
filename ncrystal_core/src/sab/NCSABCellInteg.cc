@@ -520,18 +520,19 @@ namespace NCRYSTAL_NAMESPACE {
           i.E_div_kT = e;
           i.is_bounded_by_betaminus = is_bounded_by_betaminus;
           i.is_bounded_by_betaplus = is_bounded_by_betaplus;
+          //The max levels are only a safety limit, high enough for the target
+          //precision to be reached (a converged integration stops earlier):
           unsigned minlvl, maxlvl;
-          double prec;
-          //fixme: revisit values below
           switch( scheme.npts ) {
-          case 5: prec = 5e-3; minlvl=2; maxlvl=8; break;
-          case 9: prec = 5e-4; minlvl=3; maxlvl=9; break;
-          case 17: prec = 1e-6; minlvl=4; maxlvl=10; break;
-          case 33: prec = 1e-9; minlvl=5; maxlvl=12; break;
+          case 5: minlvl=2; maxlvl=14; break;
+          case 9: minlvl=3; maxlvl=15; break;
+          case 17: minlvl=4; maxlvl=15; break;
+          case 33: minlvl=5; maxlvl=12; break;
           default:
             nc_assert(false);
-          case 65: prec = 1e-10; minlvl=6; maxlvl=14; break;//knllux=6 E-grid tolerance is 1e-8
+          case 65: minlvl=6; maxlvl=14; break;
           };
+          const double prec = SABCfg::flexAdaptivePrecision( scheme_encoded );
           R17Adaptive r17adapt(i,minlvl,maxlvl,prec);
           contrib = r17adapt.integrate(0.0,1.0);
           tgt.add( contrib*(cs.a2-cs.a1) );
