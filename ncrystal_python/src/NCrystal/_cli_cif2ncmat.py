@@ -197,6 +197,7 @@ def _main_impl( args, do_quiet ):
 
     import pathlib
 
+    from . import _cifcomposerimpl, _cifreadimpl
     from . import _common as nc_common
     from . import _ncmatimpl as nc_ncmatimpl
     from . import _sgsymimpl as nc_sgsymimpl
@@ -205,7 +206,7 @@ def _main_impl( args, do_quiet ):
 
     #Trigger gemmi/spglib import error already here (and with nicer SystemExit):
     if not args.showcif:
-        nc_cifutils._import_gemmi( sysexit = True )
+        _cifreadimpl._import_gemmi( sysexit = True )
         nc_sgsymimpl._import_spglib( sysexit = True )
 
     if args.via_ase:
@@ -282,7 +283,7 @@ def _main_impl( args, do_quiet ):
             composer.update_atomdb( elem, data )
 
         out, metadata = composer.create_ncmat( meta_data = True)
-        autofn = nc_cifutils._suggest_filename( metadata, lc )
+        autofn = _cifcomposerimpl._suggest_filename( metadata, lc )
 
     fn = args.output or autofn
 
