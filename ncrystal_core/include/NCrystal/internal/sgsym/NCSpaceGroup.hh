@@ -149,9 +149,13 @@ namespace NCRYSTAL_NAMESPACE {
   //streams as .toString():
   std::ostream& operator<<( std::ostream&, const SpaceGroup& );
 
-  //Fixme: Migrate isRhombohedralSpaceGroup() and usesRhombohedralAxes() from
-  //NCLatticeUtils.hh to NCSpaceGroup.hh/.cc (where they naturally belong, cf.
-  //SGHexFamilyAxes).
+  //Whether the space group is one of the rhombohedral (R) ones, and whether
+  //a unit cell of such a space group with lattice angle alpha (degrees) is
+  //described in rhombohedral axes (a=b=c, alpha=beta=gamma) rather than in
+  //hexagonal axes (alpha=beta=90, gamma=120). An unspecified alpha (0) means
+  //hexagonal axes:
+  bool isRhombohedralSpaceGroup( int spacegroup );
+  bool usesRhombohedralAxes( int spacegroup, double alpha );
 
 }
 
