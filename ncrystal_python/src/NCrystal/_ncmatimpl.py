@@ -728,7 +728,7 @@ class NCMATComposerImpl:
         from .misc import evaluate_query
         cellsg, atompos = self.__params['cellsg'], self.__params['atompos']
         occumap = atompos.get('occumap',{})
-        keys = ( 'u11', 'u22', 'u33', 'u12', 'u13', 'u23' )
+        keys = _nc_sgsymimpl._uij_keys
         sites = [ { 'key': lbl, 'pos': ( x, y, z ),
                     'occu': occumap.get( lbl, 1.0 ),
                     'aniso': dict( zip( keys, u ) ) if u else None }
