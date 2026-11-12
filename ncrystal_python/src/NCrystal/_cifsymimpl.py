@@ -103,11 +103,10 @@ def _expand_sites_with_ops( gemmi, content, ops, symprec, strict ):
     cellsg = content['cell']
     mult = content['multiplicities']
     sgs = _nc_sgsymimpl
-    latt = sgs._cellparams_to_spglib_lattice( cellsg )
-    def dist( x, y ):
-        d = [ ( a - b + 0.5 ) % 1.0 - 0.5 for a, b in zip( x, y ) ]
-        v = [ sum( d[i] * latt[i][k] for i in range(3) ) for k in range(3) ]
-        return sum( e * e for e in v ) ** 0.5
+    from ._numpy import _ensure_numpy
+    np = _ensure_numpy()
+    distsq = sgs._periodic_distsq_fn(
+        np.asarray( sgs._cellparams_to_spglib_lattice( cellsg ), dtype = float ) )
     res, triples = [], []
     for site in content['sites']:
         x0 = site['fract']
@@ -119,7 +118,7 @@ def _expand_sites_with_ops( gemmi, content, ops, symprec, strict ):
             R = [ row[:3] for row in fs[:3] ]
             x = [ ( sum( R[i][j] * x0[j] for j in range(3) ) + fs[i][3] ) % 1.0
                   for i in range(3) ]
-            if any( dist( x, f ) < symprec for f, _ in found ):
+            if any( distsq( x, f ) < symprec * symprec for f, _ in found ):
                 continue
             ui = sgs._rotated_cif_tensor( R, u, uf, cellsg )
             found.append( ( x, ui ) )
