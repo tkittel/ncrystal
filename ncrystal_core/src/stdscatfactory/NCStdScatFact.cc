@@ -282,9 +282,14 @@ namespace NCRYSTAL_NAMESPACE {
                   if ( !sabdata->boundXS() )
                     return complist;
 
+                  const auto thickening
+                    = ( dynamic_cast<const DI_ScatKnlDirect*>( di_scatknl )
+                        ? SABLegacy::BetaThickening::IfSparse
+                        : SABLegacy::BetaThickening::Off );
                   auto sabhelper
-                    = SABLegacy::createScatterHelperWithCache( sabdata,
-                                                         di_scatknl->energyGrid() );
+                    = SABLegacy::createScatterHelperWithCache
+                    ( sabdata, di_scatknl->energyGrid(),
+                      SABLegacy::LegacySABAlgOpts::DEFAULT, thickening );
                   complist.emplace_back(scale,makeSO<SABLegacy::SABScatterLegacy>( std::move(sabhelper) ));
                   return complist;
                 });
