@@ -34,7 +34,7 @@ stdlib::Al_sg225.ncmat;knllux=3 (freegas): extension_method=freegas
 stdlib::Polyethylene_CH2.ncmat;knllux=2 (sct, atoms C,H): extension_method=sct
   E=1e-06      xs=549.57 barn
   E=1e-05      xs=173.96 barn
-  E=0.0001     xs=55.545 barn
+  E=0.0001     xs=55.546 barn
   E=0.001      xs=19.281 barn
   E=0.01       xs=12.31 barn
   E=0.1        xs=17.776 barn
@@ -45,7 +45,7 @@ stdlib::Polyethylene_CH2.ncmat;knllux=2 (sct, atoms C,H): extension_method=sct
 stdlib::Polyethylene_CH2.ncmat;knllux=2 (freegas, atoms C,H): extension_method=freegas
   E=1e-06      xs=549.57 barn
   E=1e-05      xs=173.96 barn
-  E=0.0001     xs=55.545 barn
+  E=0.0001     xs=55.546 barn
   E=0.001      xs=19.281 barn
   E=0.01       xs=12.31 barn
   E=0.1        xs=17.776 barn

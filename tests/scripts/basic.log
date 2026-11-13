@@ -1,16 +1,16 @@
-Conversion: NC.ekin2wl(0.5) = 0.4044853757686
-Conversion: NC.ekin2wl(1.0) = 0.28601435209676
-Conversion: NC.ekin2wl(2.0) = 0.2022426878843
+Conversion: NC.ekin2wl(0.5) = 0.40448537732471
+Conversion: NC.ekin2wl(1.0) = 0.2860143531971
+Conversion: NC.ekin2wl(2.0) = 0.20224268866236
 Conversion: NC.ekin2wl(0.0) = inf
 Conversion: NC.ekin2wl(inf) = 0
-Conversion: NC.wl2ekin(0.5) = 0.32721683842132
-Conversion: NC.wl2ekin(1.0) = 0.081804209605331
-Conversion: NC.wl2ekin(2.0) = 0.020451052401333
+Conversion: NC.wl2ekin(0.5) = 0.32721684093903
+Conversion: NC.wl2ekin(1.0) = 0.081804210234757
+Conversion: NC.wl2ekin(2.0) = 0.020451052558689
 Conversion: NC.wl2ekin(0.0) = inf
 Conversion: NC.wl2ekin(inf) = 0
-Conversion: NC.ekin2ksq(0.5) = 241.29820332489
-Conversion: NC.ekin2ksq(1.0) = 482.59640664977
-Conversion: NC.ekin2ksq(2.0) = 965.19281329954
+Conversion: NC.ekin2ksq(0.5) = 241.29820146827
+Conversion: NC.ekin2ksq(1.0) = 482.59640293653
+Conversion: NC.ekin2ksq(2.0) = 965.19280587306
 Conversion: NC.ekin2ksq(0.0) = 0
 Conversion: NC.ekin2ksq(inf) = inf
 Conversion: NC.wl2k(0.5) = 12.566370614359
@@ -34,10 +34,10 @@ Aluminium PowderBragg diffraction cross-section @ [1, 2, 3, 4]Aa: [0.72722, 1.09
 Aluminium Bkgd cross-section @ 4.0Aa: 0.13602 barn
 Aluminium Bkgd+PowderBragg cross-section @ 4.0Aa: 1.76846 barn
 Aluminium absorption cross-section @ 4.0Aa: 0.513848 barn
-Germanium ScatFactSC cross-section @ 4.0Aa and (1.0, 0.15, 0.7): 0.597106 barn
-... same with xsect method: 0.597106 barn
-... same with xsect method2: 0.597106 barn
-... same with xsect method3: 0.597106 barn
+Germanium ScatFactSC cross-section @ 4.0Aa and (1.0, 0.15, 0.7): 0.597107 barn
+... same with xsect method: 0.597107 barn
+... same with xsect method2: 0.597107 barn
+... same with xsect method3: 0.597107 barn
 A few generated scattering angles using the full 3d vector interface:
 scattering at 4 Aa from (1, 0.15, 0.7) happens at 118.971 deg and delta-E 0.0209961 eV
 scattering at 4 Aa from (1, 0.15, 0.7) happens at 120.098 deg and delta-E 0.0138348 eV
@@ -54,7 +54,7 @@ scattering at 4 Aa from (1, 0.15, 0.7) happens at 84.4647 deg and delta-E 0.0164
 scattering at 4 Aa from (1, 0.15, 0.7) happens at 121.236 deg and delta-E 0.00404926 eV
 scattering at 4 Aa from (1, 0.15, 0.7) happens at 139.913 deg and delta-E 0 eV
 scattering at 4 Aa from (1, 0.15, 0.7) happens at 105.438 deg and delta-E 0 eV
-scattering at 4 Aa from (1, 0.15, 0.7) happens at 56.9244 deg and delta-E 0.00809103 eV
+scattering at 4 Aa from (1, 0.15, 0.7) happens at 48.0587 deg and delta-E 0.0104178 eV
 scattering at 4 Aa from (1, 0.15, 0.7) happens at 94.1896 deg and delta-E 0.0468856 eV
 scattering at 4 Aa from (1, 0.15, 0.7) happens at 122.214 deg and delta-E 0.0123542 eV
 scattering at 4 Aa from (1, 0.15, 0.7) happens at 55.0072 deg and delta-E 0.0127483 eV
@@ -71,7 +71,7 @@ scattering at 4 Aa from (1, 0.15, 0.6) happens at 128.98 deg and delta-E 0 eV
 scattering at 4 Aa from (1, 0.15, 0.6) happens at 85.9819 deg and delta-E 0.0080166 eV
 scattering at 4 Aa from (1, 0.15, 0.6) happens at 31.699 deg and delta-E 0 eV
 scattering at 4 Aa from (1, 0.15, 0.6) happens at 148.158 deg and delta-E 0 eV
-scattering at 4 Aa from (1, 0.15, 0.6) happens at 50.8706 deg and delta-E 0.00849039 eV
+scattering at 4 Aa from (1, 0.15, 0.6) happens at 50.9725 deg and delta-E 0.00760783 eV
 scattering at 4 Aa from (1, 0.15, 0.6) happens at 75.6183 deg and delta-E 0.0355797 eV
 scattering at 4 Aa from (1, 0.15, 0.6) happens at 104.535 deg and delta-E 0.0133796 eV
 scattering at 4 Aa from (1, 0.15, 0.6) happens at 92.208 deg and delta-E 0 eV
@@ -79,13 +79,13 @@ scattering at 4 Aa from (1, 0.15, 0.6) happens at 99.5369 deg and delta-E 0 eV
 scattering at 4 Aa from (1, 0.15, 0.6) happens at 158.84 deg and delta-E 0.0136734 eV
 scattering at 4 Aa from (1, 0.15, 0.6) happens at 80.2987 deg and delta-E 0.00804323 eV
 scattering at 4 Aa from (1, 0.15, 0.6) happens at 100.186 deg and delta-E 0.0209182 eV
-[ 18.995191  148.98152  110.13956 ... 98.997247  128.72999  61.124517 ]
+[ 18.995187  148.98152  110.13956 ... 98.997247  128.72995  61.124517 ]
 [ 17.134578  21.602978  12.952584 ... 21.880298  22.832139  3.1114642 ]
-[ 143.65079  70.642951  120.98913 ... 80.882186  88.445867  82.446771 ]
+[ 143.65079  70.642951  120.98913 ... 80.882186  88.445834  82.446771 ]
 [ 22.105541  19.542004  26.77745 ... 23.086883  54.866998  18.976117 ]
 ===> Testing potentially vanishing scatter: "Be_sg194.ncmat;dcutoff=10.0":
     xs@1Aa : 1.20377
-    xs@5Aa : 0.429148
+    xs@5Aa : 0.429149
     mean scat@1Aa : 1.8 rad, de=-0.015eV
 ===> Testing potentially vanishing scatter: "Be_sg194.ncmat;dcutoff=10.0;inelas=0;incoh_elas=0":
     xs@1Aa : 0
@@ -93,12 +93,12 @@ scattering at 4 Aa from (1, 0.15, 0.6) happens at 100.186 deg and delta-E 0.0209
     mean scat@1Aa : 0 rad, de=0eV
 ===> Testing potentially vanishing scatter: "Be_sg194.ncmat;dcutoff=10.0;coh_elas=0":
     xs@1Aa : 1.20377
-    xs@5Aa : 0.429148
+    xs@5Aa : 0.429149
     mean scat@1Aa : 1.9 rad, de=-0.015eV
 ===> Testing potentially vanishing scatter: "Al_sg225.ncmat;dcutoff=10.0":
     xs@1Aa : 0.645066
     xs@5Aa : 0.14307
-    mean scat@1Aa : 1.8 rad, de=-0.0043eV
+    mean scat@1Aa : 1.8 rad, de=-0.0044eV
 ===> Testing potentially vanishing scatter: "Al_sg225.ncmat;dcutoff=10.0;inelas=0;incoh_elas=0":
     xs@1Aa : 0
     xs@5Aa : 0
@@ -116,12 +116,12 @@ Caught NCFileNotFound!:
   Message :  Could not find data: "nosuchfile.ncmat"
 Did not catch exception! (as expected)
 wl2ekin:
-0.00511276310033
+0.00511276313967
 inf
 0.0
 [ 0.0051127631  inf  0 ]
 ekin2wl:
-1.80891359225
+1.80891359921
 inf
 0.0
 [ 1.8089136  inf  0 ]
@@ -147,59 +147,59 @@ Caught expected NCBadInput!: Forbidden character "\x0-28" in configuration strin
 Test loading of :>>>phases<1.0*unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.ncmat><<<
 Test loading of :>>>phases<1.0*unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.ncmat><<<
 Test loading of :>>>phases<0.1*unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.ncmat&0.9*void.ncmat><<<
-  debyeIsotropicMSD( TDebye=5, T=1, mass=1.007 ) = 9.080584874
+  debyeIsotropicMSD( TDebye=5, T=1, mass=1.007 ) = 9.080581823
   ...going back via debyeTempFromIsotropicMSD gives TDebye=5
-  debyeIsotropicMSD( TDebye=400, T=1, mass=1.007 ) = 0.09032536977
+  debyeIsotropicMSD( TDebye=400, T=1, mass=1.007 ) = 0.09032533941
   ...going back via debyeTempFromIsotropicMSD gives TDebye=400
-  debyeIsotropicMSD( TDebye=10000, T=1, mass=1.007 ) = 0.003612866453
+  debyeIsotropicMSD( TDebye=10000, T=1, mass=1.007 ) = 0.003612865239
   ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
-  debyeIsotropicMSD( TDebye=5, T=1, mass=10 ) = 0.9144148969
+  debyeIsotropicMSD( TDebye=5, T=1, mass=10 ) = 0.9144145896
   ...going back via debyeTempFromIsotropicMSD gives TDebye=5
-  debyeIsotropicMSD( TDebye=400, T=1, mass=10 ) = 0.009095764735
+  debyeIsotropicMSD( TDebye=400, T=1, mass=10 ) = 0.009095761679
   ...going back via debyeTempFromIsotropicMSD gives TDebye=400
-  debyeIsotropicMSD( TDebye=10000, T=1, mass=10 ) = 0.0003638156518
+  debyeIsotropicMSD( TDebye=10000, T=1, mass=10 ) = 0.0003638155296
   ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
-  debyeIsotropicMSD( TDebye=5, T=1, mass=300 ) = 0.03048049656
+  debyeIsotropicMSD( TDebye=5, T=1, mass=300 ) = 0.03048048632
   ...going back via debyeTempFromIsotropicMSD gives TDebye=5
-  debyeIsotropicMSD( TDebye=400, T=1, mass=300 ) = 0.0003031921578
+  debyeIsotropicMSD( TDebye=400, T=1, mass=300 ) = 0.000303192056
   ...going back via debyeTempFromIsotropicMSD gives TDebye=400
-  debyeIsotropicMSD( TDebye=10000, T=1, mass=300 ) = 1.212718839e-05
+  debyeIsotropicMSD( TDebye=10000, T=1, mass=300 ) = 1.212718432e-05
   ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
-  debyeIsotropicMSD( TDebye=5, T=300, mass=1.007 ) = 1734.189165
+  debyeIsotropicMSD( TDebye=5, T=300, mass=1.007 ) = 1734.188583
   ...going back via debyeTempFromIsotropicMSD gives TDebye=5
-  debyeIsotropicMSD( TDebye=400, T=300, mass=1.007 ) = 0.2841150205
+  debyeIsotropicMSD( TDebye=400, T=300, mass=1.007 ) = 0.2841149251
   ...going back via debyeTempFromIsotropicMSD gives TDebye=400
-  debyeIsotropicMSD( TDebye=10000, T=300, mass=1.007 ) = 0.003634260754
+  debyeIsotropicMSD( TDebye=10000, T=300, mass=1.007 ) = 0.003634259532
   ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
-  debyeIsotropicMSD( TDebye=5, T=300, mass=10 ) = 174.632849
+  debyeIsotropicMSD( TDebye=5, T=300, mass=10 ) = 174.6327903
   ...going back via debyeTempFromIsotropicMSD gives TDebye=5
-  debyeIsotropicMSD( TDebye=400, T=300, mass=10 ) = 0.02861038257
+  debyeIsotropicMSD( TDebye=400, T=300, mass=10 ) = 0.02861037296
   ...going back via debyeTempFromIsotropicMSD gives TDebye=400
-  debyeIsotropicMSD( TDebye=10000, T=300, mass=10 ) = 0.0003659700579
+  debyeIsotropicMSD( TDebye=10000, T=300, mass=10 ) = 0.0003659699349
   ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
-  debyeIsotropicMSD( TDebye=5, T=300, mass=300 ) = 5.821094965
+  debyeIsotropicMSD( TDebye=5, T=300, mass=300 ) = 5.821093009
   ...going back via debyeTempFromIsotropicMSD gives TDebye=5
-  debyeIsotropicMSD( TDebye=400, T=300, mass=300 ) = 0.000953679419
+  debyeIsotropicMSD( TDebye=400, T=300, mass=300 ) = 0.0009536790985
   ...going back via debyeTempFromIsotropicMSD gives TDebye=400
-  debyeIsotropicMSD( TDebye=10000, T=300, mass=300 ) = 1.219900193e-05
+  debyeIsotropicMSD( TDebye=10000, T=300, mass=300 ) = 1.219899783e-05
   ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
-  debyeIsotropicMSD( TDebye=5, T=10000, mass=1.007 ) = 57805.85988
+  debyeIsotropicMSD( TDebye=5, T=10000, mass=1.007 ) = 57805.84046
   ...going back via debyeTempFromIsotropicMSD gives TDebye=5
-  debyeIsotropicMSD( TDebye=400, T=10000, mass=1.007 ) = 9.032566967
+  debyeIsotropicMSD( TDebye=400, T=10000, mass=1.007 ) = 9.032563932
   ...going back via debyeTempFromIsotropicMSD gives TDebye=400
-  debyeIsotropicMSD( TDebye=10000, T=10000, mass=1.007 ) = 0.01484894712
+  debyeIsotropicMSD( TDebye=10000, T=10000, mass=1.007 ) = 0.01484894213
   ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
-  debyeIsotropicMSD( TDebye=5, T=10000, mass=10 ) = 5821.05009
+  debyeIsotropicMSD( TDebye=5, T=10000, mass=10 ) = 5821.048134
   ...going back via debyeTempFromIsotropicMSD gives TDebye=5
-  debyeIsotropicMSD( TDebye=400, T=10000, mass=10 ) = 0.9095794936
+  debyeIsotropicMSD( TDebye=400, T=10000, mass=10 ) = 0.9095791879
   ...going back via debyeTempFromIsotropicMSD gives TDebye=400
-  debyeIsotropicMSD( TDebye=10000, T=10000, mass=10 ) = 0.001495288975
+  debyeIsotropicMSD( TDebye=10000, T=10000, mass=10 ) = 0.001495288473
   ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
-  debyeIsotropicMSD( TDebye=5, T=10000, mass=300 ) = 194.035003
+  debyeIsotropicMSD( TDebye=5, T=10000, mass=300 ) = 194.0349378
   ...going back via debyeTempFromIsotropicMSD gives TDebye=5
-  debyeIsotropicMSD( TDebye=400, T=10000, mass=300 ) = 0.03031931645
+  debyeIsotropicMSD( TDebye=400, T=10000, mass=300 ) = 0.03031930626
   ...going back via debyeTempFromIsotropicMSD gives TDebye=400
-  debyeIsotropicMSD( TDebye=10000, T=10000, mass=300 ) = 4.984296584e-05
+  debyeIsotropicMSD( TDebye=10000, T=10000, mass=300 ) = 4.98429491e-05
   ...going back via debyeTempFromIsotropicMSD gives TDebye=10000
 [{'group_description': 'Base parameters',
   'parameters': [{'allowed_input_units': None,

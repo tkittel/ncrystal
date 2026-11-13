@@ -1,6 +1,6 @@
 NCrystal WARNING: Loading NCMAT data which has @CUSTOM_ section(s). This is OK if intended.
 SANSSphereScatter(radius=10Aa;xs@10Aa=1.18661barn)
-cross sections at 400 wavelengths OK (max rel. deviation 6.7e-16 < 1e-13)
+cross sections at 400 wavelengths OK (max rel. deviation 5.6e-16 < 1e-13)
 sampling at 2 Aa OK (KS test on Q*R)
 sampling at 20 Aa OK (KS test on Q*R)
 sampling at 100 Aa OK (KS test on Q*R)

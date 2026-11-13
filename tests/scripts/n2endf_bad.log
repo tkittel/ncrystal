@@ -196,7 +196,7 @@ Designated incoherent: Th
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "O" would normally cover energies up to Emax=5eV with the provided cfg-string but a value of Emax=1eV was enforced. [warn#27]
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Th" would normally cover energies up to Emax=5eV with the provided cfg-string but a value of Emax=1eV was enforced. [warn#28]
 >>> alpha points: 110, alpha range: (0, 189.2)
->>> beta points: 137, beta range: (0, 39.15)
+>>> beta points: 138, beta range: (0, 39.15)
 >>> alpha points: 110, alpha range: (0, 179.2)
 >>> beta points: 118, beta range: (0, 14.69)
 >>> Interpolating T=293.15K for O

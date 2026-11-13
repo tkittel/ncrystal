@@ -138,10 +138,10 @@ relaxed 227 -> setting 227:2
 Caught expected NCBadInput('Atom positions are not consistent with space group 227:1 (largest deviation of a symmetry image from an atom of the same type: 0.25 in fractional coordinates)')
 Caught expected NCBadInput('Invalid util query: ["util","atomsites","227:2","Si,0.125,0.125,0.125"] (correct usage: ["util","atomsites","strict|relaxed",SG,"lbl,x,y,z",...])')
 ============= CLI >>util wl2ekin 1.8<< ====================
-0.025248212841
+0.025248213035
 ===========================================
 ============= CLI >>util ekin2wl 0.025<< ====================
-1.8089135922
+1.8089135992
 ===========================================
 ============= CLI >>util eqrefl relaxed 149 1,2,3 1,1,0<< ====================
 [[[3, -1, -3], [3, -2, -3], [2, 1, 3], [2, -3, 3], [1, 2, 3], [1, -3, 3]],

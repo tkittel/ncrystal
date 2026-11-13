@@ -837,14 +837,14 @@ Got TextData(uid=25) with contents:
 ----> #
 ----> #  T   = 250K
 ----> #  P   = 151987.5Pa
-----> #  Rho = 3.1288837960844229kg/m^3
+----> #  Rho = 3.1288838505771617kg/m^3
 ----> #
 ----> @STATEOFMATTER
 ---->   gas
 ----> @TEMPERATURE
 ---->   250
 ----> @DENSITY
----->   3.1288837960844229 kg_per_m3
+---->   3.1288838505771617 kg_per_m3
 ----> @DYNINFO
 ---->   element  Ar
 ---->   fraction 0.12496445530915704
@@ -873,14 +873,14 @@ Got TextData(uid=27) with contents:
 ----> #
 ----> #  T   = 293.15K
 ----> #  P   = 101325Pa
-----> #  Rho = 1.7788513845852865kg/m^3
+----> #  Rho = 1.7788514155658179kg/m^3
 ----> #
 ----> @STATEOFMATTER
 ---->   gas
 ----> @TEMPERATURE
 ---->   293.15
 ----> @DENSITY
----->   1.7788513845852865 kg_per_m3
+---->   1.7788514155658179 kg_per_m3
 ----> @DYNINFO
 ---->   element  H
 ---->   fraction 1.9239306255331645e-05
@@ -913,14 +913,14 @@ Got TextData(uid=28) with contents:
 ----> #
 ----> #  T   = 250K
 ----> #  P   = 151987.5Pa
-----> #  Rho = 3.1288635251990224kg/m^3
+----> #  Rho = 3.1288635796914077kg/m^3
 ----> #
 ----> @STATEOFMATTER
 ---->   gas
 ----> @TEMPERATURE
 ---->   250
 ----> @DENSITY
----->   3.1288635251990224 kg_per_m3
+---->   3.1288635796914077 kg_per_m3
 ----> @DYNINFO
 ---->   element  Ar
 ---->   fraction 1/8
@@ -949,14 +949,14 @@ Got TextData(uid=33) with contents:
 ----> #
 ----> #  T   = 298.15K
 ----> #  P   = 202650Pa
-----> #  Rho = 5.4818603852909256kg/m^3
+----> #  Rho = 5.481860480763177kg/m^3
 ----> #
 ----> @STATEOFMATTER
 ---->   gas
 ----> @TEMPERATURE
 ---->   298.15
 ----> @DENSITY
----->   5.4818603852909256 kg_per_m3
+---->   5.481860480763177 kg_per_m3
 ----> @ATOMDB
 ---->   B is 0.95 B10 0.05 B11
 ----> @DYNINFO
@@ -983,14 +983,14 @@ Got TextData(uid=34) with contents:
 ----> #
 ----> #  T   = 293.15K
 ----> #  P   = 101325Pa
-----> #  Rho = 1.8295336435565634kg/m^3
+----> #  Rho = 1.8295336754197786kg/m^3
 ----> #
 ----> @STATEOFMATTER
 ---->   gas
 ----> @TEMPERATURE
 ---->   293.15
 ----> @DENSITY
----->   1.8295336435565634 kg_per_m3
+---->   1.8295336754197786 kg_per_m3
 ----> @DYNINFO
 ---->   element  C
 ---->   fraction 1/3
@@ -1014,7 +1014,7 @@ Got TextData(uid=36) with contents:
 ----> # Resulting gas parameters:
 ----> #
 ----> #  T   = 293.15K
-----> #  P   = 998678.141718431Pa
+----> #  P   = 998678.12432542152Pa
 ----> #  Rho = 1.64kg/m^3
 ----> #
 ----> @STATEOFMATTER
@@ -1043,14 +1043,14 @@ Got TextData(uid=37) with contents:
 ----> #
 ----> #  T   = 293.15K
 ----> #  P   = 1000000Pa
-----> #  Rho = 1.6421707169619661kg/m^3
+----> #  Rho = 1.6421707455620629kg/m^3
 ----> #
 ----> @STATEOFMATTER
 ---->   gas
 ----> @TEMPERATURE
 ---->   293.15
 ----> @DENSITY
----->   1.6421707169619661 kg_per_m3
+---->   1.6421707455620629 kg_per_m3
 ----> @DYNINFO
 ---->   element  He
 ---->   fraction 1
@@ -1071,14 +1071,14 @@ Got TextData(uid=42) with contents:
 ----> #
 ----> #  T   = 293.15K
 ----> #  P   = 101325Pa
-----> #  Rho = 1.2041520769553551kg/m^3
+----> #  Rho = 1.2041520979269056kg/m^3
 ----> #
 ----> @STATEOFMATTER
 ---->   gas
 ----> @TEMPERATURE
 ---->   293.15
 ----> @DENSITY
----->   1.2041520769553551 kg_per_m3
+---->   1.2041520979269056 kg_per_m3
 ----> @DYNINFO
 ---->   element  Xe
 ---->   fraction 4.5202215274184131e-08
@@ -1131,14 +1131,14 @@ Got TextData(uid=43) with contents:
 ----> #
 ----> #  T   = 263.15K
 ----> #  P   = 81060Pa
-----> #  Rho = 1.0727534348569578kg/m^3
+----> #  Rho = 1.0727534535400651kg/m^3
 ----> #
 ----> @STATEOFMATTER
 ---->   gas
 ----> @TEMPERATURE
 ---->   263.15
 ----> @DENSITY
----->   1.0727534348569578 kg_per_m3
+---->   1.0727534535400651 kg_per_m3
 ----> @DYNINFO
 ---->   element  Xe
 ---->   fraction 4.5136744091954109e-08

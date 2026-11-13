@@ -29,7 +29,7 @@ int main()
                               3.5, 4.0, 4.5, 5.0, 5.5, 6.0 };
   for ( auto wl : wls  ) {
     NCrystalScatProc::NeutronState n;
-    n.ekin() = 0.081804209605330899 / ( wl*wl );
+    n.ekin() = 0.081804210234757059 / ( wl*wl );
     n.u()[0] = 1.0;
     n.u()[1] = 0.0;
     n.u()[2] = 0.0;
