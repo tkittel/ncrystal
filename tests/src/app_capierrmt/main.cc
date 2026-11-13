@@ -31,6 +31,8 @@
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/threads/NCFactThreads.hh"
 #include <iostream>
+#include <new>
+#include <stdexcept>
 namespace NC = NCrystal;
 
 namespace {
@@ -68,6 +70,34 @@ namespace {
   {
     throw 17;
     return 0.5;
+  }
+  double badAllocRandGen()
+  {
+    throw std::bad_alloc();
+    return 0.5;
+  }
+  double logicErrorRandGen()
+  {
+    throw std::logic_error("some std::logic_error");
+    return 0.5;
+  }
+  void testStdException( double (*randgen)() )
+  {
+    //Errors from std exceptions keep their message (std::bad_alloc gets a
+    //clear one):
+    ncrystal_setrandgen( randgen );
+    ncrystal_scatter_t sc
+      = ncrystal_create_scatter( "stdlib::Al_sg225.ncmat;comp=inelas" );
+    nc_assert_always( !ncrystal_error() );
+    double ekin_final(-1.0), mu(-1.0);
+    ncrystal_samplescatterisotropic( sc, 0.025, &ekin_final, &mu );
+    nc_assert_always( ncrystal_error() );
+    std::cout << "Error type: " << ncrystal_lasterrortype() << std::endl;
+    std::cout << "Error message: " << ncrystal_lasterror() << std::endl;
+    ncrystal_clearerror();
+    ncrystal_unref( &sc );
+    ncrystal_setbuiltinrandgen();
+    nc_assert_always( !ncrystal_error() );
   }
 
   void testOutputsOnError()
@@ -151,6 +181,8 @@ int main()
   nc_assert_always( ntot == 0 );
   nc_assert_always( !ncrystal_error() );
   testNonStdException();
+  testStdException( badAllocRandGen );
+  testStdException( logicErrorRandGen );
   testOutputsOnError();
   return 0;
 }
