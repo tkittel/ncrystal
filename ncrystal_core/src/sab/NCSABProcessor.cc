@@ -498,10 +498,12 @@ namespace NCRYSTAL_NAMESPACE {
         //removed eps_emax (in logIntegral space) of the integral(S) difference:
 
         nc_assert_always(s.size()==e.size());
-        nc_assert_always(s.size()>=16);
+        if ( s.size() < 2 || !( s.back() > s.front() ) )
+          NCRYSTAL_THROW(BadInput,"Can not determine Emax of SAB kernel:"
+                         " too few cells with non-zero S values.");
         const double s1(s.front());
         const double s2(s.back());
-        nc_assert_always( s2>s1 && s1>=0.0 && std::isfinite(s2) );
+        nc_assert_always( s1>=0.0 && std::isfinite(s2) );
         double tgt_s;
         constexpr double eps_emax = 1e-2;
         if ( s1==0.0 ) {
@@ -512,7 +514,9 @@ namespace NCRYSTAL_NAMESPACE {
         std::size_t i = s.size()-1;
         while ( i && vectAt(s,i)>tgt_s )
           --i;
-        nc_assert_always( i > 4 );//fixme nicer error
+        if ( i == 0 )
+          NCRYSTAL_THROW(BadInput,"Can not determine Emax of SAB kernel:"
+                         " integral of S saturates in the first touched cell.");
 
         auto max_E_div_kT = vectAt(e,i);
         nc_assert( max_E_div_kT > 0.0 );
@@ -690,7 +694,6 @@ namespace NCRYSTAL_NAMESPACE {
         res.e.reserve(4096);
         res.sint.reserve(4096);
         double eprev(0.0);
-        double curr_thr(0.0);
         const double thr_eup = 1e3/kT;//1keV/kT is essentially ~infinity for our
                                       //purposes
         StableSumKahan sum;
@@ -700,12 +703,9 @@ namespace NCRYSTAL_NAMESPACE {
           double ci = cellmgr.getCellIntegral(it->cellidx);
           if ( it->e_touch > thr_eup )
             break;
-          if ( !(ci>curr_thr) )
+          if ( !(ci>0.0) )
             continue;
           sum.add(ci);
-          //fixme: tune?
-          curr_thr = sum.sum()*1e-26;//less than this won't ever affect result (~16
-          //digits + O(1e9) cells => ~O(1e-25) is enough). (fixme: tighten?)
           if ( it->e_touch > eprev*1.001 ) {
             eprev = it->e_touch;
             res.e.push_back(it->e_touch);
