@@ -149,6 +149,28 @@ namespace NCRYSTAL_NAMESPACE {
         return NullOpt;
     }
 
+    //Replaces the C locale's decimal-point string (possibly several bytes) in
+    //snprintf output of a finite number by '.', returning the new length. The
+    //output has only a sign, digits, the decimal point and "e+-dd", so any
+    //other run of bytes is the decimal point. Not in NCFmt.hh, since it is
+    //also needed in NCString.cc, where it is fwd declared.
+    std::size_t normaliseDecimalPoint( char * buf, std::size_t n )
+    {
+      std::size_t j = 0;
+      bool insep = false;
+      for ( std::size_t i = 0; i < n; ++i ) {
+        const char c = buf[i];
+        if ( ( c >= '0' && c <= '9' ) || c == '-' || c == '+' || c == 'e' ) {
+          buf[j++] = c;
+          insep = false;
+        } else if ( !insep ) {
+          buf[j++] = '.';
+          insep = true;
+        }
+      }
+      return j;
+    }
+
     //This one is not actually added to NCFMT.hh, since it is just needed in
     //NCString.cc, where it is fwd declared.
     Optional<std::uint64_t> raw_str2uint64( const char * s_data,
