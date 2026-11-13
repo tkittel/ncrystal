@@ -1325,41 +1325,73 @@ namespace NCRYSTAL_NAMESPACE {
 
       void SABProcImpl::initStripLadder( const VectD& fcAR )
       {
-        //Walking up the energy grid, a strip sampler is built with emax at the
-        //highest grid point within ladderFactor of the lowest one not yet
-        //covered, and used at the grid points where stripTryCost times its
-        //expected tries is below the expected full-cell tries. Stops at the
-        //first sampler used nowhere, if the full-cell acceptance rate is at
-        //least minFullCellAR at all its grid points:
-        constexpr double ladderFactor = 5.0;
-        constexpr double stripTryCost = 1.0;
-        constexpr double minFullCellAR = 0.4;
+        //Walking up the energy grid from the lowest grid point h not yet
+        //covered, a strip sampler is built with emax at the highest grid point
+        //j for which its expected tries at E_h are at most maxRelTries times
+        //those of a sampler built at E_h (trying j=h+1,h+2,h+4,... until one
+        //fails, then bisecting). Strip samplers are least efficient at the
+        //lowest e they cover, so this bounds the inefficiency at all of
+        //h..j. The sampler is used at the grid points where its expected tries
+        //are below those of full-cell sampling. Stops at the first h where
+        //full-cell sampling beats a sampler built at E_h:
+        constexpr double maxRelTries = 1.2;
         const std::size_t n = m_eGrid.size();
         nc_assert_always( fcAR.size() == n && m_stripIdx.size() == n );
+        auto build = [this]( std::size_t k )
+        {
+          return SABBetaStripSampler( m_cellmgr.sabDataPtr(),
+                                      m_cellmgr.logSTable(),
+                                      EDivKT{ vectAt( m_eGrid, k ) } );
+        };
         std::size_t h = 0;
         while ( h < n ) {
-          std::size_t j = h;
-          while ( j + 1 < n
-                  && ( vectAt( m_eGrid, j + 1 )
-                       <= ladderFactor * vectAt( m_eGrid, h ) ) )
-            ++j;
-          SABBetaStripSampler st( m_cellmgr.sabDataPtr(),
-                                  m_cellmgr.logSTable(),
-                                  EDivKT{ vectAt( m_eGrid, j ) } );
-          if ( !st.hasStrips() ) {
-            h = j + 1;
-            continue;//S=0 within KB(emax), nothing to sample
+          const double integ_h = vectAt( m_sIntegral, h );
+          if ( !( integ_h > 0.0 && vectAt( fcAR, h ) > 0.0 ) ) {
+            ++h;
+            continue;
           }
+          const EDivKT e_h{ vectAt( m_eGrid, h ) };
+          SABBetaStripSampler st = build( h );
+          if ( !st.hasStrips() ) {
+            ++h;
+            continue;
+          }
+          const double tries_h = st.expectedTries( e_h, integ_h );
+          if ( !( tries_h < 1.0 / vectAt( fcAR, h ) ) )
+            break;//full-cell beats strips here (and is assumed to above)
+          const double maxTries = maxRelTries * tries_h;
+          //Highest acceptable j (lo: acceptable, hi: not acceptable):
+          auto acceptable = [&]( std::size_t k, SABBetaStripSampler& out )
+          {
+            SABBetaStripSampler stk = build( k );
+            if ( !( stk.hasStrips()
+                    && stk.expectedTries( e_h, integ_h ) <= maxTries ) )
+              return false;
+            out = std::move( stk );
+            return true;
+          };
+          std::size_t lo = h;
+          std::size_t hi = n;
+          std::size_t step = 1;
+          while ( lo + 1 < hi ) {
+            const std::size_t k = ( hi == n
+                                    ? ncmin( lo + step, n - 1 )
+                                    : lo + ( hi - lo ) / 2 );
+            if ( acceptable( k, st ) )
+              lo = k;
+            else
+              hi = k;
+            step *= 2;
+          }
+          const std::size_t j = lo;
           bool used = false;
-          double minAR = 1.0;
-          for ( std::size_t k = h; k <= j; ++k ) {
+          for ( auto k : ncrange( h, j + 1 ) ) {
             const double ar = vectAt( fcAR, k );
             const double integ = vectAt( m_sIntegral, k );
-            minAR = ncmin( minAR, ar );
             if ( !( integ > 0.0 && ar > 0.0 ) )
               continue;
             const EDivKT e{ vectAt( m_eGrid, k ) };
-            if ( stripTryCost * st.expectedTries( e, integ ) < 1.0 / ar ) {
+            if ( st.expectedTries( e, integ ) < 1.0 / ar ) {
               vectAt( m_stripIdx, k )
                 = static_cast<std::int32_t>( m_strips.size() );
               used = true;
@@ -1367,8 +1399,6 @@ namespace NCRYSTAL_NAMESPACE {
           }
           if ( used )
             m_strips.push_back( std::move( st ) );
-          else if ( minAR >= minFullCellAR )
-            break;
           h = j + 1;
         }
       }

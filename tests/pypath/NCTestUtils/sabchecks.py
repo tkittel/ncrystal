@@ -52,9 +52,13 @@ def check_method_choice( cfg, lbl, nperpt = 400, require_strips = True,
                        si['beta_strip_expected_tries'] ) )
     assert strip or not require_strips, 'beta-strip sampling not used anywhere'
     for k, (a, ded, meas) in enumerate( zip( ar, dedicated, d['mean_tries'] ) ):
+        if k == 0:
+            continue#sampled just below the grid, by the below-grid sampler
         if k in strip:
             t = strip[k]
             assert t * a < 1.0, f'strips chosen at grid point {k} but more expensive'
+            #Within maxRelTries=1.2 of a sampler built at this grid point:
+            assert t <= 1.2 * ded, f'strips at grid point {k}: {t} vs {ded} tries'
             #Mean of nperpt geometric-like try counts (6 sigma):
             tol = 6 * math.sqrt( max( t - 1.0, 0.0 ) / t / nperpt ) + 0.01
             assert abs( meas / t - 1 ) < tol, f'grid point {k}: {meas} vs {t} tries'
