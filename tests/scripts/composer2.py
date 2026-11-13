@@ -263,10 +263,10 @@ def test_atomsites():
     assert '@ATOMOCCUPANCIES\n  Si .9\n' in c.create_ncmat()
     print('with occupancy 0.9:',natoms(c),'atoms')
     #set_atompos with a given setting checks exactly that setting:
-    allpos = [ (lbl,p[0],p[1],p[2]) for lbl,p in
+    allpos = [ ('Si',p[0],p[1],p[2]) for p in
                NC.misc.evaluate_query([ 'sgsym', 'positions','strict',
                                        '227:2','strict','5.43,5.43,5.43,90,90,90',
-                                       'Si,0.125,0.125,0.125']) ]
+                                       'Si,0.125,0.125,0.125'])['sites'][0]['positions'] ]
     print('all positions with 227:2:',
           natoms( mk( '227:2', allpos, use_sites = False ) ),'atoms')
     try:

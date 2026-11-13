@@ -189,3 +189,95 @@ std::vector<NC::PairDD> NCU::directionalMSDs( const Uij& u,
   }
   return res;
 }
+
+namespace NCRYSTAL_NAMESPACE {
+  namespace UijUtils {
+    namespace {
+      bool symOpMaps( const SymOp& op, const Vector& a, const Vector& b )
+      {
+        const Vector img = op.apply( a );
+        for ( auto k : ncrange( 3 ) ) {
+          const double d = img[k] - b[k];
+          if ( !( ncabs( d - std::round( d ) ) < 1e-4 ) )
+            return false;
+        }
+        return true;
+      }
+    }
+  }
+}
+
+NCU::Uij NCU::mapUstdToPosition( const SGSymmetry& sym, const CellMetric& m,
+                                 const Vector& from, const Vector& to,
+                                 const Uij& ustd )
+{
+  for ( auto& op : sym.operations() ) {
+    if ( !symOpMaps( op, from, to ) )
+      continue;
+    return convertUstarToUstd( applySymOpToUstar( op, convertUstdToUstar( ustd,
+                                                                         m ) ),
+                               m );
+  }
+  NCRYSTAL_THROW2(BadInput,"No symmetry operation of space group "
+                  <<sym.spaceGroup()<<" maps ("<<fmt(from[0],"%.6g")<<", "
+                  <<fmt(from[1],"%.6g")<<", "<<fmt(from[2],"%.6g")<<") onto ("
+                  <<fmt(to[0],"%.6g")<<", "<<fmt(to[1],"%.6g")<<", "
+                  <<fmt(to[2],"%.6g")<<")");
+}
+
+NCU::Uij NCU::snapUstdToSiteSymmetry( const SGSymmetry& sym,
+                                      const CellMetric& m, const Vector& site,
+                                      const Uij& ustd,
+                                      const std::string& descr,
+                                      double relTol, const Uij& err )
+{
+  const auto uf = convertUstdToUstar( ustd, m );
+  std::array<StableSum,6> sums;
+  unsigned nstab = 0;
+  for ( auto& op : sym.operations() ) {
+    if ( !symOpMaps( op, site, site ) )
+      continue;
+    ++nstab;
+    const auto t = applySymOpToUstar( op, uf );
+    for ( auto i : ncrange( 6 ) )
+      sums[i].add( t[i] );
+  }
+  nc_assert_always( nstab > 0 );//(at least the identity)
+  Uij ufsnap;
+  for ( auto i : ncrange( 6 ) )
+    ufsnap[i] = sums[i].sum() / nstab;
+  const auto snapped = convertUstarToUstd( ufsnap, m );
+  Uij diff;
+  for ( auto i : ncrange( 6 ) )
+    diff[i] = snapped[i] - ustd[i];
+  if ( !( maxAbs( diff ) <= relTol * maxAbs( ustd ) + 2.0 * maxAbs( err ) ) )
+    NCRYSTAL_THROW2(BadInput,"The uij values of the site "<<descr
+                    <<" do not obey the site symmetry");
+  if ( !isPositiveDefinite( snapped ) )
+    NCRYSTAL_THROW2(BadInput,"The uij values of the site "<<descr
+                    <<" do not form a positive definite matrix");
+  return snapped;
+}
+
+NCU::Uij NCU::ustdOfOrbit( const SGSymmetry& sym, const CellMetric& m,
+                           const std::vector<Vector>& positions,
+                           const std::vector<Uij>& ustds,
+                           const std::string& descr, double relTol,
+                           const Uij& err )
+{
+  nc_assert_always( !positions.empty() && positions.size() == ustds.size() );
+  const Uij rep = snapUstdToSiteSymmetry( sym, m, positions.front(),
+                                          ustds.front(), descr, relTol, err );
+  for ( auto i : ncrange( std::size_t(1), positions.size() ) ) {
+    const Uij expected = mapUstdToPosition( sym, m, positions.front(),
+                                            vectAt( positions, i ), rep );
+    Uij diff;
+    for ( auto k : ncrange( 6 ) )
+      diff[k] = expected[k] - vectAt( ustds, i )[k];
+    if ( !( maxAbs( diff ) <= relTol * maxAbs( rep ) + 2.0 * maxAbs( err ) ) )
+      NCRYSTAL_THROW2(BadInput,"The uij values of the symmetry-equivalent"
+                      " positions of "<<descr<<" are not symmetry images of"
+                      " each other");
+  }
+  return rep;
+}

@@ -341,31 +341,6 @@ namespace NCRYSTAL_NAMESPACE {
         return ntot;
       }
 
-      bool symOpMaps( const SymOp& op, const AtomInfo::Pos& a,
-                      const AtomInfo::Pos& b )
-      {
-        return details::samePosition( op.apply( a.as<Vector>() )
-                                      .as<AtomInfo::Pos>(), b );
-      }
-
-      //Anisotropic displacement tensor (Ustd) of a site, mapped from the
-      //(symmetrised) input position sympos to the orbit representative rep:
-      UijUtils::Uij uijAtRepresentative( const SGSymmetry& sym,
-                                         const UijUtils::CellMetric& metric,
-                                         const AtomInfo::Pos& sympos,
-                                         const AtomInfo::Pos& rep,
-                                         const UijUtils::Uij& uij )
-      {
-        for ( auto& op : sym.operations() )
-          if ( symOpMaps( op, sympos, rep ) )
-            return UijUtils::convertUstarToUstd(
-              UijUtils::applySymOpToUstar(
-                op, UijUtils::convertUstdToUstar( uij, metric ) ),
-              metric );
-        nc_assert_always( false );
-        return uij;
-      }
-
       //Validate the uij of the sites of an AtomInfo and complete them: they
       //must be given for all or none of the sites, are snapped to the site
       //symmetry (averaged over the operations leaving the site position
@@ -399,34 +374,12 @@ namespace NCRYSTAL_NAMESPACE {
                                                   si.beta, si.gamma );
         const double msd = ai.msd().value();
         for ( auto& site : sites ) {
-          const auto descr = details::posDescr( ai, site.position );
-          const auto uf
-            = UijUtils::convertUstdToUstar( site.uij.value(), metric );
-          std::array<StableSum,6> sums;
-          unsigned nstab = 0;
-          for ( auto& op : sym.operations() ) {
-            if ( !symOpMaps( op, site.position, site.position ) )
-              continue;
-            ++nstab;
-            const auto t = UijUtils::applySymOpToUstar( op, uf );
-            for ( auto i : ncrange( 6 ) )
-              sums[i].add( t[i] );
-          }
-          nc_assert_always( nstab > 0 );
-          UijUtils::Uij ufsnap;
-          for ( auto i : ncrange( 6 ) )
-            ufsnap[i] = sums[i].sum() / nstab;
-          const auto snapped = UijUtils::convertUstarToUstd( ufsnap, metric );
-          UijUtils::Uij diff;
-          for ( auto i : ncrange( 6 ) )
-            diff[i] = snapped[i] - site.uij.value()[i];
-          if ( UijUtils::maxAbs( diff )
-               > 0.05 * UijUtils::maxAbs( site.uij.value() ) )
-            NCRYSTAL_THROW2(BadInput,"The uij values of the site "<<descr
-                            <<" do not obey the site symmetry");
-          if ( !UijUtils::isPositiveDefinite( snapped ) )
-            NCRYSTAL_THROW2(BadInput,"The uij values of the site "<<descr
-                            <<" do not form a positive definite matrix");
+          const auto snapped
+            = UijUtils::snapUstdToSiteSymmetry( sym, metric,
+                                                site.position.as<Vector>(),
+                                                site.uij.value(),
+                                                details::posDescr( ai, site.position ) );
+          const auto ufsnap = UijUtils::convertUstdToUstar( snapped, metric );
           const double ueq = UijUtils::calcUeqFromUstar( ufsnap, metric );
           nc_assert_always( ueq > 0.0 );
           const double scale = msd / ueq;
@@ -505,11 +458,11 @@ namespace NCRYSTAL_NAMESPACE {
                               details::atominfo_pos_compare );
             checkNew( ai, input, orbitpos.front() );
             if ( site.uij.has_value() )
-              site.uij = uijAtRepresentative( sym, metric,
-                                              orbit.positions.front()
-                                              .as<AtomInfo::Pos>(),
-                                              orbitpos.front(),
-                                              site.uij.value() );
+              site.uij = UijUtils::mapUstdToPosition( sym, metric,
+                                                     orbit.positions.front(),
+                                                     orbitpos.front()
+                                                     .as<Vector>(),
+                                                     site.uij.value() );
             site.position = orbitpos.front();
             site.multiplicity = static_cast<unsigned>( orbitpos.size() );
             for ( auto& p : orbitpos )

@@ -54,8 +54,9 @@ def _orbit_positions( cellsg, setting, pos, occupancy ):
     q = [ 'sgsym', 'positions', 'strict', setting, 'lenient',
           _nc_sgsymimpl._cellarg( cellsg ),
           f'X,{x!r},{y!r},{z!r},{float(occupancy)!r}' ]
+    site, = evaluate_query( q )['sites']
     return [ tuple( _nc_sgsymimpl._remap_fract_pos(v) for v in p )
-             for _, p in evaluate_query( q ) ]
+             for p in site['positions'] ]
 
 def _mksite( a, cif_labels, pos, cellsg, setting, aniso ):
     #Site dict (cf. CIFLoader.sites) of the CIF atom a at position pos:
@@ -114,7 +115,7 @@ def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, permissive, quiet ):
     if rsites is not None:
         #Check that the sites are one per orbit of the final setting:
         type2rep = { types[i]: i for i, _ in r['allpos'] }
-        if ( Counter( lbl for lbl, _, _ in q['sites'] )
+        if ( Counter( s['label'] for s in q['sites'] )
              != Counter( f't{type2rep[ types[e["index"]] ]}' for e in rsites ) ):
             rsites = None
     if rsites is None:
@@ -128,8 +129,9 @@ def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, permissive, quiet ):
             _nc_common.warn( msg + ' (discarded due to permissive mode)' )
         #Sites from the query (without tensors), all CIF labels of each type:
         res = []
-        for lbl, pos, _ in q['sites']:
-            irep = int( lbl[1:] )
+        for s in q['sites']:
+            pos = s['position']
+            irep = int( s['label'][1:] )
             members = [ i for i in range( len( entries ) )
                         if types[i] == types[irep] ]
             res.append( _mksite( cif_atoms[ entries[irep]['src'] ],
