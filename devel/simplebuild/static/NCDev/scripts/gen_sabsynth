@@ -142,6 +142,14 @@ def main( outdir ):
            ' the explicit energy grid.', a, b, s, scaled = False,
            egrid = rounded( egrid, 6 ) )
 
+    a = np.linspace( 0.01, 50.0, 25 )
+    b = np.linspace( -30.0, 30.0, 61 )
+    s = np.full( ( len(b), len(a) ), 1e-3 )
+    ib = int( np.searchsorted( b, 0.0 ) )
+    s[ ib-1:ib+1, 0:2 ] = 1e27
+    write( outdir, 'dominant_cells', 'The cells around (alpha,beta)=(0,0)'
+           ' exceed all others by 1e30.', a, b, s, scaled = False )
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser( description = 'Write synthetic kernels.' )
     p.add_argument( 'outdir', type = pathlib.Path )

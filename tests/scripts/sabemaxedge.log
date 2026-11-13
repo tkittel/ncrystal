@@ -1,0 +1,4 @@
+Emax/kT with dominant cells x1e30: 0.9701, x1e10: 0.9701
+xs at E/kT=0.5,1,2: 6.95e+28 5.842e+28 2.921e+28
+5x5 kernel: Emax/kT 5.522
+5x5 kernel: xs at E/kT=1: 517.6
