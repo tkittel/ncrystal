@@ -113,31 +113,42 @@ namespace NCRYSTAL_NAMESPACE {
   };
 
   //Expansion of a site (fractional coordinates) into all its
-  //symmetry-equivalent positions, i.e. its 'orbit'. Positions are compared per
-  //coordinate, taking periodicity into account. Images of the site closer than
-  //5e-4 in all coordinates are considered identical (i.e. the site is on a
-  //special position which returns to itself early - without needing all the
-  //symmetry operations), in which case the site is first symmetrised (replaced
-  //by its average over the operations mapping it onto itself), which for
-  //example turns 0.3333 into 1/3. Images which are not identical, but closer
-  //than 1e-2 in all coordinates, indicate a site close to a special position
-  //but not on it (e.g. due to insufficient precision like 0.333 instead of
-  //1/3), in which case a BadInput exception is thrown. These thresholds are
-  //based on an analysis of rounding noise and genuinely distinct positions in
-  //CIF files from the Crystallography Open Database.
-
+  //symmetry-equivalent positions, i.e. its 'orbit', in a cell (for distances,
+  //in Aa, between the nearest periodic copies of positions). Images of the
+  //site closer than tolerances.averageBelow are considered identical (i.e.
+  //the site is on a special position), in which case the site is first
+  //replaced by its average over them, which for example turns 0.3333 into
+  //1/3. Images closer than tolerances.separateFrom are distinct copies of the
+  //atom, which can only be present together if the occupancy is at most 1/k
+  //for k such copies (e.g. a disordered atom split over two nearby
+  //positions); otherwise (e.g. for 0.333 instead of 1/3) a BadInput exception
+  //is thrown. The strict tolerances are for NCMAT data, the lenient ones for
+  //data with limited precision (e.g. CIF files), based on an analysis of
+  //rounding noise and disordered sites in files from the Crystallography
+  //Open Database:
+  struct SGSiteTolerances {
+    double averageBelow, separateFrom;
+    static constexpr SGSiteTolerances strict() noexcept { return { 1e-3, 0.5 }; }
+    static constexpr SGSiteTolerances lenient() noexcept { return { 1e-2, 0.5 }; }
+  };
   struct SGSiteOrbit {
     std::vector<Vector> positions;//wrapped into [0,1), symmetrised site first
     unsigned siteSymmetryOrder;//= group order / positions.size()
+    unsigned nearCopies = 0;//positions closer than separateFrom to the first
+    double nearestCopyDistance = 0.0;//(in Aa, if nearCopies>0)
   };
+  SGSiteOrbit expandSiteToOrbit( const SGSymmetry&, const CellParameters&,
+                                 const Vector& site, double occupancy,
+                                 const SGSiteTolerances& );
 
-  SGSiteOrbit expandSiteToOrbit( const SGSymmetry&, const Vector& site );
-
-  //The inverse grouping of positions into orbits. Returns the indices of the
+  //The inverse grouping of positions into orbits (each matched to the nearest
+  //symmetry image within separateFrom/2). Returns the indices of the
   //positions of each orbit, in increasing order, the orbits ordered by their
   //first index. Throws BadInput if the positions do not form complete orbits:
   std::vector<std::vector<unsigned>>
-  groupPositionsIntoOrbits( const SGSymmetry&, const std::vector<Vector>& positions );
+  groupPositionsIntoOrbits( const SGSymmetry&, const CellParameters&,
+                            const std::vector<Vector>& positions,
+                            double occupancy, const SGSiteTolerances& );
 
   //Check of a crystal structure against the settings of a space group number:
   //positions (fractional coordinates, grouped by species) are mapped by the

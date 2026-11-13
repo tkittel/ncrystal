@@ -213,6 +213,50 @@ def test_structure_symmetry():
            si['spacegroup_setting'], 'gamma', si['gamma'] )
     assert si['spacegroup_setting'] == '3:c'
 
+def test_split_sites():
+    #A disordered O atom split over two positions 0.054 Aa apart (about the
+    #mirror plane y=0 of Pm): allowed (with a warning) for occupancy 1/2, but
+    #not for occupancy 1 (both positions can not be occupied together):
+    import warnings
+    def text( occu ):
+        return f"""NCMAT v8
+@CELL
+  lengths 5 5.4 6
+  angles 90 90 90
+@SPACEGROUP
+  6:b
+@ATOMSITES
+  Al 0 0 0
+  O 0.1 0.005 0.2
+@ATOMOCCUPANCIES
+  O {occu}
+@DYNINFO
+  element Al
+  fraction {1/(1+2*float(eval(occu))):.17g}
+  type vdosdebye
+  debye_temp 300
+@DYNINFO
+  element O
+  fraction {2*float(eval(occu))/(1+2*float(eval(occu))):.17g}
+  type vdosdebye
+  debye_temp 300
+"""
+    with warnings.catch_warnings( record = True ) as wl:
+        warnings.simplefilter( 'always' )
+        si = NC.directLoad( text( '1/2' ), doScatter = False,
+                            doAbsorption = False ).info.structure_info
+    print( f'Split site with occupancy 1/2: {si["n_positions"]} positions' )
+    for w in wl:
+        print( '  warning:', str( w.message ) )
+    with ensure_error( NC.NCBadInput, 'At most one of the 2 symmetry-equivalent'
+                       ' positions of the site (0.1, 0.005, 0.2) within 0.5 Aa'
+                       ' (the closest 0.054 Aa apart) can be occupied, so its'
+                       ' occupancy must be at most 1/2 (got 1). For sites on'
+                       ' special positions, specify coordinates with'
+                       ' sufficient precision, preferably as exact fractions'
+                       ' like 1/3.' ):
+        NC.directLoad( text( '1' ), doScatter = False, doAbsorption = False )
+
 def main():
     test_hexagonal_angles()
     test_monoclinic_angles()
@@ -220,6 +264,7 @@ def main():
     test_symmetry_selfcheck()
     test_rhombohedral_axes()
     test_structure_symmetry()
+    test_split_sites()
 
 if __name__ == '__main__':
     main()

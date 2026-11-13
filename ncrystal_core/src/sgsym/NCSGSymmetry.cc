@@ -609,9 +609,6 @@ NC::SGSymmetry::SGSymmetry( internal_t, SpaceGroup sg )
 
 namespace NCRYSTAL_NAMESPACE {
   namespace {
-    using detail::site_merge_tol;
-    using detail::site_distinct_tol;
-
     double wrapCoord( double x )
     {
       double r = x - std::floor( x );
@@ -626,7 +623,9 @@ namespace NCRYSTAL_NAMESPACE {
                      wrapCoord( v.z() ) );
     }
 
-    //Periodic difference of each coordinate, in [-0.5,0.5]:
+    //Periodic difference of each coordinate, in [-0.5,0.5] (for distances
+    //well below the cell lengths, as needed here, this gives the nearest
+    //periodic copy):
     Vector periodicDiff( const Vector& a, const Vector& b )
     {
       auto f = []( double d ) { return d - std::round( d ); };
@@ -641,32 +640,92 @@ namespace NCRYSTAL_NAMESPACE {
       return ncmax( ncabs( d.x() ), ncabs( d.y() ), ncabs( d.z() ) );
     }
 
-    using detail::throwNearSpecial;
+    using detail::SiteMetric;
+
+    //Count the copies of the atom near the (symmetrised) site, which must be
+    //able to coexist given the occupancy (cf. expandSiteToOrbit):
+    void finishOrbit( SGSiteOrbit& res, const SiteMetric& metric,
+                      const SGSiteTolerances& tol, double occupancy )
+    {
+      nc_assert_always( !res.positions.empty() );
+      const Vector& site = res.positions.front();
+      for ( auto& p : res.positions ) {
+        const double d = metric.dist( periodicDiff( p, site ) );
+        if ( &p == &site || !( d < tol.separateFrom ) )
+          continue;
+        if ( !res.nearCopies || d < res.nearestCopyDistance )
+          res.nearestCopyDistance = d;
+        ++res.nearCopies;
+      }
+      const unsigned npos = res.nearCopies + 1;
+      if ( res.nearCopies && occupancy * npos > 1.0 + 1e-9 )
+        NCRYSTAL_THROW2(BadInput,"At most one of the "<<npos
+                        <<" symmetry-equivalent positions of the site ("
+                        <<fmt(site.x(),"%.6g")<<", "<<fmt(site.y(),"%.6g")
+                        <<", "<<fmt(site.z(),"%.6g")<<") within "
+                        <<fmt(tol.separateFrom)
+                        <<" Aa (the closest "
+                        <<fmt(res.nearestCopyDistance,"%.2g")<<" Aa apart)"
+                        " can be occupied, so its occupancy must be at most 1/"
+                        <<npos<<" (got "<<fmt(occupancy)<<"). For sites on"
+                        " special positions, specify coordinates with"
+                        " sufficient precision, preferably as exact fractions"
+                        " like 1/3.");
+    }
   }
 }
 
-void NC::detail::throwNearSpecial( const Vector& site, double dist )
+NC::detail::SiteMetric::SiteMetric( const CellParameters& c )
 {
-  NCRYSTAL_THROW2(BadInput,"The site ("<<fmt(site.x())<<", "
-                  <<fmt(site.y())<<", "<<fmt(site.z())<<") is close to a"
-                  " special position but not on it (symmetry-equivalent"
-                  " positions are only "<<fmt(dist,"%.2g")<<" apart in"
-                  " fractional coordinates). For sites on special"
-                  " positions, specify coordinates with sufficient"
-                  " precision, preferably as exact fractions like 1/3.");
+  const auto ca = stable_sincos_deg( c.alpha ).cos;
+  const auto cb = stable_sincos_deg( c.beta ).cos;
+  const auto cg = stable_sincos_deg( c.gamma ).cos;
+  m_gaa = c.a * c.a;
+  m_gbb = c.b * c.b;
+  m_gcc = c.c * c.c;
+  m_gab = 2.0 * c.a * c.b * cg;
+  m_gac = 2.0 * c.a * c.c * cb;
+  m_gbc = 2.0 * c.b * c.c * ca;
+}
+
+double NC::detail::SiteMetric::dist( const Vector& d ) const
+{
+  const double x = d.x(), y = d.y(), z = d.z();
+  const double dsq = ( m_gaa * x * x + m_gbb * y * y + m_gcc * z * z
+                       + m_gab * x * y + m_gac * x * z + m_gbc * y * z );
+  return std::sqrt( ncmax( 0.0, dsq ) );
+}
+
+void NC::detail::throwAmbiguousSite( const Vector& site )
+{
+  NCRYSTAL_THROW2(BadInput,"The site ("<<fmt(site.x(),"%.6g")<<", "
+                  <<fmt(site.y(),"%.6g")<<", "<<fmt(site.z(),"%.6g")
+                  <<") is too close to a"
+                  " special position to be either on it or clearly off it."
+                  " For sites on special positions, specify coordinates with"
+                  " sufficient precision, preferably as exact fractions like"
+                  " 1/3.");
 }
 
 NC::SGSiteOrbit NC::expandSiteToOrbit( const SGSymmetry& sym,
-                                       const Vector& input_site )
+                                       const CellParameters& cell,
+                                       const Vector& input_site,
+                                       double occupancy,
+                                       const SGSiteTolerances& tol )
 {
   if ( !std::isfinite( input_site.x() ) || !std::isfinite( input_site.y() )
        || !std::isfinite( input_site.z() ) )
     NCRYSTAL_THROW2(BadInput,"Invalid site coordinates: ("<<input_site.x()
                     <<", "<<input_site.y()<<", "<<input_site.z()<<")");
+  nc_assert_always( tol.averageBelow > 0.0
+                    && tol.separateFrom > tol.averageBelow );
+  const SiteMetric metric( cell );
   {
     SGSiteOrbit res;
-    if ( detail::expandSiteToOrbitExact( sym, input_site, res ) )
+    if ( detail::expandSiteToOrbitExact( sym, metric, tol, input_site, res ) ) {
+      finishOrbit( res, metric, tol, occupancy );
       return res;
+    }
   }
 
   //Otherwise in doubles:
@@ -674,48 +733,39 @@ NC::SGSiteOrbit NC::expandSiteToOrbit( const SGSymmetry& sym,
   const auto& ops = sym.operations();
 
   //Symmetrise: average (the nearest periodic copies of) the images of the
-  //site under the operations which map it onto itself. These operations
-  //(with their translations adjusted by the corresponding lattice vectors)
-  //form a group, so the average is exactly invariant under them:
+  //site closer than averageBelow, i.e. under the operations which map it
+  //onto itself:
   Vector sum( 0.0, 0.0, 0.0 );
   unsigned nstab = 0;
   for ( auto& op : ops ) {
-    const Vector img = op.apply( site );
-    const Vector d = periodicDiff( img, site );
-    const double dist = ncmax( ncabs( d.x() ), ncabs( d.y() ),
-                               ncabs( d.z() ) );
-    if ( dist < site_merge_tol ) {
+    const Vector d = periodicDiff( op.apply( site ), site );
+    if ( metric.dist( d ) < tol.averageBelow ) {
       sum += site + d;
       ++nstab;
-    } else if ( dist < site_distinct_tol ) {
-      throwNearSpecial( site, dist );
     }
   }
   nc_assert_always( nstab >= 1 );//at least the identity
   const Vector symsite = wrapPos( sum * ( 1.0 / nstab ) );
 
   //Expand the symmetrised site, keeping the first occurrence of each
-  //distinct position (all pairs of distinct positions must be clearly
-  //separated):
+  //distinct position:
   SGSiteOrbit res;
   for ( auto& op : ops ) {
     const Vector img = wrapPos( op.apply( symsite ) );
     bool found = false;
     for ( auto& p : res.positions ) {
-      const double dist = periodicDist( img, p );
-      if ( dist < site_merge_tol ) {
+      if ( metric.dist( periodicDiff( img, p ) ) < tol.averageBelow ) {
         found = true;
         break;
       }
-      if ( dist < site_distinct_tol )
-        throwNearSpecial( site, dist );
     }
     if ( !found )
       res.positions.push_back( img );
   }
-  const std::size_t npos = res.positions.size();
-  nc_assert_always( npos * nstab == ops.size() );
+  if ( res.positions.size() * nstab != ops.size() )
+    detail::throwAmbiguousSite( site );
   res.siteSymmetryOrder = nstab;
+  finishOrbit( res, metric, tol, occupancy );
   return res;
 }
 
@@ -822,8 +872,12 @@ namespace NCRYSTAL_NAMESPACE {
 
 std::vector<std::vector<unsigned>>
 NC::groupPositionsIntoOrbits( const SGSymmetry& sym,
-                              const std::vector<Vector>& positions )
+                              const CellParameters& cell,
+                              const std::vector<Vector>& positions,
+                              double occupancy,
+                              const SGSiteTolerances& tol )
 {
+  const SiteMetric metric( cell );
   nc_assert_always( positions.size() < std::numeric_limits<unsigned>::max() );
   const unsigned n = static_cast<unsigned>( positions.size() );
   std::vector<bool> assigned( n, false );
@@ -831,17 +885,19 @@ NC::groupPositionsIntoOrbits( const SGSymmetry& sym,
   for ( unsigned i = 0; i < n; ++i ) {
     if ( assigned[i] )
       continue;
-    const auto orbit = expandSiteToOrbit( sym, vectAt( positions, i ) );
+    const auto orbit = expandSiteToOrbit( sym, cell, vectAt( positions, i ),
+                                          occupancy, tol );
     std::vector<unsigned> members;
     members.reserve( orbit.positions.size() );
     for ( auto& img : orbit.positions ) {
       //The nearest unassigned position (must exist, clearly):
       unsigned best = n;
-      double bestdist = site_distinct_tol;
+      double bestdist = 0.5 * tol.separateFrom;
       for ( unsigned j = 0; j < n; ++j ) {
         if ( assigned[j] )
           continue;
-        const double dist = periodicDist( wrapPos( vectAt( positions, j ) ), img );
+        const double dist
+          = metric.dist( periodicDiff( wrapPos( vectAt( positions, j ) ), img ) );
         if ( dist < bestdist ) {
           bestdist = dist;
           best = j;

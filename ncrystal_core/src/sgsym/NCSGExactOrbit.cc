@@ -166,16 +166,18 @@ namespace NCRYSTAL_NAMESPACE {
       return 2 * r > den ? r - den : r;
     }
 
-    double periodicDist( const IPos& a, const IPos& b, std::int64_t den )
-      ncnoexceptndebug
+    using detail::SiteMetric;
+
+    //Distance (Aa) between the nearest periodic copies:
+    double periodicDist( const SiteMetric& metric, const IPos& a,
+                         const IPos& b, std::int64_t den ) ncnoexceptndebug
     {
       nc_assert( den > 0 );
-      std::int64_t m = 0;
-      for ( unsigned i = 0; i < 3; ++i ) {
-        const std::int64_t d = periodicDiffNum( a[i], b[i], den );
-        m = ncmax( m, d < 0 ? -d : d );
-      }
-      return double( m ) / double( den );
+      const double d = static_cast<double>( den );
+      return metric.dist( Vector(
+        static_cast<double>( periodicDiffNum( a[0], b[0], den ) ) / d,
+        static_cast<double>( periodicDiffNum( a[1], b[1], den ) ) / d,
+        static_cast<double>( periodicDiffNum( a[2], b[2], den ) ) / d ) );
     }
 
     //Correctly rounded (since |numerators| and den are at most 2^53):
@@ -211,7 +213,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-//Same as expandSiteToOrbit (and with the same tolerances), but in exact
+//Same as the averaging and expansion of expandSiteToOrbit, but in exact
 //integer arithmetic, so the resulting positions are the correctly
 //rounded values of the exact positions (e.g. 1/10 and not 1-0.9). The
 //site coordinates are recovered as rationals from the doubles (see
@@ -221,6 +223,8 @@ namespace NCRYSTAL_NAMESPACE {
 //below D*nstab<=192*D are below 4*192*D. Returns false if the coordinates
 //are not recognised as rationals, or if D would exceed the limit:
 bool NC::detail::expandSiteToOrbitExact( const SGSymmetry& sym,
+                                         const SiteMetric& metric,
+                                         const SGSiteTolerances& tol,
                                          const Vector& input_site,
                                          SGSiteOrbit& res )
 {
@@ -264,15 +268,12 @@ bool NC::detail::expandSiteToOrbitExact( const SGSymmetry& sym,
   std::int64_t nstab = 0;
   for ( auto& op : ops ) {
     const IPos img = applyOp( op, site, den / SymOp::tdenom );
-    const double dist = periodicDist( img, site, den );
-    if ( dist < site_merge_tol ) {
+    if ( periodicDist( metric, img, site, den ) < tol.averageBelow ) {
       for ( unsigned i = 0; i < 3; ++i ) {
         sum[i] += site[i] + periodicDiffNum( img[i], site[i], den );
         nc_assert( numOK( sum[i] ) );
       }
       ++nstab;
-    } else if ( dist < site_distinct_tol ) {
-      throwNearSpecial( site_dbl, dist );
     }
   }
   nc_assert_always( nstab >= 1 && nstab <= 192 );
@@ -289,18 +290,16 @@ bool NC::detail::expandSiteToOrbitExact( const SGSymmetry& sym,
       e = wrapNum( e, den2 );
     bool found = false;
     for ( auto& p : positions ) {
-      const double dist = periodicDist( img, p, den2 );
-      if ( dist < site_merge_tol ) {
+      if ( periodicDist( metric, img, p, den2 ) < tol.averageBelow ) {
         found = true;
         break;
       }
-      if ( dist < site_distinct_tol )
-        throwNearSpecial( site_dbl, dist );
     }
     if ( !found )
       positions.push_back( img );
   }
-  nc_assert_always( positions.size() * nstab == ops.size() );
+  if ( positions.size() * static_cast<std::size_t>( nstab ) != ops.size() )
+    throwAmbiguousSite( site_dbl );
   res.positions.clear();
   res.positions.reserve( positions.size() );
   for ( auto& p : positions )

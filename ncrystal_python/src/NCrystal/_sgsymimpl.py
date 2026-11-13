@@ -247,6 +247,11 @@ def _uses_rhombohedral_axes( sgnumber, alpha ):
     return ( int(sgnumber) in ( 146, 148, 155, 160, 161, 166, 167 )
              and alpha != 90 )
 
+def _cellarg( cellsg ):
+    """Cell parameters as one argument of the sgsym queries."""
+    return ','.join( repr( float( cellsg[k] ) )
+                     for k in ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' ) )
+
 def _sgspec( sgno, alpha ):
     """Space group number as a setting string for the sgsym queries, e.g. "166"
     or "166:r" (rhombohedral axes, judged from the cell angle alpha)."""

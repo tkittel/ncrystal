@@ -172,9 +172,12 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     }
     os << "]}";
   } else if ( key == sv_sites || key == sv_positions ) {
-    //["sgsym","sites",MODE,SG,"lbl,x,y,z",...]: group unit cell
-    //positions (fractional) into crystallographic sites, one per orbit
-    //of the space group: {"spacegroup_setting":"227:2",
+    //["sgsym","sites",MODE,SG,TOL,CELL,"lbl,x,y,z[,occupancy]",...]: group
+    //unit cell positions (fractional) into crystallographic sites, one per
+    //orbit of the space group, in the cell CELL ("a,b,c,alpha,beta,gamma"),
+    //with the site tolerances TOL ("strict" or "lenient", cf.
+    //SGSiteTolerances) and occupancies (default 1, the first given for a
+    //label applies to all of its positions): {"spacegroup_setting":"227:2",
     //"is_default_setting":b,"sites":[[lbl,[x,y,z],multiplicity],...]}.
     //SG is parsed in MODE "strict" or "relaxed" (cf. SpaceGroupParseMode),
     //and in relaxed mode the setting is moreover deduced from the
@@ -182,17 +185,39 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     //bare number finds e.g. an origin choice 2 structure), while in strict
     //mode the positions must have the symmetry of exactly the given
     //setting (an error otherwise).
-    //["sgsym","positions",MODE,SG,"lbl,x,y,z",...]: the inverse,
+    //["sgsym","positions",MODE,SG,TOL,CELL,"lbl,x,y,z[,occupancy]",...]:
+    //the inverse,
     //expanding sites in the setting SG into all unit cell positions:
     //[[lbl,[x,y,z]],...].
     const bool tosites = ( key == sv_sites );
     const auto usage = ( tosites
                          ? "correct usage: [\"sgsym\",\"sites\","
-                         "\"strict|relaxed\",SG,\"lbl,x,y,z\",...]"
+                         "\"strict|relaxed\",SG,\"strict|lenient\","
+                         "\"a,b,c,alpha,beta,gamma\","
+                         "\"lbl,x,y,z[,occupancy]\",...]"
                          : "correct usage: [\"sgsym\",\"positions\","
-                         "\"strict|relaxed\",SG,\"lbl,x,y,z\",...]" );
-    if ( nargs < 3 || ( arg(0) != "strict" && arg(0) != "relaxed" ) )
+                         "\"strict|relaxed\",SG,\"strict|lenient\","
+                         "\"a,b,c,alpha,beta,gamma\","
+                         "\"lbl,x,y,z[,occupancy]\",...]" );
+    if ( nargs < 5 || ( arg(0) != "strict" && arg(0) != "relaxed" )
+         || ( arg(2) != "strict" && arg(2) != "lenient" ) )
       invalid( usage );
+    const auto tol = ( arg(2) == "strict" ? SGSiteTolerances::strict()
+                       : SGSiteTolerances::lenient() );
+    CellParameters cell;
+    {
+      auto parts = arg(3).splitTrimmed(',');
+      double v[6];
+      if ( parts.size() != 6 )
+        invalid( usage );
+      for ( auto j : ncrange( 6 ) ) {
+        auto x = parts.at(j).toDbl();
+        if ( !x.has_value() || !( x.value() > 0.0 ) )
+          invalid( usage );
+        v[j] = x.value();
+      }
+      cell = { v[0], v[1], v[2], v[3], v[4], v[5] };
+    }
     const bool strict = ( arg(0) == "strict" );
     const SpaceGroup given( arg(1), ( strict ? SpaceGroupParseMode::Strict
                                       : SpaceGroupParseMode::Relaxed ) );
@@ -203,10 +228,18 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     //Positions grouped by label, in order of first appearance:
     std::vector<std::string> labels;
     std::vector<std::vector<Vector>> positions;
-    for ( auto i : ncrange( std::size_t(2), nargs ) ) {
+    std::vector<double> occupancies;//(per label)
+    for ( auto i : ncrange( std::size_t(4), nargs ) ) {
       auto parts = arg(i).splitTrimmed(',');
-      if ( parts.size() != 4 )
+      if ( parts.size() != 4 && parts.size() != 5 )
         invalid( usage );
+      double occ = 1.0;
+      if ( parts.size() == 5 ) {
+        auto x = parts.at(4).toDbl();
+        if ( !x.has_value() || !( x.value() > 0.0 && x.value() <= 1.0 ) )
+          invalid( usage );
+        occ = x.value();
+      }
       double v[3];
       for ( auto j : ncrange( 3 ) ) {
         auto x = parts.at(j+1).toDbl();
@@ -221,6 +254,7 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
       if ( ilbl == labels.size() ) {
         labels.push_back( lbl );
         positions.emplace_back();
+        occupancies.push_back( occ );
       }
       positions[ilbl].emplace_back( v[0], v[1], v[2] );
     }
@@ -266,7 +300,9 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
                    []( const Vector& a, const Vector& b )
                    { return std::make_tuple( a.x(), a.y(), a.z() )
                             < std::make_tuple( b.x(), b.y(), b.z() ); } );
-        for ( auto& orbit : groupPositionsIntoOrbits( sym, plist ) ) {
+        for ( auto& orbit : groupPositionsIntoOrbits( sym, cell, plist,
+                                                      occupancies[ilbl],
+                                                      tol ) ) {
           os << ( first ? "[" : ",[" );
           first = false;
           streamJSON( os, labels[ilbl] );
@@ -282,7 +318,8 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
       bool first = true;
       for ( auto ilbl : ncrange( labels.size() ) ) {
         for ( auto& site : positions[ilbl] ) {
-          const auto orbit = expandSiteToOrbit( sym, site );
+          const auto orbit = expandSiteToOrbit( sym, cell, site,
+                                                occupancies[ilbl], tol );
           for ( auto& p : orbit.positions ) {
             os << ( first ? "[" : ",[" );
             first = false;

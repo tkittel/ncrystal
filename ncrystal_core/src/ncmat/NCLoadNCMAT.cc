@@ -786,7 +786,13 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
       std::size_t natoms = 0;
       for ( auto& ep : elem2pos )
         for ( auto& p : ep.second )
-          natoms += expandSiteToOrbit( sym, p.as<Vector>() ).positions.size();
+          natoms += expandSiteToOrbit( sym,
+                                       { si.lattice_a, si.lattice_b,
+                                         si.lattice_c, si.alpha, si.beta,
+                                         si.gamma },
+                                       p.as<Vector>(), occupancyOf( ep.first ),
+                                       SGSiteTolerances::strict() )
+            .positions.size();
       si.n_positions = static_cast<unsigned>( natoms );
     }
 

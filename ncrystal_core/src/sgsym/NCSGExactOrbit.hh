@@ -29,16 +29,28 @@
 namespace NCRYSTAL_NAMESPACE {
   namespace detail {
 
-    //Tolerances of expandSiteToOrbit (see NCSGSymmetry.hh):
-    constexpr double site_merge_tol = 5e-4;
-    constexpr double site_distinct_tol = 1e-2;
-    [[noreturn]] void throwNearSpecial( const Vector& site, double dist );
+    //Cartesian distances (Aa) of fractional coordinate differences in a cell:
+    class SiteMetric {
+    public:
+      explicit SiteMetric( const CellParameters& );
+      double dist( const Vector& dfrac ) const;
+    private:
+      double m_gaa, m_gbb, m_gcc, m_gab, m_gac, m_gbc;
+    };
 
-    //Same as expandSiteToOrbit, but in exact integer arithmetic for sites
-    //whose coordinates are recognised as rationals (see rationalFromDouble),
-    //so the positions are the correctly rounded values of the exact images.
-    //Returns false (leaving res untouched) if not applicable:
-    bool expandSiteToOrbitExact( const SGSymmetry&, const Vector& site,
+    //Thrown if the site images can not be divided consistently into identical
+    //and distinct ones (i.e. a site at the averageBelow distance from a
+    //special position):
+    [[noreturn]] void throwAmbiguousSite( const Vector& site );
+
+    //Same as the averaging and expansion of expandSiteToOrbit (without the
+    //near copies and occupancy check of finishOrbit), but in exact integer
+    //arithmetic for sites whose coordinates are recognised as rationals (see
+    //rationalFromDouble), so the positions are the correctly rounded values
+    //of the exact images. Returns false (leaving res untouched) if not
+    //applicable:
+    bool expandSiteToOrbitExact( const SGSymmetry&, const SiteMetric&,
+                                 const SGSiteTolerances&, const Vector& site,
                                  SGSiteOrbit& res );
 
     //The fraction p/q with the smallest q (q<=maxDenominator) whose correctly
