@@ -1,0 +1,183 @@
+name: nothreads
+
+#Builds and tests with -DNCRYSTAL_ENABLE_THREADS=OFF (#307), long tests off.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, CC: gcc-14, CXX: g++-14,  python: '3.13', buildtype: 'Debug' }
+          - { os: macos-latest,  CC: clang,  CXX: clang++, python: '3.12', buildtype: 'Release' }
+    name: ${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}-${{ matrix.buildtype }}-nothreads
+    runs-on: ${{ matrix.os }}
+    env:
+      CC: ${{ matrix.CC }}
+      CXX: ${{ matrix.CXX }}
+    defaults:
+      run:
+        #bash gives "-o pipefail", so "cmd | tee log" fails if cmd fails:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        path: src
+
+    - name: Enable parallel cmake
+      run: python ./src/devel/bin/ncdevtool nprocs --enable-github-parallel
+
+    - name: Setup python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: ${{ matrix.python }}
+
+    - name: Pip install dependencies
+      run: python -mpip install -r ./src/devel/reqs/requirements_all_and_devel.txt
+
+    - name: Prepare log capture dir
+      run: mkdir -p ${{github.workspace}}/ci-logs
+
+    - name: Configure CMake
+      run: |
+        cmake \
+          -S ${{github.workspace}}/src \
+          -B ${{github.workspace}}/build \
+          -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} \
+          -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install \
+          -DNCRYSTAL_ENABLE_THREADS=OFF \
+          -DNCRYSTAL_ENABLE_EXAMPLES=ON \
+          -DNCRYSTAL_BUILD_STRICT=ON \
+          -DNCRYSTAL_ENABLE_TESTING=ON \
+          -DMCTOOLS_REQUIRE_ALL_TEST_DEPS=ON \
+          2>&1 | tee ${{github.workspace}}/ci-logs/configure.log
+
+    - name: Build
+      run: |
+        cmake \
+          --build ${{github.workspace}}/build \
+          --config ${{ matrix.buildtype }} \
+          2>&1 | tee ${{github.workspace}}/ci-logs/build.log
+
+    - name: CTest
+      run: |
+        ctest --test-dir ./build --no-tests=error --output-on-failure \
+          --test-output-size-failed 100000 --test-output-truncation middle --timeout 600 \
+          2>&1 | tee ${{github.workspace}}/ci-logs/ctest.log
+
+    - name: Package logs
+      if: always()
+      run: |
+        mkdir -p ${{github.workspace}}/ci-logs
+        for f in build/CMakeFiles/CMakeConfigureLog.yaml \
+                 build/Testing/Temporary/LastTest.log; do
+          if [ -f "${{github.workspace}}/$f" ]; then cp "${{github.workspace}}/$f" ${{github.workspace}}/ci-logs/; fi
+        done
+
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: ci-logs-${{ matrix.os }}-${{ matrix.buildtype }}-nothreads
+        path: ${{github.workspace}}/ci-logs
+        if-no-files-found: warn
+
+  build_windows:
+    #MSVC via CMake's default (multi-config) generator, so no CC/CXX and the
+    #build type is given at build/test time. Relative paths, since
+    #github.workspace has backslashes here, which bash would mangle:
+    name: windows-2025-Release-nothreads
+    runs-on: windows-2025
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        path: src
+
+    - name: Enable parallel cmake
+      run: python ./src/devel/bin/ncdevtool nprocs --enable-github-parallel
+
+    - name: Setup python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: '3.14'
+
+    - name: Pip install dependencies
+      run: python -mpip install -r ./src/devel/reqs/requirements_all_and_devel.txt
+
+    - name: Prepare log capture dir
+      run: mkdir -p ci-logs
+
+    - name: Configure CMake
+      run: |
+        cmake \
+          -S src \
+          -B build \
+          -DCMAKE_INSTALL_PREFIX=install \
+          -DNCRYSTAL_ENABLE_THREADS=OFF \
+          -DNCRYSTAL_ENABLE_EXAMPLES=ON \
+          -DNCRYSTAL_BUILD_STRICT=ON \
+          -DNCRYSTAL_ENABLE_TESTING=ON \
+          -DMCTOOLS_REQUIRE_ALL_TEST_DEPS=ON \
+          2>&1 | tee ci-logs/configure.log
+
+    - name: Build
+      run: |
+        cmake --build build --config Release 2>&1 | tee ci-logs/build.log
+
+    - name: CTest
+      run: |
+        ctest --test-dir ./build --build-config Release --no-tests=error --output-on-failure \
+          --test-output-size-failed 100000 --test-output-truncation middle --timeout 600 \
+          2>&1 | tee ci-logs/ctest.log
+
+    - name: Package logs
+      if: always()
+      run: |
+        mkdir -p ci-logs
+        for f in build/CMakeFiles/CMakeConfigureLog.yaml \
+                 build/Testing/Temporary/LastTest.log; do
+          if [ -f "$f" ]; then cp "$f" ci-logs/; fi
+        done
+
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: ci-logs-windows-2025-Release-nothreads
+        path: ci-logs
+        if-no-files-found: warn
+
+  collect_logs:
+    #Bundles all per-leg logs into one downloadable tarball:
+    name: Collect all CI logs
+    needs: [ build, build_windows ]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all per-leg logs
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: ci-logs-*
+          path: all-ci-logs
+
+      - name: Bundle into a single tarball
+        run: |
+          mkdir -p all-ci-logs
+          tar -czf all-ci-logs-nothreads-${{ github.sha }}.tar.gz all-ci-logs
+
+      - name: Upload combined log tarball
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: all-ci-logs-nothreads-${{ github.sha }}
+          path: all-ci-logs-nothreads-${{ github.sha }}.tar.gz
