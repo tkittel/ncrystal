@@ -36,3 +36,4 @@ mixed site:
   type vdosdebye
   debye_temp 300
 atoms per cell after remap: 2.0
+undecodable formula with remap: ['X1 is 0.75 Al 0.25 Fe']

@@ -91,6 +91,9 @@ def test_extreme_exponents():
     check( '1e-1000000000', 0.0, 0.0 )#(must not hang)
     assert vu( '1e-' + '9' * 5000 ) == ( 0.0, 0.0 )#(beyond int() digit limit)
     assert vu( '0.0e' + '9' * 5000 ) is None
+    #(leading zeros in the exponent do not count as digits):
+    assert vu( '1e+000000000005' ) == ( 1e5, 5e4 )
+    assert vu( '1e-00000000000000001' ) == ( 0.1, 0.05 )
     check( '1.5e-320', 1.5e-320, 5e-322 )#(subnormal)
     check( '1e300', 1e300, 5e299 )
     check( '0.0e308', 0.0, 5e306 )

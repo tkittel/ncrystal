@@ -312,7 +312,8 @@ def parse_cif_number( s ):
     e = 0
     if exp:
         #(huge exponents are clamped, avoiding the digit limit of int()):
-        e = int( exp ) if len( exp ) < 12 else ( -1, 1 )[exp[0] != '-'] * 10**12
+        big = len( exp.lstrip( '+-' ).lstrip( '0' ) ) >= 12
+        e = ( -1, 1 )[exp[0] != '-'] * 10**12 if big else int( exp )
     k = e - len( fpart )
     if k < -400:
         return value, 0.0#(below the smallest double)
@@ -379,7 +380,8 @@ def ueq_from_cif( gemmi, block ):
     idx = ( (0,0), (1,1), (2,2), (0,1), (0,2), (1,2) )
     res = {}
     for row in block.find( '_atom_site_aniso_',
-                           [ 'label' ] + [ f'U_{k[1:]}' for k in _nc_sgsymimpl._uij_keys ] ):
+                           [ 'label' ] + [ f'U_{k[1:]}'
+                                           for k in _nc_sgsymimpl._uij_keys ] ):
         vals = [ parse_cif_number( gemmi.cif.as_string( row[i] ) )
                  for i in range( 1, 7 ) ]
         if any( v is None for v in vals ):
@@ -428,7 +430,8 @@ def _plain_site( site ):
         #ignored later):
         raise _nc_core.NCBadInput( f'CIF site "{site.label}" has missing or'
                                    ' invalid fractional coordinates' )
-    aniso = { k: float( getattr( site.aniso, k ) ) for k in _nc_sgsymimpl._uij_keys }
+    aniso = { k: float( getattr( site.aniso, k ) )
+              for k in _nc_sgsymimpl._uij_keys }
     if all( v == 0.0 for v in aniso.values() ):
         aniso = None
     en, Z = str( site.element.name ).strip(), int( site.element.atomic_number )
