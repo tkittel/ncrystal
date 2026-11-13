@@ -24,6 +24,8 @@ namespace NC = NCrystal;
 #include <streambuf>
 #include <istream>
 #include <locale>
+#include <cerrno>
+#include <cstdlib>
 
 namespace NCRYSTAL_NAMESPACE {
   namespace detail {
@@ -208,7 +210,7 @@ NC::ShortStrDbl NC::dbl2shortstr( double value, const char * fmtstr )
   //use std::to_char instead of these locale-dependent methods!
 
   //Use the delayed_init_t constructor of ShortStrDbl, to avoid a buffer copy
-  //(this is complicated, but worth it in this case):
+  //when fmtstr is given (this is complicated, but worth it in this case):
   char * buf;
   ShortStrDbl::size_type* buf_strlen_ptr;
   ShortStrDbl result( ShortStrDbl::delayed_init_t{}, &buf, &buf_strlen_ptr );
@@ -221,16 +223,16 @@ NC::ShortStrDbl NC::dbl2shortstr( double value, const char * fmtstr )
     nc_assert( buf[nwritten_strlen] == '\0' );
     buf_strlen = nwritten_strlen;
     nc_assert( (int)std::strlen(buf) == (int)buf_strlen );
-    //Protect against non-C locale creating commas instead of dots for decimal
-    //separators:
-    auto pcomma = std::memchr(buf,',',buf_strlen);
-    if ( pcomma )
-      *(char*)pcomma = '.';
   };
 
   if ( fmtstr ) {
     //honour request for specific fmt string:
     dosnprintf(fmtstr);
+    //Protect against non-C locale creating commas instead of dots for decimal
+    //separators:
+    auto pcomma = std::memchr(buf,',',buf_strlen);
+    if ( pcomma )
+      *(char*)pcomma = '.';
   } else {
     //No specific format string requested, aim for lossless and "nice".
 
@@ -261,11 +263,27 @@ NC::ShortStrDbl NC::dbl2shortstr( double value, const char * fmtstr )
 
     //First try with a bit less than maxdigits10, which can prevent some
     //originally nice looking values being presented in a less nice looking
-    //fashion (e.g. 0.1 -> 0.09999999999999999).
-    dosnprintf(fmt_full_m2);
-    auto backconv = detail::raw_str2dbl( buf, buf_strlen );
-    if ( !backconv.has_value() || backconv.value() != value )
-      dosnprintf(fmt_full);
+    //fashion (e.g. 0.1 -> 0.09999999999999999). Round-trip check with strtod
+    //on the raw output, which uses the same (C) locale as snprintf; if it
+    //fails, fmt_full is exact anyway. Formats into a larger buffer, since the
+    //locale's decimal point can have several bytes until normalised:
+    char raw[64];
+    auto rawsnprintf = [&raw,value]( const char * f )
+    {
+      const int n = std::snprintf( raw, sizeof(raw), f, value );
+      nc_assert_always( n > 0 && n < static_cast<int>( sizeof(raw) ) );
+      return static_cast<std::size_t>( n );
+    };
+    std::size_t n = rawsnprintf( fmt_full_m2 );
+    const int saved_errno = errno;//strtod sets ERANGE for denormals
+    if ( std::strtod( raw, nullptr ) != value )
+      n = rawsnprintf( fmt_full );
+    errno = saved_errno;
+    n = detail::normaliseDecimalPoint( raw, n );
+    nc_assert_always( n <= ShortStrDbl::max_strlen );
+    std::memcpy( buf, raw, n );
+    buf[n] = '\0';
+    buf_strlen = static_cast<ShortStrDbl::size_type>( n );
 #ifndef NDEBUG
     {
       //loss less check:
