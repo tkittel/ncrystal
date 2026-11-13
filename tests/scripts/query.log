@@ -147,13 +147,29 @@ Caught expected NCBadInput('Invalid SAB JSON query: ["sab","surveyor","@1@2@x","
 
 >>> Sending query: ['sgsym', 'sites', 'strict', '227:2', 'strict', '5.43,5.43,5.43,90,90,90', 'Si,0.125,0.125,0.125', 'Si,0.875,0.875,0.875', 'Si,0.875,0.375,0.375', 'Si,0.375,0.875,0.375', 'Si,0.375,0.375,0.875', 'Si,0.125,0.625,0.625', 'Si,0.625,0.125,0.625', 'Si,0.625,0.625,0.125']
 {'is_default_setting': False,
- 'sites': [['Si', [0.125, 0.125, 0.125], 8]],
+ 'sites': [{'label': 'Si',
+            'multiplicity': 8,
+            'position': [0.125, 0.125, 0.125],
+            'split': None,
+            'uij': None}],
  'spacegroup_setting': '227:2'}
 relaxed 227 -> setting 227:2
 Caught expected NCBadInput('Atom positions are not consistent with space group 227:1 (largest deviation of a symmetry image from an atom of the same type: 0.25 in fractional coordinates)')
-Caught expected NCBadInput('Invalid sgsym query: ["sgsym","sites","227:2","Si,0.125,0.125,0.125"] (correct usage: ["sgsym","sites","strict|relaxed",SG,"strict|lenient","a,b,c,alpha,beta,gamma","lbl,x,y,z[,occupancy]",...])')
-6:b split site with occupancy 0.5 -> 2 positions
+Caught expected NCBadInput('Invalid sgsym query: ["sgsym","sites","227:2","Si,0.125,0.125,0.125"] (correct usage: ["sgsym","sites","strict|relaxed",SG,"strict|lenient","a,b,c,alpha,beta,gamma","lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]",...])')
+Caught expected NCBadInput('Invalid sgsym query: ["sgsym","positions","strict","227:2","strict","5.43,5.43,5.43,90,90,90","Si,0.125,0.125,0.125,1,2"] (correct usage: ["sgsym","positions","strict|relaxed",SG,"strict|lenient","a,b,c,alpha,beta,gamma","lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]",...])')
+split site: [{'label': 'O', 'multiplicity': 2, 'split': {'positions': 2, 'distance': 0.054}, 'uij': None, 'positions': [[0.1, 0.005, 0.2], [0.1, 0.995, 0.2]], 'uijs': None}]
 Caught expected NCBadInput('At most one of the 2 symmetry-equivalent positions of the site (0.1, 0.005, 0.2) within 0.5 Aa (the closest 0.054 Aa apart) can be occupied, so its occupancy must be at most 1/2 (got 1). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.')
+uij on the mirror plane: [0.012, 0.009, 0.015, 0.0, 0.003, 0.0] multiplicity 1
+U12=0.0003 snapped to: [0.012, 0.009, 0.015, 0.0, 0.003, 0.0]
+Caught expected NCBadInput('The uij values of the site O (0.1, 0, 0.2) do not obey the site symmetry')
+lenient, printed U12=0.001 snapped to: [0.012, 0.009, 0.015, 0.0, 0.003, 0.0]
+Caught expected NCBadInput('The uij values of the site O (0.1, 0, 0.2) do not obey the site symmetry')
+Caught expected NCBadInput('The uij values of the site O (0.1, 0, 0.2) do not form a positive definite matrix')
+uij at the two positions of a general site: [[0.012, 0.009, 0.015, 0.002, 0.003, 0.001], [0.012, 0.009, 0.015, -0.002, 0.003, -0.001]]
+grouped back into sites: [{'label': 'O', 'position': [0.1, 0.3, 0.2], 'multiplicity': 2, 'split': None, 'uij': [0.012, 0.009, 0.015, 0.002, 0.003, 0.001]}]
+Caught expected NCBadInput('The uij values of the symmetry-equivalent positions of O (0.1, 0.3, 0.2) are not symmetry images of each other')
+Caught expected NCBadInput('Anisotropic displacements (uij) must be given for all or none of the entries of O')
+printed CIF numbers: [0.012, 0.009, 0.015, 0.0, 0.003, 0.0]
 ============= CLI >>util wl2ekin 1.8<< ====================
 0.025248213035
 ===========================================

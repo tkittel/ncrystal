@@ -1,0 +1,21 @@
+Conversions:
+  Ueq (triclinic): 0.01218666252
+  eigenvalues: 0.5, 1, 1.5
+Basics:
+  y,x,-z: (1, 2, 3, 4, 5, 6) -> (2, 1, 3, 4, -6, -5)
+Directional MSDs:
+  36 directions
+Site symmetry:
+  snapped (0.012, 0.009, 0.015, 0.0003, 0.003, 0) -> (0.012, 0.009, 0.015, 0, 0.003, 0)
+  BadInput: The uij values of the site O do not obey the site symmetry
+  BadInput: The uij values of the site O do not form a positive definite matrix
+  snapped (0.01, 0.0101, 0.0099, 0.0002, 0, 0) -> (0.01, 0.01, 0.01, 0, 0, 0)
+  BadInput: The uij values of the site Al do not obey the site symmetry
+Exact snapping:
+  5300 tensors in all settings: fixed points, with exact zeros
+  snapped at 194 2c: (0.009933333333, 0.009933333333, 0.014, 0.004966666667, 0, 0)
+  136 site symmetries (subgroups of 50 point groups): exact structure
+Orbits:
+  mapped (0.012, 0.009, 0.015, 0.002, 0.003, 0.001) -> (0.012, 0.009, 0.015, -0.002, 0.003, -0.001)
+  BadInput: No symmetry operation of space group 6:b maps (0.1, 0.3, 0.2) onto (0.1, 0.4, 0.2)
+  BadInput: The uij values of the symmetry-equivalent positions of O are not symmetry images of each other

@@ -237,7 +237,7 @@ def main():
     from NCrystalDev.misc import evaluate_query
     def sg17( sgspec, declared = '17:abc' ):
         pos = evaluate_query( [ 'sgsym', 'positions', 'strict', sgspec, 'strict',
-                                '5,6,7,90,90,90', 'Al,0.1,0.2,0.3' ] )
+                                '5,6,7,90,90,90', 'Al,0.1,0.2,0.3' ] )['sites'][0]['positions']
         text = """NCMAT v8
 @CELL
   lengths 5 6 7
@@ -245,7 +245,7 @@ def main():
 @SPACEGROUP
   """ + declared + """
 @ATOMPOSITIONS
-""" + ''.join( f'  Al {x!r} {y!r} {z!r}\n' for lbl,(x,y,z) in pos ) + """@DYNINFO
+""" + ''.join( f'  Al {x!r} {y!r} {z!r}\n' for x,y,z in pos ) + """@DYNINFO
   element Al
   fraction 1
   type vdosdebye
