@@ -115,7 +115,8 @@ namespace NCRYSTAL_NAMESPACE {
             for ( auto& site : ai.sites() ) {
               const double sitescale = ( StableDbl( double(site.multiplicity) )
                                          * o * cfg.scale_factor ).value() / ntot;
-              const auto uf = UijUtils::cifToFrac( site.uij.value(), metric );
+              const auto uf
+                = UijUtils::convertUstdToUstar( site.uij.value(), metric );
               for ( auto& e : UijUtils::directionalMSDs( uf, metric ) ) {
                 auto it = msd2idx.find( e.first );
                 if ( it != msd2idx.end() ) {

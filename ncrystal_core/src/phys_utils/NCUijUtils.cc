@@ -65,21 +65,21 @@ NCU::CellMetric NCU::cellMetric( double a, double b, double c,
   return m;
 }
 
-NCU::Uij NCU::cifToFrac( const Uij& u, const CellMetric& m )
+NCU::Uij NCU::convertUstdToUstar( const Uij& u, const CellMetric& m )
 {
   const auto& r = m.recilen;
   return { u[0]*r[0]*r[0], u[1]*r[1]*r[1], u[2]*r[2]*r[2],
            u[3]*r[0]*r[1], u[4]*r[0]*r[2], u[5]*r[1]*r[2] };
 }
 
-NCU::Uij NCU::fracToCif( const Uij& u, const CellMetric& m )
+NCU::Uij NCU::convertUstarToUstd( const Uij& u, const CellMetric& m )
 {
   const auto& r = m.recilen;
   return { u[0]/(r[0]*r[0]), u[1]/(r[1]*r[1]), u[2]/(r[2]*r[2]),
            u[3]/(r[0]*r[1]), u[4]/(r[0]*r[2]), u[5]/(r[1]*r[2]) };
 }
 
-NCU::Uij NCU::transformFrac( const SymOp& op, const Uij& u )
+NCU::Uij NCU::applySymOpToUstar( const SymOp& op, const Uij& u )
 {
   static constexpr unsigned ri[6] = { 0, 1, 2, 0, 0, 1 };
   static constexpr unsigned rj[6] = { 0, 1, 2, 1, 2, 2 };
@@ -102,7 +102,7 @@ NCU::Uij NCU::transformFrac( const SymOp& op, const Uij& u )
   return res;
 }
 
-double NCU::ueqFromFrac( const Uij& u, const CellMetric& m )
+double NCU::calcUeqFromUstar( const Uij& u, const CellMetric& m )
 {
   StableSum s;
   for ( unsigned i = 0; i < 3; ++i )
@@ -129,10 +129,11 @@ double NCU::maxAbs( const Uij& u )
   return res;
 }
 
-std::array<double,3> NCU::cartEigenvalues( const Uij& u, const CellMetric& m )
+std::array<double,3> NCU::calcUcartEigenvalues( const Uij& u,
+                                                const CellMetric& m )
 {
-  //Eigenvalues of U_frac*G (similar to U_cart), from the characteristic
-  //polynomial (all roots real and positive for positive definite U_frac):
+  //Eigenvalues of Ustar*G (similar to Ucart), from the characteristic
+  //polynomial (all roots real and positive for positive definite Ustar):
   std::array<double,9> M;
   for ( unsigned i = 0; i < 3; ++i )
     for ( unsigned j = 0; j < 3; ++j )
@@ -171,7 +172,7 @@ std::vector<NC::PairDD> NCU::directionalMSDs( const Uij& u,
   static constexpr double w[6] = { 0.1713244923791704, 0.3607615730481386,
                                    0.4679139345726910, 0.4679139345726910,
                                    0.3607615730481386, 0.1713244923791704 };
-  const auto ev = cartEigenvalues( u, m );
+  const auto ev = calcUcartEigenvalues( u, m );
   std::vector<PairDD> res;
   res.reserve( 36 );
   for ( unsigned i = 0; i < 6; ++i ) {
