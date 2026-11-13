@@ -1,0 +1,10 @@
+edge values: 25 values, streamJSON output as expected for 25
+  1e+16 -> 1e+16
+  1.0461373122004696e+16 -> 10461373122004696.0
+  9007199254740992.0 -> 9007199254740992.0
+  9007199254740994.0 -> 9007199254740994.0
+  -1e+22 -> -1e+22
+  1e+17 -> 1e+17
+  1e-17 -> 1e-17
+  0.1 -> 0.1
+random bit patterns: 20000 values, streamJSON output as expected for 20000
