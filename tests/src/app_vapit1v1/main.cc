@@ -71,10 +71,10 @@ int main() {
   double dir[3] = { 1.0, 0.0, 0.0 };//dummy dir
   auto wl2ekin = [](double wl)
   {
-    return 0.081804209605330899 / (wl*wl);
+    return 0.081804210234757059 / (wl*wl);
   };
   auto ekin2wl = [](double ekin) {
-    return std::sqrt( 0.081804209605330899 / ekin );
+    return std::sqrt( 0.081804210234757059 / ekin );
   };
   auto it_refval = refvals_xs_al.begin();
   int i = 0;

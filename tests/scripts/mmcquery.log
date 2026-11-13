@@ -78,9 +78,9 @@ Caught expected NCBadInput('Invalid src cfg: ""')
              'uy': 0.0,
              'uz': 1.0},
  'metadata': {'fixed_dir': [0.0, 0.0, 1.0],
-              'fixed_energy': 0.020451052401332725,
+              'fixed_energy': 0.020451052558689266,
               'mean_dir': [0.0, 0.0, 1.0],
-              'mean_energy': 0.020451052401332725,
+              'mean_energy': 0.020451052558689266,
               'energy_description': '2Aa'}}
 
 >>> Sending query: ['mmc', 'inspectcfg', 'src', 'isotropic; z=-10;ekin=0.025']
@@ -115,9 +115,9 @@ Caught expected NCBadInput('Invalid src cfg: ""')
              'uz': 0.7071067811865475,
              'r': 0.1},
  'metadata': {'fixed_dir': [0.7071067811865475, 0.0, 0.7071067811865475],
-              'fixed_energy': 0.025248212841151512,
+              'fixed_energy': 0.025248213035418843,
               'mean_dir': [0.7071067811865475, 0.0, 0.7071067811865475],
-              'mean_energy': 0.025248212841151512,
+              'mean_energy': 0.025248213035418843,
               'energy_description': '1.8Aa'}}
 
 >>> Sending query: ['mmc', 'inspectcfg', 'src', 'constant; z=-10;wl=2.0-3.0']
@@ -138,7 +138,7 @@ Caught expected NCBadInput('Invalid src cfg: ""')
  'metadata': {'fixed_dir': [0.0, 0.0, 1.0],
               'fixed_energy': None,
               'mean_dir': [0.0, 0.0, 1.0],
-              'mean_energy': 0.013088673536852944,
+              'mean_energy': 0.013088673637561131,
               'energy_description': '(2-3)Aa'}}
 
 >>> Sending query: ['mmc', 'inspectcfg', 'src', 'constant; z=-10;ekin=0.025-1.0']
@@ -178,7 +178,7 @@ Caught expected NCBadInput('Invalid src cfg: ""')
  'metadata': {'fixed_dir': [0.0, 0.0, 1.0],
               'fixed_energy': None,
               'mean_dir': [0.0, 0.0, 1.0],
-              'mean_energy': 0.020451052401332725,
+              'mean_energy': 0.020451052558689266,
               'energy_description': '(2+-0.1)Aa'}}
 
 >>> Sending query: ['mmc', 'inspectcfg', 'src', 'constant; z=-10;ekin=0.025+-0.001']
@@ -216,7 +216,7 @@ Caught expected NCBadInput('Invalid src cfg: ""')
  'metadata': {'fixed_dir': [0.0, 0.0, 1.0],
               'fixed_energy': None,
               'mean_dir': [0.0, 0.0, 1.0],
-              'mean_energy': 0.006462997725,
+              'mean_energy': 0.006462999946608882,
               'energy_description': 'Maxwell(50K)'}}
 
 >>> Sending query: ['mmc', 'inspectcfg', 'src', 'constant; z=-10;ekin=1eV']
@@ -977,9 +977,9 @@ Caught expected NCBadInput('Invalid tally "nobreakdown" (use "tallybreakdown=0" 
              'uy': 0.0,
              'uz': 1.0},
  'metadata': {'fixed_dir': [0.0, 0.0, 1.0],
-              'fixed_energy': 0.025248212841151512,
+              'fixed_energy': 0.025248213035418843,
               'mean_dir': [0.0, 0.0, 1.0],
-              'mean_energy': 0.025248212841151512,
+              'mean_energy': 0.025248213035418843,
               'energy_description': '1.8Aa'}}
 
 >>> Sending query: ['mmc', 'inspectcfg', 'src', 'constant;ekin=0.001-0.1;x=2;z=-0.1;ux=0;uy=1;uz=1']
@@ -1018,9 +1018,9 @@ Caught expected NCBadInput('Invalid tally "nobreakdown" (use "tallybreakdown=0" 
              'uz': 1.0,
              'r': 0.1},
  'metadata': {'fixed_dir': [0.0, 0.0, 1.0],
-              'fixed_energy': 0.025248212841151512,
+              'fixed_energy': 0.025248213035418843,
               'mean_dir': [0.0, 0.0, 1.0],
-              'mean_energy': 0.025248212841151512,
+              'mean_energy': 0.025248213035418843,
               'energy_description': '1.8Aa'}}
 
 >>> Sending query: ['mmc', 'inspectcfg', 'src', 'isotropic;ekin=0.025+-0.001;n=10000']
@@ -1115,7 +1115,7 @@ Caught expected NCBadInput('Invalid tally "nobreakdown" (use "tallybreakdown=0" 
  'metadata': {'fixed_dir': [0.0, 0.0, 1.0],
               'fixed_energy': None,
               'mean_dir': [0.0, 0.0, 1.0],
-              'mean_energy': 0.0099530164965,
+              'mean_energy': 0.00995301991777768,
               'energy_description': 'Maxwell(77K)'}}
 
 >>> Sending query: ['mmc', 'inspectcfg', 'src', 'constant;wl=1.8']
@@ -1132,9 +1132,9 @@ Caught expected NCBadInput('Invalid tally "nobreakdown" (use "tallybreakdown=0" 
              'uy': 0.0,
              'uz': 1.0},
  'metadata': {'fixed_dir': [0.0, 0.0, 1.0],
-              'fixed_energy': 0.025248212841151512,
+              'fixed_energy': 0.025248213035418843,
               'mean_dir': [0.0, 0.0, 1.0],
-              'mean_energy': 0.025248212841151512,
+              'mean_energy': 0.025248213035418843,
               'energy_description': '1.8Aa'}}
 
 >>> Sending query: ['mmc', 'inspectcfg', 'src', 'constant;wl=1.8-5']
@@ -1155,7 +1155,7 @@ Caught expected NCBadInput('Invalid tally "nobreakdown" (use "tallybreakdown=0" 
  'metadata': {'fixed_dir': [0.0, 0.0, 1.0],
               'fixed_energy': None,
               'mean_dir': [0.0, 0.0, 1.0],
-              'mean_energy': 0.007076488720184335,
+              'mean_energy': 0.007076488774632965,
               'energy_description': '(1.8-5)Aa'}}
 
 >>> Sending query: ['mmc', 'inspectcfg', 'src', 'constant;wl=1.8+-0.01']
@@ -1174,5 +1174,5 @@ Caught expected NCBadInput('Invalid tally "nobreakdown" (use "tallybreakdown=0" 
  'metadata': {'fixed_dir': [0.0, 0.0, 1.0],
               'fixed_energy': None,
               'mean_dir': [0.0, 0.0, 1.0],
-              'mean_energy': 0.025248212841151512,
+              'mean_energy': 0.025248213035418843,
               'energy_description': '(1.8+-0.01)Aa'}}

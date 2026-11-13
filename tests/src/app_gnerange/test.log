@@ -632,7 +632,7 @@
   estimateGnErange: [-4.567, -0.7275]
 
 === Debye T=2000K,temp=293.15K (wide), order=30 (npts=344, relcontriblvl=1e-12) ===
-  snapToGrid      : [-4.697, -0.3298]
+  snapToGrid      : [-4.697, -0.3299]
   linear2pt       : [-4.71, -0.323]
   logLinear2pt    : [-4.71, -0.3233]
   estimateGnErange: [-4.71, -0.3233]
@@ -797,7 +797,7 @@
 === Li2O (real material), element=Li, order=20 (npts=241, relcontriblvl=0.001) ===
   snapToGrid      : [-1.136, 0.01893]
   linear2pt       : [-1.145, 0.01921]
-  logLinear2pt    : [-1.145, 0.01918]
+  logLinear2pt    : [-1.145, 0.01919]
   estimateGnErange: [-1.145, 0.01919]
 
 === Li2O (real material), element=Li, order=20 (npts=241, relcontriblvl=1e-06) ===
@@ -1012,8 +1012,8 @@
 
 === Li2O (real material), element=O, order=60 (npts=189, relcontriblvl=1e-06) ===
   snapToGrid      : [-2.461, -1.492e-16]
-  linear2pt       : [-2.461, 0.008439]
-  logLinear2pt    : [-2.461, 0.007574]
+  linear2pt       : [-2.461, 0.00844]
+  logLinear2pt    : [-2.461, 0.007575]
   estimateGnErange: [-2.461, 0.007604]
 
 === Li2O (real material), element=O, order=60 (npts=189, relcontriblvl=1e-09) ===

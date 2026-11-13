@@ -5,7 +5,7 @@ gnexpn maxOrder: 36
 gnexpn alpha2x: 0.06397
 gnexpn suggestedEmax: 1
 gnexpn sabRange: 5.751e-07 189.2 -39.02 16.12
-gnexpn last abRange: n=36 183.2 1275 -71.27 11.54
+gnexpn last abRange: n=36 183.2 1275 -71.27 11.55
 gnexpn G1 rawspec [4667]: front=~0 back=~0 min=~0 max=46.68 sum=3.029e+04
 knl alphaGrid [110]: front=~0 back=189.2 min=~0 max=189.2 sum=5279
 knl betaGrid [240]: front=-39.15 back=16.4 min=-39.15 max=16.4 sum=-493.9
