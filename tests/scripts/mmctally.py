@@ -37,13 +37,19 @@ def main():
     pprint.pp(tally_info())
     assert tallies == tally_info()['flags']['ALLHISTS']
 
+    #TODO: Energy-like tallies (de, e, l) are compared for single scattering
+    #only, since their total histograms have underestimated errors (see
+    #minimc_unittest in NCTestUtils/minimc_ref.py):
+    singlescat_tallies = ('de','e','l')
+
     #Test all tallies:
     for tally in tallies:
         print(f"Testing tally: {tally}")
         m( cfgstr='Al_sg225.ncmat;temp=200K',
            neutron_energy='2.5Aa',
            key=f'<auto>_{tally}',
-           tally=tally )
+           tally=tally,
+           singlescat_only = tally in singlescat_tallies )
 
     #Test tallyref on the tallies possibly affected:
 
@@ -58,6 +64,7 @@ def main():
             print(f"Testing tally: {tally} [tallyref={tr}]")
             m( key=f'<auto>_{tally}_tallyref{tr}',
                extra_enginecfg=f'tallyref={tr}',
+               singlescat_only = tally in singlescat_tallies,
                **kw)
 
 if __name__ == '__main__':

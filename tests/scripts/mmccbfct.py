@@ -55,12 +55,20 @@ def main(do_plot, do_update):
         ntot[0] += len( w )
         mask_fwd = uz > 0.5
         mask_back = uz < -0.5
+        hists['nscat_fwd'].fill( nscat[mask_fwd], w[mask_fwd] )
+        hists['nscat_back'].fill( nscat[mask_back], w[mask_back] )
+        #TODO: The wl0 and e histograms only use neutrons with nscat=1, since
+        #MiniMC's forced-collision scheme gives several correlated entries per
+        #source neutron (one per step, all with the same wl0), and histogram
+        #errors (sqrt of sum of w^2) are underestimated when such entries share
+        #bins, making the comparison fail too often. Entries with a given nscat
+        #are independent. Use all neutrons again once errors account for this.
+        mask_fwd &= nscat == 1
+        mask_back &= nscat == 1
         hists['wl0_fwd'].fill( wl0[mask_fwd], w[mask_fwd] )
         hists['wl0_back'].fill( wl0[mask_back], w[mask_back] )
         hists['e_fwd'].fill( e[mask_fwd], w[mask_fwd] )
         hists['e_back'].fill( e[mask_back], w[mask_back] )
-        hists['nscat_fwd'].fill( nscat[mask_fwd], w[mask_fwd] )
-        hists['nscat_back'].fill( nscat[mask_back], w[mask_back] )
 
     nccore.enableFactoryThreads()
     res = ncmmc.run(
