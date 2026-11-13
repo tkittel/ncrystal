@@ -38,6 +38,7 @@
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"//TODO: might not be needed eventually
 #include "NCrystal/internal/phys_utils/NCEqRefl.hh"//TODO: might not be needed eventually
 #include "NCrystal/internal/atomdb/NCAtomDB.hh"
+#include <new>
 #include "NCrystal/internal/vdos/NCVDOSEval.hh"
 #include "NCrystal/internal/vdos/NCVDOSGn.hh"
 #include "NCrystal/internal/vdos/NCVDOSToScatKnl.hh"
@@ -394,8 +395,10 @@ namespace NCRYSTAL_NAMESPACE {
       const std::runtime_error* stdrte = dynamic_cast<const std::runtime_error*>(&e);
       if (stdrte)
         setError(stdrte->what(),"std::runtime_error");
+      else if ( dynamic_cast<const std::bad_alloc*>(&e) )
+        setError("out of memory (std::bad_alloc)","std::bad_alloc");
       else
-        setError("<unknown>","std::exception");
+        setError(e.what(),"std::exception");
     }
 
     class RNGCWrapper final : public RNGStream {
