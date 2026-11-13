@@ -134,6 +134,15 @@ def main():
     c = read( noangles )
     assert c['cell']['beta'] == 90.0 and set( c['ueq_printed'] ) == { 'O1' }
     print( 'missing cell angles: 90 degrees, Ueq rounding errors available' )
+    #Angles of 90 and 120 degrees without uncertainty are exact:
+    import gemmi
+    from NCrystalDev._cifreadimpl import _cell_from_cif
+    for al, be, ga in ( ( '90', '90.00', '120.0' ), ( '90.00(3)', '105', '104' ),
+                        ( '89.99', '90.', '60' ) ):
+        blk = gemmi.cif.read_string( cif( cell = f'5.1 6.3 7.2 {al} {be} {ga}' ) ).sole_block()
+        c = _cell_from_cif( gemmi, blk )
+        print( f'angles {al} {be} {ga}: rounding errors',
+               [ f'{c[k][1]:.4g}' for k in ( 'alpha', 'beta', 'gamma' ) ] )
     expect_error( 'two blocks with sites', cif() + cif().replace( 'data_test', 'data_b' ) )
     expect_error( 'site without coordinates', cif( sites = [ 'O1 O ? ? ? 1 ? 4' ] ) )
     #(unoccupied sites are ignored later, so their coordinates do not matter):

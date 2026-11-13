@@ -328,8 +328,12 @@ def _cell_from_cif( gemmi, block ):
     for k in ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' ):
         tag = ( '_cell_angle_' if k in ( 'alpha', 'beta', 'gamma' )
                 else '_cell_length_' ) + k
-        s = block.find_value( tag )
-        v = parse_cif_number( gemmi.cif.as_string( s ) ) if s else None
+        raw = block.find_value( tag )
+        s = gemmi.cif.as_string( raw ) if raw is not None else None
+        v = parse_cif_number( s ) if s else None
+        if ( v and k in ( 'alpha', 'beta', 'gamma' ) and v[0] in ( 90.0, 120.0 )
+             and '(' not in s ):
+            v = ( v[0], 0.0 )#(angles required by space groups are exact)
         if v is None and k in ( 'alpha', 'beta', 'gamma' ) and s is None:
             v = ( 90.0, 0.0 )#(missing angles are 90 degrees, as in gemmi)
         if v is None:

@@ -10,7 +10,7 @@ monoclinic, listed operations, one tensor:
    multiplicities: {'O1': 4, 'Si1': 4, 'Fe1': 2}
    atom_type_number_in_cell: []
    uiso_printed: {'O1': ('0.0123', '5e-05'), 'Si1': ('0.0071', '5e-05')}
-   ueq_printed: {'O1': ('0.013201', '0.0006999')}
+   ueq_printed: {'O1': ('0.013201', '0.0006832')}
 old operations tag, no symbol:
    cell: {'a': 5.1, 'b': 6.3, 'c': 7.2, 'alpha': 90.0, 'beta': 105.0, 'gamma': 90.0}
    site: {'label': 'O1', 'element_name': 'O', 'element_Z': 8, 'fract': (0.79, 0.87, 0.63), 'occ': 1.0, 'u_iso': 0.0123, 'aniso': None}
@@ -41,6 +41,9 @@ atom counts, missing type symbol:
 block with the sites selected among two
 Biso 0.95: Uiso 0.0120319 with rounding error 6.33e-05
 missing cell angles: 90 degrees, Ueq rounding errors available
+angles 90 90.00 120.0: rounding errors ['0', '0', '0']
+angles 90.00(3) 105 104: rounding errors ['0.005', '0.5', '0.5']
+angles 89.99 90. 60: rounding errors ['0.005', '0', '0.5']
 two blocks with sites: rejected: Could not automatically determine block in CIF data with structure info
 site without coordinates: rejected: CIF site "O1" has missing or invalid fractional coordinates
 unoccupied site without coordinates: accepted with occupancies [1.0, 0.0]
