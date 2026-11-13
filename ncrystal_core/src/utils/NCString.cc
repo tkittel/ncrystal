@@ -631,10 +631,9 @@ void NC::streamJSON( std::ostream& os, double val )
   //point types to integer types once the json string is decoded in e.g. Python.
   auto sstr = dbl2shortstr(val);
   auto sstr_v = sstr.to_view();
-  if ( !sstr_v.contains_any( ".eE" ) && sstr_v.toInt().has_value() )
-    os << fmt( val, "%.1f" );
-  else
-    os << sstr;
+  os << sstr;
+  if ( !sstr_v.contains_any( ".eE" ) )
+    os << ".0";
 }
 
 void NC::streamJSONFastNotPretty( std::ostream& os, double val )
