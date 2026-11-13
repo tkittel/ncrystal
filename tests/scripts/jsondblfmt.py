@@ -20,7 +20,8 @@
 ##                                                                            ##
 ################################################################################
 
-#Exact JSON output of doubles from the C++ layer (streamJSON), checked against
+#Exact JSON output of doubles from the C++ layer (streamJSON and the arrays of
+#streamJSONHugeDblVect via streamJSONFastNotPretty), checked against
 #a platform independent reference computed with Python's correctly rounded
 #formatting, and decoded back to the identical Python floats.
 
@@ -59,11 +60,20 @@ def ref_streamjson( x ):
         return f'{x:.1f}'
     return s
 
+def ref_fastnotpretty( x ):
+    if math.isinf( x ) or x == 0.0:
+        return ref_streamjson( x )
+    s = f'{x:.17g}'
+    if abs( x ) < 1e17 and x == math.floor( x ):
+        s += '.0'
+    return s
+
 def run_query( values ):
     raw = evaluate_query( ['util','jsontest']
                           + [ str( bits(x) ) for x in values ], unpack = False )
-    part = raw.split( '"scalar":', 1 )[1].split( ']', 1 )[0] + ']'
-    return json.loads( part ), part[1:-1].split( ',' )
+    def tokens( key ):
+        return raw.split( f'"{key}":[', 1 )[1].split( ']', 1 )[0].split( ',' )
+    return json.loads( raw ), tokens( 'scalar' ), tokens( 'array' )
 
 def edge_values():
     return [ 1e16, 10461373122004696.0, 2.0**53, 2.0**53 + 2, -1e22, 1e17,
@@ -83,25 +93,27 @@ def random_values( n ):
     return res
 
 def check( values, label ):
-    d, tokens = run_query( values )
-    assert len( tokens ) == len( values )
-    nbad = 0
-    for x, tok, dec in zip( values, tokens, d ):
-        ok = ( tok == ref_streamjson( x ) and isinstance( dec, float )
-               and dec == x )
-        if not ok:
-            nbad += 1
-            if nbad <= 5:
-                print( f'  MISMATCH: {x!r}: got {tok}, expected'
-                       f' {ref_streamjson(x)}' )
-    print( f'{label}: {len(values)} values, streamJSON output as expected'
-           f' for {len(values)-nbad}' )
-    assert nbad == 0
+    d, tok_scalar, tok_array = run_query( values )
+    for key, toks, reffct in ( ( 'scalar', tok_scalar, ref_streamjson ),
+                               ( 'array', tok_array, ref_fastnotpretty ) ):
+        assert len( toks ) == len( values ) == len( d[key] )
+        nbad = 0
+        for x, tok, dec in zip( values, toks, d[key] ):
+            ok = ( tok == reffct( x ) and isinstance( dec, float )
+                   and dec == x )
+            if not ok:
+                nbad += 1
+                if nbad <= 5:
+                    print( f'  MISMATCH ({key}): {x!r}: got {tok},'
+                           f' expected {reffct(x)}' )
+        print( f'{label}: {len(values)} values, {key} output as expected'
+               f' for {len(values)-nbad}' )
+        assert nbad == 0
 
 def main():
     check( edge_values(), 'edge values' )
     for x in edge_values()[:8]:
-        print( f'  {x!r} -> {ref_streamjson(x)}' )
+        print( f'  {x!r} -> {ref_streamjson(x)} / {ref_fastnotpretty(x)}' )
     check( random_values( 20000 ), 'random bit patterns' )
 
 if __name__ == '__main__':
