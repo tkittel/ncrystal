@@ -24,7 +24,7 @@ Caught expected NCBadInput('The sites Si (0.125, 0.125, 0.125) and Si (0.875, 0.
 Sites in 225: Al 0 0 0, Cr 1/2 1/2 0
 Caught expected NCBadInput('The sites Al (0, 0, 0) and Cr (0.5, 0.5, 0) are symmetry-equivalent in space group 225, so both elements would occupy the same atom positions')
 Sites in 225: Al 0.003 0 0
-Caught expected NCBadInput('The site (0.003, 0, 0) is close to a special position but not on it (symmetry-equivalent positions are only 0.006 apart in fractional coordinates). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.')
+Caught expected NCBadInput('At most one of the 6 symmetry-equivalent positions of the site (0.003, 0, 0) within 0.5 Aa (the closest 0.017 Aa apart) can be occupied, so its occupancy must be at most 1/6 (got 1). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.')
 Site Al (0.0001, 0, 0) in 225: 4 atoms
 Caught expected NCBadInput('Fractions specified in DynamicInfoList are incompatible with those calculated from unit cell content forAtom(descr="Al",index=0): 0.3 vs 0.5')
 v7, bare 227, positions in origin choice 2: setting deduced as 227:2

@@ -243,16 +243,31 @@ NCTEST_CTYPES const char * nctest_sgsym_settinginfo( int hn )
 NCTEST_CTYPES const char * nctest_sgsym_expandsite( int hn, double x,
                                                     double y, double z )
 {
-  //Returns "<site symmetry order>|x y z;x y z;..." (full precision), or
+  //Returns "<site symmetry order>|a b c alpha beta gamma|x y z;x y z;..."
+  //(the test cell, and positions in full precision), or
   //"ERROR: <msg>" in case of BadInput:
   static std::string s_buf;//NB: Not thread-safe, but fine for this test
   try {
     try {
+      //(in a cell of about 20 Aa, with strict tolerances):
+      const auto& sym = NC::SGSymmetry::get( sgFromSettingIdx( hn ) );
+      using AC = NC::SGCellConstraints::AngleConstraint;
+      using LC = NC::SGCellConstraints::LengthConstraint;
+      const auto& cc = sym.cellConstraints();
+      NC::CellParameters cp{ 20.0, cc.b == LC::Free ? 22.0 : 0.0,
+                             cc.c == LC::Free ? 24.0 : 0.0,
+                             cc.alpha == AC::Free
+                             ? ( cc.beta == AC::EqualToAlpha ? 80.0 : 90.0 )
+                             : 0.0,
+                             cc.beta == AC::Free ? 90.0 : 0.0,
+                             cc.gamma == AC::Free ? 90.0 : 0.0 };
+      cc.complete( cp );
       const auto orbit = NC::expandSiteToOrbit(
-        NC::SGSymmetry::get( sgFromSettingIdx( hn ) ), NC::Vector( x, y, z ) );
+        sym, cp, NC::Vector( x, y, z ), 1.0, NC::SGSiteTolerances::strict() );
       std::ostringstream ss;
       ss.precision( 17 );
-      ss << orbit.siteSymmetryOrder << '|';
+      ss << orbit.siteSymmetryOrder << '|' << cp.a << ' ' << cp.b << ' '
+         << cp.c << ' ' << cp.alpha << ' ' << cp.beta << ' ' << cp.gamma << '|';
       for ( auto& p : orbit.positions )
         ss << ( &p == &orbit.positions.front() ? "" : ";" )
            << p.x() << ' ' << p.y() << ' ' << p.z();

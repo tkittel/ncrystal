@@ -37,31 +37,29 @@ from . import core as _nc_core
 
 
 def _query_sites( c, labelled_positions ):
-    #Sites (one per orbit) of labelled positions in the cell c (cellsg dict),
-    #from the atomsites query:
+    #Sites (one per orbit) of labelled positions (label, position, occupancy)
+    #in the cell c (cellsg dict), from the sgsym sites query:
     from .misc import evaluate_query
     q = [ 'sgsym', 'sites', 'relaxed',
-          _nc_sgsymimpl._sgspec( c['spacegroup']['number'], c['alpha'] ) ]
-    q += [ f'{lbl},{float(x)!r},{float(y)!r},{float(z)!r}'
-           for lbl,(x,y,z) in labelled_positions ]
-    try:
-        return evaluate_query( q )
-    except _nc_core.NCBadInput as e:
-        raise _nc_core.NCBadInput( 'The atom positions do not have the'
-                                   ' symmetry of space group'
-                                   f' {c["spacegroup"]["number"]}: {e}' )
+          _nc_sgsymimpl._sgspec( c['spacegroup']['number'], c['alpha'] ),
+          'lenient', _nc_sgsymimpl._cellarg( c ) ]
+    q += [ f'{lbl},{float(x)!r},{float(y)!r},{float(z)!r},{float(o)!r}'
+           for lbl,(x,y,z),o in labelled_positions ]
+    return evaluate_query( q )
 
-def _orbit_positions( setting, pos ):
+def _orbit_positions( cellsg, setting, pos, occupancy ):
     #All positions of the orbit of pos, in the space group setting:
     from .misc import evaluate_query
     x, y, z = ( float(v) for v in pos )
-    q = [ 'sgsym', 'positions', 'strict', setting, f'X,{x!r},{y!r},{z!r}' ]
+    q = [ 'sgsym', 'positions', 'strict', setting, 'lenient',
+          _nc_sgsymimpl._cellarg( cellsg ),
+          f'X,{x!r},{y!r},{z!r},{float(occupancy)!r}' ]
     return [ tuple( _nc_sgsymimpl._remap_fract_pos(v) for v in p )
              for _, p in evaluate_query( q ) ]
 
-def _mksite( a, cif_labels, pos, setting, aniso ):
+def _mksite( a, cif_labels, pos, cellsg, setting, aniso ):
     #Site dict (cf. CIFLoader.sites) of the CIF atom a at position pos:
-    allpos = _orbit_positions( setting, pos )
+    allpos = _orbit_positions( cellsg, setting, pos, a['occupancy'] )
     return { 'cif_labels': tuple( sorted( set( cif_labels ) ) ),
              'composition': tuple( a['composition'] ),
              'occupancy': a['occupancy'],
@@ -79,12 +77,12 @@ def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, permissive, quiet ):
     from collections import Counter
     sgs = _nc_sgsymimpl
     if not refine:
-        q = _query_sites( cellsg, [ ( f'a{i}', p )
+        q = _query_sites( cellsg, [ ( f'a{i}', p, a['occupancy'] )
                                     for i, a in enumerate( cif_atoms )
                                     for p in a['positions'] ] )
         setting = q['spacegroup_setting']
         return cellsg, [ _mksite( a, a['cif_labels'], a['positions'][0],
-                                  setting, a['aniso'] )
+                                  cellsg, setting, a['aniso'] )
                          for a in cif_atoms ], setting
 
     #All positions, with tensors rotated accordingly:
@@ -105,7 +103,8 @@ def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, permissive, quiet ):
     nc = r['cellsg']
     cellsg = { k: nc[k] for k in ('a','b','c','alpha','beta','gamma') }
     cellsg['spacegroup'] = { 'number': nc['spacegroup'], 'hm': r['sgsymb_hm'] }
-    q = _query_sites( cellsg, [ ( f't{i}', p ) for i, p in r['allpos'] ] )
+    q = _query_sites( cellsg, [ ( f't{i}', p, entries[i]['occu'] )
+                                for i, p in r['allpos'] ] )
     setting = q['spacegroup_setting']
     def labels_of( indices ):
         return [ lbl for i in indices
@@ -134,15 +133,16 @@ def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, permissive, quiet ):
             members = [ i for i in range( len( entries ) )
                         if types[i] == types[irep] ]
             res.append( _mksite( cif_atoms[ entries[irep]['src'] ],
-                                 labels_of( members ), pos, setting, None ) )
+                                 labels_of( members ), pos, cellsg, setting,
+                                 None ) )
         return cellsg, res, setting
     res, dropped = [], []
     for e in rsites:
         a = cif_atoms[ entries[ e['index'] ]['src'] ]
         if e['aniso_dropped']:
             dropped += labels_of( e['members'] )
-        res.append( _mksite( a, labels_of( e['members'] ), e['pos'], setting,
-                             e['aniso'] ) )
+        res.append( _mksite( a, labels_of( e['members'] ), e['pos'], cellsg,
+                             setting, e['aniso'] ) )
     if dropped:
         msg = ( 'The anisotropic displacements of the symmetry equivalent CIF'
                 f' sites {", ".join( sorted( set( dropped ) ) )} are not'

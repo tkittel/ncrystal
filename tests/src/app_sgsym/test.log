@@ -1778,11 +1778,13 @@ Rounded special positions:
   194 site (0.3333, 0.6667, 0.25) etc.: symmetrised to (1/3, 2/3, 1/4)
   194 site (0.333333333, 0.666666667, 0.2500000001) etc.: symmetrised to (1/3, 2/3, 1/4)
   sites k/24 in all settings: fixed coordinates identical when expanded in doubles
-  194 -> BadInput: The site (0.333, 0.667, 0.25) is close to a special position but not on it (symmetry-equivalent positions are only 0.001 apart in fractional coordinates). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.
-  227:2 -> BadInput: The site (0.125, 0.125, 0.12) is close to a special position but not on it (symmetry-equivalent positions are only 0.005 apart in fractional coordinates). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.
-Sites near a mirror plane (Pm with y->-y):
-  y=0.0002: merged (y=0), y=0.006: two positions
-  6:b -> BadInput: The site (0.1, 0.004, 0.2) is close to a special position but not on it (symmetry-equivalent positions are only 0.008 apart in fractional coordinates). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.
+  194 -> BadInput: At most one of the 3 symmetry-equivalent positions of the site (0.333, 0.667, 0.25) within 0.5 Aa (the closest 0.005 Aa apart) can be occupied, so its occupancy must be at most 1/3 (got 1). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.
+  227:2 -> BadInput: At most one of the 6 symmetry-equivalent positions of the site (0.125, 0.125, 0.12) within 0.5 Aa (the closest 0.035 Aa apart) can be occupied, so its occupancy must be at most 1/6 (got 1). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.
+  227:2 -> BadInput: At most one of the 6 symmetry-equivalent positions of the site (0.125, 0.125, 0.12) within 0.5 Aa (the closest 0.035 Aa apart) can be occupied, so its occupancy must be at most 1/6 (got 0.3). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.
+Sites near a mirror plane (Pm with y->-y, b=5.5 Aa):
+  6:b -> BadInput: At most one of the 2 symmetry-equivalent positions of the site (0.1, 0.0005, 0.2) within 0.5 Aa (the closest 0.0055 Aa apart) can be occupied, so its occupancy must be at most 1/2 (got 1). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.
+  6:b -> BadInput: At most one of the 2 symmetry-equivalent positions of the site (0.1, 0.006, 0.2) within 0.5 Aa (the closest 0.066 Aa apart) can be occupied, so its occupancy must be at most 1/2 (got 0.51). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.
+  y=0.00005: averaged (y=0); y=0.0005: averaged only with lenient tolerances; y=0.006: split site (1 copy at 0.066 Aa, needs occupancy <= 1/2); y=0.06: two positions
 Wrapping and invalid input:
   (1.25, -0.5, 2.0) -> (0.25, 0.5, 0)
   1 -> BadInput: Invalid site coordinates: (nan, 0, 0)
@@ -1798,7 +1800,7 @@ All OK
   227:2: 24 positions in 2 orbits of sizes 8 16
   194: 14 positions in 2 orbits of sizes 12 2
   14:c1: 6 positions in 2 orbits of sizes 2 4
-  225 with one position missing -> BadInput: Atom positions do not form complete orbits of the space group setting (no position near the symmetry image (0.1544, 0.2345, 0.3766) of (1.8766, 0.8456, 0.2655))
+  225 with one position missing -> BadInput: Atom positions do not form complete orbits of the space group setting (no position near the symmetry image (0.5357, 0.66, 0.9127) of (1.4643, 0.66, -0.0873))
 All OK
 ==== Structure symmetry check ====
   68:1ba-c has the same operations as 68:1
@@ -1806,8 +1808,8 @@ All OK
   68:1a-cb has the same operations as 68:1bca
 Structures in all other 527 settings matched to their setting (deviation < 1e-12)
 SG-19 structure with one atom moved by 0.01: setting 19, deviation 0.01
-SG-149 structure checked as SG-150: deviation 0.234
-SG-150 structure checked as SG-149: deviation 0.234
+SG-149 structure checked as SG-150: deviation 0.249
+SG-150 structure checked as SG-149: deviation 0.196
 227:2 structure checked against 227:2: deviation < 1e-12
 227:2 structure checked against 227:1: deviation 0.25
 14:c1 structure checked against 14:c1: deviation < 1e-12
