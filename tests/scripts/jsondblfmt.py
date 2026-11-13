@@ -27,8 +27,11 @@
 
 import NCTestUtils.enable_fpe # noqa F401
 from NCrystalDev.misc import evaluate_query
+import ctypes
 import json
+import locale
 import math
+import os
 import random
 import struct
 import sys
@@ -110,11 +113,31 @@ def check( values, label ):
                f' for {len(values)-nbad}' )
         assert nbad == 0
 
+def check_locales( values ):
+    #Output must not depend on the decimal point of the C locale. Uses the C
+    #library's setlocale directly (POSIX only), since it returns NULL for
+    #unavailable locales:
+    if os.name != 'posix':
+        return
+    setlocale = ctypes.CDLL( None ).setlocale
+    setlocale.restype = ctypes.c_char_p
+    setlocale.argtypes = [ ctypes.c_int, ctypes.c_char_p ]
+    args = ['util','jsontest'] + [ str( bits(x) ) for x in values ]
+    ref = evaluate_query( args, unpack = False )
+    for name in ( 'de_DE.UTF-8', 'de_DE.utf8', 'fr_FR.UTF-8', 'fr_FR.utf8',
+                  'ps_AF.UTF-8', 'ps_AF.utf8', 'fa_IR.UTF-8', 'fa_IR.utf8' ):
+        if setlocale( locale.LC_NUMERIC, name.encode() ) is None:
+            continue
+        raw = evaluate_query( args, unpack = False )
+        setlocale( locale.LC_NUMERIC, b'C' )
+        assert raw == ref, f'output differs in locale {name}'
+
 def main():
     check( edge_values(), 'edge values' )
     for x in edge_values()[:8]:
         print( f'  {x!r} -> {ref_streamjson(x)} / {ref_fastnotpretty(x)}' )
     check( random_values( 20000 ), 'random bit patterns' )
+    check_locales( edge_values() + random_values( 2000 ) )
 
 if __name__ == '__main__':
     main()
