@@ -40,7 +40,7 @@ def _query_sites( c, labelled_positions ):
     #Sites (one per orbit) of labelled positions in the cell c (cellsg dict),
     #from the atomsites query:
     from .misc import evaluate_query
-    q = [ 'util', 'atomsites', 'relaxed',
+    q = [ 'sgsym', 'sites', 'relaxed',
           _nc_sgsymimpl._sgspec( c['spacegroup']['number'], c['alpha'] ) ]
     q += [ f'{lbl},{float(x)!r},{float(y)!r},{float(z)!r}'
            for lbl,(x,y,z) in labelled_positions ]
@@ -55,7 +55,7 @@ def _orbit_positions( setting, pos ):
     #All positions of the orbit of pos, in the space group setting:
     from .misc import evaluate_query
     x, y, z = ( float(v) for v in pos )
-    q = [ 'util', 'atompositions', 'strict', setting, f'X,{x!r},{y!r},{z!r}' ]
+    q = [ 'sgsym', 'positions', 'strict', setting, f'X,{x!r},{y!r},{z!r}' ]
     return [ tuple( _nc_sgsymimpl._remap_fract_pos(v) for v in p )
              for _, p in evaluate_query( q ) ]
 

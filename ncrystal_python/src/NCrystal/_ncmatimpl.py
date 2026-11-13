@@ -756,7 +756,7 @@ class NCMATComposerImpl:
                     'aniso': dict( zip( keys, u ) ) if u else None }
                   for ( lbl, x, y, z ), u in zip( atompos['sites'],
                                                   atompos['uij'] ) ]
-        ops = evaluate_query( [ 'util', 'sgsym', 'strict',
+        ops = evaluate_query( [ 'sgsym', 'info', 'strict',
                                 _sgspec_for_sites( cellsg ) ] )['ops']
         expanded = _nc_sgsymimpl._expand_sites( ops, cellsg, sites )
         r = _nc_sgsymimpl._refine_sites( cellsg, expanded, tols )
@@ -787,7 +787,7 @@ class NCMATComposerImpl:
                                  ' of each other' )
             sgspec = _nc_sgsymimpl._sgspec( newcell['spacegroup'],
                                             newcell['alpha'] )
-            q = evaluate_query( [ 'util', 'atomsites', 'relaxed', sgspec ]
+            q = evaluate_query( [ 'sgsym', 'sites', 'relaxed', sgspec ]
                                 + [ f'{lbl},{x!r},{y!r},{z!r}'
                                     for lbl, x, y, z in allpos ] )
             from collections import Counter
@@ -949,7 +949,7 @@ class NCMATComposerImpl:
             return atompos
         sgspec = _sgspec_for_sites( self.__params.get('cellsg') )
         from .misc import evaluate_query
-        query = [ 'util', 'atompositions', 'strict', sgspec ]
+        query = [ 'sgsym', 'positions', 'strict', sgspec ]
         query += [ f'{lbl},{x!r},{y!r},{z!r}'
                    for lbl,x,y,z in atompos['sites'] ]
         pos = [ ( lbl, _nc_sgsymimpl._remap_fract_pos(p[0]), _nc_sgsymimpl._remap_fract_pos(p[1]),
@@ -1017,10 +1017,10 @@ class NCMATComposerImpl:
         from .misc import evaluate_query
         if atompos.get('sites') is not None:
             sgspec = _sgspec_for_sites( cellsg )
-            setting = evaluate_query(['util','sgsym','strict',sgspec])
+            setting = evaluate_query([ 'sgsym', 'info', 'strict',sgspec])
             sites = []
             for lbl,x,y,z in atompos['sites']:
-                mult = len( evaluate_query( [ 'util', 'atompositions',
+                mult = len( evaluate_query( [ 'sgsym', 'positions',
                                               'strict', sgspec,
                                               f'{lbl},{x!r},{y!r},{z!r}' ] ) )
                 sites.append( ( lbl, ( x, y, z ), mult ) )
@@ -1038,7 +1038,7 @@ class NCMATComposerImpl:
             mode = 'relaxed'
             sgspec = ( f'{sg}:r' if _nc_sgsymimpl._uses_rhombohedral_axes( sg, cellsg['alpha'] )
                        else str(sg) )
-        query = [ 'util', 'atomsites', mode, sgspec ]
+        query = [ 'sgsym', 'sites', mode, sgspec ]
         query += [ f'{lbl},{x!r},{y!r},{z!r}' for lbl,x,y,z in atompos['pos'] ]
         try:
             return evaluate_query( query )
@@ -1801,7 +1801,7 @@ def _parse_sgsetting( spacegroup ):
             raise _nc_core.NCBadInput(f'Invalid space group setting: "{spacegroup}"')
         return n, None
     from .misc import evaluate_query
-    canonical = evaluate_query(['util','sgsym','strict',s])['spacegroup']
+    canonical = evaluate_query([ 'sgsym', 'info', 'strict',s])['spacegroup']
     return int(canonical.split(':')[0]), canonical
 
 def _sgspec_for_sites( cellsg ):
