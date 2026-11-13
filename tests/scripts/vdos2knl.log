@@ -52,7 +52,7 @@ T=14K: G1 binwidth/kT <= 0.25: True  |DB deviation| < 2.5%: True
 T=50K: G1 binwidth/kT <= 0.25: True  |DB deviation| < 2.5%: True
 T=293.15K: G1 binwidth/kT <= 0.25: True  |DB deviation| < 2.5%: True
 Caught expected NCBadInput('VDOS expansion not supported for temperatures below 0.1K (requested T=0.09K)')
-Caught expected NCCalcError('VDOS expansion would require too many (4642000) bins to resolve the VDOS (which extends to 10eV) on the scale of kT=8.6173303e-06eV (max allowed is 1000000). The temperature is likely too low for the given VDOS.')
+Caught expected NCCalcError('VDOS expansion would require too many (4642000) bins to resolve the VDOS (which extends to 10eV) on the scale of kT=8.6173332621451774e-06eV (max allowed is 1000000). The temperature is likely too low for the given VDOS.')
 vdos_clathrate_H.ncmat: detailed balance of Gn functions fulfilled
 vdos_clathrate_H.ncmat: vdoslux=3 Emax >= 2eV and cross sections within 2.5% of reference: True
 vdos_clathrate_O2.ncmat: detailed balance of Gn functions fulfilled

@@ -1,4 +1,4 @@
-19.28768344355451
+19.287683779469408
 LoadedMaterial(Info=n/a, Scatter=n/a, Absorption=n/a)
 ----------------------------------------------------------------------------------------------------
 ------------------------------------   NCrystal Material Info   ------------------------------------
@@ -46,18 +46,18 @@ HKL planes (d_lower = 1 Aa, d_upper = inf Aa):
   H   K   L  d_hkl[Aa] Mult. FSquared[barn]
   1   1   1    2.35458    8     8.31585
   2   0   0    2.03912    6     8.00729
-  2   2   0    1.44188   12     6.88338
+  2   2   0    1.44188   12     6.88339
   3   1   1    1.22964   24     6.14525
   2   2   2    1.17729    8     5.91723
   4   0   0    1.01956    6     5.08669
 ----------------------------------------------------------------------------------------------------
 Scattering cross sections of Au_sg225.ncmat (inmem)
-  sigma_coh_elas ( 0.5 Aa ) = 1.436074091709 barn
-  sigma_coh_elas ( 2 Aa ) = 5.5074188840686 barn
+  sigma_coh_elas ( 0.5 Aa ) = 1.4360745677487 barn
+  sigma_coh_elas ( 2 Aa ) = 5.5074191612146 barn
   sigma_coh_elas ( 5 Aa ) = 0 barn
-  sigma_incoh_elas ( 0.5 Aa ) = 0.086260016371982 barn
-  sigma_incoh_elas ( 2 Aa ) = 0.36984881191971 barn
-  sigma_incoh_elas ( 5 Aa ) = 0.41953177320948 barn
-  sigma_inelas ( 0.5 Aa ) = 6.114073 barn
+  sigma_incoh_elas ( 0.5 Aa ) = 0.086260044334234 barn
+  sigma_incoh_elas ( 2 Aa ) = 0.36984883015337 barn
+  sigma_incoh_elas ( 5 Aa ) = 0.41953177666958 barn
+  sigma_inelas ( 0.5 Aa ) = 6.114072 barn
   sigma_inelas ( 2 Aa ) = 1.028024 barn
   sigma_inelas ( 5 Aa ) = 0.3140298 barn

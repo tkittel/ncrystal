@@ -108,8 +108,8 @@ Unit cell volume [Aa^3] : 195.072
 Atoms / unit cell       : 12
 ----------------------------------------------------------------------------------------------------
 Atom positions in unit cell (total 12):
-     8 F  positions [T_Debye=486.72K, MSD=0.0101855Aa^2]
-     4 Sr positions [T_Debye=266.35K, MSD=0.0070195Aa^2]
+     8 F  positions [T_Debye=486.72K, MSD=0.0101856Aa^2]
+     4 Sr positions [T_Debye=266.35K, MSD=0.00701951Aa^2]
 ----------------------------------------------------------------------------------------------------
 Atomic sites:
      F           1/4          1/4          1/4   (x8)

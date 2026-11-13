@@ -30,7 +30,7 @@
       at prod. truncation edge (val=5.263e-02, =0.00403*peak): noiseFloor/edgeVal=1.8e-11
   Debye T=410K,temp=293.15K (Al-like), order3=G1(*)order2raw: n=2509 peak=11.581 noiseFloor=1.030e-12  OK
       at prod. truncation edge (val=1.110e-04, =9.58e-06*peak): noiseFloor/edgeVal=9.28e-09
-  Debye T=2000K,temp=293.15K (wide), order2=G1(*)G1: n=1673 peak=5.0887 noiseFloor=3.697e-13  OK
+  Debye T=2000K,temp=293.15K (wide), order2=G1(*)G1: n=1673 peak=5.08869 noiseFloor=3.697e-13  OK
       at prod. truncation edge (val=4.274e-02, =0.0084*peak): noiseFloor/edgeVal=8.65e-12
   Debye T=2000K,temp=293.15K (wide), order3=G1(*)order2raw: n=2509 peak=4.13289 noiseFloor=3.677e-13  OK
       at prod. truncation edge (val=1.794e-04, =4.34e-05*peak): noiseFloor/edgeVal=2.05e-09
