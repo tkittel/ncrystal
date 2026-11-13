@@ -410,7 +410,7 @@ def test_spacegroups( spacegroups, seed = 99 ):
         #(NCMAT v8: the default setting is spelled out for numbers with
         #several settings, e.g. "3:b"):
         from NCrystalDev.misc import evaluate_query
-        sgspec = evaluate_query( ['util','sgsym','relaxed',str(sg)] )['spacegroup']
+        sgspec = evaluate_query( [ 'sgsym', 'info','relaxed',str(sg)] )['spacegroup']
         ncmat = ncmat.replace( '@ATOMPOSITIONS',
                                f'@SPACEGROUP\n  {sgspec}\n@ATOMPOSITIONS' )
         dcut = safe_dcutoff( s.cellpars, 120 )

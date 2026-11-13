@@ -34,7 +34,7 @@ from NCrystalDev.misc import evaluate_query
 def ops_of( setting ):
     #Parse the CIF-like operation strings ("-y,x-y,z+1/3") of the sgsym query:
     ops = []
-    for s in evaluate_query( ['util','sgsym','strict',setting] )['ops']:
+    for s in evaluate_query( [ 'sgsym', 'info', 'strict',setting] )['ops']:
         rot = np.zeros((3,3)); tr = np.zeros(3)
         for i, comp in enumerate( s.replace(' ','').split(',') ):
             for term in comp.replace('-','+-').split('+'):

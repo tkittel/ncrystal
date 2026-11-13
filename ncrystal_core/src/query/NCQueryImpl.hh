@@ -28,6 +28,12 @@ namespace NCRYSTAL_NAMESPACE {
     //Checks shared by all query entry points (non-empty, no forbidden
     //characters, no leading dashes). Throws BadInput:
     void validateQuery( const Query& );
+
+    //Each pair of arguments "RAWDATA",X replaced by the items in X, which
+    //starts with a separator character followed by the items separated by it
+    //(e.g. "@-0.1(2)@0.5"). For query sections receiving raw data (like
+    //printed CIF values), which may contain characters otherwise forbidden:
+    Query expandRawData( const Query& );
   }
 }
 

@@ -236,7 +236,7 @@ def main():
     #17:cab is detected from the positions (the cell cannot tell them apart):
     from NCrystalDev.misc import evaluate_query
     def sg17( sgspec, declared = '17:abc' ):
-        pos = evaluate_query( [ 'util', 'atompositions', 'strict', sgspec, 'Al,0.1,0.2,0.3' ] )
+        pos = evaluate_query( [ 'sgsym', 'positions', 'strict', sgspec, 'Al,0.1,0.2,0.3' ] )
         text = """NCMAT v8
 @CELL
   lengths 5 6 7
