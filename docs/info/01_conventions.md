@@ -10,7 +10,7 @@
   and `arcmin` accepted in cfg strings, masses in Daltons (amu).
 - Conversions (`NCDefs.hh`): $E = h^2/(2m_n\lambda^2)$ (`wl2ekin`,
   `ekin2wl`, `k2ekin`, `ekin2k`, `ksq2ekin`), $k = 2\pi/\lambda$; the
-  constants are CODATA values (`const_neutron_mass_amu` = 1.00866491588,
+  constants are CODATA values (`const_neutron_mass_amu` = 1.00866491606,
   `constant_hbar`, `constant_boltzmann`, ...). Thermal reference: 2200 m/s = 0.0253 eV
   = 1.798 Aa; $kT$ at 293.15 K = 25.26 meV.
 
