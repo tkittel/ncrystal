@@ -281,11 +281,13 @@ def parse_cif_number( s ):
     """Value of a CIF numeric string and its rounding error: the largest
     possible error from the rounding of the printed number, i.e. half the
     step of its last digit (e.g. 0.00005 for "0.0283", 0.5 for "2344" and
-    5e-7 for "3400e-6"). A zero without decimals ("0", "-0", "0e-3") is exact
-    (rounding error 0.0), since it is in practice a constraint. The standard
-    uncertainty in parentheses (e.g. "0.0283(4)") is ignored. Returns None if s
-    is not a number (e.g. "?", ".", "1,5" or "inf"), or if the value or rounding
-    error is not a finite double (e.g. "1e999" or "0.0e310")."""
+    5e-7 for "3400e-6"), as the smallest double not below that, and at least
+    1e-15 times the value (covering the conversion to a double). A zero
+    without an uncertainty in parentheses ("0", "0.", "0.000", "0e-3") is exact
+    (rounding error 0.0), since it is in practice a constraint (or 0 printed
+    with e.g. %.3f). The uncertainty in parentheses (e.g. "0.0283(4)") is
+    otherwise ignored. Returns None if s is not a number (e.g. "?", ".", "1,5"
+    or "inf"), or if the value is not a finite double (e.g. "1e999")."""
     m = _re_cifnum.match( s.strip() )
     if not m:
         return None
@@ -299,7 +301,7 @@ def parse_cif_number( s ):
         return None
     if value == 0.0:
         value = 0.0#(no negative zero)
-    if not point and su is None and not ipart.strip( '0' ):
+    if value == 0.0 and su is None:
         return value, 0.0
     #(exact power of ten, correctly rounded, unlike 10.0**k via libm pow):
     e = 0
@@ -308,11 +310,16 @@ def parse_cif_number( s ):
         big = len( exp.lstrip( '+-' ).lstrip( '0' ) ) >= 12
         e = ( -1, 1 )[exp[0] != '-'] * 10**12 if big else int( exp )
     k = e - len( fpart )
+    floor = abs( value ) * 1e-15
     if k < -400:
-        return value, 0.0#(below the smallest double)
+        return value, floor#(below the smallest double)
     if k > 308:
-        return None#(e.g. "0.0e310": rounding error not a finite double)
-    return value, float( _Fraction( 10 ) ** k / 2 )
+        return None#(e.g. "0.0e310(1)": rounding error not a finite double)
+    exact = _Fraction( 10 ) ** k / 2
+    r = float( exact )
+    if _Fraction( r ) < exact:
+        r = _math.nextafter( r, _math.inf )
+    return value, max( r, floor )
 
 
 def _cell_from_cif( gemmi, block ):
