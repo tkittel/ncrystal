@@ -69,8 +69,8 @@ namespace NCRYSTAL_NAMESPACE {
     //  x*U(x) = sqrt(x) * H(x)
     //
     //The universal table of U tabulates H in x (the Q part), for x in
-    //[1.5e-10,36]: below it U=2/sqrt(pi*x) is good to x/3<0.5e-10, and above it
-    //the highEForm U=1+1/(2x) applies.
+    //[1e-16,36]: below it U=2/sqrt(pi*x) is good to x/3<4e-17 (so it joins the
+    //table to rounding), and above it the highEForm U=1+1/(2x) applies.
     double freeGasH( double x )
     {
       const double s = std::sqrt( x );
@@ -80,7 +80,7 @@ namespace NCRYSTAL_NAMESPACE {
     IsoXSTable tabulateFreeGasUniversal()
     {
       constexpr double xmax = 36.0;//must match highEForm
-      auto fit = fitPiecewiseCubic( freeGasH, 1.5e-10, xmax, 1e-10, 4.0 );
+      auto fit = fitPiecewiseCubic( freeGasH, 1e-16, xmax, 1e-10, 4.0 );
       nc_assert_always( fit.x.back() == xmax );
       IsoXSTable t;
       t.E = std::move( fit.x );
