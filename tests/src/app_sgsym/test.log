@@ -1749,6 +1749,17 @@ Examples of errors:
   166:r check: Lattice angle gamma must be equal to alpha for this space group (got 61)
   1 check: Lattice angle beta must be in the range (0,180) degrees (got 180)
   1 check: Lattice parameter a must be a positive number (got -4)
+Snapping:
+  225 strict, 1 ulp: 4 4 4 90 90 90
+  225 strict, 1e-10: Lattice parameters a and b must be equal for this space group (got a=4 and b=4.0000000004)
+  225 lenient, 1e-7: 4 4 4 90 90 90
+  225 lenient, 1e-5: Lattice parameters a and b must be equal for this space group (got a=4 and b=4.00004)
+  225 lenient, a=4.123 b=4.124 printed: 4.123 4.123 4.123 90 90 90
+  225 lenient, a=4.123 b=4.125 printed: Lattice parameters a and b must be equal for this space group (got a=4.123 and b=4.125)
+  194 lenient, angles printed as 90.02 and 119.98 with rounding 0.05: 3 3 5 90 90 120
+  194 lenient, gamma 119.9 with rounding 0.05: Lattice angle gamma must be 120 degrees for this space group (got 119.9)
+  166:r lenient, rhombohedral: 4 4 4 70 70 70
+  225 lenient, b=NaN: Lattice parameter b must be a positive number (got nan)
 All OK
 ==== Expansion of sites into orbits ====
 General positions OK in all 530 settings

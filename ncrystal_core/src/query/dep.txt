@@ -1,5 +1,6 @@
 atomdb
 cfgutils
+cif
 core
 dyninfoutils
 extd_utils
