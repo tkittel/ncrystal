@@ -465,6 +465,7 @@ class Hist1D:
             else:
                 self.__yerrsq += o.__yerrsq
         self.__y += o.__y
+        return self
 
     def __rebin( self, rebin_factor ):
         if rebin_factor == 1:

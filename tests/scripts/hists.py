@@ -78,7 +78,7 @@ def main(do_plot):
     h2 = h2.toPyHist()
     h2.clone(rebin_factor=1)
 
-    h1.add_contents(h2.clone())
+    assert h1.add_contents(h2.clone()) is h1
     h1.dump()
     h1.dump(contents = False)
 
