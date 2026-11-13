@@ -132,14 +132,16 @@ def minimc_unittest( *,
                      tally='theta',
                      tallybins=None,
                      extra_enginecfg='',
-                     quiet = False
+                     quiet = False,
+                     singlescat_only = False
                     ):
     """Run MiniMC with chosen configuration and compare result with reference
     histogram. Will keep reference histogram in <testsdata>mmcrefs/key.json (if
     key contains a slash, a subdir will be used). If do_plot is True, show
     plot vs. ref., and if do_updateref is True, update the reference.
 
-    Runs with nthreads=2.
+    Runs with nthreads=2. If singlescat_only is True, only the single
+    scattering breakdown histograms are compared (see the TODO below).
     """
     from .dirs import get_named_test_data_dir
 
@@ -186,6 +188,20 @@ def minimc_unittest( *,
               " it was listed first)")
 
     h = res.tally(tally).hist_total
+    if singlescat_only:
+        #TODO: MiniMC's forced-collision scheme gives several correlated tally
+        #entries per source neutron (one per step), but histogram errors are
+        #sqrt(sum w^2), which assumes independent entries. Where a history's
+        #entries share bins (e.g. the unscattered and elastically scattered
+        #entries in energy-like tallies), errors are underestimated (by ~30%
+        #for e/l/de) and the comparison fails too often. Single scattering
+        #histograms have at most one entry per history, so their errors are
+        #right. Compare totals again once MiniMC tallies accumulate errors
+        #per history.
+        bd = res.tally(tally).hist_breakdown
+        hs = [ bd[k] for k in sorted(bd) if k.startswith('SINGLESCAT') ]
+        assert len(hs) == 2
+        h = hs[0].clone().add_contents( hs[1] )
     if do_plot:
         h.dump(contents=False)
         res.tally(tally).plot(logy=True)
