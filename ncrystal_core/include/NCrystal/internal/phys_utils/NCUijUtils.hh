@@ -26,12 +26,16 @@
 namespace NCRYSTAL_NAMESPACE {
 
   //Utilities for anisotropic displacement tensors, stored as the components
-  //(U11,U22,U33,U12,U13,U23) of a symmetric 3x3 matrix. The CIF form U^ij is
-  //relative to the normalised reciprocal axes, the fractional form is
-  //U_frac,ij = U^ij a*_i a*_j (the covariance of the displacements in
-  //fractional coordinates), so a symmetry operation with rotation part R maps
-  //U_frac to R U_frac R^T, and the Debye-Waller factor of a reflection h is
-  //exp(-2pi^2 h^T U_frac h).
+  //(U11,U22,U33,U12,U13,U23) of a symmetric 3x3 matrix, in the conventions of
+  //the IUCr nomenclature (Trueblood et al., Acta Cryst. A52 (1996) 770):
+  //
+  //  Ustd:  U^ij, the standard form relative to the normalised reciprocal axes
+  //         (Aa^2), as written in NCMAT and CIF data.
+  //  Ustar: U*_ij = U^ij a*_i a*_j, the covariance of the displacements in
+  //         fractional coordinates. A symmetry operation with rotation part R
+  //         maps it to R Ustar R^T, and the Debye-Waller factor of a
+  //         reflection h is exp(-2pi^2 h^T Ustar h).
+  //  Ucart: the Cartesian form (Aa^2).
 
   namespace UijUtils {
 
@@ -47,27 +51,27 @@ namespace NCRYSTAL_NAMESPACE {
     CellMetric cellMetric( double a, double b, double c,
                            double alpha, double beta, double gamma );
 
-    Uij cifToFrac( const Uij&, const CellMetric& );
-    Uij fracToCif( const Uij&, const CellMetric& );
+    Uij convertUstdToUstar( const Uij&, const CellMetric& );
+    Uij convertUstarToUstd( const Uij&, const CellMetric& );
 
-    //R U_frac R^T, with R the rotation part of the operation:
-    Uij transformFrac( const SymOp&, const Uij& );
+    //R Ustar R^T, with R the rotation part of the operation:
+    Uij applySymOpToUstar( const SymOp&, const Uij& );
 
-    //Equivalent isotropic displacement, trace(U_cart)/3, of U_frac:
-    double ueqFromFrac( const Uij&, const CellMetric& );
+    //Equivalent isotropic displacement, trace(Ucart)/3:
+    double calcUeqFromUstar( const Uij&, const CellMetric& );
 
     //Whether the matrix is positive definite (forms related by congruence,
-    //like the CIF, fractional and Cartesian forms, agree on this):
+    //like Ustd, Ustar and Ucart, agree on this):
     bool isPositiveDefinite( const Uij& );
 
     //Largest absolute value of the components:
     double maxAbs( const Uij& );
 
-    //Eigenvalues (ascending) of the Cartesian form of U_frac:
-    std::array<double,3> cartEigenvalues( const Uij&, const CellMetric& );
+    //Eigenvalues (ascending) of Ucart:
+    std::array<double,3> calcUcartEigenvalues( const Uij&, const CellMetric& );
 
-    //Mean-squared displacements n^T U_cart n along a fixed set of 36
-    //directions n, with weights (summing to 1), so weighted sums approximate
+    //Mean-squared displacements n^T Ucart n (from Ustar) along a fixed set of
+    //36 directions n, with weights (summing to 1), so weighted sums approximate
     //averages over all directions of smooth functions of them (6x6
     //Gauss-Legendre points in an octant of the eigenframe; relative errors
     //~1e-6 for typical tensors and ~2e-4 for eigenvalue ratios of 25 in

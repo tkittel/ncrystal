@@ -340,7 +340,7 @@ namespace NCRYSTAL_NAMESPACE {
                                       .as<AtomInfo::Pos>(), b );
       }
 
-      //Anisotropic displacement tensor (CIF form) of a site, mapped from the
+      //Anisotropic displacement tensor (Ustd) of a site, mapped from the
       //(symmetrised) input position sympos to the orbit representative rep:
       UijUtils::Uij uijAtRepresentative( const SGSymmetry& sym,
                                          const UijUtils::CellMetric& metric,
@@ -350,8 +350,9 @@ namespace NCRYSTAL_NAMESPACE {
       {
         for ( auto& op : sym.operations() )
           if ( symOpMaps( op, sympos, rep ) )
-            return UijUtils::fracToCif(
-              UijUtils::transformFrac( op, UijUtils::cifToFrac( uij, metric ) ),
+            return UijUtils::convertUstarToUstd(
+              UijUtils::applySymOpToUstar(
+                op, UijUtils::convertUstdToUstar( uij, metric ) ),
               metric );
         nc_assert_always( false );
         return uij;
@@ -391,14 +392,15 @@ namespace NCRYSTAL_NAMESPACE {
         const double msd = ai.msd().value();
         for ( auto& site : sites ) {
           const auto descr = details::posDescr( ai, site.position );
-          const auto uf = UijUtils::cifToFrac( site.uij.value(), metric );
+          const auto uf
+            = UijUtils::convertUstdToUstar( site.uij.value(), metric );
           std::array<StableSum,6> sums;
           unsigned nstab = 0;
           for ( auto& op : sym.operations() ) {
             if ( !symOpMaps( op, site.position, site.position ) )
               continue;
             ++nstab;
-            const auto t = UijUtils::transformFrac( op, uf );
+            const auto t = UijUtils::applySymOpToUstar( op, uf );
             for ( auto i : ncrange( 6 ) )
               sums[i].add( t[i] );
           }
@@ -406,7 +408,7 @@ namespace NCRYSTAL_NAMESPACE {
           UijUtils::Uij ufsnap;
           for ( auto i : ncrange( 6 ) )
             ufsnap[i] = sums[i].sum() / nstab;
-          const auto snapped = UijUtils::fracToCif( ufsnap, metric );
+          const auto snapped = UijUtils::convertUstarToUstd( ufsnap, metric );
           UijUtils::Uij diff;
           for ( auto i : ncrange( 6 ) )
             diff[i] = snapped[i] - site.uij.value()[i];
@@ -417,7 +419,7 @@ namespace NCRYSTAL_NAMESPACE {
           if ( !UijUtils::isPositiveDefinite( snapped ) )
             NCRYSTAL_THROW2(BadInput,"The uij values of the site "<<descr
                             <<" do not form a positive definite matrix");
-          const double ueq = UijUtils::ueqFromFrac( ufsnap, metric );
+          const double ueq = UijUtils::calcUeqFromUstar( ufsnap, metric );
           nc_assert_always( ueq > 0.0 );
           const double scale = msd / ueq;
           site.uij = snapped;

@@ -156,7 +156,7 @@ namespace NCRYSTAL_NAMESPACE {
       SmallVector<SmallVector<Vector,32>,4> atomic_pos;//atomic coordinates
       SmallVectD csl;//coherent scattering length
       SmallVectD msd;//mean squared displacement
-      //Anisotropic displacements (fractional form) at each position, for
+      //Anisotropic displacements (Ustar) at each position, for
       //species with uij (otherwise empty):
       SmallVector<std::vector<UijUtils::Uij>,4> ufrac;
       int max_h, max_k, max_l;
@@ -164,7 +164,7 @@ namespace NCRYSTAL_NAMESPACE {
       PairDD dcut_interval;
     };
 
-    //Anisotropic displacements (fractional form) at the unit cell positions
+    //Anisotropic displacements (Ustar) at the unit cell positions
     //of an AtomInfo, transformed from those of the sites (empty if the
     //sites have no uij):
     std::vector<UijUtils::Uij> positionTensors( const StructureInfo& si,
@@ -194,8 +194,8 @@ namespace NCRYSTAL_NAMESPACE {
           nc_assert_always( site.uij.has_value() );
           for ( auto& op : sym.operations() ) {
             if ( same( op.apply( site.position.as<Vector>() ), p ) ) {
-              u = UijUtils::transformFrac(
-                op, UijUtils::cifToFrac( site.uij.value(), metric ) );
+              u = UijUtils::applySymOpToUstar(
+                op, UijUtils::convertUstdToUstar( site.uij.value(), metric ) );
               break;
             }
           }
@@ -329,7 +329,7 @@ namespace NCRYSTAL_NAMESPACE {
 
       double calc( const Vector& hkl )
       {
-        //Debye-Waller factors exp(-2pi^2 h^T U_frac h) of positions with
+        //Debye-Waller factors exp(-2pi^2 h^T Ustar h) of positions with
         //anisotropic displacements:
         if ( m_anyaniso ) {
           const double h = hkl[0], k = hkl[1], l = hkl[2];
