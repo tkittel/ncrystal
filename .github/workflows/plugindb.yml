@@ -240,7 +240,7 @@ jobs:
     - run: pip debug --verbose
 
     - name: Install numpy and build backends
-      run: pip install -c "constraints.txt" numpy "setuptools>=64.0" "scikit-build-core>=0.10"
+      run: pip install -c "constraints.txt" numpy "setuptools>=77.0" "scikit-build-core>=0.10"
       #                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       #NB: This covers all known plugins. If it will differ, we might want to
       #    simply parse the pyproject toml instead and extract them dynamically:
