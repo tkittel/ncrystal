@@ -223,8 +223,13 @@ namespace NCRYSTAL_NAMESPACE {
   template<class T1, class T2>
   void streamJSON( std::ostream&, const std::pair<T1,T2>& );
 
-  //Slightly less nice FP formatting, but way more efficient for very long
-  //arrays of double data:
+  //Like streamJSON(double), but faster: always 17 significant digits (still
+  //exact and always decoded as a floating point number), so "0.1" becomes
+  //"0.10000000000000001". Output is independent of the locale:
+  void streamJSONFastNotPretty( std::ostream&, double );
+
+  //For very long arrays of double data (values via streamJSONFastNotPretty,
+  //unless huge array transfer is enabled):
   void streamJSONHugeDblVect( std::ostream&, VectD&& );
 
   //Entries in dictionary "\"key\":<value>":

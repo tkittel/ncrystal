@@ -20,6 +20,7 @@
 
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/core/NCFmt.hh"
+#include "NCrystal/internal/utils/NCMath.hh"
 #include <istream>
 #include <iomanip>
 #include <locale>
@@ -323,6 +324,7 @@ namespace NCRYSTAL_NAMESPACE {
     //Fwd declared from NCFmt.cc:
     Optional<std::uint64_t> raw_str2uint64( const char * s_data,
                                             std::size_t s_size );
+    std::size_t normaliseDecimalPoint( char * buf, std::size_t n );
   }
 }
 
@@ -635,6 +637,23 @@ void NC::streamJSON( std::ostream& os, double val )
     os << sstr;
 }
 
+void NC::streamJSONFastNotPretty( std::ostream& os, double val )
+{
+  if ( !std::isfinite( val ) || val == 0.0 ) {
+    streamJSON( os, val );
+    return;
+  }
+  char buf[64];
+  const int n = std::snprintf( buf, sizeof(buf), "%.17g", val );
+  nc_assert_always( n > 0 && n < static_cast<int>( sizeof(buf) ) );
+  const auto len = detail::normaliseDecimalPoint( buf,
+                                                 static_cast<std::size_t>(n) );
+  os.write( buf, static_cast<std::streamsize>( len ) );
+  //%.17g has no '.' and no exponent exactly for integers below 1e17:
+  if ( ncabs( val ) < 1e17 && val == std::floor( val ) )
+    os << ".0";
+}
+
 void NC::streamJSON( std::ostream& os, StrView sv )
 {
   //According to answer at:
@@ -800,32 +819,13 @@ void NC::streamJSONHugeDblVect( std::ostream& os, VectD&& v )
     lock.unlock();
   }
   os << '[';
-  std::ostringstream ss;
-  ss.imbue(std::locale::classic());
-  ss << std::setprecision(std::numeric_limits<double>::max_digits10)
-     << std::showpoint;
   bool first(true);
-  unsigned iflush = 0;
-  for ( auto it = v.begin(); it!=v.end(); ++it ) {
-    if (++iflush==512) {
-      //flush contents, no need for the ss buffer to be large enough to
-      //contain everything at once.
-      iflush = 0;
-      os << ss.str();
-      ss.str("");
-    }
+  for ( auto val : v ) {
     if ( first )
       first = false;
     else
-      ss <<',';
-    double val = *it;
-    if ( !std::isfinite(val) || !val ) {
-      //Handle nan+inf+0 with standard code path.
-      streamJSON(ss,val);
-    } else {
-      ss<<val;
-    }
+      os << ',';
+    streamJSONFastNotPretty( os, val );
   }
-  os << ss.str();
   os<<']';
 }
