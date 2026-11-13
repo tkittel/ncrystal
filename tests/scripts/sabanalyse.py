@@ -161,10 +161,8 @@ def main():
                          ('benzene_solid_100K_sabsmall.ncmat','C'),
                          ('benzene_solid_100K_sabsmall.ncmat','H') ]:
         med = detailed_balance_median( cfgstr, lbl )
-        if 'sabsmall' in cfgstr:
-            print(f'==> detailed balance {cfgstr}//{lbl}: {med:.1g}')
-            continue
-        ok = med < ( 1e-12 if 'D2O' in cfgstr else 3e-5 )
+        exact = 'D2O' in cfgstr or 'sabsmall' in cfgstr
+        ok = med < ( 1e-12 if exact else 3e-5 )
         print(f'==> detailed balance {cfgstr}//{lbl or "mono"}:'
               f' {"OK" if ok else "FAIL"}')
         assert ok, f'detailed balance violated ({med=})'
