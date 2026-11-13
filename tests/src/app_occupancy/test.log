@@ -1,9 +1,9 @@
-full occupancy: n_positions=8 n_atoms_average=8 numberdensity=0.04458918911480781 density=2.1636026668096275
+full occupancy: n_positions=8 n_atoms_average=8 numberdensity=0.04458918911480781 density=2.1636027044909993
   Na: numberOfPositions=4 occupancy=1
   Cl: numberOfPositions=4 occupancy=1
   composition Na: 0.5
   composition Cl: 0.5
-Na occupancy 0.9: n_positions=8 n_atoms_average=7.6 numberdensity=0.042359729659067417 density=2.0784921393163023
+Na occupancy 0.9: n_positions=8 n_atoms_average=7.6 numberdensity=0.042359729659067417 density=2.0784921755153865
   Na: numberOfPositions=4 occupancy=0.9
   Cl: numberOfPositions=4 occupancy=1
   composition Na: 0.47368421052631582

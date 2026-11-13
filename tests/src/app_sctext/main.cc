@@ -149,7 +149,7 @@ namespace {
     //allowed alpha range (u=sqrt(alpha) substitution):
     std::printf("test_kernel_closedform:\n");
     unsigned nchecked(0);
-    for ( double A : { 1.008/1.00866491588, 26.98/1.00866491588 } ) {
+    for ( double A : { 1.008/NC::const_neutron_mass_amu, 26.98/NC::const_neutron_mass_amu } ) {
       const double invA = 1.0 / A;
       for ( double c : { 0.5, 5.0, 50.0 } ) {
         for ( double beta : { 0.0, 0.3, 1.0, 3.0, 10.0, 30.0 } ) {
