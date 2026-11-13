@@ -239,12 +239,14 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr auto sv_atomsites = StrView::make("atomsites");
       constexpr auto sv_atompositions = StrView::make("atompositions");
       constexpr auto sv_sgsym = StrView::make("sgsym");
+      constexpr auto sv_jsontest = StrView::make("jsontest");
       if ( key == sv_list ) {
         if ( nargs != 0 )
           invalid("no arguments should come after: [\"util\",\"list\"]");
         os<<"[\"wl2ekin\", \"ekin2wl\", \"mathval\", \"fmadiagnose\","
           " \"kinutils\", \"browsedb\", \"browsefactories\","
-          " \"factorythreads\", \"atomdb\", \"eqrefl\", \"sgsym\"]";
+          " \"factorythreads\", \"atomdb\", \"eqrefl\", \"sgsym\","
+          " \"jsontest\"]";
       } else if ( key == sv_eqrefl ) {
         //["util","eqrefl",MODE,SG,"h1,k1,l1","h2,k2,l2",...]: For each
         //requested hkl, return the list of reflections considered
@@ -407,6 +409,32 @@ namespace NCRYSTAL_NAMESPACE {
           }
           os << ']';
         }
+      } else if ( key == sv_jsontest ) {
+        //["util","jsontest",BITS1,BITS2,...]: doubles given by their IEEE 754
+        //bit patterns (as decimal integers), written by streamJSON one at a
+        //time and as an array by streamJSONHugeDblVect (which only uses its
+        //fallback unless huge arrays are enabled): {"scalar":[..],"array":[..]}
+        static_assert( sizeof(double) == sizeof(std::uint64_t), "" );
+        VectD v;
+        v.reserve( nargs );
+        for ( auto i : ncrange( nargs ) ) {
+          auto bits = arg(i).toUInt64();
+          if ( !bits.has_value() )
+            invalid( "correct usage: [\"util\",\"jsontest\",BITS1,...] with"
+                     " IEEE 754 bit patterns of doubles as decimal integers" );
+          double x;
+          std::memcpy( &x, &bits.value(), sizeof(x) );
+          v.push_back( x );
+        }
+        os << "{\"scalar\":[";
+        for ( auto i : ncrange( v.size() ) ) {
+          if ( i )
+            os << ',';
+          streamJSON( os, v[i] );
+        }
+        os << "],\"array\":";
+        streamJSONHugeDblVect( os, std::move( v ) );
+        os << '}';
       } else if ( key == sv_sgsym ) {
         //["util","sgsym",MODE,SG]: Symmetry operations of a space group
         //setting (SG as e.g. "225", "166:r", "227:2", "14:c1" or "62:cab",
