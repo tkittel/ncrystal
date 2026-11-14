@@ -85,7 +85,7 @@ def test_xs():
     assert rel.max() < 1e-13, rel.max()
     #Limit for long wavelengths (shape -> 256/9):
     assert abs( sc.xsect( wl = 1e9 ) / ( np.median( ratio ) * 256/9 ) - 1.0 ) < 1e-13
-    print(f'cross sections at 400 wavelengths OK (max rel. deviation {rel.max():.1e} < 1e-13)')
+    print('cross sections at 400 wavelengths OK (max rel. deviation < 1e-13)')
 
 def test_sampling():
     sc = NC.createScatter( 'Al_sans.ncmat;comp=sans' )
