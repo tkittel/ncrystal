@@ -1,0 +1,298 @@
+name: static
+
+#Static builds (BUILD_SHARED_LIBS=OFF), with and without NCRYSTAL_NAMESPACE,
+#linked into downstream code both directly and via find_package(NCrystal).
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, CC: gcc,   CXX: g++,     namespace: '' }
+          - { os: ubuntu-latest, CC: gcc,   CXX: g++,     namespace: 'somenamespace' }
+          - { os: macos-latest,  CC: clang, CXX: clang++, namespace: 'somenamespace' }
+    name: ${{ matrix.os }}.${{ matrix.CC }}-static${{ matrix.namespace && '-ns' || '' }}
+    runs-on: ${{ matrix.os }}
+    env:
+      CC: ${{ matrix.CC }}
+      CXX: ${{ matrix.CXX }}
+    defaults:
+      run:
+        #bash gives "-o pipefail", so "cmd | tee log" fails if cmd fails:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        path: src
+
+    - name: Setup python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: '3.13'
+
+    - name: Prepare log capture dir
+      run: mkdir -p ${{github.workspace}}/ci-logs
+
+    - name: Configure, build, test and install
+      run: |
+        cmake \
+          -S ./src/ncrystal_core \
+          -B ./build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install \
+          -DCMAKE_INSTALL_LIBDIR=lib \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DNCRYSTAL_NAMESPACE=${{ matrix.namespace }} \
+          -DNCRYSTAL_BUILD_STRICT=ON \
+          -DNCRYSTAL_ENABLE_CORE_TESTING=ON \
+          2>&1 | tee ${{github.workspace}}/ci-logs/configure.log
+        cmake --build ./build 2>&1 | tee ${{github.workspace}}/ci-logs/build.log
+        ctest --test-dir ./build --no-tests=error --output-on-failure \
+          2>&1 | tee ${{github.workspace}}/ci-logs/ctest.log
+        cmake --install ./build 2>&1 | tee ${{github.workspace}}/ci-logs/install.log
+
+    - name: Check ncrystal-config
+      run: |
+        set -x
+        NCCFG=${{github.workspace}}/install/bin/ncrystal-config
+        $NCCFG --summary
+        test "$($NCCFG --show has_shared_lib)" = "OFF"
+        test "$($NCCFG --show has_dynamic_plugins)" = "OFF"
+        test "$($NCCFG --show namespace)" = "${{ matrix.namespace }}"
+        if $NCCFG --show shlibpath; then exit 1; fi
+
+    - name: Link C example directly
+      run: |
+        set -x
+        NCCFG=${{github.workspace}}/install/bin/ncrystal-config
+        $CC -O2 -c -I"$($NCCFG --show includedir)" \
+          ./src/examples/ncrystal_example_c.c -o ex.o
+        $CXX ex.o "$($NCCFG --show libpath)" -ldl -o ex_c
+        ./ex_c
+
+    - name: Link C++ example via find_package
+      run: |
+        set -x
+        NCCFG=${{github.workspace}}/install/bin/ncrystal-config
+        cmake -S ./src/examples/downstream_cmake -B ./bld_ds \
+          -DNCrystal_DIR="$($NCCFG --show cmakedir)"
+        cmake --build ./bld_ds
+        ./bld_ds/testapp
+
+    - name: Package logs
+      if: always()
+      run: |
+        mkdir -p ${{github.workspace}}/ci-logs
+        for f in build/CMakeFiles/CMakeConfigureLog.yaml \
+                 build/Testing/Temporary/LastTest.log; do
+          if [ -f "${{github.workspace}}/$f" ]; then cp "${{github.workspace}}/$f" ${{github.workspace}}/ci-logs/; fi
+        done
+
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: ci-logs-${{ matrix.os }}-static${{ matrix.namespace && '-ns' || '' }}
+        path: ${{github.workspace}}/ci-logs
+        if-no-files-found: warn
+
+  vitesslike:
+    #Mimics how VITESS builds and links NCrystal:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, CC: gcc,   CXX: g++,     namespace: '' }
+          - { os: ubuntu-latest, CC: gcc,   CXX: g++,     namespace: 'somenamespace' }
+          - { os: macos-latest,  CC: clang, CXX: clang++, namespace: 'somenamespace' }
+    name: ${{ matrix.os }}.${{ matrix.CC }}-vitesslike${{ matrix.namespace && '-ns' || '' }}
+    runs-on: ${{ matrix.os }}
+    env:
+      CC: ${{ matrix.CC }}
+      CXX: ${{ matrix.CXX }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        path: src
+
+    - name: Setup python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: '3.13'
+
+    - name: Prepare log capture dir
+      run: mkdir -p ${{github.workspace}}/ci-logs
+
+    - name: Configure, build and install
+      run: |
+        cmake \
+          -S ./src/ncrystal_core \
+          -B ./build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install \
+          -DCMAKE_INSTALL_LIBDIR=lib \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DNCRYSTAL_ENABLE_DYNLOAD=OFF \
+          -DNCRYSTAL_ENABLE_CFGAPP=OFF \
+          -DNCRYSTAL_NAMESPACE=${{ matrix.namespace }} \
+          2>&1 | tee ${{github.workspace}}/ci-logs/configure.log
+        cmake --build ./build 2>&1 | tee ${{github.workspace}}/ci-logs/build.log
+        cmake --install ./build 2>&1 | tee ${{github.workspace}}/ci-logs/install.log
+
+    - name: Compile and run app_capivitess
+      run: |
+        set -x
+        NS="${{ matrix.namespace }}"
+        cp ./src/tests/src/app_capivitess/main.cc vitesslike.cc
+        $CXX -O2 -I${{github.workspace}}/install/include vitesslike.cc \
+          -L${{github.workspace}}/install/lib -lNCrystal${NS:+-$NS} -ldl \
+          -o vitesslike
+        ./vitesslike | tee ${{github.workspace}}/ci-logs/vitesslike.log
+        diff ${{github.workspace}}/ci-logs/vitesslike.log \
+          ./src/tests/src/app_capivitess/test.log
+
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: ci-logs-${{ matrix.os }}-vitesslike${{ matrix.namespace && '-ns' || '' }}
+        path: ${{github.workspace}}/ci-logs
+        if-no-files-found: warn
+
+  build_windows:
+    #MSVC via CMake's default (multi-config) generator, so no CC/CXX and the
+    #build type is given at build/test time. Relative paths, since
+    #github.workspace has backslashes here, which bash would mangle. Direct
+    #linking against the library file goes through a minimal CMake project,
+    #since cl is not on PATH:
+    name: windows-2025-static
+    runs-on: windows-2025
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        path: src
+
+    - name: Setup python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: '3.13'
+
+    - name: Prepare log capture dir
+      run: mkdir -p ci-logs
+
+    - name: Configure, build, test and install
+      run: |
+        cmake \
+          -S src/ncrystal_core \
+          -B build \
+          -DCMAKE_INSTALL_PREFIX=install \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DNCRYSTAL_BUILD_STRICT=ON \
+          -DNCRYSTAL_ENABLE_CORE_TESTING=ON \
+          2>&1 | tee ci-logs/configure.log
+        cmake --build build --config Release 2>&1 | tee ci-logs/build.log
+        ctest --test-dir ./build --build-config Release --no-tests=error \
+          --output-on-failure 2>&1 | tee ci-logs/ctest.log
+        cmake --install build --config Release 2>&1 | tee ci-logs/install.log
+
+    - name: Check ncrystal-config
+      run: |
+        set -x
+        NCCFG=./install/bin/ncrystal-config
+        $NCCFG --summary
+        test "$($NCCFG --show has_shared_lib)" = "OFF"
+        if $NCCFG --show shlibpath; then exit 1; fi
+
+    - name: Link C example directly
+      run: |
+        set -x
+        mkdir rawlink
+        cp src/examples/ncrystal_example_c.c rawlink/
+        cp src/tests/src/app_capivitess/main.cc rawlink/vitesslike.cc
+        cat > rawlink/CMakeLists.txt <<'EOF'
+        cmake_minimum_required(VERSION 3.16)
+        project(rawlink LANGUAGES C CXX)
+        add_executable(ex_c ncrystal_example_c.c)
+        set_target_properties(ex_c PROPERTIES LINKER_LANGUAGE CXX)
+        add_executable(vitesslike vitesslike.cc)
+        foreach(t ex_c vitesslike)
+          target_include_directories(${t} PRIVATE "${NCINC}")
+          target_link_libraries(${t} PRIVATE "${NCLIB}")
+        endforeach()
+        EOF
+        NCCFG=./install/bin/ncrystal-config
+        cmake -S rawlink -B bld_raw -DNCINC="$($NCCFG --show includedir)" \
+          -DNCLIB="$($NCCFG --show libpath)"
+        cmake --build bld_raw --config Release
+        ./bld_raw/Release/ex_c
+        #Mimics how VITESS uses NCrystal:
+        ./bld_raw/Release/vitesslike | tee ci-logs/vitesslike.log
+        diff --strip-trailing-cr ci-logs/vitesslike.log \
+          src/tests/src/app_capivitess/test.log
+
+    - name: Link C++ example via find_package
+      run: |
+        set -x
+        NCCFG=./install/bin/ncrystal-config
+        cmake -S src/examples/downstream_cmake -B bld_ds \
+          -DNCrystal_DIR="$($NCCFG --show cmakedir)"
+        cmake --build bld_ds --config Release
+        ./bld_ds/Release/testapp
+
+    - name: Package logs
+      if: always()
+      run: |
+        mkdir -p ci-logs
+        for f in build/CMakeFiles/CMakeConfigureLog.yaml \
+                 build/Testing/Temporary/LastTest.log; do
+          if [ -f "$f" ]; then cp "$f" ci-logs/; fi
+        done
+
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: ci-logs-windows-2025-static
+        path: ci-logs
+        if-no-files-found: warn
+
+  collect_logs:
+    #Bundles all per-leg logs into one downloadable tarball:
+    name: Collect all CI logs
+    needs: [ build, vitesslike, build_windows ]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all per-leg logs
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: ci-logs-*
+          path: all-ci-logs
+
+      - name: Bundle into a single tarball
+        run: |
+          mkdir -p all-ci-logs
+          tar -czf all-ci-logs-static-${{ github.sha }}.tar.gz all-ci-logs
+
+      - name: Upload combined log tarball
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: all-ci-logs-static-${{ github.sha }}
+          path: all-ci-logs-static-${{ github.sha }}.tar.gz
