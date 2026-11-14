@@ -85,7 +85,7 @@ spectrum into format which is ready for inclusion in .ncmat files.
         return textwrap.fill(' '.join(t.split()),width=helpw)
 
     parser.add_argument("FILE",help=wrap("Either .ncmat file with VDOS or a"
-                                         " text file with two colums of data:"
+                                         " text file with two columns of data:"
                                          " egrid and density."))
     parser.add_argument('--plot','-p', action='store_true',help='Plot extracted spectrum')
     parser.add_argument("--cutoff",'-c',nargs='+',default=None,type=float,
