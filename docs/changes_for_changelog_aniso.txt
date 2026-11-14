@@ -1,0 +1,88 @@
+Input for the CHANGELOG from the tk_aniso branch (anisotropic displacements),
+in the same spirit as changes_for_changelog.txt (to be curated into the real
+CHANGELOG at release time, after which this file is dropped).
+
+### Anisotropic displacements
+
+     * NCMAT v8 @ATOMSITES lines can end with "uij" and six numbers, the
+       anisotropic displacement tensor of the site in the CIF convention
+       (U11,U22,U33,U12,U13,U23). The tensors only give the shapes: each is
+       scaled so its Ueq equals the msd from @DYNINFO (sites with different
+       msds need separate labels). Tensors must be given for all or none of
+       the sites of an element, must be positive definite, and are snapped to
+       the site symmetry (clear breaks are rejected).
+     * Bragg structure factors use anisotropic Debye-Waller factors, and the
+       incoherent elastic model the powder average over directions of the
+       projected msd. Inelastic scattering stays isotropic. No change for
+       materials without tensors.
+     * Incoherent elastic scattering uses one cross section table for all
+       elements, both for cross sections and sampling (much faster setup for
+       many elements or tensor sites). Sampled scattering angles of materials
+       with several elements change (same distribution).
+     * AtomInfo::Site::uij holds the tensors (mapped to the representative
+       position, symmetrised and scaled), also available in the "sites" JSON
+       query, the Python AtomInfo.sites, and the dumps.
+     * NCMATComposer always writes NCMAT v8 data (non-crystalline materials
+       therefore need set_state_of_matter, unless implied by the dynamics),
+       set_cellsg accepts space group settings like "227:2", and the new
+       set_atomsites takes one position per site, optionally with an
+       occupancy and/or a uij tensor. Site occupancies are written to
+       @ATOMOCCUPANCIES.
+     * NCMATComposer.refine_crystal_structure keeps sites with uij tensors
+       (transformed to the refined cell). Site tensors enter the symmetry
+       detection via their eigenvalues, and are dropped with a warning if
+       those of equivalent sites are not each other's symmetry images.
+     * NCMATComposer.refine_crystal_structure and .verify_crystal_structure
+       have new tolerance parameters tol, tol_symprec (and tol_uij for
+       refinement), limited to 5% (relative) and 0.5Aa. The symprec
+       parameter is an obsolete alias of tol_symprec, and all parameters
+       are now keyword-only.
+     * cif2ncmat and CIFLoader keep anisotropic displacements, also when
+       spglib refines the structure (e.g. from P1 or primitive cells), with
+       the tensors transformed accordingly. Sites given separately are only
+       considered equivalent if their compositions, occupancies, Uiso values
+       and tensor eigenvalues agree within tolerances (new CIFLoader
+       parameters tol, tol_symprec, tol_uij, tol_occu, and cif2ncmat options
+       --tol, --tol-symprec, --tol-uij, --tol-occu), and tensors are dropped
+       with a warning if those of equivalent sites are not each other's
+       symmetry images. CIFLoader.atoms no longer has an 'aniso' key, and the
+       new CIFLoader.sites gives one entry per site, with the tensor.
+     * CIF loading reworked: gemmi now only parses the CIF text, and the
+       symmetry handling (setting, site expansion, special positions, split
+       sites, uij site symmetry, cell constraints) is done by the NCrystal
+       library, with the same code as the NCMAT loader (lenient tolerances
+       based on the rounding of the printed values). The setting comes from
+       the listed symmetry operations (decimal translations like 0.5 are
+       accepted), cross-checked against the space group symbol, or else from
+       the symbol, with several candidate settings resolved by the cell
+       (otherwise an error asking for --spacegroup). Listed operations which
+       are not those of a tabulated setting (e.g. pymatgen primitive cells,
+       origin shifts) are rejected. Elements of sites without a usable
+       _atom_site_type_symbol come from their labels, checked against
+       _chemical_formula_sum (one warning per file). Split sites (copies of
+       an atom within 0.5 Aa) are rejected unless permissive. Site
+       multiplicities in the CIF data are no longer used.
+     * CIFLoader and cif2ncmat reject CIF data with inconsistent symmetry
+       information (listed symmetry operations not matching the space group
+       symbol or being incomplete or unparsable, anisotropic displacements of
+       equivalent sites
+       which are not each other's symmetry images). The new permissive mode
+       (CIFLoader permissive parameter, cif2ncmat --permissive) loads some of
+       these anyway with warnings, when the needed information can be
+       recovered. Cell parameters slightly off the declared symmetry are
+       accepted (with a warning) if refinement confirms the space group.
+     * CIFLoader and cif2ncmat reject sites whose Uiso differs from the Ueq
+       of their tensor by more than rounding of the printed values (Uiso,
+       tensor and cell) explains, plus tol_uij (with permissive mode, the Uiso
+       is used with a warning). The Ueq of tensors without Uiso is now correct
+       for non-orthogonal cells (it was the mean of the diagonal).
+     * CIF fixes: tritium ("T") sites are loaded as H3 instead of rejected;
+       override_spacegroup (cif2ncmat --spacegroup) now also applies to CIF
+       data listing symmetry operations, and accepts settings like "70:1";
+       charges like "O-2" in type symbols are understood; remapping an element
+       of a mixed site no longer duplicates the site; an unparsable
+       _atom_type_number_in_cell (e.g. "?") is ignored instead of crashing;
+       Biso values are also considered in the Uiso versus Ueq check; a
+       missing Materials Project API key gives the intended error message;
+       sites without coordinates ("?") are rejected with a clear error
+       (instead of a ValueError).

@@ -87,10 +87,20 @@ must contain only this file, with the message
 - `ncmat.py` + `_ncmatimpl.py` (2.2k): `NCMATComposer`, the builder behind
   `cif2ncmat`, `hfg2ncmat`, `vdos2ncmat` etc. (`from_cif/from_info/...`,
   `set_*`, `create_ncmat`, `write`, `register_as`, `load`).
+- `_sgsymimpl.py`: spglib refinement, cell geometry and displacement tensor
+  helpers shared by `NCMATComposer` and `CIFLoader`.
+- `_stablemath.py`: cross-platform reproducible arithmetic (sine and cosine of
+  degrees from the C++ `stable_sincos_deg`, exact matrix products and scaling
+  via `fractions`).
 - `vdos.py` (1.1k): Debye VDOS/MSD helpers, `analyseVDOS`, `extractGn`,
   `extractKnl` (-> C `ncrystal_raw_vdos2kernel`), `PhononDOSAnalyser`.
-- `cifutils.py` (1.8k): `CIFSource`, `CIFLoader` (gemmi, spglib, ase;
-  online DBs: COD, Materials Project via `MATERIALSPROJECT_USER_API_KEY`).
+- `cifutils.py` (0.7k): public `CIFSource`, `CIFLoader` and validation plots
+  (gemmi, spglib, ase). Implemented in `_cifsrcimpl.py` (fetching from COD,
+  Materials Project via `MATERIALSPROJECT_USER_API_KEY`, local cache),
+  `_cifreadimpl.py` (reading with gemmi, CIF numbers with their rounding
+  errors), `_cifsymimpl.py` (which symmetry to use), `_cifsitesimpl.py`
+  (finding and grouping sites), `_cifloadimpl.py` (the loading steps) and
+  `_cifcomposerimpl.py` (creating the `NCMATComposer`).
 - `ncmat2endf.py` + `_ncmat2endf_impl.py` (1.6k): ENDF export via
   `endf_parserpy`.
 - `misc.py` + `_miscimpl.py`: type-erasure wrappers `MaterialSource`,
