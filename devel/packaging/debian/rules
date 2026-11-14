@@ -1,0 +1,48 @@
+#!/usr/bin/make -f
+
+#Packaging template for Debian, see devel/packaging/README.md.
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export PYBUILD_SYSTEM = pyproject
+
+#Optimise as in upstream's default (Release) builds, except with noopt
+#(then -O0 and assertions enabled, for debugging):
+ifeq (,$(filter noopt,$(DEB_BUILD_OPTIONS)))
+export DEB_CFLAGS_MAINT_APPEND = -O3
+export DEB_CXXFLAGS_MAINT_APPEND = -O3
+export DEB_CPPFLAGS_MAINT_APPEND = -DNDEBUG
+endif
+
+#dh_auto_test only runs the core tests, the Python ones need the installed
+#packages and run via autopkgtest (debian/tests):
+COREOPTS = -DNCRYSTAL_MODIFY_RPATH=OFF -DNCRYSTAL_ENABLE_CORE_TESTING=ON
+
+#Runs dh_auto_$(1) with pybuild for both Python projects, which pybuild
+#installs directly into debian/python3-<PYBUILD_NAME>:
+define pysteps
+PYBUILD_NAME=ncrystal dh_auto_$(1) --buildsystem=pybuild \
+  --sourcedirectory=ncrystal_python
+PYBUILD_NAME=ncrystal-verify dh_auto_$(1) --buildsystem=pybuild \
+  --sourcedirectory=ncrystal_verify
+endef
+
+%:
+	dh $@ --buildsystem=cmake --sourcedirectory=ncrystal_core
+
+override_dh_auto_configure:
+	dh_auto_configure -- $(COREOPTS)
+	$(call pysteps,configure)
+
+override_dh_auto_build:
+	dh_auto_build
+	$(call pysteps,build)
+
+override_dh_auto_install:
+	dh_auto_install
+	$(call pysteps,install)
+
+#The command-line tools belong in the ncrystal package:
+execute_after_dh_auto_install:
+	mkdir -p debian/ncrystal/usr
+	mv debian/python3-ncrystal/usr/bin debian/ncrystal/usr/
+	debian/genmanpages

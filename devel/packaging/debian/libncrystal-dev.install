@@ -1,0 +1,3 @@
+usr/include
+usr/lib/*/libNCrystal.so
+usr/lib/*/cmake
