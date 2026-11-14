@@ -428,6 +428,29 @@ void NC::Cfg::CfgManip::streamJSON( const CfgData& data, std::ostream& os )
 }
 
 
+void NC::Cfg::CfgManip::streamJSONAll( const CfgData& data, std::ostream& os )
+{
+  os << '[';
+  for ( auto i : ncrange( sizeof(varlist)/sizeof(varlist[0]) ) ) {
+    const auto varid = static_cast<VarId>( i );
+    const auto& varinfo = varInfo( varid );
+    if ( i )
+      os << ',';
+    os << '[';
+    ::NCrystal::streamJSON( os, varinfo.nameSV() );
+    os << ',';
+    auto buf = searchBuf( data, varid );
+    if ( buf )
+      varinfo.streamAsJSON( os, *buf );
+    else if ( varinfo.hasDefaultValue() )
+      varinfo.streamDefaultValueJSON( os );
+    else
+      os << "null";
+    os << ',' << ( buf ? "true" : "false" ) << ']';
+  }
+  os << ']';
+}
+
 std::vector<NC::VectS> NC::Cfg::CfgManip::get_atomdb_parsed(const CfgData& data)
 {
   auto sv_atomdb = get_atomdb(data);

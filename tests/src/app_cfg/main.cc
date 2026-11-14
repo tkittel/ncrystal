@@ -887,6 +887,19 @@ int main(int,char**) {
     std::cout<<cfg<<std::endl;
     std::cout<<cfg.textData();
   }
+  {
+    //getTextDataSourceName gives the TextData name, also for named raw data
+    //where getDataSourceName gives an anonymous name:
+    NC::MatCfg cfg_file("Al_fake.ncmat;temp=600K");
+    std::cout << cfg_file.getDataSourceName() << " | "
+              << cfg_file.getTextDataSourceName() << std::endl;
+    auto tdn = NC::makeSO<const NC::TextData>( NC::RawStrData( std::string("NCMAT v2\n") ),
+                                               NC::TextData::DataType{"ncmat"},
+                                               NC::DataSourceName("my #data") );
+    NC::MatCfg cfg_named( tdn, "temp=600K" );
+    std::cout << cfg_named.getDataSourceName() << " | "
+              << cfg_named.getTextDataSourceName() << std::endl;
+  }
 
   test();
   test_copyonwrite();

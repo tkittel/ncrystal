@@ -1123,7 +1123,7 @@ def _decodecfg_and_loadobjs( cfgstr ):
 
     def _decode_cfg( cstr ):
         dc = decodeCfg(cstr)
-        assert dc['format'] == 'NCrystal-MatCfg-v1'
+        assert dc['format'] == 'NCrystal-MatCfg-v2'
         return dc
 
     def fmtfp( v ):
