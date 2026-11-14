@@ -10,4 +10,6 @@ same site given twice (occupancy 2): rejected: Error: Too high total occupancy (
 different displacements at the same positions: rejected: atoms labelled "A" and "B" have same cell positions but different uiso information. This is not supported.
 different tensors at the same positions: rejected: atoms labelled "A" and "B" have same cell positions but different uiso information. This is not supported.
 wrong atom count: rejected: Expanded number of atoms per cell (2) is different from what is stated explicitly in the CIF data (3). Wrong spacegroup (or choice/setting improperly specified)?
+split site, total occupancy 0.5: 2 positions 0.054 Aa apart
+split site, total occupancy 0.6: rejected: At most one of the 2 symmetry-equivalent positions of the site (0.1, 0.005, 0.2) within 0.5 Aa (the closest 0.054 Aa apart) can be occupied, so its occupancy must be at most 1/2 (got 0.6). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.
 atom count checks done

@@ -24,7 +24,7 @@
 # NEEDS: gemmi
 
 # Tests of _cifreadimpl.read_cif: CIF text read with gemmi into the plain
-# content used by the rest of the CIF loading.
+# content (printed strings) used by the rest of the CIF loading.
 
 import NCTestUtils.enable_fpe # noqa F401
 import NCTestUtils.reprint_escaped_warnings # noqa F401
@@ -58,26 +58,21 @@ def cif( *, hm = 'P 1 21/c 1', itno = '14', ops = None, extra = '',
         lines += aniso
     return '\n'.join( lines ) + '\n' + extra
 
-def read( txt, override = None ):
-    return read_cif( txt, quiet = True, override_spacegroup = override )
+def read( txt ):
+    return read_cif( txt, quiet = True )
 
 def show( descr, c ):
     print( f'{descr}:' )
     print( '   cell:', c['cell'] )
     for s in c['sites']:
         print( '   site:', s )
-    for k in ( 'listed_ops', 'symbol_hm', 'symbol_itnumbers', 'orig_hm_alt',
-               'multiplicities', 'atom_type_number_in_cell' ):
+    for k in ( 'listed_ops', 'hall', 'hm', 'itnumber', 'formula',
+               'atom_type_number_in_cell' ):
         print( f'   {k}:', c[k] )
-    #(rounding errors with limited precision, as they involve trigonometry):
-    for k in ( 'uiso_printed', 'ueq_printed' ):
-        print( f'   {k}:', { lbl: ( f'{v:.6g}', f'{e:.4g}' )
-                             for lbl, ( v, e ) in c[k].items() } )
-    assert c['_struct'] is not None and c['_gemmi'] is not None
 
-def expect_error( descr, txt, detail = True, **kw ):
+def expect_error( descr, txt, detail = True ):
     try:
-        read( txt, **kw )
+        read( txt )
     except NC.NCBadInput as e:
         #(without the details from gemmi, which might change between versions):
         print( f'{descr}: rejected: {e if detail else str(e).split("(")[0].rstrip()}' )
@@ -86,72 +81,91 @@ def expect_error( descr, txt, detail = True, **kw ):
 
 def main():
     ops14 = [ 'x, y, z', '-x, y+1/2, -z+1/2', '-x, -y, -z', 'x, -y+1/2, z+1/2' ]
-    c = read( cif( ops = ops14,
-                   aniso = [ 'O1 0.012 0.009 0.015 0.002 -0.003 0.001' ] ) )
-    show( 'monoclinic, listed operations, one tensor', c )
+    c = read( cif( ops = ops14, extra = "_chemical_formula_sum 'Fe O Si'\n",
+                   aniso = [ 'O1 0.012(2) 0.009 0.015 0.002 -0.003 0.001',
+                             'Si1 0.01 ? 0.01 0 0 0' ] ) )
+    show( 'monoclinic, listed operations, tensors', c )
     o1, si1, fe1 = c['sites']
-    assert o1['aniso'] == { 'u11': 0.012, 'u22': 0.009, 'u33': 0.015,
-                            'u12': 0.002, 'u13': -0.003, 'u23': 0.001 }
-    assert si1['aniso'] is None and fe1['aniso'] is None
-    assert si1['occ'] == 0.5 and o1['u_iso'] == 0.0123
-    assert c['listed_ops'] == ops14
-    assert c['multiplicities'] == { 'O1': 4, 'Si1': 4, 'Fe1': 2 }
-    assert set( c['uiso_printed'] ) == { 'O1', 'Si1' }
-    assert set( c['ueq_printed'] ) == { 'O1' }
-    #Old operations tag, no H-M symbol, only the IT number:
-    c = read( cif( ops = ops14, hm = None, opstag = '_symmetry_equiv_pos_as_xyz' ) )
-    show( 'old operations tag, no symbol', c )
-    assert c['listed_ops'] == ops14 and c['symbol_itnumbers'][0] == [ '14' ]
-    #No listed operations, symbol only:
-    c = read( cif() )
-    assert c['listed_ops'] is None and c['orig_hm_alt'] == 'P 1 21/c 1'
-    #Override: listed operations are then ignored:
-    c = read( cif( ops = ops14 ), override = 'P 1 21/c 1' )
-    assert c['listed_ops'] is None
-    print( 'override ignores listed operations' )
-    #Atom counts and an element only given by the label:
+    #(printed strings, with uncertainties):
+    assert o1['uij'] == [ '0.012(2)', '0.009', '0.015', '0.002', '-0.003', '0.001' ]
+    assert o1['uiso'] == '0.0123(4)' and si1['occ'] == '0.5'
+    #(tensors with missing values are ignored; null values are None):
+    assert si1['uij'] is None and fe1['uij'] is None and fe1['uiso'] is None
+    assert c['listed_ops'] == ops14 and c['formula'] == 'Fe O Si'
+    assert c['cell'] == { 'a': '5.1', 'b': '6.3', 'c': '7.2', 'alpha': '90',
+                          'beta': '105', 'gamma': '90' }
+    #Old tags, no H-M symbol, only the IT number:
+    c = read( cif( ops = ops14, hm = None, itno = None,
+                   opstag = '_symmetry_equiv_pos_as_xyz',
+                   extra = "_symmetry_Int_Tables_number 14\n"
+                   "_symmetry_space_group_name_Hall '-P 2ybc'\n" ) )
+    show( 'old tags, no H-M symbol', c )
+    assert c['listed_ops'] == ops14 and c['itnumber'] == '14'
+    assert c['hall'] == '-P 2ybc' and c['hm'] is None
+    #No listed operations:
+    assert read( cif() )['listed_ops'] is None
+    #Atom counts, a missing type symbol, B instead of U:
     c = read( cif( extra = 'loop_\n_atom_type_symbol\n_atom_type_number_in_cell\n'
-                   'O 4\nSi 2\nFe 2\n',
+                   'O 4\nSi 2\nFe ?\n',
                    sites = [ 'O1 O 0.79 0.87 0.63 1 0.0123 4',
-                             'CaM1 . 0.11 0.22 0.33 1 0.0071 4' ] ) )
-    show( 'atom counts, missing type symbol', c )
-    assert c['atom_type_number_in_cell'] == [ '4', '2', '2' ]
+                             'CaM1 . 0.11 0.22 0.33 1 0.0071 4' ] ).replace(
+                                 '_atom_site_U_iso_or_equiv',
+                                 '_atom_site_B_iso_or_equiv' ) )
+    show( 'atom counts, missing type symbol, Biso', c )
+    assert c['atom_type_number_in_cell'] == [ '4', '2', None ]
+    assert c['sites'][1]['type_symbol'] is None
+    assert c['sites'][0]['biso'] == '0.0123' and c['sites'][0]['uiso'] is None
     #Several blocks: the one with sites is used:
     c = read( 'data_first\n_cell_length_a 1\n' + cif() )
     assert len( c['sites'] ) == 3
     print( 'block with the sites selected among two' )
-    #Biso instead of Uiso (Uiso = Biso/(8 pi^2)), and no cell angles (then 90):
-    c = read( cif( cell = '5.1 6.3 7.2 90 90 90',
-                   aniso = [ 'O1 0.012 0.009 0.015 0.002 -0.003 0.001' ],
-                   sites = [ 'O1 O 0.79 0.87 0.63 1 ? 4' ] ).replace(
-                       '_atom_site_U_iso_or_equiv', '_atom_site_B_iso_or_equiv' ).replace(
-                           'O1 O 0.79 0.87 0.63 1 ? 4', 'O1 O 0.79 0.87 0.63 1 0.95 4' ) )
-    ( u, e ), = c['uiso_printed'].values()
-    print( f'Biso 0.95: Uiso {u:.6g} with rounding error {e:.3g}' )
-    assert abs( u - 0.95 / ( 8 * 3.141592653589793**2 ) ) < 1e-15
-    noangles = '\n'.join( ln for ln in cif( aniso = [ 'O1 0.012 0.009 0.015 0.002 -0.003 0.001' ] ).splitlines()
-                          if not ln.startswith( '_cell_angle' ) )
-    c = read( noangles )
-    assert c['cell']['beta'] == 90.0 and set( c['ueq_printed'] ) == { 'O1' }
-    print( 'missing cell angles: 90 degrees, Ueq rounding errors available' )
-    #Angles of 90 and 120 degrees without uncertainty are exact:
-    import gemmi
-    from NCrystalDev._cifreadimpl import _cell_from_cif
-    for al, be, ga in ( ( '90', '90.00', '120.0' ), ( '90.00(3)', '105', '104' ),
-                        ( '89.99', '90.', '60' ) ):
-        blk = gemmi.cif.read_string( cif( cell = f'5.1 6.3 7.2 {al} {be} {ga}' ) ).sole_block()
-        c = _cell_from_cif( gemmi, blk )
-        print( f'angles {al} {be} {ga}: rounding errors',
-               [ f'{c[k][1]:.4g}' for k in ( 'alpha', 'beta', 'gamma' ) ] )
+    #Missing cell angles are 90 degrees, but missing lengths are an error:
+    c = read( '\n'.join( ln for ln in cif().splitlines()
+                         if not ln.startswith( '_cell_angle' ) ) )
+    assert all( c['cell'][k] == '90' for k in ( 'alpha', 'beta', 'gamma' ) )
+    print( 'missing cell angles: 90 degrees' )
+    expect_error( 'missing cell length',
+                  '\n'.join( ln for ln in cif().splitlines()
+                             if not ln.startswith( '_cell_length_b' ) ) )
     expect_error( 'two blocks with sites', cif() + cif().replace( 'data_test', 'data_b' ) )
-    expect_error( 'site without coordinates', cif( sites = [ 'O1 O ? ? ? 1 ? 4' ] ) )
-    #(unoccupied sites are ignored later, so their coordinates do not matter):
-    c = read( cif( sites = [ 'O1 O 0.1 0.2 0.3 1 ? 4', 'O2 O ? ? ? 0 ? 4' ] ) )
-    print( 'unoccupied site without coordinates: accepted with occupancies',
-           [ s['occ'] for s in c['sites'] ] )
     expect_error( 'syntax error', 'data_x\n_a 1 2\n', detail = False )
     expect_error( 'no blocks', '# nothing\n' )
-    expect_error( 'unknown override', cif(), override = 'Q 99' )
+    #Aniso rows go to the sites with their label in order (labels reused):
+    c = read( cif( sites = [ 'O1 O 0.1 0.2 0.3 1 ? 4', 'O1 O 0.4 0.2 0.3 1 ? 4',
+                             'Si1 Si 0.6 0.2 0.3 1 ? 4' ],
+                   aniso = [ 'O1 0.011 0.012 0.013 0 0 0',
+                             'Si1 0.021 0.022 0.023 0 0 0',
+                             'O1 0.031 0.032 0.033 0 0 0' ] ) )
+    print( 'reused labels, tensors:', [ s['uij'] and s['uij'][0]
+                                        for s in c['sites'] ] )
+    assert [ s['uij'][0] for s in c['sites'] ] == [ '0.011', '0.031', '0.021' ]
+    from NCrystalDev.cifutils import CIFLoader
+    #All-zero tensors are placeholders for no tensor (the Uiso is used), and
+    #errors about tensors name the CIF site:
+    for descr, aniso in ( ( 'all-zero tensor', '0 0 0 0 0 0' ),
+                          ( 'tensor not positive definite',
+                            '0.01 -0.01 0.01 0 0 0' ) ):
+        try:
+            lc = CIFLoader( cif( sites = [ 'Fe1 Fe 0 0 0 1 0.012 2' ],
+                                 aniso = [ f'Fe1 {aniso}' ], ops = ops14 ),
+                            quiet = True, refine_with_spglib = False )
+        except NC.NCBadInput as e:
+            print( f'{descr}: rejected: {e}' )
+        else:
+            s, = lc.sites
+            print( f'{descr}: uiso {s["uiso"]}, tensor {s["aniso"]}' )
+    #Missing coordinates are rejected when loading (but unoccupied sites are
+    #ignored):
+    from NCrystalDev.cifutils import CIFLoader
+    for sites in ( [ 'O1 O ? ? ? 1 ? 4' ],
+                   [ 'O1 O 0.1 0.2 0.3 1 ? 4', 'O2 O ? ? ? 0 ? 4' ] ):
+        try:
+            lc = CIFLoader( cif( sites = sites, ops = ops14 ), quiet = True,
+                            refine_with_spglib = False )
+        except NC.NCBadInput as e:
+            print( f'sites {sites}: rejected: {e}' )
+        else:
+            print( f'sites {sites}: loaded {len(lc.sites)} site(s)' )
 
 if __name__ == '__main__':
     main()

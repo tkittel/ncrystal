@@ -262,14 +262,15 @@ class CIFLoader:
         refinement, as it is needed to ensure correctness and consistency of the
         resulting material.
 
-        The override_spacegroup parameter can in some cases be used to select a
-        particular setting of the detected spacegroup. For instance, spacegroup
-        number 70 is available in two settings, and loading a CIF file with
-        those might result in a warning that both "F d d d:1" and "F d d d:2"
-        are available. Trying again with override_spacegroup="F d d d:1" can be
-        used to explicitly select one of them (it might require some
-        investigation of course to determine which one is right). A list of
-        space group settings can be found at:
+        The override_spacegroup parameter replaces the symmetry information of
+        the CIF data (listed operations and symbols) with a Hermann-Mauguin
+        symbol or a setting like "70:1". This can for instance select a
+        particular setting when the CIF data does not list its symmetry
+        operations, and its space group symbol fits several settings (e.g. "F
+        d d d" for origin choices "F d d d:1" and "F d d d:2", which is an
+        error otherwise). It might require some investigation of course to
+        determine which one is right. A list of space group settings can be
+        found at:
 
         https://cci.lbl.gov/sginfo/hall_symbols.html
 
@@ -294,9 +295,9 @@ class CIFLoader:
         0.01Aa for the default tol.
 
         CIF data with inconsistent information (e.g. symmetry operations not
-        matching the space group symbol, site multiplicities not matching the
-        symmetry, or anisotropic displacements of equivalent sites which are
-        not each other's symmetry images) is rejected. With permissive=True,
+        matching the space group symbol, anisotropic displacements of
+        equivalent sites which are not each other's symmetry images, or split
+        sites, i.e. copies of an atom closer than 0.5Aa) is rejected. With permissive=True,
         some such data is loaded anyway, with warnings, if the information
         needed can be recovered (e.g. by discarding anisotropic
         displacements). Use this with care.
@@ -314,13 +315,11 @@ class CIFLoader:
             if not isinstance( cifsrc, CIFSource ):
                 cifsrc = CIFSource( cifsrc )
             cifdata = cifsrc.load_data( quiet = quiet, mp_apikey = mp_apikey )
-            load, gemmi, struct = load_cif_data( cifsrc, cifdata,
-                                                 quiet = quiet,
-                                                 refine_with_spglib = refine_with_spglib,
-                                                 merge_equiv = merge_equiv,
-                                                 override_spacegroup = override_spacegroup,
-                                                 tols = tols,
-                                                 permissive = permissive )
+            load = load_cif_data( cifsrc, cifdata, quiet = quiet,
+                                  refine_with_spglib = refine_with_spglib,
+                                  merge_equiv = merge_equiv,
+                                  override_spacegroup = override_spacegroup,
+                                  tols = tols, permissive = permissive )
         assert len(load)==12
         self.__cifsrc = load['cifsrc']
         self.__actual_codid = load['actual_codid']
@@ -335,11 +334,6 @@ class CIFLoader:
         self._sgsetting = load['sgsetting']
         self.__cifdescr = load['cifdescr']
         self.__warnlist = tuple( warnlist )
-
-        #Hidden support for additional processing in derived class:
-        _ = getattr( self, '_process_raw_gemmi_objects', None )
-        if _:
-            _( gemmi, struct )
 
     @property
     def cifsrc( self ):
