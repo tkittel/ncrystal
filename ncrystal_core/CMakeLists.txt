@@ -510,7 +510,9 @@ if ( NCRYSTAL_BUILD_STRICT )
 endif()
 
 function(set_target_common_props targetname)
-  mctools_apply_strict_comp_properties( ${targetname} )
+  if ( NCRYSTAL_BUILD_STRICT )
+    mctools_apply_strict_comp_properties( ${targetname} )
+  endif()
   if ( STRICT_CPPSTD )
     set_target_properties(
       ${targetname}
