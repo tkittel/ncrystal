@@ -68,30 +68,22 @@ namespace NCRYSTAL_NAMESPACE {
     //relative deviation from evaluateMonoAtomic below 1e-10:
     static IsoXSTable tabulateMonoAtomic( double meanSqDisp, SigmaBound bound_incoh_xs );
 
+    //Tabulation of the summed cross section of all elements, with a relative
+    //deviation from evaluate below 1e-10 (one table however many elements;
+    //identical to tabulateMonoAtomic for a single element):
+    IsoXSTable tabulate() const;
+
     //Element data, (msd,boundincohxs*scale):
     Span<const PairDD> elementData() const { return m_elm_data; }
     CrossSect evaluate(NeutronEnergy ekin) const;
 
     void evaluateMany( Span<const double> ekin, Span<double> tgt) const;
 
-
-    //Sample cosine of scatter angle:
-    static CosineScatAngle sampleMuMonoAtomic( RNG&, NeutronEnergy, double meanSqDisp );
-    CosineScatAngle sampleMu( RNG&, NeutronEnergy );
-
     //Constructor merging two existing instances with associated scales:
     ElIncXS( const ElIncXS&, double, const ElIncXS&,  double );
 
     //Number of elements:
     std::size_t nElements() const;
-
-    struct EPointAnalysis {
-      SmallVector<double,32> data;
-      NeutronEnergy ekin;
-      CrossSect getXS() const { return CrossSect{ data.back() }; }
-      CosineScatAngle sampleMu( const ElIncXS&, RNG& ) const;
-    };
-    void analyseEnergyPoint( NeutronEnergy ekin, EPointAnalysis& ) const;
 
     ////////////////////////////////////////////////////////////////////////////////////
     //
@@ -125,17 +117,17 @@ namespace NCRYSTAL_NAMESPACE {
     // And E = p^2/2m, lambda=2pi/k, p=hbar*k so t = (16*pi^2)*d^2 / lambda^2.
     //
     // In order to sample a value of mu=costheta for a particular scattering, it
-    // must occur as per the integrand in [***], i.e. a mu value must be sampled in
-    // [-1,1] with probability proportional to exp(a*mu) where a=2*k^2*d^2.
+    // must occur as per the integrand in [***], summed over elements. With
+    // q=Q^2=2k^2*(1-mu) in [0,4k^2], the summed integrand is G(q), a function of
+    // q alone, and E*XStot(E) is proportional to C(4k^2) with C(q) the integral
+    // of G over [0,q]. So mu=1-2*E'/E where E'*XStot(E')=R*E*XStot(E) for a
+    // uniform random R (ElIncScatter does this with the tabulated XStot).
     //
     ////////////////////////////////////////////////////////////////////////////////////
 
   private:
     SmallVector<PairDD,16> m_elm_data;//for exact eval, (msd,boundincohxs*scale)
     static double eval_1mexpmtdivt(double t);//safe/fast eval of (1-exp(-t))/t for t>=0.0 with >10 sign. digits
-
-    void evalXSContribsCommul( NeutronEnergy, SmallVector<double,32>& ) const;
-    friend struct EPointAnalysis;
   };
 }
 

@@ -23,6 +23,7 @@
 #include "NCrystal/internal/phys_utils/NCElIncXS.hh"
 #include "NCrystal/internal/utils/NCIsoXSUtils.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCRandUtils.hh"
 #include <iostream>
 
 namespace NC = NCrystal;
@@ -127,6 +128,65 @@ int main()
     for ( auto j : NC::ncrange( msd.size() ) )
       ref += scale[j] * refXS( e, msd[j], bixs[j] );
     nc_assert_always( NC::floateq( v, ref, 1e-10, 0.0 ) );
+  }
+
+  //Many elements (as from anisotropic sites, incl. one with zero msd): one
+  //table, within 1e-10 of the summed formula:
+  NC::VectD mm, mb, ms;
+  for ( auto i : NC::ncrange( 4000 ) ) {
+    const double x = std::fmod( i * 0.6180339887498949, 1.0 );
+    mm.push_back( i ? 0.002 + 0.05 * x : 0.0 );
+    mb.push_back( 1.0 + std::fmod( i * 0.4142135623730951, 1.0 ) );
+    ms.push_back( 1.0 / 4000 );
+  }
+  {
+    NC::ElIncXS ei( mm, mb, ms );
+    const NC::IsoXSEvaluator ev( ei.tabulate() );
+    double w = 0.0;
+    for ( auto e : NC::geomspace( 1e-14, 1e6, 2003 ) )
+      w = std::max( w, std::fabs( ev.eval( e ) / ei.evaluate( NC::NeutronEnergy{ e } ).dbl() - 1.0 ) );
+    nc_assert_always( w < 1e-10 );
+    std::cout << "Number of points (4000 elements): " << ev.table().E.size() << std::endl;
+  }
+
+  //Sampled mu follow the exact distribution, (summed) density
+  //w*exp(-a*(1-mu)) with a=2k^2*msd:
+  {
+    NC::ElIncScatter scm( mm, mb, ms );
+    auto rng = NC::getRNG();
+    auto cdf = []( double e, const NC::VectD& m, const NC::VectD& b,
+                    const NC::VectD& s, double mu )
+    {
+      constexpr double kk = 8.0 * NC::kPiSq * NC::ekin2wlsqinv(1.0);
+      double num = 0.0, den = 0.0;
+      for ( auto j : NC::ncrange( m.size() ) ) {
+        const double a = kk * m[j] * e, wt = b[j] * s[j];
+        auto F = [a]( double x ) { return a < 1e-200 ? 1.0 + x : std::exp( -2.0 * a ) * NC::stable_expm1( a * ( 1.0 + x ) ) / a; };
+        num += wt * F( mu );
+        den += wt * F( 1.0 );
+      }
+      return num / den;
+    };
+    const unsigned N = 200000;
+    for ( int which : { 0, 1 } ) {
+      const NC::ElIncScatter& s = which ? scm : sc;
+      const NC::VectD& m = which ? mm : msd;
+      const NC::VectD& b = which ? mb : bixs;
+      const NC::VectD& f = which ? ms : scale;
+      for ( double e : { 1e-5, 0.025, 0.3, 5.0 } ) {
+        NC::VectD mus;
+        mus.reserve( N );
+        for ( unsigned i = 0; i < N; ++i )
+          mus.push_back( s.sampleScatterIsotropic( cp, *rng, NC::NeutronEnergy{ e } ).mu.dbl() );
+        std::sort( mus.begin(), mus.end() );
+        double dmax = 0.0;
+        for ( double mu : NC::linspace( -1.0, 1.0, 41 ) ) {
+          const double emp = double( std::upper_bound( mus.begin(), mus.end(), mu ) - mus.begin() ) / N;
+          dmax = std::max( dmax, std::fabs( emp - cdf( e, m, b, f, mu ) ) );
+        }
+        nc_assert_always( dmax < 0.006 );
+      }
+    }
   }
   std::cout << "All ok" << std::endl;
 }

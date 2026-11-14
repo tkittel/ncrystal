@@ -25,7 +25,6 @@
 #include "NCrystal/internal/phys_utils/NCElIncXS.hh"
 #include "NCrystal/internal/phys_utils/NCUijUtils.hh"
 #include "NCrystal/internal/phys_utils/NCDebyeMSD.hh"
-#include "NCrystal/internal/utils/NCRandUtils.hh"
 #include "NCrystal/internal/utils/NCSpan.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/utils/NCString.hh"
@@ -222,38 +221,64 @@ namespace NCRYSTAL_NAMESPACE {
                                      std::move(res.value().scale) );
     }
 
-    //Sum of the tabulations of the elements:
-    IsoXSTable tabulateElInc( const ElIncXS& ei )
+    //Values of e*xs at the energies of a table of the form P_i(u)/e (no q, r,
+    //tail[0] or tail[4] terms, as made by ElIncXS):
+    VectD nodeEXS( const IsoXSTable& t )
     {
-      const auto elms = ei.elementData();
-      if ( elms.empty() )
-        return ElIncXS::tabulateMonoAtomic( 0.0, SigmaBound{ 0.0 } );
-      if ( elms.size() == 1 )
-        return ElIncXS::tabulateMonoAtomic( elms[0].first,
-                                            SigmaBound{ elms[0].second } );
-      std::vector<IsoXSTable> tables;
-      tables.reserve( elms.size() );
-      std::vector<std::pair<double,const IsoXSTable*>> inputs;
-      inputs.reserve( elms.size() );
-      for ( auto& e : elms )
-        tables.push_back( ElIncXS::tabulateMonoAtomic( e.first,
-                                                       SigmaBound{ e.second } ) );
-      for ( auto& t : tables )
-        inputs.emplace_back( 1.0, &t );
-      return mergeIsoXSTables( inputs );
+      nc_assert_always( t.q.empty() && t.r.empty() && !t.tail[0]
+                        && !t.tail[4] && t.p.size() + 4 == 4 * t.E.size() );
+      VectD res;
+      res.reserve( t.E.size() );
+      for ( auto i : ncrange( t.E.size() - 1 ) )
+        res.push_back( t.p[4*i] );
+      const double* p = t.p.data() + t.p.size() - 4;
+      res.push_back( p[0] + p[1] + p[2] + p[3] );
+      return res;
     }
 
-    std::vector<IsoXSEvaluator> elementEvaluators( const ElIncXS& ei )
+    //Per interval of such a table: 1/(P(1)-P(0)) and the coefficients a1..a3
+    //of the cubic Hermite interpolation u(v)=a1*v+a2*v^2+a3*v^3 of the inverse
+    //of P (v=(y-P(0))/(P(1)-P(0)), u(0)=0, u(1)=1, matching u'(0) and u'(1)):
+    VectD inverseGuesses( const IsoXSTable& t )
     {
-      std::vector<IsoXSEvaluator> res;
-      const auto elms = ei.elementData();
-      if ( elms.size() < 2 )
-        return res;
-      res.reserve( elms.size() );
-      for ( auto& e : elms )
-        res.emplace_back( ElIncXS::tabulateMonoAtomic( e.first,
-                                                       SigmaBound{ e.second } ) );
+      VectD res;
+      res.reserve( t.p.size() );
+      for ( auto i : ncrange( t.E.size() - 1 ) ) {
+        const double* p = t.p.data() + 4 * i;
+        const double ds = p[1] + p[2] + p[3];
+        const double dp1 = p[1] + 2.0 * p[2] + 3.0 * p[3];
+        const bool ok = ds > 0.0 && p[1] > 0.0 && dp1 > 0.0;
+        const double d0 = ok ? ds / p[1] : 1.0;
+        const double d1 = ok ? ds / dp1 : 1.0;
+        res.insert( res.end(), { ds > 0.0 ? 1.0 / ds : 0.0, d0,
+                                 3.0 - 2.0 * d0 - d1, d0 + d1 - 2.0 } );
+      }
       return res;
+    }
+
+    //u in [0,1] with P(u)=y for the cubic P(u)=p0+p1*u+p2*u^2+p3*u^3 (assumed
+    //increasing, P(0)<=y<=P(1)), by Newton iterations safeguarded by bisection,
+    //starting from the inverse interpolation g (see inverseGuesses). Stops at
+    //a residual below 1e-11*y, well within the 0.5e-10 of the table itself:
+    double solveCubic( const double* p, const double* g, double y )
+    {
+      auto P = [p]( double u ) { return p[0] + u * ( p[1] + u * ( p[2] + u * p[3] ) ); };
+      double lo = 0.0, hi = 1.0;
+      const double v = ( y - p[0] ) * g[0];
+      double u = ncclamp( v * ( g[1] + v * ( g[2] + v * g[3] ) ), 0.0, 1.0 );
+      const double eps = 1e-11 * y;
+      for ( int it = 0; it < 100; ++it ) {
+        const double r = P( u ) - y;
+        if ( ncabs( r ) <= eps )
+          return u;
+        ( r < 0.0 ? lo : hi ) = u;
+        const double d = p[1] + u * ( 2.0 * p[2] + 3.0 * u * p[3] );
+        double un = ( d > 0.0 ? u - r / d : -1.0 );
+        if ( !( un > lo && un < hi ) )
+          un = 0.5 * ( lo + hi );
+        u = un;
+      }
+      return u;
     }
 
   }
@@ -287,21 +312,31 @@ NC::CrossSect NC::ElIncScatter::crossSectionIsotropic( CachePtr&, NeutronEnergy 
 
 NC::CosineScatAngle NC::ElIncScatter::sampleMu( RNG& rng, NeutronEnergy ekin ) const
 {
-  //Pick element by the values of their tabulations:
-  const auto elms = m_elincxs->elementData();
-  nc_assert( m_elmxs.size() == ( elms.size() > 1 ? elms.size() : 0 ) );
-  std::size_t idx = 0;
-  if ( m_elmxs.size() > 1 ) {
-    SmallVector<double,32> commul;
-    StableSumKahan sum;
-    for ( auto& ev : m_elmxs ) {
-      sum.add( ev.eval( ekin.dbl() ) );
-      commul.push_back( sum.sum() );
-    }
-    idx = RandIdxByWeightPicker::oneShotPick( rng, commul );
+  //With the table's e*xs(e) (see NCElIncXS.hh): mu = 1-2*e'/e with
+  //e'*xs(e') = (1-R)*e*xs(e) (1-R since e' decreases with mu, so R gives the mu
+  //of inverting the cdf in mu, as for the analytic single element sampling):
+  const double e = ekin.dbl();
+  const double exs = e * m_xs.eval( e );
+  if ( !( exs > 0.0 ) )
+    return CosineScatAngle{ ncfma( 2.0, rng.generate(), -1.0 ) };
+  const double y = ( 1.0 - rng.generate() ) * exs;
+  const auto& t = m_xs.table();
+  double ep;
+  if ( y < m_nodeexs.front() ) {
+    ep = y / t.tail[1];//xs=tail[1] below the table
+  } else if ( !( y < m_nodeexs.back() ) ) {
+    //e*xs = tail[3]*e + tail[2] above the table:
+    ep = ( t.tail[3] > 0.0
+           ? ncmax( t.E.back(), ( y - t.tail[2] ) / t.tail[3] )
+           : t.E.back() );
+  } else {
+    const std::size_t i = m_nodeguide.upperBoundIdx( m_nodeexs.data(),
+                                                     m_nodeexs.size(), y ) - 1;
+    const double u = solveCubic( t.p.data() + 4 * i,
+                                 m_invguess.data() + 4 * i, y );
+    ep = ncfma( u, t.E[i+1] - t.E[i], t.E[i] );
   }
-  nc_assert( idx < elms.size() );
-  return ElIncXS::sampleMuMonoAtomic( rng, ekin, elms[idx].first );
+  return CosineScatAngle{ ncclamp( 1.0 - 2.0 * ( ep / e ), -1.0, 1.0 ) };
 }
 
 NC::Optional<NC::IsoXSTable>
@@ -316,10 +351,18 @@ NC::ScatterOutcomeIsotropic NC::ElIncScatter::sampleScatterIsotropic( CachePtr&,
 }
 
 NC::ElIncScatter::ElIncScatter( std::unique_ptr<ElIncXS> p )
-  : m_elincxs( std::move(p) ),
-    m_xs( tabulateElInc( *m_elincxs ) ),
-    m_elmxs( elementEvaluators( *m_elincxs ) )
+  : ElIncScatter( std::move(p), IsoXSTable() )
 {
+}
+
+NC::ElIncScatter::ElIncScatter( std::unique_ptr<ElIncXS> p, IsoXSTable t )
+  : m_elincxs( std::move(p) ),
+    m_xs( t.E.empty() ? m_elincxs->tabulate() : std::move(t) ),
+    m_nodeexs( nodeEXS( m_xs.table() ) ),
+    m_invguess( inverseGuesses( m_xs.table() ) )
+{
+  if ( m_nodeexs.front() > 0.0 )
+    m_nodeguide = LogGuideTable( m_nodeexs.data(), m_nodeexs.size() );
 }
 
 std::shared_ptr<NC::ProcImpl::Process> NC::ElIncScatter::createMerged( const Process& oraw,
@@ -332,8 +375,14 @@ std::shared_ptr<NC::ProcImpl::Process> NC::ElIncScatter::createMerged( const Pro
   auto& o = *optr;
   nc_assert( m_elincxs != nullptr );
   nc_assert( o.m_elincxs != nullptr );
-  return std::make_shared<ElIncScatter>(ncmake_unique<ElIncXS>( *m_elincxs, scale_self,
-                                                                *o.m_elincxs, scale_other ));
+  //Merged table is the exact sum (to within a few ulp) of the scaled tables:
+  const std::pair<double,const IsoXSTable*> inputs[2]
+    = { { scale_self, &m_xs.table() }, { scale_other, &o.m_xs.table() } };
+  return std::make_shared<ElIncScatter>( ncmake_unique<ElIncXS>( *m_elincxs,
+                                                                 scale_self,
+                                                                 *o.m_elincxs,
+                                                                 scale_other ),
+                                         mergeIsoXSTables( inputs ) );
 }
 
 NC::Optional<std::string> NC::ElIncScatter::specificJSONDescription() const
