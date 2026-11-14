@@ -306,6 +306,7 @@ int nccfg_boolopt_embed_data(void) { return 0; }
 int nccfg_boolopt_examples(void) { return 1; }
 int nccfg_boolopt_modify_rpath(void) { return 1; }
 int nccfg_boolopt_threads(void) { return 1; }
+int nccfg_boolopt_shared_lib(void) { return 1; }
 int nccfg_boolopt_expects_shlibdir_override(void) { return 0; }
 """
     for k,v in expandvars.items():
