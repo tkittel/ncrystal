@@ -1,0 +1,49 @@
+Material stdlib::Ge_sg227.ncmat;dcutoff=0.5;mos=40.0arcsec;dir1=@crys_hkl:5,1,1@lab:0,0,1;dir2=@crys_hkl:0,-1,1@lab:0,1,0:
+  State of matter: Solid
+  Crystal (space group: 227)
+  Number density: 0.0441826 [1/Aa^3]
+  Density: 5.3288 [g/cm3]
+  Component 0: Ge (Z=32, A=0) fraction=1 mass=72.6322
+  Bound coh/inc/abs xs per atom: 8.41874/0.18/2.2 [barn]
+  wl=0.5 Aa: xs=6.4688 barn, 1000 scatterings OK
+  wl=1.8 Aa: xs=1.2912 barn, 1000 scatterings OK
+  wl=4 Aa: xs=0.59711 barn, 1000 scatterings OK
+  wl=10 Aa: xs=0.74941 barn, 1000 scatterings OK
+Material stdlib::Al_sg225.ncmat;temp=200K:
+  State of matter: Solid
+  Crystal (space group: 225)
+  Number density: 0.0602324 [1/Aa^3]
+  Density: 2.69865 [g/cm3]
+  Component 0: Al (Z=13, A=0) fraction=1 mass=26.9815
+  Bound coh/inc/abs xs per atom: 1.49485/0.0082/0.231 [barn]
+  wl=0.5 Aa: xs=1.3918 barn, 1000 scatterings OK
+  wl=1.8 Aa: xs=1.4575 barn, 1000 scatterings OK
+  wl=4 Aa: xs=1.7475 barn, 1000 scatterings OK
+  wl=10 Aa: xs=0.11939 barn, 1000 scatterings OK
+Material gasmix::He/1bar:
+  State of matter: Gas
+  No crystal structure
+  Number density: 2.47074e-05 [1/Aa^3]
+  Density: 0.000164217 [g/cm3]
+  Component 0: He (Z=2, A=0) fraction=1 mass=4.0026
+  Bound coh/inc/abs xs per atom: 1.34/0/0.00747 [barn]
+  wl=0.5 Aa: xs=0.86317 barn, 1000 scatterings OK
+  wl=1.8 Aa: xs=0.96254 barn, 1000 scatterings OK
+  wl=4 Aa: xs=1.3437 barn, 1000 scatterings OK
+  wl=10 Aa: xs=2.8047 barn, 1000 scatterings OK
+Material stdlib::LiquidHeavyWaterD2O_T293.6K.ncmat:
+  State of matter: Liquid
+  No crystal structure
+  Number density: 0.0997033 [1/Aa^3]
+  Density: 1.10526 [g/cm3]
+  Component 0: H2 (Z=1, A=2) fraction=0.666667 mass=2.0141
+  Component 1: O (Z=8, A=0) fraction=0.333333 mass=15.9993
+  Bound coh/inc/abs xs per atom: 5.13878/1.36693/0.000409333 [barn]
+Warning: Discarding 204 edges of provided kernel data due to missing S values.
+Warning: Discarding 120 edges of provided kernel data due to missing S values.
+  wl=0.5 Aa: xs=3.6313 barn, 1000 scatterings OK
+  wl=1.8 Aa: xs=4.6903 barn, 1000 scatterings OK
+  wl=4 Aa: xs=7.2525 barn, 1000 scatterings OK
+  wl=10 Aa: xs=6.1286 barn, 1000 scatterings OK
+Material with invalid cfg-string:
+ERROR [BadInput]: Out of range temperature value -5K provided for parameter "temp" (valid temperatures must be in the range 0.001K .. 1e+06K)
