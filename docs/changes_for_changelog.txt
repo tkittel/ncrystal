@@ -198,8 +198,10 @@ CHANGELOG at release time.
        systems, setting info (axes, unique axis, cell/origin choice, axis
        permutation), and cell constraints derived from the operations.
        expandSiteToOrbit(..) expands sites into symmetry-equivalent positions
-       (symmetrising sites within 5e-4 of special positions, and rejecting
-       sites within 1e-2 but not on them).
+       in a cell: positions closer than 1e-3 Aa (NCMAT, 1e-2 Aa for CIF
+       data) are averaged, and positions closer than 0.5 Aa are allowed only
+       if the occupancy permits at most one of them to be occupied (a split
+       site, with a warning when loading NCMAT data).
      * Fix wrong real-space lattice (thus volume, density, d-spacings and
        plane normals) for unit cells with cos(alpha)!=cos(beta)cos(gamma),
        e.g. triclinic and rhombohedral cells (github issue #383). Affected

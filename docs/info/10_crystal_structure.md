@@ -117,7 +117,7 @@ Debye temperature and displacement, and a link to the element's dynamics.
 Python exposes this as `Info.structure_info` and `Info.getAtomInfo()` (with
 `AtomInfo.sites`, `.positions`, `.count`, ...); JSON queries on `Info`
 objects give the structure and the sites, and utility queries
-(`["util","atomsites",...]`, `["util","atompositions",...]`) convert
+(`["sgsym","sites",...]`, `["sgsym","positions",...]`) convert
 between positions and sites for any space group, deducing the setting from
 a bare number.
 

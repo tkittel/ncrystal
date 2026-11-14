@@ -94,9 +94,9 @@ the public type `SpaceGroupSettingIdx` in `NCTypes.hh`.
   $\bar3m1$ (space groups 149, 151, 153, 157, 159, 162, 163 previously got
   wrong structure factors), and makes any declared setting flow through to
   the hkl families.
-- **Queries.** `["util","sgsym",SG]` (operations of a setting),
-  `["util","eqrefl",SG,"H,K,L"]`, `["util","atomsites",...]`,
-  `["util","atompositions",...]`, and the structure and sites queries on
+- **Queries.** `["sgsym","info",SG]` (operations of a setting),
+  `["util","eqrefl",SG,"H,K,L"]`, `["sgsym","sites",...]`,
+  `["sgsym","positions",...]`, and the structure and sites queries on
   `Info` objects; `NCMATComposer.verify_crystal_structure` and
   `refine_crystal_structure` (spglib-based, chapter 60) accept any setting
   the library handles and standardise others.
