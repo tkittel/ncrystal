@@ -1746,6 +1746,10 @@ double ncrystal_decodecfg_packfact( const char * cfgstr )
 unsigned ncrystal_decodecfg_vdoslux( const char * cfgstr )
 {
   try {
+    //obsolete fct:
+    static NC::Msg::WarnFirstTime wf;
+    wf("The ncrystal_decodecfg_vdoslux function is obsolete. Please use the"
+       " [\"matcfg\",\"decode\",CFGSTR] JSON query instead.");
     NC::MatCfg cfg(cfgstr);
     return cfg.get_vdoslux();
   } NCCATCH;
@@ -2351,6 +2355,10 @@ char* ncrystal_getrngstate_ofscatter(ncrystal_scatter_t sh)
 char* ncrystal_decodecfg_json( const char * cfgstr )
 {
   try {
+    //obsolete fct:
+    static NC::Msg::WarnFirstTime wf;
+    wf("The ncrystal_decodecfg_json function is obsolete. Please use the"
+       " [\"matcfg\",\"decode\",CFGSTR] JSON query instead.");
     NC::MatCfg cfg(cfgstr);
     return ncc::createString(cfg.toJSONCfg());
   } NCCATCH;
@@ -2368,6 +2376,10 @@ char * ncrystal_dbg_process( ncrystal_process_t o )
 char* ncrystal_normalisecfg( const char * cfgstr )
 {
   try {
+    //obsolete fct:
+    static NC::Msg::WarnFirstTime wf;
+    wf("The ncrystal_normalisecfg function is obsolete. Please use the"
+       " [\"matcfg\",\"normalise\",CFGSTR] JSON query instead.");
     NC::MatCfg cfg(cfgstr);
     return ncc::createString(cfg.toStrCfg());
   } NCCATCH;
@@ -2626,6 +2638,10 @@ char * ncrystal_info_underlyinguid( ncrystal_info_t ci )
 char * ncrystal_gencfgstr_doc(int mode)
 {
   try {
+    //obsolete fct:
+    static NC::Msg::WarnFirstTime wf;
+    wf("The ncrystal_gencfgstr_doc function is obsolete. Please use the"
+       " [\"matcfg\",\"doc\",MODE] JSON query instead.");
     std::ostringstream ss;
     switch (mode) {
     case 0: NC::MatCfg::genDoc(ss,NC::MatCfg::GenDocMode::TXT_FULL); break;
