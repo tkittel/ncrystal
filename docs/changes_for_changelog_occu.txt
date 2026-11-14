@@ -21,8 +21,8 @@ dropped).
        of vacancies). AtomInfo::numberPerUnitCell() is renamed
        numberOfPositions(), and AtomInfo gets occupancy() and
        averageNumberOfAtoms(). The AtomInfo::Site::occupancy placeholder is
-       removed, and Site::uij is reserved for future anisotropic
-       displacements (rejected if set).
+       removed, and Site::uij is added for anisotropic displacements (see
+       changes_for_changelog_aniso.txt).
      * C API: new ncrystal_info_cquery function for keyed access to e.g. the
        space group (and setting), lattice parameters, cell volume, number of
        positions, average number of atoms and the number density of unit
