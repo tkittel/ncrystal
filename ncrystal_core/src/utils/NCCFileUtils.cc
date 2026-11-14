@@ -42,6 +42,7 @@
 //Not pretty, but it works:
 #if __cplusplus
 #  include "NCrystal/internal/utils/NCCFileUtils.hh"
+#  include <stdexcept>
 #else
 #  include "NCCFileUtils.h"
 #endif
