@@ -46,7 +46,7 @@ ncrystal-config = "_ncrystal_core.info:_ncrystal_config_cli_wrapper"
 NCrystal = "_ncrystal_core"
 
 [build-system]
-requires = ["scikit-build-core>=0.12"]
+requires = ["scikit-build-core>=0.11.1"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
