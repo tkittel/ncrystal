@@ -37,7 +37,7 @@ jobs:
       #--no-build-isolation to prevent getting the ncrystal pkgs just installed
       #to instead be taken from PyPI:
       run: |
-        pip install "scikit-build-core>=0.12"
+        pip install "scikit-build-core>=0.11.1"
         pip install ./src/examples/plugin --no-deps --no-build-isolation
 
     - name: Install plugin_dataonly

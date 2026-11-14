@@ -272,10 +272,29 @@ def check_all_toml_parsing():
         parse_toml(f)
     print('all ok')
 
+def check_skbuild_requirement():
+    #Debian stable (trixie) has scikit-build-core 0.11.1, so do not require
+    #anything newer while supporting builds there. Applies to all files:
+    import re
+
+    from .srciter import all_files_iter
+    expected = 'scikit-build-core>=0.11.1'
+    bad = []
+    for f in all_files_iter('toml','yml','py'):
+        for m in re.findall(r'scikit-build-core\s*[<>=~!]+\s*[0-9.]+',
+                            f.read_text()):
+            if m != expected:
+                bad.append( (f.relative_to(reporoot),m) )
+    for f,m in bad:
+        print(f'ERROR: {f} has "{m}" (expected "{expected}")')
+    if bad:
+        raise SystemExit('Wrong scikit-build-core requirements')
+
 def main():
     check_all_toml_parsing()
     check_all_project_scripts()
     check_metadata()
+    check_skbuild_requirement()
     print("All OK!")
 
 if __name__=='__main__':

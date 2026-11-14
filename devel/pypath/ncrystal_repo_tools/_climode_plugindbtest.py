@@ -218,7 +218,7 @@ def _test_plugin( name, info, workdir, wheeldir, python, skip_pypi ):
         steps = [
             ( 'install build backends',
               pip + [ 'install' ] + c + [ 'numpy', 'setuptools>=77.0',
-                                          'scikit-build-core>=0.10' ] ),
+                                          'scikit-build-core>=0.11.1' ] ),
             ( 'install ncrystal',
               pip + [ 'install' ] + c + [ '--no-index', '--find-links',
                                           wheeldir, 'ncrystal',
