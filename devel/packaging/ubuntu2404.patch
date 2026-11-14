@@ -1,0 +1,35 @@
+Description: Build with the older Python build tools of Ubuntu 24.04
+ Old-style license field and lower setuptools/scikit-build-core requirements.
+Forwarded: not-needed
+
+--- a/ncrystal_python/pyproject.toml
++++ b/ncrystal_python/pyproject.toml
+@@ -22,3 +22,3 @@
+ [build-system]
+-requires = ["setuptools>=77.0"]
++requires = ["setuptools>=68.1"]
+ build-backend = "setuptools.build_meta"
+@@ -38,4 +38,3 @@
+ readme = "README.md"
+-license = "Apache-2.0"
+-license-files = ["LICENSE"]
++license = {text = "Apache-2.0"}
+ classifiers = [
+--- a/ncrystal_verify/pyproject.toml
++++ b/ncrystal_verify/pyproject.toml
+@@ -30,4 +30,3 @@
+ readme = "README.md"
+-license = "Apache-2.0"
+-license-files = ["LICENSE"]
++license = {text = "Apache-2.0"}
+ authors = [
+@@ -48,3 +47,3 @@
+ [build-system]
+-requires = ["scikit-build-core>=0.11.1"]
++requires = ["scikit-build-core>=0.7"]
+ build-backend = "scikit_build_core.build"
+@@ -53,3 +52,3 @@
+ logging.level = "INFO"
+-minimum-version = "build-system.requires"
++minimum-version = "0.7"
+ wheel.packages = ['skbld_autogen/_ncrystal_verify']

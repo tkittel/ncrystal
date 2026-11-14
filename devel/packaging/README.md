@@ -4,7 +4,7 @@
 
 The `debian/` subdirectory contains the files for building Debian packages of
 NCrystal (also for derivatives like Ubuntu). It needs Debian 13 (trixie) or
-Ubuntu 26.04, or later.
+Ubuntu 26.04, or later. For Ubuntu 24.04, see below.
 
 To build the packages, run the following in the root directory of an NCrystal
 source tree. Nothing needs to be installed beforehand: `apt build-dep` installs
@@ -21,6 +21,15 @@ The packages (`.deb` files) end up in the parent directory. To check them with
 `lintian *.changes`, or to run the package tests in `debian/tests` on the
 installed packages with `autopkgtest`, first `sudo apt install lintian
 autopkgtest`.
+
+For Ubuntu 24.04, whose Python build tools are older, additionally apply
+`ubuntu2404.patch` (before `apt build-dep`):
+
+```
+mkdir -p debian/patches
+cp devel/packaging/ubuntu2404.patch debian/patches/
+echo ubuntu2404.patch > debian/patches/series
+```
 
 Binary packages (`apt install ncrystal` installs them all):
 
