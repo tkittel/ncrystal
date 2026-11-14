@@ -229,7 +229,7 @@ def parse_args():
     parser.add_argument('-m','--allow-missing', action='append',
                         metavar='DEP',
                         help=wrap(
-                            """Allow to skip tests which do not have the listed
+                            """Skip tests which do not have the listed
                             optional dependencies installed (the special name
                             "all" means all of them). Any test missing a
                             dependency not listed with this flag will be marked
