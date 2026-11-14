@@ -748,7 +748,6 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
     _wrap('ncrystal_clone_scatter',ncrystal_scatter_t,(ncrystal_scatter_t,))
     _wrap('ncrystal_clone_scatter_rngbyidx64',ncrystal_scatter_t,(ncrystal_scatter_t,_ulong,_ulong))
     _wrap('ncrystal_clone_scatter_rngforcurrentthread',ncrystal_scatter_t,(ncrystal_scatter_t,))
-    _wrap('ncrystal_decodecfg_vdoslux',_uint,(_cstr,))
     _wrap('ncrystal_has_factory',_int,(_cstr,))
     _wrap('ncrystal_clear_caches',None,())
 
@@ -784,11 +783,6 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
         return json.loads( _decode_and_dealloc_raw_str( _raw_dbg_process( rawprocobj ) ) )
     functions['nc_dbg_proc']=nc_dbg_proc
 
-    _raw_decodecfg_json = _wrap('ncrystal_decodecfg_json',_charptr,(_cstr,),hide=True)
-    def nc_cfgstr2json(cfgstr):
-        return _decode_and_dealloc_raw_str( _raw_decodecfg_json(_str2cstr(cfgstr) ) )
-    functions['nc_cfgstr2json']=nc_cfgstr2json
-
     _raw_ncmat2json = _wrap('ncrystal_ncmat2json',_charptr,(_cstr,),hide=True)
     def nc_ncmat2json(tdname):
         return _decode_and_dealloc_raw_str( _raw_ncmat2json(_str2cstr(tdname) ) )
@@ -801,25 +795,6 @@ def _load(nclib_filename, ncrystal_namespace_protection ):
     raw_info_underlyinguid = _wrap('ncrystal_info_underlyinguid',_charptr,(ncrystal_info_t,),hide=True)
     functions['infouid_underlying'] = lambda rawinfo : int(_decode_and_dealloc_raw_str(raw_info_underlyinguid(rawinfo)))
 
-    _raw_normcfgstr = _wrap('ncrystal_normalisecfg',_charptr,(_cstr,),hide=True)
-    def nc_normcfgstr(cfgstr):
-        raw_str = _raw_normcfgstr(_str2cstr(cfgstr))
-        if not raw_str:
-            return None
-        res=_cstr2str(ctypes.cast(raw_str,_cstr).value)
-        _raw_deallocstr(raw_str)
-        return res
-    functions['nc_normcfgstr']=nc_normcfgstr
-
-    _raw_gencfgdoc = _wrap('ncrystal_gencfgstr_doc',_charptr,(_int,),hide=True)
-    def nc_gencfgdoc(mode):
-        raw_str = _raw_gencfgdoc(mode)
-        if not raw_str:
-            return None
-        res=_cstr2str(ctypes.cast(raw_str,_cstr).value)
-        _raw_deallocstr(raw_str)
-        return res
-    functions['nc_gencfgdoc']=nc_gencfgdoc
 
     _raw_gettextdata = _wrap('ncrystal_get_text_data',_cstrp,(_cstr,),hide=True)
     _raw_deallocstr = _wrap('ncrystal_dealloc_string',None,(_charptr,),hide=True)
