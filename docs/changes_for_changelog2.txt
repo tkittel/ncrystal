@@ -208,3 +208,26 @@ CHANGELOG at release time, after which both files are dropped).
        the asymmetric beta grids. Exported kernels satisfy detailed balance
        to rounding, and low-energy cross sections at low temperatures are
        slightly more accurate (up to ~0.2%).
+
+### Cfg decoding and queries
+
+     * New JSON query category ["matcfg",...]: decode, decodedata (raw data
+       plus its name and cfg parameters), normalise and doc. Any query argument following
+       one with the exact content "RAWDATA" is exempt from the character
+       restrictions on query arguments.
+     * The decoded cfg JSON format is now NCrystal-MatCfg-v2, with a new
+       "allpars" entry listing every cfg parameter as [name, value, is_set]
+       (unset parameters at their default value, or null if none), and a
+       new "textdata_name" entry with the name of the TextData (also
+       available via the new MatCfg::getTextDataSourceName).
+     * Python: decodeCfg and decodecfg_vdoslux accept anything
+       MaterialSource accepts (cfg-strings, raw NCMAT data, TextData,
+       NCMATComposer, ...) plus optional cfg_params, honouring any embedded
+       NCRYSTALMATCFG.
+     * C API: ncrystal_decodecfg_vdoslux, ncrystal_decodecfg_json,
+       ncrystal_normalisecfg and ncrystal_gencfgstr_doc are obsolete (they
+       warn on first use); use the ["matcfg",...] queries instead.
+     * detect_scattering_components and cfgstr_detect_components share one
+       implementation, probing the inelas component with vdoslux at most 2
+       (never above the material's own) instead of 0, with a fallback to
+       the material's own settings, which cfgstr_detect_components lacked.
