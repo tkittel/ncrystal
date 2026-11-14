@@ -29,10 +29,17 @@ import NCrystalDev as NC
 from NCrystalDev._cifsitesimpl import merge_atoms
 
 def atom( lbl, elem, coords, occ = 1.0, uiso = 0.01, aniso = None ):
+    #(as from collect_atoms, with the entry of the positions query):
+    x, y, z = coords[0]
     return { 'cif_label': lbl, 'element_marker': elem,
-             'expanded_coords': [ tuple( c ) for c in coords ],
-             'rotations': [ None ] * len( coords ), 'occupancy': occ,
-             'uiso': uiso, 'aniso': aniso }
+             'positions': [ tuple( c ) for c in coords ], 'uijs': None,
+             'split': None, 'occupancy': occ, 'uiso': uiso, 'aniso': aniso,
+             '_entry': ( lbl, x, y, z, repr( occ ), None ) }
+
+#(setting and cell used to expand merged atoms again):
+P1 = ( '1', { 'a': 4, 'b': 4, 'c': 4, 'alpha': 90, 'beta': 90, 'gamma': 90 } )
+def merge( atoms, count, sc = P1 ):
+    return merge_atoms( atoms, count, *sc )
 
 orbit_a = [ ( 0.0, 0.0, 0.0 ), ( 0.5, 0.5, 0.5 ) ]
 orbit_a2 = [ ( 0.5, 0.5, 0.5 ), ( 0.0, 0.0, 0.0 ) ]#(same, other order)
@@ -46,29 +53,29 @@ def show( descr, atoms ):
 
 def expect_error( descr, *args ):
     try:
-        merge_atoms( *args )
+        merge( *args )
     except NC.NCBadInput as e:
         print( f'{descr}: rejected: {e}' )
     else:
         raise SystemExit( f'{descr}: not rejected' )
 
 def main():
-    a = merge_atoms( [ atom( 'Na1', 'Na', orbit_a ),
+    a = merge( [ atom( 'Na1', 'Na', orbit_a ),
                        atom( 'Cl1', 'Cl', orbit_b ) ], 4 )
     show( 'separate sites', a )
     assert len( a ) == 2 and a[0]['occupancy'] == 1.0
     #Mixed occupancy on one site (in any order of the positions):
-    a = merge_atoms( [ atom( 'Al1', 'Al', orbit_a, occ = 0.75 ),
+    a = merge( [ atom( 'Al1', 'Al', orbit_a, occ = 0.75 ),
                        atom( 'Cr1', 'Cr', orbit_a2, occ = 0.25 ) ], None )
     show( 'mixed site', a )
     assert len( a ) == 1 and a[0]['composition'] == ( ( 0.25, 'Cr' ), ( 0.75, 'Al' ) )
     #Partial occupancy (composition normalised, occupancy kept):
-    a = merge_atoms( [ atom( 'O1', 'O', orbit_a, occ = 0.4 ),
+    a = merge( [ atom( 'O1', 'O', orbit_a, occ = 0.4 ),
                        atom( 'F1', 'F', orbit_a, occ = 0.4 ) ], None )
     show( 'partially occupied mixed site', a )
     assert a[0]['occupancy'] == 0.8 and a[0]['composition'] == ( ( 0.5, 'F' ), ( 0.5, 'O' ) )
     #Rounding of occupancies slightly above 1 is accepted:
-    a = merge_atoms( [ atom( 'A', 'Al', orbit_a, occ = 0.5000004 ),
+    a = merge( [ atom( 'A', 'Al', orbit_a, occ = 0.5000004 ),
                        atom( 'B', 'Cr', orbit_a, occ = 0.5000004 ) ], None )
     assert a[0]['occupancy'] == 1.0
     expect_error( 'occupancy above 1',
@@ -84,13 +91,27 @@ def main():
                     atom( 'B', 'Cr', orbit_a, occ = 0.5, aniso = { 'u11': 0.02 } ) ],
                   None )
     #Orbits of different sizes are never merged:
-    a = merge_atoms( [ atom( 'A', 'Al', orbit_a ),
+    a = merge( [ atom( 'A', 'Al', orbit_a ),
                        atom( 'B', 'Cr', orbit_a[:1] ) ], None )
     assert len( a ) == 2
     #Atom count check (1% tolerance):
-    merge_atoms( [ atom( 'Na1', 'Na', orbit_a ) ], 2 )
-    merge_atoms( [ atom( 'Na1', 'Na', orbit_a ) ], 2.01 )
+    merge( [ atom( 'Na1', 'Na', orbit_a ) ], 2 )
+    merge( [ atom( 'Na1', 'Na', orbit_a ) ], 2.01 )
     expect_error( 'wrong atom count', [ atom( 'Na1', 'Na', orbit_a ) ], 3 )
+    #Split site (two positions 0.054 Aa apart in Pm): fine for each element
+    #alone, but not with their total occupancy:
+    pm = ( '6:b', { 'a': 5, 'b': 5.4, 'c': 6, 'alpha': 90, 'beta': 90,
+                    'gamma': 90 } )
+    split = [ ( 0.1, 0.005, 0.2 ), ( 0.1, 0.995, 0.2 ) ]
+    a = merge( [ atom( 'A', 'Al', split, occ = 0.25 ),
+                 atom( 'B', 'Cr', split, occ = 0.25 ) ], None, pm )
+    sp = a[0]['split']
+    print( 'split site, total occupancy 0.5:', sp['positions'],
+           f"positions {sp['distance']:.4g} Aa apart" )
+    assert a[0]['split']['positions'] == 2
+    expect_error( 'split site, total occupancy 0.6',
+                  [ atom( 'A', 'Al', split, occ = 0.3 ),
+                    atom( 'B', 'Cr', split, occ = 0.3 ) ], None, pm )
     print( 'atom count checks done' )
 
 if __name__ == '__main__':

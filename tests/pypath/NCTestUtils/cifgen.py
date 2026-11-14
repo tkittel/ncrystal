@@ -300,15 +300,22 @@ def to_cif( structure, *, style = 'asym', round_digits = None,
         ops = [ ( R, t + shift - R @ shift ) for R,t in base.symops() ]
         sgno = structure.spacegroup
         sgtype = spacegroup_type( structure.hall_number )
-        hm = sgtype.international_full
-        if sgtype.choice:
-            hm += ':' + sgtype.choice#origin choice or axes (e.g. "H")
+        #(short symbol with origin choice or axes, e.g. "Fd-3m:2" or "R-3m:H",
+        #as commonly written in CIF files):
+        hm = sgtype.international_short
+        if sgtype.choice in ( '1', '2', 'H', 'R' ):
+            hm += ':' + sgtype.choice
     a, b, c, alpha, beta, gamma = structure.cellpars
     lines = [ f'data_{name}' ]
     for k, v in ( ('length_a',a), ('length_b',b), ('length_c',c),
                   ('angle_alpha',alpha), ('angle_beta',beta),
                   ('angle_gamma',gamma) ):
         lines.append( f'_cell_{k} {v:.12g}' )
+    import collections
+    counts = collections.Counter( e for e, _ in structure.atoms )
+    lines.append( '_chemical_formula_sum \''
+                  + ' '.join( f'{e}{n}' for e, n in sorted( counts.items() ) )
+                  + "'" )
     lines += [ f'_space_group_IT_number {sgno}',
                f"_space_group_name_H-M_alt '{hm}'",
                'loop_', '_space_group_symop_operation_xyz' ]
@@ -354,4 +361,9 @@ def invalid_cifs( structure ):
         style = 'p1' ).replace( "'x,y,z'", "'x,y,z'\n'-x,-y,-z'" ).replace(
             '_space_group_IT_number 1', '_space_group_IT_number 2' ).replace(
                 "'P 1'", "'P -1'" )
+    #Listed operations with an origin shift (not a tabulated setting). Not in
+    #P1, whose only operation (x,y,z) is unchanged by a shift:
+    if structure.spacegroup != 1:
+        out['origin-shift'] = to_cif( structure.with_origin_shift(
+            (0.125,0.25,0.375) ) )
     return out

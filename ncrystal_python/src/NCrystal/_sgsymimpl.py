@@ -247,6 +247,19 @@ def _uses_rhombohedral_axes( sgnumber, alpha ):
     return ( int(sgnumber) in ( 146, 148, 155, 160, 161, 166, 167 )
              and alpha != 90 )
 
+def _rawargs( items ):
+    """Query arguments passing the items (e.g. printed CIF values like
+    "-0.12(3)") verbatim: "RAWDATA" and the items joined by a separator not in
+    any of them, which is also the first character (cf. the sgsym and cif
+    queries)."""
+    items = [ str( e ) for e in items ]
+    if not items:
+        return []
+    for sep in '@|~^!;:#$':
+        if not any( sep in e for e in items ):
+            return [ 'RAWDATA', sep + sep.join( items ) ]
+    raise _nc_core.NCBadInput( 'Could not find a separator for query data' )
+
 def _cellarg( cellsg ):
     """Cell parameters as one argument of the sgsym queries."""
     return ','.join( repr( float( cellsg[k] ) )
@@ -409,11 +422,6 @@ def _np_is_identity( m ):
     #nb: spglib transformation matrices can have tiny numerical noise
     return all( abs( m[i][j] - (1.0 if i==j else 0.0) ) < 1e-9
                 for i in range(3) for j in range(3) )
-
-def _remap_fract_pos_pt(xyz):
-    return ( _remap_fract_pos(xyz[0]),
-             _remap_fract_pos(xyz[1]),
-             _remap_fract_pos(xyz[2]) )
 
 def _remap_fract_pos(x):
     x = float(x)

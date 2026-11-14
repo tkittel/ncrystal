@@ -6,7 +6,13 @@ tritium type symbol:
    ('H1', 'H2') ((1.0, 'H3'),) occupancy 1.0 positions 2
 element from label:
    ('CaM1',) ((1.0, 'Ca'),) occupancy 1.0 positions 1
+   ('Cl(1)',) ((1.0, 'Cl'),) occupancy 1.0 positions 1
    ('OA1',) ((1.0, 'O'),) occupancy 1.0 positions 1
+warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, O from OA1, Cl from Cl(1)) [warn#5]
+element from label (Cs1 with C):
+   ('Cs1',) ((1.0, 'C'),) occupancy 1.0 positions 1
+element from label (no formula): rejected: CIF site "CaM1" has no usable _atom_site_type_symbol, and its label does not unambiguously start with an element of the chemical formula (no _chemical_formula_sum)
+element from label (not in formula): rejected: CIF site "Cl(1)" has no usable _atom_site_type_symbol, and its label does not unambiguously start with an element of the chemical formula ("Ca O")
 atom count "?":
    ('Cl1',) ((1.0, 'Cl'),) occupancy 1.0 positions 1
    ('Na1',) ((1.0, 'Na'),) occupancy 1.0 positions 1

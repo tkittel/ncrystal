@@ -163,9 +163,10 @@ def test_symmetry_information():
                      mults = [ 2, 4 ] )
     lc = load( good )
     show( 'rutile, with listed operations and multiplicities', lc )
-    expect_error( 'wrong multiplicity', cif_text( rutile, 'P 42/m n m',
-                                                  asym_rutile, ops = ops,
-                                                  mults = [ 2, 2 ] ) )
+    #(site multiplicities in the CIF data are not used):
+    show( 'rutile, wrong multiplicities (ignored)',
+          load( cif_text( rutile, 'P 42/m n m', asym_rutile, ops = ops,
+                          mults = [ 2, 2 ] ) ) )
     #An unparsable operation: rejected, but in permissive mode the symbol is
     #used:
     bad = good.replace( f"'{ops[1]}'", "'x+500/999,y,z'" )
@@ -209,18 +210,6 @@ def test_primitive():
                sgs._cif_uij_ueq( u_o, conv ), u_o ) ]
     ref = load( cif_text( conv, 'C 1 2/c 1', asym ) )
     show( 'C2/c', ref )
-    #Site multiplicities, either the number of positions (as in the CIF
-    #dictionary) or the order of the site symmetry (as written by SHELXL), but
-    #consistently so:
-    for mults, ok in ( ( [ 8, 4 ], True ), ( [ 1, 2 ], True ),
-                       ( [ 1, 4 ], False ), ( [ 8, 2 ], False ),
-                       ( [ 4, 4 ], False ) ):
-        txt = cif_text( conv, 'C 1 2/c 1', asym, mults = mults )
-        if ok:
-            load( txt )
-            print( f'   multiplicities {mults}: accepted' )
-        else:
-            expect_error( f'multiplicities {mults}', txt )
     allc = expand( '15:b1', conv, asym )
     L = np.array( sgs._cellparams_to_spglib_lattice( conv ) ).T
     M = np.array( [ [ 0.5, 0.5, 0 ], [ -0.5, 0.5, 0 ], [ 0, 0, 1 ] ] )
@@ -280,26 +269,22 @@ def test_primitive():
         asym_p.append( ( lbl, el, x, occ, uiso, sgs._frac_to_cif( uf, prim ) ) )
     txt = cif_text( prim, 'C 1 2/c 1', asym_p, ops = ops, mults = [ 4, 2 ],
                     header = '# generated using pymatgen' )
-    lc = load( txt )
-    show( f'C2/c, primitive cell with {len(ops)} listed operations', lc )
-    assert lc.cellsg['spacegroup']['number'] == 15
-    assert same_bragg( bref, bragg( lc ) )
-    print( '   Bragg reflections identical to C2/c' )
-    #Operations missing (caught by the multiplicities):
-    for bad, descr in ( ( txt.replace( f"'{ops[1]}'\n", '' ),
+    #(listed operations which are not those of a tabulated setting are
+    #rejected, also with the symbol in permissive mode, since the cell does
+    #not fit the space group of the symbol):
+    for bad, descr in ( ( txt, 'primitive cell with listed operations' ),
+                        ( txt.replace( f"'{ops[1]}'\n", '' ),
                           'missing operation' ),
                         ( txt.replace( f"'{ops[1]}'\n",
                                        "'x+500/999,y,z'\n" ),
-                          'unparsable operation' ),
-                        ( txt.replace( f"'{ops[1]}'\n", '' ).replace(
-                              f"'{ops[3]}'\n", '' ),
-                          'operations of a smaller group' ),
-                        ( txt.replace( f"'{ops[2]}'\n", '' ).replace(
-                              f"'{ops[3]}'\n", '' ),
-                          'operations of a tabulated smaller group' ) ):
+                          'unparsable operation' ) ):
         for permissive in ( False, True ):
             expect_error( f'{descr}, permissive={permissive}', bad,
                           permissive = permissive )
+    #Operations of a tabulated group (P -1) disagreeing with the symbol:
+    expect_error( 'operations of a tabulated smaller group',
+                  txt.replace( f"'{ops[2]}'\n", '' ).replace(
+                      f"'{ops[3]}'\n", '' ) )
 
 test_rutile()
 test_symmetry_information()

@@ -21,19 +21,15 @@
 
 """
 
-Internal implementation of reading CIF data with gemmi for the cifutils
-module (including the numbers of the CIF data with their rounding errors).
+Internal implementation of reading CIF data for the cifutils module: gemmi
+only parses the CIF text, and the values needed are read from its tags and
+loops as the printed strings (so their rounding errors are available).
 
 """
 
 __all__ = []
 
-import math as _math
-import re as _re
-from fractions import Fraction as _Fraction
-
 from . import _common as _nc_common
-from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
 from ._cifsrcimpl import _codid2url, _mpid2url, mp_origin_note
 
@@ -156,389 +152,109 @@ def _import_gemmi( *, sysexit = False ):
     _import_gemmi_cache[1] = importlib.import_module('gemmi.cif')
     return _import_gemmi_cache[0], _import_gemmi_cache[1]
 
-_guessmap = [None]
-
-def _guess_spacegroup_name( gemmi, s ):
-    def _guess_keys( s ):
-        s=''.join(s.split())
-        return [ s, s.replace('/',''),s.replace('-',''),s.replace('-','').replace('/','' ) ]
-    def _init_guess_map():
-        guess = {}
-        def _ag( i, s ):
-            if s not in guess:
-                guess[s] = {i}
-            else:
-                guess[s].add(i)
-        def add_guess( i, s ):
-            for k in _guess_keys(s):
-                _ag( i, k )
-        for i in range(1,230+1):
-            sg = gemmi.find_spacegroup_by_number(i)
-            add_guess( i, sg.xhm() )
-            add_guess( i, sg.short_name() )
-            add_guess( i, sg.hall )
-            add_guess( i, sg.hm )
-        return guess
-    if not _guessmap[0]:
-        _guessmap[0] = _init_guess_map()
-    gm = _guessmap[0]
-    possible_sgnos = set()
-    for k in _guess_keys(s):
-        for i in gm.get(k,[]):
-            possible_sgnos.add( i )
-    return sorted(possible_sgnos)
-
-def _load_with_gemmi( cifblock, allow_fixup = True ):
-    #Load cifblock into gemmi struct. We might perform in-place editing of the
-    #cifblock, if gemmi does not immediately recognise the space group.
-    gemmi, _gemmi_cif = _import_gemmi()
-
-    struct = gemmi.make_small_structure_from_block( cifblock )
-
-    assert struct
-    if hasattr(struct,'find_spacegroup'):
-        sg = struct.find_spacegroup()
-    else:
-        sg = struct.spacegroup
-
-    if not sg:
-        #Doing what the old struct.find_spacegroup() was doing:
-        sg = gemmi.find_spacegroup_by_name( hm=struct.spacegroup_hm,
-                                            alpha=struct.cell.alpha,
-                                            gamma=struct.cell.gamma)
-
-    if sg or not allow_fixup:
-        return struct, sg
-
-    #Let us see if we can find the spacegroup with a bit of manual
-    #intervention. If we can, we update the cifblock and do a full reload
-    #(otherwise the gemmi struct object won't have the spacegroup and images
-    #properly initialised):
-
-    _ = cifblock.find(['_space_group_IT_number'])
-    if not _:
-        _ = cifblock.find(['_symmetry_Int_Tables_number'])
-
-    if _ and len(_)==1 and len(_[0])==1 and str(_[0][0]).isdigit() and (1<=int(str(_[0][0]))<=230):
-        _sgnum = int(_[0][0])
-        #NB: We can do this for some groups only (cubic?) Or perhaps we could use it as a double-check only?
-        sg = gemmi.find_spacegroup_by_number(_sgnum)
-        assert sg and sg.number == _sgnum
-
-    sg_hm = str(struct.spacegroup_hm).strip()
-    if sg_hm and not sg:
-        def sg_searchname(x):
-            return gemmi.find_spacegroup_by_name(x,
-                                                 struct.cell.alpha,
-                                                 struct.cell.gamma )
-        attempts = [ sg_hm ]
-        #TODO: We used to do this, but currently it does not make a difference:
-        #for e in ('H','R'):#NB H+R is not enough, see table 6 at http://cci.lbl.gov/sginfo/hall_symbols.html
-        #    if sg_hm.endswith(e):
-        #        attempts.append( sg_hm[:-1] + ' : ' + sg_hm[-1] )
-        for a in attempts:
-            a = ' '.join(a.split())
-            sg = sg_searchname( a )
-            if sg:
-                _nc_common.warn(f'Had to interpret spacegroup "{sg_hm}" as "{a}" before Gemmi could recognise it.')
-                break
-
-    if sg_hm and not sg:
-        possible = _guess_spacegroup_name( gemmi, sg_hm )
-        if len(possible) == 1:
-            sgnum = possible[0]
-            sg = gemmi.find_spacegroup_by_number(sgnum)
-            _nc_common.warn(f'Had to interpret spacegroup "{sg_hm}" as "{sg.hm}" before Gemmi could recognise it.')
-        elif len(possible) > 1:
-            poshm = [ (sgnum,gemmi.find_spacegroup_by_number(sgnum).hm) for sgnum in possible ]
-            poshm = ', '.join( f'"{sgstr}"(number {sgnum})' for sgnum,sgstr in poshm )
-            _nc_common.warn(f'Failed to interpret spacegroup "{sg_hm}". Could be any of: {poshm}.')
-    if not sg:
-        #manual intervention did not help:
-        return struct, None
-
-    #patch up the cifblock with info about manually found spacegroup, and try again:
-    _update_spacegroup_in_cifblock( cifblock, sg )
-
-    return _load_with_gemmi( cifblock, allow_fixup = False )
-
-def _update_spacegroup_in_cifblock_from_name( gemmi, cifblock, name ):
-    sg = gemmi.find_spacegroup_by_name( name )
-    if not sg:
-        raise _nc_core.NCBadInput(f'Unknown spacegroup: "{name}"')
-    _update_spacegroup_in_cifblock( cifblock, sg )
-
-def _update_spacegroup_in_cifblock( cifblock, sg, use_xhm = True ):
-    cifblock.set_pair('_space_group_name_H-M_alt', sg.xhm() if use_xhm else sg.hm )
-    cifblock.set_pair('_space_group_IT_number', str(sg.number) )
-    cifblock.set_pair('_space_group_name_Hall', sg.hall )
-    cifblock.set_pair('_space_group_crystal_system', sg.crystal_system_str() )
-
-_re_cifnum = _re.compile( r'^([-+]?)(\d*)(?:(\.)(\d*))?'
-                          r'(?:[eE]([-+]?\d+))?(\(\d+\))?$' )
-
-def parse_cif_number( s ):
-    """Value of a CIF numeric string and its rounding error: the largest
-    possible error from the rounding of the printed number, i.e. half the
-    step of its last digit (e.g. 0.00005 for "0.0283", 0.5 for "2344" and
-    5e-7 for "3400e-6"), as the smallest double not below that, and at least
-    1e-15 times the value (covering the conversion to a double). A zero
-    without an uncertainty in parentheses ("0", "0.", "0.000", "0e-3") is exact
-    (rounding error 0.0), since it is in practice a constraint (or 0 printed
-    with e.g. %.3f). The uncertainty in parentheses (e.g. "0.0283(4)") is
-    otherwise ignored. Returns None if s is not a number (e.g. "?", ".", "1,5"
-    or "inf"), or if the value is not a finite double (e.g. "1e999")."""
-    m = _re_cifnum.match( s.strip() )
-    if not m:
-        return None
-    sign, ipart, point, fpart, exp, su = m.groups()
-    fpart = fpart or ''
-    if not ipart and not fpart:
-        return None
-    mant = ( ipart or '0' ) + ( '.' + fpart if point else '' )
-    value = float( sign + mant + ( 'e' + exp if exp else '' ) )
-    if not _math.isfinite( value ):
-        return None
-    if value == 0.0:
-        value = 0.0#(no negative zero)
-    if value == 0.0 and su is None:
-        return value, 0.0
-    #(exact power of ten, correctly rounded, unlike 10.0**k via libm pow):
-    e = 0
-    if exp:
-        #(huge exponents are clamped, avoiding the digit limit of int()):
-        big = len( exp.lstrip( '+-' ).lstrip( '0' ) ) >= 12
-        e = ( -1, 1 )[exp[0] != '-'] * 10**12 if big else int( exp )
-    k = e - len( fpart )
-    floor = abs( value ) * 1e-15
-    if k < -400:
-        return value, floor#(below the smallest double)
-    if k > 308:
-        return None#(e.g. "0.0e310(1)": rounding error not a finite double)
-    exact = _Fraction( 10 ) ** k / 2
-    r = float( exact )
-    if _Fraction( r ) < exact:
-        r = _math.nextafter( r, _math.inf )
-    return value, max( r, floor )
-
-
-def _cell_from_cif( gemmi, block ):
-    #Cell parameters as (value,rounding_error), or None if not available:
-    res = {}
-    for k in ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' ):
-        tag = ( '_cell_angle_' if k in ( 'alpha', 'beta', 'gamma' )
-                else '_cell_length_' ) + k
-        raw = block.find_value( tag )
-        s = gemmi.cif.as_string( raw ) if raw is not None else None
-        v = parse_cif_number( s ) if s else None
-        if ( v and k in ( 'alpha', 'beta', 'gamma' ) and v[0] in ( 90.0, 120.0 )
-             and '(' not in s ):
-            v = ( v[0], 0.0 )#(angles required by space groups are exact)
-        if v is None and k in ( 'alpha', 'beta', 'gamma' ) and s is None:
-            v = ( 90.0, 0.0 )#(missing angles are 90 degrees, as in gemmi)
-        if v is None:
-            return None
-        res[k] = v
-    return res
-
-def uiso_from_cif( gemmi, block ):
-    """Positive Uiso values of the sites of a CIF block (gemmi.cif.Block):
-    label -> (uiso, rounding_error), cf. parse_cif_number. Biso values
-    (_atom_site_B_iso_or_equiv) are used for sites without a Uiso value, as
-    Uiso = Biso/(8 pi^2), as gemmi does."""
-    res = {}
-    f = 1.0 / ( 8.0 * _math.pi * _math.pi )
-    for row in block.find( '_atom_site_', [ 'label', '?U_iso_or_equiv',
-                                            '?B_iso_or_equiv' ] ):
-        v = ( parse_cif_number( gemmi.cif.as_string( row[1] ) )
-              if row.has( 1 ) else None )
-        if ( v is None or not v[0] > 0.0 ) and row.has( 2 ):
-            b = parse_cif_number( gemmi.cif.as_string( row[2] ) )
-            v = ( b[0] * f, b[1] * f ) if b is not None else None
-        if v is not None and v[0] > 0.0:
-            res[ gemmi.cif.as_string( row[0] ) ] = v
-    return res
-
-def ueq_from_cif( gemmi, block ):
-    """Ueq of the anisotropic tensors of the sites of a CIF block
-    (gemmi.cif.Block), computed from the printed tensor components and cell
-    parameters: label -> (ueq, rounding_error), where the rounding error is the
-    largest error in ueq which the rounding errors of these printed numbers can
-    cause (cf. parse_cif_number). Sites or cells with values which can not be
-    parsed or used (e.g. an impossible cell, rejected elsewhere) are
-    omitted."""
-    sgs = _nc_sgsymimpl
-    cell = _cell_from_cif( gemmi, block )
-    if cell is None:
-        return {}
-    cellsg = { k: v for k, ( v, _ ) in cell.items() }
-    def ueq_or_none( aniso, c ):
-        try:
-            return sgs._cif_uij_ueq( aniso, c )
-        except ( ValueError, ZeroDivisionError ):
-            return None
-    try:
-        g, r = sgs._cell_metric( cellsg )
-    except ( ValueError, ZeroDivisionError ):
-        return {}
-    idx = ( (0,0), (1,1), (2,2), (0,1), (0,2), (1,2) )
-    res = {}
-    for row in block.find( '_atom_site_aniso_',
-                           [ 'label' ] + [ f'U_{k[1:]}'
-                                           for k in _nc_sgsymimpl._uij_keys ] ):
-        vals = [ parse_cif_number( gemmi.cif.as_string( row[i] ) )
-                 for i in range( 1, 7 ) ]
-        if any( v is None for v in vals ):
+def _select_block( cif_doc ):
+    #The block with the structure (the only one, or the only one with sites):
+    if len( cif_doc ) == 0:
+        raise _nc_core.NCBadInput('CIF data had no blocks!')
+    if len( cif_doc ) == 1:
+        return cif_doc.sole_block()
+    blk = None
+    for e in cif_doc:
+        if not len( e.find( [ '_atom_site_fract_x' ] ) ):
             continue
-        aniso = { k: v for k, ( v, _ ) in zip( _nc_sgsymimpl._uij_keys, vals ) }
-        ueq = ueq_or_none( aniso, cellsg )
-        if ueq is None:
-            continue
-        #Rounding errors of the tensor components (Ueq is linear in them):
-        err = 0.0
-        for ( i, j ), ( _, e ) in zip( idx, vals ):
-            f = r[i] * r[j] * g[i][j] * ( 1.0 if i == j else 2.0 ) / 3.0
-            err += abs( f ) * e
-        #Rounding errors of the cell parameters (estimated numerically):
-        for k, ( v, e ) in cell.items():
-            if e:
-                c2 = dict( cellsg )
-                c2[k] = v + e
-                u2 = ueq_or_none( aniso, c2 )
-                if u2 is None:
-                    break
-                err += abs( u2 - ueq )
-        else:
-            res[ gemmi.cif.as_string( row[0] ) ] = ( ueq, err )
-    return res
+        if blk:
+            blk = None
+            break
+        blk = e
+    if not blk:
+        raise _nc_core.NCBadInput('Could not automatically determine block in'
+                                  ' CIF data with structure info')
+    return blk
 
-def _cif_multiplicities( gemmi, cifblock ):
-    """Site label -> multiplicity, from the CIF block (empty if absent)."""
-    lbls = [ gemmi.cif.as_string(v)
-             for v in cifblock.find_values( '_atom_site_label' ) ]
-    mults = list( cifblock.find_values( '_atom_site_symmetry_multiplicity' ) )
-    res = {}
-    if len( mults ) == len( lbls ):
-        for lbl, m in zip( lbls, mults ):
-            try:
-                res[lbl] = int( gemmi.cif.as_string( m ) )
-            except ValueError:
-                pass
-    return res
+_uij_tags = ( 'U_11', 'U_22', 'U_33', 'U_12', 'U_13', 'U_23' )
 
-def _plain_site( site ):
-    #A gemmi small structure site as a plain dict:
-    fract = ( site.fract.x, site.fract.y, site.fract.z )
-    if site.occ > 0.0 and not all( _math.isfinite( x ) for x in fract ):
-        #(e.g. a site with "?" for its coordinates; unoccupied sites are
-        #ignored later):
-        raise _nc_core.NCBadInput( f'CIF site "{site.label}" has missing or'
-                                   ' invalid fractional coordinates' )
-    aniso = { k: float( getattr( site.aniso, k ) )
-              for k in _nc_sgsymimpl._uij_keys }
-    if all( v == 0.0 for v in aniso.values() ):
-        aniso = None
-    en, Z = str( site.element.name ).strip(), int( site.element.atomic_number )
-    if en == 'X' and _re.sub( r'[^A-Za-z]', '', site.type_symbol ) == 'T':
-        en, Z = 'T', 1#(tritium, unknown to gemmi)
-    return { 'label': str( site.label ),
-             'element_name': en,
-             'element_Z': Z,
-             'fract': fract,
-             'occ': float( site.occ ),
-             'u_iso': float( site.u_iso ),
-             'aniso': aniso }
-
-def read_cif( cifdata, *, quiet, override_spacegroup ):
-    """Read CIF data (text) with gemmi, into the plain content needed for
-    loading it. Returns a dict with:
+def read_cif( cifdata, *, quiet ):
+    """Read CIF data (text). Values are the printed strings (without quotes),
+    None if absent or null ("?" or "."). Returns a dict with:
       'cif_raw': the document as a dict (None if not decodable),
-      'cell': dict with keys a,b,c,alpha,beta,gamma,
-      'sites': the sites as dicts with keys label, element_name, element_Z,
-               fract, occ, u_iso and aniso (CIF uij dict or None),
-      'listed_ops': the listed symmetry operation strings (None if absent,
-                    or if the space group is overridden),
-      'symbol_hm', 'symbol_itnumbers': the space group symbol and the values
-                    of the IT number fields (per tag),
-      'orig_hm_alt': the original _space_group_name_H-M_alt value (or None),
-      'multiplicities': site label -> multiplicity,
-      'atom_type_number_in_cell': the raw values of that field,
-      'uiso_printed', 'ueq_printed': cf. uiso_from_cif and ueq_from_cif.
-    The gemmi module, structure and space group are also included (keys
-    '_gemmi', '_struct' and '_sg') for the symmetry decisions."""
-    from itertools import chain
-    gemmi, gemmi_cif = _import_gemmi()
+      'cell': a,b,c,alpha,beta,gamma (missing angles are "90"),
+      'listed_ops': the listed symmetry operations (None if absent),
+      'hall', 'hm', 'itnumber': the space group symbols and number,
+      'formula': the chemical formula (_chemical_formula_sum),
+      'sites': dicts with keys label, type_symbol, x, y, z, uiso, biso, occ and
+               uij (the six aniso values, None if not all given),
+      'atom_type_number_in_cell': the values of that field."""
+    _, gemmi_cif = _import_gemmi()
     if not quiet:
         _nc_common.print("Attempting to load CIF data with gemmi")
     try:
         cif_doc = gemmi_cif.read_string( cifdata )
     except ValueError as e:
         raise _nc_core.NCBadInput(f'CIF parsing error (from Gemmi): "{e}"')
-
-    cif_doc_as_json = cif_doc.as_json()
     import json
     try:
-        cif_doc_as_dict = json.loads( cif_doc_as_json )
+        cif_raw = json.loads( cif_doc.as_json() )
     except json.decoder.JSONDecodeError as e:
-        cif_doc_as_dict = None
+        cif_raw = None
         _nc_common.warn(f'Could not decode raw CIF data to dictionary (Gemmi bug?): JSONDecodeError("{e}")')
+    blk = _select_block( cif_doc )
 
-    if len(cif_doc) == 0:
-        raise _nc_core.NCBadInput('CIF data had no blocks!')
-    if len(cif_doc) == 1:
-        blk = cif_doc.sole_block()
-    else:
-        blk = None
-        for e in cif_doc:
-            if not len(e.find(['_atom_site_fract_x'])):
-                continue
-            if blk:
-                blk = None
-                break
-            blk = e
-        if not blk:
-            raise _nc_core.NCBadInput('Could not automatically determine block in CIF data with structure info')
+    def val( raw ):
+        return None if raw is None or gemmi_cif.is_null( raw ) else gemmi_cif.as_string( raw )
+    def first( *tags ):
+        for tag in tags:
+            v = blk.find_value( tag )
+            if v is not None:
+                return val( v )
+    def column( tag ):
+        return [ val( v ) for v in blk.find_values( tag ) ]
 
-    if override_spacegroup:
-        assert isinstance(override_spacegroup,str)
-        _nc_common.warn(f'Overriding spacegroup to "{override_spacegroup}" due to explicit request')
-        _update_spacegroup_in_cifblock_from_name( gemmi, blk, override_spacegroup )
-
-    #record original h-m-alt entry:
-    orig_hm_alt = None
-    _ = blk.find(['_space_group_name_H-M_alt'])
-    if _ and len(_)==1 and len(_[0])==1:
-        orig_hm_alt = gemmi.cif.as_string(_[0][0]).strip()#(without quotes)
-
-    struct, sg = _load_with_gemmi( blk )
-
-    if not struct:
-        raise _nc_core.NCBadInput('Could not load structure with Gemmi')
+    cell = {}
+    for k in ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' ):
+        isangle = k in ( 'alpha', 'beta', 'gamma' )
+        v = first( ( '_cell_angle_' if isangle else '_cell_length_' ) + k )
+        if v is None and isangle and blk.find_value( '_cell_angle_' + k ) is None:
+            v = '90'#(missing angles are 90 degrees)
+        if v is None:
+            raise _nc_core.NCBadInput(f'CIF data lacks the cell parameter {k}')
+        cell[k] = v
 
     listed = None
-    if not override_spacegroup:
-        for tag in ( '_space_group_symop_operation_xyz',
-                     '_symmetry_equiv_pos_as_xyz' ):
-            listed = [ gemmi.cif.as_string( v )
-                       for v in blk.find_values( tag ) ]
-            if listed:
-                break
-        listed = listed or None
-    _ = blk.find(['_atom_type_number_in_cell'])
-    return { 'cif_raw': cif_doc_as_dict,
-             'cell': { k: getattr( struct.cell, k )
-                       for k in ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' ) },
-             'sites': [ _plain_site( s ) for s in struct.sites ],
-             'listed_ops': listed,
-             'symbol_hm': ' '.join( str( struct.spacegroup_hm ).split() ),
-             'symbol_itnumbers': [ [ gemmi.cif.as_string( e )
-                                     for e in blk.find_values( tag ) ]
-                                   for tag in ( '_space_group_IT_number',
-                                                '_symmetry_Int_Tables_number' ) ],
-             'orig_hm_alt': orig_hm_alt,
-             'multiplicities': _cif_multiplicities( gemmi, blk ),
-             'atom_type_number_in_cell': ( list(chain.from_iterable(_))
-                                           if _ else [] ),
-             'uiso_printed': uiso_from_cif( gemmi, blk ),
-             'ueq_printed': ueq_from_cif( gemmi, blk ),
-             '_gemmi': gemmi, '_struct': struct, '_sg': sg }
+    for tag in ( '_space_group_symop_operation_xyz',
+                 '_symmetry_equiv_pos_as_xyz' ):
+        listed = [ v for v in column( tag ) if v is not None ]
+        if listed:
+            break
+
+    cols = [ 'label', '?type_symbol', '?fract_x', '?fract_y', '?fract_z',
+             '?U_iso_or_equiv', '?B_iso_or_equiv', '?occupancy' ]
+    keys = [ 'label', 'type_symbol', 'x', 'y', 'z', 'uiso', 'biso', 'occ' ]
+    sites = []
+    for row in blk.find( '_atom_site_', cols ):
+        sites.append( { k: ( val( row[i] ) if row.has( i ) else None )
+                        for i, k in enumerate( keys ) } )
+    #Aniso rows go to the sites with their label, in order (some files reuse
+    #labels):
+    for s in sites:
+        s['uij'] = None
+    taken = set()
+    for row in blk.find( '_atom_site_aniso_', [ 'label' ] + list( _uij_tags ) ):
+        v = [ val( row[i] ) for i in range( 1, 7 ) ]
+        i = next( ( i for i, s in enumerate( sites )
+                    if s['label'] == val( row[0] ) and i not in taken ), None )
+        if i is not None:
+            taken.add( i )
+            sites[i]['uij'] = None if any( e is None for e in v ) else v
+
+    return { 'cif_raw': cif_raw,
+             'cell': cell,
+             'listed_ops': listed or None,
+             'hall': first( '_space_group_name_Hall',
+                            '_symmetry_space_group_name_Hall' ),
+             'hm': first( '_space_group_name_H-M_alt',
+                          '_symmetry_space_group_name_H-M' ),
+             'itnumber': first( '_space_group_IT_number',
+                                '_symmetry_Int_Tables_number' ),
+             'formula': first( '_chemical_formula_sum' ),
+             'sites': sites,
+             'atom_type_number_in_cell': [ v for v in column( '_atom_type_number_in_cell' ) ] }
