@@ -1,0 +1,111 @@
+name: debian
+
+#Builds Debian packages from devel/packaging/debian, checks them with lintian,
+#installs them and runs the package tests (debian/tests) via autopkgtest.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest,    arch: amd64 }
+          - { os: ubuntu-24.04-arm, arch: arm64 }
+    name: debian-trixie-${{ matrix.arch }}
+    runs-on: ${{ matrix.os }}
+    container: debian:trixie
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Install packaging tools
+      run: |
+        apt-get update
+        apt-get install -y --no-install-recommends \
+          ca-certificates git devscripts lintian autopkgtest
+
+    - name: Checkout
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      with:
+        path: src
+
+    - name: Prepare source tree
+      run: |
+        mkdir -p ci-logs
+        cp -r src/devel/packaging/debian src/debian
+        cd src
+        v="$(cat VERSION)-1~ci${{ github.run_number }}"
+        DEBFULLNAME="NCrystal CI" DEBEMAIL="ncrystal-developers@cern.ch" \
+          dch --create --package ncrystal --newversion "$v" \
+          --distribution unstable --force-distribution "CI build." \
+          -c debian/changelog.new
+        mv debian/changelog.new debian/changelog
+
+    - name: Install build dependencies
+      run: |
+        cd src
+        apt-get build-dep -y ./
+
+    - name: Build packages
+      run: |
+        cd src
+        dpkg-buildpackage -b -us -uc 2>&1 | tee ../ci-logs/build.log
+
+    - name: Lintian
+      run: lintian --fail-on error --info *.changes 2>&1 | tee ci-logs/lintian.log
+
+    - name: Install packages and run package tests
+      run: |
+        autopkgtest --output-dir ci-logs/autopkgtest ./*.deb ./src -- null \
+          2>&1 | tee ci-logs/autopkgtest.log
+
+    - name: Package logs
+      if: always()
+      run: |
+        mkdir -p ci-logs
+        for f in src/obj-*/Testing/Temporary/LastTest.log; do
+          if [ -f "$f" ]; then cp "$f" ci-logs/; fi
+        done
+
+    - name: Upload packages
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: debs-trixie-${{ matrix.arch }}
+        path: '*.deb'
+
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: ci-logs-trixie-${{ matrix.arch }}
+        path: ci-logs
+        if-no-files-found: warn
+
+  collect_logs:
+    #Bundles all per-leg logs into one downloadable tarball:
+    name: Collect all CI logs
+    needs: [ build ]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all per-leg logs
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: ci-logs-*
+          path: all-ci-logs
+
+      - name: Bundle into a single tarball
+        run: |
+          mkdir -p all-ci-logs
+          tar -czf all-ci-logs-debian-${{ github.sha }}.tar.gz all-ci-logs
+
+      - name: Upload combined log tarball
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: all-ci-logs-debian-${{ github.sha }}
+          path: all-ci-logs-debian-${{ github.sha }}.tar.gz
