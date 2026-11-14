@@ -141,8 +141,14 @@ namespace MCFILEUTILS_CPPNAMESPACE {
   {
     //safe strlen which guarantees result can fit in an unsigned integer (or
     //less, when 0<nmax<UINT_MAX is provided).
-    if ( nmax == 0 )
-      nmax = ( UINT_MAX > PTRDIFF_MAX ? PTRDIFF_MAX - 1 : UINT_MAX -1 );
+    if ( nmax == 0 ) {
+      //Plain strlen, since memchr with a huge bound triggers GCC's
+      //-Wstringop-overread for short strings:
+      const mcu8str_size_t n = STDNS strlen( c_str );
+      if ( !MCTOOLS_STROKFORUINT(n) )
+        mctools_impl_error("str length out of range");
+      return n;
+    }
 
     if ( ( nmax + 1 ) > PTRDIFF_MAX || ( nmax + 1 ) > UINT_MAX )
       mctools_impl_error("str length out of range");
