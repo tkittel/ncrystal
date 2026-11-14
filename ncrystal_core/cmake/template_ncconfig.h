@@ -42,4 +42,5 @@ int nccfg_boolopt_embed_data(void) { return @nccfgapp_has_dataembed_01@; }
 int nccfg_boolopt_examples(void) { return @nccfgapp_has_examples_01@; }
 int nccfg_boolopt_modify_rpath(void) { return @nccfgapp_has_modrpath_01@; }
 int nccfg_boolopt_threads(void) { return @nccfgapp_has_threads_01@; }
+int nccfg_boolopt_shared_lib(void) { return @nccfgapp_has_shlib_01@; }
 int nccfg_boolopt_expects_shlibdir_override(void) { return @nccfgapp_expect_shlibdir_override_01@; }

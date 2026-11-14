@@ -167,6 +167,11 @@ cmake -S . -B build \
 cmake --build build --target install --config Release
 ```
 
+To link NCrystal statically into an application, add `-DBUILD_SHARED_LIBS=OFF`.
+Such a static build can not be used by the Python module or by dynamic plugins
+(NCRYSTAL_ENABLE_DYNLOAD is forced OFF), and applications bundling NCrystal in
+this way should consider setting `NCRYSTAL_NAMESPACE` to avoid symbol clashes.
+
 You should then make sure that the directory where ncrystal-config was installed
 is in your path, and you can use `which ncrystal-config` to verify that it is
 so. Depending on your platform and options, this might look like:
