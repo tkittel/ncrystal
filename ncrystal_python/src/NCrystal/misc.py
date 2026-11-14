@@ -119,6 +119,15 @@ class MaterialSource:
         """
         return bool( self.__d.get('preloaded') )
 
+    def _decodecfg_json( self ):
+        """JSON string with the decoded cfg (cf. NCrystal.cfgstr.decodeCfg)."""
+        f = self.__d.get('decodefct')
+        if not f:
+            from .exceptions import NCBadInput
+            raise NCBadInput( 'Can not decode cfg of a MaterialSource'
+                              ' which is preloaded.' )
+        return f( None )
+
     def load( self, extra_cfg_params = None, doInfo = True, doScatter = True, doAbsorption = True ):
         """
         Loads material (if not preloaded) and in any case returns a

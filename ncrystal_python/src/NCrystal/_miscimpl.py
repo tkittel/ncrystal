@@ -67,6 +67,14 @@ def matsrc_initfmt( data, fmt, cfg_params ):
                for e in (to_str(cfgstr),to_str(extra_params))
                if (e or '').strip() ]
         return ';'.join(ll) if ll else None
+    def mk_decodefct_rawdata( content, dtype, name = None ):
+        def decodefct( extra_cfg ):
+            from .misc import evaluate_query
+            return evaluate_query( [ 'matcfg', 'decodedata', dtype or '',
+                                     cfgcombine(cfg_params,extra_cfg) or '',
+                                     'RAWDATA', name or '',
+                                     'RAWDATA', content ], unpack = False )
+        return decodefct
     if fmt == 'NCrystal.MaterialSource':
         if not cfg_params:
             return data
@@ -74,15 +82,19 @@ def matsrc_initfmt( data, fmt, cfg_params ):
         if not wrapped_loadfct:
             raise NCBadInput('Can not add cfg_params to MaterialSource'
                              ' which is of "preloaded" type.')
+        wrapped_decodefct = data['decodefct']
         def loadfct( extra_cfg, doInfo, doScatter, doAbsorption ):
             return wrapped_loadfct( cfgcombine(cfg_params,extra_cfg), doInfo, doScatter, doAbsorption )
+        def decodefct( extra_cfg ):
+            return wrapped_decodefct( cfgcombine(cfg_params,extra_cfg) )
         descr = data.get('description')
         plotlabel = data.get('plotlabel')
         if plotlabel:
             plotlabel+=f'+ ";{cfg_params}"'
         return { 'description': f'{descr} + ";{cfg_params}"',
                  'plotlabel': plotlabel,
-                 'loadfct': loadfct }
+                 'loadfct': loadfct,
+                 'decodefct': decodefct }
     if fmt == 'filepath':
         import pathlib
         p = pathlib.Path(data)
@@ -111,7 +123,9 @@ def matsrc_initfmt( data, fmt, cfg_params ):
                                                doInfo = doInfo,
                                                doScatter = doScatter,
                                                doAbsorption = doAbsorption )
-        return { 'description': descr, 'loadfct': loadfct }
+        return { 'description': descr, 'loadfct': loadfct,
+                 'decodefct': mk_decodefct_rawdata( _textdata, _dtype,
+                                                    str(p) ) }
     if fmt=='cfgstr':
         cfgstr = to_str(data)
         if cfg_params:
@@ -124,7 +138,13 @@ def matsrc_initfmt( data, fmt, cfg_params ):
             s = _nc_core.createScatter(cs) if doScatter else None
             a = _nc_core.createAbsorption(cs) if doAbsorption else None
             return _nc_core.LoadedMaterial.fromExistingObjects(info=i,scatter=s,absorption=a)
-        return { 'description': cfgstr, 'loadfct': loadfct }
+        def decodefct( extra_cfg ):
+            from .misc import evaluate_query
+            return evaluate_query( [ 'matcfg', 'decode',
+                                     cfgcombine(cfgstr,extra_cfg) ],
+                                   unpack = False )
+        return { 'description': cfgstr, 'loadfct': loadfct,
+                 'decodefct': decodefct }
     if fmt=='NCrystal.TextData':
         descr = data.dataSourceName or 'Anonymous TextData'
         if cfg_params:
@@ -135,7 +155,10 @@ def matsrc_initfmt( data, fmt, cfg_params ):
                                                doInfo = doInfo,
                                                doScatter = doScatter,
                                                doAbsorption = doAbsorption )
-        return { 'description': descr, 'loadfct': loadfct }
+        return { 'description': descr, 'loadfct': loadfct,
+                 'decodefct': mk_decodefct_rawdata( data.rawData,
+                                                    data.dataType,
+                                                    data.dataSourceName ) }
     if fmt=='ncmat':
         data = to_str(data)
         def loadfct( extra_cfg, doInfo, doScatter, doAbsorption ):
@@ -145,7 +168,8 @@ def matsrc_initfmt( data, fmt, cfg_params ):
                                                doInfo = doInfo,
                                                doScatter = doScatter,
                                                doAbsorption = doAbsorption )
-        return { 'description': 'Anonymous NCMAT data', 'loadfct': loadfct }
+        return { 'description': 'Anonymous NCMAT data', 'loadfct': loadfct,
+                 'decodefct': mk_decodefct_rawdata( data, 'ncmat' ) }
     if fmt=='NCrystal.NCMATComposer':
         txtdata = data.create_ncmat()# NCMATComposer is not immutable so we simply
                                      # capture the state by invoking create_ncmat
@@ -158,7 +182,9 @@ def matsrc_initfmt( data, fmt, cfg_params ):
                                                doInfo = doInfo,
                                                doScatter = doScatter,
                                                doAbsorption = doAbsorption )
-        return { 'description': 'NCMATComposer object', 'loadfct': loadfct, 'plotlabel': plotlabel }
+        return { 'description': 'NCMATComposer object', 'loadfct': loadfct,
+                 'decodefct': mk_decodefct_rawdata( txtdata, 'ncmat' ),
+                 'plotlabel': plotlabel }
     if fmt=='NCrystal.LoadedMaterial':
         return { 'description': 'NCrystal.LoadedMaterial object',
                  'preloaded': data }
@@ -189,9 +215,9 @@ def matsrc_init( class_MaterialSource, matsrc_extract_d_fct, data, fmt, cfg_para
         raise NCBadInput( f'Unknown format "{fmt}" (must be one of:'
                           ' %s)'%matsrc_allfmts(as_str=True) )
     d = matsrc_initfmt( matsrc_extract_d_fct(data) if fmt=='NCrystal.MaterialSource' else data, fmt, cfg_params )
-    assert len(d) in (2,3)
     assert 'description' in d
     assert int('preloaded' in d) + int('loadfct' in d) == 1
+    assert ( 'decodefct' in d ) == ( 'loadfct' in d )
     if 'preloaded' in d and (cfg_params or '').strip():
         raise NCBadInput('MaterialSource objects that are wrapping preloaded'
                          ' physics objects can not be initialised with'

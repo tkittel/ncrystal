@@ -494,3 +494,17 @@ Decoding cfg 'phases<0.4*C_sg227_Diamond.ncmat&0.6*C_sg227_Diamond.ncmat>;temp=3
 Caught expected NCFileNotFound('Could not find data: "foobarnonexistent.ncmat"')
 Caught expected NCBadInput('Syntax error - invalid value "warm" provided for parameter "temp"')
 generateCfgStrDoc("print") output redirected OK
+cfgstr: data_name='stdlib::Al_sg225.ncmat' textdata_name='Al_sg225.ncmat' pars=[] vdoslux=3
+cfgstr+params: data_name='stdlib::Al_sg225.ncmat' textdata_name='Al_sg225.ncmat' pars=[['temp', 20.0], ['vdoslux', 5]] vdoslux=5
+ncmat: data_name='<anonymous-ncmat-data>' textdata_name='(anonymous TextData, 3487bytes, type=ncmat)' pars=[] vdoslux=3
+ncmat+embedded: data_name='<anonymous-ncmat-data>' textdata_name='(anonymous TextData, 3515bytes, type=ncmat)' pars=[['vdoslux', 1]] vdoslux=1
+ncmat+embedded+params: data_name='<anonymous-ncmat-data>' textdata_name='(anonymous TextData, 3515bytes, type=ncmat)' pars=[['temp', 50.0], ['vdoslux', 4]] vdoslux=4
+TextData: data_name='<anonymous-ncmat-data>' textdata_name='Al_sg225.ncmat' pars=[['vdoslux', 2]] vdoslux=2
+file path: data_name='<anonymous-ncmat-data>' textdata_name='tmp_cfgstr_weird #name&.ncmat' pars=[['temp', 30.0]] vdoslux=3
+NCMATComposer: data_name='<anonymous-ncmat-data>' textdata_name='(anonymous TextData, 254bytes, type=ncmat)' pars=[['vdoslux', 6]] vdoslux=6
+MaterialSource: data_name='<anonymous-ncmat-data>' textdata_name='(anonymous TextData, 3515bytes, type=ncmat)' pars=[['temp', 10.0], ['vdoslux', 1]] vdoslux=1
+MaterialSource+params: data_name='<anonymous-ncmat-data>' textdata_name='(anonymous TextData, 3515bytes, type=ncmat)' pars=[['temp', 10.0], ['vdoslux', 5]] vdoslux=5
+multiphase vdoslux: 2
+Caught expected NCCalcError('Could not determine unique value of parameter "vdoslux" on multiphase material (different values found in different phases).')
+Caught expected NCBadInput('Can not decode cfg of a MaterialSource which is preloaded.')
+generateCfgStrDoc modes OK
