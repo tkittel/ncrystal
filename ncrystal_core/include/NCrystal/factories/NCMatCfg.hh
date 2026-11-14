@@ -320,6 +320,11 @@ namespace NCRYSTAL_NAMESPACE {
     //code should not parse this!):
     const DataSourceName& getDataSourceName() const;
 
+    //For non-multiphase cfg objects, name of the associated text data (e.g. a
+    //file name, which unlike getDataSourceName() is also available for raw
+    //data given a name). For output only, code should not parse this!
+    const DataSourceName& getTextDataSourceName() const;
+
     /////////////////////////////////////////////////////////////////////////////
     // Methods for multi-phase configurations:                                 //
     /////////////////////////////////////////////////////////////////////////////
