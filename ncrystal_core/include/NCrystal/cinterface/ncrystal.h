@@ -1241,10 +1241,6 @@ extern "C" {
   NCRYSTAL_API char * ncrystal_process_uid(ncrystal_process_t);
   NCRYSTAL_API char * ncrystal_info_uid(ncrystal_info_t);
 
-  /*Generate cfg-str variable documentation as string (must free with call to      */
-  /*ncrystal_dealloc_string). Mode 0 (full), 1 (short), 2 (json):                  */
-  NCRYSTAL_API char * ncrystal_gencfgstr_doc(int mode);
-
   /*Underlying UID (in case density value or cfgdata  was overridden):             */
   NCRYSTAL_API char * ncrystal_info_underlyinguid(ncrystal_info_t);
 
@@ -1274,14 +1270,6 @@ extern "C" {
                                        double temperature, double atom_mass_amu,
                                        double* msd, double* debye_temp, double* gamma0,
                                        double* temp_eff, double* origIntegral );
-
-  /* Extract NCMatCfg variables which can not be inferred from an ncrystal_info_t  */
-  /* object and which might be needed in plugins (to be expanded as needed).       */
-  /* Returned strings must be cleaned up with ncrystal_dealloc_string.             */
-  NCRYSTAL_API unsigned ncrystal_decodecfg_vdoslux( const char * cfgstr );
-  NCRYSTAL_API char* ncrystal_decodecfg_json( const char * cfgstr );
-  /* Parse and reencode cfg (as NCrystal::MatCfg(cfgstr).toStrCfg()):              */
-  NCRYSTAL_API char* ncrystal_normalisecfg( const char * cfgstr );
 
   /* Clear various caches employed inside NCrystal:                                */
   NCRYSTAL_API void ncrystal_clear_caches(void);
@@ -1453,6 +1441,14 @@ extern "C" {
   /*Obsolete function which now always returns 1.0. Packing factors are now        */
   /*instead absorbed into the material densities:                                  */
   NCRYSTAL_API double ncrystal_decodecfg_packfact( const char * cfgstr );
+
+  /*Obsolete cfg-string functions. Use the ["matcfg",...] JSON queries via        */
+  /*ncrystal_jsonquery instead. Returned strings must be cleaned up with           */
+  /*ncrystal_dealloc_string. Doc modes are 0 (full), 1 (short), 2 (json):          */
+  NCRYSTAL_API unsigned ncrystal_decodecfg_vdoslux( const char * cfgstr );
+  NCRYSTAL_API char* ncrystal_decodecfg_json( const char * cfgstr );
+  NCRYSTAL_API char* ncrystal_normalisecfg( const char * cfgstr );
+  NCRYSTAL_API char * ncrystal_gencfgstr_doc(int mode);
 
   /*Obsolete function which now just is an alias for ncrystal_clear_caches above:  */
   NCRYSTAL_API void ncrystal_clear_info_caches(void);
