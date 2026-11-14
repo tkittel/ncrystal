@@ -103,6 +103,12 @@ namespace NCRYSTAL_NAMESPACE {
       //Stream set variables as json list, e.g.: [ ["temp", 293.15], ["vdoslux", 3] ]
       static void streamJSON( const CfgData&, std::ostream& );
 
+      //Stream all variables as json list of [name, value, is_set] entries, in
+      //varlist order. Unset variables get their default value (null if they
+      //have no default), e.g.: [ ["absnfactory", "", false], ...,
+      //["vdoslux", 5, true] ]
+      static void streamJSONAll( const CfgData&, std::ostream& );
+
       //Miscellaneous:
       static VarIdList findCommonEntries( std::function<const CfgData*()> cfgDataIter );
 

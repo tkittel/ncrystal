@@ -2,6 +2,8 @@ Checking NCrystal::getVersion()
 MatCfg("<anonymous-ncmat-data>;dcutoff=2;temp=600")
 NCMAT v2
 bla bla
+Al_fake.ncmat | Al_fake.ncmat
+<anonymous-ncmat-data> | my #data
 Dump: MatCfg("Al_fake.ncmat;temp=77")
 toStrCfg(false) : "temp=77"
 toStrCfg: Al_fake.ncmat;absnfactory=SomeAbsFact;coh_elas=1;dcutoff=0.2;dir1=@crys:1,2,3@lab:4,5,6;dir2=@crys_hkl:1.1,2,3@lab:4.01,5,6;dirtol=3.1415926535897931;incoh_elas=1;inelas=auto;infofactory=mycoolfact;mos=0.02;sans=1;scatfactory=SomeScatterFact;temp=500;density=0.2x

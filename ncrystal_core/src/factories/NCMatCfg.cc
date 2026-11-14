@@ -130,6 +130,7 @@ public:
   TextDataUID m_textDataUID;
   std::string m_textDataType;
   DataSourceName m_dataSourceName;//data name as passed to MatCfg constructor or an appropriate "<anonymousXXX-data>"
+  DataSourceName m_textDataSourceName;//name of the TextData
   std::shared_ptr<PhaseList> m_phases;//set if multiphase
   Cfg::CfgData m_cfgdata;//Variables (if single phase)
 
@@ -822,6 +823,7 @@ NC::MatCfg::MatCfg( constructor_args&& args )
     //Cache TextData meta data which should remain even if thinned:
     mod->m_textDataUID = textData.dataUID();
     mod->m_textDataType = textData.dataType();
+    mod->m_textDataSourceName = textData.dataSourceName();
     const auto& textDataType = mod->m_textDataType;
 
     //Original file name (if any) is needed for more consistent
@@ -988,6 +990,13 @@ const NC::TextDataUID NC::MatCfg::textDataUID() const
   return m_impl->m_textDataUID;
 }
 
+const NC::DataSourceName& NC::MatCfg::getTextDataSourceName() const
+{
+  if ( m_impl->isMultiPhase() )
+    NCRYSTAL_THROW(LogicError,"MatCfg::getTextDataSourceName called for multiphase object");
+  return m_impl->m_textDataSourceName;
+}
+
 const std::string& NC::MatCfg::getDataType() const
 {
   if ( m_impl->isMultiPhase() )
@@ -1133,7 +1142,7 @@ bool NC::MatCfg::isMultiPhase() const { return m_impl->m_phases != nullptr; }
 std::string NC::MatCfg::toJSONCfg() const
 {
   std::ostringstream os;
-  os << "{\"format\":\"NCrystal-MatCfg-v1\", \"ismultiphase\":"
+  os << "{\"format\":\"NCrystal-MatCfg-v2\", \"ismultiphase\":"
      <<(isMultiPhase()?"true":"false");
   if ( !isMultiPhase() ) {
     os << ",\"data_name\":";
@@ -1141,8 +1150,12 @@ std::string NC::MatCfg::toJSONCfg() const
     os << ",\"textdata_uid\": \""<<m_impl->m_textDataUID.value()<<"\"";
     os << ",\"textdata_type\":";
     streamJSON(os,m_impl->m_textDataType);
+    os << ",\"textdata_name\":";
+    streamJSON(os,m_impl->m_textDataSourceName.str());
     os << ",\"pars\":";
     CfgManip::streamJSON( m_impl->m_cfgdata, os );
+    os << ",\"allpars\":";
+    CfgManip::streamJSONAll( m_impl->m_cfgdata, os );
   } else {
     //multiphase
     nc_assert(m_impl->m_phases!=nullptr);
