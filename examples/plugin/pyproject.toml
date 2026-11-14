@@ -30,7 +30,7 @@ classifiers = [
 ]
 
 [build-system]
-requires = ["scikit-build-core>=0.12", "ncrystal-core>=4.4.7" ]
+requires = ["scikit-build-core>=0.11.1", "ncrystal-core>=4.4.7" ]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
