@@ -48,6 +48,38 @@ def test_cli( *args ):
     nc_cli.run('query',*args)
     print("===========================================")
 
+def test_matcfg():
+    #Raw data can follow a "RAWDATA" argument, exempting it from the
+    #character restrictions on query strings:
+    from NCrystalDev.misc import evaluate_query
+    data = ( 'NCMAT v7\n# Comment with forbidden chars "#<>&;" and a NCRYSTALMATCFG[temp=20K]\n'
+             '@CELL\n  cubic 4.04958\n@SPACEGROUP\n  225\n'
+             '@ATOMPOSITIONS\n  Al 0 0 0\n  Al 0 0.5 0.5\n'
+             '  Al 0.5 0 0.5\n  Al 0.5 0.5 0\n'
+             '@DEBYETEMPERATURE\n  Al   410.4\n' )
+    for name in ('','my #data.ncmat'):
+        d = evaluate_query(['matcfg','decodedata','ncmat','vdoslux=1',
+                            'RAWDATA',name,'RAWDATA',data])
+        print('decodedata:',d['data_name'],d['textdata_name'],d['pars'])
+    with ensure_error(NCBadInput,
+                      'Forbidden character "#" in query! Problem found in:'
+                      ' "#x"'):
+        evaluate_query(['matcfg','decodedata','ncmat','','RAWDATA','',
+                        'NOTRAWDATA','#x'])
+    with ensure_error(NCBadInput,
+                      'Forbidden character "#" in query! Problem found in:'
+                      ' "#"'):
+        evaluate_query(['matcfg','decode','RAWDATA','x','#'])
+    with ensure_error(NCBadInput,
+                      'Invalid matcfg JSON query: ["matcfg","decode"]'
+                      ' (correct usage: ["matcfg","decode",CFGSTR])'):
+        evaluate_query(['matcfg','decode'])
+    with ensure_error(NCBadInput,
+                      'Invalid matcfg JSON query: ["matcfg","doc","x"]'
+                      ' (correct usage: ["matcfg","doc",MODE] with MODE'
+                      ' "full", "short" or "json")'):
+        evaluate_query(['matcfg','doc','x'])
+
 def main():
     from NCrystalDev._common import print
     ncsetenv('FIX_QUERY_VERSION_FOR_TESTS','1')
@@ -131,6 +163,9 @@ def main():
     test_cli('util','list')
     test_cli('sab','list')
     test_cli('vdos','list')
+    test_cli('matcfg','list')
+    test_cli('matcfg','normalise','stdlib::Al_sg225.ncmat ; temp = 20C')
+    test_matcfg()
     for k in ('sab','vdos'):
         with ensure_error(NCBadInput,
                           f'Invalid {k.upper()} JSON query: ["{k}","list","x"]'

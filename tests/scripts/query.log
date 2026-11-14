@@ -88,11 +88,11 @@ Caught expected RuntimeError('File already exists (use --force to overwrite): tm
 Wrote: tmp_test_file.json
 ===========================================
 Contents of tmp_test_file.json: ========================================
-["version", "util", "mmc", "sab", "vdos", "isomacroxstable"]
+["version", "util", "mmc", "sab", "vdos", "isomacroxstable", "matcfg"]
 ============= CLI >>foo<< ====================
 Caught expected NCBadInput('Invalid JSON query key: "foo"')
 ============= CLI >>list<< ====================
-['version', 'util', 'mmc', 'sab', 'vdos', 'isomacroxstable']
+['version', 'util', 'mmc', 'sab', 'vdos', 'isomacroxstable', 'matcfg']
 ===========================================
 ============= CLI >>mmc list<< ====================
 ['run', 'scenario', 'inspectcfg', 'cfgdoc']
@@ -125,6 +125,18 @@ Caught expected NCBadInput('Invalid JSON query key: "foo"')
 ============= CLI >>vdos list<< ====================
 ['expand']
 ===========================================
+============= CLI >>matcfg list<< ====================
+['decode', 'decodedata', 'normalise', 'doc']
+===========================================
+============= CLI >>matcfg normalise 'stdlib::Al_sg225.ncmat ; temp = 20C'<< ====================
+'stdlib::Al_sg225.ncmat;temp=20C'
+===========================================
+decodedata: <anonymous-ncmat-data> (anonymous TextData, 221bytes, type=ncmat) [['temp', 20.0], ['vdoslux', 1]]
+decodedata: <anonymous-ncmat-data> my #data.ncmat [['temp', 20.0], ['vdoslux', 1]]
+Caught expected NCBadInput('Forbidden character "#" in query! Problem found in: "#x"')
+Caught expected NCBadInput('Forbidden character "#" in query! Problem found in: "#"')
+Caught expected NCBadInput('Invalid matcfg JSON query: ["matcfg","decode"] (correct usage: ["matcfg","decode",CFGSTR])')
+Caught expected NCBadInput('Invalid matcfg JSON query: ["matcfg","doc","x"] (correct usage: ["matcfg","doc",MODE] with MODE "full", "short" or "json")')
 
 >>> Sending query: ['sab', 'list', 'x']
 Caught expected NCBadInput('Invalid SAB JSON query: ["sab","list","x"] (no arguments should come after: ["sab","list"])')

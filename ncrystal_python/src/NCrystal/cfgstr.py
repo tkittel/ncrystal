@@ -31,18 +31,22 @@ def normaliseCfg(cfgstr):
        loading the specified cfg-string into a C++ MatCfg object and then
        re-encoding it as a string.
     """
-    from ._chooks import _get_raw_cfcts
-    return _get_raw_cfcts()['nc_normcfgstr'](cfgstr)
+    from .misc import evaluate_query
+    return evaluate_query( ['matcfg','normalise',cfgstr] )
 
-def decodeCfg(cfgstr,*,asJSONStr=False):
-    """Decodes cfg-string and returns as Python data structure (a dictionary). The
-       format of this data structure should be mostly self-evident by
-       inspection, and is not guaranteed to stay the same across NCrystal
-       versions. If asJSONStr=true, the data structure will be returned as a
-       JSON-encoded string, instead of a Python dictionary.
+def decodeCfg( material, cfg_params = None, *, asJSONStr = False ):
+    """Decodes the cfg of a material and returns it as a Python data structure
+       (a dictionary). The material can be a cfg-string, raw NCMAT data, a
+       TextData or NCMATComposer object, or anything else accepted by
+       NCrystal.misc.MaterialSource, and cfg_params are extra cfg parameters
+       to apply. The "allpars" entry lists all parameters, including those at
+       default values. The format of this data structure should be mostly
+       self-evident by inspection, and is not guaranteed to stay the same
+       across NCrystal versions. If asJSONStr=true, the data structure will
+       be returned as a JSON-encoded string, instead of a Python dictionary.
     """
-    from ._chooks import _get_raw_cfcts
-    _js = _get_raw_cfcts()['nc_cfgstr2json'](cfgstr)
+    from .misc import MaterialSource
+    _js = MaterialSource( material, cfg_params = cfg_params )._decodecfg_json()
     if asJSONStr:
         return _js
     import json
@@ -55,23 +59,31 @@ def generateCfgStrDoc( mode = "print" ):
     string), 'json' (return json-encoded string), or 'python' (return python
     data structures).
     """
-    modemap={'print':0,'txt_full':0,'txt_short':1,'json':2,'python':2}
-    modeint = modemap.get(mode,None)
-    if modeint is None:
+    modemap={'print':'full','txt_full':'full','txt_short':'short',
+             'json':'json','python':'json'}
+    qmode = modemap.get(mode,None)
+    if qmode is None:
         from .exceptions import NCBadInput
         raise NCBadInput(f'mode must be one of {sorted(modemap.keys())}')
-    from ._chooks import _get_raw_cfcts
-    _=_get_raw_cfcts()['nc_gencfgdoc'](modeint)
+    from .misc import evaluate_query
+    _=evaluate_query( ['matcfg','doc',qmode], unpack = ( mode != 'json' ) )
     if mode == 'print':
         from ._common import print
         print(_)
-    elif mode == 'python':
-        import json
-        return json.loads(_)
     else:
         return _
 
-def decodecfg_vdoslux(cfgstr):
-    """Extract vdoslux value from cfgstr."""
-    from ._chooks import _get_raw_cfcts, _str2cstr
-    return int(_get_raw_cfcts()['ncrystal_decodecfg_vdoslux'](_str2cstr(cfgstr)))
+def decodecfg_vdoslux( material, cfg_params = None ):
+    """Extract vdoslux value from the cfg of a material (accepting the same
+    arguments as decodeCfg)."""
+    def get( d ):
+        if not d['ismultiphase']:
+            return { v for n,v,_ in d['allpars'] if n == 'vdoslux' }
+        return set().union( *( get(ph) for _,ph in d['phases'] ) )
+    vals = get( decodeCfg( material, cfg_params ) )
+    if len(vals) != 1:
+        from .exceptions import NCCalcError
+        raise NCCalcError( 'Could not determine unique value of parameter'
+                           ' "vdoslux" on multiphase material (different'
+                           ' values found in different phases).' )
+    return int( vals.pop() )
