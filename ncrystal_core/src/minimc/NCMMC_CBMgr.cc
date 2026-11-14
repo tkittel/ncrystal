@@ -235,6 +235,8 @@ void NCMMC::CB::CBMgr::registerData( const Basket& b )
     nc_assert(!(m_cache->size() + b.size() > m_nmax));
   } else if ( m_cache->size() + b.size() > m_nmax ) {
     flush();
+    if ( m_callback == nullptr )
+      return;//halted with error by the callback
   }
   nc_assert(m_cache!=nullptr);
   data_append( *m_cache, b );
