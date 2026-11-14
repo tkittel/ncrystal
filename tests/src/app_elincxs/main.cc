@@ -23,6 +23,7 @@
 #include "NCrystal/internal/phys_utils/NCElIncXS.hh"
 #include "NCrystal/internal/utils/NCIsoXSUtils.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCRandUtils.hh"
 #include <iostream>
 
 namespace NC = NCrystal;
@@ -44,6 +45,27 @@ namespace {
     return res;
   }
 
+}
+
+namespace {
+  //Whether e*xs of a table of the form P_i(u)/e (as made by ElIncXS)
+  //increases monotonically, checked at 50 points per piece (merged tables
+  //and sampling need this, also where e*xs flattens at high energies):
+  bool isMonotone( const NC::IsoXSTable& t )
+  {
+    for ( auto i : NC::ncrange( t.E.size() - 1 ) ) {
+      const double* p = t.p.data() + 4 * i;
+      double prev = p[0];
+      for ( int k = 1; k <= 50; ++k ) {
+        const double u = k / 50.0;
+        const double v = p[0] + u * ( p[1] + u * ( p[2] + u * p[3] ) );
+        if ( v < prev )
+          return false;
+        prev = v;
+      }
+    }
+    return true;
+  }
 }
 
 int main()
@@ -127,6 +149,80 @@ int main()
     for ( auto j : NC::ncrange( msd.size() ) )
       ref += scale[j] * refXS( e, msd[j], bixs[j] );
     nc_assert_always( NC::floateq( v, ref, 1e-10, 0.0 ) );
+  }
+
+  //Many elements (as from anisotropic sites, incl. one with zero msd): one
+  //table, within 1e-10 of the summed formula:
+  NC::VectD mm, mb, ms;
+  for ( auto i : NC::ncrange( 4000 ) ) {
+    const double x = std::fmod( i * 0.6180339887498949, 1.0 );
+    mm.push_back( i ? 0.002 + 0.05 * x : 0.0 );
+    mb.push_back( 1.0 + std::fmod( i * 0.4142135623730951, 1.0 ) );
+    ms.push_back( 1.0 / 4000 );
+  }
+  {
+    NC::ElIncXS ei( mm, mb, ms );
+    const NC::IsoXSEvaluator ev( ei.tabulate() );
+    double w = 0.0;
+    for ( auto e : NC::geomspace( 1e-14, 1e6, 2003 ) )
+      w = NC::ncmax( w, NC::ncabs( ev.eval( e ) / ei.evaluate( NC::NeutronEnergy{ e } ).dbl() - 1.0 ) );
+    nc_assert_always( w < 1e-10 );
+    nc_assert_always( isMonotone( ev.table() ) );
+    std::cout << "Number of points (4000 elements): " << ev.table().E.size() << std::endl;
+  }
+
+  //Monotone pieces, also for few elements with different msd and after
+  //merging tables with different energy ranges:
+  {
+    for ( double m : { 0.0, 1e-4, 0.0117, 0.5 } )
+      nc_assert_always( isMonotone( NC::ElIncXS::tabulateMonoAtomic( m, NC::SigmaBound{ 5.08 } ) ) );
+    auto t1 = NC::ElIncXS( { 0.03, 0.006, 0.004 }, { 80.3, 5.6, 4.2 }, { 0.5, 0.4, 0.1 } ).tabulate();
+    auto t2 = NC::ElIncXS( { 0.008, 0.003 }, { 11.1, 1.0 }, { 0.5, 0.5 } ).tabulate();
+    nc_assert_always( isMonotone( t1 ) && isMonotone( t2 ) && isMonotone( d.value() ) );
+    const std::pair<double,const NC::IsoXSTable*> inputs[2] = { { 0.96, &t1 }, { 0.04, &t2 } };
+    auto tm = NC::mergeIsoXSTables( inputs );
+    nc_assert_always( isMonotone( tm ) );
+    std::cout << "Monotone pieces: OK" << std::endl;
+  }
+
+  //Sampled mu follow the exact distribution, (summed) density
+  //w*exp(-a*(1-mu)) with a=2k^2*msd:
+  {
+    NC::ElIncScatter scm( mm, mb, ms );
+    auto rng = NC::getRNG();
+    auto cdf = []( double e, const NC::VectD& m, const NC::VectD& b,
+                    const NC::VectD& s, double mu )
+    {
+      constexpr double kk = 8.0 * NC::kPiSq * NC::ekin2wlsqinv(1.0);
+      double num = 0.0, den = 0.0;
+      for ( auto j : NC::ncrange( m.size() ) ) {
+        const double a = kk * m[j] * e, wt = b[j] * s[j];
+        auto F = [a]( double x ) { return a < 1e-200 ? 1.0 + x : std::exp( -2.0 * a ) * NC::stable_expm1( a * ( 1.0 + x ) ) / a; };
+        num += wt * F( mu );
+        den += wt * F( 1.0 );
+      }
+      return num / den;
+    };
+    const unsigned N = 200000;
+    for ( int which : { 0, 1 } ) {
+      const NC::ElIncScatter& s = which ? scm : sc;
+      const NC::VectD& m = which ? mm : msd;
+      const NC::VectD& b = which ? mb : bixs;
+      const NC::VectD& f = which ? ms : scale;
+      for ( double e : { 1e-5, 0.025, 0.3, 5.0 } ) {
+        NC::VectD mus;
+        mus.reserve( N );
+        for ( unsigned i = 0; i < N; ++i )
+          mus.push_back( s.sampleScatterIsotropic( cp, *rng, NC::NeutronEnergy{ e } ).mu.dbl() );
+        std::sort( mus.begin(), mus.end() );
+        double dmax = 0.0;
+        for ( double mu : NC::linspace( -1.0, 1.0, 41 ) ) {
+          const double emp = double( std::upper_bound( mus.begin(), mus.end(), mu ) - mus.begin() ) / N;
+          dmax = NC::ncmax( dmax, NC::ncabs( emp - cdf( e, m, b, f, mu ) ) );
+        }
+        nc_assert_always( dmax < 0.006 );
+      }
+    }
   }
   std::cout << "All ok" << std::endl;
 }
