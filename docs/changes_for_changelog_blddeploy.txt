@@ -47,3 +47,22 @@ the real CHANGELOG at release time, after which this file is dropped).
        not always be run (e.g. when cross-compiling).
      * The examples (downstream_cmake, plugin and the README CMake code) now
        require NCrystal 4.4.7 (the example plugin: ncrystal-core>=4.4.7).
+     * Static builds: configuring ncrystal-core with BUILD_SHARED_LIBS=OFF
+       now produces a static NCrystal library for linking into applications
+       (shared remains the default). Static builds can not be used by the
+       Python module, NCRYSTAL_ENABLE_DYNLOAD is forced OFF, and
+       NCRYSTAL_ENABLE_TESTING is rejected. NCrystalConfig.cmake finds the
+       Threads dependency of static installs, Windows static builds avoid
+       dllexport/dllimport, and ncrystal-config has a new has_shared_lib item
+       (the shlib* items are not available for static builds).
+     * Missing include of <stdexcept> added in NCCFileUtils.cc (failed to
+       compile in static builds).
+     * Require scikit-build-core 0.11.1 or later (was 0.12), since Debian
+       stable (trixie) has 0.11.1.
+     * Strict compilation flags (-Werror etc.) are again only used with
+       NCRYSTAL_BUILD_STRICT, as intended. Since 4.1.6 all builds used them.
+     * Debian packaging: devel/packaging/debian contains the files for
+       building Debian packages (libncrystal<major>, libncrystal-dev,
+       python3-ncrystal, python3-ncrystal-verify and ncrystal, the latter
+       installing everything), and the debian.yml workflow builds and tests
+       them.
