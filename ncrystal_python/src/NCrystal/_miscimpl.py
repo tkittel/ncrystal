@@ -376,9 +376,19 @@ def _anyvdos_init( class_AnyVDOS, anyvdos_extract_d, data, fmt, label ):
 def detect_scatcomps( standard_comp_types, matsrc ):
     from .exceptions import NCBadInput, NCCalcError
     if matsrc.is_preloaded:
-        from .exceptions import NCBadInput
         raise NCBadInput('detect_scattering_components can not be used'
                          ' with preloaded material sources')
+    #The inelas component is first probed with a cheaper vdoslux (never higher
+    #than the material's own, in any phase). This is not a great solution, but
+    #in the absence of deeper changes to NCrystal processes, this seems a
+    #reasonable compromise:
+    import json
+    def vdoslux_vals( d ):
+        if not d['ismultiphase']:
+            return [ v for n,v,_ in d['allpars'] if n == 'vdoslux' ]
+        return [ v for _,ph in d['phases'] for v in vdoslux_vals(ph) ]
+    probe_vdoslux = min( vdoslux_vals( json.loads( matsrc._decodecfg_json() ) )
+                         + [ 2 ] )
     res=[]
     for ct in standard_comp_types:
         def load(extra = None,captured_ct=ct):
@@ -390,12 +400,8 @@ def detect_scatcomps( standard_comp_types, matsrc ):
                                 doAbsorption = False )
         m = None
         if ct == 'inelas':
-            #For inelas component first we try to see if we can get away with
-            #using a potentially smaller vdoslux than is actually used. This is
-            #not a great solution, but in the absence of deeper changes to
-            #NCrystal processes, this seems a reasonable compromise.
             try:
-                m = load('vdoslux=0')
+                m = load(f'vdoslux={probe_vdoslux}')
             except NCCalcError as e:
                 if not str(e).startswith('VDOS expansion would require'):
                     raise
