@@ -87,6 +87,17 @@ def main():
                       " ('foo', 117)"):
         test('foo',117)
 
+    #An argument following "RAWDATA" is exempt from the character checks (so
+    #here the query fails later, on the argument count):
+    with ensure_error(NCBadInput,
+                      'Forbidden character "#" in query! Problem found in:'
+                      ' "#"'):
+        test('util','wl2ekin','#')
+    with ensure_error(NCBadInput,'Invalid util query: ["util","wl2ekin",'
+                      '"RAWDATA","#"] (correct usage: ["util","wl2ekin",'
+                      'VALUE_ANGSTROM])'):
+        test('util','wl2ekin','RAWDATA','#')
+
     for a in ('bar'+'\x07','\x07','\x07\x07','\x07'+'bar'):
         with ensure_error(NCBadInput,
                           'Can not use character 0x07 (ASCII BEL) in JSON'

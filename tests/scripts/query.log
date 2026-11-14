@@ -26,6 +26,12 @@ Caught expected NCBadInput('Invalid MiniMC JSON query: ["mmc","bla-bla"]')
 >>> Sending query: ['foo', '117']
 Caught expected NCBadInput("Invalid query (not all entries are strings): ('foo', 117)")
 
+>>> Sending query: ['util', 'wl2ekin', '#']
+Caught expected NCBadInput('Forbidden character "#" in query! Problem found in: "#"')
+
+>>> Sending query: ['util', 'wl2ekin', 'RAWDATA', '#']
+Caught expected NCBadInput('Invalid util query: ["util","wl2ekin","RAWDATA","#"] (correct usage: ["util","wl2ekin",VALUE_ANGSTROM])')
+
 >>> Sending query: ['foo', 'bar\\x07']
 Caught expected NCBadInput('Can not use character 0x07 (ASCII BEL) in JSON query strings')
 
