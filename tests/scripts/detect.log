@@ -1,1 +1,30 @@
-['coh_elas', 'incoh_elas', 'inelas']
+CaO2H2_sg164_CalciumHydroxide.ncmat;temp=3000K
+NCrystal WARNING: VDOS expansion could only reach Emax=2.6017eV and not the target Emax=5eV
+   ['coh_elas', 'incoh_elas', 'inelas']
+   cohelas: CaO2H2_sg164_CalciumHydroxide.ncmat;incoh_elas=0;inelas=0;sans=0;temp=3000
+   incohelas: CaO2H2_sg164_CalciumHydroxide.ncmat;coh_elas=0;inelas=0;sans=0;temp=3000
+   inelas: CaO2H2_sg164_CalciumHydroxide.ncmat;coh_elas=0;incoh_elas=0;sans=0;temp=3000
+CaO2H2_sg164_CalciumHydroxide.ncmat;temp=5000K
+NCrystal WARNING: VDOS expansion could only reach Emax=0.490569eV and not the target Emax=5eV
+   ['coh_elas', 'incoh_elas', 'inelas']
+   cohelas: CaO2H2_sg164_CalciumHydroxide.ncmat;incoh_elas=0;inelas=0;sans=0;temp=5000
+   incohelas: CaO2H2_sg164_CalciumHydroxide.ncmat;coh_elas=0;inelas=0;sans=0;temp=5000
+   inelas: CaO2H2_sg164_CalciumHydroxide.ncmat;coh_elas=0;incoh_elas=0;sans=0;temp=5000
+CaO2H2_sg164_CalciumHydroxide.ncmat;temp=2000K;vdoslux=1
+NCrystal WARNING: VDOS expansion could only reach Emax=4.34373eV and not the target Emax=5eV
+   ['coh_elas', 'incoh_elas', 'inelas']
+   cohelas: CaO2H2_sg164_CalciumHydroxide.ncmat;incoh_elas=0;inelas=0;sans=0;temp=2000;vdoslux=1
+   incohelas: CaO2H2_sg164_CalciumHydroxide.ncmat;coh_elas=0;inelas=0;sans=0;temp=2000;vdoslux=1
+   inelas: CaO2H2_sg164_CalciumHydroxide.ncmat;coh_elas=0;incoh_elas=0;sans=0;temp=2000;vdoslux=1
+Al_sg225.ncmat;comp=inelas
+   ['inelas']
+   inelas: Al_sg225.ncmat;coh_elas=0;incoh_elas=0;sans=0
+phases<0.5*Al_sg225.ncmat;vdoslux=1&0.5*Cu_sg225.ncmat>
+   ['coh_elas', 'incoh_elas', 'inelas']
+   cohelas: phases<0.5*Al_sg225.ncmat;vdoslux=1&0.5*Cu_sg225.ncmat>;incoh_elas=0;inelas=0;sans=0
+   incohelas: phases<0.5*Al_sg225.ncmat;vdoslux=1&0.5*Cu_sg225.ncmat>;coh_elas=0;inelas=0;sans=0
+   inelas: phases<0.5*Al_sg225.ncmat;vdoslux=1&0.5*Cu_sg225.ncmat>;coh_elas=0;incoh_elas=0;sans=0
+gasmix::He
+   ['inelas']
+   inelas: gasmix::He;coh_elas=0;incoh_elas=0;sans=0
+raw data: ['coh_elas', 'incoh_elas', 'inelas']
