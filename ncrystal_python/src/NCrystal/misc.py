@@ -311,18 +311,11 @@ def cfgstr_detect_components( cfgstr ):
     cfg-strings: [(cfgstr1,compname1), (cfgstr2,compname2),...].
 
     """
-    #Normalise original cfg (so syntax errors will refer to the cfgstr as
-    #originally specified), and add flags which cause initialisation speedup
-    #without affecting which components are present:
+    from ._miscimpl import detect_scatcomps
     from .cfgstr import normaliseCfg
-    from .core import createScatter
-    probecfgstr = normaliseCfg(cfgstr) + ';vdoslux=0'
-    res=[]
-    for ct in standard_comp_types:
-        extracfg = f';comp={ct}'
-        if not createScatter( probecfgstr + extracfg ).isNull():
-            res.append( ( normaliseCfg(cfgstr+extracfg), ct.replace('_','') ) )
-    return res
+    return [ ( normaliseCfg(f'{cfgstr};comp={ct}'), ct.replace('_','') )
+             for ct in detect_scatcomps( standard_comp_types,
+                                         MaterialSource( cfgstr ) ) ]
 
 def evaluate_query( query, unpack=True, readonly = False,
                     huge_arrays = False ):
