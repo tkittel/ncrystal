@@ -149,6 +149,27 @@ if ( DEFINED SKBUILD_PROJECT_NAME )
   endif()
 endif()
 
+#A static library is built when BUILD_SHARED_LIBS is set to a false value. It
+#can not be used by the Python module, dynamic plugins, or the full tests:
+if ( DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS )
+  set( ncrystal_static_lib ON )
+  if ( DEFINED SKBUILD_PROJECT_NAME )
+    message( FATAL_ERROR "BUILD_SHARED_LIBS=OFF (static library) is not"
+      " supported when building ncrystal-core with pip/scikit-build-core"
+      " (the Python module needs the shared library)" )
+  endif()
+  if ( NCRYSTAL_ENABLE_TESTING )
+    message( FATAL_ERROR "BUILD_SHARED_LIBS=OFF (static library) is not"
+      " supported with NCRYSTAL_ENABLE_TESTING (the tests need the shared"
+      " library)" )
+  endif()
+  if ( NCRYSTAL_ENABLE_DYNLOAD )
+    _ncrystal_option_force( NCRYSTAL_ENABLE_DYNLOAD OFF )
+  endif()
+else()
+  set( ncrystal_static_lib OFF )
+endif()
+
 if ( NCRYSTAL_ENABLE_TESTING AND NCRYSTAL_ENABLE_CORE_TESTING )
   message( FATAL_ERROR
     "Enabling both NCRYSTAL_ENABLE_TESTING"
@@ -527,7 +548,11 @@ if ( NOT NCRYSTAL_ENABLE_THREADS STREQUAL "OFF" )
 endif()
 
 #NCrystal library and header files, including optional built-in modules if enabled:
-add_library( NCrystal SHARED ${ncpkg_all_ncrystal_lib_srcfiles} )
+if ( ncrystal_static_lib )
+  add_library( NCrystal STATIC ${ncpkg_all_ncrystal_lib_srcfiles} )
+else()
+  add_library( NCrystal SHARED ${ncpkg_all_ncrystal_lib_srcfiles} )
+endif()
 
 #Make sure client code will use at least c++11:
 target_compile_features( NCrystal INTERFACE cxx_std_11 )
@@ -581,7 +606,9 @@ else()
 endif()
 
 set_target_common_props( NCrystal )
-target_link_libraries( NCrystal PRIVATE ncrystal_common )
+#BUILD_INTERFACE since ncrystal_common is not exported (static libraries export
+#their private link dependencies):
+target_link_libraries( NCrystal PRIVATE $<BUILD_INTERFACE:ncrystal_common> )
 target_include_directories(
   NCrystal
   PRIVATE "${PROJECT_SOURCE_DIR}/src"

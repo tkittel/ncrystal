@@ -248,6 +248,7 @@ nccfg_strlist nccfg_show_item_list(void)
     "has_examples",
     //"has_g4hooks",
     "has_modify_rpath",
+    "has_shared_lib",
     "has_threads",
     "includedir",
     "intversion",
@@ -277,6 +278,10 @@ mcu8str nccfg_show_item_lookup( nccfgstate* state,
   //Lookup string value of named item. Returns invalid string (with
   //c_str=nullptr) in case name not recognised. Synchronize with implementation
   //of nccfg_show_item_list function).
+
+  //Static builds have no shared library:
+  if ( !nccfg_boolopt_shared_lib() && !strncmp( item, "shlib", 5 ) )
+    return mcu8str_view_cstr("n/a (static library)");
 
   //All options (libpath first since it might be used by e.g. the python
   //modules):
@@ -337,6 +342,8 @@ mcu8str nccfg_show_item_lookup( nccfgstate* state,
       val = nccfg_boolopt_examples();
     //else if ( NCCFG_STREQUALCONST(item,"has_g4hooks") )
     //  val = nccfg_boolopt_g4hooks();
+    else if ( NCCFG_STREQUALCONST(item,"has_shared_lib") )
+      val = nccfg_boolopt_shared_lib();
     else if ( NCCFG_STREQUALCONST(item,"has_modify_rpath") )
       val = nccfg_boolopt_modify_rpath();
     else if ( NCCFG_STREQUALCONST(item,"has_threads") )
@@ -365,6 +372,13 @@ int nccfg_mode_show( nccfgstate* state,
   }
 
   for ( const char ** item = itemB; item != itemE; ++item ) {
+    if ( !nccfg_boolopt_shared_lib() && !strncmp( *item, "shlib", 5 ) ) {
+      mcu8str cmdname = nccfg_thiscmdname(state);
+      fprintf(stderr,"%s: error: Item \"%s\" not available since NCrystal"
+              " was built as a static library.\n", cmdname.c_str, *item);
+      mcu8str_dealloc(&cmdname);
+      return 1;
+    }
     mcu8str res = nccfg_show_item_lookup( state, *item );
     if ( res.c_str ) {
       printf("%s\n",res.c_str);

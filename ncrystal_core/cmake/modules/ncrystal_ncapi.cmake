@@ -48,9 +48,9 @@ function( nccfgapp_create_ncapi_h resvar_includepath )
     #environment:
     string( APPEND ncapidefs "#define NCRYSTAL_DISABLE_CMDLINEPLUGINMGR\n")
   endif()
-  if ( WIN32 AND NCRYSTAL_WINEXPORTALL )
+  if ( WIN32 AND ( NCRYSTAL_WINEXPORTALL OR ncrystal_static_lib ) )
     #prevent __declspec(dllexport/import) since compiling with CMake
-    #WINDOWS_EXPORT_ALL_SYMBOLS:
+    #WINDOWS_EXPORT_ALL_SYMBOLS or as a static library:
     string( APPEND ncapidefs "#define NCRYSTAL_PREVENT_WINDLLEXPORT\n")
   endif()
   include( ncrystal_fmadispatch )

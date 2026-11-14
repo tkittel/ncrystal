@@ -109,6 +109,12 @@ if ( "@ncrystal_skbuild_shlib_in_wheel_scripts@" )
   endfunction()
 endif()
 
+#Static NCrystal libraries export their thread dependency:
+if ( "@ncrystal_static_lib@" AND "@_ncrystal_actual_enable_threads@" )
+  include( CMakeFindDependencyMacro )
+  find_dependency( Threads )
+endif()
+
 #The NCrystal targets (not including the G4NCrystal targets!):
 if(NOT TARGET NCrystal::NCrystal)
   include( "${NCrystal_CMAKEDIR}/NCrystalTargets.cmake" )
