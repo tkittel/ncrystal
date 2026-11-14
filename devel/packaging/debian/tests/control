@@ -1,0 +1,5 @@
+Test-Command: ncrystal-verify --allow-missing endf-parserpy
+Depends: ncrystal, python3-ncrystal-verify, python3-matplotlib,
+ python3-spglib, python3-gemmi, python3-ase, python3-mpmath,
+ cmake, g++
+Restrictions: allow-stderr

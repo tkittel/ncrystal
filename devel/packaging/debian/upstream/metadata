@@ -1,0 +1,27 @@
+Bug-Database: https://github.com/mctools/ncrystal/issues
+Bug-Submit: https://github.com/mctools/ncrystal/issues/new
+Documentation: https://github.com/mctools/ncrystal/wiki
+Repository: https://github.com/mctools/ncrystal.git
+Repository-Browse: https://github.com/mctools/ncrystal
+Reference:
+ - Author: X.-X. Cai and T. Kittelmann
+   Title: "NCrystal: A library for thermal neutron transport"
+   Journal: Computer Physics Communications
+   Volume: 246
+   Year: 2020
+   Pages: 106851
+   DOI: 10.1016/j.cpc.2019.07.015
+ - Author: T. Kittelmann and X.-X. Cai
+   Title: "Elastic neutron scattering models for NCrystal"
+   Journal: Computer Physics Communications
+   Volume: 267
+   Year: 2021
+   Pages: 108082
+   DOI: 10.1016/j.cpc.2021.108082
+ - Author: X.-X. Cai and T. Kittelmann and others
+   Title: "Rejection-based sampling of inelastic neutron scattering"
+   Journal: Journal of Computational Physics
+   Volume: 380
+   Year: 2019
+   Pages: 400-407
+   DOI: 10.1016/j.jcp.2018.11.043

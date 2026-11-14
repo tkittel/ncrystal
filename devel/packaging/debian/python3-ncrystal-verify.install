@@ -1,0 +1,4 @@
+usr/bin/ncrystal-verify
+usr/share/man/man1/ncrystal-verify.1
+usr/lib/python3*/dist-packages/_ncrystal_verify
+usr/lib/python3*/dist-packages/ncrystal_verify-*.dist-info

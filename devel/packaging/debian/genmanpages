@@ -1,0 +1,77 @@
+#!/usr/bin/python3
+
+#Generates man pages for all commands in <destdir>/usr/bin into
+#<destdir>/usr/share/man/man1, from the argparse parsers of the NCrystal
+#command-line modules (or the --help output of the other commands).
+
+import os
+import pathlib
+import subprocess
+import sys
+import tomllib
+
+def roff_escape( s ):
+    return s.replace('\\','\\e').replace('-','\\-')
+
+def page_from_helptext( name, descr, helptext ):
+    import NCrystal
+    out = [ f'.TH {name.upper()} 1 "" "NCrystal {NCrystal.__version__}"'
+            ' "NCrystal"',
+            '.SH NAME',
+            f'{roff_escape(name)} \\- {roff_escape(descr)}',
+            '.SH DESCRIPTION',
+            '.nf' ]
+    for line in helptext.splitlines():
+        line = roff_escape(line)
+        out.append( ( '\\&' + line ) if line.startswith(('.',"'")) else line )
+    out.append('.fi')
+    return '\n'.join(out)+'\n'
+
+def main():
+    destdir = pathlib.Path(sys.argv[1]).absolute()
+    srcdir = pathlib.Path(__file__).absolute().parent.parent
+    sitepkgs, = destdir.glob('usr/lib/python3*/dist-packages')
+    sys.path.insert(0,str(sitepkgs))
+    libs = list(destdir.glob('usr/lib/*/libNCrystal.so.*'))
+    assert len(libs)==1, libs
+    os.environ['NCRYSTAL_LIB'] = str(libs[0])
+    env = dict( os.environ, PYTHONPATH = str(sitepkgs) )
+    from argparse_manpage.manpage import Manpage
+    import NCrystal
+    from NCrystal._clientry import generate_usage
+    mandir = destdir / 'usr/share/man/man1'
+    mandir.mkdir( parents = True, exist_ok = True )
+    pyproj = tomllib.loads( ( srcdir / 'ncrystal_python/pyproject.toml' )
+                            .read_text() )
+    pages = {}
+    for name, entry in pyproj['project']['scripts'].items():
+        modname = entry.split(':')[0]
+        if modname == 'NCrystal._clientry':
+            pages[name] = page_from_helptext(
+                name, 'NCrystal command-line tools',
+                generate_usage( return_list = False ) )
+            continue
+        import importlib
+        mod = importlib.import_module( modname )
+        parser = mod.create_argparser_for_sphinx( name )
+        parser.man_short_description = mod.climod_metadata()['descr']
+        mp = Manpage( parser )
+        mp.source = f'NCrystal {NCrystal.__version__}'
+        mp.manual = 'NCrystal'
+        pages[name] = str( mp )
+    cfgcmd = destdir / 'usr/bin/ncrystal-config'
+    pages['ncrystal-config'] = page_from_helptext(
+        'ncrystal-config', 'information about the NCrystal installation',
+        subprocess.run( [ str(cfgcmd), '--help' ], env = env, check = True,
+                        capture_output = True, text = True ).stdout )
+    pages['ncrystal-verify'] = page_from_helptext(
+        'ncrystal-verify', 'run the NCrystal tests on the installed NCrystal',
+        subprocess.run( [ sys.executable, str(destdir/'usr/bin/ncrystal-verify'),
+                          '--help' ], env = env, check = True,
+                        capture_output = True, text = True ).stdout )
+    for name, content in sorted( pages.items() ):
+        ( mandir / f'{name}.1' ).write_text( content )
+        print(f'genmanpages: wrote {name}.1')
+
+if __name__ == '__main__':
+    main()

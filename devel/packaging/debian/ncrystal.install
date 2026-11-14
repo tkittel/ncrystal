@@ -1,0 +1,8 @@
+usr/bin/nctool
+usr/bin/ncrystal
+usr/bin/ncrystal_*
+usr/bin/ncrystal-config
+usr/share/man/man1/nctool.1
+usr/share/man/man1/ncrystal.1
+usr/share/man/man1/ncrystal_*.1
+usr/share/man/man1/ncrystal-config.1

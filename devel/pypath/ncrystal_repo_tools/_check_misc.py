@@ -29,6 +29,11 @@ ignore_list_nonascii = {
     'devel/plugin_database.yml',
 }
 
+#Makefiles need TABs:
+ignore_list_tabs = {
+    'devel/packaging/debian/rules',
+}
+
 def main():
 
     import platform
@@ -105,7 +110,7 @@ def main():
 
         lines = content.splitlines()
         for e in lines:
-            if '\t' in e:
+            if '\t' in e and frel not in ignore_list_tabs:
                 raise SystemExit(f'TABs found in {f}')
             if ( e.endswith(' ')
                  and not frel.startswith('tests/data/refnc1/')

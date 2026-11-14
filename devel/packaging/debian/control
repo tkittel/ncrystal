@@ -1,0 +1,86 @@
+Source: ncrystal
+Section: science
+Priority: optional
+Maintainer: NCrystal developers <ncrystal-developers@cern.ch>
+Build-Depends: debhelper-compat (= 13),
+               cmake,
+               dh-sequence-python3,
+               pybuild-plugin-pyproject,
+               python3-all,
+               python3-setuptools,
+               python3-scikit-build-core,
+               python3-argparse-manpage,
+               python3-numpy
+Standards-Version: 4.7.2
+Homepage: https://mctools.github.io/ncrystal/
+Vcs-Git: https://github.com/mctools/ncrystal.git
+Vcs-Browser: https://github.com/mctools/ncrystal
+Rules-Requires-Root: no
+
+Package: libncrystal4
+Section: libs
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: thermal neutron transport in crystals and other materials (library)
+ NCrystal is a library for thermal neutron transport in crystals and other
+ materials, used by Monte Carlo simulation codes and analysis tools. It
+ includes a library of standard material data.
+ .
+ This package contains the shared library.
+
+Package: libncrystal-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: libncrystal4 (= ${binary:Version}), ${misc:Depends}
+Description: thermal neutron transport in crystals and other materials (headers)
+ NCrystal is a library for thermal neutron transport in crystals and other
+ materials, used by Monte Carlo simulation codes and analysis tools.
+ .
+ This package contains the C and C++ headers and CMake configuration files.
+
+Package: python3-ncrystal
+Section: python
+Architecture: all
+Depends: libncrystal4 (>= ${source:Version}),
+         libncrystal4 (<< ${source:Version}.1~),
+         ${python3:Depends},
+         ${misc:Depends}
+Suggests: python3-matplotlib, python3-spglib, python3-gemmi, python3-ase
+Description: thermal neutron transport in crystals and other materials (Python)
+ NCrystal is a library for thermal neutron transport in crystals and other
+ materials, used by Monte Carlo simulation codes and analysis tools.
+ .
+ This package contains the NCrystal Python module.
+
+Package: python3-ncrystal-verify
+Section: python
+Architecture: all
+Depends: python3-ncrystal (= ${source:Version}), ${python3:Depends},
+         ${misc:Depends}
+Description: thermal neutron transport in crystals and other materials (tests)
+ NCrystal is a library for thermal neutron transport in crystals and other
+ materials, used by Monte Carlo simulation codes and analysis tools.
+ .
+ This package contains the ncrystal-verify command, which runs the NCrystal
+ test suite against the installed NCrystal.
+
+Package: ncrystal
+Architecture: any
+Depends: python3-ncrystal (= ${source:Version}),
+         libncrystal-dev (= ${binary:Version}),
+         ${shlibs:Depends},
+         ${python3:Depends},
+         ${misc:Depends}
+Recommends: python3-matplotlib,
+            python3-spglib,
+            python3-gemmi,
+            python3-ncrystal-verify
+Suggests: python3-ase
+Description: thermal neutron transport in crystals and other materials
+ NCrystal is a library for thermal neutron transport in crystals and other
+ materials, used by Monte Carlo simulation codes and analysis tools.
+ .
+ This package contains the command-line tools (ncrystal, nctool,
+ ncrystal-config, ...), and depends on all other NCrystal packages.

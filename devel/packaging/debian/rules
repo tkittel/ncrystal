@@ -1,0 +1,38 @@
+#!/usr/bin/make -f
+
+#Packaging template for Debian, see devel/packaging/README.md.
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export PYBUILD_SYSTEM = pyproject
+export PYBUILD_DESTDIR = debian/tmp
+
+#dh_auto_test only runs the core tests, the Python ones need the installed
+#packages and run via autopkgtest (debian/tests):
+COREOPTS = -DNCRYSTAL_MODIFY_RPATH=OFF -DNCRYSTAL_ENABLE_CORE_TESTING=ON
+
+#Runs dh_auto_$(1) with pybuild for both Python projects (separate PYBUILD_NAME
+#values keep their build directories apart):
+define pysteps
+PYBUILD_NAME=ncrystal dh_auto_$(1) --buildsystem=pybuild \
+  --sourcedirectory=ncrystal_python
+PYBUILD_NAME=ncrystal-verify dh_auto_$(1) --buildsystem=pybuild \
+  --sourcedirectory=ncrystal_verify
+endef
+
+%:
+	dh $@ --buildsystem=cmake --sourcedirectory=ncrystal_core
+
+override_dh_auto_configure:
+	dh_auto_configure -- $(COREOPTS)
+	$(call pysteps,configure)
+
+override_dh_auto_build:
+	dh_auto_build
+	$(call pysteps,build)
+
+override_dh_auto_install:
+	dh_auto_install
+	$(call pysteps,install)
+
+execute_after_dh_auto_install:
+	debian/genmanpages debian/tmp
