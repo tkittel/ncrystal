@@ -115,5 +115,28 @@ int main()
   auto cf_h2o = testChemForm("H2O");
   auto cf_oh2 = testChemForm("OH2");
   nc_assert_always( cf_h2o == cf_oh2);
+  //Not simple formulas (but general ones, see below):
+  testChemForm("Al1.0");
+  testChemForm("D2O");
+  testChemForm("C60.5 H57");
+
+  //General formulas (fractional counts, isotope aliases D and T):
+  for ( const char * s : { "Al2O3", "C60.5 H57 Cl Ir4", "Cu0.92 Zn.08",
+                           "D2O", "T", "H2 O", " Fe ", "Al1.0", "Al2.", "Al0",
+                           "Al0.0", "Al1..2", "Al.", "X2", "Xx", "al2", "",
+                           "Al2 (O3)", "H1e2", "Fe1000000001" } ) {
+    std::cout << "General chem form \"" << s << "\":";
+    auto t = NC::tryDecodeChemicalFormula( s );
+    if ( !t.has_value() )
+      std::cout << " invalid";
+    else
+      for ( auto& e : t.value() )
+        std::cout << " " << NC::fmt( e.first ) << "*"
+                  << ( e.second.isElement()
+                       ? NC::elementZToName( e.second.Z() )
+                       : "Z" + std::to_string( e.second.Z() ) + "A"
+                       + std::to_string( e.second.A() ) );
+    std::cout << std::endl;
+  }
 
 }

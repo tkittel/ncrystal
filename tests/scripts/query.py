@@ -28,8 +28,13 @@ from NCTestUtils.env import ncsetenv
 from NCTestUtils.common import ensure_error
 from argparse import ArgumentError
 import shlex
+import json
 import pathlib
 from NCrystalDev.misc import evaluate_query as ncquery
+
+def raw( *items ):
+    #Items passed verbatim as one argument (cf. the sgsym and cif queries):
+    return [ 'RAWDATA', '@' + '@'.join( items ) ]
 
 def safefmt(s):
     return str(s).encode('unicode_escape').decode('utf-8')
@@ -177,6 +182,7 @@ def main():
                       " with grids encoded as '@val1@..@valn')"):
         test('sab','surveyor','@1@2@x','@1@2')
     test_atomsites()
+    test_cif()
     test_cli('util','wl2ekin','1.8')
     test_cli('util','ekin2wl','0.025')
     test_cli('util','eqrefl','relaxed','149','1,2,3','1,1,0')
@@ -202,10 +208,26 @@ def main():
     test_cli('sgsym','fromhm','R -3 m')
     test_cli('sgsym','fromhm','C m c e')
     test_cli('sgsym','fromhm','C -1')#(no tabulated setting)
-    test( 'sgsym','fromhall','-P 2ybc' )#(programmatic: no "--" needed)
+    test_cli('sgsym','fromnumber','227')
+    test_cli('sgsym','fromnumber','14')
+    test_cli('sgsym','fromnumber','225')
+    for bad in ( '0', '231', 'x', '1.0' ):
+        with ensure_error( NCBadInput, 'Invalid sgsym query: ["sgsym",'
+                           f'"fromnumber","{bad}"] (correct usage: ["sgsym",'
+                           '"fromnumber",N], with N in 1..230)' ):
+            ncquery( [ 'sgsym', 'fromnumber', bad ] )
+    test( 'sgsym','fromhall',*raw('-P 2ybc') )#(raw data: no "@" needed)
+    test( 'sgsym','fromops','x,y,z',*raw('-x,-y,-z','x+1/2,y,z') )
+    test( 'sgsym','fromops',*raw('x,y,z','-x,-y,-z'),'@x+1/2,y,z' )
+    test( 'sgsym','fromops','RAWDATA','|x,y,z|-x,-y,-z' )
+    for bad in ( [ 'RAWDATA' ], [ 'RAWDATA', '' ] ):
+        with ensure_error(NCBadInput,'Invalid JSON query ("RAWDATA" must be'
+                          ' followed by a separator character and the items'
+                          ' separated by it)'):
+            ncquery( [ 'sgsym', 'fromops', 'x,y,z', *bad ] )
     #Cell parameters snapped to the constraints of a setting (printed values
     #with rounding errors with lenient tolerances):
-    test_cli('sgsym','cell','lenient','225','4.123(2)','4.124','4.1234','90','90.0','90')
+    test_cli('sgsym','cell','lenient','225',*raw('4.123(2)','4.124','4.1234','90','90.0','90'))
     test_cli('sgsym','cell','strict','194','3','3','5','90','90','120')
     with ensure_error(NCBadInput,'Lattice parameters a and b must be equal for'
                       ' this space group (got a=4.123 and b=4.124)'):
@@ -398,6 +420,34 @@ def test_atomsites():
         ncquery( [ 'sgsym', 'positions', *pm, 'O,0.1,0.005,0.2' ] )
     test_uij()
 
+def test_cif():
+    test( 'cif', 'list' )
+    test( 'cif', 'numbers', *raw( '0.0283', '2344', '1.234e-2(6)', '3400e-6',
+                                  '-0.000', '0', '0.000(2)', '?', '.', '1,5',
+                                  '1.2(3)e-4', '1e999' ) )
+    test( 'cif', 'elements', 'typesymbol', *raw( 'O2-', 'Fe3+', 'CO', 'Co',
+                                                 'D', 'T+', 'Mn3.614+', 'Fe0',
+                                                 'O-2', 'D+1', 'Ag+1', '?',
+                                                 'Xx', 'O2+-', 'O+-2',
+                                                 'O-2-' ) )
+    test( 'cif', 'elements', 'label', *raw( 'Ca Co0.5 O3 C2 H Cl', 'CaM1',
+                                            'OA1', 'Fe12', 'D1', 'Ow1', 'X1',
+                                            'C', 'Co1', 'CO1', 'Cl(1)', 'Cs1',
+                                            'H01a', 'CL1', 'CA1' ) )
+    test( 'cif', 'elements', 'label', 'Al2O3' )
+    test( 'cif', 'elements', 'label', 'not a formula', 'Al1' )
+    for bad in ( [], [ 'label' ], [ 'bla', 'X' ] ):
+        with ensure_error( NCBadInput, 'Invalid cif query: '
+                           + json.dumps( [ 'cif', 'elements' ] + bad,
+                                         separators = ( ',', ':' ) )
+                           + ' (correct usage: ["cif","elements","typesymbol",'
+                           'STR,...] or ["cif","elements","label",FORMULA,'
+                           'STR,...])' ):
+            ncquery( [ 'cif', 'elements', *bad ] )
+    with ensure_error( NCBadInput,
+                       'Invalid cif query: ["cif","bla"] (unknown key)' ):
+        ncquery( [ 'cif', 'bla' ] )
+
 def rnd( o ):
     #Round floats (also nested) to 10 digits, for platform-stable printouts:
     if isinstance( o, float ):
@@ -463,8 +513,21 @@ def test_uij():
         ncquery( [ 'sgsym', 'sites', *pm, pos[0], 'O,0.1,0.7,0.2,0.5' ] )
     #Printed CIF numbers with uncertainties are accepted:
     r = ncquery( [ 'sgsym', 'positions', *pml,
-                   'O,0.1000(3),0,0.2000(2),0.0120(4),0.0090(3),0.0150(5),0,0.0030(2),0' ] )
+                   *raw( 'O,0.1000(3),0,0.2000(2),0.0120(4),0.0090(3),'
+                         '0.0150(5),0,0.0030(2),0' ) ] )
     print( 'printed CIF numbers:', rnd( r['sites'][0]['uij'] ) )
+    #Ueq and its rounding error from the printed tensor and cell (here the
+    #angles 90 printed without uncertainty are exact):
+    for c in ( '5,5.4,6,90,95,90', '5.0(1),5.4(2),6.0(1),90,95.0(3),90',
+               '5.0(1),5.4(2),6.0(1),90.0(1),95.0(3),90' ):
+        r = ncquery( [ 'sgsym', 'positions', 'strict', '6:b', 'lenient',
+                       *raw( c, 'O,0.1,0.3,0.2,0.0120(4),0.0090(3),0.0150(5),'
+                             '0.0020(2),0.0030(2),0.0010(1)' ) ] )
+        print( 'ueq in cell', c, ':', [ float( f'{v:.6g}' )
+                                         for v in r['sites'][0]['ueq'] ] )
+    r = ncquery( [ 'sgsym', 'positions', 'strict', '6:b', 'strict',
+                   '5,5.4,6,90,95,90', 'O,0.1,0.3,0.2' ] )
+    assert r['sites'][0]['ueq'] is None
 
 if __name__ == '__main__':
     main()

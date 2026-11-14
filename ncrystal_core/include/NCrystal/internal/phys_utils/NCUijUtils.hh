@@ -43,7 +43,7 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Real space metric (G_ij = a_i.a_j, row-major) and reciprocal axis
     //lengths a*_i (without 2pi factor), from cell parameters (angstrom and
-    //degrees):
+    //degrees). Throws BadInput if they do not form a valid cell:
     struct CellMetric {
       std::array<double,9> g;
       std::array<double,3> recilen;
@@ -60,6 +60,14 @@ namespace NCRYSTAL_NAMESPACE {
     //Equivalent isotropic displacement, trace(Ucart)/3:
     double calcUeqFromUstar( const Uij&, const CellMetric& );
 
+    //Ueq of a Ustd tensor in a cell, and an estimate of the largest error in
+    //it caused by the rounding errors of the tensor components and the cell
+    //parameters (exact for the components, as Ueq is linear in them, and to
+    //first order for the cell, by moving each parameter by its rounding
+    //error):
+    PairDD calcUeqWithRoundingError( const Uij& ustd, const CellParameters&,
+                                     const Uij& ustdRoundingErrors,
+                                     const CellParameters& cellRoundingErrors );
     //Whether the matrix is positive definite (forms related by congruence,
     //like Ustd, Ustar and Ucart, agree on this):
     bool isPositiveDefinite( const Uij& );

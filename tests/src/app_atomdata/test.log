@@ -419,3 +419,29 @@ Try decoding chem form "H2O"
 Try decoding chem form "OH2"
   -> Got 2 * H
   -> Got 1 * O
+Try decoding chem form "Al1.0"
+  -> Decoding failed!!
+Try decoding chem form "D2O"
+  -> Decoding failed!!
+Try decoding chem form "C60.5 H57"
+  -> Decoding failed!!
+General chem form "Al2O3": 2*Al 3*O
+General chem form "C60.5 H57 Cl Ir4": 60.5*C 57*H 1*Cl 4*Ir
+General chem form "Cu0.92 Zn.08": 0.92*Cu 0.08*Zn
+General chem form "D2O": 2*Z1A2 1*O
+General chem form "T": 1*Z1A3
+General chem form "H2 O": 2*H 1*O
+General chem form " Fe ": 1*Fe
+General chem form "Al1.0": 1*Al
+General chem form "Al2.": 2*Al
+General chem form "Al0": invalid
+General chem form "Al0.0": invalid
+General chem form "Al1..2": invalid
+General chem form "Al.": invalid
+General chem form "X2": invalid
+General chem form "Xx": invalid
+General chem form "al2": invalid
+General chem form "": invalid
+General chem form "Al2 (O3)": invalid
+General chem form "H1e2": invalid
+General chem form "Fe1000000001": 1000000001*Fe

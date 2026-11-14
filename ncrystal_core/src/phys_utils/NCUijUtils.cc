@@ -38,12 +38,15 @@ namespace NCRYSTAL_NAMESPACE {
 NCU::CellMetric NCU::cellMetric( double a, double b, double c,
                                  double alpha, double beta, double gamma )
 {
-#ifndef NDEBUG
-  nc_assert_always( a > 0.0 && b > 0.0 && c > 0.0 );
-  nc_assert_always( alpha > 0.0 && alpha < 180.0 );
-  nc_assert_always( beta > 0.0 && beta < 180.0 );
-  nc_assert_always( gamma > 0.0 && gamma < 180.0 );
-#endif
+  auto invalid = [a,b,c,alpha,beta,gamma]() {
+    NCRYSTAL_THROW2(BadInput,"Invalid unit cell parameters: a,b,c="<<fmt(a)
+                    <<","<<fmt(b)<<","<<fmt(c)<<" Aa, alpha,beta,gamma="
+                    <<fmt(alpha)<<","<<fmt(beta)<<","<<fmt(gamma)<<" degrees");
+  };
+  auto angleOK = []( double x ) { return x > 0.0 && x < 180.0; };
+  if ( !( a > 0.0 && b > 0.0 && c > 0.0 && std::isfinite( a + b + c )
+          && angleOK( alpha ) && angleOK( beta ) && angleOK( gamma ) ) )
+    invalid();
   //(reproducible, and exact for common angles like 90 and 120 degrees):
   const double ca = stable_sincos_deg( alpha ).cos;
   const double cb = stable_sincos_deg( beta ).cos;
@@ -59,7 +62,8 @@ NCU::CellMetric NCU::cellMetric( double a, double b, double c,
   const double c22 = g[0]*g[4] - g[1]*g[3];
   const double det = g[0]*c00 - g[1]*( g[3]*g[8] - g[5]*g[6] )
     + g[2]*( g[3]*g[7] - g[4]*g[6] );
-  nc_assert_always( det > 0.0 );
+  if ( !( det > 0.0 ) )
+    invalid();//(e.g. alpha=beta=gamma=150)
   m.recilen = { std::sqrt( c00 / det ), std::sqrt( c11 / det ),
                 std::sqrt( c22 / det ) };
   return m;
@@ -109,6 +113,40 @@ double NCU::calcUeqFromUstar( const Uij& u, const CellMetric& m )
     for ( unsigned j = 0; j < 3; ++j )
       s.add( u[uijIdx( i, j )] * m.g[3*i+j] );
   return s.sum() / 3.0;
+}
+
+NC::PairDD NCU::calcUeqWithRoundingError( const Uij& u,
+                                          const CellParameters& c,
+                                          const Uij& uerr,
+                                          const CellParameters& cerr )
+{
+  auto ueqIn = [&u]( const CellParameters& x ) {
+    const auto m = cellMetric( x.a, x.b, x.c, x.alpha, x.beta, x.gamma );
+    return calcUeqFromUstar( convertUstdToUstar( u, m ), m );
+  };
+  const auto m = cellMetric( c.a, c.b, c.c, c.alpha, c.beta, c.gamma );
+  const double ueq = calcUeqFromUstar( convertUstdToUstar( u, m ), m );
+  StableSum err;
+  for ( auto i : ncrange( 6 ) ) {
+    if ( !uerr[i] )
+      continue;
+    Uij unit{};
+    unit[i] = 1.0;
+    err.add( ncabs( calcUeqFromUstar( convertUstdToUstar( unit, m ), m ) )
+             * uerr[i] );
+  }
+  double CellParameters::* const params[6]
+    = { &CellParameters::a, &CellParameters::b, &CellParameters::c,
+        &CellParameters::alpha, &CellParameters::beta,
+        &CellParameters::gamma };
+  for ( auto p : params ) {
+    if ( !( cerr.*p ) )
+      continue;
+    CellParameters x = c;
+    x.*p += cerr.*p;
+    err.add( ncabs( ueqIn( x ) - ueq ) );
+  }
+  return { ueq, err.sum() };
 }
 
 bool NCU::isPositiveDefinite( const Uij& u )

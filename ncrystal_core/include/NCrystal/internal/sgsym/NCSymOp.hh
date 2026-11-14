@@ -44,8 +44,9 @@ namespace NCRYSTAL_NAMESPACE {
   //_space_group_symop_operation_xyz): lower case, no spaces, and translations
   //last. When parsing, spaces, upper case letters, translations before
   //variables ("1/2+x"), any order of terms, and leading "+" signs are also
-  //accepted. Translations must be integers or fractions (not decimals) which
-  //are exact multiples of 1/24.
+  //accepted. Translations must be integers, fractions or decimals (e.g. "0.5"
+  //or ".25", as written by some CIF programs) which are exact multiples of
+  //1/24 (so "0.333" is rejected).
 
   class SymOp final {
   public:

@@ -604,6 +604,14 @@ Accepted input:
   "x,y,z-1/24" -> x,y,z+23/24
   "-x+y,-x,z+2/3" -> -x+y,-x,z+2/3
   "y,x,-z+5/12" -> y,x,-z+5/12
+  "x+0.5,y,z" -> x+1/2,y,z
+  "x,y,z+.5" -> x,y,z+1/2
+  "-x+0.5,y+0.5,-z" -> -x+1/2,y+1/2,-z
+  "-x, 0.500+y, 0.500-z" -> -x,y+1/2,-z+1/2
+  "x+0.25,y-0.75,z" -> x+1/4,y+1/4,z
+  "x+0.125,y,z" -> x+1/8,y,z
+  "x+1.5,y,z" -> x+1/2,y,z
+  "x+5.,y,z" -> x,y,z
 Invalid input:
   "" -> BadInput: Invalid symmetry operation "": expected three comma-separated components
   "x,y" -> BadInput: Invalid symmetry operation "x,y": expected three comma-separated components
@@ -613,8 +621,14 @@ Invalid input:
   "x,x,z" -> BadInput: Invalid symmetry operation "x,x,z": Symmetry operations must have a rotation part belonging to point group m-3m with orthogonal-type axes (i.e. a signed permutation matrix) or point group 6/mmm with hexagonal axes
   "x+y+z,y,z" -> BadInput: Invalid symmetry operation "x+y+z,y,z": Symmetry operations must have a rotation part belonging to point group m-3m with orthogonal-type axes (i.e. a signed permutation matrix) or point group 6/mmm with hexagonal axes
   "x+1/5,y,z" -> BadInput: Invalid symmetry operation "x+1/5,y,z": translations must be multiples of 1/24
-  "x+0.5,y,z" -> BadInput: Invalid symmetry operation "x+0.5,y,z": decimal translations are not supported (use fractions like 1/2)
-  "x,y,z+.5" -> BadInput: Invalid symmetry operation "x,y,z+.5": decimal translations are not supported (use fractions like 1/2)
+  "x+0.3,y,z" -> BadInput: Invalid symmetry operation "x+0.3,y,z": translations must be multiples of 1/24
+  "x+0.333,y,z" -> BadInput: Invalid symmetry operation "x+0.333,y,z": translations must be multiples of 1/24
+  "x+0.3333333,y,z" -> BadInput: Invalid symmetry operation "x+0.3333333,y,z": number too long
+  "x+.,y,z" -> BadInput: Invalid symmetry operation "x+.,y,z": invalid number
+  "x+0.5.5,y,z" -> BadInput: Invalid symmetry operation "x+0.5.5,y,z": invalid number
+  "x+0.5/2,y,z" -> BadInput: Invalid symmetry operation "x+0.5/2,y,z": invalid fraction
+  "x+1/2.0,y,z" -> BadInput: Invalid symmetry operation "x+1/2.0,y,z": invalid number
+  "x+0.5x,y,z" -> BadInput: Invalid symmetry operation "x+0.5x,y,z": coefficients of x, y, z must be +1 or -1
   "a,b,c" -> BadInput: Invalid symmetry operation "a,b,c": unexpected character
   "x y,y,z" -> BadInput: Invalid symmetry operation "x y,y,z": missing sign between terms
   "x+,y,z" -> BadInput: Invalid symmetry operation "x+,y,z": incomplete term
