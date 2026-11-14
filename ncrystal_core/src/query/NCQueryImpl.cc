@@ -30,7 +30,16 @@ void NC::QueryImpl::validateQuery( const Query& query )
     NCRYSTAL_THROW2(BadInput,
                     "Invalid JSON query (query is empty)");
 
+  //An argument following one with the exact content "RAWDATA" is exempted
+  //from the checks below (e.g. for raw NCMAT data):
+  constexpr auto sv_rawdata = StrView::make("RAWDATA");
+  bool rawdata = false;
   for ( auto& e : query ) {
+    if ( rawdata ) {
+      rawdata = false;
+      continue;
+    }
+    rawdata = ( e == sv_rawdata );
     //Enforce lack of leading '-' in query strings to make it easier to accept
     //query strings from the command line, and in general not allowing more
     //chars than absolutely necessary to accept NCrystal cfg-strings.
