@@ -84,12 +84,24 @@ int main()
   for ( const char * s : { "O", "O2-", "Fe3+", "Fe0", "Mn3.614+", "T", "T+", "D",
                            "D0", "h", "c", "cl", "zn", "MO", "AL", "CO", "Co", "co",
                            "Cl1-", " Na+ ", "OW", "Ow", "X", "Xx", "C_ar", "O2-x",
-                           "Fe 3+", "", "?", ".", "1", "2+" } )
+                           "Fe 3+", "", "?", ".", "1", "2+", "O-2", "D+1",
+                           "Ag+1", "Mn-3.5", "O+-2", "O-2-", "O--" } )
     showElement( "type symbol", s, NC::elementFromCIFTypeSymbol( s ) );
-  for ( const char * s : { "CaM1", "OA1", "Fe12", "Fe1", "F1", "C1", "CO1", "Co1",
-                           "D1", "T2", "H1A", "Ow1", "OW1", "X1", "C", "1", "Na 1",
-                           "NaA B2", "Fe1a2", "" } )
-    showElement( "label", s, NC::elementFromCIFLabel( s ) );
+  //Labels, checked against chemical formulas:
+  const char * formulas[] = { "C19 H14 Cl Fe N O7", "Ca O3 Si", "Cs Cl",
+                              "C12 H10 Co0.5 O2.5", "H2 O", "D2 O", "Al2O3",
+                              "Al2 O3 X", "" };
+  for ( const char * f : formulas ) {
+    std::cout << "formula \"" << f << "\":" << std::endl;
+    for ( const char * s : { "Cl1", "Cl(1)", "C1", "Cs1", "Co1", "Ca1", "CaM1",
+                             "Fe1", "F1", "H01a", "Ho1", "Ow1", "D1", "T1",
+                             "O(1)", "Al", "X1", "1", "", "CL(1)", "CL1",
+                             "CS1", "CA1" } ) {
+      auto e = NC::elementFromCIFLabel( s, f );
+      if ( e.has_value() )
+        showElement( "  label", s, e );
+    }
+  }
 
   //Rounding errors are exact multiples of powers of ten where possible:
   REQUIRE( NC::parseCIFNumber( "2344" ).value().roundingError == 0.5 );

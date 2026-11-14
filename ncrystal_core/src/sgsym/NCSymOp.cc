@@ -161,13 +161,9 @@ namespace NCRYSTAL_NAMESPACE {
           ++i;
           continue;
         }
-        if ( !( ch >= '0' && ch <= '9' ) ) {
-          if ( ch == '.' )
-            throwBadStr( full, "decimal translations are not supported"
-                         " (use fractions like 1/2)" );
+        if ( !( ch >= '0' && ch <= '9' ) && ch != '.' )
           throwBadStr( full, "unexpected character" );
-        }
-        //Integer or fraction:
+        //Integer, fraction or decimal (exact, e.g. "0.5" or ".25"):
         auto readUInt = [&full,&c,&i,n]()
         {
           std::int64_t v = 0;
@@ -180,9 +176,23 @@ namespace NCRYSTAL_NAMESPACE {
           }
           return v;
         };
-        const std::int64_t num = readUInt();
+        std::int64_t num = ( ch == '.' ? 0 : readUInt() );
         std::int64_t den = 1;
-        if ( i < n && c[i] == '/' ) {
+        if ( i < n && c[i] == '.' ) {
+          ++i;
+          unsigned nfrac = 0;
+          while ( i < n && c[i] >= '0' && c[i] <= '9' ) {
+            if ( ++nfrac > 6 )
+              throwBadStr( full, "number too long" );
+            num = 10 * num + ( c[i] - '0' );
+            den *= 10;
+            ++i;
+          }
+          if ( ch == '.' && !nfrac )
+            throwBadStr( full, "invalid number" );
+          if ( i < n && c[i] == '/' )
+            throwBadStr( full, "invalid fraction" );
+        } else if ( i < n && c[i] == '/' ) {
           ++i;
           if ( !( i < n && c[i] >= '0' && c[i] <= '9' ) )
             throwBadStr( full, "invalid fraction" );
@@ -191,8 +201,7 @@ namespace NCRYSTAL_NAMESPACE {
             throwBadStr( full, "division by zero" );
         }
         if ( i < n && ( c[i] == '.' ) )
-          throwBadStr( full, "decimal translations are not supported"
-                       " (use fractions like 1/2)" );
+          throwBadStr( full, "invalid number" );
         if ( i < n && ( c[i] == 'x' || c[i] == 'y' || c[i] == 'z' ) )
           throwBadStr( full, "coefficients of x, y, z must be +1 or -1" );
         if ( ( num * SymOp::tdenom ) % den != 0 )

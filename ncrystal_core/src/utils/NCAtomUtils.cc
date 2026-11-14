@@ -234,87 +234,66 @@ void NC::validateAtomDBLine(const VectS& words, unsigned ncmat_version )
   }
 }
 
-namespace NCRYSTAL_NAMESPACE {
-  namespace {
-    bool readNextChemFormEntry( const char*& it, const char* itE, DecodedChemForm& cf ) {
-      //returns false in case of errors
-      auto skipWhiteSpace = [](const char*& it2, const char* it2E)
-      {
-        while ( it2!=it2E && isWhiteSpace(*it2) )
-          ++it2;
-      };
-      skipWhiteSpace(it,itE);
-      if ( it == itE )
-        return false;
-      if (!contains(s_upperabc,*it))
-        return false;//must start with upper case character.
-      auto itSymbE = std::next(it);
-      while ( itSymbE != itE && contains(s_lowerabc,*itSymbE) )
-        ++itSymbE;//include all immediately following lower case chars in symbol
-
-      AtomSymbol symbol(std::string(it,std::distance(it,itSymbE)));
-      if (!symbol.isElement())
-        return false;
-
-      //skip chars used for symbol and any leading whitespace:
-      it = itSymbE;
-      skipWhiteSpace(it,itE);
-
-      //See if we are followed by a number:
-      if ( it==itE || contains(s_upperabc,*it ) ) {
-        //end of string or encountered new element name, implicit count of 1:
-        cf.emplace_back( 1, symbol );
-        return true;
+NC::Optional<NC::ChemFormTerms> NC::tryDecodeChemicalFormula( StrView s )
+{
+  auto isDigit = [](char c) { return c>='0'&&c<='9'; };
+  ChemFormTerms res;
+  std::size_t i = 0;
+  auto skipWhiteSpace = [&s,&i]() {
+    while ( i < s.size() && isWhiteSpace( s[i] ) )
+      ++i;
+  };
+  skipWhiteSpace();
+  while ( i < s.size() ) {
+    //Symbol: an upper case letter and all immediately following lower case
+    //letters:
+    if ( !contains( s_upperabc, s[i] ) )
+      return NullOpt;
+    std::size_t iE = i + 1;
+    while ( iE < s.size() && contains( s_lowerabc, s[iE] ) )
+      ++iE;
+    AtomSymbol symbol( s.substr( i, iE - i ).to_string() );
+    if ( !symbol.isElement() && !symbol.isIsotope() )
+      return NullOpt;
+    i = iE;
+    skipWhiteSpace();
+    //Optional count (implicitly 1), digits with at most one decimal point:
+    double count = 1.0;
+    if ( i < s.size() && !contains( s_upperabc, s[i] ) ) {
+      std::size_t jE = i;
+      unsigned ndigits = 0, npoints = 0;
+      while ( jE < s.size() && ( isDigit( s[jE] ) || s[jE] == '.' ) ) {
+        ( s[jE] == '.' ? npoints : ndigits ) += 1;
+        ++jE;
       }
-      //Must be followed by a number here. Allowed forms are for now always
-      //integral and positive, i.e. pure digits 0-9!
-      auto isDigit = [](char c) { return c>='0'&&c<='9'; };
-      std::uint_least32_t digitVal = 0;
-      auto addDigitChar = [&digitVal](char c) {
-        constexpr std::uint_least32_t maxAllowed = 1000000000;
-        constexpr std::uint_least32_t maxAllowedDiv10 = maxAllowed/10;
-        nc_assert(c>='0'&&c<='9');
-        if ( digitVal > maxAllowedDiv10 )
-          return false;
-        digitVal *= 10;
-        digitVal += (int(c)-int('0'));
-        return digitVal <= maxAllowed;
-      };
-      if ( !isDigit(*it) )
-        return false;
-      if ( !addDigitChar(*it) )
-        return false;
-      //include all immediately following digits:
-      auto itDigitE = std::next(it);
-      while ( itDigitE != itE && isDigit(*itDigitE) ) {
-        if ( !addDigitChar(*itDigitE) )
-          return false;
-        ++itDigitE;
-      }
-      if (!digitVal)
-        return false;//prevent a count of 0
-      cf.emplace_back( digitVal, symbol );
-      it = itDigitE;
-      skipWhiteSpace(it,itE);
-      return true;
+      if ( !ndigits || npoints > 1
+           || !safe_str2dbl( s.substr( i, jE - i ), count )
+           || !( count > 0.0 ) || !std::isfinite( count ) )
+        return NullOpt;
+      i = jE;
+      skipWhiteSpace();
     }
-
+    res.emplace_back( count, symbol );
   }
+  if ( res.empty() )
+    return NullOpt;
+  return res;
 }
 
 NC::Optional<NC::DecodedChemForm> NC::tryDecodeSimpleChemicalFormula( std::string s )
 {
-  DecodedChemForm cf;
-  {
-    const char * it = s.data();
-    auto itE = it + s.size();
-    while ( it != itE ) {
-      if (!readNextChemFormEntry(it,itE,cf))
-        return NullOpt;
-    }
-  }
-  if ( cf.empty() )
+  //Only elements with positive integral counts written as pure digits:
+  if ( contains( s, '.' ) )
     return NullOpt;
+  auto terms = tryDecodeChemicalFormula( s );
+  if ( !terms.has_value() )
+    return NullOpt;
+  DecodedChemForm cf;
+  for ( auto& e : terms.value() ) {
+    if ( !e.second.isElement() || !( e.first <= 1e9 ) )
+      return NullOpt;
+    cf.emplace_back( static_cast<std::uint_least32_t>( e.first ), e.second );
+  }
   if ( cf.size() == 1 )
     return cf;
   return normaliseSimpleChemicalFormula( cf );

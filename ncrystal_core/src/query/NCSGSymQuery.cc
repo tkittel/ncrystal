@@ -61,6 +61,7 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
   constexpr auto sv_fromops = StrView::make("fromops");
   constexpr auto sv_fromhall = StrView::make("fromhall");
   constexpr auto sv_fromhm = StrView::make("fromhm");
+  constexpr auto sv_fromnumber = StrView::make("fromnumber");
   constexpr auto sv_cell = StrView::make("cell");
   //Settings as a JSON list like ["14:b1","14:b2"]:
   auto streamSettings = [&os]( const std::vector<SpaceGroup>& v ) {
@@ -78,7 +79,7 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     if ( nargs != 0 )
       invalid("no arguments should come after: [\"sgsym\",\"list\"]");
     os<<"[\"info\", \"sites\", \"positions\", \"fromops\","
-      " \"fromhall\", \"fromhm\", \"cell\"]";
+      " \"fromhall\", \"fromhm\", \"fromnumber\", \"cell\"]";
   } else if ( key == sv_fromops ) {
     //["sgsym","fromops",OP,...]: the settings with exactly these symmetry
     //operations (like "x,-y,z+1/2", cf. SymOp, with a "@" prefix if starting
@@ -130,9 +131,18 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
                : "correct usage: [\"sgsym\",\"fromhm\",SYMBOL]" );
     streamSettings( key == sv_fromhall ? settingsFromHallSymbol( argNoAt(0) )
                     : settingsFromHMSymbol( argNoAt(0) ) );
+  } else if ( key == sv_fromnumber ) {
+    //["sgsym","fromnumber",N]: all settings of the space group number N
+    //(1-230), in table order, as ["227:1","227:2"]:
+    auto n = ( nargs == 1 ? arg(0).toInt() : NullOpt );
+    if ( !n.has_value() || n.value() < 1 || n.value() > 230 )
+      invalid( "correct usage: [\"sgsym\",\"fromnumber\",N],"
+               " with N in 1..230" );
+    streamSettings( SpaceGroup::settingsOfNumber(
+                      static_cast<unsigned>( n.value() ) ) );
   } else if ( key == sv_info ) {
-    //["sgsym","info",MODE,SG]: Symmetry operations of a space group
-    //setting (SG as e.g. "225", "166:r", "227:2", "14:c1" or "62:cab",
+    //["sgsym","info",MODE,SG]: H-M symbol ("hm", ITVB computer-entry
+    //format) and symmetry operations of a space group setting (SG as e.g. "225", "166:r", "227:2", "14:c1" or "62:cab",
     //parsed in MODE "strict" or "relaxed", cf. SpaceGroupParseMode), both
     //as CIF-like strings ("ops", incl. centring) and as the distinct
     //rotation parts (row-major integer matrices acting on fractional
@@ -149,6 +159,7 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
                          JSONDictPos::FIRST );
     streamJSONDictEntry( os, "settingidx",
                          static_cast<unsigned>( sg.settingIdx().get() ) );
+    streamJSONDictEntry( os, "hm", sg.hmSymbol() );
     streamJSONDictEntry( os, "order", sym.order() );
     streamJSONDictEntry( os, "latticesymbol",
                          std::string( 1, sym.latticeSymbol() ) );
@@ -181,13 +192,15 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     //"lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]" (occupancy default 1,
     //the first given for a label applies to all of its entries; uij as Ustd,
     //cf. NCUijUtils.hh). Numbers may be printed CIF numbers (e.g.
-    //"0.0123(4)"), whose rounding errors are used with lenient tolerances.
+    //"0.0123(4)"), whose rounding errors are used with lenient tolerances
+    //(angles printed as 90 or 120 without uncertainty are exact).
     //Result: {"spacegroup_setting":"227:2","sites":[{"label":..,
     //"multiplicity":n,"split":null|{"positions":k,"distance":d},
-    //"uij":null|[6 values, snapped to the site symmetry],"positions":[[x,y,z],
-    //...],"uijs":null|[[6 values],...]},...]}, where "split" describes a
-    //split site (cf. expandSiteToOrbit) and "uijs" are the tensors at the
-    //positions.
+    //"uij":null|[6 values, snapped to the site symmetry],"ueq":null|[ueq,
+    //rounding error],"positions":[[x,y,z],...],"uijs":null|[[6 values],...]},
+    //...]}, where "split" describes a split site (cf. expandSiteToOrbit),
+    //"ueq" is that of the given uij (cf. calcUeqWithRoundingError) and "uijs"
+    //are the tensors at the positions.
     //["sgsym","sites",MODE,SG,TOL,CELL,ENTRY,...]: the inverse, grouping unit
     //cell positions (entries as above, with uij at each position) into sites,
     //one per orbit: {"spacegroup_setting":"227:2","is_default_setting":b,
@@ -226,18 +239,24 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
         invalid( usage );
       return x.value();
     };
-    CellParameters cell;
+    CellParameters cell, cellerr{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
     {
       auto parts = arg(3).splitTrimmed(',');
       if ( parts.size() != 6 )
         invalid( usage );
-      double v[6];
+      double v[6], e[6];
       for ( auto j : ncrange( 6 ) ) {
-        v[j] = number( parts.at(j) ).value;
+        const auto x = number( parts.at(j) );
+        v[j] = x.value;
+        //(angles printed as 90 or 120 without uncertainty are exact):
+        const bool exact = ( j >= 3 && ( v[j] == 90.0 || v[j] == 120.0 )
+                             && !parts.at(j).contains( '(' ) );
+        e[j] = ( lenient && !exact ) ? x.roundingError : 0.0;
         if ( !( v[j] > 0.0 ) )
           invalid( usage );
       }
       cell = { v[0], v[1], v[2], v[3], v[4], v[5] };
+      cellerr = { e[0], e[1], e[2], e[3], e[4], e[5] };
     }
     const auto metric = UijUtils::cellMetric( cell.a, cell.b, cell.c,
                                               cell.alpha, cell.beta,
@@ -449,6 +468,16 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
           streamSplit( orbit );
           os << ",\"uij\":";
           streamUij( uij );
+          os << ",\"ueq\":";
+          if ( e.uij.has_value() ) {
+            const auto ueq
+              = UijUtils::calcUeqWithRoundingError( e.uij.value(), cell,
+                                                    e.uijerr, cellerr );
+            const double v[2] = { ueq.first, ueq.second };
+            streamVals( v, 2 );
+          } else {
+            os << "null";
+          }
           os << ",\"positions\":[";
           for ( auto& p : orbit.positions ) {
             if ( &p != &orbit.positions.front() )

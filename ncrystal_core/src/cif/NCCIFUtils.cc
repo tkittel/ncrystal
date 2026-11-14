@@ -201,47 +201,50 @@ NC::Optional<NC::CIFElement> NC::elementFromCIFTypeSymbol( StrView sv )
     if ( !res.has_value() )
       return NullOpt;
   }
-  //Optional charge, like "2-", "3.614+", "0" or "+":
+  //Optional charge, like "2-", "-2", "3.614+", "0" or "+":
+  auto isSign = []( char c ) { return c == '+' || c == '-'; };
   std::size_t i = nletters;
+  const bool signFirst = ( i < s.size() && isSign( s[i] ) );
+  if ( signFirst )
+    ++i;
   while ( i < s.size() && ( isDigit( s[i] ) || s[i] == '.' ) )
     ++i;
-  if ( i < s.size() && ( s[i] == '+' || s[i] == '-' ) )
+  if ( !signFirst && i < s.size() && isSign( s[i] ) )
     ++i;
   if ( i != s.size() )
     return NullOpt;
   return res;
 }
 
-NC::Optional<NC::CIFElement> NC::elementFromCIFLabel( StrView sv )
+NC::Optional<NC::CIFElement> NC::elementFromCIFLabel( StrView label,
+                                                      StrView formula )
 {
-  const StrView s = sv.trimmed();
-  if ( s.empty() || !isDigit( s.back() ) )
+  auto terms = tryDecodeChemicalFormula( formula );
+  if ( !terms.has_value() )
     return NullOpt;
-  //Element name at the start of the label without its trailing digits, two
-  //letters preferred (e.g. "Fe1" is Fe, not F):
-  std::size_t ndigits = 0;
-  while ( ndigits + 1 < s.size() && isDigit( s[ s.size() - 1 - ndigits ] ) )
-    ++ndigits;
-  const StrView prefix = s.substr( 0, s.size() - ndigits );
-  Optional<CIFElement> res;
-  std::size_t nname = 0;
-  for ( std::size_t n : { std::size_t(2), std::size_t(1) } ) {
-    if ( prefix.size() < n )
-      continue;
-    res = elementFromName( prefix.substr( 0, n ).to_string() );
-    if ( res.has_value() ) {
-      nname = n;
-      break;
+  auto inFormula = [&terms]( unsigned z ) {
+    for ( auto& e : terms.value() )
+      if ( e.second.Z() == z )
+        return true;
+    return false;
+  };
+  const StrView s = label.trimmed();
+  if ( s.empty() )
+    return NullOpt;
+  if ( s.size() >= 2 ) {
+    auto res = elementFromName( s.substr( 0, 2 ).to_string() );
+    if ( res.has_value() && inFormula( res.value().Z ) )
+      return res;
+    //Ambiguous if the two letters only form an element of the formula when
+    //ignoring case (e.g. "CL1" with both C and Cl in the formula):
+    if ( isUpper( s[1] ) ) {
+      auto ci = elementFromName( std::string{ s[0], toLower( s[1] ) } );
+      if ( ci.has_value() && inFormula( ci.value().Z ) )
+        return NullOpt;
     }
   }
-  if ( !res.has_value() )
-    return NullOpt;
-  //Then only upper case letters (and spaces) and digits:
-  StrView rest = s.substr( nname ).trimmed();
-  while ( !rest.empty() && isUpper( rest[0] ) )
-    rest = rest.substr( 1 ).trimmed();
-  for ( auto c : rest )
-    if ( !isDigit( c ) )
-      return NullOpt;
-  return res;
+  auto res = elementFromName( s.substr( 0, 1 ).to_string() );
+  if ( res.has_value() && inFormula( res.value().Z ) )
+    return res;
+  return NullOpt;
 }

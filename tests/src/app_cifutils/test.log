@@ -111,23 +111,74 @@ type symbol "?" -> none
 type symbol "." -> none
 type symbol "1" -> none
 type symbol "2+" -> none
-label "CaM1" -> Z=20 A=0
-label "OA1" -> Z=8 A=0
-label "Fe12" -> Z=26 A=0
-label "Fe1" -> Z=26 A=0
-label "F1" -> Z=9 A=0
-label "C1" -> Z=6 A=0
-label "CO1" -> Z=6 A=0
-label "Co1" -> Z=27 A=0
-label "D1" -> Z=1 A=2
-label "T2" -> Z=1 A=3
-label "H1A" -> none
-label "Ow1" -> none
-label "OW1" -> Z=8 A=0
-label "X1" -> none
-label "C" -> none
-label "1" -> none
-label "Na 1" -> Z=11 A=0
-label "NaA B2" -> Z=11 A=0
-label "Fe1a2" -> none
-label "" -> none
+type symbol "O-2" -> Z=8 A=0
+type symbol "D+1" -> Z=1 A=2
+type symbol "Ag+1" -> Z=47 A=0
+type symbol "Mn-3.5" -> Z=25 A=0
+type symbol "O+-2" -> none
+type symbol "O-2-" -> none
+type symbol "O--" -> none
+formula "C19 H14 Cl Fe N O7":
+  label "Cl1" -> Z=17 A=0
+  label "Cl(1)" -> Z=17 A=0
+  label "C1" -> Z=6 A=0
+  label "Cs1" -> Z=6 A=0
+  label "Co1" -> Z=6 A=0
+  label "Ca1" -> Z=6 A=0
+  label "CaM1" -> Z=6 A=0
+  label "Fe1" -> Z=26 A=0
+  label "H01a" -> Z=1 A=0
+  label "Ho1" -> Z=1 A=0
+  label "Ow1" -> Z=8 A=0
+  label "D1" -> Z=1 A=2
+  label "T1" -> Z=1 A=3
+  label "O(1)" -> Z=8 A=0
+  label "CS1" -> Z=6 A=0
+  label "CA1" -> Z=6 A=0
+formula "Ca O3 Si":
+  label "Ca1" -> Z=20 A=0
+  label "CaM1" -> Z=20 A=0
+  label "Ow1" -> Z=8 A=0
+  label "O(1)" -> Z=8 A=0
+formula "Cs Cl":
+  label "Cl1" -> Z=17 A=0
+  label "Cl(1)" -> Z=17 A=0
+  label "Cs1" -> Z=55 A=0
+formula "C12 H10 Co0.5 O2.5":
+  label "Cl1" -> Z=6 A=0
+  label "Cl(1)" -> Z=6 A=0
+  label "C1" -> Z=6 A=0
+  label "Cs1" -> Z=6 A=0
+  label "Co1" -> Z=27 A=0
+  label "Ca1" -> Z=6 A=0
+  label "CaM1" -> Z=6 A=0
+  label "H01a" -> Z=1 A=0
+  label "Ho1" -> Z=1 A=0
+  label "Ow1" -> Z=8 A=0
+  label "D1" -> Z=1 A=2
+  label "T1" -> Z=1 A=3
+  label "O(1)" -> Z=8 A=0
+  label "CL(1)" -> Z=6 A=0
+  label "CL1" -> Z=6 A=0
+  label "CS1" -> Z=6 A=0
+  label "CA1" -> Z=6 A=0
+formula "H2 O":
+  label "H01a" -> Z=1 A=0
+  label "Ho1" -> Z=1 A=0
+  label "Ow1" -> Z=8 A=0
+  label "D1" -> Z=1 A=2
+  label "T1" -> Z=1 A=3
+  label "O(1)" -> Z=8 A=0
+formula "D2 O":
+  label "H01a" -> Z=1 A=0
+  label "Ho1" -> Z=1 A=0
+  label "Ow1" -> Z=8 A=0
+  label "D1" -> Z=1 A=2
+  label "T1" -> Z=1 A=3
+  label "O(1)" -> Z=8 A=0
+formula "Al2O3":
+  label "Ow1" -> Z=8 A=0
+  label "O(1)" -> Z=8 A=0
+  label "Al" -> Z=13 A=0
+formula "Al2 O3 X":
+formula "":
