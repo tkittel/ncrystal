@@ -1,0 +1,19 @@
+fake-broken: module=None problem='could not be imported (broken on purpose)'
+   The Python package "fake-broken" could not be imported (broken on purpose). NCrystal requires fake-broken>=1.0, which is available on PyPI ("python3 -m pip install 'fake-broken>=1.0'") and conda-forge ("conda install -c conda-forge 'fake-broken-conda>=1.0'").
+Caught expected ImportError('The Python package "fake-broken", needed for testing, could not be imported (broken on purpose). NCrystal requires fake-broken>=1.0, which is available on PyPI ("python3 -m pip install \'fake-broken>=1.0\'") and conda-forge ("conda install -c conda-forge \'fake-broken-conda>=1.0\'").')
+Caught expected SystemExit('ERROR: The Python package "fake-broken" could not be imported (broken on purpose). NCrystal requires fake-broken>=1.0, which is available on PyPI ("python3 -m pip install \'fake-broken>=1.0\'") and conda-forge ("conda install -c conda-forge \'fake-broken-conda>=1.0\'").')
+fake-missing: module=None problem='is not installed'
+   The Python package "fake-missing" is not installed. NCrystal requires fake-missing>=1.0, which is available on PyPI ("python3 -m pip install 'fake-missing>=1.0'") and conda-forge ("conda install -c conda-forge 'fake-missing-conda>=1.0'").
+Caught expected ImportError('The Python package "fake-missing", needed for testing, is not installed. NCrystal requires fake-missing>=1.0, which is available on PyPI ("python3 -m pip install \'fake-missing>=1.0\'") and conda-forge ("conda install -c conda-forge \'fake-missing-conda>=1.0\'").')
+Caught expected SystemExit('ERROR: The Python package "fake-missing" is not installed. NCrystal requires fake-missing>=1.0, which is available on PyPI ("python3 -m pip install \'fake-missing>=1.0\'") and conda-forge ("conda install -c conda-forge \'fake-missing-conda>=1.0\'").')
+fake-nomin: module=None problem='is not installed'
+   The Python package "fake-nomin" is not installed. NCrystal requires fake-nomin, which is available on PyPI ("python3 -m pip install 'fake-nomin'") and conda-forge ("conda install -c conda-forge 'fake-nomin-conda'").
+Caught expected ImportError('The Python package "fake-nomin", needed for testing, is not installed. NCrystal requires fake-nomin, which is available on PyPI ("python3 -m pip install \'fake-nomin\'") and conda-forge ("conda install -c conda-forge \'fake-nomin-conda\'").')
+Caught expected SystemExit('ERROR: The Python package "fake-nomin" is not installed. NCrystal requires fake-nomin, which is available on PyPI ("python3 -m pip install \'fake-nomin\'") and conda-forge ("conda install -c conda-forge \'fake-nomin-conda\'").')
+fake-novers: module=ncfake_novers problem=None
+fake-ok: module=ncfake_ok problem=None
+fake-old: module=None problem='is too old (found version 1.2.3)'
+   The Python package "fake-old" is too old (found version 1.2.3). NCrystal requires fake-old>=1.10, which is available on PyPI ("python3 -m pip install 'fake-old>=1.10'") and conda-forge ("conda install -c conda-forge 'fake-old-conda>=1.10'").
+Caught expected ImportError('The Python package "fake-old", needed for testing, is too old (found version 1.2.3). NCrystal requires fake-old>=1.10, which is available on PyPI ("python3 -m pip install \'fake-old>=1.10\'") and conda-forge ("conda install -c conda-forge \'fake-old-conda>=1.10\'").')
+Caught expected SystemExit('ERROR: The Python package "fake-old" is too old (found version 1.2.3). NCrystal requires fake-old>=1.10, which is available on PyPI ("python3 -m pip install \'fake-old>=1.10\'") and conda-forge ("conda install -c conda-forge \'fake-old-conda>=1.10\'").')
+fake-sub: module=ncfake_sub problem=None

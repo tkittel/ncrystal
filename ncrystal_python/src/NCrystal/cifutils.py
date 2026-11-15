@@ -1358,20 +1358,13 @@ _import_gemmi_cache = [None,None]
 def _import_gemmi( *, sysexit = False ):
     if _import_gemmi_cache[0] is not None:
         return _import_gemmi_cache[0], _import_gemmi_cache[1]
-    try:
-        import gemmi  #both available on pypi and conda-forge
-        import gemmi.cif
-    except ImportError:
-        m = ( 'Could not import gemmi modules needed to process CIF files.'
-              +' The gemmi package is available on both PyPI ("python3 -mpip install'
-              +' gemmi") and conda ("conda install -c conda-forge gemmi")' )
-        if sysexit:
-            raise SystemExit(m)
-        else:
-            raise ImportError(m)
+    from ._imports import import_optional
+    gemmi = import_optional( 'gemmi', purpose = 'to process CIF files',
+                             sysexit = sysexit )
+    import importlib
     _import_gemmi_cache[0] = gemmi
-    _import_gemmi_cache[1] = gemmi.cif
-    return gemmi, gemmi.cif
+    _import_gemmi_cache[1] = importlib.import_module('gemmi.cif')
+    return _import_gemmi_cache[0], _import_gemmi_cache[1]
 
 _guessmap = [None]
 def _guess_spacegroup_name( gemmi, s ):

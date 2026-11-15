@@ -37,7 +37,13 @@ def main():
     sys.path.insert(0,str(pathlib.Path('fakepypath').absolute()))
     from NCrystalDev.cli import run as ncrun
     from NCTestUtils.common import ensure_error
-    with ensure_error(ImportError,'Could not import endf_parserpy'):
+    msg = ( 'The Python package "endf-parserpy", needed for ENDF files,'
+            ' could not be imported (I am a bad endf_parserpy module).'
+            ' NCrystal requires endf-parserpy>=0.17.0, which is available on'
+            ' PyPI ("python3 -m pip install \'endf-parserpy>=0.17.0\'") and'
+            ' conda-forge ("conda install -c conda-forge'
+            ' \'endf-parserpy>=0.17.0\'").' )
+    with ensure_error(ImportError,msg):
         ncrun('ncmat2endf','Al_sg225.ncmat;temp=350K')
 
 if __name__ == '__main__':
