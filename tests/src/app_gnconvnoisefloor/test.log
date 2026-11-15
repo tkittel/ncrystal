@@ -22,18 +22,18 @@
       at prod. truncation edge (val=1.125e+17, =2.54e-10*peak): noiseFloor/edgeVal=0.000442
 
 --- Real data: live Debye-model G1, self-convolved (orders 2,3) ---
-  Debye T=80K,temp=10K (narrow/steep, cold), order2=G1(*)G1: n=1673 peak=134.053 noiseFloor=9.740e-12  OK
-      at prod. truncation edge (val=1.142e+00, =0.00852*peak): noiseFloor/edgeVal=8.53e-12
-  Debye T=80K,temp=10K (narrow/steep, cold), order3=G1(*)order2raw: n=2509 peak=109.605 noiseFloor=9.752e-12  OK
-      at prod. truncation edge (val=4.955e-03, =4.52e-05*peak): noiseFloor/edgeVal=1.97e-09
-  Debye T=410K,temp=293.15K (Al-like), order2=G1(*)G1: n=1673 peak=13.0632 noiseFloor=9.491e-13  OK
-      at prod. truncation edge (val=5.263e-02, =0.00403*peak): noiseFloor/edgeVal=1.8e-11
-  Debye T=410K,temp=293.15K (Al-like), order3=G1(*)order2raw: n=2509 peak=11.581 noiseFloor=1.030e-12  OK
-      at prod. truncation edge (val=1.110e-04, =9.58e-06*peak): noiseFloor/edgeVal=9.28e-09
-  Debye T=2000K,temp=293.15K (wide), order2=G1(*)G1: n=1673 peak=5.08869 noiseFloor=3.697e-13  OK
-      at prod. truncation edge (val=4.274e-02, =0.0084*peak): noiseFloor/edgeVal=8.65e-12
-  Debye T=2000K,temp=293.15K (wide), order3=G1(*)order2raw: n=2509 peak=4.13289 noiseFloor=3.677e-13  OK
-      at prod. truncation edge (val=1.794e-04, =4.34e-05*peak): noiseFloor/edgeVal=2.05e-09
+  Debye T=80K,temp=10K (narrow/steep, cold), order2=G1(*)G1: n=1673 peak=134.41 noiseFloor=9.766e-12  OK
+      at prod. truncation edge (val=1.142e+00, =0.0085*peak): noiseFloor/edgeVal=8.55e-12
+  Debye T=80K,temp=10K (narrow/steep, cold), order3=G1(*)order2raw: n=2509 peak=110.146 noiseFloor=9.801e-12  OK
+      at prod. truncation edge (val=4.957e-03, =4.5e-05*peak): noiseFloor/edgeVal=1.98e-09
+  Debye T=410K,temp=293.15K (Al-like), order2=G1(*)G1: n=1673 peak=13.0698 noiseFloor=9.496e-13  OK
+      at prod. truncation edge (val=5.262e-02, =0.00403*peak): noiseFloor/edgeVal=1.8e-11
+  Debye T=410K,temp=293.15K (Al-like), order3=G1(*)order2raw: n=2509 peak=11.602 noiseFloor=1.032e-12  OK
+      at prod. truncation edge (val=1.110e-04, =9.56e-06*peak): noiseFloor/edgeVal=9.3e-09
+  Debye T=2000K,temp=293.15K (wide), order2=G1(*)G1: n=1673 peak=5.10228 noiseFloor=3.707e-13  OK
+      at prod. truncation edge (val=4.276e-02, =0.00838*peak): noiseFloor/edgeVal=8.67e-12
+  Debye T=2000K,temp=293.15K (wide), order3=G1(*)order2raw: n=2509 peak=4.15304 noiseFloor=3.695e-13  OK
+      at prod. truncation edge (val=1.795e-04, =4.32e-05*peak): noiseFloor/edgeVal=2.06e-09
 --- Real data: live Li2O (Li,O) material G1, self-convolved (orders 2,3) ---
   Li2O (real material, temp=10K), element=Li, order2=G1(*)G1: n=40905 peak=14.5209 noiseFloor=5.217e-12  OK
       at prod. truncation edge (val=8.464e-08, =5.83e-09*peak): noiseFloor/edgeVal=6.16e-05

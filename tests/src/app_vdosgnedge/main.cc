@@ -19,10 +19,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-//Gn functions evaluated exactly at the edges of their energy ranges (and just
-//outside) must give the edge values of the raw spectra (and 0), with both
-//VDOSGn::eval and VDOSGn::evalMany, for linearly and cubically interpolated
-//orders. The upper edge once gave the second-last value.
+//Gn functions evaluated exactly at the edges of their energy ranges, or up to
+//8 ulps outside them (rounding of energies meant to be on the edge), must give
+//the edge values of the raw spectra, and 0 further out, with both VDOSGn::eval
+//and VDOSGn::evalMany, for linearly and cubically interpolated orders. The
+//upper edge once gave the second-last value.
 
 #include "NCrystal/internal/vdos/NCVDOSGn.hh"
 #include "NCrystal/internal/vdos/NCVDOSEval.hh"
@@ -53,13 +54,28 @@ namespace {
       //otherwise:
       auto near = [specmax]( double a, double b )
       { return NC::ncabs( a - b ) <= 1e-12 * specmax; };
-      nc_assert_always( near( gn.eval( order, range.first ), spec.front() ) );
-      nc_assert_always( near( gn.eval( order, range.second ), spec.back() ) );
-      const double below = std::nextafter( range.first, -NC::kInfinity );
-      const double above = std::nextafter( range.second, NC::kInfinity );
-      nc_assert_always( gn.eval( order, below ) == 0.0 );
-      nc_assert_always( gn.eval( order, above ) == 0.0 );
-      const NC::VectD egrid = { below, range.first, range.second, above };
+      //Moves x by k ulps towards to:
+      auto ulps = []( double x, double to, unsigned k )
+      {
+        for ( unsigned i = 0; i < k; ++i )
+          x = std::nextafter( x, to );
+        return x;
+      };
+      NC::VectD egrid;
+      for ( unsigned k : { 32u, 8u, 4u, 1u } )
+        egrid.push_back( ulps( range.first, -NC::kInfinity, k ) );
+      egrid.push_back( range.first );
+      egrid.push_back( range.second );
+      for ( unsigned k : { 1u, 4u, 8u, 32u } )
+        egrid.push_back( ulps( range.second, NC::kInfinity, k ) );
+      for ( auto i : NC::ncrange( egrid.size() ) ) {
+        const double e = egrid.at(i);
+        const double v = gn.eval( order, e );
+        if ( i == 0 || i + 1 == egrid.size() )
+          nc_assert_always( v == 0.0 );//32 ulps outside
+        else
+          nc_assert_always( near( v, i < 5 ? spec.front() : spec.back() ) );
+      }
       gn.evalMany( order, egrid, out, workbuf );
       for ( auto i : NC::ncrange( egrid.size() ) )
         nc_assert_always( out.at(i) == gn.eval( order, egrid.at(i) ) );

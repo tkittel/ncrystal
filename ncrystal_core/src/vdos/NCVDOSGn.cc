@@ -215,6 +215,7 @@ namespace NCRYSTAL_NAMESPACE {
         VectD m_spec;
         std::size_t m_spec_size_minus_2;
         double m_egrid_lower, m_egrid_upper;
+        double m_snap_lower, m_snap_upper;//see constructor
         double m_egrid_binwidth, m_egrid_invbinwidth, m_specMaxVal;
         unsigned long m_thinFactor;//NB: binwidth is G1's binwidth multiplied
                                    //    by m_thinFactor
@@ -243,15 +244,23 @@ NCV::VDOSGnData::VDOSGnData( const VectD &spec,
   m_spec_size_minus_2 = m_spec.size() - 2;
   m_egrid_upper = equidistantGridPoint( m_egrid_lower, m_egrid_binwidth,
                                         m_spec.size()-1 );
+  //Energies within a few ulps outside the range are evaluated at its edge:
+  //such energies typically come from rounding of values meant to be exactly
+  //on it (e.g. a Debye cutoff via E/kT*kT), and Gn need not be 0 at its edges:
+  constexpr double kkk = 8.0 * std::numeric_limits<double>::epsilon();
+  m_snap_lower = m_egrid_lower - kkk * ncabs( m_egrid_lower );
+  m_snap_upper = m_egrid_upper + kkk * ncabs( m_egrid_upper );
   nc_assert_always(!m_spec.empty());
   //The assymetric Gn functions are constructed/required to have unit area, so
   //must normalise.  NB: In principle higher-order spectra are guaranteed to be
   //normalised when lower order spectra are. However, this re-normalisation acts
   //as a safeguard in the face of thinning, truncation and numerical errors in
   //general.
+  //Area of the piecewise linear function (end points with half weight):
   double asym_area = 0.;
   for(unsigned i=0;i<m_spec.size();i++)
     asym_area +=  m_spec[i];
+  asym_area -= 0.5 * ( m_spec.front() + m_spec.back() );
   asym_area *= egrid_binwidth;
   double inv_asym_area(1.0/asym_area);
   for(unsigned i=0;i<m_spec.size();i++)
@@ -269,8 +278,9 @@ NCV::VDOSGnData::VDOSGnData( const VectD &spec,
 
 double NCV::VDOSGnData::interpolateDensity(double energy) const
 {
-  if (!valueInInterval(m_egrid_lower,m_egrid_upper,energy))
+  if (!valueInInterval(m_snap_lower,m_snap_upper,energy))
     return 0.0;
+  energy = ncclamp( energy, m_egrid_lower, m_egrid_upper );
   double a = (energy-m_egrid_lower)*m_egrid_invbinwidth;
   double floor_a = std::floor(a);
   //The index is only clamped at the upper edge (a=npts-1), where f=1 then
@@ -338,12 +348,15 @@ void NCV::VDOSGnData::interpolateDensityMany( Span<const double> energy,
   double* ncrestrict buf_f = workbuf.data();
   double* ncrestrict buf_ix = buf_f + n;
 
-  const std::size_t beg = fastLowerBoundIdx( energy.data(), n, m_egrid_lower );
+  const std::size_t beg = fastLowerBoundIdx( energy.data(), n, m_snap_lower );
   const std::size_t end = beg + fastUpperBoundIdx( energy.data()+beg, n-beg,
-                                                    m_egrid_upper );
+                                                    m_snap_upper );
 
   for (std::size_t i = beg; i < end; ++i) {
-    const double a = (ep[i] - m_egrid_lower) * m_egrid_invbinwidth;
+    //Energies in the snap margins are evaluated at the edges, as in
+    //interpolateDensity (branch-free):
+    const double e = ncclamp( ep[i], m_egrid_lower, m_egrid_upper );
+    const double a = (e - m_egrid_lower) * m_egrid_invbinwidth;
     const double fa = std::floor(a);
     const std::size_t ix = ncmin( m_spec_size_minus_2,
                                   static_cast<std::size_t>(fa) );
