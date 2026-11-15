@@ -372,23 +372,23 @@ namespace NCRYSTAL_NAMESPACE {
       static VarBuf set_val( VarId varid, const OrientDir& value ) {
         //nc_assert_always(!value.crystal.empty());//fails if moved-from
         alignas(double) char tmp[6*sizeof(double)+1];
-        const Vector * vcrys;
+        Vector vcrys;
         if ( value.crystal.has_value<HKLPoint>() ) {
           tmp[6*sizeof(double)] = 1;
-          vcrys = &value.crystal.get<HKLPoint>().as<Vector>();
+          vcrys = value.crystal.get<HKLPoint>().as<Vector>();
         } else if ( value.crystal.has_value<CrystalAxis>() ) {
           tmp[6*sizeof(double)] = 0;
-          vcrys = &value.crystal.get<CrystalAxis>().as<Vector>();
+          vcrys = value.crystal.get<CrystalAxis>().as<Vector>();
         } else {
           NCRYSTAL_THROW2(BadInput,"Moved-from crystal direction object"
                           " provided for parameter \""<<Derived::name<<"\"");
         }
-        if ( std::min<double>( value.lab.as<Vector>().mag2(), vcrys->mag2() ) < 1e-100 )
+        if ( std::min<double>( value.lab.as<Vector>().mag2(), vcrys.mag2() ) < 1e-100 )
           NCRYSTAL_THROW2(BadInput,"Null vector provided for parameter \""<<Derived::name<<"\"");
         double * tmp_vals = reinterpret_cast<double*>( &tmp[0] );
-        tmp_vals[0] = sanitiseDblValue( (*vcrys)[0], Derived::name );
-        tmp_vals[1] = sanitiseDblValue( (*vcrys)[1], Derived::name );
-        tmp_vals[2] = sanitiseDblValue( (*vcrys)[2], Derived::name );
+        tmp_vals[0] = sanitiseDblValue( vcrys[0], Derived::name );
+        tmp_vals[1] = sanitiseDblValue( vcrys[1], Derived::name );
+        tmp_vals[2] = sanitiseDblValue( vcrys[2], Derived::name );
         tmp_vals[3] = sanitiseDblValue( value.lab[0], Derived::name );
         tmp_vals[4] = sanitiseDblValue( value.lab[1], Derived::name );
         tmp_vals[5] = sanitiseDblValue( value.lab[2], Derived::name );

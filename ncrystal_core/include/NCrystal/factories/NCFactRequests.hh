@@ -102,7 +102,7 @@ namespace NCRYSTAL_NAMESPACE {
       double get_mosprec() const;
       double get_sccutoff() const;
       double get_dirtol() const;
-      const LCAxis& get_lcaxis() const;
+      LCAxis get_lcaxis() const;
       std::int_least32_t get_lcmode() const;
 
       bool isSingleCrystal() const;

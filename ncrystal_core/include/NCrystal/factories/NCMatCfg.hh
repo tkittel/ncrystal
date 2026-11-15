@@ -268,7 +268,7 @@ namespace NCRYSTAL_NAMESPACE {
     double get_mosprec() const;
     double get_sccutoff() const;
     double get_dirtol() const;
-    const LCAxis& get_lcaxis() const;
+    LCAxis get_lcaxis() const;
     std::string get_infofactory() const;
     std::string get_scatfactory() const;
     std::string get_absnfactory() const;

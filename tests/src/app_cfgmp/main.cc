@@ -147,7 +147,7 @@ void test2()
   testAccess<const std::string&,std::string,&NC::MatCfg::get_absnfactory,&NC::MatCfg::set_absnfactory>("absnfactory","ccc","aaa","bbb");
   testAccess<int,int,&NC::MatCfg::get_lcmode,&NC::MatCfg::set_lcmode>("lcmode","30",1000,-5);
   testAccess<int,int,&NC::MatCfg::get_vdoslux,&NC::MatCfg::set_vdoslux>("vdoslux","5",2,4);
-  testAccess<const NC::LCAxis&,const NC::LCAxis&,&NC::MatCfg::get_lcaxis,&NC::MatCfg::set_lcaxis>("lcaxis","0,0.5,0.5",NC::LCAxis(0.0,1.0,0.0),NC::LCAxis(1.0,0.0,0.0));
+  testAccess<const NC::LCAxis&,NC::LCAxis,&NC::MatCfg::get_lcaxis,&NC::MatCfg::set_lcaxis>("lcaxis","0,0.5,0.5",NC::LCAxis(0.0,1.0,0.0),NC::LCAxis(1.0,0.0,0.0));
 
   using ODir = NC::OrientDir;
   testAccess<const ODir&,ODir,&NC::MatCfg::get_dir1,&NC::MatCfg::set_dir1>("dir1","@crys:0.2,0,0.8@lab:0,0,1",

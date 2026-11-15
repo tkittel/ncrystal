@@ -525,9 +525,11 @@ namespace NCRYSTAL_NAMESPACE {
     using FixedVector<TValue,N>::FixedVector;
 
     //Interoperability with other compatible classes (those also implemented via
-    //StronglyTypedFixedVector and not adding neither data members nor vtables):
-    template<class TOther> ncconstexpr17 TOther& as() noexcept;
-    template<class TOther> ncconstexpr17 const TOther& as() const noexcept;
+    //StronglyTypedFixedVector and not adding neither data members nor
+    //vtables). Returns a copy, since accessing an object through a reference
+    //to another class type is UB (strict aliasing). The copy is const, so
+    //attempts to modify the original through it fail to compile:
+    template<class TOther> ncconstexpr17 const TOther as() const noexcept;
 
   private:
     template<class TOther>
@@ -968,7 +970,7 @@ namespace NCRYSTAL_NAMESPACE {
   template<class TOther>
   inline ncconstexpr17 void StronglyTypedFixedVector<Derived,TValue,N>::ensureCompatible() noexcept
   {
-    //Verify our class and TOther are safe for the reinterpret_casts used in the as<..>() methods.
+    //Verify our class and TOther are compatible for the as<..>() method.
     static_assert( N == TOther::size(), "incompatible types (incompatible size)" );
     static_assert( std::is_same<TValue,typename TOther::value_type>::value,
                    "incompatible types (incompatible value type)" );
@@ -980,10 +982,8 @@ namespace NCRYSTAL_NAMESPACE {
     static_assert(std::is_base_of<OtherExpectedCRTPBase, TOther>::value,
                   "incompatible types (target class not derived from StronglyTypedFixedVector or not correctly CRTP derived)");
     //Both this and the other class must be compatible with a simple
-    //implementation. We want to make sure that neither class added vtables or
-    //data members, which could make the reinterpret casts problematic.  The
-    //checks might in principle fail to catch some wrong usage on machines with
-    //extreme alignments, but in practice this is not really an issue.
+    //implementation, i.e. neither class added vtables or data members which
+    //the copy in as<..>() would ignore:
     class Simple : public StronglyTypedFixedVector<Simple,TValue,N> {};
     static_assert(sizeof(Derived)==sizeof(Simple), "incompatible types (source class adds data-members or virtual functions)");
     static_assert(sizeof(TOther)==sizeof(Simple), "incompatible types (target class adds data-members or virtual functions)");
@@ -991,24 +991,9 @@ namespace NCRYSTAL_NAMESPACE {
 
   template <class Derived, class TValue, std::size_t N>
   template<class TOther>
-  ncconstexpr17 TOther& StronglyTypedFixedVector<Derived,TValue,N>::as() noexcept
+  ncconstexpr17 const TOther StronglyTypedFixedVector<Derived,TValue,N>::as() const noexcept
   {
-    //Due to the common base FixedVector<TValue,N> class keeping all data, and
-    //the various checks in ensureCompatible, this should be safe. There is a
-    //small loophole in the standard for making the cast UB, but unless
-    //compilers will go out of their way to make life miserable for us for no
-    //reason at all, we should be safe. In any case, compilation or the very
-    //first runtime usage should hopefully break down horribly and visibly if we
-    //ever encounter such a compiler.
-    ensureCompatible<TOther>();
-    return *reinterpret_cast<TOther*>(this);
-  }
-
-  template <class Derived, class TValue, std::size_t N>
-  template<class TOther>
-  ncconstexpr17 const TOther& StronglyTypedFixedVector<Derived,TValue,N>::as() const noexcept
-  {
-    return ensureCompatible<TOther>(), *reinterpret_cast<const TOther*>(this);
+    return ensureCompatible<TOther>(), TOther( this->m_data );
   }
 
   namespace detail {
