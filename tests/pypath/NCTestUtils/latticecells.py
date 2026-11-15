@@ -36,6 +36,7 @@ import NCrystalDev as NC
 import numpy as np
 import spglib
 
+from .cifgen import symmetry_dataset
 from .env import ncsetenv
 
 
@@ -263,7 +264,7 @@ def other_settings( cellpars, atoms ):
     #The same crystal in other settings: spglib standardised and primitive
     #cells, and the Niggli reduced cell.
     cell, num2elem = spglib_cell( cellpars, atoms )
-    ds = spglib.get_symmetry_dataset( cell, symprec = 1e-5 )
+    ds = symmetry_dataset( cell, symprec = 1e-5 )
     pl, pp, pn = spglib.standardize_cell( cell, to_primitive = True,
                                           symprec = 1e-5 )
     nl = spglib.niggli_reduce( cell[0] )
@@ -274,7 +275,7 @@ def other_settings( cellpars, atoms ):
                                    ( 'niggli', nl, npos, cell[2], None ) ):
         vatoms = [ ( num2elem[int(n)], )+tuple( float(x)%1.0 for x in p )
                    for p, n in zip( vp, vn ) ]
-        vds = spglib.get_symmetry_dataset( ( vl, vp, vn ), symprec = 1e-5 )
+        vds = symmetry_dataset( ( vl, vp, vn ), symprec = 1e-5 )
         yield vname, cellpars_from_lattice( vl ), vatoms, sg, vds
 
 def check_crystal( name, cellpars, atoms, nplanes = 300 ):
@@ -289,8 +290,8 @@ def check_crystal( name, cellpars, atoms, nplanes = 300 ):
     dmax = max( e.d for e in info.hklObjects() )
     wls = [ 2*dcut + f*2*(dmax-dcut) for f in (0.01,0.2,0.5,0.8,0.99) ]
     xs = cohelas_xs_per_atom( ncmat, dcut, wls )
-    sgno = spglib.get_symmetry_dataset( spglib_cell( cellpars, atoms )[0],
-                                        symprec = 1e-5 ).number
+    sgno = symmetry_dataset( spglib_cell( cellpars, atoms )[0],
+                             symprec = 1e-5 ).number
     for vname, vcell, vatoms, sg, vds in other_settings( cellpars, atoms ):
         vn = f'{name}/{vname}'
         vncmat = compose( vcell, vatoms, spacegroup = sg )
@@ -385,8 +386,8 @@ def test_stdlib():
         check_cell( fe.name, info, dcut )
         atoms = [ ( ai.atomData.displayLabel(), )+tuple(p)
                   for ai in info.atominfos for p in ai.positions ]
-        ds = spglib.get_symmetry_dataset( spglib_cell( cellpars, atoms )[0],
-                                          symprec = 1e-5 )
+        ds = symmetry_dataset( spglib_cell( cellpars, atoms )[0],
+                               symprec = 1e-5 )
         assert ds.number == info.structure_info['spacegroup'], fe.name
         check_symmetry_groups( fe.name, info, ds )
         n += 1
@@ -415,7 +416,7 @@ def test_spacegroups( spacegroups, seed = 99 ):
         dcut = safe_dcutoff( s.cellpars, 120 )
         info = load_info( ncmat, dcut )
         ntot += check_cell( f'SG-{sg}', info, dcut )
-        ds = spglib.get_symmetry_dataset( s.spglib_cell(), symprec = 1e-5 )
+        ds = symmetry_dataset( s.spglib_cell(), symprec = 1e-5 )
         check_symmetry_groups( f'SG-{sg}', info, ds )
     print(f'{len(spacegroups)} space groups OK ({ntot} planes checked)')
 
@@ -445,7 +446,7 @@ def test_rhombohedral_axes( seed = 7 ):
                              dcut )
         assert info_rh.structure_info['spacegroup'] == sg
         n = check_cell( f'SG-{sg}/rh', info_rh, dcut )
-        ds = spglib.get_symmetry_dataset( ( pl, pp, pn ), symprec = 1e-5 )
+        ds = symmetry_dataset( ( pl, pp, pn ), symprec = 1e-5 )
         check_symmetry_groups( f'SG-{sg}/rh', info_rh, ds )
         cmp_spectra( f'SG-{sg}', powder_spectrum( info_hex, dcut ),
                      powder_spectrum( info_rh, dcut ) )
