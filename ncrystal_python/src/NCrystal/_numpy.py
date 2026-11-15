@@ -43,11 +43,8 @@ class _LazyNumpy:
     @staticmethod
     def _load():
         if not _numpy_mod:
-            try:
-                import numpy
-            except ImportError:
-                numpy = None
-            _numpy_mod.append( numpy )
+            from ._imports import find_optional
+            _numpy_mod.append( find_optional( 'numpy' )[0] )
         return _numpy_mod[0]
     def __bool__( self ):
         return _LazyNumpy._load() is not None
@@ -66,9 +63,11 @@ _np = _LazyNumpy()
 
 def _ensure_numpy():
     if not _np:
+        from ._imports import find_optional, optional_error_msg
         from .exceptions import NCException
-        raise NCException("Numpy not available - array "
-                          "based functionality is unavailable")
+        raise NCException( optional_error_msg( 'numpy',
+                                               find_optional( 'numpy' )[1],
+                                               'for array-based functionality' ) )
     return _np
 
 def _np_linspace(start,stop,num=50):

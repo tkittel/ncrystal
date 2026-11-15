@@ -456,8 +456,8 @@ def _import_matplotlib_plt():
                 )
             )
         else:
-            #first matplotlib alone, for a perhaps more pedagogical ImportError.
-            import matplotlib # noqa F401
+            from ._imports import import_optional
+            import_optional( 'matplotlib', purpose = 'for plotting' )
             import matplotlib.pyplot as plt
             _theplt[0]=plt
     return _theplt[0]
@@ -475,8 +475,8 @@ def _import_matplotlib_pdfpages():
             return PdfPages
         mode = _fakepyplot_mode()
         if mode!='log_and_block':
-            import matplotlib
-            matplotlib.use('agg')
+            from ._imports import import_optional
+            import_optional( 'matplotlib', purpose = 'for plotting' ).use('agg')
         if mode:
             from ._testimpl import _create_pdfpages_inspector
             _thepdfpages[0] = (

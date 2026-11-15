@@ -110,6 +110,24 @@ def check_env_files(db, *, fix = False):
     if not ok:
         error('some files needs to be updated')
 
+def check_depdb_py_files(db, *, fix = False):
+    from .depdb import produce_expected_ncrystal_depdb_py
+    from .dirs import reporoot
+    for frel, expected in [
+            ( 'ncrystal_python/src/NCrystal/_depdb.py',
+              produce_expected_ncrystal_depdb_py(db) ) ]:
+        f = reporoot.joinpath(*frel.split('/'))
+        if f.is_file() and f.read_text() == expected:
+            continue
+        if not fix:
+            print()
+            print(f'ERROR: {frel} needs updating. Fix with:'
+                  ' ncdevtool depdb --mode=fixreqfiles')
+            print()
+            raise SystemExit(1)
+        print(f'Updating {frel}')
+        f.write_text(expected)
+
 def main():
     from .depdb import load_depdb
     db = load_depdb()
@@ -119,6 +137,7 @@ def main():
 
     check_deps_in_toml_files( db )
     check_env_files( db )
+    check_depdb_py_files( db )
 
 
 if __name__=='__main__':

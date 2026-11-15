@@ -251,3 +251,45 @@ def produce_expected_conda_yml_files(db):
     name2deplist = _produce_expected_deplists_for_env_files(db)
     return { f'conda_{n}.yml': content(n,d)
              for n,d in name2deplist.items() }
+
+def _produce_depdb_py( db, names, docstr, columns ):
+    #Content of a generated python module with a dict "deps" mapping each
+    #dependency in names to a tuple with the values of the given columns (keys
+    #in dependency_database.yml).
+    from .dirs import reporoot
+    banner = reporoot.joinpath('ncrystal_python','src','NCrystal',
+                               '__init__.py').read_text().split('\n')[:21]
+    out = banner + [
+        '',
+        '#Generated from devel/dependency_database.yml by',
+        '#"ncdevtool depdb --mode=fixreqfiles". Do not edit by hand.',
+        '',
+        f'"""{docstr}"""',
+        '',
+        '#name: ( '+', '.join(columns)+' )',
+        'deps = {',
+    ]
+    for n in sorted(names):
+        i = db['dependencies'][n]
+        assert not i.get('in_pystdlib_from') and not i.get('max_version')
+        vals = tuple( i.get(c) for c in columns )
+        out.append( f'    {n!r}: ( '+', '.join(repr(v) for v in vals)+' ),' )
+    out += [ '}', '' ]
+    return '\n'.join(out)
+
+def produce_expected_ncrystal_depdb_py(db):
+    #ncrystal_python/src/NCrystal/_depdb.py: the optional dependencies of the
+    #NCrystal module itself (ncrystal-python and the non-devel ncrystal-metapkg
+    #extras), for import checks and error messages.
+    pkgs = db['packages']
+    names = set( pkgs['ncrystal-python']['deps']['BASE'] )
+    for part, deplist in pkgs['ncrystal-metapkg']['deps'].items():
+        if part not in ('BASE','devel'):
+            names.update( deplist )
+    names -= set( pkgs.keys() )
+    return _produce_depdb_py( db, names,
+                              'Internal module with the minimum versions and'
+                              ' package names of the optional dependencies'
+                              ' of NCrystal.',
+                              ( 'min_version', 'import_check',
+                                'pypi_pkgname', 'conda_pkgname' ) )
