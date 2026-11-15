@@ -44,178 +44,178 @@
 
 --- Real data: live Debye-model sweep (many orders/temperatures/relcontriblvl) ---
 === Debye T=80K,temp=293.15K (narrow/steep), order=1 (npts=837, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.006877, 0.006877]
+  snapToGrid      : [-0.006894, 0.006894]
   linear2pt       : [-0.006894, 0.006894]
   logLinear2pt    : [-0.006894, 0.006894]
   estimateGnErange: [-0.006894, 0.006894]
 
 === Debye T=80K,temp=293.15K (narrow/steep), order=1 (npts=837, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.006877, 0.006877]
+  snapToGrid      : [-0.006894, 0.006894]
   linear2pt       : [-0.006894, 0.006894]
   logLinear2pt    : [-0.006894, 0.006894]
   estimateGnErange: [-0.006894, 0.006894]
 
 === Debye T=80K,temp=293.15K (narrow/steep), order=1 (npts=837, relcontriblvl=1e-09) ===
-  snapToGrid      : [-0.006877, 0.006877]
+  snapToGrid      : [-0.006894, 0.006894]
   linear2pt       : [-0.006894, 0.006894]
   logLinear2pt    : [-0.006894, 0.006894]
   estimateGnErange: [-0.006894, 0.006894]
 
 === Debye T=80K,temp=293.15K (narrow/steep), order=1 (npts=837, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.006877, 0.006877]
+  snapToGrid      : [-0.006894, 0.006894]
   linear2pt       : [-0.006894, 0.006894]
   logLinear2pt    : [-0.006894, 0.006894]
   estimateGnErange: [-0.006894, 0.006894]
 
 === Debye T=80K,temp=293.15K (narrow/steep), order=1 (npts=837, relcontriblvl=1e-13) ===
-  snapToGrid      : [-0.006877, 0.006877]
+  snapToGrid      : [-0.006894, 0.006894]
   linear2pt       : [-0.006894, 0.006894]
   logLinear2pt    : [-0.006894, 0.006894]
   estimateGnErange: [-0.006894, 0.006894]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=2 (npts=1669, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.01375, 0.01374]
-  linear2pt       : [-0.01375, 0.01375]
-  logLinear2pt    : [-0.01375, 0.01375]
-  estimateGnErange: [-0.01375, 0.01375]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=2 (npts=1673, relcontriblvl=0.001) ===
+  snapToGrid      : [-0.01379, 0.01377]
+  linear2pt       : [-0.01379, 0.01379]
+  logLinear2pt    : [-0.01379, 0.01379]
+  estimateGnErange: [-0.01379, 0.01379]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=2 (npts=1669, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.01375, 0.01375]
-  linear2pt       : [-0.01375, 0.01375]
-  logLinear2pt    : [-0.01375, 0.01375]
-  estimateGnErange: [-0.01375, 0.01375]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=2 (npts=1673, relcontriblvl=1e-06) ===
+  snapToGrid      : [-0.01379, 0.01379]
+  linear2pt       : [-0.01379, 0.01379]
+  logLinear2pt    : [-0.01379, 0.01379]
+  estimateGnErange: [-0.01379, 0.01379]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=2 (npts=1669, relcontriblvl=1e-09) ===
-  snapToGrid      : [-0.01375, 0.01375]
-  linear2pt       : [-0.01375, 0.01375]
-  logLinear2pt    : [-0.01375, 0.01375]
-  estimateGnErange: [-0.01375, 0.01375]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=2 (npts=1673, relcontriblvl=1e-09) ===
+  snapToGrid      : [-0.01379, 0.01379]
+  linear2pt       : [-0.01379, 0.01379]
+  logLinear2pt    : [-0.01379, 0.01379]
+  estimateGnErange: [-0.01379, 0.01379]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=2 (npts=1669, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.01375, 0.01375]
-  linear2pt       : [-0.01375, 0.01375]
-  logLinear2pt    : [-0.01375, 0.01375]
-  estimateGnErange: [-0.01375, 0.01375]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=2 (npts=1673, relcontriblvl=1e-12) ===
+  snapToGrid      : [-0.01379, 0.01379]
+  linear2pt       : [-0.01379, 0.01379]
+  logLinear2pt    : [-0.01379, 0.01379]
+  estimateGnErange: [-0.01379, 0.01379]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=2 (npts=1669, relcontriblvl=1e-13) ===
-  snapToGrid      : [-0.01375, 0.01375]
-  linear2pt       : [-0.01375, 0.01375]
-  logLinear2pt    : [-0.01375, 0.01375]
-  estimateGnErange: [-0.01375, 0.01375]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=2 (npts=1673, relcontriblvl=1e-13) ===
+  snapToGrid      : [-0.01379, 0.01379]
+  linear2pt       : [-0.01379, 0.01379]
+  logLinear2pt    : [-0.01379, 0.01379]
+  estimateGnErange: [-0.01379, 0.01379]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=3 (npts=2503, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.0202, 0.01999]
-  linear2pt       : [-0.02022, 0.02]
-  logLinear2pt    : [-0.02022, 0.02]
-  estimateGnErange: [-0.02022, 0.02]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=3 (npts=2509, relcontriblvl=0.001) ===
+  snapToGrid      : [-0.02025, 0.02004]
+  linear2pt       : [-0.02026, 0.02005]
+  logLinear2pt    : [-0.02026, 0.02005]
+  estimateGnErange: [-0.02026, 0.02005]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=3 (npts=2503, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.02063, 0.02063]
-  linear2pt       : [-0.02063, 0.02063]
-  logLinear2pt    : [-0.02063, 0.02063]
-  estimateGnErange: [-0.02063, 0.02063]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=3 (npts=2509, relcontriblvl=1e-06) ===
+  snapToGrid      : [-0.02068, 0.02068]
+  linear2pt       : [-0.02068, 0.02068]
+  logLinear2pt    : [-0.02068, 0.02068]
+  estimateGnErange: [-0.02068, 0.02068]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=3 (npts=2503, relcontriblvl=1e-09) ===
-  snapToGrid      : [-0.02063, 0.02063]
-  linear2pt       : [-0.02063, 0.02063]
-  logLinear2pt    : [-0.02063, 0.02063]
-  estimateGnErange: [-0.02063, 0.02063]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=3 (npts=2509, relcontriblvl=1e-09) ===
+  snapToGrid      : [-0.02068, 0.02068]
+  linear2pt       : [-0.02068, 0.02068]
+  logLinear2pt    : [-0.02068, 0.02068]
+  estimateGnErange: [-0.02068, 0.02068]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=3 (npts=2503, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.02063, 0.02063]
-  linear2pt       : [-0.02063, 0.02063]
-  logLinear2pt    : [-0.02063, 0.02063]
-  estimateGnErange: [-0.02063, 0.02063]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=3 (npts=2509, relcontriblvl=1e-12) ===
+  snapToGrid      : [-0.02068, 0.02068]
+  linear2pt       : [-0.02068, 0.02068]
+  logLinear2pt    : [-0.02068, 0.02068]
+  estimateGnErange: [-0.02068, 0.02068]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=3 (npts=2503, relcontriblvl=1e-13) ===
-  snapToGrid      : [-0.02063, 0.02063]
-  linear2pt       : [-0.02063, 0.02063]
-  logLinear2pt    : [-0.02063, 0.02063]
-  estimateGnErange: [-0.02063, 0.02063]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=3 (npts=2509, relcontriblvl=1e-13) ===
+  snapToGrid      : [-0.02068, 0.02068]
+  linear2pt       : [-0.02068, 0.02068]
+  logLinear2pt    : [-0.02068, 0.02068]
+  estimateGnErange: [-0.02068, 0.02068]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=5 (npts=1043, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.03028, 0.02883]
-  linear2pt       : [-0.0303, 0.02889]
-  logLinear2pt    : [-0.0303, 0.02889]
-  estimateGnErange: [-0.0303, 0.02889]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=5 (npts=1045, relcontriblvl=0.001) ===
+  snapToGrid      : [-0.03035, 0.02896]
+  linear2pt       : [-0.03037, 0.02896]
+  logLinear2pt    : [-0.03037, 0.02896]
+  estimateGnErange: [-0.03037, 0.02896]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=5 (npts=1043, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.03364, 0.03338]
-  linear2pt       : [-0.03371, 0.03342]
-  logLinear2pt    : [-0.0337, 0.03342]
-  estimateGnErange: [-0.0337, 0.03342]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=5 (npts=1045, relcontriblvl=1e-06) ===
+  snapToGrid      : [-0.03378, 0.03345]
+  linear2pt       : [-0.03379, 0.0335]
+  logLinear2pt    : [-0.03379, 0.0335]
+  estimateGnErange: [-0.03379, 0.0335]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=5 (npts=1043, relcontriblvl=1e-09) ===
-  snapToGrid      : [-0.03424, 0.03424]
-  linear2pt       : [-0.0343, 0.03425]
-  logLinear2pt    : [-0.0343, 0.03425]
-  estimateGnErange: [-0.03429, 0.03425]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=5 (npts=1045, relcontriblvl=1e-09) ===
+  snapToGrid      : [-0.03437, 0.0343]
+  linear2pt       : [-0.03439, 0.03434]
+  logLinear2pt    : [-0.03438, 0.03433]
+  estimateGnErange: [-0.03438, 0.03433]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=5 (npts=1043, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.03437, 0.03437]
-  linear2pt       : [-0.03437, 0.03437]
-  logLinear2pt    : [-0.03437, 0.03437]
-  estimateGnErange: [-0.03437, 0.03437]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=5 (npts=1045, relcontriblvl=1e-12) ===
+  snapToGrid      : [-0.03444, 0.03444]
+  linear2pt       : [-0.03444, 0.03444]
+  logLinear2pt    : [-0.03444, 0.03444]
+  estimateGnErange: [-0.03444, 0.03444]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=5 (npts=1043, relcontriblvl=1e-13) ===
-  snapToGrid      : [-0.03437, 0.03437]
-  linear2pt       : [-0.03437, 0.03437]
-  logLinear2pt    : [-0.03437, 0.03437]
-  estimateGnErange: [-0.03437, 0.03437]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=5 (npts=1045, relcontriblvl=1e-13) ===
+  snapToGrid      : [-0.03444, 0.03444]
+  linear2pt       : [-0.03444, 0.03444]
+  logLinear2pt    : [-0.03444, 0.03444]
+  estimateGnErange: [-0.03444, 0.03444]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=10 (npts=507, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.04697, 0.04196]
-  linear2pt       : [-0.04699, 0.04222]
-  logLinear2pt    : [-0.04699, 0.04221]
-  estimateGnErange: [-0.04699, 0.04221]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=10 (npts=509, relcontriblvl=0.001) ===
+  snapToGrid      : [-0.04697, 0.04222]
+  linear2pt       : [-0.04711, 0.04231]
+  logLinear2pt    : [-0.04711, 0.04231]
+  estimateGnErange: [-0.04711, 0.04231]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=10 (npts=507, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.05885, 0.05594]
-  linear2pt       : [-0.05897, 0.05612]
-  logLinear2pt    : [-0.05896, 0.05612]
-  estimateGnErange: [-0.05896, 0.05612]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=10 (npts=509, relcontriblvl=1e-06) ===
+  snapToGrid      : [-0.05885, 0.05621]
+  linear2pt       : [-0.05911, 0.05625]
+  logLinear2pt    : [-0.05911, 0.05625]
+  estimateGnErange: [-0.05911, 0.05625]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=10 (npts=507, relcontriblvl=1e-09) ===
-  snapToGrid      : [-0.06412, 0.0628]
-  linear2pt       : [-0.06433, 0.06286]
-  logLinear2pt    : [-0.06431, 0.06285]
-  estimateGnErange: [-0.06432, 0.06285]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=10 (npts=509, relcontriblvl=1e-09) ===
+  snapToGrid      : [-0.06439, 0.0628]
+  linear2pt       : [-0.06449, 0.06301]
+  logLinear2pt    : [-0.06447, 0.063]
+  estimateGnErange: [-0.06447, 0.063]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=10 (npts=507, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.0665, 0.06597]
-  linear2pt       : [-0.06676, 0.06607]
-  logLinear2pt    : [-0.06676, 0.06605]
-  estimateGnErange: [-0.06676, 0.06605]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=10 (npts=509, relcontriblvl=1e-12) ===
+  snapToGrid      : [-0.06676, 0.06597]
+  linear2pt       : [-0.06695, 0.06621]
+  logLinear2pt    : [-0.06692, 0.0662]
+  estimateGnErange: [-0.06692, 0.0662]
 
-=== Debye T=80K,temp=293.15K (narrow/steep), order=10 (npts=507, relcontriblvl=1e-13) ===
-  snapToGrid      : [-0.06703, 0.0665]
-  linear2pt       : [-0.06703, 0.0665]
-  logLinear2pt    : [-0.06703, 0.0665]
-  estimateGnErange: [-0.06703, 0.0665]
+=== Debye T=80K,temp=293.15K (narrow/steep), order=10 (npts=509, relcontriblvl=1e-13) ===
+  snapToGrid      : [-0.06729, 0.06676]
+  linear2pt       : [-0.06729, 0.06676]
+  logLinear2pt    : [-0.06729, 0.06676]
+  estimateGnErange: [-0.06729, 0.06676]
 
 === Debye T=80K,temp=293.15K (narrow/steep), order=30 (npts=288, relcontriblvl=0.001) ===
   snapToGrid      : [-0.08761, 0.07072]
-  linear2pt       : [-0.08836, 0.07101]
-  logLinear2pt    : [-0.08834, 0.07099]
-  estimateGnErange: [-0.08834, 0.07099]
+  linear2pt       : [-0.08858, 0.07116]
+  logLinear2pt    : [-0.08857, 0.07114]
+  estimateGnErange: [-0.08857, 0.07114]
 
 === Debye T=80K,temp=293.15K (narrow/steep), order=30 (npts=288, relcontriblvl=1e-06) ===
   snapToGrid      : [-0.1172, 0.1013]
-  linear2pt       : [-0.1177, 0.1021]
-  logLinear2pt    : [-0.1177, 0.1021]
-  estimateGnErange: [-0.1177, 0.1021]
+  linear2pt       : [-0.118, 0.1023]
+  logLinear2pt    : [-0.118, 0.1023]
+  estimateGnErange: [-0.118, 0.1023]
 
 === Debye T=80K,temp=293.15K (narrow/steep), order=30 (npts=288, relcontriblvl=1e-09) ===
-  snapToGrid      : [-0.1372, 0.1235]
-  linear2pt       : [-0.138, 0.1242]
-  logLinear2pt    : [-0.1379, 0.1242]
-  estimateGnErange: [-0.1379, 0.1242]
+  snapToGrid      : [-0.1383, 0.1235]
+  linear2pt       : [-0.1383, 0.1245]
+  logLinear2pt    : [-0.1383, 0.1245]
+  estimateGnErange: [-0.1383, 0.1245]
 
 === Debye T=80K,temp=293.15K (narrow/steep), order=30 (npts=288, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.1531, 0.1404]
-  linear2pt       : [-0.1531, 0.1412]
-  logLinear2pt    : [-0.1531, 0.1412]
-  estimateGnErange: [-0.1531, 0.1412]
+  snapToGrid      : [-0.1531, 0.1414]
+  linear2pt       : [-0.1535, 0.1415]
+  logLinear2pt    : [-0.1535, 0.1415]
+  estimateGnErange: [-0.1535, 0.1415]
 
 === Debye T=80K,temp=293.15K (narrow/steep), order=30 (npts=288, relcontriblvl=1e-13) ===
   snapToGrid      : [-0.1573, 0.1457]
@@ -225,27 +225,27 @@
 
 === Debye T=80K,temp=293.15K (narrow/steep), order=100 (npts=283, relcontriblvl=0.001) ===
   snapToGrid      : [-0.1773, 0.1161]
-  linear2pt       : [-0.1774, 0.1163]
-  logLinear2pt    : [-0.1774, 0.1163]
-  estimateGnErange: [-0.1774, 0.1163]
+  linear2pt       : [-0.1779, 0.1165]
+  logLinear2pt    : [-0.1779, 0.1165]
+  estimateGnErange: [-0.1779, 0.1165]
 
 === Debye T=80K,temp=293.15K (narrow/steep), order=100 (npts=283, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.2343, 0.1752]
-  linear2pt       : [-0.2359, 0.1766]
-  logLinear2pt    : [-0.2359, 0.1765]
-  estimateGnErange: [-0.2359, 0.1765]
+  snapToGrid      : [-0.2364, 0.1752]
+  linear2pt       : [-0.2365, 0.1769]
+  logLinear2pt    : [-0.2365, 0.1769]
+  estimateGnErange: [-0.2365, 0.1769]
 
 === Debye T=80K,temp=293.15K (narrow/steep), order=100 (npts=283, relcontriblvl=1e-09) ===
   snapToGrid      : [-0.2787, 0.2217]
-  linear2pt       : [-0.2796, 0.222]
-  logLinear2pt    : [-0.2795, 0.222]
-  estimateGnErange: [-0.2795, 0.222]
+  linear2pt       : [-0.2803, 0.2225]
+  logLinear2pt    : [-0.2803, 0.2224]
+  estimateGnErange: [-0.2803, 0.2224]
 
 === Debye T=80K,temp=293.15K (narrow/steep), order=100 (npts=283, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.3145, 0.2575]
-  linear2pt       : [-0.3155, 0.2595]
-  logLinear2pt    : [-0.3153, 0.2595]
-  estimateGnErange: [-0.3154, 0.2595]
+  snapToGrid      : [-0.3145, 0.2597]
+  linear2pt       : [-0.3162, 0.2601]
+  logLinear2pt    : [-0.3162, 0.2601]
+  estimateGnErange: [-0.3162, 0.2601]
 
 === Debye T=80K,temp=293.15K (narrow/steep), order=100 (npts=283, relcontriblvl=1e-13) ===
   snapToGrid      : [-0.3251, 0.2702]
@@ -254,148 +254,148 @@
   estimateGnErange: [-0.3251, 0.2702]
 
 === Debye T=410K,temp=293.15K (Al-like), order=1 (npts=837, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.03525, 0.03525]
+  snapToGrid      : [-0.03533, 0.03533]
   linear2pt       : [-0.03533, 0.03533]
   logLinear2pt    : [-0.03533, 0.03533]
   estimateGnErange: [-0.03533, 0.03533]
 
 === Debye T=410K,temp=293.15K (Al-like), order=1 (npts=837, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.03525, 0.03525]
+  snapToGrid      : [-0.03533, 0.03533]
   linear2pt       : [-0.03533, 0.03533]
   logLinear2pt    : [-0.03533, 0.03533]
   estimateGnErange: [-0.03533, 0.03533]
 
 === Debye T=410K,temp=293.15K (Al-like), order=1 (npts=837, relcontriblvl=1e-09) ===
-  snapToGrid      : [-0.03525, 0.03525]
+  snapToGrid      : [-0.03533, 0.03533]
   linear2pt       : [-0.03533, 0.03533]
   logLinear2pt    : [-0.03533, 0.03533]
   estimateGnErange: [-0.03533, 0.03533]
 
 === Debye T=410K,temp=293.15K (Al-like), order=1 (npts=837, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.03525, 0.03525]
+  snapToGrid      : [-0.03533, 0.03533]
   linear2pt       : [-0.03533, 0.03533]
   logLinear2pt    : [-0.03533, 0.03533]
   estimateGnErange: [-0.03533, 0.03533]
 
 === Debye T=410K,temp=293.15K (Al-like), order=1 (npts=837, relcontriblvl=1e-13) ===
-  snapToGrid      : [-0.03525, 0.03525]
+  snapToGrid      : [-0.03533, 0.03533]
   linear2pt       : [-0.03533, 0.03533]
   logLinear2pt    : [-0.03533, 0.03533]
   estimateGnErange: [-0.03533, 0.03533]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=2 (npts=1669, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.07049, 0.07015]
-  linear2pt       : [-0.07049, 0.07024]
-  logLinear2pt    : [-0.07049, 0.07024]
-  estimateGnErange: [-0.07049, 0.07024]
+=== Debye T=410K,temp=293.15K (Al-like), order=2 (npts=1673, relcontriblvl=0.001) ===
+  snapToGrid      : [-0.07066, 0.07032]
+  linear2pt       : [-0.07066, 0.0704]
+  logLinear2pt    : [-0.07066, 0.0704]
+  estimateGnErange: [-0.07066, 0.0704]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=2 (npts=1669, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.07049, 0.07049]
-  linear2pt       : [-0.07049, 0.07049]
-  logLinear2pt    : [-0.07049, 0.07049]
-  estimateGnErange: [-0.07049, 0.07049]
+=== Debye T=410K,temp=293.15K (Al-like), order=2 (npts=1673, relcontriblvl=1e-06) ===
+  snapToGrid      : [-0.07066, 0.07066]
+  linear2pt       : [-0.07066, 0.07066]
+  logLinear2pt    : [-0.07066, 0.07066]
+  estimateGnErange: [-0.07066, 0.07066]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=2 (npts=1669, relcontriblvl=1e-09) ===
-  snapToGrid      : [-0.07049, 0.07049]
-  linear2pt       : [-0.07049, 0.07049]
-  logLinear2pt    : [-0.07049, 0.07049]
-  estimateGnErange: [-0.07049, 0.07049]
+=== Debye T=410K,temp=293.15K (Al-like), order=2 (npts=1673, relcontriblvl=1e-09) ===
+  snapToGrid      : [-0.07066, 0.07066]
+  linear2pt       : [-0.07066, 0.07066]
+  logLinear2pt    : [-0.07066, 0.07066]
+  estimateGnErange: [-0.07066, 0.07066]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=2 (npts=1669, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.07049, 0.07049]
-  linear2pt       : [-0.07049, 0.07049]
-  logLinear2pt    : [-0.07049, 0.07049]
-  estimateGnErange: [-0.07049, 0.07049]
+=== Debye T=410K,temp=293.15K (Al-like), order=2 (npts=1673, relcontriblvl=1e-12) ===
+  snapToGrid      : [-0.07066, 0.07066]
+  linear2pt       : [-0.07066, 0.07066]
+  logLinear2pt    : [-0.07066, 0.07066]
+  estimateGnErange: [-0.07066, 0.07066]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=2 (npts=1669, relcontriblvl=1e-13) ===
-  snapToGrid      : [-0.07049, 0.07049]
-  linear2pt       : [-0.07049, 0.07049]
-  logLinear2pt    : [-0.07049, 0.07049]
-  estimateGnErange: [-0.07049, 0.07049]
+=== Debye T=410K,temp=293.15K (Al-like), order=2 (npts=1673, relcontriblvl=1e-13) ===
+  snapToGrid      : [-0.07066, 0.07066]
+  linear2pt       : [-0.07066, 0.07066]
+  logLinear2pt    : [-0.07066, 0.07066]
+  estimateGnErange: [-0.07066, 0.07066]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=3 (npts=2503, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.1046, 0.09695]
-  linear2pt       : [-0.1046, 0.09696]
-  logLinear2pt    : [-0.1046, 0.09696]
-  estimateGnErange: [-0.1046, 0.09696]
+=== Debye T=410K,temp=293.15K (Al-like), order=3 (npts=2509, relcontriblvl=0.001) ===
+  snapToGrid      : [-0.1048, 0.09712]
+  linear2pt       : [-0.1049, 0.09716]
+  logLinear2pt    : [-0.1049, 0.09716]
+  estimateGnErange: [-0.1049, 0.09716]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=3 (npts=2503, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.1057, 0.1055]
-  linear2pt       : [-0.1057, 0.1056]
-  logLinear2pt    : [-0.1057, 0.1055]
-  estimateGnErange: [-0.1057, 0.1056]
+=== Debye T=410K,temp=293.15K (Al-like), order=3 (npts=2509, relcontriblvl=1e-06) ===
+  snapToGrid      : [-0.106, 0.1057]
+  linear2pt       : [-0.106, 0.1058]
+  logLinear2pt    : [-0.106, 0.1058]
+  estimateGnErange: [-0.106, 0.1058]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=3 (npts=2503, relcontriblvl=1e-09) ===
-  snapToGrid      : [-0.1057, 0.1057]
-  linear2pt       : [-0.1057, 0.1057]
-  logLinear2pt    : [-0.1057, 0.1057]
-  estimateGnErange: [-0.1057, 0.1057]
+=== Debye T=410K,temp=293.15K (Al-like), order=3 (npts=2509, relcontriblvl=1e-09) ===
+  snapToGrid      : [-0.106, 0.106]
+  linear2pt       : [-0.106, 0.106]
+  logLinear2pt    : [-0.106, 0.106]
+  estimateGnErange: [-0.106, 0.106]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=3 (npts=2503, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.1057, 0.1057]
-  linear2pt       : [-0.1057, 0.1057]
-  logLinear2pt    : [-0.1057, 0.1057]
-  estimateGnErange: [-0.1057, 0.1057]
+=== Debye T=410K,temp=293.15K (Al-like), order=3 (npts=2509, relcontriblvl=1e-12) ===
+  snapToGrid      : [-0.106, 0.106]
+  linear2pt       : [-0.106, 0.106]
+  logLinear2pt    : [-0.106, 0.106]
+  estimateGnErange: [-0.106, 0.106]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=3 (npts=2503, relcontriblvl=1e-13) ===
-  snapToGrid      : [-0.1057, 0.1057]
-  linear2pt       : [-0.1057, 0.1057]
-  logLinear2pt    : [-0.1057, 0.1057]
-  estimateGnErange: [-0.1057, 0.1057]
+=== Debye T=410K,temp=293.15K (Al-like), order=3 (npts=2509, relcontriblvl=1e-13) ===
+  snapToGrid      : [-0.106, 0.106]
+  linear2pt       : [-0.106, 0.106]
+  logLinear2pt    : [-0.106, 0.106]
+  estimateGnErange: [-0.106, 0.106]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=5 (npts=1043, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.1633, 0.1244]
-  linear2pt       : [-0.1636, 0.1246]
-  logLinear2pt    : [-0.1636, 0.1246]
-  estimateGnErange: [-0.1636, 0.1246]
+=== Debye T=410K,temp=293.15K (Al-like), order=5 (npts=1045, relcontriblvl=0.001) ===
+  snapToGrid      : [-0.164, 0.1248]
+  linear2pt       : [-0.164, 0.1248]
+  logLinear2pt    : [-0.164, 0.1248]
+  estimateGnErange: [-0.164, 0.1248]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=5 (npts=1043, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.1741, 0.1647]
-  linear2pt       : [-0.1743, 0.1648]
-  logLinear2pt    : [-0.1742, 0.1648]
-  estimateGnErange: [-0.1743, 0.1648]
+=== Debye T=410K,temp=293.15K (Al-like), order=5 (npts=1045, relcontriblvl=1e-06) ===
+  snapToGrid      : [-0.1745, 0.165]
+  linear2pt       : [-0.1747, 0.1652]
+  logLinear2pt    : [-0.1747, 0.1652]
+  estimateGnErange: [-0.1747, 0.1652]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=5 (npts=1043, relcontriblvl=1e-09) ===
-  snapToGrid      : [-0.1758, 0.1741]
-  linear2pt       : [-0.1761, 0.1743]
-  logLinear2pt    : [-0.176, 0.1742]
-  estimateGnErange: [-0.176, 0.1743]
+=== Debye T=410K,temp=293.15K (Al-like), order=5 (npts=1045, relcontriblvl=1e-09) ===
+  snapToGrid      : [-0.1761, 0.1745]
+  linear2pt       : [-0.1765, 0.1747]
+  logLinear2pt    : [-0.1765, 0.1747]
+  estimateGnErange: [-0.1765, 0.1747]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=5 (npts=1043, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.1761, 0.1758]
-  linear2pt       : [-0.1761, 0.1761]
-  logLinear2pt    : [-0.1761, 0.176]
-  estimateGnErange: [-0.1761, 0.176]
+=== Debye T=410K,temp=293.15K (Al-like), order=5 (npts=1045, relcontriblvl=1e-12) ===
+  snapToGrid      : [-0.1765, 0.1761]
+  linear2pt       : [-0.1765, 0.1765]
+  logLinear2pt    : [-0.1765, 0.1765]
+  estimateGnErange: [-0.1765, 0.1765]
 
-=== Debye T=410K,temp=293.15K (Al-like), order=5 (npts=1043, relcontriblvl=1e-13) ===
-  snapToGrid      : [-0.1761, 0.1761]
-  linear2pt       : [-0.1761, 0.1761]
-  logLinear2pt    : [-0.1761, 0.1761]
-  estimateGnErange: [-0.1761, 0.1761]
+=== Debye T=410K,temp=293.15K (Al-like), order=5 (npts=1045, relcontriblvl=1e-13) ===
+  snapToGrid      : [-0.1765, 0.1765]
+  linear2pt       : [-0.1765, 0.1765]
+  logLinear2pt    : [-0.1765, 0.1765]
+  estimateGnErange: [-0.1765, 0.1765]
 
 === Debye T=410K,temp=293.15K (Al-like), order=10 (npts=502, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.2759, 0.1555]
-  linear2pt       : [-0.2768, 0.1559]
-  logLinear2pt    : [-0.2768, 0.1559]
-  estimateGnErange: [-0.2768, 0.1559]
+  snapToGrid      : [-0.2772, 0.1555]
+  linear2pt       : [-0.2776, 0.1561]
+  logLinear2pt    : [-0.2776, 0.1561]
+  estimateGnErange: [-0.2776, 0.1561]
 
 === Debye T=410K,temp=293.15K (Al-like), order=10 (npts=502, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.3192, 0.2421]
-  linear2pt       : [-0.3203, 0.2431]
-  logLinear2pt    : [-0.3203, 0.2431]
-  estimateGnErange: [-0.3203, 0.2431]
+  snapToGrid      : [-0.3205, 0.2434]
+  linear2pt       : [-0.3211, 0.2435]
+  logLinear2pt    : [-0.3211, 0.2435]
+  estimateGnErange: [-0.3211, 0.2435]
 
 === Debye T=410K,temp=293.15K (Al-like), order=10 (npts=502, relcontriblvl=1e-09) ===
   snapToGrid      : [-0.3381, 0.2948]
-  linear2pt       : [-0.3383, 0.2949]
-  logLinear2pt    : [-0.3382, 0.2949]
-  estimateGnErange: [-0.3382, 0.2949]
+  linear2pt       : [-0.3391, 0.2956]
+  logLinear2pt    : [-0.339, 0.2955]
+  estimateGnErange: [-0.3391, 0.2955]
 
 === Debye T=410K,temp=293.15K (Al-like), order=10 (npts=502, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.3449, 0.3232]
-  linear2pt       : [-0.3462, 0.324]
-  logLinear2pt    : [-0.3462, 0.3239]
-  estimateGnErange: [-0.3461, 0.3239]
+  snapToGrid      : [-0.3462, 0.3246]
+  linear2pt       : [-0.3472, 0.3246]
+  logLinear2pt    : [-0.347, 0.3246]
+  estimateGnErange: [-0.347, 0.3246]
 
 === Debye T=410K,temp=293.15K (Al-like), order=10 (npts=502, relcontriblvl=1e-13) ===
   snapToGrid      : [-0.3476, 0.33]
@@ -404,28 +404,28 @@
   estimateGnErange: [-0.3476, 0.33]
 
 === Debye T=410K,temp=293.15K (Al-like), order=30 (npts=274, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.6005, 0.1677]
-  linear2pt       : [-0.6043, 0.1693]
-  logLinear2pt    : [-0.6042, 0.1692]
-  estimateGnErange: [-0.6042, 0.1692]
+  snapToGrid      : [-0.6059, 0.1677]
+  linear2pt       : [-0.606, 0.1692]
+  logLinear2pt    : [-0.606, 0.1691]
+  estimateGnErange: [-0.606, 0.1691]
 
 === Debye T=410K,temp=293.15K (Al-like), order=30 (npts=274, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.7249, 0.3354]
-  linear2pt       : [-0.7301, 0.3379]
-  logLinear2pt    : [-0.7301, 0.3377]
-  estimateGnErange: [-0.7301, 0.3377]
+  snapToGrid      : [-0.7303, 0.3354]
+  linear2pt       : [-0.7324, 0.3381]
+  logLinear2pt    : [-0.7321, 0.338]
+  estimateGnErange: [-0.7322, 0.338]
 
 === Debye T=410K,temp=293.15K (Al-like), order=30 (npts=274, relcontriblvl=1e-09) ===
   snapToGrid      : [-0.8114, 0.4598]
-  linear2pt       : [-0.8128, 0.463]
-  logLinear2pt    : [-0.8126, 0.4628]
-  estimateGnErange: [-0.8126, 0.4628]
+  linear2pt       : [-0.8151, 0.4636]
+  logLinear2pt    : [-0.8147, 0.4634]
+  estimateGnErange: [-0.8148, 0.4634]
 
 === Debye T=410K,temp=293.15K (Al-like), order=30 (npts=274, relcontriblvl=1e-12) ===
   snapToGrid      : [-0.8709, 0.5626]
-  linear2pt       : [-0.8715, 0.5638]
-  logLinear2pt    : [-0.8713, 0.5636]
-  estimateGnErange: [-0.8713, 0.5636]
+  linear2pt       : [-0.8741, 0.5647]
+  logLinear2pt    : [-0.8736, 0.5644]
+  estimateGnErange: [-0.8736, 0.5644]
 
 === Debye T=410K,temp=293.15K (Al-like), order=30 (npts=274, relcontriblvl=1e-13) ===
   snapToGrid      : [-0.8872, 0.5896]
@@ -435,27 +435,27 @@
 
 === Debye T=410K,temp=293.15K (Al-like), order=100 (npts=268, relcontriblvl=0.001) ===
   snapToGrid      : [-1.471, -0.0541]
-  linear2pt       : [-1.477, -0.05068]
-  logLinear2pt    : [-1.477, -0.05091]
-  estimateGnErange: [-1.477, -0.0509]
+  linear2pt       : [-1.482, -0.05277]
+  logLinear2pt    : [-1.482, -0.05288]
+  estimateGnErange: [-1.482, -0.05287]
 
 === Debye T=410K,temp=293.15K (Al-like), order=100 (npts=268, relcontriblvl=1e-06) ===
   snapToGrid      : [-1.742, 0.2488]
-  linear2pt       : [-1.745, 0.2585]
-  logLinear2pt    : [-1.744, 0.2584]
-  estimateGnErange: [-1.744, 0.2584]
+  linear2pt       : [-1.75, 0.2574]
+  logLinear2pt    : [-1.75, 0.2571]
+  estimateGnErange: [-1.75, 0.2571]
 
 === Debye T=410K,temp=293.15K (Al-like), order=100 (npts=268, relcontriblvl=1e-09) ===
   snapToGrid      : [-1.937, 0.4869]
-  linear2pt       : [-1.941, 0.4961]
-  logLinear2pt    : [-1.94, 0.4958]
-  estimateGnErange: [-1.94, 0.4958]
+  linear2pt       : [-1.946, 0.4955]
+  logLinear2pt    : [-1.946, 0.4951]
+  estimateGnErange: [-1.946, 0.4951]
 
 === Debye T=410K,temp=293.15K (Al-like), order=100 (npts=268, relcontriblvl=1e-12) ===
-  snapToGrid      : [-2.088, 0.6924]
-  linear2pt       : [-2.098, 0.6958]
-  logLinear2pt    : [-2.098, 0.6953]
-  estimateGnErange: [-2.098, 0.6953]
+  snapToGrid      : [-2.099, 0.6924]
+  linear2pt       : [-2.105, 0.6955]
+  logLinear2pt    : [-2.104, 0.6951]
+  estimateGnErange: [-2.104, 0.6951]
 
 === Debye T=410K,temp=293.15K (Al-like), order=100 (npts=268, relcontriblvl=1e-13) ===
   snapToGrid      : [-2.142, 0.7465]
@@ -464,214 +464,214 @@
   estimateGnErange: [-2.142, 0.7465]
 
 === Debye T=2000K,temp=293.15K (wide), order=1 (npts=837, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.1719, 0.1719]
-  linear2pt       : [-0.1723, 0.172]
-  logLinear2pt    : [-0.1723, 0.172]
-  estimateGnErange: [-0.1723, 0.172]
+  snapToGrid      : [-0.1723, 0.1723]
+  linear2pt       : [-0.1723, 0.1723]
+  logLinear2pt    : [-0.1723, 0.1723]
+  estimateGnErange: [-0.1723, 0.1723]
 
 === Debye T=2000K,temp=293.15K (wide), order=1 (npts=837, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.1719, 0.1719]
+  snapToGrid      : [-0.1723, 0.1723]
   linear2pt       : [-0.1723, 0.1723]
   logLinear2pt    : [-0.1723, 0.1723]
   estimateGnErange: [-0.1723, 0.1723]
 
 === Debye T=2000K,temp=293.15K (wide), order=1 (npts=837, relcontriblvl=1e-09) ===
-  snapToGrid      : [-0.1719, 0.1719]
+  snapToGrid      : [-0.1723, 0.1723]
   linear2pt       : [-0.1723, 0.1723]
   logLinear2pt    : [-0.1723, 0.1723]
   estimateGnErange: [-0.1723, 0.1723]
 
 === Debye T=2000K,temp=293.15K (wide), order=1 (npts=837, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.1719, 0.1719]
+  snapToGrid      : [-0.1723, 0.1723]
   linear2pt       : [-0.1723, 0.1723]
   logLinear2pt    : [-0.1723, 0.1723]
   estimateGnErange: [-0.1723, 0.1723]
 
 === Debye T=2000K,temp=293.15K (wide), order=1 (npts=837, relcontriblvl=1e-13) ===
-  snapToGrid      : [-0.1719, 0.1719]
+  snapToGrid      : [-0.1723, 0.1723]
   linear2pt       : [-0.1723, 0.1723]
   logLinear2pt    : [-0.1723, 0.1723]
   estimateGnErange: [-0.1723, 0.1723]
 
-=== Debye T=2000K,temp=293.15K (wide), order=2 (npts=1669, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.3439, 0.167]
-  linear2pt       : [-0.3439, 0.1674]
-  logLinear2pt    : [-0.3439, 0.1674]
-  estimateGnErange: [-0.3439, 0.1674]
+=== Debye T=2000K,temp=293.15K (wide), order=2 (npts=1673, relcontriblvl=0.001) ===
+  snapToGrid      : [-0.3447, 0.167]
+  linear2pt       : [-0.3447, 0.1672]
+  logLinear2pt    : [-0.3447, 0.1672]
+  estimateGnErange: [-0.3447, 0.1672]
 
-=== Debye T=2000K,temp=293.15K (wide), order=2 (npts=1669, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.3439, 0.3237]
-  linear2pt       : [-0.3439, 0.3238]
-  logLinear2pt    : [-0.3439, 0.3238]
-  estimateGnErange: [-0.3439, 0.3238]
+=== Debye T=2000K,temp=293.15K (wide), order=2 (npts=1673, relcontriblvl=1e-06) ===
+  snapToGrid      : [-0.3447, 0.3241]
+  linear2pt       : [-0.3447, 0.3242]
+  logLinear2pt    : [-0.3447, 0.3242]
+  estimateGnErange: [-0.3447, 0.3242]
 
-=== Debye T=2000K,temp=293.15K (wide), order=2 (npts=1669, relcontriblvl=1e-09) ===
-  snapToGrid      : [-0.3439, 0.3439]
-  linear2pt       : [-0.3439, 0.3439]
-  logLinear2pt    : [-0.3439, 0.3439]
-  estimateGnErange: [-0.3439, 0.3439]
+=== Debye T=2000K,temp=293.15K (wide), order=2 (npts=1673, relcontriblvl=1e-09) ===
+  snapToGrid      : [-0.3447, 0.3447]
+  linear2pt       : [-0.3447, 0.3447]
+  logLinear2pt    : [-0.3447, 0.3447]
+  estimateGnErange: [-0.3447, 0.3447]
 
-=== Debye T=2000K,temp=293.15K (wide), order=2 (npts=1669, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.3439, 0.3439]
-  linear2pt       : [-0.3439, 0.3439]
-  logLinear2pt    : [-0.3439, 0.3439]
-  estimateGnErange: [-0.3439, 0.3439]
+=== Debye T=2000K,temp=293.15K (wide), order=2 (npts=1673, relcontriblvl=1e-12) ===
+  snapToGrid      : [-0.3447, 0.3447]
+  linear2pt       : [-0.3447, 0.3447]
+  logLinear2pt    : [-0.3447, 0.3447]
+  estimateGnErange: [-0.3447, 0.3447]
 
-=== Debye T=2000K,temp=293.15K (wide), order=2 (npts=1669, relcontriblvl=1e-13) ===
-  snapToGrid      : [-0.3439, 0.3439]
-  linear2pt       : [-0.3439, 0.3439]
-  logLinear2pt    : [-0.3439, 0.3439]
-  estimateGnErange: [-0.3439, 0.3439]
+=== Debye T=2000K,temp=293.15K (wide), order=2 (npts=1673, relcontriblvl=1e-13) ===
+  snapToGrid      : [-0.3447, 0.3447]
+  linear2pt       : [-0.3447, 0.3447]
+  logLinear2pt    : [-0.3447, 0.3447]
+  estimateGnErange: [-0.3447, 0.3447]
 
-=== Debye T=2000K,temp=293.15K (wide), order=3 (npts=2502, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.5133, 0.1377]
-  linear2pt       : [-0.5136, 0.1379]
-  logLinear2pt    : [-0.5136, 0.1379]
-  estimateGnErange: [-0.5136, 0.1379]
+=== Debye T=2000K,temp=293.15K (wide), order=3 (npts=2508, relcontriblvl=0.001) ===
+  snapToGrid      : [-0.5146, 0.1373]
+  linear2pt       : [-0.5148, 0.1376]
+  logLinear2pt    : [-0.5148, 0.1376]
+  estimateGnErange: [-0.5148, 0.1376]
 
-=== Debye T=2000K,temp=293.15K (wide), order=3 (npts=2502, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.5158, 0.3484]
-  linear2pt       : [-0.5158, 0.3487]
-  logLinear2pt    : [-0.5158, 0.3487]
-  estimateGnErange: [-0.5158, 0.3487]
+=== Debye T=2000K,temp=293.15K (wide), order=3 (npts=2508, relcontriblvl=1e-06) ===
+  snapToGrid      : [-0.517, 0.3484]
+  linear2pt       : [-0.517, 0.3487]
+  logLinear2pt    : [-0.517, 0.3487]
+  estimateGnErange: [-0.517, 0.3487]
 
-=== Debye T=2000K,temp=293.15K (wide), order=3 (npts=2502, relcontriblvl=1e-09) ===
-  snapToGrid      : [-0.5158, 0.4766]
-  linear2pt       : [-0.5158, 0.4768]
-  logLinear2pt    : [-0.5158, 0.4768]
-  estimateGnErange: [-0.5158, 0.4768]
+=== Debye T=2000K,temp=293.15K (wide), order=3 (npts=2508, relcontriblvl=1e-09) ===
+  snapToGrid      : [-0.517, 0.477]
+  linear2pt       : [-0.517, 0.4774]
+  logLinear2pt    : [-0.517, 0.4774]
+  estimateGnErange: [-0.517, 0.4774]
 
-=== Debye T=2000K,temp=293.15K (wide), order=3 (npts=2502, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.5158, 0.5137]
-  linear2pt       : [-0.5158, 0.5141]
-  logLinear2pt    : [-0.5158, 0.5141]
-  estimateGnErange: [-0.5158, 0.5141]
+=== Debye T=2000K,temp=293.15K (wide), order=3 (npts=2508, relcontriblvl=1e-12) ===
+  snapToGrid      : [-0.517, 0.515]
+  linear2pt       : [-0.517, 0.5153]
+  logLinear2pt    : [-0.517, 0.5152]
+  estimateGnErange: [-0.517, 0.5153]
 
-=== Debye T=2000K,temp=293.15K (wide), order=3 (npts=2502, relcontriblvl=1e-13) ===
-  snapToGrid      : [-0.5158, 0.5154]
-  linear2pt       : [-0.5158, 0.5154]
-  logLinear2pt    : [-0.5158, 0.5154]
-  estimateGnErange: [-0.5158, 0.5154]
+=== Debye T=2000K,temp=293.15K (wide), order=3 (npts=2508, relcontriblvl=1e-13) ===
+  snapToGrid      : [-0.517, 0.5166]
+  linear2pt       : [-0.517, 0.5166]
+  logLinear2pt    : [-0.517, 0.5166]
+  estimateGnErange: [-0.517, 0.5166]
 
-=== Debye T=2000K,temp=293.15K (wide), order=5 (npts=1914, relcontriblvl=0.001) ===
-  snapToGrid      : [-0.8304, 0.04618]
-  linear2pt       : [-0.8305, 0.04693]
-  logLinear2pt    : [-0.8305, 0.04693]
-  estimateGnErange: [-0.8305, 0.04693]
+=== Debye T=2000K,temp=293.15K (wide), order=5 (npts=1918, relcontriblvl=0.001) ===
+  snapToGrid      : [-0.832, 0.04535]
+  linear2pt       : [-0.8325, 0.04614]
+  logLinear2pt    : [-0.8325, 0.04614]
+  estimateGnErange: [-0.8325, 0.04614]
 
-=== Debye T=2000K,temp=293.15K (wide), order=5 (npts=1914, relcontriblvl=1e-06) ===
-  snapToGrid      : [-0.8551, 0.32]
-  linear2pt       : [-0.8556, 0.3201]
-  logLinear2pt    : [-0.8555, 0.3201]
-  estimateGnErange: [-0.8555, 0.3201]
+=== Debye T=2000K,temp=293.15K (wide), order=5 (npts=1918, relcontriblvl=1e-06) ===
+  snapToGrid      : [-0.8568, 0.3191]
+  linear2pt       : [-0.8576, 0.3197]
+  logLinear2pt    : [-0.8576, 0.3197]
+  estimateGnErange: [-0.8575, 0.3197]
 
-=== Debye T=2000K,temp=293.15K (wide), order=5 (npts=1914, relcontriblvl=1e-09) ===
-  snapToGrid      : [-0.8593, 0.5228]
-  linear2pt       : [-0.8593, 0.5234]
-  logLinear2pt    : [-0.8593, 0.5234]
-  estimateGnErange: [-0.8593, 0.5234]
+=== Debye T=2000K,temp=293.15K (wide), order=5 (npts=1918, relcontriblvl=1e-09) ===
+  snapToGrid      : [-0.8609, 0.5228]
+  linear2pt       : [-0.8617, 0.5234]
+  logLinear2pt    : [-0.8617, 0.5234]
+  estimateGnErange: [-0.8617, 0.5234]
 
-=== Debye T=2000K,temp=293.15K (wide), order=5 (npts=1914, relcontriblvl=1e-12) ===
-  snapToGrid      : [-0.8593, 0.677]
-  linear2pt       : [-0.8593, 0.6775]
-  logLinear2pt    : [-0.8593, 0.6775]
-  estimateGnErange: [-0.8593, 0.6775]
+=== Debye T=2000K,temp=293.15K (wide), order=5 (npts=1918, relcontriblvl=1e-12) ===
+  snapToGrid      : [-0.8617, 0.6778]
+  linear2pt       : [-0.8617, 0.6779]
+  logLinear2pt    : [-0.8617, 0.6779]
+  estimateGnErange: [-0.8617, 0.6779]
 
-=== Debye T=2000K,temp=293.15K (wide), order=5 (npts=1914, relcontriblvl=1e-13) ===
-  snapToGrid      : [-0.8593, 0.7158]
-  linear2pt       : [-0.8593, 0.7159]
-  logLinear2pt    : [-0.8593, 0.7159]
-  estimateGnErange: [-0.8593, 0.7159]
+=== Debye T=2000K,temp=293.15K (wide), order=5 (npts=1918, relcontriblvl=1e-13) ===
+  snapToGrid      : [-0.8617, 0.7166]
+  linear2pt       : [-0.8617, 0.7167]
+  logLinear2pt    : [-0.8617, 0.7167]
+  estimateGnErange: [-0.8617, 0.7167]
 
-=== Debye T=2000K,temp=293.15K (wide), order=10 (npts=738, relcontriblvl=0.001) ===
-  snapToGrid      : [-1.537, -0.2606]
-  linear2pt       : [-1.54, -0.2573]
-  logLinear2pt    : [-1.54, -0.2573]
-  estimateGnErange: [-1.54, -0.2573]
+=== Debye T=2000K,temp=293.15K (wide), order=10 (npts=739, relcontriblvl=0.001) ===
+  snapToGrid      : [-1.54, -0.2606]
+  linear2pt       : [-1.544, -0.2593]
+  logLinear2pt    : [-1.544, -0.2593]
+  estimateGnErange: [-1.544, -0.2593]
 
-=== Debye T=2000K,temp=293.15K (wide), order=10 (npts=738, relcontriblvl=1e-06) ===
-  snapToGrid      : [-1.643, 0.1089]
-  linear2pt       : [-1.643, 0.1121]
-  logLinear2pt    : [-1.643, 0.1121]
-  estimateGnErange: [-1.643, 0.1121]
+=== Debye T=2000K,temp=293.15K (wide), order=10 (npts=739, relcontriblvl=1e-06) ===
+  snapToGrid      : [-1.646, 0.1089]
+  linear2pt       : [-1.647, 0.1106]
+  logLinear2pt    : [-1.647, 0.1106]
+  estimateGnErange: [-1.647, 0.1106]
 
-=== Debye T=2000K,temp=293.15K (wide), order=10 (npts=738, relcontriblvl=1e-09) ===
-  snapToGrid      : [-1.686, 0.4024]
-  linear2pt       : [-1.686, 0.4035]
-  logLinear2pt    : [-1.686, 0.4035]
-  estimateGnErange: [-1.686, 0.4035]
+=== Debye T=2000K,temp=293.15K (wide), order=10 (npts=739, relcontriblvl=1e-09) ===
+  snapToGrid      : [-1.689, 0.3991]
+  linear2pt       : [-1.691, 0.4023]
+  logLinear2pt    : [-1.69, 0.4023]
+  estimateGnErange: [-1.69, 0.4023]
 
-=== Debye T=2000K,temp=293.15K (wide), order=10 (npts=738, relcontriblvl=1e-12) ===
-  snapToGrid      : [-1.702, 0.6465]
-  linear2pt       : [-1.705, 0.6492]
-  logLinear2pt    : [-1.705, 0.6491]
-  estimateGnErange: [-1.705, 0.6491]
+=== Debye T=2000K,temp=293.15K (wide), order=10 (npts=739, relcontriblvl=1e-12) ===
+  snapToGrid      : [-1.709, 0.6465]
+  linear2pt       : [-1.71, 0.6484]
+  logLinear2pt    : [-1.709, 0.6484]
+  estimateGnErange: [-1.709, 0.6484]
 
-=== Debye T=2000K,temp=293.15K (wide), order=10 (npts=738, relcontriblvl=1e-13) ===
-  snapToGrid      : [-1.709, 0.7191]
-  linear2pt       : [-1.709, 0.7195]
-  logLinear2pt    : [-1.709, 0.7195]
-  estimateGnErange: [-1.709, 0.7195]
+=== Debye T=2000K,temp=293.15K (wide), order=10 (npts=739, relcontriblvl=1e-13) ===
+  snapToGrid      : [-1.712, 0.7191]
+  linear2pt       : [-1.712, 0.7194]
+  logLinear2pt    : [-1.712, 0.7194]
+  estimateGnErange: [-1.712, 0.7194]
 
-=== Debye T=2000K,temp=293.15K (wide), order=30 (npts=344, relcontriblvl=0.001) ===
-  snapToGrid      : [-4.037, -1.781]
-  linear2pt       : [-4.046, -1.78]
-  logLinear2pt    : [-4.046, -1.78]
-  estimateGnErange: [-4.046, -1.78]
+=== Debye T=2000K,temp=293.15K (wide), order=30 (npts=345, relcontriblvl=0.001) ===
+  snapToGrid      : [-4.051, -1.794]
+  linear2pt       : [-4.057, -1.787]
+  logLinear2pt    : [-4.056, -1.787]
+  estimateGnErange: [-4.056, -1.787]
 
-=== Debye T=2000K,temp=293.15K (wide), order=30 (npts=344, relcontriblvl=1e-06) ===
-  snapToGrid      : [-4.354, -1.201]
-  linear2pt       : [-4.365, -1.195]
-  logLinear2pt    : [-4.364, -1.195]
-  estimateGnErange: [-4.364, -1.195]
+=== Debye T=2000K,temp=293.15K (wide), order=30 (npts=345, relcontriblvl=1e-06) ===
+  snapToGrid      : [-4.367, -1.214]
+  linear2pt       : [-4.376, -1.201]
+  logLinear2pt    : [-4.375, -1.201]
+  estimateGnErange: [-4.375, -1.201]
 
-=== Debye T=2000K,temp=293.15K (wide), order=30 (npts=344, relcontriblvl=1e-09) ===
-  snapToGrid      : [-4.565, -0.7389]
-  linear2pt       : [-4.568, -0.7273]
-  logLinear2pt    : [-4.567, -0.7275]
-  estimateGnErange: [-4.567, -0.7275]
+=== Debye T=2000K,temp=293.15K (wide), order=30 (npts=345, relcontriblvl=1e-09) ===
+  snapToGrid      : [-4.578, -0.7389]
+  linear2pt       : [-4.579, -0.7332]
+  logLinear2pt    : [-4.579, -0.7335]
+  estimateGnErange: [-4.579, -0.7335]
 
-=== Debye T=2000K,temp=293.15K (wide), order=30 (npts=344, relcontriblvl=1e-12) ===
-  snapToGrid      : [-4.697, -0.3299]
-  linear2pt       : [-4.71, -0.323]
-  logLinear2pt    : [-4.71, -0.3233]
-  estimateGnErange: [-4.71, -0.3233]
+=== Debye T=2000K,temp=293.15K (wide), order=30 (npts=345, relcontriblvl=1e-12) ===
+  snapToGrid      : [-4.71, -0.3299]
+  linear2pt       : [-4.722, -0.3287]
+  logLinear2pt    : [-4.722, -0.3289]
+  estimateGnErange: [-4.722, -0.3289]
 
-=== Debye T=2000K,temp=293.15K (wide), order=30 (npts=344, relcontriblvl=1e-13) ===
-  snapToGrid      : [-4.737, -0.2111]
-  linear2pt       : [-4.737, -0.2111]
-  logLinear2pt    : [-4.737, -0.2111]
-  estimateGnErange: [-4.737, -0.2111]
+=== Debye T=2000K,temp=293.15K (wide), order=30 (npts=345, relcontriblvl=1e-13) ===
+  snapToGrid      : [-4.75, -0.2111]
+  linear2pt       : [-4.75, -0.2111]
+  logLinear2pt    : [-4.75, -0.2111]
+  estimateGnErange: [-4.75, -0.2111]
 
-=== Debye T=2000K,temp=293.15K (wide), order=100 (npts=162, relcontriblvl=0.001) ===
+=== Debye T=2000K,temp=293.15K (wide), order=100 (npts=163, relcontriblvl=0.001) ===
   snapToGrid      : [-12.03, -7.916]
-  linear2pt       : [-12.04, -7.871]
-  logLinear2pt    : [-12.04, -7.873]
-  estimateGnErange: [-12.04, -7.872]
+  linear2pt       : [-12.07, -7.898]
+  logLinear2pt    : [-12.07, -7.9]
+  estimateGnErange: [-12.07, -7.899]
 
-=== Debye T=2000K,temp=293.15K (wide), order=100 (npts=162, relcontriblvl=1e-06) ===
-  snapToGrid      : [-12.72, -6.914]
-  linear2pt       : [-12.76, -6.884]
-  logLinear2pt    : [-12.76, -6.887]
-  estimateGnErange: [-12.76, -6.887]
+=== Debye T=2000K,temp=293.15K (wide), order=100 (npts=163, relcontriblvl=1e-06) ===
+  snapToGrid      : [-12.77, -6.914]
+  linear2pt       : [-12.79, -6.912]
+  logLinear2pt    : [-12.79, -6.913]
+  estimateGnErange: [-12.79, -6.913]
 
-=== Debye T=2000K,temp=293.15K (wide), order=100 (npts=162, relcontriblvl=1e-09) ===
-  snapToGrid      : [-13.25, -6.122]
-  linear2pt       : [-13.28, -6.104]
-  logLinear2pt    : [-13.27, -6.107]
-  estimateGnErange: [-13.27, -6.107]
+=== Debye T=2000K,temp=293.15K (wide), order=100 (npts=163, relcontriblvl=1e-09) ===
+  snapToGrid      : [-13.3, -6.175]
+  linear2pt       : [-13.31, -6.13]
+  logLinear2pt    : [-13.31, -6.131]
+  estimateGnErange: [-13.31, -6.131]
 
-=== Debye T=2000K,temp=293.15K (wide), order=100 (npts=162, relcontriblvl=1e-12) ===
-  snapToGrid      : [-13.67, -5.436]
-  linear2pt       : [-13.69, -5.433]
-  logLinear2pt    : [-13.68, -5.434]
-  estimateGnErange: [-13.68, -5.434]
+=== Debye T=2000K,temp=293.15K (wide), order=100 (npts=163, relcontriblvl=1e-12) ===
+  snapToGrid      : [-13.67, -5.489]
+  linear2pt       : [-13.72, -5.454]
+  logLinear2pt    : [-13.72, -5.457]
+  estimateGnErange: [-13.72, -5.457]
 
-=== Debye T=2000K,temp=293.15K (wide), order=100 (npts=162, relcontriblvl=1e-13) ===
-  snapToGrid      : [-13.77, -5.278]
-  linear2pt       : [-13.77, -5.278]
-  logLinear2pt    : [-13.77, -5.278]
-  estimateGnErange: [-13.77, -5.278]
+=== Debye T=2000K,temp=293.15K (wide), order=100 (npts=163, relcontriblvl=1e-13) ===
+  snapToGrid      : [-13.83, -5.278]
+  linear2pt       : [-13.83, -5.278]
+  logLinear2pt    : [-13.83, -5.278]
+  estimateGnErange: [-13.83, -5.278]
 
 --- Real data: live Li2O (Li,O) sweep (many orders/relcontriblvl) ---
 === Li2O (real material), element=Li, order=1 (npts=20453, relcontriblvl=0.001) ===
