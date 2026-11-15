@@ -72,8 +72,8 @@ Caught expected NCBadInput('Invalid energy unit on "1.0ergs". Possible units inc
   scenario = ""
   cfgstr   = "solid::Al/1gcm3"
 
-    -> geomcfg   = "sphere;r=0.157649"
-    -> srccfg    = "circular;z=-0.157649;r=0.157649;ekin=0.0252617;n=1e6"
+    -> geomcfg   = "sphere;r=0.1576525"
+    -> srccfg    = "circular;z=-0.1576525;r=0.1576525;ekin=0.0252617;n=1e6"
 
 >>> Testing
   scenario = ""
@@ -86,8 +86,8 @@ Caught expected NCBadInput('Invalid energy unit on "1.0ergs". Possible units inc
   scenario = ""
   cfgstr   = "solid::Al/1gcm3;temp=1000K"
 
-    -> geomcfg   = "sphere;r=0.1574615"
-    -> srccfg    = "circular;z=-0.1574615;r=0.1574615;ekin=0.0861733;n=1e6"
+    -> geomcfg   = "sphere;r=0.157482"
+    -> srccfg    = "circular;z=-0.157482;r=0.157482;ekin=0.0861733;n=1e6"
 
 >>> Testing
   scenario = "1.8meV"
@@ -230,8 +230,8 @@ Caught expected NCBadInput('Can not use kT as a unit for a multi-phase material 
   scenario = ""
   cfgstr   = "phases<0.001*solid::Be/1gcm3;temp=100K&0.999*solid::Al/1gcm3;temp=200K>"
 
-    -> geomcfg   = "sphere;r=0.156533"
-    -> srccfg    = "circular;z=-0.156533;r=0.156533;wl=1.8;n=1e6"
+    -> geomcfg   = "sphere;r=0.156548"
+    -> srccfg    = "circular;z=-0.156548;r=0.156548;wl=1.8;n=1e6"
 
 >>> Testing
   scenario = "1BT on 1m"

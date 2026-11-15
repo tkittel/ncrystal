@@ -58,6 +58,6 @@ Scattering cross sections of Au_sg225.ncmat (inmem)
   sigma_incoh_elas ( 0.5 Aa ) = 0.086260044334234 barn
   sigma_incoh_elas ( 2 Aa ) = 0.36984883015337 barn
   sigma_incoh_elas ( 5 Aa ) = 0.41953177666958 barn
-  sigma_inelas ( 0.5 Aa ) = 6.114072 barn
-  sigma_inelas ( 2 Aa ) = 1.028024 barn
-  sigma_inelas ( 5 Aa ) = 0.3140298 barn
+  sigma_inelas ( 0.5 Aa ) = 6.11554 barn
+  sigma_inelas ( 2 Aa ) = 1.028905 barn
+  sigma_inelas ( 5 Aa ) = 0.3148578 barn
