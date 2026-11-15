@@ -53,21 +53,6 @@ def create_argparser_for_sphinx( progname ):
 def _is_unittest():
     return nccommon.ncgetenv_bool('TOOL_UNITTESTS')
 
-#Function for importing required python modules which may be missing, to provide
-#a somewhat more helpful error to the user:
-def import_optpymod(name):
-    import importlib
-    errmsg = None
-    try:
-        themod = importlib.import_module(name)
-    except ImportError as exc:
-        errmsg = f'ERROR: Could not import a required python module: {name}'
-        if maybeThisIsConda() and name in ('matplotlib','numpy'):
-            errmsg += (' (looks like you are using conda so you might solve it'
-                       f' by running "conda install [-c conda-forge] {name}")')
-        raise SystemExit(errmsg) from exc
-    return themod
-
 def parseArgs( progname, arglist, *, return_parser = False ):
     import argparse
 
@@ -456,8 +441,10 @@ def import_npplt(pdf=False):
                              '(see also '
                              'https://github.com/mctools/ncrystal/issues/202)')
         return _npplt
-    np = import_optpymod('numpy')
-    mpl = import_optpymod('matplotlib')
+    from ._imports import import_optional
+    np = import_optional( 'numpy', sysexit = True )
+    mpl = import_optional( 'matplotlib', purpose = 'for plotting',
+                           sysexit = True )
 
     if _mpldpi[0]:
         mpl.rcParams['figure.dpi']=_mpldpi[0]
@@ -476,7 +463,7 @@ def import_npplt(pdf=False):
         if not PdfPages:
             raise SystemExit("ERROR: Your installation of matplotlib does"
                              " not have the required support for PDF output.")
-    plt = import_optpymod('matplotlib.pyplot')
+    import matplotlib.pyplot as plt
 
     _npplt = (np,plt,PdfPages(_pdffilename) if pdf else None)
 
@@ -977,8 +964,3 @@ def benchmark_mode( progname, arglist):
         dt = 0.0
     print(f'{dt*1000.0:.2f}ms')
 
-def maybeThisIsConda():
-    import os
-    import sys
-    return ( os.environ.get('CONDA_PREFIX',None) or
-             os.path.exists(os.path.join(sys.base_prefix, 'conda-meta')) )
