@@ -163,9 +163,26 @@ def try_cfg_with_cmake_project(verbose):
         print(end='',flush=True)
     return rv.returncode == 0
 
+def _vtuple( s ):
+    import re
+    return tuple( int(e) for e in re.findall(r'\d+',s)[:3] )
+
+def _installed_version( modname, pypiname ):
+    import importlib
+    import importlib.metadata
+    v = getattr( importlib.import_module( modname.split('.')[0] ),
+                 '__version__', None )
+    if v is None:
+        try:
+            v = importlib.metadata.version( pypiname )
+        except importlib.metadata.PackageNotFoundError:
+            pass
+    return v
+
 def prepare_needs( scripts, verbose ):
     import importlib
-    import shutil
+
+    from ._depdb import deps
 
     script2dep = {}
     alldeps = set()
@@ -180,39 +197,27 @@ def prepare_needs( scripts, verbose ):
     for dep in sorted(alldeps):
         deppretty = 'cmake (with compilers)' if dep=='cmake' else dep
         print(f"Checking for presence of {deppretty}...",end='',flush=True)
-        def mark( ok, _dep = dep ):
+        def mark( ok, note = '', _dep = dep ):
             if ok:
                 print(' yes')
             else:
                 absent.add( _dep )
-                print(' no')
+                print(' no'+note)
         if dep == 'cmake':
             #special, must try to tiny cmake project with C and C++
             mark(try_cfg_with_cmake_project(verbose))
             continue
-        if dep in ['ruff']:
-            #just a command of the same name:
-            mark(shutil.which(dep))
-            continue
-        modtoimport = dep
-        if dep=='matplotlib':
-            modtoimport = 'matplotlib.pyplot'
-        elif dep=='endf-parserpy':
-            modtoimport = 'endf_parserpy'
-        elif dep=='toml':
-            import sys
-            if sys.version_info[0:2] >= (3,11):
-                #tomllib always present in 3.11+
-                continue
-            else:
-                #use optional module tomli in 3.10 and earlier:
-                modtoimport = 'tomli'
-        ok = True
+        minv, modname, pypiname = deps[dep]
         try:
-            importlib.import_module(modtoimport)
+            importlib.import_module(modname)
         except ModuleNotFoundError:
-            ok = False
-        mark(ok)
+            mark(False)
+            continue
+        v = _installed_version( modname, pypiname )
+        if minv and v and _vtuple(v) < _vtuple(minv):
+            mark(False,f' (version {v} is too old, {minv} or later needed)')
+        else:
+            mark(True)
     return { 'absent': absent,
              'script2dep': script2dep }
 

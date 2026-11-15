@@ -111,11 +111,16 @@ def check_env_files(db, *, fix = False):
         error('some files needs to be updated')
 
 def check_depdb_py_files(db, *, fix = False):
-    from .depdb import produce_expected_ncrystal_depdb_py
+    from .depdb import (
+        produce_expected_ncrystal_depdb_py,
+        produce_expected_verify_depdb_py,
+    )
     from .dirs import reporoot
     for frel, expected in [
             ( 'ncrystal_python/src/NCrystal/_depdb.py',
-              produce_expected_ncrystal_depdb_py(db) ) ]:
+              produce_expected_ncrystal_depdb_py(db) ),
+            ( 'ncrystal_verify/depdb.py',
+              produce_expected_verify_depdb_py(db) ) ]:
         f = reporoot.joinpath(*frel.split('/'))
         if f.is_file() and f.read_text() == expected:
             continue
