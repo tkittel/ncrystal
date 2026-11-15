@@ -1975,16 +1975,10 @@ def _spglib_apply_std_transform( spglib_cell, transform ):
     return lattice_std, pos, typ
 
 def _import_spglib( *, sysexit = False ):
-    try:
-        import spglib  #both available on pypi and conda-forge
-    except ImportError:
-        m = ( 'Could not import spglib module needed to standardise and verify crystal structures.'
-              +' The spglib package is available on both PyPI ("python3 -mpip install'
-              +' spglib") and conda ("conda install -c conda-forge spglib")' )
-        if sysexit:
-            raise SystemExit(m)
-        else:
-            raise ImportError(m)
+    from ._imports import import_optional
+    spglib = import_optional( 'spglib', sysexit = sysexit,
+                              purpose = ( 'to standardise and verify crystal'
+                                          ' structures' ) )
     if hasattr(spglib,'spglib'):
         #spglib version < 2.7
         return spglib.spglib
@@ -1999,18 +1993,9 @@ def _import_spglib( *, sysexit = False ):
     return spglib
 
 def _import_ase( *, sysexit = False ):
-    try:
-        import ase  #both available on pypi and conda-forge
-        import ase.io
-    except ImportError:
-        m = ( 'Could not import ase module.'
-              +' The ase package is available on both PyPI ("python3 -mpip install'
-              +' ase") and conda ("conda install -c conda-forge ase")' )
-        if sysexit:
-            raise SystemExit(m)
-        else:
-            raise ImportError(m)
-    return ase, ase.io
+    from ._imports import import_optional
+    ase = import_optional( 'ase', sysexit = sysexit )
+    return ase, ase.io#import_optional also imported ase.io
 
 def _spglib_extractsg( spglib_symdata ):
     sd = spglib_symdata

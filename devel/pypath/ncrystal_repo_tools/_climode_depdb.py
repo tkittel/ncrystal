@@ -40,10 +40,11 @@ def gathertestdeps():
     return needs
 
 def fixreqfiles():
-    from ._check_deps import check_env_files
+    from ._check_deps import check_depdb_py_files, check_env_files
     from .depdb import load_depdb
     db = load_depdb()
     check_env_files( db, fix = True )
+    check_depdb_py_files( db, fix = True )
 
 def main( parser ):
     parser.init( short_description() )

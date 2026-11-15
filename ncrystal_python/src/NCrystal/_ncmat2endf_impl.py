@@ -53,33 +53,13 @@ _cacheimport=[None]
 def import_endfparserpy():
     if _cacheimport[0] is not None:
         return _cacheimport[0]
-    try:
-        import endf_parserpy
-        from endf_parserpy.interpreter.fortran_utils import (
-            read_fort_floats,
-            write_fort_floats,
-        )
-    except ImportError as e:
-        ncprint('ERROR: Could not import endf_parserpy.\n\n'
-                '       Please check that the endf-parserpy package was'
-                ' correctly installed.\n'
-                '\n'
-                '       Examples of how to do this:\n'
-                '\n'
-                '          $> conda install -c conda-forge endf_parserpy\n'
-                '             (always prefer this if using Conda)\n'
-                '\n'
-                '          $> pip install ncrystal[endf]\n'
-                '             (best way if not using Conda and NCrystal was itself installed via pip)\n'
-                '\n'
-                '          $> pip install ncrystal[all]\n'
-                '             (same as previous but provides even more optional dependencies)\n'
-                '\n'
-                '          $> pip install endf_parserpy\n'
-                '             (might work in other cases if you at least can use pip for dependencies)\n'
-                '\n'
-                )
-        raise ImportError('Could not import endf_parserpy') from e
+    from ._imports import import_optional
+    endf_parserpy = import_optional( 'endf-parserpy',
+                                     purpose = 'for ENDF files' )
+    from endf_parserpy.interpreter.fortran_utils import (
+        read_fort_floats,
+        write_fort_floats,
+    )
     _cacheimport[0] = ( endf_parserpy,read_fort_floats,write_fort_floats)
     return _cacheimport[0]
 

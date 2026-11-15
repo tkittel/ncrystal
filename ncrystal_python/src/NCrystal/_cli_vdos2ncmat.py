@@ -338,7 +338,9 @@ def main( progname, arglist ):
             else:
                 plt.plot(egrid,dos,*aargs,**kwargs)
 
-        import matplotlib as mpl
+        from ._imports import import_optional
+        mpl = import_optional( 'matplotlib', purpose = 'for plotting',
+                               sysexit = True )
         mpl.rcParams['figure.dpi']=args.dpi
         #ability to quit plot windows with Q:
         if 'keymap.quit' in mpl.rcParams and 'q' not in mpl.rcParams['keymap.quit']:
