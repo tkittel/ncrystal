@@ -71,7 +71,9 @@ NC::LCHelper::LCHelper( NC::LCAxis lcaxis,
   nc_assert_always(m_xsfact>0);
   nc_assert_always(lcaxis.as<Vector>().isUnitVector());
   nc_assert_always(lcaxis_labframe.as<Vector>().isUnitVector());
-  lcaxis.as<Vector>().normalise();//clear tiny errors
+  Vector v = lcaxis.as<Vector>();
+  v.normalise();//clear tiny errors
+  lcaxis = v.as<LCAxis>();
 
   //Collect planes into temporary map, in order to merge those with similar
   //(angle2lcaxis,dspacing) values:

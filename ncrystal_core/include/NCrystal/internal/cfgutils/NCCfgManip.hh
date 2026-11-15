@@ -190,7 +190,7 @@ namespace NCRYSTAL_NAMESPACE {
       static void set_lcmode( CfgData& data, std::int_least32_t val ) { setValue<vardef_lcmode>( data,static_cast<std::int_least32_t>(val) ); }
 
 
-      static const LCAxis& get_lcaxis(const CfgData& data) { return getValue<vardef_lcaxis>(data).as<LCAxis>(); }
+      static LCAxis get_lcaxis(const CfgData& data) { return getValue<vardef_lcaxis>(data).as<LCAxis>(); }
       static void set_lcaxis( CfgData& data, const LCAxis& val ) { setValue<vardef_lcaxis>(data, val.as<Vector>()); }
 
       static double get_strain(const CfgData& data) { return getValue<vardef_strain>(data); }

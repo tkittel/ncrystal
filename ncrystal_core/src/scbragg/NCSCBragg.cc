@@ -318,9 +318,9 @@ NC::ScatterOutcome NC::SCBragg::sampleScatter( CachePtr& cp, RNG& rng, NeutronEn
     return { ekin, indir };
   }
 
-  NeutronDirection outdir;
-  m_pimpl->genScat( cache, rng, outdir.as<Vector>() );
-  return { ekin, outdir };
+  Vector outdir;
+  m_pimpl->genScat( cache, rng, outdir );
+  return { ekin, outdir.as<NeutronDirection>() };
 }
 
 NC::Optional<std::string> NC::SCBragg::specificJSONDescription() const

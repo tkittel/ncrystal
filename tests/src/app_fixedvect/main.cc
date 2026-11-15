@@ -54,20 +54,21 @@ int main() {
   v3fct(V3{1.1,2.1,3.1});
   v3fct({1.1,2.1,3.1});
   v3fct({1.1,2,3.1});
-  V3alt& c = b.as<V3alt>();
+  V3alt c = b.as<V3alt>();//a copy
   std::cout << c << std::endl;
   c[1] = 15.123;
-  std::cout << b << std::endl;
+  std::cout << c << std::endl;
+  std::cout << b << std::endl;//unchanged
   v3fct(c.as<V3>());
 
-  NC::NeutronDirection& nd = b.as<NC::NeutronDirection>();
+  NC::NeutronDirection nd = b.as<NC::NeutronDirection>();//a copy
   nd.at(2)=12.0;
   std::cout << nd << std::endl;
   nd.rawArray()[1] = 6.0;
   std::cout << nd << std::endl;
   nd.array()[0] = 3.0;
   std::cout << nd << std::endl;
-  std::cout << b << std::endl;
+  std::cout << b << std::endl;//unchanged
 
   return 0;
 }
