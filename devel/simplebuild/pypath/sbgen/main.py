@@ -113,18 +113,20 @@ def create_pkginfo_pytestpkg( pkgname,
 _created_custom_pydeps = set()
 _depdb = [None]
 def get_dependency_from_pydep( pd):
+    if _depdb[0] is None:
+        from ncrystal_repo_tools.depdb import load_depdb
+        _depdb[0] = load_depdb()['dependencies']
+    dbinfo = _depdb[0].get(pd,{})
+    minv = dbinfo.get('min_version')
     s = _pydep2sblddep.get(pd)
-    if s is not None:
+    if s is not None and ( not minv or dbinfo.get('in_pystdlib_from') ):
         return s
-    #Need custom pydep
-    name = f'Py{pd.capitalize()}'
+    #Need custom pydep (also to check a minimum version):
+    name = f'NCPy{pd.capitalize()}'
     if name in _created_custom_pydeps:
         return name#already created
     _created_custom_pydeps.add(name)
 
-    if _depdb[0] is None:
-        from ncrystal_repo_tools.depdb import load_depdb
-        _depdb[0] = load_depdb()['dependencies']
     pytestcode = None
     pymodname = _depdb[0][pd].get('import_check')
     cmdcheck = _depdb[0][pd].get('cmd_check')
@@ -133,7 +135,13 @@ def get_dependency_from_pydep( pd):
                       f"shutil.which('{cmdcheck}') else 1)")
     if not pytestcode:
         pymodname = pymodname or pd
-        pytestcode = f"import {pymodname} as m; print(m.__version__)"
+        top = pymodname.split('.')[0]
+        req = tuple( int(e) for e in (minv or '0').split('.') )
+        pytestcode = ( f"import {pymodname}; import {top} as m; import re;"
+                       " s=getattr(m,'__version__',None);"
+                       " v=tuple(int(x) for x in re.findall('[0-9]+',s or '')[:3]);"
+                       " print(s or '');"
+                       f" raise SystemExit(0 if s is None or v>={req!r} else 1)" )
     content = """
 execute_process(
     COMMAND "${Python_EXECUTABLE}" "-c" "@pytestcode@"

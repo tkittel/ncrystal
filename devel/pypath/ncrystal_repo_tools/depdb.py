@@ -293,3 +293,11 @@ def produce_expected_ncrystal_depdb_py(db):
                               ' of NCrystal.',
                               ( 'min_version', 'import_check',
                                 'pypi_pkgname', 'conda_pkgname' ) )
+
+def produce_expected_verify_depdb_py(db):
+    #ncrystal_verify/depdb.py: the dependencies of the ncrystal-verify scripts.
+    return _produce_depdb_py( db, db['packages']['ncrystal-verify']['deps']['all'],
+                              'Minimum versions of the dependencies of the'
+                              ' ncrystal-verify scripts.',
+                              ( 'min_version', 'import_check',
+                                'pypi_pkgname' ) )
