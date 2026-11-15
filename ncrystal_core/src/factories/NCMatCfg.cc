@@ -930,7 +930,7 @@ std::string NC::MatCfg::get_inelas() const { return CfgManip::get_inelas( m_impl
 std::string NC::MatCfg::get_infofactory() const { return CfgManip::get_infofactory( m_impl->readVar(Cfg::VarId::infofactory) ).to_string(); }
 std::string NC::MatCfg::get_scatfactory() const { return CfgManip::get_scatfactory( m_impl->readVar(Cfg::VarId::scatfactory) ).to_string(); }
 std::string NC::MatCfg::get_absnfactory() const { return CfgManip::get_absnfactory( m_impl->readVar(Cfg::VarId::absnfactory) ).to_string(); }
-const NC::LCAxis& NC::MatCfg::get_lcaxis() const { return CfgManip::get_lcaxis( m_impl->readVar(Cfg::VarId::lcaxis) ); }
+NC::LCAxis NC::MatCfg::get_lcaxis() const { return CfgManip::get_lcaxis( m_impl->readVar(Cfg::VarId::lcaxis) ); }
 
 void NC::MatCfg::set_temp( Temperature v ) { m_impl.modify()->setVar( v, &CfgManip::set_temp ); }
 void NC::MatCfg::set_dcutoff( double v ) { m_impl.modify()->setVar( v, &CfgManip::set_dcutoff ); }
