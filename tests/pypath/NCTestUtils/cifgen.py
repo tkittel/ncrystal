@@ -25,6 +25,7 @@ rejected), for testing CIF-related functionality. Requires numpy and spglib.
 """
 
 import math
+import types
 from fractions import Fraction
 
 import numpy as np
@@ -60,8 +61,8 @@ class Structure:
 
     def unique_sites( self ):
         """One representative for each set of symmetry-equivalent atoms."""
-        ds = spglib.get_symmetry_dataset( self.spglib_cell(), symprec = 1e-5,
-                                          hall_number = self.hall_number )
+        ds = symmetry_dataset( self.spglib_cell(), symprec = 1e-5,
+                               hall_number = self.hall_number )
         assert ds.number == self.spacegroup
         return [ self.atoms[i] for i in sorted(set(ds.equivalent_atoms)) ]
 
@@ -93,12 +94,25 @@ def cellpars_from_lattice( lattice ):
     return ( float(np.linalg.norm(va)), float(np.linalg.norm(vb)),
              float(np.linalg.norm(vc)), ang(vb,vc), ang(va,vc), ang(va,vb) )
 
+def _attrs( d ):
+    #spglib < 2.5 returns dicts instead of objects:
+    return types.SimpleNamespace( **d ) if isinstance( d, dict ) else d
+
+def symmetry_dataset( cell, **kwargs ):
+    """spglib.get_symmetry_dataset (None on failure), for all spglib versions."""
+    d = spglib.get_symmetry_dataset( cell, **kwargs )
+    return None if d is None else _attrs( d )
+
+def spacegroup_type( hall_number ):
+    """spglib.get_spacegroup_type, for all spglib versions."""
+    return _attrs( spglib.get_spacegroup_type( hall_number ) )
+
 _hall_cache = {}
 def default_hall_number( spacegroup ):
     """spglib's default (first) Hall number of a space group."""
     if not _hall_cache:
         for h in range( 1, 531 ):
-            _hall_cache.setdefault( spglib.get_spacegroup_type(h).number, h )
+            _hall_cache.setdefault( spacegroup_type(h).number, h )
     return _hall_cache[spacegroup]
 
 def symops_from_hall( hall_number ):
@@ -221,8 +235,8 @@ def random_structure( rng, spacegroup, nsites = 2, max_atoms = 64,
         s = Structure( cellpars, atoms, spacegroup, hall )
         #Must have the correct symmetry with both strict and the loose
         #tolerances (the latter is used by e.g. cif2ncmat):
-        if all( getattr( spglib.get_symmetry_dataset( s.spglib_cell(),
-                                                      symprec = sp ),
+        if all( getattr( symmetry_dataset( s.spglib_cell(),
+                                           symprec = sp ),
                          'number', None ) == spacegroup
                 for sp in ( 1e-5, 1e-2 ) ):
             return s
@@ -285,7 +299,7 @@ def to_cif( structure, *, style = 'asym', round_digits = None,
         #x' = x+s => ops become R.x' + (t + s - R.s):
         ops = [ ( R, t + shift - R @ shift ) for R,t in base.symops() ]
         sgno = structure.spacegroup
-        sgtype = spglib.get_spacegroup_type( structure.hall_number )
+        sgtype = spacegroup_type( structure.hall_number )
         hm = sgtype.international_full
         if sgtype.choice:
             hm += ':' + sgtype.choice#origin choice or axes (e.g. "H")
