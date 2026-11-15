@@ -150,6 +150,7 @@ def main():
     tgt.joinpath('_cli.py').write_text( srcroot.joinpath('cli.py').read_text() )
 
     handle_scripts( testinfo, tgt.joinpath('data','scripts') )
+    tgt.joinpath('_depdb.py').write_text( srcroot.joinpath('depdb.py').read_text() )
     handle_pymods( testinfo, tgt.joinpath('data','pypath') )
     handle_datadirs( testinfo, tgt.joinpath('data','data') )
 
