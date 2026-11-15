@@ -667,7 +667,7 @@ namespace NCRYSTAL_NAMESPACE {
             m_einfo(std::move(ekin_parsed))
         {
           nc_assert_always(m_w>0.0&&std::isfinite(m_w));
-          const Vector& vdir = m_dir.as<Vector>();
+          const Vector vdir = m_dir.as<Vector>();
           if ( m_radius.get() > 0.0 ) {
             //We must find m_a and m_b as basis vectors of the disk on which to
             //generate neutrons:
