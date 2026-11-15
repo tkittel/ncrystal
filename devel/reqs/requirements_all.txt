@@ -1,5 +1,5 @@
-ase>=3.23.0
+ase>=3.25.0
 endf-parserpy>=0.17.0
-gemmi>=0.6.1
+gemmi>=0.6.6
 matplotlib>=3.6.0
 spglib>=2.1.0
