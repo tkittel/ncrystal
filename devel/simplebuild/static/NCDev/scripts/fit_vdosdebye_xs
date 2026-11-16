@@ -1,0 +1,655 @@
+#!/usr/bin/env python3
+
+################################################################################
+##                                                                            ##
+##  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)   ##
+##                                                                            ##
+##  Copyright 2015-2026 NCrystal developers                                   ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+"""Fits the inelastic cross section of the idealised Debye VDOS model and
+writes the coefficients as a C++ header (NCVDOSDebyeXSData.hh).
+
+Model: sigma/sigma_b = sigma_1 + sigma_ge2, with u=E/(k theta), x=theta/T and
+A=M/m_n. The one-phonon part sigma_1 is computed exactly at runtime, and
+log(sigma_ge2/sigma_free), sigma_free=(A/(A+1))^2, is a blend of six tensor
+Legendre polynomials in (u-variable, log x, log(A+1)): sqrt(u) below u=3.6
+and log(u) above u=2.5, for each of three x ranges: [0.001,0.02] (crude,
+for the unphysical T>50*theta), [0.015,3.399] and [2.618,1000], blended with
+C2 smoothsteps (in log u and log x) over the overlaps, so the result is
+smooth. Range: x in [0.001,1000], A in [0.95,260], u in [0,umax(x)] with
+umax(x)=1000*max(1,0.015/x). Above umax(x), sigma is taken as
+sigma_free+c/E (c matching at umax), which is also validated here.
+
+The reference is the exact Debye model (rho ~ e^2 on [0,theta]), computed
+with ~1e-7 precision: G_n for n<=20 from lattice convolutions of the exact
+G1 (Richardson-extrapolated over two lattice spacings), Edgeworth G_n above,
+a compound-Poisson Edgeworth form for lambda*alpha > 150, and analytic alpha
+integrals of the Poisson weights.
+
+Usage: fit_vdosdebye_xs WORKDIR OUTFILE [--nproc N] [--target 9e-4]
+                        [--target-crude 9e-3]
+
+Reference data is cached in WORKDIR (several hours of CPU on first run).
+Degrees are tuned greedily per piece until the max relative error on sigma
+over all validation data (incl. a fine u grid around the multiphonon
+onsets at integer u) is below target (target-crude for x<0.02), then
+trimmed. The final validation
+uses the coefficients as written (6 significant digits)."""
+
+import argparse
+import itertools
+import pathlib
+import sys
+import time
+
+import numpy as np
+from numpy.polynomial import legendre as Lg
+from numpy.polynomial.legendre import leggauss
+from scipy.integrate import quad
+from scipy.interpolate import CubicSpline
+from scipy.special import gammainc, gammaincc, ndtr
+
+#############################################################################
+# Reference: exact Debye model, sigma/sigma_b split into (sigma_1, sigma_ge2)
+
+SQ2PI = np.sqrt(2 * np.pi)
+_gl = {}
+
+def gl(q):
+    if q not in _gl:
+        _gl[q] = leggauss(q)
+    return _gl[q]
+
+def hermite(z, kmax=9):
+    H = [np.ones_like(z), z]
+    for k in range(1, kmax):
+        H.append(z * H[k] - k * H[k - 1])
+    return H
+
+def std_cums(K2, K3, K4, K5):
+    #Edgeworth coefficients (to n^-3/2) from cumulants K2..K5:
+    s = np.sqrt(K2)
+    return s, (K3 / (6 * s**3), K4 / (24 * s**4), K3**2 / (72 * s**6),
+               K5 / (120 * s**5), K3 * K4 / (144 * s**7), K3**3 / (1296 * s**9))
+
+def edge_pdf(z, c):
+    H = hermite(z)
+    return np.exp(-0.5 * z * z) / SQ2PI * (1 + c[0] * H[3] + c[1] * H[4] + c[2] * H[6]
+                                           + c[3] * H[5] + c[4] * H[7] + c[5] * H[9])
+
+def edge_cdf(z, c):
+    H = hermite(z)
+    phi = np.exp(-0.5 * z * z) / SQ2PI
+    return ndtr(z) - phi * (c[0] * H[2] + c[1] * H[3] + c[2] * H[5]
+                            + c[3] * H[4] + c[4] * H[6] + c[5] * H[8])
+
+class DebyeRef:
+    """sigma/sigma_b of the Debye model at x=theta/T, beta>0 = energy gain
+    (units kT). Usage: DebyeRef(x).parts(us, A) -> (sigma_1, sigma_ge2)."""
+
+    def __init__(self, x, NE=20, z0=150.0, m=128):
+        self.x, self.NE, self.m = x, NE, m
+        def integ(f):
+            o = {'epsabs': 0, 'epsrel': 1e-13, 'limit': 400}
+            return quad(f, -x, 0, **o)[0] + quad(f, 0, x, **o)[0]
+        T1 = lambda b: 3 / x**3 * (b / np.expm1(b) if b else 1.0)
+        self.lam = integ(T1)
+        raw = [integ(lambda b, k=k: b**k * T1(b)) / self.lam for k in range(1, 6)]
+        mu = raw[0]
+        c = [None, mu, raw[1] - mu**2]
+        c.append(raw[2] - 3 * mu * raw[1] + 2 * mu**3)
+        c.append(raw[3] - 4 * mu * raw[2] + 6 * mu**2 * raw[1] - 3 * mu**4 - 3 * c[2]**2)
+        m5 = (raw[4] - 5 * mu * raw[3] + 10 * mu**2 * raw[2]
+              - 10 * mu**3 * raw[1] + 4 * mu**5)
+        c.append(m5 - 10 * c[3] * c[2])
+        self.raw, self.cum = raw, c#raw moments and cumulants of G1
+        self.a0 = z0 / self.lam#alpha above which the compound-Poisson form is used
+        self.N = int(z0 + 10 * np.sqrt(z0) + 20)
+        self.lat = [self._lattice(mm) for mm in (m, 2 * m)]
+
+    def G1(self, b):
+        #normalised G1 = 3/(x^3 lam) b/(exp(b)-1) for |b|<=x:
+        with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
+            g = np.where(b != 0, b / np.expm1(b), 1.0)
+        return np.where(np.abs(b) <= self.x, 3.0 / self.x**3 * g / self.lam, 0.0)
+
+    def _lattice(self, m):
+        #G1 cell masses (cell centres), n-fold convolutions -> density splines
+        x = self.x
+        h = x / m
+        t, w = gl(16)
+        edges = np.arange(-m, m + 1) * h
+        lo, hi = edges[:-1], edges[1:]
+        nodes = 0.5 * (hi - lo)[:, None] * t[None, :] + 0.5 * (hi + lo)[:, None]
+        mu = 0.5 * (hi - lo) * np.sum(w[None, :] * self.G1(nodes), axis=1)
+        out, M = {}, mu.copy()
+        for n in range(2, self.NE + 1):
+            M = np.convolve(M, mu)
+            pos = (np.arange(len(M)) - n * m + n / 2) * h
+            out[n] = CubicSpline(np.concatenate([[pos[0] - h], pos, [pos[-1] + h]]),
+                                 np.concatenate([[0.0], M / h, [0.0]]),
+                                 bc_type='natural', extrapolate=False)
+        return out
+
+    def _W(self, n, lam_m, lam_p):
+        #int_{alpha-}^{alpha+} Poisson(n; lam*alpha) dalpha (stable branch,
+        #only where non-negligible):
+        n, lam_m, lam_p = np.broadcast_arrays(np.asarray(n, dtype=float), lam_m, lam_p)
+        res = np.zeros(lam_m.shape)
+        wid = 9.0 * np.sqrt(n + 1.0) + 10.0
+        act = (lam_p > n + 1.0 - wid) & (lam_m < n + 1.0 + wid) & (lam_p > lam_m)
+        use_q = act & (lam_m > n + 1.0)
+        use_p = act & ~use_q
+        if use_q.any():
+            nq = n[use_q] + 1.0
+            res[use_q] = gammaincc(nq, lam_m[use_q]) - gammaincc(nq, lam_p[use_q])
+        if use_p.any():
+            nq = n[use_p] + 1.0
+            res[use_p] = gammainc(nq, lam_p[use_p]) - gammainc(nq, lam_m[use_p])
+        return res / self.lam
+
+    def _integ(self, e, A, n, dens, lo, hi, kinks, q):
+        #int dens(b)*W_n(b) db over [max(lo,-e),hi] in s=sqrt(e+b), split at
+        #kinks, for all energies e (nE,1) and orders n (1,nN):
+        lo = np.maximum(lo, -e)
+        hi = np.maximum(hi, lo)
+        se, sA = np.sqrt(e), np.sqrt(A * self.a0)
+        cands = list(kinks)
+        #breakpoints at +-x*2^-k: resolve the exp(-beta) fall-off of energy
+        #gain at large x and narrow features near beta=0 at small x:
+        for k in range(13):
+            for sg in (1.0, -1.0):
+                cands.append(np.full((1, 1), sg * self.x * 2.0**-k))
+        for sv in (sA - se, sA + se, se - sA):
+            cands.append(np.where(sv > 0, sv * sv - e, np.nan))
+        lo_b, hi_b = np.broadcast_arrays(lo, hi)
+        P = np.stack([lo_b, hi_b] + [np.broadcast_to(c, lo_b.shape) for c in cands], axis=-1)
+        P = np.where(np.isnan(P), lo_b[..., None], P)
+        P = np.clip(P, lo_b[..., None], hi_b[..., None])
+        P.sort(axis=-1)
+        s = np.sqrt(np.maximum(e[..., None] + P, 0.0))
+        s0, s1 = s[..., :-1], s[..., 1:]
+        t, w = gl(q)
+        S = 0.5 * (s1 - s0)[..., None] * t + 0.5 * (s1 + s0)[..., None]
+        ee = e[..., None, None]
+        am = np.minimum((np.sqrt(ee) - S)**2 / A, self.a0)
+        ap = np.minimum((np.sqrt(ee) + S)**2 / A, self.a0)
+        nn = n[..., None, None] if np.ndim(n) else n
+        f = np.nan_to_num(dens(S * S - ee) * self._W(nn, self.lam * am, self.lam * ap) * 2 * S)
+        return np.sum(0.5 * (s1 - s0) * np.sum(w * f, axis=-1), axis=-1)
+
+    def _lattice_part(self, e, A, lat):
+        x = self.x
+        tot = np.zeros(e.shape[0])
+        for n in range(2, self.NE + 1):
+            sp = lat[n]
+            kinks = [np.full((1, 1), j * x) for j in range(-n, n + 1)]
+            tot += self._integ(e, A, n, lambda b, sp=sp: np.nan_to_num(sp(b)),
+                               np.array([[-n * x]]), np.array([[n * x]]), kinks, 12)[:, 0]
+        return tot
+
+    def _edgeworth_part(self, e, A):
+        c = self.cum
+        n = np.arange(self.NE + 1, self.N + 1)[None, :].astype(float)
+        mean = n * c[1]
+        s, K = std_cums(n * c[2], n * c[3], n * c[4], n * c[5])
+        mb, sb = mean[..., None, None], s[..., None, None]
+        Kb = [k[..., None, None] for k in K]
+        pdf = lambda b: edge_pdf((b - mb) / sb, Kb) / sb
+        tot = self._integ(e, A, n, pdf, mean - 12 * s, np.minimum(0.0, mean + 12 * s),
+                          [mean], 24).sum(axis=1)
+        dbm = lambda b: np.exp(-b) * pdf(-b)#detailed balance for beta>0
+        tot += self._integ(e, A, n, dbm, np.zeros_like(mean),
+                           np.minimum(np.maximum(0.0, -(mean - 12 * s)), 745.0),
+                           [np.where(mean < 0, -mean, np.nan)], 24).sum(axis=1)
+        return tot
+
+    def _inner_high(self, e, A, a):
+        za = self.lam * a
+        s, K = std_cums(za * self.raw[1], za * self.raw[2], za * self.raw[3], za * self.raw[4])
+        K1 = za * self.raw[0]
+        sa, se = np.sqrt(A * a), np.sqrt(e)
+        b1, b2 = (sa - se)**2 - e, (sa + se)**2 - e
+        return edge_cdf((b2 - K1) / s, K) - edge_cdf((b1 - K1) / s, K)
+
+    def _high_part(self, e, A):
+        a0 = self.a0
+        ag = a0 * np.geomspace(1.0, 1e9, 600)[None, :]
+        v = self._inner_high(e, A, ag) * ag
+        vmax = v.max(axis=1, keepdims=True)
+        ok = v > 1e-18 * np.where(vmax > 0, vmax, np.inf)
+        idx = np.where(ok.any(axis=1), (ok * np.arange(600)).max(axis=1), 0)
+        ahi = ag[0, np.minimum(599, idx + 2)]
+        t, w = gl(32)
+        L0, L1 = np.log(a0), np.log(ahi)[:, None]
+        edges = L0 + (L1 - L0) * np.linspace(0, 1, 25)[None, :]
+        lo, hi = edges[:, :-1], edges[:, 1:]
+        a = np.exp(0.5 * (hi - lo)[..., None] * t + 0.5 * (hi + lo)[..., None])
+        val = self._inner_high(e[..., None], A, a) * a
+        res = np.sum(0.5 * (hi - lo) * np.sum(w * val, axis=-1), axis=-1)
+        return np.where(vmax[:, 0] > 0, res, 0.0)
+
+    def parts(self, us, A):
+        e = (np.asarray(us, dtype=float) * self.x)[:, None]
+        pref = A / (4 * e[:, 0])
+        s1 = pref * self._integ(e, A, 1, self.G1, np.array([[-self.x]]),
+                                np.array([[self.x]]), [np.zeros((1, 1))], 16)[:, 0]
+        fixed = self._high_part(e, A) + self._edgeworth_part(e, A)
+        r = [pref * (self._lattice_part(e, A, lat) + fixed) for lat in self.lat]
+        return s1, (4 * r[1] - r[0]) / 3
+
+#############################################################################
+# Reference data: training grids (dense near the domain ends and around the
+# onsets at integer u) and independent validation sets.
+
+XMIN, XMAX, AMIN, AMAX, UMAX = 0.02, 1000.0, 0.95, 260.0, 1000.0
+XLOW = 1e-3#below XMIN: unphysical T>50*theta, fitted more crudely
+XC = (0.015, XMIN)#x blend of the crude and the low-x pieces
+UMAXC = UMAX * XC[0] / XLOW#umax(XLOW)
+
+def umaxf(x):
+    #upper u of the fitted pieces (above: sigma_free+c/E), umax(x)*x*theta
+    #stays above 15*k*T for x<XC[0]:
+    return UMAX * np.maximum(1.0, XC[0] / np.asarray(x, dtype=float))
+UB = (2.5, 3.6)#u overlap of the sqrt(u) and log(u) pieces
+XR = 1500.0**(1.0 / 56)#x node ratio; nodes are 0.1*XR^k, x blend edges on nodes
+XB = (0.1 * XR**25, 0.1 * XR**27)
+
+def cheb_ends(lo, hi, n, frac):
+    #Chebyshev nodes of [log lo, log hi], keeping those within frac of the ends
+    t = np.cos(np.pi * (np.arange(n) + 0.5) / n)
+    v = np.exp(np.log(lo) + (t + 1) / 2 * np.log(hi / lo))
+    return np.sort(v[np.abs(t) > 1 - 2 * frac])
+
+def training_grids():
+    k = np.arange(int(np.floor(np.log(XMIN / 0.1) / np.log(XR))) + 1,
+                  int(np.ceil(np.log(XMAX / 0.1) / np.log(XR))))
+    xs = np.unique(np.concatenate([[XMIN], 0.1 * XR**k, [XMAX],
+                                   cheb_ends(XMIN, XMAX, 46, 0.06)]))
+    L = np.log(np.array([AMIN, AMAX]) + 1)
+    a1 = np.exp(np.linspace(L[0], L[1], 16)) - 1
+    a2 = np.linspace(AMIN**-0.5, AMAX**-0.5, 20)**-2
+    As = np.unique(np.round(np.concatenate([a1, a2]), 9))
+    La = np.log(As + 1)
+    As = np.sort(np.concatenate([As, np.exp(0.5 * (La[1:] + La[:-1])) - 1]))
+    us = np.unique(np.concatenate([np.geomspace(1e-5, 0.8, 36), np.linspace(0.8, 6.0, 61),
+                                   np.geomspace(6.0, UMAX, 25)]))
+    uhi = cheb_ends(UB[0], UMAX, 48, 0.12)
+    return xs, As, np.unique(np.concatenate([us, uhi[uhi > 100]]))
+
+def training_grids_low(As):
+    #x in [XLOW,XMIN) (the grid above covers XMIN), with u up to umax(x):
+    xs = np.unique(np.concatenate([np.geomspace(XLOW, XC[0], 9),
+                                   [np.sqrt(XC[0] * XMIN)]]))
+    us = np.unique(np.concatenate([np.geomspace(1e-5, 0.8, 30), np.linspace(0.8, 6.0, 41),
+                                   np.geomspace(6.0, UMAXC, 34)]))
+    return xs, As, us
+
+def validation_sets_low(rng):
+    grid = (np.geomspace(XLOW * 1.05, XMIN / 1.01, 13), np.geomspace(AMIN * 1.01, AMAX / 1.01, 9),
+            np.geomspace(1.1e-5, UMAXC / 1.1, 70))
+    n = 3000
+    x = np.exp(rng.uniform(np.log(XLOW), np.log(XMIN), n))
+    u = np.exp(rng.uniform(np.log(1e-5), np.log(umaxf(x)), n))
+    A = np.exp(rng.uniform(np.log(AMIN + 1), np.log(AMAX + 1), n)) - 1
+    return grid, (x, A, u)
+
+def tail_sets(rng):
+    #points above umax(x) (all x), and the same (x,A) at umax(x). Only those
+    #with u<=30*umax(x) and E/kT<=1000 are used (see tail_keep):
+    n = 2000
+    x = np.exp(rng.uniform(np.log(XLOW), np.log(XMAX), n))
+    A = np.exp(rng.uniform(np.log(AMIN + 1), np.log(AMAX + 1), n)) - 1
+    u = umaxf(x) * np.exp(rng.uniform(0.0, np.log(1e4), n))
+    return (x, A, u), (x, A, umaxf(x))
+
+def tail_keep(dt, dm):
+    #The reference loses ~1e-3 precision at E/kT>~1e3 (vs. the exact limit
+    #sigma_free there), so the tail is checked where it deviates most from
+    #the exact sigma (just above umax), and where the reference is reliable.
+    #Further up, the tail and the exact sigma both approach sigma_free (as
+    #sigma_free*(1+O(kT/(A*E)))):
+    k = (dt['u'] <= 30 * umaxf(dt['x'])) & (dt['u'] * dt['x'] <= 1000.0)
+    return {a: v[k] for a, v in dt.items()}, {a: v[k] for a, v in dm.items()}
+
+def validation_sets(rng):
+    grid = (np.geomspace(XMIN * 1.07, XMAX / 1.07, 49), np.geomspace(AMIN * 1.01, AMAX / 1.01, 13),
+            np.geomspace(1.1e-5, UMAX / 1.1, 85))
+    fine = (np.geomspace(0.025, 950.0, 14), np.array([0.96, 1.21, 1.58, 3.3, 9.0, 40.0, 180.0, 255.0]),
+            np.linspace(1.0, 9.0, 321))
+    n = 6000
+    rnd = (np.exp(rng.uniform(np.log(XMIN), np.log(XMAX), n)),
+           np.exp(rng.uniform(np.log(AMIN + 1), np.log(AMAX + 1), n)) - 1,
+           np.exp(rng.uniform(np.log(1e-5), np.log(UMAX), n)))
+    return grid, fine, rnd
+
+def _gridjob(args):
+    i, x, As, us = args
+    R = DebyeRef(x)
+    r = [R.parts(us, A) for A in As]
+    return i, np.array([a for a, _ in r]), np.array([b for _, b in r])
+
+def _pointjob(args):
+    k, x, A, u = args
+    s1, s2 = DebyeRef(x).parts(np.array([u]), A)
+    return k, s1[0], s2[0]
+
+def progress(name, k, n, t0):
+    #printed after each finished job (at least every 10%), with an estimate:
+    if k == n or k * 10 // n != (k - 1) * 10 // n or n <= 40:
+        dt = time.time() - t0
+        print(f'  {name}: {k}/{n} jobs done ({dt:.0f}s, ~{dt * (n - k) / k:.0f}s left)',
+              flush=True)
+
+def cached_grid(wd, name, xs, As, us, pool):
+    fn = wd / f'{name}.npz'
+    if not fn.exists():
+        t0 = time.time()
+        print(f'  generating {name}: {len(xs)} x values, {len(As)} A, {len(us)} u', flush=True)
+        S1 = np.zeros((len(xs), len(As), len(us)))
+        S2 = np.zeros_like(S1)
+        jobs = [(i, xs[i], As, us) for i in range(len(xs))]
+        for k, (i, a, b) in enumerate(pool.imap_unordered(_gridjob, jobs), 1):
+            S1[i], S2[i] = a, b
+            progress(name, k, len(jobs), t0)
+        np.savez(fn, xs=xs, As=As, us=us, S1=S1, S2=S2)
+        print(f'  generated {name} ({time.time() - t0:.0f}s)', flush=True)
+    g = np.load(fn)
+    X, A, U = (a.ravel() for a in np.meshgrid(g['xs'], g['As'], g['us'], indexing='ij'))
+    return {'x': X, 'A': A, 'u': U, 'S1': g['S1'].ravel(), 'S2': g['S2'].ravel()}
+
+def cached_points(wd, name, x, A, u, pool):
+    fn = wd / f'{name}.npz'
+    if not fn.exists():
+        t0 = time.time()
+        print(f'  generating {name}: {len(x)} points', flush=True)
+        S1, S2 = np.zeros(len(x)), np.zeros(len(x))
+        jobs = [(k, x[k], A[k], u[k]) for k in range(len(x))]
+        for j, (k, a, b) in enumerate(pool.imap_unordered(_pointjob, jobs, chunksize=20), 1):
+            S1[k], S2[k] = a, b
+            progress(name, j, len(jobs), t0)
+        np.savez(fn, x=x, A=A, u=u, S1=S1, S2=S2)
+        print(f'  generated {name} ({time.time() - t0:.0f}s)', flush=True)
+    g = np.load(fn)
+    return {k: g[k] for k in ('x', 'A', 'u', 'S1', 'S2')}
+
+def cat(*ds):
+    return {k: np.concatenate([d[k] for d in ds]) for k in ds[0]}
+
+#############################################################################
+# Model: pieces (xlo, xhi, ulo, uhi, (du, dx, da), sqrtu), blended in log u, log x
+
+def mapv(q, lo, hi):
+    return 2 * (q - lo) / (hi - lo) - 1
+
+def coords(d, m, p):
+    xlo, xhi, ulo, uhi, _, sq = p
+    u = d['u'][m]
+    tu = mapv(np.sqrt(u), 0.0, np.sqrt(uhi)) if sq else mapv(np.log(u), np.log(ulo), np.log(uhi))
+    tx = mapv(np.log(np.minimum(d['x'][m], XMAX)), np.log(xlo), np.log(xhi))
+    ta = mapv(np.log(d['A'][m] + 1), np.log(AMIN + 1), np.log(AMAX + 1))
+    return tu, tx, ta
+
+def design(d, m, p):
+    du, dx, da = p[4]
+    tu, tx, ta = coords(d, m, p)
+    vu, vx, va = Lg.legvander(tu, du), Lg.legvander(tx, dx), Lg.legvander(ta, da)
+    return (vu[:, :, None, None] * vx[:, None, :, None] * va[:, None, None, :]).reshape(len(tu), -1)
+
+def yshift(d, m, p):
+    #the sqrt(u) pieces fit log(sqrt(u)*sigma_ge2/sigma_free) (finite at u=0)
+    return 0.5 * np.log(d['u'][m]) if p[5] else 0.0
+
+def layout(degs):
+    #order: sqrt(u) low/high x, log(u) low/high x, crude sqrt(u), crude log(u)
+    X = [(XC[0], XB[1]), (XB[0], XMAX)]
+    return ([(a, b, 0.0, UB[1], g, True) for (a, b), g in zip(X, degs[:2])]
+            + [(a, b, UB[0], UMAX, g, False) for (a, b), g in zip(X, degs[2:4])]
+            + [(XLOW, XMIN, 0.0, UB[1], degs[4], True),
+               (XLOW, XMIN, UB[0], UMAXC, degs[5], False)])
+
+def in_piece(d, p):
+    xlo, xhi, ulo, uhi = p[:4]
+    e = 1e-9
+    return ((d['u'] >= ulo * (1 - e)) & (d['u'] <= uhi * (1 + e))
+            & (d['u'] <= umaxf(d['x']) * (1 + e))
+            & (d['x'] >= xlo * (1 - e)) & (d['x'] <= xhi * (1 + e)))
+
+def target(d):
+    #log(sigma_ge2/sigma_free) and weight (sigma_ge2/sigma, floored)
+    sf = (d['A'] / (d['A'] + 1))**2
+    with np.errstate(divide='ignore', invalid='ignore'):
+        Y = np.log(d['S2'] / sf)
+    return Y, np.maximum(d['S2'] / (d['S1'] + d['S2']), 1e-3)
+
+def fit_piece(d, p):
+    #Weighted least squares via chunked normal equations (equilibrated):
+    Y, W = target(d)
+    ii = np.nonzero(in_piece(d, p) & np.isfinite(Y))[0]
+    nc = int(np.prod(np.array(p[4]) + 1))
+    G, b = np.zeros((nc, nc)), np.zeros(nc)
+    for k0 in range(0, len(ii), 40000):
+        m = np.zeros(len(Y), bool)
+        m[ii[k0:k0 + 40000]] = True
+        V = design(d, m, p) * W[m][:, None]
+        G += V.T @ V
+        b += V.T @ ((Y[m] + yshift(d, m, p)) * W[m])
+    s = 1.0 / np.sqrt(np.diag(G))
+    return np.linalg.solve(G * s[:, None] * s[None, :], b * s) * s
+
+def smooth(t):
+    t = np.clip(t, 0.0, 1.0)
+    return t * t * t * (10.0 + t * (-15.0 + 6.0 * t))
+
+def xweight(p, x):
+    #weight in x of piece p (crude, low or high x range):
+    sc = smooth(np.log(x / XC[0]) / np.log(XC[1] / XC[0]))
+    sx = smooth(np.log(np.minimum(x, XMAX) / XB[0]) / np.log(XB[1] / XB[0]))
+    if p[0] == XLOW:
+        return 1.0 - sc
+    return sc * (1.0 - sx) if p[0] == XC[0] else sx
+
+def predict(fits, d):
+    #blended log(sigma_ge2/sigma_free), for u<=umax(x)
+    out = np.zeros(len(d['u']))
+    su = smooth(np.log(d['u'] / UB[0]) / np.log(UB[1] / UB[0]))
+    for p, c in fits:
+        w = (1.0 - su if p[5] else su) * xweight(p, d['x'])
+        m = w > 0
+        if not m.any():
+            continue
+        out[m] += w[m] * (design(d, m, p) @ c - yshift(d, m, p))
+    return out
+
+def rel_errors(fits, d):
+    pred = np.exp(predict(fits, d)) * (d['A'] / (d['A'] + 1))**2
+    return np.abs(pred - d['S2']) / (d['S1'] + d['S2'])
+
+def tail_errors(fits, dt, dm):
+    #sigma_free+(sigma(umax)-sigma_free)*umax/u above umax(x), vs reference:
+    sf = (dm['A'] / (dm['A'] + 1))**2
+    sm = dm['S1'] + np.exp(predict(fits, dm)) * sf
+    pred = sf + (sm - sf) * dm['u'] / dt['u']
+    return np.abs(pred - dt['S1'] - dt['S2']) / (dt['S1'] + dt['S2'])
+
+#############################################################################
+# Tuning, rounding, output
+
+def tune(D, V, tgts, degs):
+    cache = {}
+    t0 = time.time()
+    def fitp(p):
+        if p not in cache:
+            cache[p] = fit_piece(D, p)
+            print(f'    fitted piece x=[{p[0]:g},{p[1]:g}] u=[{p[2]:g},{p[3]:g}] degs {p[4]}'
+                  f' ({time.time() - t0:.0f}s)', flush=True)
+        return p, cache[p]
+    #validation regions (dominated by one piece each, same order as degs):
+    lo, mid, hi = V['x'] < XMIN, (V['x'] >= XMIN) & (V['x'] < 2.983), V['x'] >= 2.983
+    Q = [(V['u'] < 3.0) & mid, (V['u'] < 3.0) & hi, (V['u'] >= 3.0) & mid,
+         (V['u'] >= 3.0) & hi, (V['u'] < 3.0) & lo, (V['u'] >= 3.0) & lo]
+    def ev(dg):
+        fits = [fitp(p) for p in layout(dg)]
+        r = rel_errors(fits, V)
+        return [r[q].max() for q in Q], sum(len(c) for _, c in fits)
+    STEP = (2, 1, 1)
+    qe, nc = ev(degs)
+    def worst(qe):
+        return max(e / t for e, t in zip(qe, tgts))
+    while worst(qe) > 1.0:#grow the worst piece where it gains most per coefficient
+        k = int(np.argmax([e / t for e, t in zip(qe, tgts)]))
+        best = None
+        for dim in range(3):
+            d2 = list(degs)
+            g = list(d2[k])
+            g[dim] += STEP[dim]
+            d2[k] = tuple(g)
+            qe2, nc2 = ev(d2)
+            gain = (np.log(qe[k]) - np.log(qe2[k])) / max(nc2 - nc, 1)
+            if best is None or gain > best[0]:
+                best = (gain, d2, qe2, nc2)
+        _, degs, qe, nc = best
+        print(f'  grow: {nc} coefs, max/target {worst(qe):.3f}, degs {degs}', flush=True)
+    improved = True
+    while improved:#trim while staying below target
+        improved = False
+        for k, dim in itertools.product(range(len(degs)), range(3)):
+            d2 = list(degs)
+            g = list(d2[k])
+            g[dim] -= STEP[dim]
+            if g[dim] < 1:
+                continue
+            d2[k] = tuple(g)
+            qe2, nc2 = ev(d2)
+            if worst(qe2) <= 1.0:
+                degs, qe, nc, improved = d2, qe2, nc2, True
+                print(f'  trim: {nc} coefs, max/target {worst(qe):.3f}, degs {degs}', flush=True)
+                break
+    return degs, [fitp(p) for p in layout(degs)]
+
+FMT = '%.6g'#coefficient rounding error is negligible vs the fit error
+
+def rounded(fits):
+    return [(p, np.array([float(FMT % v) for v in c])) for p, c in fits]
+
+#C++ licence banner (as in all NCrystal C++ files; '' = empty row):
+_LIC = ['', 'This file is part of NCrystal (see https://mctools.github.io/ncrystal/)', '',
+        'Copyright 2015-2026 NCrystal developers', '',
+        'Licensed under the Apache License, Version 2.0 (the "License");',
+        'you may not use this file except in compliance with the License.',
+        'You may obtain a copy of the License at', '',
+        '    http://www.apache.org/licenses/LICENSE-2.0', '',
+        'Unless required by applicable law or agreed to in writing, software',
+        'distributed under the License is distributed on an "AS IS" BASIS,',
+        'WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.',
+        'See the License for the specific language governing permissions and',
+        'limitations under the License.', '']
+BANNER = '\n'.join(['/' * 80] + [('//  ' + t).ljust(78) + '//' for t in _LIC] + ['/' * 80])
+
+def write_header(fn, fits, maxerr, maxerr_crude):
+    allc = np.concatenate([c for _, c in fits])
+    out = ['#ifndef NCrystal_VDOSDebyeXSData_hh', '#define NCrystal_VDOSDebyeXSData_hh', '', BANNER, '',
+           '//GENERATED by devel/simplebuild/static/NCDev/scripts/fit_vdosdebye_xs (do',
+           '//not edit). Fit of log(sigma_ge2/sigma_free) of the Debye VDOS model, see',
+           ('//NCVDOSDebyeXS.hh. Max relative error on sigma: '
+            f'{maxerr:.2g} ({maxerr_crude:.2g} for x<xmin).'), '',
+           'namespace NCRYSTAL_NAMESPACE {', '  namespace VDOSDebyeXSData {', '',
+           f'    constexpr double xlow = {XLOW!r};',
+           f'    constexpr double xmin = {XMIN!r}, xmax = {XMAX!r};',
+           f'    constexpr double xcblend_lo = {XC[0]!r};',
+           f'    constexpr double Amin = {AMIN!r}, Amax = {AMAX!r};',
+           f'    constexpr double umax = {UMAX!r};',
+           f'    constexpr double ublend_lo = {UB[0]!r}, ublend_hi = {UB[1]!r};',
+           f'    constexpr double xblend_lo = {XB[0]!r};',
+           f'    constexpr double xblend_hi = {XB[1]!r};', '',
+           '    //Pieces: sqrt(u) (else log(u)) variable, x range, u range, degrees in',
+           '    //(u, log x, log(A+1)) and offset in coefs (index order u, x, A). The',
+           '    //last two are for x in [xlow,xmin], blended with the first and third',
+           '    //over [xcblend_lo,xmin]. All are used only up to',
+           '    //umax*max(1,xcblend_lo/x):',
+           '    struct Piece { bool sqrtu; double xlo, xhi, ulo, uhi;',
+           '                   unsigned du, dx, da, offset; };',
+           f'    constexpr Piece pieces[{len(fits)}] = {{']
+    off = 0
+    for p, c in fits:
+        xlo, xhi, ulo, uhi, (du, dx, da), sq = p
+        out.append(f'      {{ {"true" if sq else "false"}, {xlo!r}, {xhi!r},')
+        out.append(f'        {ulo!r}, {uhi!r}, {du}, {dx}, {da}, {off} }},')
+        off += len(c)
+    out += ['    };', '', f'    constexpr unsigned ncoefs = {len(allc)};',
+            '    constexpr double coefs[ncoefs] = {']
+    line = '     '
+    for v in allc:
+        tok = ' ' + (FMT % v) + ','
+        if len(line) + len(tok) > 79:
+            out.append(line)
+            line = '     '
+        line += tok
+    out += [line, '    };', '  }', '}', '', '#endif', '']
+    pathlib.Path(fn).write_text('\n'.join(out))
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
+    ap.add_argument('workdir', type=pathlib.Path)
+    ap.add_argument('outfile', type=pathlib.Path)
+    ap.add_argument('--nproc', type=int, default=4)
+    ap.add_argument('--target', type=float, default=9e-4)
+    ap.add_argument('--target-crude', type=float, default=9e-3)
+    args = ap.parse_args()
+    args.workdir.mkdir(parents=True, exist_ok=True)
+    from multiprocessing import Pool
+    xs, As, us = training_grids()
+    grid, fine, rnd = validation_sets(np.random.default_rng(12345))
+    lgrid, lrnd = validation_sets_low(np.random.default_rng(23456))
+    tail_t, tail_m = tail_sets(np.random.default_rng(34567))
+    print(f'training: {len(xs)} x, {len(As)} A, {len(us)} u', flush=True)
+    keep = lambda d: {k: v[d['u'] <= umaxf(d['x']) * (1 + 1e-9)] for k, v in d.items()}
+    with Pool(args.nproc) as pool:
+        D = cat(cached_grid(args.workdir, 'train', xs, As, us, pool),
+                keep(cached_grid(args.workdir, 'trainlow', *training_grids_low(As), pool)))
+        V = cat(cached_grid(args.workdir, 'valgrid', *grid, pool),
+                cached_grid(args.workdir, 'valfine', *fine, pool),
+                cached_points(args.workdir, 'valrnd', *rnd, pool),
+                keep(cached_grid(args.workdir, 'vallowgrid', *lgrid, pool)),
+                cached_points(args.workdir, 'vallowrnd', *lrnd, pool))
+        TT, TM = tail_keep(cached_points(args.workdir, 'tail', *tail_t, pool),
+                           cached_points(args.workdir, 'tailumax', *tail_m, pool))
+    print(f'{len(D["u"])} training and {len(V["u"])} validation points', flush=True)
+    tgts = [args.target] * 4 + [args.target_crude] * 2
+    degs, fits = tune(D, V, tgts, [(8, 6, 6), (12, 6, 6), (8, 6, 7), (8, 6, 7),
+                                   (6, 3, 4), (6, 3, 4)])
+    fits = rounded(fits)
+    r, rt = rel_errors(fits, V), tail_errors(fits, TT, TM)
+    crude, crude_t = V['x'] < XMIN, TT['x'] < XMIN
+    emax = max(r[~crude].max(), rt[~crude_t].max())
+    emax_c = max(r[crude].max(), rt[crude_t].max())
+    #(margins vs. the actual targets, 1e-3 and 1e-2, are for the rounding of
+    #coefficients, which hardly affects the tail):
+    tail_ok = rt[~crude_t].max() <= 1e-3 and rt[crude_t].max() <= 1e-2
+    i = int(np.argmax(np.where(crude, 0.0, r)))
+    print(f'final: {sum(len(c) for _, c in fits)} coefs, degs {degs}, max error {emax:.2e}'
+          f' (above umax: {rt[~crude_t].max():.2e}; largest below umax at u={V["u"][i]:.3g}'
+          f' x={V["x"][i]:.3g} A={V["A"][i]:.3g}), x<xmin: {emax_c:.2e}'
+          f' (above umax: {rt[crude_t].max():.2e})', flush=True)
+    if (r[~crude].max() > args.target or r[crude].max() > args.target_crude
+            or not tail_ok):
+        sys.exit('ERROR: targets not met with rounded coefficients (or above umax)')
+    write_header(args.outfile, fits, emax, emax_c)
+    print(f'wrote {args.outfile}')
+
+if __name__ == '__main__':
+    main()
