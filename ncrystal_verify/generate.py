@@ -139,6 +139,8 @@ def main():
     if '--gather-scripts-deps' in sys.argv[1:]:
         #Special mode needed to verify dependency list in pyproject.toml
         needs = handle_scripts( testinfo, None )
+        #"subprocess" is not a package, just the ability to start processes:
+        needs.discard('subprocess')
         import json
         print( json.dumps( sorted(needs) ) )
         return
