@@ -27,17 +27,30 @@ include( mctools_utils )
 #hidden option (for experts) called NCRYSTAL_NOTOUCH_CMAKE_BUILD_TYPE" which can
 #be set to ON to stop NCrystal from fiddling with the CMAKE_BUILD_TYPE.
 
+#Emscripten (wasm, e.g. Pyodide) builds have no threads, no plugins to load
+#and no use for the ncrystal-config command by default (only changes the
+#defaults, explicit values still apply):
+if ( EMSCRIPTEN )
+  set( _ncdef_dynload "OFF" )
+  set( _ncdef_threads "OFF" "ON" "IFAVAILABLE" )
+  set( _ncdef_cfgapp "OFF" )
+else()
+  set( _ncdef_dynload "ON" )
+  set( _ncdef_threads "ON" "IFAVAILABLE" "OFF" )
+  set( _ncdef_cfgapp "ON" )
+endif()
+
 bool_option( NCRYSTAL_ENABLE_EXAMPLES  "Whether to build and install various examples." "OFF" )
 enum_option( NCRYSTAL_ENABLE_DATA      "Whether to include the standard data library files (possibly EMBED'ed into the binary)." "EMBED" "ON" "OFF" )
 bool_option( NCRYSTAL_MODIFY_RPATH     "Whether to try to set RPATH in installed binaries (if disabled all special RPATH handling is skipped)." "ON" )
-bool_option( NCRYSTAL_ENABLE_DYNLOAD   "Enable dynamic plugin loading capabilities." "ON" )
+bool_option( NCRYSTAL_ENABLE_DYNLOAD   "Enable dynamic plugin loading capabilities." "${_ncdef_dynload}" )
 enum_option( NCRYSTAL_BUILD_STRICT     "Stricter build (primarily for testing). Can optionally select specific C++ standard." "OFF" "ON" "11" "14" "17" "20" "23" )
 bool_option( NCRYSTAL_ENABLE_CPACK     "Includes CPack and sets relevant meta-data." "OFF" )
 bool_option( NCRYSTAL_QUIET            "Produce less status messages during configuration." "OFF" )
 bool_option( NCRYSTAL_SKIP_INSTALL     "Set to prevent any installation targets from being created." "OFF" )
-enum_option( NCRYSTAL_ENABLE_THREADS   "Enable multithread usage (multithread safety is not affected by this)." "ON" "IFAVAILABLE" "OFF" )
+enum_option( NCRYSTAL_ENABLE_THREADS   "Enable multithread usage (multithread safety is not affected by this)." ${_ncdef_threads} )
 bool_option( NCRYSTAL_ENABLE_TESTING   "Whether to enable the CTest-based tests in the tests subdirectory." "OFF" )
-bool_option( NCRYSTAL_ENABLE_CFGAPP    "Whether to build and install the ncrystal-config command" "ON" )
+bool_option( NCRYSTAL_ENABLE_CFGAPP    "Whether to build and install the ncrystal-config command" "${_ncdef_cfgapp}" )
 bool_option( NCRYSTAL_WINEXPORTALL     "Whether WINDOWS_EXPORT_ALL_SYMBOLS should be set on NCrystal library" "ON" )
 
 bool_option( NCRYSTAL_ENABLE_TESTING   "Whether to enable the CTest-based tests in the tests subdirectory." "OFF" )
