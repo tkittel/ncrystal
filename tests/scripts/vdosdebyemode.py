@@ -23,7 +23,9 @@
 # Test of inelas=vdosdebye (selected by inelas=auto for crystalline materials
 # with Debye temperatures but no @DYNINFO sections), which must give the same
 # cross sections as the corresponding @DYNINFO entries of type vdosdebye, both
-# with the next-gen and the legacy (knllux=-1) kernel processing.
+# with the next-gen and the legacy (knllux=-1) kernel processing, and both
+# with the grouped treatment of VDOSDebye entries (vdoslux=3) and with separate
+# phonon expansions (vdoslux=103).
 
 import NCrystalDev as NC
 
@@ -77,20 +79,23 @@ _occu = """NCMAT v8
  debye_temp 250.0
 """
 
+#(knllux, vdoslux) combinations (legacy knllux=-1 never uses grouping):
+_luxes = ( ( 3, 3 ), ( 0, 3 ), ( 3, 103 ), ( 0, 103 ), ( -1, 3 ) )
+
 def test_occupancies( energies ):
     #With partial occupancies (and NCMAT v8, which has no @DEBYETEMPERATURE),
     #inelas=vdosdebye must still weight the atoms like the @DYNINFO fractions
     #(the average numbers of atoms, here 2 Na and 4 Cl):
     NC.registerInMemoryFileData( 'NaCl_occu.ncmat', _occu )
-    for knllux in ( 3, 0, -1 ):
+    for knllux, vdoslux in _luxes:
         res = []
         for inelas in ( 'vdosdebye', 'auto' ):
             cfg = ( f'NaCl_occu.ncmat;temp=200K;knllux={knllux};comp=inelas'
-                    f';inelas={inelas}' )
+                    f';inelas={inelas};vdoslux={vdoslux}' )
             sc = NC.createScatter( cfg )
             res.append( [ sc.xsect( ekin = e ) for e in energies ] )
-        assert res[0] == res[1], ('NaCl_occu', knllux)
-        print(f'NaCl (Na occupancy 1/2) knllux={knllux}: '
+        assert res[0] == res[1], ('NaCl_occu', knllux, vdoslux)
+        print(f'NaCl (Na occupancy 1/2) knllux={knllux} vdoslux={vdoslux}: '
               + ' '.join( f'{x:.6g}' for x in res[0] ) )
 
 def main():
@@ -98,14 +103,15 @@ def main():
     register( 'NaCl', 5.64, ['Na','Cl'], [290.0, 250.0] )
     energies = [ 1e-5, 1e-3, 0.025, 0.1, 1.0, 10.0, 100.0 ]
     for name in ( 'Al', 'NaCl' ):
-        for knllux in ( 3, 0, -1 ):
+        for knllux, vdoslux in _luxes:
             res = []
             for f in ( 'debyeonly', 'dyninfo' ):
-                cfg = f'{name}_{f}.ncmat;temp=200K;knllux={knllux};comp=inelas'
+                cfg = ( f'{name}_{f}.ncmat;temp=200K;knllux={knllux};comp=inelas'
+                        f';vdoslux={vdoslux}' )
                 sc = NC.createScatter( cfg )
                 res.append( [ sc.xsect( ekin = e ) for e in energies ] )
-            assert res[0] == res[1], (name, knllux)
-            print(f'{name} knllux={knllux}: '
+            assert res[0] == res[1], (name, knllux, vdoslux)
+            print(f'{name} knllux={knllux} vdoslux={vdoslux}: '
                   + ' '.join( f'{x:.6g}' for x in res[0] ) )
     test_occupancies( energies )
 

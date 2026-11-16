@@ -12,3 +12,4 @@ sablegacy
 sabscatter
 scbragg
 utils
+vdos

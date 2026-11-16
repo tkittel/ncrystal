@@ -52,7 +52,7 @@ stdlib::Y2SiO5_sg15_YSO.ncmat
    first: (0 Aa, 0.321785/cm) last: (500 Aa, 8.31435/cm)
 stdlib::B4C_sg166_BoronCarbide.ncmat
    ndiscontinuities=903 tol=0.0001 wlmax=500 maxrelerr<tol: OK
-   processes: AbsOOV ElIncScatter PowderBragg SABScatter
+   processes: AbsOOV ElIncScatter PowderBragg VDOSDebyeGroupScatter
    first: (0 Aa, 0.602612/cm) last: (500 Aa, 23133.3/cm)
 gasmix::air
    ndiscontinuities=0 tol=0.0001 wlmax=500 maxrelerr<tol: OK
@@ -70,8 +70,8 @@ Caught expected NCBadInput('IsoMacroXSTable: only isotropic materials are suppor
 NCrystal WARNING: Loading NCMAT data which has @CUSTOM_ section(s). This is OK if intended.
 Al_sans.ncmat
    ndiscontinuities=126 tol=0.0001 wlmax=500 maxrelerr<tol: OK
-   processes: AbsOOV ElIncScatter PowderBragg SABScatter SANSSphereScatter
-   first: (0 Aa, 0.0757122/cm) last: (500 Aa, 6.23508/cm)
+   processes: AbsOOV ElIncScatter PowderBragg SANSSphereScatter VDOSDebyeGroupScatter
+   first: (0 Aa, 0.0757122/cm) last: (500 Aa, 6.2358/cm)
 Caught expected NCCalcError('IsoMacroXSTable: the cross section has an unexpected discontinuity (or an extremely sharp feature) at wavelength 1.65323 Aa')
 Caught expected NCBadInput('IsoMacroXSTable: invalid tolerance 0 (must be in the range (0,1))')
 Caught expected NCBadInput('IsoMacroXSTable: invalid wlmax 1e-05 (must be larger than 0.0001 Aa)')

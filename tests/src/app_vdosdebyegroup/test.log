@@ -1,0 +1,34 @@
+vdoslux=0: lvl=0 legacy=0 allowGrouping=1 tolerance=0.6 expansionLux=0
+vdoslux=1: lvl=1 legacy=0 allowGrouping=1 tolerance=0.5 expansionLux=1
+vdoslux=2: lvl=2 legacy=0 allowGrouping=1 tolerance=0.4 expansionLux=2
+vdoslux=3: lvl=3 legacy=0 allowGrouping=1 tolerance=0.3 expansionLux=3
+vdoslux=4: lvl=4 legacy=0 allowGrouping=1 tolerance=0.2 expansionLux=4
+vdoslux=5: lvl=5 legacy=0 allowGrouping=1 tolerance=0.1 expansionLux=5
+vdoslux=6: lvl=6 legacy=0 allowGrouping=0 tolerance=0.1 expansionLux=6
+vdoslux=100: lvl=0 legacy=0 allowGrouping=0 tolerance=0.6 expansionLux=0
+vdoslux=103: lvl=3 legacy=0 allowGrouping=0 tolerance=0.3 expansionLux=3
+vdoslux=106: lvl=6 legacy=0 allowGrouping=0 tolerance=0.1 expansionLux=6
+vdoslux=1000: lvl=0 legacy=1 allowGrouping=0 tolerance=0.6 expansionLux=1000
+vdoslux=1003: lvl=3 legacy=1 allowGrouping=0 tolerance=0.3 expansionLux=1003
+vdoslux=1005: lvl=5 legacy=1 allowGrouping=0 tolerance=0.1 expansionLux=1005
+vdoslux=2000: lvl=0 legacy=0 allowGrouping=1 tolerance=0.6 expansionLux=0
+vdoslux=2005: lvl=5 legacy=0 allowGrouping=1 tolerance=0.1 expansionLux=5
+vdoslux=2006: lvl=6 legacy=0 allowGrouping=0 tolerance=0.1 expansionLux=6
+tolerance=0: 40 entries -> 40 clusters
+tolerance=0.02: 40 entries -> 14 clusters
+tolerance=0.05: 40 entries -> 7 clusters
+tolerance=0.1: 40 entries -> 4 clusters
+tolerance=0.2: 40 entries -> 2 clusters
+tolerance=0.35: 40 entries -> 1 clusters
+tolerance=10: 40 entries -> 1 clusters
+VDOSDebyeGroupData: 2 clusters, cross sections OK
+VDOSDebyeGroupData: cluster picking OK
+VDOSDebyeGroupData: single cluster OK
+vdoslux=0: 0.15*VDOSDebyeGroupScatter 0.75*VDOSDebyeGroupScatter 0.1*FreeGas
+vdoslux=3: 0.15*VDOSDebyeGroupScatter 0.75*VDOSDebyeGroupScatter 0.1*FreeGas
+vdoslux=5: 0.15*VDOSDebyeGroupScatter 0.75*VDOSDebyeGroupScatter 0.1*FreeGas
+vdoslux=103: 0.15*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.1*FreeGas
+mass 300u:NCrystal WARNING: The 1 @DYNINFO entry of type vdosdebye with mass 300u (293.15K) is not handled together (VDOSDebyeGroupScatter), since that mass is outside the supported range (0.958232u-262.253u). Each entry gets its own phonon expansion instead, which can be slow.
+ SABScatter
+TDebye=0.2K: CalcError: The VDOSDebye entry for Al (TDebye=0.2K) at T=293.15K has T/TDebye=1466, above the maximum of 1000 supported by the grouped VDOSDebye treatment. To instead use a separate phonon expansion for each entry (which has no such hard limit, but can be slower to initialise), add 100 to the vdoslux value, i.e. use vdoslux=101.
+All ok
