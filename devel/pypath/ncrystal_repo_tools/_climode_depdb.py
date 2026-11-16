@@ -37,7 +37,8 @@ def gathertestdeps():
             for line in fh:
                 if line.startswith('# NEEDS:'):
                     needs.update(set(line[len('# NEEDS:'):].split()))
-    return needs
+    #"subprocess" is not a package, just the ability to start processes:
+    return needs - {'subprocess'}
 
 def fixreqfiles():
     from ._check_deps import (
