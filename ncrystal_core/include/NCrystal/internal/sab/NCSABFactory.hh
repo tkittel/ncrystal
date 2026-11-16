@@ -41,14 +41,18 @@ namespace NCRYSTAL_NAMESPACE {
                               shared_obj<const SABData>,
                               Optional<Temperature> teff = NullOpt,
                               std::shared_ptr<const VectD>
-                              energyGrid = nullptr );
+                              energyGrid = nullptr,
+                              SABExtended::SupportXS
+                              = SABExtended::SupportXS::YES );
 
     shared_obj<const SAB::SABExtended>
     createSABExtendedWithCache( int knllux,
                                 shared_obj<const SABData>,
                                 Optional<Temperature> teff = NullOpt,
                                 std::shared_ptr<const VectD>
-                                energyGrid = nullptr );
+                                energyGrid = nullptr,
+                                SABExtended::SupportXS
+                                = SABExtended::SupportXS::YES );
 
     ///////////////////////////////
     // Create shared energy grid //

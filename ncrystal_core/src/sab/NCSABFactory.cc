@@ -62,7 +62,7 @@ namespace NCRYSTAL_NAMESPACE {
       //would e.g. break the map's strict weak ordering if a NaN ever
       //slipped in):
       using SECacheKey_Thin
-        = std::tuple<UniqueIDValue,UniqueIDValue,int,std::uint64_t>;
+        = std::tuple<UniqueIDValue,UniqueIDValue,int,std::uint64_t,bool>;
 
       Optional<Temperature> teffFromKeyBits( std::uint64_t bits )
       {
@@ -130,7 +130,8 @@ namespace NCRYSTAL_NAMESPACE {
           ss<<"(SABData id="<<std::get<0>(key.thin_key).value
             <<";egrid id="<<std::get<1>(key.thin_key).value
             <<";knllux="<<std::get<2>(key.thin_key)
-            <<";teffbits="<<std::get<3>(key.thin_key)<<")";
+            <<";teffbits="<<std::get<3>(key.thin_key)
+            <<";supportxs="<<std::get<4>(key.thin_key)<<")";
           return ss.str();
         }
       protected:
@@ -146,7 +147,10 @@ namespace NCRYSTAL_NAMESPACE {
           return createSABExtendedNoCache( knllux,
                                            key.sabdata_ptr,
                                            teff,
-                                           std::move(egrid) );
+                                           std::move(egrid),
+                                           ( std::get<4>(key.thin_key)
+                                             ? SABExtended::SupportXS::YES
+                                             : SABExtended::SupportXS::NO ) );
         }
       };
 
@@ -227,26 +231,30 @@ NC::shared_obj<const NC::SAB::SABExtended>
 NC::SAB::createSABExtendedNoCache( int knllux,
                                    shared_obj<const SABData> sab,
                                    Optional<Temperature> teff,
-                                   std::shared_ptr<const VectD> egrid )
+                                   std::shared_ptr<const VectD> egrid,
+                                   SABExtended::SupportXS supportxs )
 {
   auto cfg = SABCfg::createConfig(knllux);
   return SAB::SABExtended::create( cfg,
                                    std::move(sab),
                                    teff,
-                                   std::move(egrid) );
+                                   std::move(egrid),
+                                   supportxs );
 }
 
 NC::shared_obj<const NC::SAB::SABExtended>
 NC::SAB::createSABExtendedWithCache( int knllux,
                                      shared_obj<const SABData> sab,
                                      Optional<Temperature> teff,
-                                     std::shared_ptr<const VectD> egrid )
+                                     std::shared_ptr<const VectD> egrid,
+                                     SABExtended::SupportXS supportxs )
 {
   SECacheKey key;
   std::get<0>(key.thin_key) = sab->getUniqueID();
   std::get<1>(key.thin_key) = egridToUniqueID(egrid);
   std::get<2>(key.thin_key) = knllux;
   std::get<3>(key.thin_key) = teffToKeyBits( teff );
+  std::get<4>(key.thin_key) = ( supportxs == SABExtended::SupportXS::YES );
   key.sabdata_ptr = std::move(sab);
   return getSEFactory().create(key);
 }
