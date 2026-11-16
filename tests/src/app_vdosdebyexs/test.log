@@ -1,0 +1,21 @@
+TDebye=3K T=100K M=1.00794u
+TDebye=50K T=100K M=12.011u
+TDebye=130K T=100K M=26.9815u
+TDebye=330K T=100K M=55.845u
+TDebye=1100K T=100K M=1.00794u
+TDebye=4000K T=100K M=207.2u
+TDebye=95000K T=100K M=15.999u
+TDebye=200000K T=100K M=1.00794u
+All 80 values OK (one-phonon part to 1e-5, total to 1e-3, relative to the total)
+TDebye=0.33K T=300K M=1.00794u
+TDebye=0.33K T=300K M=15.999u
+TDebye=0.33K T=300K M=207.2u
+TDebye=1.5K T=300K M=1.00794u
+TDebye=1.5K T=300K M=15.999u
+TDebye=1.5K T=300K M=207.2u
+TDebye=4.5K T=300K M=1.00794u
+TDebye=4.5K T=300K M=15.999u
+TDebye=4.5K T=300K M=207.2u
+All 72 values for T/TDebye in [50,1000] OK (one-phonon part to 1e-5, total to 1e-2)
+Tabulations agree with direct evaluations to 2e-4
+Out of range inputs give CalcError

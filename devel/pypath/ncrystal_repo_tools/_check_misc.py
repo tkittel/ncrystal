@@ -64,6 +64,7 @@ def main():
         'tests/data/H_from_ethanol_liquid_200K_sabsmall.ncmat' : 200,
         'tests/data/ptreduce/li_from_li2o_e0grid.txt' : 100,
         'tests/data/ptreduce/al_e0grid.txt' : 100,
+        'ncrystal_core/src/vdos/NCVDOSDebyeXSData.hh' : 90,#generated fit coefficients
     }
     #slightly larger on windows (larger line endings):
     limfactor = 1.02 if platform.system() == 'Windows' else 1.0
