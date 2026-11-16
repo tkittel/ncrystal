@@ -3,7 +3,7 @@ name: pyodide
 #Builds the ncrystal-core wheel for Pyodide (wasm) with the latest Pyodide,
 #checks that the [tool.pyodide.build] flags in pyproject.toml are in sync with
 #Pyodide's defaults (devel/ci/pyodide_checkflags.py), and tests the wheels in
-#Pyodide (under node).
+#Pyodide (under node), including ncrystal-verify.
 
 on:
   push:
@@ -61,6 +61,12 @@ jobs:
         pyodide venv venv_pyodide
         ./venv_pyodide/bin/pip install ./dist/*.whl
         ./venv_pyodide/bin/python -c 'import NCrystal; NCrystal.test()' 2>&1 | tee logs/test.log
+        test "${PIPESTATUS[0]}" -eq 0
+        #ncrystal-verify runs on the host (it starts a process per test),
+        #with each test running in Pyodide:
+        ./venv_pyodide/bin/pip install mpmath
+        python -m pip install --no-deps ./dist/ncrystal_verify-*.whl
+        ncrystal-verify -m all --python ./venv_pyodide/bin/python 2>&1 | tee logs/verify.log
         test "${PIPESTATUS[0]}" -eq 0
 
     - name: Upload logs
