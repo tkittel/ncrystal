@@ -20,6 +20,8 @@
 ##                                                                            ##
 ################################################################################
 
+# NEEDS: subprocess
+
 # Test the ["util","browsedb",...] and ["util","browsefactories"] JSON
 # queries.
 

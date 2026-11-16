@@ -20,6 +20,8 @@
 ##                                                                            ##
 ################################################################################
 
+# NEEDS: subprocess
+
 # Test inference of namespace from NCRYSTAL_LIB (only file name should
 # matter, not dots in parent dirs).
 

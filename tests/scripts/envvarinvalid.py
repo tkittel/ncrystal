@@ -20,6 +20,8 @@
 ##                                                                            ##
 ################################################################################
 
+# NEEDS: subprocess
+
 # Test that invalid values of environment variables result in exceptions
 # which can be caught. This includes variables which used to be processed
 # already during initialisation of global variables, where invalid values
