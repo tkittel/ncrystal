@@ -1,0 +1,25 @@
+Input for the CHANGELOG from the VDOSDebye cross section and grouping work, in
+the same spirit as changes_for_changelog.txt (to be curated into the real
+CHANGELOG at release time, after which this file is dropped).
+
+### Performance
+
+     * VDOSDebye entries are handled in groups at vdoslux 0-5: all entries with
+       the same mass and temperature form a group, with cross sections from
+       the Debye model without any phonon expansion (exact one-phonon part,
+       fitted multi-phonon part, within 1e-3 and exact at high energies), and
+       samplings from a few phonon expansions, each for a cluster of entries
+       with similar mean squared displacements. Materials with many entries
+       (e.g. from CIF files with many sites) thus initialise much faster
+       (e.g. 586 entries: ~97s -> ~2-3s at vdoslux=3). VDOSDebye cross
+       sections change by up to ~2e-3 (the precision of the expansions), and
+       samplings change within the clustering tolerances. Other dynamic info
+       types are not affected, and vdoslux=6 keeps separate expansions.
+     * Temperatures above 1000 times the Debye temperature are not supported
+       by the grouped treatment (and above 50 times, unphysical anyway, with
+       1e-2 cross section precision). For testing, vdoslux values 100-106 are
+       like 0-6, but without the grouped treatment.
+     * New internal VDOSDebyeXS class (vdos component) providing these
+       cross sections (tuning script in
+       devel/simplebuild/static/NCDev/scripts/fit_vdosdebye_xs), and
+       thinIsoXSTable (utils component) for thinning cross section tables.
