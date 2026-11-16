@@ -48,14 +48,13 @@ def prepend_to_path_var( env, varname, val ):
         env[varname] = val
 
 
-def run_test( script, verbose ):
+def run_test( script, verbose, pycmd ):
     name = script.stem
     print(f" .. running test {name}")
     pypath = script.parent.parent.joinpath('pypath')
     assert pypath.is_dir()
     import os
     import subprocess
-    import sys
     env = os.environ.copy()
     prepend_to_path_var( env, 'PYTHONPATH', pypath )
     #Needed for windows, leaving them on all the time for now:
@@ -67,7 +66,7 @@ def run_test( script, verbose ):
     #spurious test failures:
     env['NCRYSTAL_DISABLE_DYNLOAD']='1'
     with work_in_tmpdir():
-        rv = subprocess.run( [sys.executable, str(script)],
+        rv = subprocess.run( [pycmd, str(script)],
                              env = env,
                              capture_output = True,
                              check = False )
@@ -163,13 +162,23 @@ def try_cfg_with_cmake_project(verbose):
         print(end='',flush=True)
     return rv.returncode == 0
 
-def _vtuple( s ):
-    import re
+#Code run with the Python command of the tests (via "-c"), to check which of
+#the dependencies are present there (with the same version checks as used by
+#NCrystal). Prints a JSON dict: dep -> [present, note], plus sys.platform:
+_depcheck_code = r"""
+import importlib, importlib.metadata, json, re, sys
+def vtuple( s ):
     return tuple( int(e) for e in re.findall(r'\d+',s)[:3] )
-
-def _installed_version( modname, pypiname ):
-    import importlib
-    import importlib.metadata
+res = {}
+for dep, ( minv, modname, pypiname ) in json.loads( sys.argv[1] ).items():
+    if dep == 'subprocess':
+        res[dep] = [ sys.platform != 'emscripten', '' ]
+        continue
+    try:
+        mod = importlib.import_module( modname )
+    except ModuleNotFoundError:
+        res[dep] = [ False, '' ]
+        continue
     v = getattr( importlib.import_module( modname.split('.')[0] ),
                  '__version__', None )
     if v is None:
@@ -177,13 +186,29 @@ def _installed_version( modname, pypiname ):
             v = importlib.metadata.version( pypiname )
         except importlib.metadata.PackageNotFoundError:
             pass
-    return v
+    if minv and v and vtuple(v) < vtuple(minv):
+        res[dep] = [ False, f' (version {v} is too old, {minv} or later needed)' ]
+    else:
+        res[dep] = [ True, '' ]
+print( json.dumps( { 'deps' : res, 'platform' : sys.platform } ) )
+"""
 
-def prepare_needs( scripts, verbose ):
-    import importlib
+def check_deps_with_pycmd( deps, pycmd ):
+    import json
+    import subprocess
 
-    from ._depdb import deps
+    from ._depdb import deps as depdb
+    #"subprocess" is not a package, just the ability to start processes:
+    table = { d : ( [None,None,None] if d == 'subprocess' else depdb[d] )
+              for d in deps }
+    rv = subprocess.run( [ pycmd, '-c', _depcheck_code, json.dumps(table) ],
+                         capture_output = True, check = False )
+    if rv.returncode != 0:
+        raise SystemExit(f'Failed to check dependencies with {pycmd}:\n'
+                         + rv.stderr.decode('utf8','backslashreplace'))
+    return json.loads( rv.stdout.decode().strip().splitlines()[-1] )
 
+def prepare_needs( scripts, verbose, pycmd ):
     script2dep = {}
     alldeps = set()
     for script in scripts:
@@ -193,31 +218,24 @@ def prepare_needs( scripts, verbose ):
         if needs:
             script2dep[name] = needs
             alldeps.update( needs )
+    res = check_deps_with_pycmd( alldeps - {'cmake'}, pycmd )
     absent = set()
     for dep in sorted(alldeps):
         deppretty = 'cmake (with compilers)' if dep=='cmake' else dep
         print(f"Checking for presence of {deppretty}...",end='',flush=True)
-        def mark( ok, note = '', _dep = dep ):
-            if ok:
-                print(' yes')
-            else:
-                absent.add( _dep )
-                print(' no'+note)
         if dep == 'cmake':
-            #special, must try to tiny cmake project with C and C++
-            mark(try_cfg_with_cmake_project(verbose))
-            continue
-        minv, modname, pypiname = deps[dep]
-        try:
-            importlib.import_module(modname)
-        except ModuleNotFoundError:
-            mark(False)
-            continue
-        v = _installed_version( modname, pypiname )
-        if minv and v and _vtuple(v) < _vtuple(minv):
-            mark(False,f' (version {v} is too old, {minv} or later needed)')
+            #special, must try to tiny cmake project with C and C++ (not for
+            #Emscripten, where the tests do not use the native compilers):
+            ok = ( res['platform'] != 'emscripten'
+                   and try_cfg_with_cmake_project(verbose) )
+            note = ''
         else:
-            mark(True)
+            ok, note = res['deps'][dep]
+        if ok:
+            print(' yes')
+        else:
+            absent.add( dep )
+            print(' no'+note)
     return { 'absent': absent,
              'script2dep': script2dep }
 
@@ -261,6 +279,14 @@ def parse_args():
                             """Enable longer tests as well.""" )
                         )
 
+    parser.add_argument('--python', metavar='CMD', default=None,
+                        help=wrap(
+                            """Python command for running the tests (default:
+                            the current Python). For example the python of a
+                            Pyodide virtual environment, to test NCrystal in
+                            WebAssembly.""" )
+                        )
+
     args = parser.parse_args()
 
     def flatten_to_set( list_of_strs ):
@@ -276,6 +302,12 @@ def parse_args():
 
 def main():
     args = parse_args()
+    import os
+    import sys
+    pycmd = args.python or sys.executable
+    if os.sep in pycmd or '/' in pycmd:
+        #Absolute, since the tests run in temporary directories:
+        pycmd = os.path.abspath( pycmd )
     filterfct = None
     if args.filters:
         import fnmatch
@@ -298,7 +330,7 @@ def main():
         assert nhidden > 0, "no long tests defined"
         scripts = _
 
-    depinfo = prepare_needs( scripts, args.verbose )
+    depinfo = prepare_needs( scripts, args.verbose, pycmd )
     jobs = []
 
     for script in scripts:
@@ -328,7 +360,7 @@ def main():
                 dep_skipped_bad += 1
                 print(" .. can not run test {} (missing: {})".format(name,' '.join(missing)))
         else:
-            if not run_test(script,args.verbose):
+            if not run_test(script,args.verbose,pycmd):
                 failures += 1
             else:
                 successes += 1

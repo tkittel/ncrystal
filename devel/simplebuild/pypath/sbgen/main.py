@@ -168,7 +168,9 @@ def extract_deps_from_needs(sf):
     with sf.open('rt') as fh:
         for line in fh:
             if line.startswith('# NEEDS: '):
-                return set( line[9:].split() )
+                #"subprocess" is not a package, just the ability to start
+                #processes (always possible here):
+                return set( line[9:].split() ) - {'subprocess'}
 
 def create_pkginfo( pkgname,
                     extdeps = None,
