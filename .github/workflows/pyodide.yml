@@ -1,0 +1,72 @@
+name: pyodide
+
+#Builds the ncrystal-core wheel for Pyodide (wasm) with the latest Pyodide,
+#checks that the [tool.pyodide.build] flags in pyproject.toml are in sync with
+#Pyodide's defaults (devel/ci/pyodide_checkflags.py), and tests the wheels in
+#Pyodide (under node).
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        path: src
+
+    - name: Setup python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+      with:
+        python-version: '3.14'
+
+    - name: Install pyodide-build and the latest Pyodide
+      run: |
+        set -eux
+        mkdir -p logs
+        python -m pip install pyodide-build
+        pyodide xbuildenv install
+        pyodide xbuildenv install-emscripten
+        pyodide config list 2>&1 | tee logs/pyodide_config.log
+
+    - name: Check Pyodide flags
+      run: |
+        cd src
+        python ./devel/ci/pyodide_checkflags.py 2>&1 | tee ../logs/checkflags.log
+        test "${PIPESTATUS[0]}" -eq 0
+
+    - name: Build wheels
+      run: |
+        set -eux
+        cd src/ncrystal_core
+        pyodide build -o ../../dist 2>&1 | tee ../../logs/build_core.log
+        test "${PIPESTATUS[0]}" -eq 0
+        cd ..
+        python -m pip wheel --no-deps -w ../dist ./ncrystal_python ./ncrystal_verify
+        ls -l ../dist
+
+    - name: Test wheels in Pyodide
+      run: |
+        set -eux
+        #pyodide venv needs node, use the one installed with emscripten:
+        nodebin=$(dirname "$(find ~/.cache/pyodide-build -path '*emsdk/node/*/bin/node' | head -1)")
+        export PATH="${nodebin}:${PATH}"
+        pyodide venv venv_pyodide
+        ./venv_pyodide/bin/pip install ./dist/*.whl
+        ./venv_pyodide/bin/python -c 'import NCrystal; NCrystal.test()' 2>&1 | tee logs/test.log
+        test "${PIPESTATUS[0]}" -eq 0
+
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: ci-logs-pyodide
+        path: logs
+        if-no-files-found: warn
