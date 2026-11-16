@@ -32,6 +32,9 @@ def _ncrystal_config_cli_wrapper():
     import pathlib
     import subprocess
     import sys
+    if sys.platform == 'emscripten':
+        raise SystemExit('ERROR: ncrystal-config is not available for'
+                         ' Emscripten (Pyodide)')
     f = pathlib.Path(__file__).parent.joinpath('data','bin','ncrystal-config')
     a = sys.argv[:]
     a[0] = f
