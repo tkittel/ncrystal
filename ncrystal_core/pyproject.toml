@@ -61,3 +61,12 @@ sdist.include = ["/src/","/include/","/cmake/",
                  ]
 sdist.cmake = true
 wheel.py-api = "py3" # as close to "noarch" as possible (ABI3)
+
+[tool.pyodide.build]
+#Flags for Pyodide (wasm) builds, replacing Pyodide's defaults which use -Oz
+#(optimise for size). Pyodide's base flags can not be referenced here, so they
+#are spelled out (checked against Pyodide by CI). Hidden symbol visibility
+#avoids internal calls going through the dynamic linker:
+cflags = "-g0 -fPIC -fwasm-exceptions -sSUPPORT_LONGJMP=wasm -fvisibility=hidden -O3"
+cxxflags = "-fvisibility-inlines-hidden -O3"
+ldflags = "-g0 -fwasm-exceptions -sSUPPORT_LONGJMP=wasm -s SIDE_MODULE=1 -O3"

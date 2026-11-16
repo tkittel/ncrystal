@@ -179,8 +179,13 @@ def check_metadata():
                         allow_diff = [] )
 
     #Check 'tool' section
-    assert set( data_core['tool'].keys() ) == {'scikit-build'}
-    assert set( data_monolith['tool'].keys() ) == {'scikit-build'}
+    assert set( data_core['tool'].keys() ) == {'scikit-build','pyodide'}
+    assert set( data_monolith['tool'].keys() ) == {'scikit-build','pyodide'}
+    assert ( data_core['tool']['pyodide'].keys()
+             == data_monolith['tool']['pyodide'].keys() == {'build'} )
+    assert ( data_core['tool']['pyodide']['build'].keys()
+             == data_monolith['tool']['pyodide']['build'].keys() )
+    cmp_common_entries( 'tool.pyodide.build', data_monolith, data_core )
     cmp_common_entries( 'tool.scikit-build', data_monolith, data_core,
                         allow_diff = ['sdist','wheel'] )
     cmp_common_entries( 'tool.scikit-build.sdist', data_monolith, data_core,
