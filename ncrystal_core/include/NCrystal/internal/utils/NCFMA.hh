@@ -46,8 +46,8 @@ namespace NCRYSTAL_NAMESPACE {
   ncforceinline double ncfma( double, double, double ) noexcept;
 
   //Correctly rounded a*b+c without hardware FMA, giving results identical to
-  //std::fma. Faster than many software std::fma implementations (wasm: 5.6ns vs
-  //14-19ns, glibc: 3.8ns vs 6-11ns), but slower than hardware FMA (1.8ns) and
+  //std::fma. Faster than many software std::fma implementations (wasm: 6.6ns vs
+  //19ns, glibc: 4.8ns vs 6-11ns), but slower than hardware FMA (1.8ns) and
   //hinders auto vectorisation.
   double softFMA( double a, double b, double c ) noexcept;
 
@@ -73,10 +73,17 @@ inline double NCrystal::softFMA( double a, double b, double c ) noexcept
 #ifdef __clang__
 #  pragma clang fp contract(off)
 #endif
-  const double aa = std::fabs(a), ab = std::fabs(b), ac = std::fabs(c);
-  const double p = aa * ab;
-  if ( !( p < 1e300 && ac < 1e300 && aa < 1e290 && ab < 1e290
-          && p > 1e-280 && ( ac == 0.0 || ac > 1e-280 ) ) )
+  std::uint64_t ba, bb, bc;
+  std::memcpy( &ba, &a, sizeof(ba) );
+  std::memcpy( &bb, &b, sizeof(bb) );
+  std::memcpy( &bc, &c, sizeof(bc) );
+  const unsigned ea = unsigned(ba>>52)&0x7ffu, eb = unsigned(bb>>52)&0x7ffu;
+  const unsigned ec = unsigned(bc>>52)&0x7ffu;
+  //Exponents of a, b and (non-zero) c must be within +-400, so nothing below
+  //can overflow or underflow:
+  constexpr unsigned lo = 1023u-400u, hi = 1023u+400u;
+  const bool cok = ( ec - lo <= hi - lo ) || ( ( bc << 1 ) == 0 );
+  if ( !( ( ea - lo <= hi - lo ) & ( eb - lo <= hi - lo ) & cok ) )
     return std::fma( a, b, c );
   //Exact product uh+ul=a*b:
   const double uh = a * b;
@@ -88,19 +95,18 @@ inline double NCrystal::softFMA( double a, double b, double c ) noexcept
   const double th = c + uh;
   const double tbb = th - c;
   const double tl = ( c - ( th - tbb ) ) + ( uh - tbb );
-  //v = tl+ul rounded to odd:
+  //v = tl+ul rounded to odd (if inexact and even, move one ulp towards
+  //tl+ul), without branches since that is often mispredicted:
   double v = tl + ul;
   const double vb = v - tl;
   const double ve = ( tl - ( v - vb ) ) + ( ul - vb );
-  if ( ve != 0.0 ) {
-    std::uint64_t bits;
-    std::memcpy( &bits, &v, sizeof(bits) );
-    if ( !( bits & 1u ) ) {
-      //v is even, so move it one ulp towards tl+ul:
-      bits += ( ( ve > 0.0 ) == ( v > 0.0 ) ? 1u : std::uint64_t(-1) );
-      std::memcpy( &v, &bits, sizeof(bits) );
-    }
-  }
+  std::uint64_t bits, bve;
+  std::memcpy( &bits, &v, sizeof(bits) );
+  std::memcpy( &bve, &ve, sizeof(bve) );
+  const std::uint64_t adj = std::uint64_t( ( ve != 0.0 ) & !( bits & 1u ) );
+  const std::uint64_t dir = ( bve ^ bits ) >> 63;
+  bits += adj - 2u*( adj & dir );
+  std::memcpy( &v, &bits, sizeof(bits) );
   return th + v;
 }
 
