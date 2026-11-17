@@ -395,6 +395,9 @@ def main( progname, arglist ):
         density = density[0:-1]
         egrid = egrid[0:-1]
 
+    from ._ncmatimpl import _vdos_with_final_zero
+    egrid, density = _vdos_with_final_zero( egrid, density )
+
     from .ncmat import formatVectorForNCMAT
 
     egrid_cnt =''
