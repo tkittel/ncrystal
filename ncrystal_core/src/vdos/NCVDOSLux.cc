@@ -25,23 +25,31 @@ namespace NC=NCrystal;
 namespace NCRYSTAL_NAMESPACE {
   namespace VDOS {
     namespace {
-      int vdosluxEncodeRaw( unsigned lvl, bool isLegacy )
+      //Bits: 0-6 lvl, 7 legacy, 8 no grouping (raw 100+lvl):
+      constexpr unsigned noGroupingBit = 256u;
+
+      int vdosluxEncodeRaw( unsigned lvl, bool isLegacy, bool noGrouping )
       {
         int v = static_cast<int>(lvl);
         if ( isLegacy )
           v += 1000;
+        if ( noGrouping )
+          v += 100;
         return v;
       }
 
       unsigned vdosluxDecodeRaw( int rawval )
       {
         //0 + val : nextgen
+        //100 + val : nextgen, no grouping of VDOSDebye entries
         //1000 + val : legacy
         //2000 + val : nextgen
         if ( rawval >= 0 && rawval <= 6 )
           rawval += 2000;
         unsigned res;
-        if ( rawval >= 2000 && rawval <= 2006 ) {
+        if ( rawval >= 100 && rawval <= 106 ) {
+          res = static_cast<unsigned>(rawval-100) | noGroupingBit;
+        } else if ( rawval >= 2000 && rawval <= 2006 ) {
           res = static_cast<unsigned>(rawval-2000);
           nc_assert_always( res <= 127 );
         } else if ( rawval >= 1000 && rawval <= 1005 ) {
@@ -76,12 +84,19 @@ NC::VDOS::VDOSLux::VDOSLux()
 int NC::VDOS::VDOSLux::raw() const
 {
   return vdosluxEncodeRaw( lvl(),
-                           isLegacy() );
+                           isLegacy(),
+                           static_cast<bool>( m_v & noGroupingBit ) );
 }
 
 NC::VDOS::VDOSLux NC::VDOS::VDOSLux::reduceLvl( unsigned v ) const
 {
   return VDOSLux( vdosluxEncodeRaw( ( lvl() > v ? lvl() - v : 0u ),
-                                    isLegacy() ) );
+                                    isLegacy(),
+                                    static_cast<bool>( m_v & noGroupingBit ) ) );
+}
+
+NC::VDOS::VDOSLux NC::VDOS::VDOSLux::expansionLux() const
+{
+  return VDOSLux( vdosluxEncodeRaw( lvl(), isLegacy(), false ) );
 }
 
