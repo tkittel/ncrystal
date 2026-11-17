@@ -290,7 +290,7 @@ jobs:
       # (no 32bit wheels).
 
       - name: cibuildwheel
-        uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074
+        uses: pypa/cibuildwheel@f9b966cfadf4109556cadc5bb39ddb72d0ce664e
         env:
           CIBW_ARCHS_WINDOWS: native
         with:
@@ -298,7 +298,7 @@ jobs:
           output-dir: wheelhouse
 
       - name: cibuildwheel manylinux2014
-        uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074
+        uses: pypa/cibuildwheel@f9b966cfadf4109556cadc5bb39ddb72d0ce664e
         if: runner.os == 'Linux'
         env:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
