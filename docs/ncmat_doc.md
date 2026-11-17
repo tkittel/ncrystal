@@ -338,14 +338,14 @@ the remaining points spaced evenly between those (the total number of points
 will then be inferred by the number of points in the *vdos_density* field -
 which must always be at least 5).
 
-The overall normalisation or unit of the values in the *vdos_densiy* field does
+The overall normalisation or unit of the values in the *vdos_density* field does
 not matter, as NCrystal will renormalise them automatically. The actual density
 function will be formed by linear interpolation within the grid. For energies
 below the first grid point, the density values will be assumed to scale as the
 square of the energy - an approximation which should be suitable for solid
 materials. For energies above the last grid point, densities will be assumed to
-be 0. To ensure convergence of subsequent calculations in NCrystal, the first
-point in the *vdos_egrid* is required to be at least 1e-5 (i.e. 0.01meV).
+be 0. Additionally, starting with NCrystal release 5.0.0, an extra grid point
+will be appended with density 0 if the last density value is not already 0.
 
 An example vdos specification might look like:
 
