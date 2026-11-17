@@ -70,7 +70,7 @@ jobs:
     needs: [ preparations ]
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-15-intel, macos-15]
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, windows-11-arm, macos-15-intel, macos-15]
         #        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         #NOTICE: Keep synchronised with matrix platform list elsewhere in this file!!!!
     name: ${{ matrix.os }} / test
@@ -113,10 +113,18 @@ jobs:
         run: echo "INSTALL_ENDF_PARSERPY_CPP=no" >> $GITHUB_ENV
 
       - name: Pip install extra deps
+        if: matrix.os != 'windows-11-arm'
         run: pip install -r ./src/devel/reqs/requirements_all_and_devel.txt
 
+      - name: Pip install extra deps except gemmi (no Windows ARM64 wheels)
+        if: matrix.os == 'windows-11-arm'
+        shell: bash
+        run: |
+          grep -v '^gemmi' ./src/devel/reqs/requirements_all_and_devel.txt > reqs.txt
+          pip install -r reqs.txt
+
       - name: ncrystal-verify
-        run: ncrystal-verify
+        run: ncrystal-verify ${{ matrix.os == 'windows-11-arm' && '-m gemmi' || '' }}
 
   build_sdists:
     name: Build source distribution
@@ -252,7 +260,7 @@ jobs:
     strategy:
       matrix:
         # macos-15-intel is an intel runner, macos-15 is apple silicon
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-15-intel, macos-15]
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, windows-11-arm, macos-15-intel, macos-15]
         #        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         #NOTICE: Keep synchronised with matrix platform list elsewhere in this file!!!!
     name: ${{ matrix.os }} / ncrystal-core wheels
@@ -277,15 +285,13 @@ jobs:
         run: test -f "${SDIST_PATH}"
 
       # Run cibuildwheel. Both in default mode, and with additional steps for
-      # manylinux2014 wheels.
-      #
-      # Additionally, also try to make windows-arm64 wheels through cross
-      # compilation.
+      # manylinux2014 wheels. Windows wheels only for the native architecture
+      # (no 32bit wheels).
 
       - name: cibuildwheel
         uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074
         env:
-          CIBW_ARCHS_WINDOWS: "AMD64 ARM64"
+          CIBW_ARCHS_WINDOWS: native
         with:
           package-dir: ${{ env.SDIST_PATH }}
           output-dir: wheelhouse
