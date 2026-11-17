@@ -65,4 +65,9 @@ NC::VDOSData::VDOSData( PairDD egrid,
   nc_assert( m_e.first < m_e.second );
   nc_assert( m_d.size()>=2 );
   nc_assert( *std::min_element(m_d.begin(),m_d.end())>=0.0);
+  //A step at emax can not be represented on the grid, so the density must
+  //end with exactly one zero (see VDOS::ensureSingleTrailingZero):
+  if ( m_d.size() < 2 || m_d.back() != 0.0 || m_d[m_d.size()-2] == 0.0 )
+    NCRYSTAL_THROW(BadInput,"VDOS density must end with exactly one zero"
+                   " value");
 }
