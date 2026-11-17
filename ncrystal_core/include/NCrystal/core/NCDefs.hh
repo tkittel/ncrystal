@@ -463,10 +463,6 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Interoperability with C arrays:
     explicit constexpr FixedVector(const carray_type& xyz) noexcept;
-    explicit ncconstexpr17 operator carray_type&() noexcept { return rawArray(); }
-    explicit ncconstexpr17 operator const carray_type&() const noexcept { return rawArray(); }
-    ncconstexpr17 carray_type& rawArray() noexcept;
-    ncconstexpr17 const carray_type& rawArray() const noexcept;
     ncconstexpr17 void applyTo( carray_type& ) const noexcept;
 
     //Access:
@@ -1013,18 +1009,6 @@ namespace NCRYSTAL_NAMESPACE {
       detail::streamdblfmtg(os,dir[i]);
     }
     return os << " }";
-  }
-
-  template <class TValue, std::size_t N>
-  inline ncconstexpr17 typename FixedVector<TValue,N>::carray_type& FixedVector<TValue,N>::rawArray() noexcept
-  {
-    return *reinterpret_cast<carray_type*>(m_data.data());
-  }
-
-  template <class TValue, std::size_t N>
-  inline ncconstexpr17 const typename FixedVector<TValue,N>::carray_type& FixedVector<TValue,N>::rawArray() const noexcept
-  {
-    return *reinterpret_cast<const carray_type*>(m_data.data());
   }
 
   template <typename T>

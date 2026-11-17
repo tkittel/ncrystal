@@ -64,7 +64,7 @@ int main() {
   NC::NeutronDirection nd = b.as<NC::NeutronDirection>();//a copy
   nd.at(2)=12.0;
   std::cout << nd << std::endl;
-  nd.rawArray()[1] = 6.0;
+  nd[1] = 6.0;
   std::cout << nd << std::endl;
   nd.array()[0] = 3.0;
   std::cout << nd << std::endl;
