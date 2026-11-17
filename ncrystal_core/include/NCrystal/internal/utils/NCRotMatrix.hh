@@ -55,9 +55,9 @@ namespace NCRYSTAL_NAMESPACE {
     RotMatrix& operator=(Matrix&& o);
 
     Vector operator*(const Vector&) const;
-    const Vector& colX() const;
-    const Vector& colY() const;
-    const Vector& colZ() const;
+    Vector colX() const;
+    Vector colY() const;
+    Vector colZ() const;
   };
 
   class PhiRot {
@@ -109,22 +109,25 @@ namespace NCRYSTAL_NAMESPACE {
                    d[6]*v.x() + d[7]*v.y() + d[8]*v.z()  );
   }
 
-  inline const Vector& RotMatrix::colX() const
+  inline Vector RotMatrix::colX() const
   {
     nc_assert( m_colcount==3 && m_rowcount==3 );
-    return *reinterpret_cast<const Vector*>((*this)[0]);
+    const double * d = (*this)[0];
+    return Vector( d[0], d[1], d[2] );
   }
 
-  inline const Vector& RotMatrix::colY() const
+  inline Vector RotMatrix::colY() const
   {
     nc_assert( m_colcount==3 && m_rowcount==3 );
-    return *reinterpret_cast<const Vector*>((*this)[1]);
+    const double * d = (*this)[1];
+    return Vector( d[0], d[1], d[2] );
   }
 
-  inline const Vector& RotMatrix::colZ() const
+  inline Vector RotMatrix::colZ() const
   {
     nc_assert( m_colcount==3 && m_rowcount==3 );
-    return *reinterpret_cast<const Vector*>((*this)[2]);
+    const double * d = (*this)[2];
+    return Vector( d[0], d[1], d[2] );
   }
 
   inline RotMatrix::RotMatrix()
