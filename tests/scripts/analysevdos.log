@@ -13,9 +13,9 @@
 ==> ZnS_sg216_Sphalerite.ncmat;temp=300;vdoslux=0//Zn => debye_temp=240.030721699; gamma0=16.2334446254; integral=0.00745755438465; msd=0.0117918530082; teff=316.58850441
 ==> Fe_sg229_Iron-alpha.ncmat;temp=990000.0;vdoslux=0//Fe => debye_temp=433.392535338; gamma0=14254.1708424; integral=0.00960568682606; msd=13.7344744109; teff=990000.00897
 ==> Nylon66or6_C12H22N2O2.ncmat;temp=990000.0;vdoslux=0//H => debye_temp=836.655482663; gamma0=43001.9467677; integral=0.0487739481441; msd=204.189260497; teff=990000.647597
-==> Nylon66or6_C12H22N2O2.ncmat;temp=990000.0;vdoslux=0//C => debye_temp=400.011544241; gamma0=14849.1429446; integral=0.0114917669103; msd=74.9636701551; teff=990000.008081
-==> Nylon66or6_C12H22N2O2.ncmat;temp=990000.0;vdoslux=0//N => debye_temp=400.011544241; gamma0=14849.1429446; integral=0.0114917669103; msd=64.2826187944; teff=990000.008081
-==> Nylon66or6_C12H22N2O2.ncmat;temp=990000.0;vdoslux=0//O => debye_temp=400.011544241; gamma0=14849.1429446; integral=0.0114917669103; msd=56.2769085803; teff=990000.008081
+==> Nylon66or6_C12H22N2O2.ncmat;temp=990000.0;vdoslux=0//C => debye_temp=399.999917379; gamma0=14857.4274944; integral=0.0114897691286; msd=74.9680281804; teff=990000.008081
+==> Nylon66or6_C12H22N2O2.ncmat;temp=990000.0;vdoslux=0//N => debye_temp=399.999917379; gamma0=14857.4274944; integral=0.0114897691286; msd=64.2863558751; teff=990000.008081
+==> Nylon66or6_C12H22N2O2.ncmat;temp=990000.0;vdoslux=0//O => debye_temp=399.999917379; gamma0=14857.4274944; integral=0.0114897691286; msd=56.2801802476; teff=990000.008081
 ==> Y_sg194.ncmat;temp=990000.0;vdoslux=0//Y => debye_temp=209.198299863; gamma0=30995.3618267; integral=0.00544223374036; msd=37.0279607146; teff=990000.002199
 ==> Dy2O3_sg206_DysprosiumOxide.ncmat;temp=1000000.0;vdoslux=0//O => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
 ==> Dy2O3_sg206_DysprosiumOxide.ncmat;temp=1000000.0;vdoslux=0//Dy => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
