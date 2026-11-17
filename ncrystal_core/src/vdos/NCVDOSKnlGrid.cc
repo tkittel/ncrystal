@@ -329,6 +329,11 @@ NC::VDOS::determineAlphaBetaGridFromGn( const GnExpansion& gnexpn,
   //gaussians with sigma=sqrt(n) at high x values, this is perhaps not
   //surprising in hindsight, at least not at high x values.
 
+  //fixme: Make the grid denser near alpha=0 (node ratio well below 2). There
+  //S ~ alpha^n rises like a power, which log-linear cells with node ratio ~2
+  //underestimate by up to ~4% per cell, biasing low-energy cross sections of
+  //heavy atoms by ~-3e-4 (e.g. Pb, TDebye=100K, T=293K, E=1e-5eV, vdoslux=5).
+
   const double xmax = alpha2x*alphaMax;
   nc_assert_always(alpha2x>0.0&&std::isfinite(alpha2x));
   const double x2alpha = 1.0/alpha2x;
