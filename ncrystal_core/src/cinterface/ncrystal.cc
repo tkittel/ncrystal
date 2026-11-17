@@ -2583,7 +2583,9 @@ void ncrystal_vdoseval( double vdos_emin, double vdos_emax,
     density.reserve(vdos_ndensity);
     for ( auto i : NC::ncrange(vdos_ndensity) )
       density.push_back( vdos_density[i] );
-    NC::VDOSData vd( NC::PairDD{vdos_emin,vdos_emax},
+    NC::PairDD egrid{vdos_emin,vdos_emax};
+    NC::VDOS::ensureSingleTrailingZero( egrid, density );
+    NC::VDOSData vd( egrid,
                      std::move(density),
                      NC::Temperature{temperature},
                      NC::SigmaBound{1.0},//doesn't matter for VDOSEval

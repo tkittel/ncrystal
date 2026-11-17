@@ -130,9 +130,17 @@ namespace NCRYSTAL_NAMESPACE {
     // points from emin to emax (both positive), which would coincide with zero
     // if the grid was extended downwards by a whole number of bins. The
     // returned egrid is always specified in the compact form with just two
-    // entries, {emin,emax}.
+    // entries, {emin,emax}. The returned density ends with exactly one zero
+    // value (see ensureSingleTrailingZero).
     //
     std::pair<VectD,VectD> regulariseVDOSGrid( const VectD& egrid, const VectD& density );
+
+    //Make a regular VDOS end with exactly one zero density value, extending or
+    //shrinking emax accordingly: appends a zero point if the last density is
+    //nonzero (a step at emax can not be represented on the grid, so the
+    //density instead falls linearly to zero over one bin), and drops surplus
+    //trailing zeros. Throws BadInput if the grid is not regular.
+    void ensureSingleTrailingZero( PairDD& egrid_range, VectD& density );
 
     //Check if grid is already regular within stated tolerance. If it is,
     //returns high-precision corrected emax value, otherwise returns 0.0.

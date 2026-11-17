@@ -564,6 +564,38 @@ double NC::VDOS::checkIsRegularVDOSGrid( const VectD& egrid, const VectD& densit
   return checkIsRegularVDOSGrid( PairDD(egrid.front(),egrid.back()), density, tolerance );
 }
 
+void NC::VDOS::ensureSingleTrailingZero( PairDD& egrid, VectD& density )
+{
+  const double emax_reg = checkIsRegularVDOSGrid( egrid, density );
+  if ( !emax_reg )
+    NCRYSTAL_THROW(BadInput,"VDOS energy grid is not regular");
+  const double emin = egrid.first;
+  //Same binwidth as in checkIsRegularVDOSGrid:
+  const double nbins_below_emin
+    = std::round( emin * ( density.size() - 1 ) / ( emax_reg - emin ) );
+  nc_assert_always( nbins_below_emin >= 1.0 );
+  const double binwidth = emin / nbins_below_emin;
+  while ( density.size() > 2 && density.back() == 0.0
+          && density[density.size()-2] == 0.0 )
+    density.pop_back();
+  if ( density.back() != 0.0 )
+    density.push_back( 0.0 );
+  egrid.second = ncfma( static_cast<double>( density.size() - 1 ),
+                        binwidth, emin );
+}
+
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    std::pair<VectD,VectD> withSingleTrailingZero( double emin, double emax,
+                                                   VectD density )
+    {
+      PairDD egrid( emin, emax );
+      VDOS::ensureSingleTrailingZero( egrid, density );
+      return { VectD{ egrid.first, egrid.second }, std::move(density) };
+    }
+  }
+}
+
 std::pair<NC::VectD,NC::VectD> NC::VDOS::regulariseVDOSGrid( const VectD& orig_egrid, const VectD& orig_density )
 {
   static bool s_verbose_vdosregul = ncgetenv_bool("DEBUG_VDOSREGULARISATION");
@@ -600,7 +632,8 @@ std::pair<NC::VectD,NC::VectD> NC::VDOS::regulariseVDOSGrid( const VectD& orig_e
            <<(emax_corrected/orig_egrid.back()-1.0)<<")";
       NCRYSTAL_MSG(msg.str());
     }
-    return { VectD({orig_egrid.front(),emax_corrected}), orig_density };
+    return withSingleTrailingZero( orig_egrid.front(), emax_corrected,
+                                   orig_density );
   }
 
   //Ok, we need to regularise! We do this enforcing a uniform binwidth and
@@ -787,5 +820,6 @@ std::pair<NC::VectD,NC::VectD> NC::VDOS::regulariseVDOSGrid( const VectD& orig_e
                  << ", " << newEgrid.back() << "]");
 
   nc_assert(newEgrid.size()==2);
-  return { newEgrid, newDensity };
+  return withSingleTrailingZero( newEgrid.front(), newEgrid.back(),
+                                 std::move(newDensity) );
 }
