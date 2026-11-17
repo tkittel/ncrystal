@@ -42,20 +42,21 @@ vdos_units_2_eV = {
 
 def createVDOSDebye( debye_temperature ):
     """Create simplified VDOS according to the Debye model"""
-    from ._numpy import _ensure_numpy, _np, _np_linspace
+    from ._numpy import _ensure_numpy, _np
     _ensure_numpy()
     #NB: Must keep function exactly synchronised with createVDOSDebye function
     #in .cc src (although leaving out temperature,boundXS,elementMassAMU args
     #here):
     debye_energy = _constant_boltzmann*debye_temperature
-    if 0.5*debye_energy < 1.001e-5:
+    h = debye_energy / 1000.5
+    if 991.0*h < 1.001e-5:
         from .exceptions import NCBadInput
         raise NCBadInput('Too low Debye temperature')
-    vdos_egrid = _np_linspace(0.5*debye_energy,debye_energy,20)
     scale = 1.0 / (debye_energy*debye_energy)
-    vdos_density = scale * (vdos_egrid**2)
-    #Actual returned egrid should contain only first and last value:
-    return (_np.asarray([vdos_egrid[0],vdos_egrid[-1]]) ,vdos_density)
+    vdos_egrid = _np.arange(991,1001,dtype=float) * h
+    vdos_density = _np.append( (vdos_egrid*vdos_egrid)*scale, 0.0 )
+    #Returned egrid contains only first and last value:
+    return (_np.asarray([991.0*h,1001.0*h]),vdos_density)
 
 def debyeIsotropicMSD( *, debye_temperature, temperature, mass ):
     """Estimate (isotropic, harmonic) atomic mean-squared-displacement (a.k.a. "U_iso") using the

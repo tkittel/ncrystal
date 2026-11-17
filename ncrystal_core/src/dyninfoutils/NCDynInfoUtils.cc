@@ -455,13 +455,21 @@ NC::VDOSData NCDI::createVDOSDebye( DebyeTemperature debyeTemperature,
 {
   //NB: Must keep function exactly synchronised with createVDOSDebye function in
   //Python interface:
+  //Grid points (991..1001)*h with h=debye_energy/1000.5: the density is e^2
+  //up to debye_energy-h/2 and 0 at debye_energy+h/2. So the parabola below
+  //the first point is exact, and the cliff at debye_energy (not representable
+  //on a grid) becomes a linear ramp over one bin, centred on debye_energy:
   const double debye_energy = constant_boltzmann*debyeTemperature.get();
-  auto vdos_egrid = linspace(0.5*debye_energy,debye_energy,20);
-  double scale = 1.0 / (debye_energy*debye_energy);
-  auto vdos_density = vectorTrf( vdos_egrid,
-                                 [scale](double e){ return e*e*scale; } );
-  //Actual returned egrid should contain only first and last value:
-  return VDOSData( PairDD(vdos_egrid.front(),vdos_egrid.back()),
+  const double h = debye_energy / 1000.5;
+  const double scale = 1.0 / (debye_energy*debye_energy);
+  VectD vdos_density;
+  vdos_density.reserve(11);
+  for ( auto i : ncrange( 991, 1001 ) ) {
+    const double e = i * h;
+    vdos_density.push_back( e*e*scale );
+  }
+  vdos_density.push_back( 0.0 );
+  return VDOSData( PairDD( 991.0*h, 1001.0*h ),
                    std::move(vdos_density),
                    temperature,
                    boundXS,

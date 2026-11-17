@@ -8,7 +8,7 @@
 =====> solid::CH2/0.95gcm3;temp=5;vdoslux=2;knllux=4
 =====> sabxs_debye_H_100K.ncmat;temp=1;vdoslux=4;knllux=0
 =====> sabxs_debye_H_100K.ncmat;temp=300;vdoslux=0;knllux=3
-NCrystal WARNING: VDOS expansion could only reach Emax=0.740725eV and not the target Emax=5eV
+NCrystal WARNING: VDOS expansion could only reach Emax=0.656567eV and not the target Emax=5eV
 =====> sabxs_debye_H_1000K.ncmat;temp=300;vdoslux=2;knllux=5
 =====> sabxs_debye_C_400K.ncmat;temp=4;vdoslux=4;knllux=1
 =====> sabxs_debye_C_400K.ncmat;temp=1200;vdoslux=0;knllux=4
