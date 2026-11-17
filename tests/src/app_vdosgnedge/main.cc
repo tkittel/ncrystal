@@ -88,7 +88,7 @@ namespace {
 
 int main()
 {
-  //Debye VDOS, whose G1 drops from its maximum to 0 at the upper edge:
+  //Debye VDOS, whose G1 is large right up to its upper edge:
   const auto debye
     = NC::DynInfoUtils::createVDOSDebye( NC::DebyeTemperature{ 410.4 },
                                          NC::Temperature{ 200.0 },

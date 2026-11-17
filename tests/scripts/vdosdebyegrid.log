@@ -1,0 +1,4 @@
+TDebye=100K T=293.15K Pb: ok
+TDebye=400K T=293.15K O: ok
+TDebye=600K T=10K H: ok
+TDebye=2000K T=1000K C: ok
