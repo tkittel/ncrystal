@@ -357,9 +357,58 @@ jobs:
           path: ./wheelhouse/ncrystal_core-*.whl
           if-no-files-found: error
 
+  test_pyodide_wheels:
+    #Tests the Pyodide wheel with the pure wheels in Pyodide (under node), as in
+    #pyodide.yml. Python 3.14 selects the latest Pyodide 314.x, matching the
+    #cp314 wheel.
+    needs: [ build_core_wheels_pyodide, build_pure_wheels ]
+    name: pyodide / test wheels
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: ncrystal-core-wheels-pyodide
+          path: ./dist
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: wheel-ncrystal-python
+          path: ./dist
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: wheel-ncrystal-verify
+          path: ./dist
+
+      - name: Setup python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.14'
+
+      - name: Install pyodide-build and Pyodide
+        run: |
+          set -eux
+          python -m pip install pyodide-build
+          pyodide xbuildenv install
+          pyodide xbuildenv install-emscripten
+
+      - name: Test wheels in Pyodide
+        run: |
+          set -eux
+          #pyodide venv needs node, use the one installed with emscripten:
+          nodebin=$(dirname "$(find ~/.cache/pyodide-build -path '*emsdk/node/*/bin/node' | head -1)")
+          export PATH="${nodebin}:${PATH}"
+          pyodide venv venv_pyodide
+          ./venv_pyodide/bin/pip install ./dist/*.whl
+          ./venv_pyodide/bin/python -c 'import NCrystal; NCrystal.test()'
+          #ncrystal-verify runs on the host, with each test running in Pyodide:
+          ./venv_pyodide/bin/pip install mpmath
+          python -m pip install --no-deps ./dist/ncrystal_verify-*.whl
+          ncrystal-verify -m all --python ./venv_pyodide/bin/python
+
   collect_output:
     name: Collect all output
-    needs: [preparations, build_sdists, build_core_wheels, build_core_wheels_pyodide, build_pure_wheels]
+    needs: [preparations, build_sdists, build_core_wheels, build_core_wheels_pyodide, test_pyodide_wheels, build_pure_wheels]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
