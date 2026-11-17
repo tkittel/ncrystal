@@ -70,7 +70,7 @@ jobs:
     needs: [ preparations ]
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-15-intel, macos-14]
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-15-intel, macos-15]
         #        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         #NOTICE: Keep synchronised with matrix platform list elsewhere in this file!!!!
     name: ${{ matrix.os }} / test
@@ -251,8 +251,8 @@ jobs:
     needs: [ preparations, build_sdists ]
     strategy:
       matrix:
-        # macos-15-intel is an intel runner, macos-14 is apple silicon
-        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-15-intel, macos-14]
+        # macos-15-intel is an intel runner, macos-15 is apple silicon
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-15-intel, macos-15]
         #        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         #NOTICE: Keep synchronised with matrix platform list elsewhere in this file!!!!
     name: ${{ matrix.os }} / ncrystal-core wheels
