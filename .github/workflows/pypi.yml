@@ -321,9 +321,45 @@ jobs:
           path: ./wheelhouse/ncrystal_core-*.whl
           if-no-files-found: error
 
+  build_core_wheels_pyodide:
+    #Pyodide (wasm) wheel. Only cp314 (Pyodide 314.x, tag pyemscripten_2026_0)
+    #is supported, since PyPI rejects the tags of older Pyodide versions.
+    needs: [ preparations, build_sdists ]
+    name: pyodide / ncrystal-core wheel
+    runs-on: ubuntu-latest
+    env:
+      SDIST_PATH: "./sdist/${{ needs.build_sdists.outputs.sdistname_core }}"
+    steps:
+      - name: download ncrystal-core sdist
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: sdist-ncrystal-core
+          path: ./sdist
+
+      - name: Verify presence of sdist
+        run: test -f "${SDIST_PATH}"
+
+      - name: cibuildwheel
+        uses: pypa/cibuildwheel@f9b966cfadf4109556cadc5bb39ddb72d0ce664e
+        env:
+          CIBW_PLATFORM: pyodide
+          CIBW_BUILD: "cp314-*"
+        with:
+          package-dir: ${{ env.SDIST_PATH }}
+          output-dir: wheelhouse
+
+      - name: list wheelhouse
+        run: ls -l ./wheelhouse/
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ncrystal-core-wheels-pyodide
+          path: ./wheelhouse/ncrystal_core-*.whl
+          if-no-files-found: error
+
   collect_output:
     name: Collect all output
-    needs: [preparations, build_sdists, build_core_wheels, build_pure_wheels]
+    needs: [preparations, build_sdists, build_core_wheels, build_core_wheels_pyodide, build_pure_wheels]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
@@ -401,6 +437,7 @@ jobs:
             "musllinux_1_2_aarch64",
             "win_amd64",
             "win_arm64",
+            "pyemscripten_2026_0_wasm32",
           ]
           versionstr = '${{ needs.preparations.outputs.ncrystalversion }}'
           prefix = f'ncrystal_core-{versionstr}-py3-none-'
