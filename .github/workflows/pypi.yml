@@ -12,6 +12,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           path: src
+          persist-credentials: false
           #Workaround for https://github.com/actions/checkout/issues/1467:
           ref: ${{ github.ref }}
           fetch-tags: true
