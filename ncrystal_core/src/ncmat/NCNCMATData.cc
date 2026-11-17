@@ -179,6 +179,9 @@ void NC::NCMATData::DynInfo::validate( int theversion ) const
     if ( v_dos.size() < 5 )
       NCRYSTAL_THROW(BadInput,"too few vdos_density parameters");
     valvector("vdos",v_dos, true);
+    if ( theversion >= 8 && v_dos.back() != 0.0 )
+      NCRYSTAL_THROW(BadInput,"NCMAT v8 requires a final vdos_density value"
+                     " of 0");
 
     auto& v_er = fields.at("vdos_egrid");
     if ( v_er.size()!=2 && v_er.size()!=v_dos.size() )
