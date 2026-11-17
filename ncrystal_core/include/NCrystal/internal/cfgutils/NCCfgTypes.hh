@@ -208,7 +208,9 @@ namespace NCRYSTAL_NAMESPACE {
 
       static double get_val( const VarBuf& buf )
       {
-        return *reinterpret_cast<const double*>(buf.dataAssertLocal());
+        double v;
+        std::memcpy( &v, buf.dataAssertLocal(), sizeof(v) );
+        return v;
       }
 
       static VarBuf set_val( VarId varid, double value ) {
@@ -226,7 +228,9 @@ namespace NCRYSTAL_NAMESPACE {
           //str rep was not short enough to cache, generate on demand (passing
           //through same method as the cached would have been, for
           //consistency):
-          os << dbl2shortstr( *reinterpret_cast<const double*>(buf_data) );
+          double v;
+          std::memcpy( &v, buf_data, sizeof(v) );
+          os << dbl2shortstr( v );
         }
       }
 
@@ -265,9 +269,11 @@ namespace NCRYSTAL_NAMESPACE {
       static constexpr bool auto_normalise = true;//will normalise all vectors to unit length unless overridden to false.
       using Base = ValVector;
       static constexpr auto value_type_descr = "vector (3D)";
-      static const Vector& get_val( const VarBuf& buf )
+      static Vector get_val( const VarBuf& buf )
       {
-        return *reinterpret_cast<const Vector*>( buf.dataAssertLocal() );
+        Vector v;
+        std::memcpy( &v, buf.dataAssertLocal(), sizeof(v) );
+        return v;
       }
       static int cmp( const VarBuf& a, const VarBuf& b )
       {
@@ -296,7 +302,7 @@ namespace NCRYSTAL_NAMESPACE {
 
       static void stream_val( std::ostream& os, const VarBuf& buf )
       {
-        auto& v = get_val(buf);
+        const Vector v = get_val(buf);
         os << fmt( v[0] ) << ',' << fmt( v[1] ) << ',' << fmt( v[2] );
       }
 
@@ -337,12 +343,14 @@ namespace NCRYSTAL_NAMESPACE {
       using Base = ValOrientDir;
       static constexpr auto value_type_descr = "crystal axis orientation";
 
-      struct DecodedBuffer{ const double* vals; bool crystal_is_hkl; };
+      struct DecodedBuffer{ std::array<double,6> vals; bool crystal_is_hkl; };
       static DecodedBuffer detail_bufdecode( const VarBuf& buf )
       {
         const char* bufdata = buf.data();
-        return { reinterpret_cast<const double*>( bufdata ),
-                 bool( *std::next(bufdata,6*sizeof(double)) == 1 ) };
+        DecodedBuffer res;
+        std::memcpy( res.vals.data(), bufdata, 6*sizeof(double) );
+        res.crystal_is_hkl = ( *std::next(bufdata,6*sizeof(double)) == 1 );
+        return res;
       }
 
       static OrientDir get_val( const VarBuf& buf )
@@ -385,13 +393,14 @@ namespace NCRYSTAL_NAMESPACE {
         }
         if ( std::min<double>( value.lab.as<Vector>().mag2(), vcrys.mag2() ) < 1e-100 )
           NCRYSTAL_THROW2(BadInput,"Null vector provided for parameter \""<<Derived::name<<"\"");
-        double * tmp_vals = reinterpret_cast<double*>( &tmp[0] );
+        double tmp_vals[6];
         tmp_vals[0] = sanitiseDblValue( vcrys[0], Derived::name );
         tmp_vals[1] = sanitiseDblValue( vcrys[1], Derived::name );
         tmp_vals[2] = sanitiseDblValue( vcrys[2], Derived::name );
         tmp_vals[3] = sanitiseDblValue( value.lab[0], Derived::name );
         tmp_vals[4] = sanitiseDblValue( value.lab[1], Derived::name );
         tmp_vals[5] = sanitiseDblValue( value.lab[2], Derived::name );
+        std::memcpy( &tmp[0], tmp_vals, sizeof(tmp_vals) );
         return VarBuf( &tmp[0], sizeof(tmp), varid );
       }
 
@@ -621,7 +630,9 @@ namespace NCRYSTAL_NAMESPACE {
       {
         static_assert(VarBuf::buffer_local_size>=sizeof(int64_t),"");
         static_assert(alignof(VarBuf)%alignof(int64_t)==0,"");
-        return *reinterpret_cast<const int64_t*>(buf.dataAssertLocal());
+        int64_t v;
+        std::memcpy( &v, buf.dataAssertLocal(), sizeof(v) );
+        return v;
       }
       static VarBuf set_val( VarId varid, int64_t value ) {
         value = Derived::value_validate(value);
