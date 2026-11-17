@@ -329,18 +329,9 @@ jobs:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           pattern: "ncrystal-core-wheels-*"
-          path: ncrystal-core-wheels-raw #unpacks all artifacts into ncrystal-core-wheels-raw/
-          #Todo if we use merge-multiple: 'true', we might not have to do the
-          #find trick below
-
-      - name: Look in ncrystal-core-wheels-raw
-        run: find ./ncrystal-core-wheels-raw/
-
-        #gh-action-pypi-publish expects a flat directory layout
-      - name: Move core wheel files into dist_core
-        run: |
-            mkdir -p dist_core
-            find ./ncrystal-core-wheels-raw/ -type f -name "ncrystal_core-*.whl" -exec mv {} dist_core/ \;
+          #gh-action-pypi-publish expects a flat directory layout:
+          path: dist_core
+          merge-multiple: true
 
       - name: list collected files
         run: ls -l ./dist_core
