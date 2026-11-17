@@ -136,6 +136,18 @@ namespace NCRYSTAL_NAMESPACE {
     const TRemotePtr& remotePtr() const noexcept;
     TRemotePtr& remotePtr() noexcept;
     TMetaData& mdRef() noexcept;
+    //Constructs the TMetaData object in m_data (later copies of m_data bytes
+    //then overwrite an existing object, as allowed for trivial types):
+    void constructMetaData( TMetaData md = TMetaData() ) noexcept
+    {
+      constructMetaDataImpl( std::move(md),
+                             std::integral_constant<bool,has_metadata>() );
+    }
+    void constructMetaDataImpl( TMetaData md, std::true_type ) noexcept
+    {
+      new(&m_data[_detail_pos_md]) TMetaData( std::move(md) );
+    }
+    void constructMetaDataImpl( TMetaData, std::false_type ) noexcept {}
     void unsetIfRemote() noexcept;
     const TMetaData& detail_metaData_nocheck() const noexcept;
   };
@@ -178,8 +190,7 @@ namespace NCRYSTAL_NAMESPACE {
   inline ImmutableBuffer<LBMS,BA,TMetaData>::ImmutableBuffer( NullOptType )
   {
     m_data[_detail_pos_mode] = 0;
-    if ( has_metadata )
-      *reinterpret_cast<TMetaData*>(&m_data[_detail_pos_md]) = TMetaData();
+    constructMetaData();
   }
 
   template<std::size_t LBMS, std::size_t BA, class MD>
@@ -211,7 +222,7 @@ namespace NCRYSTAL_NAMESPACE {
   inline ImmutableBuffer<LBMS,BA,TMetaData>::ImmutableBuffer( const char * src, std::size_t len, TMetaData md )
   {
     initBuffer(src,len);
-    *reinterpret_cast<TMetaData*>(&m_data[_detail_pos_md]) = std::move(md);
+    constructMetaData( std::move(md) );
   }
 
   template<std::size_t LBMS, std::size_t BA, class MD>
@@ -274,6 +285,7 @@ namespace NCRYSTAL_NAMESPACE {
   inline ImmutableBuffer<LBMS,BA,MD>::ImmutableBuffer( const ImmutableBuffer& o ) noexcept
   {
     m_data[_detail_pos_mode] = (char)0;//unset
+    constructMetaData();
     *this = o;//copy via assignment
   }
 
@@ -313,6 +325,7 @@ namespace NCRYSTAL_NAMESPACE {
   inline ImmutableBuffer<LBMS,BA,MD>::ImmutableBuffer( ImmutableBuffer&& o ) noexcept
   {
     m_data[_detail_pos_mode] = (char)0;//unset
+    constructMetaData();
     *this = std::move(o);//move via assignment
   }
 
