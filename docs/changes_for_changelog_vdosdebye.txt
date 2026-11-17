@@ -8,13 +8,17 @@ CHANGELOG at release time, after which this file is dropped).
        the same mass and temperature form a group, with cross sections from
        the Debye model without any phonon expansion (exact one-phonon part,
        fitted multi-phonon part, within 1e-3 and exact at high energies), and
-       samplings from a few phonon expansions, each for a cluster of entries
-       with similar mean squared displacements. Materials with many entries
-       (e.g. from CIF files with many sites) thus initialise much faster
-       (e.g. 586 entries: ~97s -> ~2-3s at vdoslux=3). VDOSDebye cross
-       sections change by up to ~2e-3 (the precision of the expansions), and
-       samplings change within the clustering tolerances. Other dynamic info
-       types are not affected, and vdoslux=6 keeps separate expansions.
+       samplings from phonon expansions. Groups with at most 3 entries are
+       sampled as before (one expansion per entry). In larger groups,
+       entries with similar mean squared displacements are clustered (more
+       finely at higher vdoslux) and sampled with one expansion per cluster,
+       at vdoslux and knllux two levels lower (but not below 1). Materials
+       with many entries (e.g. from CIF files with many sites) thus
+       initialise much faster (e.g. 586 entries: ~97s -> ~2.7s at
+       vdoslux=3). VDOSDebye cross sections change by up to ~2e-3 (the
+       precision of the expansions), and samplings of large groups change
+       within the clustering tolerances. Other dynamic info types are not
+       affected, and vdoslux=6 keeps separate expansions.
      * Temperatures above 1000 times the Debye temperature are not supported
        by the grouped treatment (and above 50 times, unphysical anyway, with
        1e-2 cross section precision). For testing, vdoslux values 100-106 are
