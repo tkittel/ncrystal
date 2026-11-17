@@ -340,7 +340,8 @@ below the first grid point, the density values will be assumed to scale as the
 square of the energy - an approximation which should be suitable for solid
 materials. For energies above the last grid point, densities will be assumed to
 be 0. Additionally, starting with NCrystal release 5.0.0, an extra grid point
-will be appended with density 0 if the last density value is not already 0.
+will be appended with density 0 if the last density value is not already 0 (and
+in *NCMAT v8* files, the last density value is required to be 0 already).
 
 An example vdos specification might look like:
 
@@ -888,10 +889,11 @@ effective temperature information. This is of particular benefit for files using
 scattering kernels (type *scatknl*), which can now both be used in crystalline
 materials and provide their own displacement and effective temperature data,
 rather than relying on the automatic estimation of these quantities directly
-from the kernels. Additionally, rules concerning the @STATEOFMATTER and
-@SPACEGROUP sections have been updated, the @DEBYETEMPERATURE section is no
-longer allowed, and new @ATOMSITES and @ATOMOCCUPANCIES sections are
-introduced.
+from the kernels. Additionally, some rules concerning the @STATEOFMATTER,
+@SPACEGROUP, and @DYNINFO sections have been updated, the @DEBYETEMPERATURE
+section is no longer allowed, and new @ATOMSITES and @ATOMOCCUPANCIES sections
+are introduced.
+
 
 ## The @SPACEGROUP section accepts a setting ##
 
@@ -1046,6 +1048,11 @@ possible (unlike the automatic displacement extraction discussed above, this
 is a pure modelling improvement with no effect on which physics components a
 material has, and it is therefore applied to files of any NCMAT version). The
 value must be at least as large as the *temperature* field of the section.
+
+### VDOS curves must end with a density of 0 ###
+
+In @DYNINFO sections of type *vdos*, the last value of the *vdos_density* field
+must now always be a 0.
 
 ## Crystalline materials with scattering kernels ##
 
