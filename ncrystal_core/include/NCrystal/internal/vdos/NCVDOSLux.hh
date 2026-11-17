@@ -33,12 +33,22 @@ namespace NCRYSTAL_NAMESPACE {
 
     class VDOSLux final {
     public:
+      //Raw values: 0..6 (2000..2006 are synonyms), 1000..1005 (legacy
+      //expansion), and 100..106 (like 0..6, but without the grouped
+      //treatment of VDOSDebye entries, cf. NCVDOSDebyeGroup.hh):
       explicit VDOSLux( int vdoslux_raw );
       VDOSLux();
       VDOSLux reduceLvl( unsigned ) const;
       int raw() const;
       unsigned lvl() const { return m_v & 127u; }
       bool isLegacy() const { return static_cast<bool>(m_v & 128u); }
+
+      //Whether VDOSDebye entries get the grouped treatment (0..5):
+      bool allowGrouping() const { return m_v <= 5u; }
+
+      //The same without the 100..106 flag, for the expansions themselves
+      //(which do not depend on it, so their caches are shared):
+      VDOSLux expansionLux() const;
       bool operator==(const VDOSLux& o) const { return m_v == o.m_v; }
       bool operator!=(const VDOSLux& o) const { return m_v != o.m_v; }
       bool operator<(const VDOSLux& o) const { return m_v < o.m_v; }

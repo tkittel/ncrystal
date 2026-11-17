@@ -205,8 +205,10 @@ namespace NCRYSTAL_NAMESPACE {
 
       //Values 0..6 select the VDOS expansion levels. Hidden developer-only
       //values (not in the description or error messages): 1000..1005 select
-      //the legacy expansion (levels 0..5), and 2000..2006 are synonyms of
-      //0..6 (normalised to 0..6). Cf. VDOSLux.
+      //the legacy expansion (levels 0..5), 2000..2006 are synonyms of 0..6
+      //(normalised to 0..6), and 100..106 are like 0..6 but without the
+      //grouped treatment of VDOSDebye entries (cf. NCVDOSDebyeGroup.hh).
+      //Cf. VDOSLux.
 
       static constexpr auto name = "vdoslux";
       static constexpr auto group = VarGroupId::ScatterBase;
@@ -232,6 +234,7 @@ namespace NCRYSTAL_NAMESPACE {
         if ( 2000 <= value && value <= 2006 )
           value -= 2000;
         if ( !( ( 0 <= value && value <= 6 )
+                || ( 100 <= value && value <= 106 )
                 || ( 1000 <= value && value <= 1005 ) ) ) {
           //Don't mention the hidden values:
           NCRYSTAL_THROW2(BadInput,
