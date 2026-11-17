@@ -907,13 +907,14 @@ class NCMATComposerImpl:
                 dt=dyninfo['debye_temp']
                 lines += f'debye_temp {dt:g}\n'
             elif ditype == 'vdos':
-                x = dyninfo['vdos_egrid']
+                x, y = _vdos_with_final_zero( dyninfo['vdos_egrid'],
+                                              dyninfo['vdos'] )
                 from ._common import _grid_is_linspace
                 if len(x)>2 and _grid_is_linspace(x):
                     lines += f'vdos_egrid {_fmtprecisenum(x[0])} {_fmtprecisenum(x[-1])}\n'
                 else:
                     lines += formatVector('vdos_egrid',x)
-                lines += formatVector('vdos_density',dyninfo['vdos'])
+                lines += formatVector('vdos_density',y)
             elif ditype in ('sterile','freegas','msd'):
                 pass
             elif ditype == 'scatknl':
@@ -1762,6 +1763,21 @@ def _is_nonempty_array( x ):
 def _fmtprecisenum( v, strip_leading_zero = True ):
     _ = f'{v:.14g}' if v else '0'
     return _[1:] if (strip_leading_zero and _.startswith('0.')) else _
+
+def _vdos_with_final_zero( egrid, density ):
+    #NCMAT v8 requires a final density of 0, so append a point with density 0
+    #one bin beyond the last point if needed (egrid has two entries [emin,emax]
+    #or one per density value):
+    egrid, density = list(egrid), list(density)
+    if density[-1] == 0.0:
+        return egrid, density
+    if len(egrid) == 2 and len(density) > 2:
+        emin, emax = egrid
+        egrid = [ emin, emax + ( emax - emin ) / ( len(density) - 1 ) ]
+    else:
+        egrid.append( egrid[-1] + ( egrid[-1] - egrid[-2] ) )
+    density.append( 0.0 )
+    return egrid, density
 
 def _copyarray_or_None( x ):
     if x is None or (hasattr(x,'__len__') and len(x)==0):
