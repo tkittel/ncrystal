@@ -1,0 +1,17 @@
+smooth tol=0: OK
+smooth tol=1e-10: OK
+smooth tol=1e-07: OK
+smooth tol=5e-05: OK
+smooth tol=0.001: OK
+smooth tol=0.1: OK
+kink tol=1e-06: OK
+kink tol=0.001: OK
+jump tol=1e-06: OK
+jump tol=0.01: OK
+Debye sum tol=0: OK
+Debye sum tol=5e-05: OK
+Debye sum tol=0.001: OK
+zero range tol=0: OK
+zero range tol=0.0001: OK
+two nodes tol=0.1: OK
+invalid tolerances: OK

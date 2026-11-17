@@ -204,6 +204,133 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
+NC::IsoXSTable NC::thinIsoXSTable( const IsoXSTable& t, double reltol )
+{
+  if ( !( reltol >= 0.0 && std::isfinite( reltol ) ) )
+    NCRYSTAL_THROW2( BadInput, "thinIsoXSTable: invalid reltol: " << reltol );
+#ifndef NDEBUG
+  validateTabulation( t );
+#endif
+  const VectD& E = t.E;
+  const std::size_t n = E.size();
+  //F=e*xs and dF/de in input interval i at relative position u:
+  auto evalF = [&t,&E]( std::size_t i, double u )
+  {
+    const double lo = vectAt( E, i ), invw = 1.0 / ( vectAt( E, i + 1 ) - lo );
+    const double e = lo + u * ( vectAt( E, i + 1 ) - lo );
+    auto dpoly = [u,invw]( const double * c )
+    {
+      return ncfma( u, ncfma( u, 3.0 * c[3], 2.0 * c[2] ), c[1] ) * invw;
+    };
+    double F = 0.0, dF = 0.0;
+    if ( !t.p.empty() ) {
+      F += evalCubicU( &t.p[4*i], u );
+      dF += dpoly( &t.p[4*i] );
+    }
+    if ( !t.q.empty() ) {
+      const double se = std::sqrt( e ), Q = evalCubicU( &t.q[4*i], u );
+      F += se * Q;
+      dF += 0.5 * Q / se + se * dpoly( &t.q[4*i] );
+    }
+    if ( !t.r.empty() ) {
+      F += vectAt( t.r, i ) / e;
+      dF -= vectAt( t.r, i ) / ( e * e );
+    }
+    return std::make_pair( F, dF );
+  };
+  //Cubic Hermite (in u) of g=sqrt(e)*xs=F/sqrt(e) on [E[a],E[b]]:
+  auto hermite = [&E,&evalF]( std::size_t a, std::size_t b )
+  {
+    const double w = vectAt( E, b ) - vectAt( E, a );
+    auto gd = [w,&evalF]( std::size_t i, double u, double e )
+    {
+      const auto f = evalF( i, u );
+      const double se = std::sqrt( e );
+      return std::make_pair( f.first / se,
+                             w * ( f.second - 0.5 * f.first / e ) / se );
+    };
+    const auto ga = gd( a, 0.0, vectAt( E, a ) );
+    const auto gb = gd( b - 1, 1.0, vectAt( E, b ) );
+    const double dg = gb.first - ga.first;
+    return std::array<double,4>{ ga.first, ga.second,
+                                 3.0 * dg - 2.0 * ga.second - gb.second,
+                                 -2.0 * dg + ga.second + gb.second };
+  };
+  //Whether the Hermite piece on [E[a],E[b]] reproduces the input:
+  auto accept = [&E,&evalF,&hermite,reltol]( std::size_t a, std::size_t b )
+  {
+    const auto c = hermite( a, b );
+    const double ea = vectAt( E, a ), w = vectAt( E, b ) - ea;
+    auto check = [&evalF,&c,ea,w,reltol]( std::size_t i, double u, double e )
+    {
+      const double xs = evalF( i, u ).first / e;
+      const double xsnew = evalCubicU( c.data(), ( e - ea ) / w ) / std::sqrt( e );
+      return ncabs( xsnew - xs ) <= reltol * ncabs( xs );
+    };
+    for ( auto i : ncrange( a, b ) ) {
+      const double lo = vectAt( E, i ), hi = vectAt( E, i + 1 );
+      if ( !check( i, 0.5, 0.5 * ( lo + hi ) ) )
+        return false;
+      if ( i > a && !check( i, 0.0, lo ) )
+        return false;
+      if ( i + 1 < b && !check( i, 1.0, hi ) )
+        return false;
+    }
+    return true;
+  };
+  //Greedy: from node a, the furthest b found by doubling then bisection
+  //(b=a+1 keeps the input interval):
+  IsoXSTable res;
+  for ( auto k : ncrange( 5 ) )
+    res.tail[k] = t.tail[k];
+  res.E.push_back( E.front() );
+  std::size_t a = 0;
+  while ( a + 1 < n ) {
+    std::size_t good = a + 1, bad = n;
+    for ( std::size_t len = 2; a + len < n; len *= 2 ) {
+      if ( !accept( a, a + len ) ) {
+        bad = a + len;
+        break;
+      }
+      good = a + len;
+    }
+    if ( bad == n && good + 1 < n ) {
+      if ( accept( a, n - 1 ) )
+        good = n - 1;
+      else
+        bad = n - 1;
+    }
+    while ( bad - good > 1 ) {
+      const std::size_t mid = good + ( bad - good ) / 2;
+      if ( accept( a, mid ) )
+        good = mid;
+      else
+        bad = mid;
+    }
+    res.E.push_back( vectAt( E, good ) );
+    if ( good == a + 1 ) {
+      for ( auto j : ncrange( 4 ) ) {
+        res.p.push_back( t.p.empty() ? 0.0 : vectAt( t.p, 4*a + j ) );
+        res.q.push_back( t.q.empty() ? 0.0 : vectAt( t.q, 4*a + j ) );
+      }
+      res.r.push_back( t.r.empty() ? 0.0 : vectAt( t.r, a ) );
+    } else {
+      const auto c = hermite( a, good );
+      res.p.insert( res.p.end(), 4, 0.0 );
+      res.q.insert( res.q.end(), c.begin(), c.end() );
+      res.r.push_back( 0.0 );
+    }
+    a = good;
+  }
+  if ( allZero( res.p ) )
+    res.p.clear();
+  if ( allZero( res.q ) )
+    res.q.clear();
+  if ( allZero( res.r ) )
+    res.r.clear();
+  return res;
+}
+
 NC::IsoXSTable NC::mergeIsoXSTables( Span<const std::pair<double,const IsoXSTable*>> inputs )
 {
   std::size_t nused = 0;
