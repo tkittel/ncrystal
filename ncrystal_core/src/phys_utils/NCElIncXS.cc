@@ -72,8 +72,21 @@ namespace NCRYSTAL_NAMESPACE {
     //from 2e-10 to beyond -log(1e-10), and coefficients p (in u, see
     //NCIsoXSUtils.hh). On [a,a+h], |f-H| <= h^4*max|f^(4)|/384 =
     //h^4*exp(-a)/384, and f >= f(a), so h=(192e-10*f(a)/exp(-a))^(1/4) gives a
-    //relative error below 0.5e-10. Below and above the nodes, f(t)=t and
-    //f(t)=1 are good to 0.5e-10 and 0.4e-10:
+    //relative error below 0.5e-10 (h is reduced where needed to keep the
+    //pieces monotone). Below and above the nodes, f(t)=t and f(t)=1 are good
+    //to 0.5e-10 and 0.4e-10:
+    //Whether a cubic Hermite piece with increase df>0 and end slopes d0,d1>=0
+    //(per unit u) is monotone, by the Fritsch-Carlson criterion
+    //(d0/df)^2+(d1/df)^2<=9. The step sizes below are chosen for accuracy,
+    //which allows large steps where e*xs flattens, but the pieces must also
+    //be monotone: e*xs is inverted for sampling (ElIncScatter), and tables
+    //merged with mergeIsoXSTables must keep increasing node values:
+    bool isMonotoneHermite( double df, double d0, double d1 )
+    {
+      nc_assert( df > 0.0 && d0 >= 0.0 && d1 >= 0.0 );
+      return ncsquare( d0 ) + ncsquare( d1 ) <= 9.0 * ncsquare( df );
+    }
+
     struct ElIncUnivTable {
       VectD t, p;
     };
@@ -90,11 +103,17 @@ namespace NCRYSTAL_NAMESPACE {
           const double a = res.t.back();
           const double fa = -stable_expm1( -a );
           const double ea = stable_exp( -a );
-          const double h = std::sqrt( std::sqrt( 192e-10 * fa / ea ) );
-          const double b = a + h;
-          const double fb = -stable_expm1( -b );
-          const double d0 = h * ea;
-          const double d1 = h * stable_exp( -b );
+          double h = std::sqrt( std::sqrt( 192e-10 * fa / ea ) );
+          double b, fb, d0, d1;
+          while ( true ) {
+            b = a + h;
+            fb = -stable_expm1( -b );
+            d0 = h * ea;
+            d1 = h * stable_exp( -b );
+            if ( isMonotoneHermite( fb - fa, d0, d1 ) )
+              break;
+            h *= 0.75;
+          }
           res.p.insert( res.p.end(), { fa, d0,
                                        ncfma( 3.0, fb - fa,
                                               -ncfma( 2.0, d0, d1 ) ),
@@ -146,7 +165,8 @@ NC::IsoXSTable NC::ElIncXS::tabulate() const
   //a_j*(1-exp(-g_j*t)) + b*t (sum a_j = 1, 0<g_j<=1, b*t for elements with
   //zero msd). Then |f^(4)| = sum_j a_j*g_j^4*exp(-g_j*t) decreases and f
   //increases, so h=(192e-10*f(a)/|f^(4)(a)|)^(1/4) again gives a relative
-  //error below 0.5e-10. Nodes end once exp(-g_min*t)<0.4e-10.
+  //error below 0.5e-10 (reduced where needed to keep the pieces monotone).
+  //Nodes end once exp(-g_min*t)<0.4e-10.
   constexpr double kkk = 16.0 * kPiSq * ekin2wlsqinv(1.0);
   constexpr double msd_zero = 1e-290;//as in tabulateMonoAtomic
   if ( m_elm_data.size() == 1 )
@@ -202,11 +222,18 @@ NC::IsoXSTable NC::ElIncXS::tabulate() const
   while ( tt.back() < t_high ) {
     const double ta = tt.back();
     nc_assert( va.f > 0.0 && va.f4 > 0.0 );
-    const double h = std::sqrt( std::sqrt( 192e-10 * va.f / va.f4 ) );
-    const double tb = ta + h;
-    const FVals vb = evalF( tb );
-    const double d0 = h * va.fp;
-    const double d1 = h * vb.fp;
+    double h = std::sqrt( std::sqrt( 192e-10 * va.f / va.f4 ) );
+    double tb, d0, d1;
+    FVals vb;
+    while ( true ) {
+      tb = ta + h;
+      vb = evalF( tb );
+      d0 = h * va.fp;
+      d1 = h * vb.fp;
+      if ( isMonotoneHermite( vb.f - va.f, d0, d1 ) )
+        break;
+      h *= 0.75;
+    }
     pp.insert( pp.end(), { va.f, d0,
                            ncfma( 3.0, vb.f - va.f, -ncfma( 2.0, d0, d1 ) ),
                            ncfma( 2.0, va.f - vb.f, d0 + d1 ) } );

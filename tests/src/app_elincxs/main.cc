@@ -47,6 +47,27 @@ namespace {
 
 }
 
+namespace {
+  //Whether e*xs of a table of the form P_i(u)/e (as made by ElIncXS)
+  //increases monotonically, checked at 50 points per piece (merged tables
+  //and sampling need this, also where e*xs flattens at high energies):
+  bool isMonotone( const NC::IsoXSTable& t )
+  {
+    for ( auto i : NC::ncrange( t.E.size() - 1 ) ) {
+      const double* p = t.p.data() + 4 * i;
+      double prev = p[0];
+      for ( int k = 1; k <= 50; ++k ) {
+        const double u = k / 50.0;
+        const double v = p[0] + u * ( p[1] + u * ( p[2] + u * p[3] ) );
+        if ( v < prev )
+          return false;
+        prev = v;
+      }
+    }
+    return true;
+  }
+}
+
 int main()
 {
   const auto energies = testEnergies();
@@ -146,7 +167,22 @@ int main()
     for ( auto e : NC::geomspace( 1e-14, 1e6, 2003 ) )
       w = std::max( w, std::fabs( ev.eval( e ) / ei.evaluate( NC::NeutronEnergy{ e } ).dbl() - 1.0 ) );
     nc_assert_always( w < 1e-10 );
+    nc_assert_always( isMonotone( ev.table() ) );
     std::cout << "Number of points (4000 elements): " << ev.table().E.size() << std::endl;
+  }
+
+  //Monotone pieces, also for few elements with different msd and after
+  //merging tables with different energy ranges:
+  {
+    for ( double m : { 0.0, 1e-4, 0.0117, 0.5 } )
+      nc_assert_always( isMonotone( NC::ElIncXS::tabulateMonoAtomic( m, NC::SigmaBound{ 5.08 } ) ) );
+    auto t1 = NC::ElIncXS( { 0.03, 0.006, 0.004 }, { 80.3, 5.6, 4.2 }, { 0.5, 0.4, 0.1 } ).tabulate();
+    auto t2 = NC::ElIncXS( { 0.008, 0.003 }, { 11.1, 1.0 }, { 0.5, 0.5 } ).tabulate();
+    nc_assert_always( isMonotone( t1 ) && isMonotone( t2 ) && isMonotone( d.value() ) );
+    const std::pair<double,const NC::IsoXSTable*> inputs[2] = { { 0.96, &t1 }, { 0.04, &t2 } };
+    auto tm = NC::mergeIsoXSTables( inputs );
+    nc_assert_always( isMonotone( tm ) );
+    std::cout << "Monotone pieces: OK" << std::endl;
   }
 
   //Sampled mu follow the exact distribution, (summed) density
