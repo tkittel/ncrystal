@@ -31,8 +31,9 @@ namespace NC=NCrystal;
 
 namespace {
 
-  void prtgrid(NC::Span<const double> g)
+  void prtgrid(NC::Span<const double> g, const char * fmtstr = nullptr )
   {
+    //fmtstr: e.g. "%.14g" for computed values (hiding libm differences).
     std::cout<<"[";
     bool first = true;
     for (auto e : g) {
@@ -40,7 +41,7 @@ namespace {
         first = false;
       else
         std::cout<<", ";
-      std::cout<<NC::fmt(e);
+      std::cout<<NC::fmt(e,fmtstr);
     }
     std::cout<<"]";
   }
@@ -1470,6 +1471,51 @@ namespace {
   }
 }
 
+namespace {
+  void testCapGridRatio()
+  {
+    using NC::VectD;
+    auto t = []( VectD g, double rmax, bool expect_unchanged )
+    {
+      std::cout<<"Test capGridRatio(";
+      prtgrid(g);
+      std::cout<<", rmax="<<NC::fmtg(rmax)<<")"<<std::endl;
+      const VectD orig = g;
+      NC::VDOS::capGridRatio( g, rmax );
+      std::cout<<"   ->   result: ";
+      prtgrid(g,"%.14g");
+      std::cout<<std::endl;
+      REQUIRE( g.size() == orig.size() );
+      REQUIRE( NC::nc_is_grid(g) );
+      REQUIRE( g.at(0) == orig.at(0) );
+      REQUIRE( g.at(1) == orig.at(1) );
+      REQUIRE( g.back() == orig.back() );
+      for ( auto i : NC::ncrange( std::size_t(2), g.size() ) )
+        REQUIRE( g.at(i) / g.at(i-1) <= rmax * ( 1.0 + 1e-12 ) );
+      if ( expect_unchanged )
+        REQUIRE( g == orig );
+    };
+    //No coarse intervals:
+    t( { 0.0, 1.0, 1.5, 2.0, 2.5, 3.0 }, 2.0, true );
+    //The first interval is never capped:
+    t( { 0.0, 1e-5, 1.5e-5, 2e-5, 3e-5 }, 2.0, true );
+    //One coarse interval, with near-duplicate points to remove:
+    t( { 0.0, 1.0, 1.001, 1.5, 2.0, 2.002, 3.0, 24.0, 30.0, 35.0, 40.0,
+         45.0, 50.0 }, 2.0, false );
+    //Several coarse intervals:
+    t( { 0.0, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19,
+         0.2, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 10.0 },
+       1.5, false );
+    //Ratios exactly at rmax (lattice points) are not coarse, also not after
+    //perturbations at the rounding error level:
+    t( { 0.0, 1.0, 2.0, 4.0, 8.0, 16.0 }, 2.0, true );
+    t( { 0.0, 1.0, 2.0*(1+1e-14), 4.0*(1-1e-14), 8.0, 16.0*(1+1e-14) }, 2.0,
+       true );
+    //First point not zero:
+    t( { 0.5, 1.0, 1.01, 1.02, 1.03, 1.04, 1.05, 4.0 }, 1.5, false );
+  }
+}
+
 int main() {
   std::cout<<"Testing rangeXNexpMX"<<std::endl;
   testRangeXNexpMX();
@@ -1484,6 +1530,9 @@ int main() {
   std::cout<<"Testing topOffGrid"<<std::endl;
   testTopOffGrid();
   std::cout<<"Testing topOffGrid... done"<<std::endl;
+  std::cout<<"Testing capGridRatio"<<std::endl;
+  testCapGridRatio();
+  std::cout<<"Testing capGridRatio... done"<<std::endl;
   std::cout<<"Testing makeCommonGrid"<<std::endl;
   testMakeCommonGrid();
   std::cout<<"Testing makeCommonGrid... done"<<std::endl;
