@@ -27,6 +27,7 @@ namespace NC = NCrystal;
 #include <cerrno>
 #include <cstdlib>
 #include <clocale>
+#include <cfenv>
 #include <cstdio>
 
 namespace NCRYSTAL_NAMESPACE {
@@ -64,6 +65,14 @@ namespace NCRYSTAL_NAMESPACE {
         //failures):
         if ( s_size > denorm_str_maxsize )
           return NullOpt;
+        //Only plain decimal numbers (strtod also accepts e.g. "nan", "inf" and
+        //hexadecimal numbers, which str2dbl rejects):
+        for ( auto i : ncrange( s_size ) ) {
+          const char c = s_data[i];
+          if ( !( ( c >= '0' && c <= '9' ) || c == '.' || c == 'e'
+                  || c == 'E' || c == '+' || c == '-' ) )
+            return NullOpt;
+        }
         const char * dp = std::localeconv()->decimal_point;
         const std::size_t ndp = std::strlen( dp );
         if ( !ndp || ndp > 8 )
@@ -79,11 +88,18 @@ namespace NCRYSTAL_NAMESPACE {
           }
         }
         buf[n] = '\0';
-        const int saved_errno = errno;//strtod sets ERANGE for subnormals
+        //strtod sets ERANGE and floating point exception flags (underflow,
+        //overflow, e.g. for "1e400"), which must neither leak nor trap
+        //(e.g. on i386 with traps enabled):
+        const int saved_errno = errno;
+        std::fenv_t fenv;
+        const bool held = ( std::feholdexcept( &fenv ) == 0 );
         char * end = nullptr;
         const double v = std::strtod( buf, &end );
+        if ( held )
+          std::fesetenv( &fenv );
         errno = saved_errno;
-        if ( end != buf + n || v == 0.0
+        if ( end != buf + n || !std::isfinite( v ) || v == 0.0
              || !( std::fabs( v ) < std::numeric_limits<double>::min() ) )
           return NullOpt;
         return v;
@@ -120,7 +136,8 @@ namespace NCRYSTAL_NAMESPACE {
           test( std::string( "-" ) + b, -v );
         }
         //Not subnormal, or no value, is not accepted:
-        for ( const char * bad : { "1e-400", "1e-300", "1.5", "abc", "1e-310x" } )
+        for ( const char * bad : { "1e-400", "1e-300", "1.5", "abc", "1e-310x",
+                                   "nan", "inf", "1e400", "0x1p-1070" } )
           nc_assert_always( !raw_str2dbl_subnormal( bad, std::strlen(bad) ).has_value() );
         return 1;
       }();
