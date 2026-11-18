@@ -297,9 +297,14 @@ NC::VDOS::expandVDOSToGnFcts( const VDOSData& vdosdata,
                                    EDivKT{targetEmax_reduced.dbl()*invkT})
              .isEmpty());
 
-    if ( !vdoslux.isLegacy() || s_verbose )
+    if ( s_verbose
+         || ( !vdoslux.isLegacy()
+              && ( vdoslux.lvl() > 0
+                   || targetEmax_requested.has_value()
+                   || targetEmax_reduced.dbl() < 0.1 * targetEmax.dbl() ) ) ) {
       NCRYSTAL_WARN("VDOS expansion could only reach Emax="<<targetEmax_reduced
                     <<" and not the target Emax="<<targetEmax);
+    }
     targetEmax = targetEmax_reduced;
     targetEmax_div_kT = EDivKT{ targetEmax.dbl() * invkT };
     if ( vdoslux.isLegacy() )
