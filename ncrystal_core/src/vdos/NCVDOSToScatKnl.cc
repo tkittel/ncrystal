@@ -284,7 +284,9 @@ NCV::createScatteringKernel( const VDOSData& vdosdata,
                                               gnexpn.sabRange.x1()*1.01, nalpha );
   } else {
     std::tie( alphaGrid, betaGrid )
-      = VDOS::determineAlphaBetaGridFromGn( gnexpn, nalpha, nbeta );
+      = VDOS::determineAlphaBetaGridFromGn( gnexpn, nalpha, nbeta,
+                                            VDOS::gridMaxAlphaRatioFromLux(
+                                              vdoslux ) );
   }
 
   nc_assert_always(nc_is_grid(alphaGrid));

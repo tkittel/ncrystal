@@ -102,7 +102,7 @@ int main() {
     double xs = virtapi->crossSectionUncached( *scat_scge, neutron );
     std::cout<<" GeSC: xs(" << wl << " Aa, dir2) = "
              << std::setprecision(7)<<xs << " barn/atom" << std::endl;
-    require_flteq( 1.65393628935, xs );
+    require_flteq( 1.65394268479, xs );
   }
 
   {

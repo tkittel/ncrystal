@@ -7,13 +7,13 @@ gnexpn suggestedEmax: 1
 gnexpn sabRange: 5.751e-07 189.2 -39.02 16.12
 gnexpn last abRange: n=36 183.2 1275 -71.27 11.55
 gnexpn G1 rawspec [4653]: front=~0 back=~0 min=~0 max=46.77 sum=3e+04
-knl alphaGrid [110]: front=~0 back=189.2 min=~0 max=189.2 sum=5279
+knl alphaGrid [110]: front=~0 back=189.2 min=~0 max=189.2 sum=5203
 knl betaGrid [240]: front=-39.52 back=16.21 min=-39.52 max=16.21 sum=-497.6
-knl sab [26400]: front=~0 back=~0 min=~0 max=0.4729 sum=1077
+knl sab [26400]: front=~0 back=~0 min=~0 max=0.4729 sum=1039
 knl suggestedEmax: 1
-std alphaGrid [110]: front=~0 back=189.2 min=~0 max=189.2 sum=5279
+std alphaGrid [110]: front=~0 back=189.2 min=~0 max=189.2 sum=5203
 std betaGrid [240]: front=-39.52 back=16.21 min=-39.52 max=16.21 sum=-497.6
-std sab [26400]: front=~0 back=~0 min=~0 max=0.4729 sum=1077
+std sab [26400]: front=~0 back=~0 min=~0 max=0.4729 sum=1039
 std suggestedEmax: 1
 alpha range: 0 189.2
 beta range: -39.52 16.21
@@ -26,13 +26,13 @@ gnexpn suggestedEmax: 1
 gnexpn sabRange: 9.714e-07 179.2 -14.66 10.76
 gnexpn last abRange: n=27 187.9 1798 -16.87 10.92
 gnexpn G1 rawspec [4653]: front=~0 back=~0 min=~0 max=137 sum=3e+04
-knl alphaGrid [110]: front=~0 back=179.2 min=~0 max=179.2 sum=4997
+knl alphaGrid [110]: front=~0 back=179.2 min=~0 max=179.2 sum=4925
 knl betaGrid [240]: front=-14.69 back=10.85 min=-14.69 max=10.85 sum=-64.99
-knl sab [26400]: front=~0 back=~0 min=~0 max=1.411 sum=3811
+knl sab [26400]: front=~0 back=~0 min=~0 max=1.411 sum=3697
 knl suggestedEmax: 1
-std alphaGrid [110]: front=~0 back=179.2 min=~0 max=179.2 sum=4997
+std alphaGrid [110]: front=~0 back=179.2 min=~0 max=179.2 sum=4925
 std betaGrid [240]: front=-14.69 back=10.85 min=-14.69 max=10.85 sum=-64.99
-std sab [26400]: front=~0 back=~0 min=~0 max=1.411 sum=3811
+std sab [26400]: front=~0 back=~0 min=~0 max=1.411 sum=3697
 std suggestedEmax: 1
 alpha range: 0 179.2
 beta range: -14.69 10.85

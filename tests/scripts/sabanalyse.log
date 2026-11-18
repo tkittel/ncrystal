@@ -1,6 +1,6 @@
 ==> stdlib::Al_sg225.ncmat//mono:
     teff ~ 321 K (vdos 320 K), relerr<0.02: OK [nrows=152]
-    msd  ~ 0.0098 Aa^2 (vdos 0.0098 Aa^2), relerr<0.02: OK [nrows=95]
+    msd  ~ 0.0098 Aa^2 (vdos 0.0098 Aa^2), relerr<0.02: OK [nrows=94]
 ==> stdlib::CaH2_sg62_CalciumHydride.ncmat;temp=20//H:
     teff ~ 635 K (vdos 634 K), relerr<0.03: OK [nrows=61]
     msd  ~ 0.021 Aa^2 (vdos 0.021 Aa^2), relerr<0.08: OK [nrows=79]

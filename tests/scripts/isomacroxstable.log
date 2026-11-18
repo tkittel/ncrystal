@@ -13,11 +13,11 @@ stdlib::Al_sg225.ncmat tol=1e-3
 stdlib::Al_sg225.ncmat wlmax=10
    ndiscontinuities=126 tol=0.0001 wlmax=10 maxrelerr<tol: OK
    processes: AbsOOV ElIncScatter PowderBragg SABScatter
-   first: (0 Aa, 0.0841247/cm) last: (10 Aa, 0.0904633/cm)
+   first: (0 Aa, 0.0841247/cm) last: (10 Aa, 0.0904634/cm)
 stdlib::Al_sg225.ncmat wlmax=4.7
    ndiscontinuities=126 tol=0.0001 wlmax=4.7 maxrelerr<tol: OK
    processes: AbsOOV ElIncScatter PowderBragg SABScatter
-   first: (0 Aa, 0.0841247/cm) last: (4.7 Aa, 0.0448172/cm)
+   first: (0 Aa, 0.0841247/cm) last: (4.7 Aa, 0.0448173/cm)
 stdlib::Al_sg225.ncmat;density=0.5x
    ndiscontinuities=126 tol=0.0001 wlmax=500 maxrelerr<tol: OK
    processes: AbsOOV ElIncScatter PowderBragg SABScatter
@@ -49,7 +49,7 @@ stdlib::Polyethylene_CH2.ncmat;knllux=3
 stdlib::Y2SiO5_sg15_YSO.ncmat
    ndiscontinuities=12114 tol=0.0001 wlmax=500 maxrelerr<tol: OK
    processes: AbsOOV ElIncScatter PowderBragg SABScatter
-   first: (0 Aa, 0.321785/cm) last: (500 Aa, 8.31416/cm)
+   first: (0 Aa, 0.321785/cm) last: (500 Aa, 8.31419/cm)
 stdlib::B4C_sg166_BoronCarbide.ncmat
    ndiscontinuities=903 tol=0.0001 wlmax=500 maxrelerr<tol: OK
    processes: AbsOOV ElIncScatter PowderBragg SABScatter
@@ -61,7 +61,7 @@ gasmix::air
 phases<0.3*stdlib::Al_sg225.ncmat&0.7*stdlib::Cu_sg225.ncmat>
    ndiscontinuities=224 tol=0.0001 wlmax=500 maxrelerr<tol: OK
    processes: AbsOOV ElIncScatter PowderBragg SABScatter
-   first: (0 Aa, 0.486746/cm) last: (500 Aa, 65.3016/cm)
+   first: (0 Aa, 0.486746/cm) last: (500 Aa, 65.3017/cm)
 stdlib::void.ncmat
    ndiscontinuities=0 tol=0.0001 wlmax=500 maxrelerr<tol: OK
    processes: NullAbsorption NullScatter
