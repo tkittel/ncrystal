@@ -100,6 +100,11 @@ namespace NCRYSTAL_NAMESPACE {
     // course be called again if needed, possibly with a lower rtol).
     void topOffGrid( VectD& g, std::size_t npts, double rtol = 0.1 );
 
+    //Add points so that g[i]/g[i-1] <= rmax for i >= 2, and remove as many
+    //points where g is densest, so the size of g is unchanged. Never removes
+    //g[0], g[1] or the last point. Requires 0 <= g[0] < g[1] and rmax > 1.
+    void capGridRatio( VectD& g, double rmax );
+
     // Position of point i of an equidistant grid: x0+i*binWidth, but calculated
     // with a single rounding (using an explicit ncfma). For consistency, all
     // node positions of equidistant grids and piecewise linear functions must
