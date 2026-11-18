@@ -182,3 +182,16 @@ formula "Al2O3":
   label "Al" -> Z=13 A=0
 formula "Al2 O3 X":
 formula "":
+  label "Cl1" -> Z=17 A=0
+  label "Cl(1)" -> Z=17 A=0
+  label "C1" -> Z=6 A=0
+  label "Cs1" -> Z=55 A=0
+  label "Co1" -> Z=27 A=0
+  label "Ca1" -> Z=20 A=0
+  label "Fe1" -> Z=26 A=0
+  label "F1" -> Z=9 A=0
+  label "Ho1" -> Z=67 A=0
+  label "D1" -> Z=1 A=2
+  label "T1" -> Z=1 A=3
+  label "O(1)" -> Z=8 A=0
+  label "Al" -> Z=13 A=0

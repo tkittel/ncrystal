@@ -219,6 +219,23 @@ NC::Optional<NC::CIFElement> NC::elementFromCIFTypeSymbol( StrView sv )
 NC::Optional<NC::CIFElement> NC::elementFromCIFLabel( StrView label,
                                                       StrView formula )
 {
+  if ( formula.trimmed().empty() ) {
+    //No formula: only an element name in its usual case, followed by nothing
+    //but digits and parentheses (e.g. "Al", "Fe2", "O(1)"):
+    const StrView s = label.trimmed();
+    std::size_t n = 0;
+    while ( n < s.size() && n < 2 && isAlpha( s[n] ) )
+      ++n;
+    if ( n == 0 || ( n < s.size() && isAlpha( s[n] ) ) )
+      return NullOpt;
+    for ( auto i : ncrange( n, s.size() ) )
+      if ( !isDigit( s[i] ) && s[i] != '(' && s[i] != ')' )
+        return NullOpt;
+    const std::string name = s.substr( 0, n ).to_string();
+    if ( !isUpper( name[0] ) || ( n == 2 && !isLower( name[1] ) ) )
+      return NullOpt;
+    return elementFromName( name );
+  }
   auto terms = tryDecodeChemicalFormula( formula );
   if ( !terms.has_value() )
     return NullOpt;

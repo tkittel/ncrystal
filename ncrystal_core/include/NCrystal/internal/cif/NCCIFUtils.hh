@@ -66,7 +66,9 @@ namespace NCRYSTAL_NAMESPACE {
   //their element). Returns NullOpt if neither does, if the formula can not
   //be decoded, or if the label is ambiguous because the first two letters
   //form an element of the formula when ignoring case (e.g. "CL1" for a formula
-  //with both C and Cl):
+  //with both C and Cl). Without a formula (empty), only labels which are an
+  //element name in its usual case followed by nothing but digits and
+  //parentheses are accepted (e.g. "Al", "Fe2" or "O(1)", but not "CaM1"):
   Optional<CIFElement> elementFromCIFLabel( StrView label, StrView formula );
 
 }

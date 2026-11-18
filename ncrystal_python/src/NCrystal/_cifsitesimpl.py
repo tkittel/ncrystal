@@ -104,7 +104,8 @@ def _site_numbers( sites ):
 def _element_markers( sites, formula ):
     #Element (or isotope, e.g. "H2" for deuterium) of each CIF site (dicts,
     #cf. read_cif), from its type symbol, or else from its label checked
-    #against the chemical formula (with one warning):
+    #against the chemical formula, or without a formula only from labels like
+    #"Al1" (with one warning; cf. elementFromCIFLabel):
     from .atomdata import elementZToName
     def marker( e ):
         return elementZToName( e[0] ) + ( str( e[1] ) if e[1] else '' )
@@ -112,20 +113,21 @@ def _element_markers( sites, formula ):
                     *_rawargs( s['type_symbol'] or '?' for s in sites ) )
     missing = [ i for i, e in enumerate( elems ) if e is None ]
     if missing:
-        fromlbl = ( _query( 'cif', 'elements', 'label',
-                            *_rawargs( [ formula ] + [ sites[i]['label']
-                                                       for i in missing ] ) )
-                    if formula else [ None ] * len( missing ) )
+        fromlbl = _query( 'cif', 'elements', 'label',
+                          *_rawargs( [ formula or '' ]
+                                     + [ sites[i]['label'] for i in missing ] ) )
         examples = {}
         for i, e in zip( missing, fromlbl ):
             lbl = sites[i]['label']
             if e is None:
                 raise _nc_core.NCBadInput(
                     f'CIF site "{lbl}" has no usable _atom_site_type_symbol,'
-                    ' and its label does not unambiguously start with an'
-                    ' element of the chemical formula'
-                    + ( f' ("{formula}")' if formula
-                        else ' (no _chemical_formula_sum)' ) )
+                    + ( ' and its label does not unambiguously start with an'
+                        f' element of the chemical formula ("{formula}")'
+                        if formula else
+                        ' and without a _chemical_formula_sum its label must'
+                        ' be an element name followed by nothing but digits'
+                        ' and parentheses (like "Al", "Fe2" or "O(1)")' ) )
             elems[i] = e
             examples.setdefault( marker( e ), lbl )
         ex = [ f'{m} from {lbl}' for m, lbl in examples.items() ]
