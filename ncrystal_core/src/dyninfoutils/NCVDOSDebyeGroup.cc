@@ -31,67 +31,48 @@
 namespace NC = NCrystal;
 namespace NCDI = NCrystal::DynInfoUtils;
 
-double NCDI::VDOSDebyeGroupData::tolerance( VDOS::VDOSLux vdoslux )
+namespace NCRYSTAL_NAMESPACE {
+  namespace DynInfoUtils {
+    namespace {
+      //(1-3/neff)^2 (0 for neff<=3):
+      double neffFactor( double neff )
+      {
+        nc_assert_always( neff >= 1.0 - 1e-9 );
+        return ncsquare( ncmax( 0.0, 1.0 - 3.0 / neff ) );
+      }
+    }
+  }
+}
+
+double NCDI::VDOSDebyeGroupData::tolerance( VDOS::VDOSLux vdoslux,
+                                            double neff )
 {
-  static constexpr double tol[6] = { 0.6, 0.5, 0.4, 0.3, 0.2, 0.1 };
-  return tol[std::min<unsigned>( 5u, vdoslux.lvl() )];
+  static constexpr double tol[6] = { 0.6, 0.4, 0.25, 0.16, 0.1, 0.06 };
+  return tol[std::min<unsigned>( 5u, vdoslux.lvl() )] * neffFactor( neff );
+}
+
+bool NCDI::VDOSDebyeGroupData::lowersLevels( double neff )
+{
+  return neff > 3.0;
+}
+
+double NCDI::VDOSDebyeGroupData::effectiveNumberOfEntries( const VecEntries& v )
+{
+  StableSum s, s2;
+  for ( auto& e : v ) {
+    s.add( e.scale );
+    s2.add( e.scale * e.scale );
+  }
+  nc_assert_always( s2.sum() > 0.0 );
+  return ncsquare( s.sum() ) / s2.sum();
 }
 
 namespace NCRYSTAL_NAMESPACE {
   namespace DynInfoUtils {
     namespace {
 
-      //An entry with its scale w, x=log(msd), and msd:
-      struct Pt { std::size_t idx; double w, x, msd; };
-
-      //Contiguous range [b,e) of points sorted by x (a candidate cluster), with
-      //its weight, sum of w*(x-mean)^2, and best split (at index split,
-      //reducing sse by red):
-      struct PtRange {
-        std::size_t b, e;
-        double W, sse, red;
-        std::size_t split;
-      };
-
-      PtRange makePtRange( const std::vector<Pt>& p, std::size_t b,
-                           std::size_t e )
-      {
-        nc_assert( b < e && e <= p.size() );
-        PtRange c{ b, e, 0.0, 0.0, 0.0, b };
-        StableSum W, Wx;
-        for ( auto i = b; i < e; ++i ) {
-          W.add( p[i].w );
-          Wx.add( p[i].w * p[i].x );
-        }
-        c.W = W.sum();
-        const double mu = Wx.sum() / c.W;
-        StableSum v;
-        for ( auto i = b; i < e; ++i )
-          v.add( p[i].w * ( p[i].x - mu ) * ( p[i].x - mu ) );
-        c.sse = v.sum();
-        //Split into [b,i) and [i,e) reduces sse by WL*WR/W*(muL-muR)^2. Means
-        //from both sides, and no splits between identical x values:
-        const std::size_t n = e - b;
-        VectD rW( n + 1, 0.0 ), rWx( n + 1, 0.0 );
-        for ( auto j = n; j > 0; --j ) {
-          rW[j-1] = rW[j] + p[b+j-1].w;
-          rWx[j-1] = rWx[j] + p[b+j-1].w * p[b+j-1].x;
-        }
-        double lW = 0.0, lWx = 0.0;
-        for ( std::size_t j = 1; j < n; ++j ) {
-          lW += p[b+j-1].w;
-          lWx += p[b+j-1].w * p[b+j-1].x;
-          if ( !( p[b+j].x > p[b+j-1].x ) )
-            continue;
-          const double d = lWx / lW - rWx[j] / rW[j];
-          const double red = lW * rW[j] / ( lW + rW[j] ) * d * d;
-          if ( red > c.red ) {
-            c.red = red;
-            c.split = b + j;
-          }
-        }
-        return c;
-      }
+      //An entry with its scale w and x=log(msd):
+      struct Pt { std::size_t idx; double w, x; };
 
       void validateEntries( const std::vector<DebyeTempAndScale>& entries,
                             Temperature temp, AtomMass mass )
@@ -123,8 +104,9 @@ namespace NCRYSTAL_NAMESPACE {
         for ( auto& e : std::get<4>( key ) )
           entries.push_back( { e.second, DebyeTemperature{ e.first } } );
         using GD = VDOSDebyeGroupData;
-        const auto clusters = GD::clusterEntries( entries, temp, mass,
-                                                  GD::tolerance( vdoslux ) );
+        const double tol
+          = GD::tolerance( vdoslux, GD::effectiveNumberOfEntries( entries ) );
+        const auto clusters = GD::clusterEntries( entries, temp, mass, tol );
         const auto nc = clusters.size();
 
         //Debye temperature of each cluster, from its mean msd (weighted by
@@ -146,8 +128,11 @@ namespace NCRYSTAL_NAMESPACE {
                                                      temp, mass ) );
         }
 
-        //Expensive work as jobs: cross section tables of all entries, and the
-        //sampling models (expansions of the Debye models of the clusters):
+        //Expensive work as jobs: cross section tables of all entries (thinned,
+        //so merging is cheap), and the sampling models (expansions of the
+        //Debye models of the clusters). Thinning twice with reltol 2.5e-5
+        //keeps cluster tables within 5e-5 of the exact sums:
+        const double thin_reltol = 2.5e-5;
         std::vector<IsoXSTable> tables( entries.size() );
         std::vector<std::shared_ptr<const SAB::SABExtended>> sabexts( nc );
         {
@@ -155,21 +140,30 @@ namespace NCRYSTAL_NAMESPACE {
           for ( auto i : ncrange( entries.size() ) ) {
             const auto tdi = entries[i].debyeTemperature;
             IsoXSTable * out = &tables[i];
-            jobs.queue( [out,tdi,temp,mass]()
+            jobs.queue( [out,tdi,temp,mass,thin_reltol]()
             {
-              *out = VDOS::VDOSDebyeXS( tdi, temp, mass ).createXSTabulation();
+              *out = thinIsoXSTable( VDOS::VDOSDebyeXS( tdi, temp, mass )
+                                     .createXSTabulation(), thin_reltol );
             } );
           }
+          //Levels used for all clusters (see lowersLevels):
+          const bool lw = GD::lowersLevels( GD::effectiveNumberOfEntries( entries ) );
+          auto lower = []( int l ) { return l > 1 ? ncmax( 1, l - 2 ) : l; };
+          const int lv = static_cast<int>( vdoslux.lvl() );
+          const VDOS::VDOSLux vdoslux_c
+            = lw ? vdoslux.reduceLvl( static_cast<unsigned>( lv - lower( lv ) ) )
+                 : vdoslux;
+          const int knllux_c = lw ? lower( knllux ) : knllux;
           for ( auto ic : ncrange( nc ) ) {
             const auto tdc = td[ic];
             std::shared_ptr<const SAB::SABExtended> * out = &sabexts[ic];
-            jobs.queue( [out,tdc,temp,mass,vdoslux,knllux]()
+            jobs.queue( [out,tdc,temp,mass,vdoslux_c,knllux_c]()
             {
               auto sabdata
                 = extractSABDataFromVDOSDebyeModel( tdc, temp, SigmaBound{ 1.0 },
-                                                    mass, vdoslux.expansionLux() );
+                                                    mass, vdoslux_c.expansionLux() );
               *out = SAB::createSABExtendedWithCache
-                ( knllux, std::move( sabdata ),
+                ( knllux_c, std::move( sabdata ),
                   debyeEffectiveTemperature( tdc, temp ), nullptr,
                   SAB::SABExtended::SupportXS::NO );
             } );
@@ -177,9 +171,8 @@ namespace NCRYSTAL_NAMESPACE {
           jobs.waitAll();
         }
 
-        //Cluster tables (summed and thinned), and their sum. With a single
-        //cluster, its table is the total:
-        constexpr double thin_reltol = 5e-5;
+        //Cluster tables (summed and thinned again), and their sum. With a
+        //single cluster, its table is the total:
         std::vector<VDOSDebyeGroupData::Cluster> cls;
         cls.reserve( nc );
         std::vector<IsoXSTable> ctables;
@@ -255,44 +248,104 @@ NCDI::VDOSDebyeGroupData::clusterEntries( const VecEntries& entries,
   //Points sorted by (x, input order):
   std::vector<Pt> pts;
   pts.reserve( entries.size() );
-  for ( auto i : ncrange( entries.size() ) ) {
-    const double msd = debyeIsotropicMSD( entries[i].debyeTemperature,
-                                          temp, mass );
-    pts.push_back( { i, entries[i].scale, std::log( msd ), msd } );
-  }
+  for ( auto i : ncrange( entries.size() ) )
+    pts.push_back( { i, entries[i].scale,
+                     std::log( debyeIsotropicMSD( entries[i].debyeTemperature,
+                                                  temp, mass ) ) } );
   std::stable_sort( pts.begin(), pts.end(),
                     []( const Pt& a, const Pt& b ) { return a.x < b.x; } );
-  std::vector<PtRange> cls;
-  cls.push_back( makePtRange( pts, 0, pts.size() ) );
-  StableSum sse;
-  sse.add( cls.front().sse );
-  //Split the cluster with the largest reduction of sse, until sse is at
-  //most tolerance^2 * W (ties: first found):
-  const double limit = tolerance * tolerance * cls.front().W;
-  while ( sse.sum() > limit ) {
-    PtRange* best = nullptr;
-    for ( auto& c : cls )
-      if ( c.red > 0.0 && ( !best || c.red > best->red ) )
-        best = &c;
-    if ( !best )
-      break;
-    const PtRange c = *best;
-    *best = makePtRange( pts, c.b, c.split );
-    const double sse_left = best->sse;
-    cls.push_back( makePtRange( pts, c.split, c.e ) );
-    sse.add( -c.sse );
-    sse.add( sse_left );
-    sse.add( cls.back().sse );
+  //Cumulative sums of w, w*x, w*x^2 (x relative to the first, for
+  //precision), giving the sse of any range [b,e) in O(1):
+  const std::size_t n = pts.size();
+  VectD cW( n + 1, 0.0 ), cWx( n + 1, 0.0 ), cWxx( n + 1, 0.0 );
+  {
+    StableSum sW, sWx, sWxx;
+    for ( auto i : ncrange( n ) ) {
+      const double w = pts[i].w, x = pts[i].x - pts.front().x;
+      sW.add( w );
+      sWx.add( w * x );
+      sWxx.add( w * x * x );
+      cW[i+1] = sW.sum();
+      cWx[i+1] = sWx.sum();
+      cWxx[i+1] = sWxx.sum();
+    }
   }
-  //Decreasing weight (ties: lowest x first):
-  std::stable_sort( cls.begin(), cls.end(),
-                    []( const PtRange& a, const PtRange& b )
-                    { return a.W > b.W || ( a.W == b.W && a.b < b.b ); } );
+  auto sse = [&cW,&cWx,&cWxx]( std::size_t b, std::size_t e )
+  {
+    const double wx = cWx[e] - cWx[b];
+    return ncmax( 0.0, ( cWxx[e] - cWxx[b] ) - wx * wx / ( cW[e] - cW[b] ) );
+  };
+  //Possible range ends (no cuts between identical x values):
+  std::vector<std::size_t> ends;
+  for ( auto i : ncrange( std::size_t(1), n + 1 ) )
+    if ( i == n || pts[i].x > pts[i-1].x )
+      ends.push_back( i );
+  //Dynamic programming over k=1,2,..: cost[j] is the lowest sse of [0,ends[j])
+  //split into k ranges, and from[k-1][j] the start of the last of them (ties:
+  //first found). Stop when the full range is within the limit, or no longer
+  //improves:
+  const double limit = tolerance * tolerance * cW[n];
+  const std::size_t m = ends.size();
+  VectD cost( m );
+  for ( auto j : ncrange( m ) )
+    cost[j] = sse( 0, ends[j] );
+  std::vector<std::vector<std::size_t>> from;
+  from.emplace_back( m, 0 );
+  while ( cost.back() > limit && from.size() < m ) {
+    const std::size_t k = from.size();//ranges so far
+    VectD cnew( m, kInfinity );
+    std::vector<std::size_t> fnew( m, 0 );
+    for ( auto j : ncrange( k, m ) ) {
+      for ( auto i : ncrange( k - 1, j ) ) {
+        const double c = cost[i] + sse( ends[i], ends[j] );
+        if ( c < cnew[j] ) {
+          cnew[j] = c;
+          fnew[j] = ends[i];
+        }
+      }
+    }
+    if ( !( cnew.back() < cost.back() ) )
+      break;
+    cost.swap( cnew );
+    from.push_back( std::move( fnew ) );
+  }
+  //Ranges, from the back:
+  std::vector<std::pair<std::size_t,std::size_t>> rngs;
+  {
+    std::size_t e = n;
+    for ( auto k = from.size(); k > 0; --k ) {
+      const std::size_t je = std::lower_bound( ends.begin(), ends.end(), e )
+        - ends.begin();
+      nc_assert( je < m && ends[je] == e );
+      const std::size_t b = ( k == 1 ? 0 : from[k-1][je] );
+      rngs.emplace_back( b, e );
+      e = b;
+    }
+    nc_assert( e == 0 );
+  }
+  //Decreasing weight (summed directly, so equal weights compare equal; ties:
+  //lowest x first):
+  std::vector<std::pair<double,std::pair<std::size_t,std::size_t>>> wr;
+  for ( auto& r : rngs ) {
+    StableSum w;
+    for ( auto i : ncrange( r.first, r.second ) )
+      w.add( pts[i].w );
+    wr.emplace_back( w.sum(), r );
+  }
+  std::sort( wr.begin(), wr.end(),
+             []( const std::pair<double,std::pair<std::size_t,std::size_t>>& a,
+                 const std::pair<double,std::pair<std::size_t,std::size_t>>& b )
+             {
+               return a.first > b.first
+                 || ( a.first == b.first && a.second.first < b.second.first );
+             } );
+  for ( auto i : ncrange( wr.size() ) )
+    rngs[i] = wr[i].second;
   std::vector<std::vector<std::size_t>> res;
-  res.reserve( cls.size() );
-  for ( auto& c : cls ) {
+  res.reserve( rngs.size() );
+  for ( auto& r : rngs ) {
     res.emplace_back();
-    for ( auto i = c.b; i < c.e; ++i )
+    for ( auto i : ncrange( r.first, r.second ) )
       res.back().push_back( pts[i].idx );
   }
   return res;

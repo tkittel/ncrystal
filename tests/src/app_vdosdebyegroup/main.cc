@@ -29,6 +29,7 @@
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/factories/NCDataSources.hh"
 #include <iostream>
+#include <random>
 #include <sstream>
 
 //Tests of the grouped treatment of VDOSDebye entries (NCVDOSDebyeGroup.hh)
@@ -91,7 +92,11 @@ namespace {
       const NC::VDOS::VDOSLux vl( raw );
       std::cout << "vdoslux=" << raw << ": lvl=" << vl.lvl() << " legacy="
                 << vl.isLegacy() << " allowGrouping=" << vl.allowGrouping()
-                << " tolerance=" << GD::tolerance( vl ) << " expansionLux="
+                << " tolerance(neff=1,3,4,10,100)=" << GD::tolerance( vl, 1.0 )
+                << "," << GD::tolerance( vl, 3.0 ) << ","
+                << GD::tolerance( vl, 4.0 ) << ","
+                << GD::tolerance( vl, 10.0 ) << "," << GD::tolerance( vl, 100.0 )
+                << " expansionLux="
                 << vl.expansionLux().raw() << std::endl;
     }
   }
@@ -179,7 +184,8 @@ namespace {
     const Entries v = testEntries();
     const NC::VDOS::VDOSLux lux3( 3 );
     auto d = NCDI::createVDOSDebyeGroupData( v, temp, mass, lux3, 3 );
-    const auto cl = GD::clusterEntries( v, temp, mass, GD::tolerance( lux3 ) );
+    const double tol3 = GD::tolerance( lux3, GD::effectiveNumberOfEntries( v ) );
+    const auto cl = GD::clusterEntries( v, temp, mass, tol3 );
     REQUIRE( d->nEntries() == v.size() );
     REQUIRE( d->clusters().size() == cl.size() && cl.size() > 1 );
     REQUIRE( d->temperature() == temp && d->mass() == mass );
@@ -332,12 +338,44 @@ namespace {
   }
 }
 
+namespace {
+  void testSmallGroups()
+  {
+    //Groups with n<=3 entries (random distinct Debye temperatures and
+    //scales) get neither merging nor lowering at any vdoslux:
+    std::mt19937 gen( 12345 );//fully specified, so portable
+    auto rnd = [&gen]() { return gen() / 4294967296.0; };
+    std::size_t ncheck = 0;
+    for ( std::size_t n = 1; n <= 3; ++n ) {
+      for ( int itry = 0; itry < 200; ++itry ) {
+        Entries v;
+        for ( std::size_t i = 0; i < n; ++i )
+          v.push_back( { 1e-3 + rnd(),
+                         NC::DebyeTemperature{ 100.0 + 50.0 * i
+                                               + 40.0 * rnd() } } );
+        const double neff = GD::effectiveNumberOfEntries( v );
+        REQUIRE( neff <= n * ( 1.0 + 1e-12 ) );
+        REQUIRE( !GD::lowersLevels( neff ) );
+        for ( int raw = 0; raw <= 5; ++raw ) {
+          const double tol = GD::tolerance( NC::VDOS::VDOSLux( raw ), neff );
+          REQUIRE( tol == 0.0 );
+          REQUIRE( GD::clusterEntries( v, temp, mass, tol ).size() == n );
+          ++ncheck;
+        }
+      }
+    }
+    std::cout << "Small groups (n<=3): no merging or lowering in " << ncheck
+              << " checks" << std::endl;
+  }
+}
+
 int main()
 {
   testSettings();
   testClusters();
   testData();
   testFactory();
+  testSmallGroups();
   std::cout << "All ok" << std::endl;
   return 0;
 }

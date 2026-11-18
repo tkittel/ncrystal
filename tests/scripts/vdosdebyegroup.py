@@ -111,5 +111,25 @@ def main():
         sc = NC.createScatter( f'vdosdebyegroup_one.ncmat;vdoslux={lux};comp=inelas' )
         print( f'vdoslux={lux}:', sc.getSummary( short = False )['name'] )
 
+def test_lowering():
+    #Ten oxygen entries with similar Debye temperatures, and two light
+    #outliers: neff>3, so all clusters are sampled with vdoslux and knllux
+    #two levels lower (never below 1), visible as smaller kernels:
+    tds = [ 380.0 + 4.0 * i for i in range( 10 ) ] + [ 150.0, 1000.0 ]
+    fracs = [ '9/100' ] * 10 + [ '1/20' ] * 2
+    lines = [ 'NCMAT v7', '@STATEOFMATTER', '  solid',
+              '@DENSITY', '  1.0 g_per_cm3', '@ATOMDB' ]
+    lines += [ f'  X{i+1} is O' for i in range( len( tds ) ) ]
+    for i, ( td, f ) in enumerate( zip( tds, fracs ) ):
+        lines += [ '@DYNINFO', f'  element X{i+1}', f'  fraction {f}',
+                   '  type vdosdebye', f'  debye_temp {td}' ]
+    NC.registerInMemoryFileData( 'vdosdebyegroup_low.ncmat', '\n'.join( lines ) )
+    for lux in ( 1, 2, 3, 5 ):
+        sc = NC.createScatter( f'vdosdebyegroup_low.ncmat;comp=inelas;vdoslux={lux}' )
+        print( f'vdoslux={lux}:' )
+        for c in sc.getSummary( short = False )['specific']['clusters']:
+            print( '   ', c )
+
 if __name__ == '__main__':
     main()
+    test_lowering()

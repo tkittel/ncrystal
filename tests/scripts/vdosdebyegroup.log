@@ -2,7 +2,7 @@ Cross sections agree within 2e-3
 Sampled distributions agree
 ProcComposition(2 components, isotropic)
    |-- 0.2 * VDOSDebyeGroupScatter(n=1;nclusters=1;TDebye=600K;T=293.15K;M=1.00798u;sigma_free=20.4902barn)
-   \-- 0.8 * VDOSDebyeGroupScatter(n=5;nclusters=3;TDebye=250K..700K;T=293.15K;M=15.9993u;sigma_free=3.74537barn)
+   \-- 0.8 * VDOSDebyeGroupScatter(n=5;nclusters=5;TDebye=250K..700K;T=293.15K;M=15.9993u;sigma_free=3.74537barn)
 0.2 {
  "name": "VDOSDebyeGroupScatter",
  "materialType": "Isotropic",
@@ -39,9 +39,9 @@ ProcComposition(2 components, isotropic)
  ],
  "isNull": false,
  "specific": {
-  "summarystr": "n=5;nclusters=3;TDebye=250K..700K;T=293.15K;M=15.9993u;sigma_free=3.74537barn",
+  "summarystr": "n=5;nclusters=5;TDebye=250K..700K;T=293.15K;M=15.9993u;sigma_free=3.74537barn",
   "n": 5,
-  "nclusters": 3,
+  "nclusters": 5,
   "TDebye_min": 250.0,
   "TDebye_max": 700.0,
   "T": 293.15,
@@ -49,9 +49,11 @@ ProcComposition(2 components, isotropic)
   "sigma_bound": 4.2325,
   "sigma_free": 3.74537,
   "clusters": [
-   "n=2;scale=0.4;TDebye=590.43K;nalpha=280;nbeta=650;Emax=5eV",
-   "n=2;scale=0.4;TDebye=353.386K;nalpha=280;nbeta=650;Emax=5eV",
-   "n=1;scale=0.2;TDebye=250K;nalpha=280;nbeta=650;Emax=5eV"
+   "n=1;scale=0.2;TDebye=700K;nalpha=110;nbeta=240;Emax=5eV",
+   "n=1;scale=0.2;TDebye=520K;nalpha=110;nbeta=240;Emax=5eV",
+   "n=1;scale=0.2;TDebye=400K;nalpha=110;nbeta=240;Emax=5eV",
+   "n=1;scale=0.2;TDebye=320K;nalpha=110;nbeta=240;Emax=5eV",
+   "n=1;scale=0.2;TDebye=250K;nalpha=110;nbeta=240;Emax=5eV"
   ]
  }
 }
@@ -93,3 +95,20 @@ vdoslux=6: SABScatter
 vdoslux=100: SABScatter
 vdoslux=105: SABScatter
 vdoslux=1003: SABScatter
+vdoslux=1:
+    n=10;scale=0.89999999999999991;TDebye=397.503K;nalpha=110;nbeta=240;Emax=5eV
+    n=1;scale=0.05;TDebye=1000K;nalpha=110;nbeta=240;Emax=5eV
+    n=1;scale=0.05;TDebye=150K;nalpha=110;nbeta=240;Emax=5eV
+vdoslux=2:
+    n=10;scale=0.89999999999999991;TDebye=397.503K;nalpha=110;nbeta=240;Emax=5eV
+    n=1;scale=0.05;TDebye=1000K;nalpha=110;nbeta=240;Emax=5eV
+    n=1;scale=0.05;TDebye=150K;nalpha=110;nbeta=240;Emax=5eV
+vdoslux=3:
+    n=10;scale=0.89999999999999991;TDebye=397.503K;nalpha=110;nbeta=240;Emax=5eV
+    n=1;scale=0.05;TDebye=1000K;nalpha=110;nbeta=240;Emax=5eV
+    n=1;scale=0.05;TDebye=150K;nalpha=110;nbeta=240;Emax=5eV
+vdoslux=5:
+    n=5;scale=0.44999999999999996;TDebye=407.882K;nalpha=280;nbeta=650;Emax=5eV
+    n=5;scale=0.44999999999999996;TDebye=387.876K;nalpha=280;nbeta=650;Emax=5eV
+    n=1;scale=0.05;TDebye=1000K;nalpha=280;nbeta=650;Emax=5eV
+    n=1;scale=0.05;TDebye=150K;nalpha=280;nbeta=650;Emax=5eV

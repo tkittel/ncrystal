@@ -57,17 +57,35 @@ namespace NCRYSTAL_NAMESPACE {
       //per unit summed scale (in barn for a bound cross section of 1 barn).
 
       //Tolerance on the spread of log(msd) values within the clusters (see
-      //clusterEntries): 0.6, 0.5, 0.4, 0.3, 0.2, 0.1 at vdoslux 0-5. Cross
-      //sections are exact, so this only concerns sampled distributions:
-      static double tolerance( VDOS::VDOSLux );
+      //clusterEntries), for a group with neff effective entries:
+      //T*max(0,1-3/neff)^2, with T=0.6, 0.4, 0.25, 0.16, 0.1, 0.06
+      //at vdoslux 0-5. Groups with few entries thus keep them apart (cheap),
+      //while those with many (costly) are clustered more coarsely,
+      //continuously in the inputs (a tiny entry changes neff very little).
+      //Cross sections are exact, so this only concerns sampled
+      //distributions:
+      static double tolerance( VDOS::VDOSLux, double neff );
+
+      //Whether all clusters get vdoslux and knllux two levels lower (never
+      //below 1, and 0 stays 0): for neff>3, i.e. when grouping is in effect
+      //(clustering is about as imprecise as the lower levels). This jumps at
+      //neff=3, but by little (distributions at levels L and L-2 differ by
+      //~1e-3). Since neff<=n, groups with n<=3 entries thus get neither
+      //merging (except of equal msd values) nor lowering, i.e. are sampled
+      //like without grouping:
+      static bool lowersLevels( double neff );
+
+      //Effective number of entries, (sum of scales)^2/(sum of scales^2):
+      using VecEntries = std::vector<DebyeTempAndScale>;
+      static double effectiveNumberOfEntries( const VecEntries& );
 
       //Clusters of entries (as indices into the input) with contiguous
-      //log(msd) values: starting with one cluster, the split which most
-      //reduces E = sum of scale*(log(msd)-cluster mean)^2 is repeated until
-      //E <= tolerance^2 * sum(scale). Clusters are sorted by decreasing summed
-      //scale (ties: lowest msd first), their entries by increasing msd (ties:
-      //input order):
-      using VecEntries = std::vector<DebyeTempAndScale>;
+      //log(msd) values (no cuts between equal values): the fewest clusters
+      //with E <= tolerance^2 * sum(scale), where E = sum of
+      //scale*(log(msd)-cluster mean)^2, and for that number the lowest E
+      //(found by dynamic programming in O(k*n^2) for k clusters and n
+      //entries). Clusters are sorted by decreasing summed scale (ties: lowest
+      //msd first), their entries by increasing msd (ties: input order):
       static std::vector<std::vector<std::size_t>>
       clusterEntries( const VecEntries&, Temperature, AtomMass,
                       double tolerance );
@@ -77,8 +95,9 @@ namespace NCRYSTAL_NAMESPACE {
         std::size_t n;//number of entries
         double scale;//summed scale of its entries
         DebyeTemperature debyeTemperature;//from their mean msd
-        //Summed cross sections of its entries (thinned table), absent if
-        //there is only one cluster (then equal to xs()):
+        //Summed cross sections of its entries (thinned table, within ~5e-5
+        //of the exact sum), absent if there is only one cluster (then equal
+        //to xs()):
         Optional<IsoXSEvaluator> xs;
         shared_obj<const SAB::SABExtended> sabext;//(SupportXS::NO)
       };
