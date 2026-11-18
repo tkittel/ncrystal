@@ -361,7 +361,9 @@ def invalid_cifs( structure ):
         style = 'p1' ).replace( "'x,y,z'", "'x,y,z'\n'-x,-y,-z'" ).replace(
             '_space_group_IT_number 1', '_space_group_IT_number 2' ).replace(
                 "'P 1'", "'P -1'" )
-    #Listed operations with an origin shift (not a tabulated setting):
-    out['origin-shift'] = to_cif( structure.with_origin_shift(
-        (0.125,0.25,0.375) ) )
+    #Listed operations with an origin shift (not a tabulated setting). Not in
+    #P1, whose only operation (x,y,z) is unchanged by a shift:
+    if structure.spacegroup != 1:
+        out['origin-shift'] = to_cif( structure.with_origin_shift(
+            (0.125,0.25,0.375) ) )
     return out
