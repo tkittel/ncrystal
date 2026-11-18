@@ -93,8 +93,8 @@ Caught expected NCBadInput('Invalid energy unit on "1.0ergs". Possible units inc
   scenario = "1.8meV"
   cfgstr   = "stdlib:: Al_sg225.ncmat   ;temp=20 C"
 
-    -> geomcfg   = "sphere;r=0.50312"
-    -> srccfg    = "circular;z=-0.50312;r=0.50312;ekin=0.0018000000000000002;n=1e6"
+    -> geomcfg   = "sphere;r=0.503115"
+    -> srccfg    = "circular;z=-0.503115;r=0.503115;ekin=0.0018000000000000002;n=1e6"
 
 >>> Testing
   scenario = "["

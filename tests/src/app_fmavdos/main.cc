@@ -485,8 +485,8 @@ namespace {
       const NCV::VDOSLux lux( c.lux );
       auto gnexpn = NCV::expandVDOSToGnFcts( vd, lux );
       auto dim = NCV::gridDimFromLux( lux );
-      auto ab = NCV::determineAlphaBetaGridFromGn( gnexpn, dim.first,
-                                                   dim.second );
+      auto ab = NCV::determineAlphaBetaGridFromGn(
+        gnexpn, dim.first, dim.second, NCV::gridMaxAlphaRatioFromLux( lux ) );
       return Res{ gnexpn.Gn.maxOrder().value(), gnexpn.sabRange,
                   ab.first, ab.second,
                   NCV::setupE0ABGrid( gnexpn, 20 ).first };
@@ -562,7 +562,8 @@ namespace {
 
     unsigned nalpha, nbeta;
     std::tie( nalpha, nbeta ) = NCV::gridDimFromLux( lux );
-    auto ab = NCV::determineAlphaBetaGridFromGn( gnexpn, nalpha, nbeta );
+    auto ab = NCV::determineAlphaBetaGridFromGn(
+      gnexpn, nalpha, nbeta, NCV::gridMaxAlphaRatioFromLux( lux ) );
     prtgrid( "Alpha grid", ab.first );
     prtgrid( "Beta grid", ab.second );
 

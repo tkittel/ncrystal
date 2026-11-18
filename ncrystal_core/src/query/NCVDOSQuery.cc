@@ -133,7 +133,9 @@ namespace NCRYSTAL_NAMESPACE {
 
         unsigned nalpha, nbeta;
         std::tie(nalpha, nbeta) = VDOS::gridDimFromLux( vdos.vdoslux );
-        auto abgrid = VDOS::determineAlphaBetaGridFromGn( gnexpn, nalpha, nbeta );
+        const double rmax = VDOS::gridMaxAlphaRatioFromLux( vdos.vdoslux );
+        auto abgrid = VDOS::determineAlphaBetaGridFromGn( gnexpn, nalpha,
+                                                          nbeta, rmax );
 
         //fixme make complete:
         os << "{\"input\":{\"cfgstr\":";

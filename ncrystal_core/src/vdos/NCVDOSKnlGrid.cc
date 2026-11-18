@@ -186,7 +186,8 @@ NC::VDOS::getCombinedGnFct( const GnExpansion& gnexpn )
 
 std::pair<NC::VectD,NC::VectD>
 NC::VDOS::determineAlphaBetaGridFromGn( const GnExpansion& gnexpn,
-                                        unsigned nalpha, unsigned nbeta )
+                                        unsigned nalpha, unsigned nbeta,
+                                        double maxAlphaRatio )
 {
   //fixme: parallelise parts with FactoryJobs?
 
@@ -410,6 +411,9 @@ NC::VDOS::determineAlphaBetaGridFromGn( const GnExpansion& gnexpn,
     };
 
     topOff(avals, requested_nalpha );
+    //Without this, extreme alpha2x values (e.g. very cold heavy atoms) can
+    //leave a large gap between the E0 points and the powspace part:
+    capGridRatio( avals, maxAlphaRatio );
 
     const std::size_t bvals_size_withoute0 = bvals.size();
     bvals = mergeGridsWithTol( bvals, e0grid, rtol );
@@ -439,6 +443,13 @@ NC::VDOS::determineAlphaBetaGridFromGn( const GnExpansion& gnexpn,
   nc_assert( nc_is_grid( avals ) );
   nc_assert( nc_is_grid( bvals ) );
   return {avals, bvals};
+}
+
+double NC::VDOS::gridMaxAlphaRatioFromLux( VDOSLux vdoslux )
+{
+  constexpr double rmax[7] = { 4.0, 3.0, 2.5, 2.0, 1.7, 1.5, 1.4 };
+  nc_assert_always( vdoslux.lvl() <= 6 );
+  return rmax[vdoslux.lvl()];
 }
 
 std::pair<unsigned,unsigned> NC::VDOS::gridDimFromLux( VDOSLux vdoslux )

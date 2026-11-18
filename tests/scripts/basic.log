@@ -34,10 +34,10 @@ Aluminium PowderBragg diffraction cross-section @ [1, 2, 3, 4]Aa: [0.72722, 1.09
 Aluminium Bkgd cross-section @ 4.0Aa: 0.13602 barn
 Aluminium Bkgd+PowderBragg cross-section @ 4.0Aa: 1.76846 barn
 Aluminium absorption cross-section @ 4.0Aa: 0.513848 barn
-Germanium ScatFactSC cross-section @ 4.0Aa and (1.0, 0.15, 0.7): 0.597107 barn
-... same with xsect method: 0.597107 barn
-... same with xsect method2: 0.597107 barn
-... same with xsect method3: 0.597107 barn
+Germanium ScatFactSC cross-section @ 4.0Aa and (1.0, 0.15, 0.7): 0.597114 barn
+... same with xsect method: 0.597114 barn
+... same with xsect method2: 0.597114 barn
+... same with xsect method3: 0.597114 barn
 A few generated scattering angles using the full 3d vector interface:
 scattering at 4 Aa from (1, 0.15, 0.7) happens at 118.971 deg and delta-E 0.0209961 eV
 scattering at 4 Aa from (1, 0.15, 0.7) happens at 120.098 deg and delta-E 0.0138348 eV
@@ -81,8 +81,8 @@ scattering at 4 Aa from (1, 0.15, 0.6) happens at 80.2987 deg and delta-E 0.0080
 scattering at 4 Aa from (1, 0.15, 0.6) happens at 100.186 deg and delta-E 0.0209182 eV
 [ 18.995187  148.98152  110.13956 ... 98.997247  128.72995  61.124517 ]
 [ 17.134578  21.602978  12.952584 ... 21.880298  22.832139  3.1114642 ]
-[ 143.65079  70.642951  120.98913 ... 80.882186  88.445834  82.446771 ]
-[ 22.105541  19.542004  26.77745 ... 23.086883  54.866998  18.976117 ]
+[ 143.65079  70.642951  120.98913 ... 109.77117  171.82309  129.30746 ]
+[ 22.105541  19.542004  26.77745 ... 34.752748  2.3181128  17.678906 ]
 ===> Testing potentially vanishing scatter: "Be_sg194.ncmat;dcutoff=10.0":
     xs@1Aa : 1.20377
     xs@5Aa : 0.429149
@@ -97,16 +97,16 @@ scattering at 4 Aa from (1, 0.15, 0.6) happens at 100.186 deg and delta-E 0.0209
     mean scat@1Aa : 1.9 rad, de=-0.015eV
 ===> Testing potentially vanishing scatter: "Al_sg225.ncmat;dcutoff=10.0":
     xs@1Aa : 0.645066
-    xs@5Aa : 0.14307
-    mean scat@1Aa : 1.8 rad, de=-0.0044eV
+    xs@5Aa : 0.143071
+    mean scat@1Aa : 1.8 rad, de=-0.0043eV
 ===> Testing potentially vanishing scatter: "Al_sg225.ncmat;dcutoff=10.0;inelas=0;incoh_elas=0":
     xs@1Aa : 0
     xs@5Aa : 0
     mean scat@1Aa : 0 rad, de=0eV
 ===> Testing potentially vanishing scatter: "Al_sg225.ncmat;dcutoff=10.0;coh_elas=0":
     xs@1Aa : 0.645066
-    xs@5Aa : 0.14307
-    mean scat@1Aa : 1.8 rad, de=-0.0044eV
+    xs@5Aa : 0.143071
+    mean scat@1Aa : 1.8 rad, de=-0.0043eV
 ===> Testing exceptions
 Caught NCException!:
   Type    :  NCFileNotFound
