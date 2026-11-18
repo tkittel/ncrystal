@@ -31,11 +31,12 @@ import NCTestUtils.enable_fpe # noqa F401
 import numpy as np
 import spglib
 import NCrystalDev._sgsymimpl as sgs
+from NCTestUtils.cifgen import spacegroup_type
 
 def sg_ops( sgno ):
     #Operations of the first (standard) setting of the space group:
     for hall in range( 1, 531 ):
-        if spglib.get_spacegroup_type( hall ).number == sgno:
+        if spacegroup_type( hall ).number == sgno:
             d = spglib.get_symmetry_from_database( hall )
             return list( zip( d['rotations'], d['translations'] ) )
 
