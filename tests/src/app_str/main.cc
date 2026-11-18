@@ -351,6 +351,20 @@ void test_str2dblconverter()
     cc.check( s );
   }
 
+  //Subnormals round-trip exactly through fmt and str2dbl (some stream
+  //implementations fail to read them, cf. raw_str2dbl):
+  for ( int i = 0; i < 2000; ++i ) {
+    const std::uint64_t bits = rng.genUInt64() & ( ( std::uint64_t(1) << 52 ) - 1 );
+    double x;
+    std::memcpy( &x, &bits, sizeof(double) );
+    if ( i % 2 )
+      x = -x;
+    std::ostringstream ss;
+    ss << NC::fmt( x );
+    const std::string str = ss.str();
+    REQUIRE( NC::str2dbl( str ) == x );
+  }
+
   //Still agrees after being moved:
   NC::Str2DblConverter conv2( std::move( cc.conv ) );
   cc.conv = std::move( conv2 );
