@@ -7,4 +7,4 @@ sampling at 100 Aa OK (KS test on Q*R)
 sampling at 1000 Aa OK (KS test on Q*R)
 Al_sans.ncmat;comp=sans: 24 table points, within the tolerance 0.0001 up to 500 Aa
 Al_sans.ncmat: 184 table points, within the tolerance 0.0001 up to 500 Aa
-Al_sans.ncmat;knllux=-1: 206 table points, within the tolerance 0.0001 up to 500 Aa
+Al_sans.ncmat;knllux=-1: 201 table points, within the tolerance 0.0001 up to 500 Aa

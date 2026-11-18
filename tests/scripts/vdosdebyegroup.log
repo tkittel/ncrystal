@@ -77,8 +77,8 @@ ProcComposition(6 components, isotropic)
  "specific": {
   "summarystr": "nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=1.00798u;extend=sct;sigma_free=20.4902barn",
   "Emax": 5.0,
-  "Emin": 1.21777e-08,
-  "negrid": 233,
+  "Emin": 1.21635e-08,
+  "negrid": 229,
   "T": 293.15,
   "M": 1.00798,
   "sigma_bound": 82.0168,

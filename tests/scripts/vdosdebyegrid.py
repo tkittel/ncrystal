@@ -55,7 +55,8 @@ def check( debye_temp, temp, element ):
                                               f'  vdos_egrid {emin:.17g} {emax:.17g}',
                                               '  vdos_density '
                                               + ' '.join(f'{d:.17g}' for d in dens) ] ) )
-    cfg = f';temp={temp}K;vdoslux=3;comp=inelas'
+    #(vdoslux=103: expansions, as for "vdos", not the grouped treatment)
+    cfg = f';temp={temp}K;vdoslux=103;comp=inelas'
     sc_d = NC.createScatter( fn_d + cfg )
     sc_v = NC.createScatter( fn_v + cfg )
     for e in ( 1e-5, 0.0253, 0.5 ):
