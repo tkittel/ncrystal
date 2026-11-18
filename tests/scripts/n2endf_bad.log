@@ -247,7 +247,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "Al" woul
 >> Prepare elastic approximations
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Mixed elastic mode for Al but no incoherent elastic data found: coherent approximation [warn#48]
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Combining (alpha, beta) grids from different temperatures. This usually results in a huge grid. [warn#49]
->>> alpha points: 546, alpha range: (0, 198.4)
+>>> alpha points: 545, alpha range: (0, 198.4)
 >>> beta points: 614, beta range: (0, 34.81)
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#50]
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): The extracted kernel for "V" would normally cover energies up to Emax=5eV with the provided cfg-string but a value of Emax=1eV was enforced. [warn#51]

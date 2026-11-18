@@ -35,11 +35,16 @@ namespace NCRYSTAL_NAMESPACE {
     //Determine (nalpha,nbeta) based on vdoslux:
     std::pair<unsigned,unsigned> gridDimFromLux( VDOSLux );
 
-    //Determine full alpha and beta grids based on an existing expansion and
-    //grid dimensions:
+    //Largest allowed ratio of neighbouring alpha grid points (apart from the
+    //first two) based on vdoslux:
+    double gridMaxAlphaRatioFromLux( VDOSLux );
+
+    //Determine full alpha and beta grids based on an existing expansion,
+    //grid dimensions and the largest allowed alpha ratio:
     std::pair<VectD,VectD>
     determineAlphaBetaGridFromGn( const GnExpansion&,
-                                  unsigned nalpha, unsigned nbeta );
+                                  unsigned nalpha, unsigned nbeta,
+                                  double maxAlphaRatio );
 
     //Construct intermediate function, representing a weighted combination of Gn
     //function. Returns (betavals,combgnvals) and is exposed here for

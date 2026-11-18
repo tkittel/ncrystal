@@ -8,7 +8,7 @@ Material stdlib::Ge_sg227.ncmat;dcutoff=0.5;mos=40.0arcsec;dir1=@crys_hkl:5,1,1@
   wl=0.5 Aa: xs=6.4688 barn, 1000 scatterings OK
   wl=1.8 Aa: xs=1.2912 barn, 1000 scatterings OK
   wl=4 Aa: xs=0.59711 barn, 1000 scatterings OK
-  wl=10 Aa: xs=0.74941 barn, 1000 scatterings OK
+  wl=10 Aa: xs=0.74943 barn, 1000 scatterings OK
 Material stdlib::Al_sg225.ncmat;temp=200K:
   State of matter: Solid
   Crystal (space group: 225)

@@ -154,9 +154,9 @@ def _actualtest( verbose ):
     prfct('Verifying loaded Scatter object')
     nipc_testwl = 1.2
     #_nc_print(nipc.xsect(wl=nipc_testwl),nipc.xsect(wl=5.0))
-    require_flteq(16.75748060461658,nipc.xsect(wl=nipc_testwl))
-    require_flteq(16.75748060461658,nipc.xsect(wl=nipc_testwl,direction=(1,0,0)))
-    require_flteq(5.96098519807626,nipc.xsect(wl=5.0))
+    require_flteq(16.757494101741113,nipc.xsect(wl=nipc_testwl))
+    require_flteq(16.757494101741113,nipc.xsect(wl=nipc_testwl,direction=(1,0,0)))
+    require_flteq(5.961037186755543,nipc.xsect(wl=5.0))
 
     require( nipc.name == 'ProcComposition' )
 
@@ -252,7 +252,7 @@ def _actualtest( verbose ):
     gesc = NC.createScatterIndependentRNG(_cfgstr4,_seed4)
     prfct('Verifying loaded Scatter object')
     require_flteq(591.0126833534165,gesc.crossSection(wl2ekin(1.540),( 0., 1., 1. )))
-    require_flteq(1.6539362893509624,gesc.crossSection(wl2ekin(1.540),( 1., 1., 0. )))
+    require_flteq(1.653942684786731,gesc.crossSection(wl2ekin(1.540),( 1., 1., 0. )))
     prfct('standard Python-API testing done')
 
 
