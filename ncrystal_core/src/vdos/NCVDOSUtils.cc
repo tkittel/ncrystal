@@ -339,6 +339,56 @@ void NC::VDOS::topOffGrid( VectD& g, std::size_t npts, double rtol )
   nc_assert(nc_is_grid(g));
 }
 
+void NC::VDOS::capGridRatio( VectD& g, double rmax )
+{
+#ifndef NDEBUG
+  nc_assert_always( g.size() >= 3 );
+  nc_assert_always( rmax > 1.0 && std::isfinite(rmax) );
+  nc_assert_always( nc_is_grid(g) );
+  nc_assert_always( g.front() >= 0.0 && g[1] > 0.0 );
+#endif
+  struct Node { double x; bool added; };
+  std::vector<Node> v;
+  v.reserve( 2 * g.size() );
+  v.push_back( { g[0], false } );
+  v.push_back( { g[1], false } );
+  //Tolerances, so results do not depend on rounding errors when ratios are
+  //(nearly) exactly at rmax or equal to each other (e.g. lattice points):
+  constexpr double tol = 1e-9;
+  const double lrmax = stable_log( rmax );
+  std::size_t nadded = 0;
+  for ( auto i : ncrange( std::size_t(2), g.size() ) ) {
+    const double x0 = g[i-1];
+    const double lr = stable_log( g[i] / x0 );
+    if ( lr > lrmax * ( 1.0 + tol ) ) {
+      const auto n = static_cast<unsigned>( std::ceil( lr / lrmax - tol ) );
+      for ( auto j : ncrange( 1u, n ) )
+        v.push_back( { x0 * stable_exp( lr * j / n ), true } );
+      nadded += n - 1;
+    }
+    v.push_back( { g[i], false } );
+  }
+  for ( std::size_t k = 0; k < nadded; ++k ) {
+    std::size_t best = 0;
+    double bestr = kInfinity;
+    for ( auto i : ncrange( std::size_t(2), v.size() - 1 ) ) {
+      if ( v[i].added )
+        continue;
+      const double r = v[i+1].x / v[i-1].x;
+      if ( r < bestr * ( 1.0 - tol ) ) {
+        bestr = r;
+        best = i;
+      }
+    }
+    nc_assert_always( best > 0 );
+    v.erase( v.begin() + static_cast<std::ptrdiff_t>(best) );
+  }
+  nc_assert_always( v.size() == g.size() );
+  for ( auto i : ncrange( g.size() ) )
+    g[i] = v[i].x;
+  nc_assert( nc_is_grid(g) );
+}
+
 NC::VectD NC::VDOS::makeCommonGrid(Span<const EquidistantGrid> grids )
 {
   struct Entry {
