@@ -67,7 +67,7 @@ namespace NCRYSTAL_NAMESPACE {
     //Debye-Waller factor per unit alpha: lambda = int_0^x 3/x^3 b coth(b/2) db.
     double debyeLambda( double x )
     {
-      auto f = [x]( double b )
+      auto f = []( double b )
       {
         return b > 1e-8 ? b / std::tanh( 0.5 * b ) : 2.0;
       };
