@@ -75,6 +75,12 @@ def main():
     lc = show( 'element from label (Cs1 with C)', CIFLoader(
         cif( [ 'Cs1 . 0 0 0 1' ], "_chemical_formula_sum 'C'\n" ),
         quiet = True, refine_with_spglib = False ) )
+    #Without a formula, only labels which are an element name followed by
+    #digits or parentheses:
+    lc = show( 'element from label (no formula)', CIFLoader(
+        cif( [ 'Al . 0 0 0 1', 'O(1) . 0.5 0.5 0.5 1' ] ),
+        quiet = True, refine_with_spglib = False ) )
+    assert sorted( a['composition'][0][1] for a in lc.atoms ) == [ 'Al', 'O' ]
     for extra, why in ( ( '', 'no formula' ),
                         ( "_chemical_formula_sum 'Ca O'\n", 'not in formula' ) ):
         try:
