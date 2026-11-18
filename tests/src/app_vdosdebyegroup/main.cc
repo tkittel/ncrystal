@@ -321,9 +321,10 @@ namespace {
       "NCMAT v7\n@STATEOFMATTER\n  solid\n@DENSITY\n  1.0 g_per_cm3\n"
       "@ATOMDB\n  U 300u 5fm 0b 0b\n"
       "@DYNINFO\n  element U\n  fraction 1\n  type vdosdebye\n  debye_temp 200\n" );
-    std::cout << "mass 300u:"
-              << compNames( "vdosdebyegroup_heavy.ncmat;comp=inelas;vdoslux=1" )
-              << std::endl;
+    //(created before printing, since it emits a warning):
+    const std::string heavy
+      = compNames( "vdosdebyegroup_heavy.ncmat;comp=inelas;vdoslux=1" );
+    std::cout << "mass 300u:" << heavy << std::endl;
     //T>1000*TDebye (error message pointing to vdoslux=101):
     NC::DataSources::registerInMemoryFileData(
       "vdosdebyegroup_cold.ncmat",

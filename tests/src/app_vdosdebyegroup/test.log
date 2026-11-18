@@ -28,8 +28,8 @@ vdoslux=0: 0.15*VDOSDebyeGroupScatter 0.75*VDOSDebyeGroupScatter 0.1*FreeGas
 vdoslux=3: 0.15*VDOSDebyeGroupScatter 0.75*VDOSDebyeGroupScatter 0.1*FreeGas
 vdoslux=5: 0.15*VDOSDebyeGroupScatter 0.75*VDOSDebyeGroupScatter 0.1*FreeGas
 vdoslux=103: 0.15*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.03*SABScatter 0.1*FreeGas
-mass 300u:NCrystal WARNING: The 1 @DYNINFO entry of type vdosdebye with mass 300u (293.15K) is not handled together (VDOSDebyeGroupScatter), since that mass is outside the supported range (0.958232u-262.253u). Each entry gets its own phonon expansion instead, which can be slow.
- SABScatter
+NCrystal WARNING: The 1 @DYNINFO entry of type vdosdebye with mass 300u (293.15K) is not handled together (VDOSDebyeGroupScatter), since that mass is outside the supported range (0.958232u-262.253u). Each entry gets its own phonon expansion instead, which can be slow.
+mass 300u: SABScatter
 TDebye=0.2K: CalcError: The VDOSDebye entry for Al (TDebye=0.2K) at T=293.15K has T/TDebye=1466, above the maximum of 1000 supported by the grouped VDOSDebye treatment. To instead use a separate phonon expansion for each entry (which has no such hard limit, but can be slower to initialise), add 100 to the vdoslux value, i.e. use vdoslux=101.
 Small groups (n<=3): no merging or lowering in 3600 checks
 All ok
