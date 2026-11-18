@@ -42,7 +42,9 @@ def run( testname ):
     _register_synthetic_materials()
     mon = XSMonitor( testname = testname,
                      cfglist = _tests[testname](),
-                     matloadfct = _load_fct,
+                     matloadfct = ( _load_fct_grouped
+                                    if testname == 'sabxsgrouped'
+                                    else _load_fct ),
                      egridgenfct = _egrid_fct,
                      rdtolfct = _rdtol_for_cfgstr,
                      datadir = 'sabxs' )
@@ -64,10 +66,22 @@ def _rdtol_for_cfgstr( cfgstr ):
         return 1e-6
     return 1e-5
 
+def _expansions( cfgstr ):
+    #These tests cover phonon expansions and kernel integration, so
+    #vdoslux=0..5 is mapped to 100..105 (the same without the grouped
+    #treatment of VDOSDebye entries, cf. the sabxsgrouped test). Other
+    #dynamic info types are not affected:
+    return re.sub( r';vdoslux=([0-5])(?=;|$)',
+                   lambda m : f';vdoslux={100+int(m.group(1))}', cfgstr )
+
 def _load_fct( cfgstr ):
     if cfgstr.endswith( _freegas_marker ):
-        return _FreeGasExtenderMaterial( cfgstr[:-len(_freegas_marker)] )
+        return _FreeGasExtenderMaterial(
+            _expansions( cfgstr[:-len(_freegas_marker)] ) )
     #only inelastic scattering is monitored:
+    return nccore.load( _expansions( cfgstr ) + ';comp=inelas' )
+
+def _load_fct_grouped( cfgstr ):
     return nccore.load( cfgstr + ';comp=inelas' )
 
 #Entries with this suffix use the free-gas extender instead of the default SCT
@@ -157,6 +171,16 @@ def _register_synthetic_materials():
             else:
                 c.set_dyninfo_debyetemp( 'X', td )
             c.register_as( _synth_name( elem, td, use_msd ) )
+    #Five O entries, i.e. a group which is clustered (neff>3):
+    from NCrystalDev.datasrc import registerInMemoryFileData
+    tds = ( 250, 320, 400, 520, 700 )
+    lines = [ 'NCMAT v7', '@STATEOFMATTER', '  solid', '@DENSITY',
+              '  1.0 g_per_cm3', '@ATOMDB' ]
+    lines += [ f'  X{i+1} is O' for i in range(len(tds)) ]
+    for i, td in enumerate( tds ):
+        lines += [ '@DYNINFO', f'  element X{i+1}', '  fraction 1/5',
+                   '  type vdosdebye', f'  debye_temp {td}' ]
+    registerInMemoryFileData( 'sabxs_debye_O5.ncmat', '\n'.join(lines)+'\n' )
 
 ################################################################################
 # The tests
@@ -303,6 +327,18 @@ def _list_legacy():
     yield f'{_sl("Al_sg225")};temp=293.15;vdoslux=1002;knllux=3'
     yield f'{_sl("Al_sg225")};temp=293.15;vdoslux=2002;knllux=-1'
 
+def _list_grouped():
+    #The grouped treatment of VDOSDebye entries (vdoslux=0..5): cross sections
+    #from VDOSDebyeXS, incl. very cold, hot, light and heavy cases, a mixture
+    #with other dynamic info types, and a group with five entries:
+    entries = [ ( _sl('Ca_sg229_Calcium-gamma'), ( 0.1, 5, 293.15, 3000 ) ),
+                ( _sl('PEEK_C19H12O3'), ( 20, 293.15 ) ),
+                ( 'solid::CH2/0.95gcm3', ( 5, 293.15 ) ),
+                ( _synth_name('H',100.0), ( 0.1, 300 ) ),
+                ( _synth_name('U',200.0), ( 2, 600 ) ),
+                ( 'sabxs_debye_O5.ncmat', ( 1, 293.15, 2000 ) ) ]
+    yield from _rotate( entries )
+
 def _half( entries, k ):
     #Every second entry (k=0,1), to split a slow test into two:
     return list(entries)[k::2]
@@ -311,6 +347,7 @@ _tests = {
     'sabxslegacy' : lambda : list(_list_legacy()),
     'sabxstrouble' : lambda : list(_list_trouble()),
     'sabxstestdata' : lambda : list(_list_testdata()),
+    'sabxsgrouped' : lambda : list(_list_grouped()),
     'long_sabxslighta' : lambda : _half(_list_light(),0),
     'long_sabxslightb' : lambda : _half(_list_light(),1),
     'long_sabxsheavy' : lambda : list(_list_heavy()),
