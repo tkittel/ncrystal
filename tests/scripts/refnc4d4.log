@@ -129,5 +129,5 @@ ZrF4-beta_sg84.ncmat: identical
 ZrO2_sg137_Zirconia.ncmat: identical
 ZrO2_sg14_Zirconia.ncmat: identical
 Zr_sg194.ncmat: identical
-void.ncmat: identical
-All 131 compared files identical.
+void.ncmat: excluded (state of matter (gas) declared for release 5.0.0)
+All 130 compared files identical.
