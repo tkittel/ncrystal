@@ -155,3 +155,18 @@ expect_error( 'unweighted fractions (sites)', nacl( ['Na 0.9'] ) )
 expect_error( 'unweighted fractions (positions)', nacl( ['Na 0.9'], sites = False ) )
 expect_error( 'NCMAT v7', nacl( ['Na 0.9'], version = 7, sites = False,
                                 fracs = ('9/19','10/19') ) )
+
+#NCMATComposer with a partial occupancy writes @ATOMOCCUPANCIES and dyninfo
+#fractions weighted by the occupancies:
+c = NC.NCMATComposer()
+c.set_cellsg_cubic( 4.0, spacegroup = 221 )
+c.set_atompos( [ ('C',0,0,0,0.88), ('Al',0.5,0.5,0.5) ] )
+c.set_dyninfo_vdosdebye( 'C', 300 )
+c.set_dyninfo_vdosdebye( 'Al', 300 )
+#FIXME: verify_crystal_structure=False is only a workaround for spglib not
+#being available in wasm (Pyodide). Revisit.
+ncmat_data = c.create_ncmat( verify_crystal_structure = False )
+for line in ncmat_data.splitlines():
+    if line.strip().startswith(('C ','fraction')) or 'OCCUPANCIES' in line:
+        print( f'  composer: {line.strip()}' )
+show( 'composer, C 0.88', load( ncmat_data ) )

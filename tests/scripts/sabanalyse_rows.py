@@ -77,6 +77,7 @@ def check_cut_kernels( cfgstr, lbl, tt, mt ):
         c = NCMATComposer()
         c.set_composition( 'X', di.atomData.displayLabel() )
         c.set_density( 1.0 )
+        c.set_state_of_matter( 'solid' )
         c.set_dyninfo_scatknl( 'X', alphagrid = a, betagrid = b[mask],
                                temperature = info.getTemperature(),
                                sab = sab[mask,:].flatten() )
