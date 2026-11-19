@@ -49,7 +49,7 @@ stdlib::Polyethylene_CH2.ncmat;knllux=3
 stdlib::Y2SiO5_sg15_YSO.ncmat
    ndiscontinuities=12114 tol=0.0001 wlmax=500 maxrelerr<tol: OK
    processes: AbsOOV ElIncScatter PowderBragg SABScatter
-   first: (0 Aa, 0.321785/cm) last: (500 Aa, 8.31435/cm)
+   first: (0 Aa, 0.321785/cm) last: (500 Aa, 8.31416/cm)
 stdlib::B4C_sg166_BoronCarbide.ncmat
    ndiscontinuities=903 tol=0.0001 wlmax=500 maxrelerr<tol: OK
    processes: AbsOOV ElIncScatter PowderBragg SABScatter

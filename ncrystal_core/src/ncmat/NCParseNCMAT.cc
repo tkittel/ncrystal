@@ -24,6 +24,7 @@
 #include "NCrystal/internal/utils/NCStrView.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
+#include "NCrystal/internal/vdos/NCVDOSEval.hh"
 #include <sstream>
 #if nc_cplusplus >= 201703L
 #  include <functional>//for std::invoke
@@ -793,6 +794,11 @@ void NC::NCMATParser::handleSectionData_DYNINFO(const Parts& parts, unsigned lin
       NCRYSTAL_THROW2(BadInput,e1<<": no input found in @DYNINFO section (expected in line "<<lineno<<")");
     try {
       m_active_dyninfo->validate( m_data.version );
+      if ( m_active_dyninfo->dyninfo_type == NCMATData::DynInfo::VDOS )
+        VDOS::VDOSEval::checkAndStandardiseInput(
+                     m_active_dyninfo->fields.at("vdos_egrid"),
+                     m_active_dyninfo->fields.at("vdos_density"),
+                     VDOS::VDOSEval::FinalZero::Append );
     } catch (Error::BadInput&e) {
       NCRYSTAL_THROW2(BadInput,e.what()<<" (problem found in the @DYNINFO section ending in line "<<lineno<<")");
     }

@@ -35,12 +35,12 @@
   Debye T=2000K,temp=293.15K (wide), order3=G1(*)order2raw: n=6007 peak=4.1297 noiseFloor=5.686e-13  OK
       at prod. truncation edge (val=3.130e-05, =7.58e-06*peak): noiseFloor/edgeVal=1.82e-08
 --- Real data: live Li2O (Li,O) material G1, self-convolved (orders 2,3) ---
-  Li2O (real material, temp=10K), element=Li, order2=G1(*)G1: n=40905 peak=14.5209 noiseFloor=5.217e-12  OK
-      at prod. truncation edge (val=8.464e-08, =5.83e-09*peak): noiseFloor/edgeVal=6.16e-05
-  Li2O (real material, temp=10K), element=Li, order3=G1(*)order2raw: n=61357 peak=11.3456 noiseFloor=4.992e-12  OK
-      at prod. truncation edge (val=1.299e-12, =1.15e-13*peak): noiseFloor/edgeVal=3.84
-  Li2O (real material, temp=10K), element=O, order2=G1(*)G1: n=40905 peak=19.8977 noiseFloor=7.149e-12  OK
-      at prod. truncation edge (val=1.185e-08, =5.96e-10*peak): noiseFloor/edgeVal=0.000603
-  Li2O (real material, temp=10K), element=O, order3=G1(*)order2raw: n=61357 peak=15.2892 noiseFloor=6.727e-12  OK
-      at prod. truncation edge (val=1.707e-12, =1.12e-13*peak): noiseFloor/edgeVal=3.94
+  Li2O (real material, temp=10K), element=Li, order2=G1(*)G1: n=26621 peak=14.52 noiseFloor=4.208e-12  OK
+      at prod. truncation edge (val=1.910e-12, =1.32e-13*peak): noiseFloor/edgeVal=2.2
+  Li2O (real material, temp=10K), element=Li, order3=G1(*)order2raw: n=39931 peak=11.3449 noiseFloor=4.027e-12  OK
+      at prod. truncation edge (val=1.180e-12, =1.04e-13*peak): noiseFloor/edgeVal=3.41
+  Li2O (real material, temp=10K), element=O, order2=G1(*)G1: n=26621 peak=19.8972 noiseFloor=5.767e-12  OK
+      at prod. truncation edge (val=7.344e-12, =3.69e-13*peak): noiseFloor/edgeVal=0.785
+  Li2O (real material, temp=10K), element=O, order3=G1(*)order2raw: n=39931 peak=15.2887 noiseFloor=5.427e-12  OK
+      at prod. truncation edge (val=1.584e-12, =1.04e-13*peak): noiseFloor/edgeVal=3.43
 

@@ -907,12 +907,9 @@ namespace NCRYSTAL_NAMESPACE {
 
       VectD vdos_egrid_orig( vdos_egrid, vdos_egrid + vdos_egrid_npts );
       VectD vdos_density_orig( vdos_density, vdos_density + vdos_density_npts );
-      if ( !( vdos_density_orig.size() >= 5 ) )
-        NCRYSTAL_THROW(BadInput,"Too few points in VDOS density.");
-      if ( ! ( vdos_egrid_orig.size()==2 || vdos_egrid_orig.size()==vdos_density_orig.size() ) )
-        NCRYSTAL_THROW(BadInput,"VDOS egrid must have two points, or the same number of points as the density.");
-      nc_assert_always( vdos_egrid_orig.size()==2 || vdos_egrid_orig.size()==vdos_density_orig.size());
-      nc_assert_always( vdos_density_orig.size() >= 5 );
+      VDOS::VDOSEval::checkAndStandardiseInput( vdos_egrid_orig,
+                                                vdos_density_orig,
+                                                VDOS::VDOSEval::FinalZero::Append );
       VectD vdos_egrid_reg, vdos_density_reg;
       std::tie(vdos_egrid_reg, vdos_density_reg) = VDOS::regulariseVDOSGrid( vdos_egrid_orig, vdos_density_orig);
       nc_assert_always(vdos_egrid_reg.size()==2);
@@ -2583,7 +2580,10 @@ void ncrystal_vdoseval( double vdos_emin, double vdos_emax,
     density.reserve(vdos_ndensity);
     for ( auto i : NC::ncrange(vdos_ndensity) )
       density.push_back( vdos_density[i] );
-    NC::VDOSData vd( NC::PairDD{vdos_emin,vdos_emax},
+    NC::VectD egrid{ vdos_emin, vdos_emax };
+    NC::VDOS::VDOSEval::checkAndStandardiseInput(
+                     egrid, density, NC::VDOS::VDOSEval::FinalZero::Append );
+    NC::VDOSData vd( NC::PairDD{ egrid.front(), egrid.back() },
                      std::move(density),
                      NC::Temperature{temperature},
                      NC::SigmaBound{1.0},//doesn't matter for VDOSEval
