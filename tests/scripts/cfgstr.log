@@ -501,7 +501,7 @@ ncmat+embedded: data_name='<anonymous-ncmat-data>' textdata_name='(anonymous Tex
 ncmat+embedded+params: data_name='<anonymous-ncmat-data>' textdata_name='(anonymous TextData, 3454bytes, type=ncmat)' pars=[['temp', 50.0], ['vdoslux', 4]] vdoslux=4
 TextData: data_name='<anonymous-ncmat-data>' textdata_name='Al_sg225.ncmat' pars=[['vdoslux', 2]] vdoslux=2
 file path: data_name='<anonymous-ncmat-data>' textdata_name='tmp_cfgstr_weird #name&.ncmat' pars=[['temp', 30.0]] vdoslux=3
-NCMATComposer: data_name='<anonymous-ncmat-data>' textdata_name='(anonymous TextData, 254bytes, type=ncmat)' pars=[['vdoslux', 6]] vdoslux=6
+NCMATComposer: data_name='<anonymous-ncmat-data>' textdata_name='(anonymous TextData, 252bytes, type=ncmat)' pars=[['vdoslux', 6]] vdoslux=6
 MaterialSource: data_name='<anonymous-ncmat-data>' textdata_name='(anonymous TextData, 3454bytes, type=ncmat)' pars=[['temp', 10.0], ['vdoslux', 1]] vdoslux=1
 MaterialSource+params: data_name='<anonymous-ncmat-data>' textdata_name='(anonymous TextData, 3454bytes, type=ncmat)' pars=[['temp', 10.0], ['vdoslux', 5]] vdoslux=5
 multiphase vdoslux: 2
