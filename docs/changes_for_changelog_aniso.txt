@@ -86,3 +86,12 @@ CHANGELOG at release time, after which this file is dropped).
        missing Materials Project API key gives the intended error message;
        sites without coordinates ("?") are rejected with a clear error
        (instead of a ValueError).
+     * cif2ncmat and CIFLoader.create_ncmat(_composer) now always use Uiso
+       (Biso) values in the CIF data. Their temperature is taken from the
+       uiso_temperature parameter (--uisotemp), or else from the
+       _diffrn_ambient_temperature or _cell_measurement_temperature CIF field,
+       or else assumed to be 293K (with a warning). Inconsistent (more than 5%
+       apart) or invalid (outside 0.1K-3000K) CIF fields are errors, unless in
+       permissive mode. The NCMAT header documents the temperature used and
+       its source. The fallback Debye temperature (--debyetemp) is only used
+       for atoms without Uiso values.
