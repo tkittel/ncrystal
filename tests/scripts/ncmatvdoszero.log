@@ -1,0 +1,18 @@
+NCMAT v7, last density 1: loaded
+NCMAT v7, last density 0: loaded
+NCMAT v8, last density 1: BadInput: vdos_density must end with a value of 0 (problem found in the @DYNINFO section ending in line 11)
+NCMAT v8, last density 0: loaded
+NCMAT v7, 5 values: identical results
+NCMATComposer, 5 values: identical results
+analyseVDOS, 5 values: identical results
+NCMAT v7, 6 values: identical results
+NCMAT v8, 6 values: identical results
+NCMATComposer, 6 values: identical results
+analyseVDOS, 6 values: identical results
+NCMAT v7, 8 values: identical results
+NCMAT v8, 8 values: identical results
+NCMATComposer, 8 values: identical results
+analyseVDOS, 8 values: identical results
+NCMAT v7, 1 2 3 0 0: BadInput: vdos_density has too few values (>=5 needed, excess trailing zeroes are ignored since NCrystal v5.0.0) (problem found in the @DYNINFO section ending in line 11)
+NCMAT v8, 1 2 3 0 0: BadInput: vdos_density has too few values (>=5 needed, excess trailing zeroes are ignored since NCrystal v5.0.0) (problem found in the @DYNINFO section ending in line 11)
+NCMATComposer, 1 2 3 0 0: BadInput: vdos_density has too few values (>=5 needed, excess trailing zeroes are ignored since NCrystal v5.0.0)
