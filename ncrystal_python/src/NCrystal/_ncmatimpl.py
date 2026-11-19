@@ -553,6 +553,7 @@ class NCMATComposerImpl:
                                           else self.__prunecomment(comment) ) } )
 
     def set_dyninfo_vdos( self, label, vdos_egrid, vdos, *, comment, fraction ):
+        vdos_egrid, vdos = _standardise_vdos( vdos_egrid, vdos )
         self.__add_dyninfo( label, fraction,
                             { 'ditype': 'vdos',
                               'vdos_egrid': _copyarray_or_None(vdos_egrid),
@@ -865,8 +866,8 @@ class NCMATComposerImpl:
         lines=''
         natoms_with_fallback_dyninfo = 0
 
-        def formatVector(name,values):
-            return formatVectorForNCMAT(name,values,_magic_two_space)
+        def formatVector(name,values,exact=False):
+            return formatVectorForNCMAT(name,values,_magic_two_space,exact)
 
         for lbl,fracinfo in sorted(fractions.items()):
             if not isinstance(fracinfo,float) and len(fracinfo)==3:
@@ -909,10 +910,11 @@ class NCMATComposerImpl:
             elif ditype == 'vdos':
                 x = dyninfo['vdos_egrid']
                 from ._common import _grid_is_linspace
+                #(egrid written exactly, as it might have been computed by
+                #_standardise_vdos):
                 if len(x)>2 and _grid_is_linspace(x):
-                    lines += f'vdos_egrid {_fmtprecisenum(x[0])} {_fmtprecisenum(x[-1])}\n'
-                else:
-                    lines += formatVector('vdos_egrid',x)
+                    x = [ x[0], x[-1] ]
+                lines += formatVector('vdos_egrid',x,exact=True)
                 lines += formatVector('vdos_density',dyninfo['vdos'])
             elif ditype in ('sterile','freegas','msd'):
                 pass
@@ -1763,6 +1765,15 @@ def _fmtprecisenum( v, strip_leading_zero = True ):
     _ = f'{v:.14g}' if v else '0'
     return _[1:] if (strip_leading_zero and _.startswith('0.')) else _
 
+def _standardise_vdos( egrid, density ):
+    #VDOS curve in NCrystal's standard form (excess trailing zeros dropped, a
+    #final zero appended if missing), via the C++ implementation:
+    from .misc import evaluate_query
+    fmt = lambda v : ','.join( repr(float(e)) for e in v )
+    r = evaluate_query( [ 'vdos', 'standardise', 'append',
+                          fmt(egrid), fmt(density) ] )
+    return r['egrid'], r['density']
+
 def _copyarray_or_None( x ):
     if x is None or (hasattr(x,'__len__') and len(x)==0):
         return None
@@ -2268,10 +2279,12 @@ def _cifdata_via_ase( data_or_file, ase_format = None, quiet = False ):
         ase_io.write(s, ase_obj, format='cif')
         return s.getvalue().decode()
 
-def formatVectorForNCMAT(name,values,indent):
+def formatVectorForNCMAT(name,values,indent,exact=False):
+    #exact: shortest representation which reads back as the same number.
     def provideFormattedEntries():
         def _fmtnum(num):
-            _ = f'{num:g}' if num else '0'#avoid 0.0, -0, etc.
+            _ = ( repr(float(num)) if exact else f'{num:g}' ) if num else '0'
+            _ = _.removesuffix('.0')
             if _.startswith('0.'):
                 _=_[1:]
             return _

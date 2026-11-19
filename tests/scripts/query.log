@@ -123,7 +123,7 @@ Caught expected NCBadInput('Invalid JSON query key: "foo"')
  'xs']
 ===========================================
 ============= CLI >>vdos list<< ====================
-['expand']
+['expand', 'standardise']
 ===========================================
 ============= CLI >>matcfg list<< ====================
 ['decode', 'decodedata', 'normalise', 'doc']
