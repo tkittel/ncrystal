@@ -1,4 +1,4 @@
-NCMAT v5
+NCMAT v8
 #
 # Zirconium dioxide (ZrO2, Zirconia, tetragonal, SG-137 / P4_2/nmc))
 #
@@ -35,14 +35,10 @@ NCMAT v5
   lengths 3.5961 !! 5.177
   angles 90 90 90
 @SPACEGROUP
-  137
-@ATOMPOSITIONS
-  Zr   0   0   0
-  Zr 1/2 1/2 1/2
-  O  1/2   0 .797
-  O    0 1/2 .203
-  O    0 1/2 .703
-  O  1/2   0 .297
+  137:1
+@ATOMSITES
+  Zr 0 0 0
+  O 0 1/2 .203
 @DYNINFO
   element  Zr
   fraction 1/3

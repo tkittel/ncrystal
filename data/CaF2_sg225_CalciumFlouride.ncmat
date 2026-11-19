@@ -1,4 +1,4 @@
-NCMAT v5
+NCMAT v8
 #
 # Calcium Flouride (CaF2, cubic, SG-225 / Fm-3m)
 #
@@ -32,19 +32,9 @@ NCMAT v5
   cubic 5.4631
 @SPACEGROUP
   225
-@ATOMPOSITIONS
+@ATOMSITES
   Ca 0 0 0
-  Ca 0 1/2 1/2
-  Ca 1/2 0 1/2
-  Ca 1/2 1/2 0
   F 1/4 1/4 1/4
-  F 1/4 3/4 3/4
-  F 3/4 1/4 3/4
-  F 3/4 3/4 1/4
-  F 1/4 3/4 1/4
-  F 1/4 1/4 3/4
-  F 3/4 3/4 3/4
-  F 3/4 1/4 1/4
 @DYNINFO
   element  Ca
   fraction 1/3

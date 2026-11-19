@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Silicon (diamond-like structure)
 #
@@ -17,16 +17,9 @@ NCMAT v4
 @CELL
   cubic 5.4307
 @SPACEGROUP
-  227
-@ATOMPOSITIONS
-  Si 1/2 1/2 0
-  Si 1/4 3/4 3/4
-  Si 1/2 0   1/2
-  Si 1/4 1/4 1/4
-  Si 0   1/2 1/2
-  Si 3/4 3/4 1/4
-  Si 0   0   0
-  Si 3/4 1/4 3/4
+  227:1
+@ATOMSITES
+  Si 0 0 0
 @DYNINFO
   element Si
   fraction 1

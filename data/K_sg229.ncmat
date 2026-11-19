@@ -1,4 +1,4 @@
-NCMAT v5
+NCMAT v8
 #
 # Potassium (K, cubic, SG-229 / Im-3m)
 #
@@ -31,9 +31,8 @@ NCMAT v5
   cubic 5.247
 @SPACEGROUP
   229
-@ATOMPOSITIONS
+@ATOMSITES
   K 0 0 0
-  K 1/2 1/2 1/2
 @DYNINFO
   element  K
   fraction 1

@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Paladium (fcc)
 #
@@ -20,11 +20,8 @@ NCMAT v4
   cubic 3.8898
 @SPACEGROUP
   225
-@ATOMPOSITIONS
-  Pd 1/2 1/2   0
-  Pd 1/2   0 1/2
-  Pd   0 1/2 1/2
-  Pd   0   0   0
+@ATOMSITES
+  Pd 0 0 0
 @DYNINFO
   element  Pd
   fraction 1

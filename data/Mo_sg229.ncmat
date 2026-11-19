@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Molybdenum (bcc)
 #
@@ -19,9 +19,8 @@ NCMAT v4
   cubic 3.1473
 @SPACEGROUP
   229
-@ATOMPOSITIONS
-  Mo   0   0   0
-  Mo 1/2 1/2 1/2
+@ATOMSITES
+  Mo 0 0 0
 @DYNINFO
   element  Mo
   fraction 1

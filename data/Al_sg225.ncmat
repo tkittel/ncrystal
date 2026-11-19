@@ -1,4 +1,4 @@
-NCMAT v5
+NCMAT v8
 #
 # Aluminium (Al, fcc, cubic, SG-225 / Fm-3m)
 #
@@ -29,11 +29,8 @@ NCMAT v5
   cubic 4.04958
 @SPACEGROUP
   225
-@ATOMPOSITIONS
-  Al   0 1/2 1/2
-  Al   0   0   0
-  Al 1/2 1/2   0
-  Al 1/2   0 1/2
+@ATOMSITES
+  Al 0 0 0
 @DYNINFO
   element  Al
   fraction 1

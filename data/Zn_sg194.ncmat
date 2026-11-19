@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Zinc (hcp)
 #
@@ -21,9 +21,8 @@ NCMAT v4
   angles 90 90 120
 @SPACEGROUP
   194
-@ATOMPOSITIONS
+@ATOMSITES
   Zn 1/3 2/3 1/4
-  Zn 2/3 1/3 3/4
 @DYNINFO
   element  Zn
   fraction 1

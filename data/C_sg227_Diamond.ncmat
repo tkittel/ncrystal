@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Diamond.
 #
@@ -17,16 +17,9 @@ NCMAT v4
 @CELL
   cubic 3.56679
 @SPACEGROUP
-  227
-@ATOMPOSITIONS
-  C 1/2 0   1/2
-  C 1/4 3/4 3/4
-  C 1/2 1/2 0
-  C 1/4 1/4 1/4
-  C 0   0   0
-  C 3/4 3/4 1/4
-  C 0   1/2 1/2
-  C 3/4 1/4 3/4
+  227:1
+@ATOMSITES
+  C 0 0 0
 @DYNINFO
   element  C
   fraction 1

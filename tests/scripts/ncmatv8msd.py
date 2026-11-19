@@ -132,7 +132,7 @@ def li2o_structure():
     lines, keep = [], False
     for line in NC.createTextData( 'stdlib::Li2O_sg225_LithiumOxide.ncmat' ):
         if line.startswith('@'):
-            keep = line.startswith( ('@CELL','@SPACEGROUP','@ATOMPOSITIONS') )
+            keep = line.startswith( ('@CELL','@SPACEGROUP','@ATOMSITES') )
         if keep:
             lines.append( line + '\n' )
     return ''.join( lines )

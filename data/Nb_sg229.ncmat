@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Niobium (bcc)
 #
@@ -19,9 +19,8 @@ NCMAT v4
   cubic 3.3004
 @SPACEGROUP
   229
-@ATOMPOSITIONS
-  Nb   0   0   0
-  Nb 1/2 1/2 1/2
+@ATOMSITES
+  Nb 0 0 0
 @DYNINFO
   element  Nb
   fraction 1

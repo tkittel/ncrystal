@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Copper (Cu, fcc).
 #
@@ -17,11 +17,8 @@ NCMAT v4
   cubic 3.61496
 @SPACEGROUP
   225
-@ATOMPOSITIONS
-  Cu 1/2 1/2 0
-  Cu 1/2 0   1/2
-  Cu 0   1/2 1/2
-  Cu 0   0   0
+@ATOMSITES
+  Cu 0 0 0
 @DYNINFO
   element  Cu
   fraction 1

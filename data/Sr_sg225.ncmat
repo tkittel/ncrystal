@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Strontium.
 #
@@ -17,11 +17,8 @@ NCMAT v4
   cubic 6.0847
 @SPACEGROUP
   225
-@ATOMPOSITIONS
-  Sr 1/2 1/2 1/2
-  Sr 1/2   0   0
-  Sr   0 1/2   0
-  Sr   0   0 1/2
+@ATOMSITES
+  Sr 0 0 1/2
 @DYNINFO
   element  Sr
   fraction 1

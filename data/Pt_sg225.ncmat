@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Platinum (fcc)
 #
@@ -19,11 +19,8 @@ NCMAT v4
   cubic 3.9231
 @SPACEGROUP
   225
-@ATOMPOSITIONS
-  Pt 1/2 0   1/2
-  Pt 1/2 1/2 0
-  Pt 0   0   0
-  Pt 0   1/2 1/2
+@ATOMSITES
+  Pt 0 0 0
 @DYNINFO
   element  Pt
   fraction 1

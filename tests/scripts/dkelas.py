@@ -36,6 +36,7 @@ import NCTestUtils.enable_fpe # noqa F401
 import NCTestUtils.enable_testdatapath # noqa F401
 import NCrystalDev as NC
 from NCrystalDev.misc import evaluate_query as q
+from NCTestUtils.dirs import get_named_test_data_dir
 
 def fmt(x,prec=4):
     return 'absent' if x is None else f'{x:.{prec}g}'
@@ -108,8 +109,9 @@ def crystalline_scatknl_probe():
     #wiring probe at 10K.
     struct = []
     take = False
-    for line in NC.createTextData(
-            'stdlib::Li2O_sg225_LithiumOxide.ncmat' ):
+    #(the 4.4.6 version, with @ATOMPOSITIONS as needed for NCMAT v7):
+    li2o = get_named_test_data_dir('refnc4d4') / 'Li2O_sg225_LithiumOxide.ncmat'
+    for line in li2o.read_text().splitlines():
         if line.startswith('@'):
             take = line.startswith( ('@CELL','@SPACEGROUP',
                                      '@ATOMPOSITIONS') )
@@ -140,11 +142,9 @@ def crystalline_scatknl_probe():
     take = False
     for line in NC.createTextData( 'stdlib::C_sg227_Diamond.ncmat' ):
         if line.startswith('@'):
-            take = line.startswith( ('@CELL','@SPACEGROUP',
-                                     '@ATOMPOSITIONS') )
+            take = line.startswith( ('@CELL','@SPACEGROUP','@ATOMSITES') )
         if take:
-            #(v8 needs the setting explicitly, 227:1 is the v4 default):
-            struct_c.append( '  227:1' if line.strip() == '227' else line )
+            struct_c.append( line )
     knl_c = []
     take = False
     for line in NC.createTextData( 'C_from_benzene_solid_20K_sabsmall.ncmat' ):

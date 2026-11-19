@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Gamma-iron (austenite, fcc Fe)
 #
@@ -32,12 +32,9 @@ NCMAT v4
   #which is a formula from https://doi.org/10.2355/isijinternational.45.1789
   cubic 3.658
 @SPACEGROUP
-    225
-@ATOMPOSITIONS
-    Fe   0   0   0
-    Fe   0 1/2 1/2
-    Fe 1/2   0 1/2
-    Fe 1/2 1/2   0
+  225
+@ATOMSITES
+  Fe 0 0 0
 @DYNINFO
   element  Fe
   fraction 1
