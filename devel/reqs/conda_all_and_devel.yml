@@ -20,5 +20,5 @@ dependencies:
   - PyYAML >=6.0.0
   - ruff >=0.16.1
   - simple-build-system >=1.6.0
-  - spglib >=2.1.0
+  - spglib >=2.3.1
   - tomli >=2.0.0
