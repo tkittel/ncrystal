@@ -58,7 +58,7 @@ Dynamic info for C (33.3333%):
    type: freegas
 ----------------------------------------------------------------------------------------------------
 ---------------------------------------- orig ----------------------------------------
-NCMAT v5
+NCMAT v8
 #
 # Aluminium (Al, fcc, cubic, SG-225 / Fm-3m)
 #
@@ -89,11 +89,8 @@ NCMAT v5
   cubic 4.04958
 @SPACEGROUP
   225
-@ATOMPOSITIONS
-  Al   0 1/2 1/2
-  Al   0   0   0
-  Al 1/2 1/2   0
-  Al 1/2   0 1/2
+@ATOMSITES
+  Al 0 0 0
 @DYNINFO
   element  Al
   fraction 1
@@ -131,16 +128,13 @@ NCMAT v5
     .509862 .484214 .458806 .434668 .410583 .386357 .362131 .337836 .313452
     .289068 .261524 .233749 .20274 .16795 .125961 .0770796 .0135243 0
 ---------------------------------------- packed ----------------------------------------
-NCMAT v5
+NCMAT v8
 @CELL
 cubic 4.04958
 @SPACEGROUP
 225
-@ATOMPOSITIONS
-Al 0 1/2 1/2
+@ATOMSITES
 Al 0 0 0
-Al 1/2 1/2 0
-Al 1/2 0 1/2
 @DYNINFO
 element Al
 fraction 1
@@ -178,7 +172,7 @@ vdos_density .013232 .0141193 .0150065 .0158938 .0167811 .0176684 .0185557
 .509862 .484214 .458806 .434668 .410583 .386357 .362131 .337836 .313452
 .289068 .261524 .233749 .20274 .16795 .125961 .0770796 .0135243 0
 ---------------------------------------- orig ----------------------------------------
-NCMAT v4
+NCMAT v8
 #
 # Pyrolytic Graphite (HOPG if used as single crystal, suitable to model large
 # mosaicity graphite monochromators or analysers).
@@ -213,11 +207,9 @@ NCMAT v4
   angles 90 90 120
 @SPACEGROUP
   194
-@ATOMPOSITIONS
-  C 0   0   1/4
-  C 0   0   3/4
+@ATOMSITES
+  C 0 0 1/4
   C 1/3 2/3 1/4
-  C 2/3 1/3 3/4
 @DYNINFO
   element C
   fraction 1
@@ -246,18 +238,16 @@ NCMAT v4
     .38582 .370983 .367645 .36121 .359361 .361592 .359231 .361276 .366002
     .369424 .380428 .397168 .420602 .450652 .505492 .711627 .926181 .384246 0
 ---------------------------------------- packed ----------------------------------------
-NCMAT v4
+NCMAT v8
 #NCRYSTALMATCFG[lcaxis=0,0,1]
 @CELL
 lengths 2.464 !! 6.711
 angles 90 90 120
 @SPACEGROUP
 194
-@ATOMPOSITIONS
+@ATOMSITES
 C 0 0 1/4
-C 0 0 3/4
 C 1/3 2/3 1/4
-C 2/3 1/3 3/4
 @DYNINFO
 element C
 fraction 1
