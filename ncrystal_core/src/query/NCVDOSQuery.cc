@@ -192,6 +192,20 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
+namespace NCRYSTAL_NAMESPACE {
+  namespace VDOS {
+    namespace {
+      VectD parseCommaSepDbls( StrView sv )
+      {
+        VectD res;
+        for ( auto& e : sv.split<16>(',') )
+          res.push_back( str2dbl( e, "Invalid number in VDOS JSON query" ) );
+        return res;
+      }
+    }
+  }
+}
+
 void NC::VDOS::JSONQuery( std::ostream& os, const Query& query )
 {
   auto invalid = [&query](const char * reason){
@@ -216,7 +230,29 @@ void NC::VDOS::JSONQuery( std::ostream& os, const Query& query )
   constexpr auto sv_list = StrView::make("list");
   constexpr auto sv_expand = StrView::make("expand");
 
-  if ( key == sv_expand ) {
+  constexpr auto sv_standardise = StrView::make("standardise");
+  if ( key == sv_standardise ) {
+    //Brings a VDOS to the standard form of
+    //VDOSEval::checkAndStandardiseInput:
+    constexpr auto sv_require = StrView::make("require");
+    constexpr auto sv_append = StrView::make("append");
+    const auto mode = ( nargs == 3 ? arg(0).trimmed() : StrView() );
+    if ( mode != sv_require && mode != sv_append )
+      invalid("correct usage: [\"vdos\",\"standardise\",FINALZERO,EGRID,"
+              "DENSITY] (FINALZERO is \"require\" or \"append\", EGRID and"
+              " DENSITY comma-separated numbers)");
+    VectD egrid = parseCommaSepDbls( arg(1) );
+    VectD density = parseCommaSepDbls( arg(2) );
+    VDOSEval::checkAndStandardiseInput( egrid, density,
+                                        ( mode == sv_require
+                                          ? VDOSEval::FinalZero::Require
+                                          : VDOSEval::FinalZero::Append ) );
+    os << "{\"egrid\":";
+    streamJSON( os, egrid );
+    os << ",\"density\":";
+    streamJSON( os, density );
+    os << '}';
+  } else if ( key == sv_expand ) {
     if ( nargs<1||nargs>3 )
       invalid("correct usage: [\"vdos\",\"expand\","
               "MATCFGSTR,ATOMDISPLAYLABEL]"
@@ -230,7 +266,7 @@ void NC::VDOS::JSONQuery( std::ostream& os, const Query& query )
   } else if ( key == sv_list ) {
     if ( nargs != 0 )
       invalid("no arguments should come after: [\"vdos\",\"list\"]");
-    streamJSON( os, std::array<StrView,1>{ sv_expand } );
+    streamJSON( os, std::array<StrView,2>{ sv_expand, sv_standardise } );
   } else {
     invalid(nullptr);
   }
