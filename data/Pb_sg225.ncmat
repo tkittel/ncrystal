@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Lead (Pb)
 #
@@ -17,11 +17,8 @@ NCMAT v4
   cubic 4.9505
 @SPACEGROUP
   225
-@ATOMPOSITIONS
-  Pb 1/2 1/2 1/2
-  Pb 1/2 0   0
-  Pb 0   1/2 0
-  Pb 0   0   1/2
+@ATOMSITES
+  Pb 0 0 1/2
 @DYNINFO
   element  Pb
   fraction 1

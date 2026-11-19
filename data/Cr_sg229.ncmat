@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Chromium (bcc)
 #
@@ -19,9 +19,8 @@ NCMAT v4
   cubic 2.8839
 @SPACEGROUP
   229
-@ATOMPOSITIONS
-  Cr   0   0   0
-  Cr 1/2 1/2 1/2
+@ATOMSITES
+  Cr 0 0 0
 @DYNINFO
   element  Cr
   fraction 1

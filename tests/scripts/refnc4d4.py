@@ -35,6 +35,8 @@ from NCrystalDev.datasrc import browseFiles
 excluded_files = {
     'SiO2-beta_sg180_BetaQuartz.ncmat':
     'O z-coordinates snapped to exact fractions for release 5.0.0',
+    'void.ncmat':
+    'state of matter (gas) declared for release 5.0.0',
 }
 
 #Stdlib files removed or renamed since 4.4.6 must be added here:

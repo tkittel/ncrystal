@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Beta-tin (Sn). (body-centered tetragonal, "white tin").
 #
@@ -22,12 +22,9 @@ NCMAT v4
   lengths 5.8197 !! 3.17488
   angles 90 90 90
 @SPACEGROUP
-  141
-@ATOMPOSITIONS
-  Sn   0   0   0
-  Sn 1/2   0 3/4
-  Sn 1/2 1/2 1/2
-  Sn   0 1/2 1/4
+  141:1
+@ATOMSITES
+  Sn 0 0 0
 @DYNINFO
   element  Sn
   fraction 1

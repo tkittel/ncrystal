@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Tungsten (W). BCC.
 #
@@ -23,9 +23,8 @@ NCMAT v4
   cubic 3.16469
 @SPACEGROUP
   229
-@ATOMPOSITIONS
-  W   0   0   0
-  W 1/2 1/2 1/2
+@ATOMSITES
+  W 0 0 0
 @DYNINFO
   element  W
   fraction 1

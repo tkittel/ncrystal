@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Gold (Au, fcc)
 #
@@ -19,11 +19,8 @@ NCMAT v4
   cubic 4.07825
 @SPACEGROUP
   225
-@ATOMPOSITIONS
-  Au   0 1/2 1/2
-  Au   0   0   0
-  Au 1/2 1/2   0
-  Au 1/2   0 1/2
+@ATOMSITES
+  Au 0 0 0
 @DYNINFO
   element  Au
   fraction 1

@@ -1,4 +1,4 @@
-NCMAT v5
+NCMAT v8
 #
 # Special void material with ~0 density and with vanishing cross sections.
 #
@@ -10,6 +10,8 @@ NCMAT v5
 @ATOMDB
    #Turn off physics on this modified hydrogen by putting cross sections to 0.
    H 1.007975973752u 0fm 0b 0b
+@STATEOFMATTER
+  gas
 @DYNINFO
   #Also turn off physics by asking for "sterile" dynamics:
   element H

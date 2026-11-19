@@ -1,4 +1,4 @@
-NCMAT v5
+NCMAT v8
 #
 # Sodium Chloride  (NaCl, cubic, SG-225 / Fm-3m)
 #
@@ -32,14 +32,8 @@ NCMAT v5
   cubic 5.6401
 @SPACEGROUP
   225
-@ATOMPOSITIONS
+@ATOMSITES
   Na 0 0 0
-  Na 0 1/2 1/2
-  Na 1/2 0 1/2
-  Na 1/2 1/2 0
-  Cl 1/2 1/2 1/2
-  Cl 1/2 0 0
-  Cl 0 1/2 0
   Cl 0 0 1/2
 @DYNINFO
   element  Cl
