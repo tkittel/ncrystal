@@ -159,12 +159,12 @@ NCMAT v8
   element X1
   fraction 3/4
   type vdosdebye
-  msd .02 at_temperature 200
+  msd 0.02 at_temperature 200
 @DYNINFO
   element X2
   fraction 1/4
   type vdosdebye
-  msd .005 at_temperature 200
+  msd 0.005 at_temperature 200
 
 
 
@@ -195,7 +195,7 @@ NCMAT v8
   element Al
   fraction 1
   type vdos
-  vdos_egrid .00485015 .0398222
+  vdos_egrid 0.00485015 0.0398222
   vdos_density .013232 .0141193 .0150065 .0158938 .0167811 .0176684 .0185557
      .0195536 .020725 .0218964 .0230678 .0242392 .0254106 .0265808 .027748
      .0289152 .0300825 .0312497 .032417 .0338129 .0352559 .0366988 .0381418

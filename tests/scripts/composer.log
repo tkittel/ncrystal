@@ -143,12 +143,12 @@ NCMAT v8
   element C
   fraction 1/3
   type vdosdebye
-  msd .0076 at_temperature 50
+  msd 0.0076 at_temperature 50
 @DYNINFO
   element H
   fraction 2/3
   type vdosdebye
-  msd .022 at_temperature 50
+  msd 0.022 at_temperature 50
 
 
 
@@ -162,7 +162,7 @@ NCMAT v8
 # U232
 #
 @DENSITY
-  1.0 g_per_cm3
+  1 g_per_cm3
 @STATEOFMATTER
   solid
 @ATOMDB
@@ -221,7 +221,7 @@ NCMAT v8
 # U232
 #
 @DENSITY
-  1.0 g_per_cm3
+  1 g_per_cm3
 @STATEOFMATTER
   solid
 @ATOMDB
