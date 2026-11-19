@@ -38,6 +38,6 @@ syntax error: rejected: CIF parsing error
 no blocks: rejected: CIF data had no blocks!
 reused labels, tensors: ['0.011', '0.031', '0.021']
 all-zero tensor: uiso 0.012, tensor None
-tensor not positive definite: rejected: The uij values of the site Fe1 (0, 0, 0) do not form a positive definite matrix
+tensor not positive definite: rejected: The uij values of the site "Fe1" (0, 0, 0) do not form a positive definite matrix
 sites ['O1 O ? ? ? 1 ? 4']: rejected: CIF site "O1" has missing or invalid fractional coordinates
 sites ['O1 O 0.1 0.2 0.3 1 ? 4', 'O2 O ? ? ? 0 ? 4']: loaded 1 site(s)

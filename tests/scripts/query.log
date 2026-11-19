@@ -173,13 +173,13 @@ split site: [{'label': 'O', 'multiplicity': 2, 'split': {'positions': 2, 'distan
 Caught expected NCBadInput('At most one of the 2 symmetry-equivalent positions of the site (0.1, 0.005, 0.2) within 0.5 Aa (the closest 0.054 Aa apart) can be occupied, so its occupancy must be at most 1/2 (got 1). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.')
 uij on the mirror plane: [0.012, 0.009, 0.015, 0.0, 0.003, 0.0] multiplicity 1
 U12=0.0003 snapped to: [0.012, 0.009, 0.015, 0.0, 0.003, 0.0]
-Caught expected NCBadInput('The uij values of the site O (0.1, 0, 0.2) do not obey the site symmetry')
+Caught expected NCBadInput('The uij values of the site "O" (0.1, 0, 0.2) do not obey the site symmetry')
 lenient, printed U12=0.001 snapped to: [0.012, 0.009, 0.015, 0.0, 0.003, 0.0]
-Caught expected NCBadInput('The uij values of the site O (0.1, 0, 0.2) do not obey the site symmetry')
-Caught expected NCBadInput('The uij values of the site O (0.1, 0, 0.2) do not form a positive definite matrix')
+Caught expected NCBadInput('The uij values of the site "O" (0.1, 0, 0.2) do not obey the site symmetry')
+Caught expected NCBadInput('The uij values of the site "O" (0.1, 0, 0.2) do not form a positive definite matrix')
 uij at the two positions of a general site: [[0.012, 0.009, 0.015, 0.002, 0.003, 0.001], [0.012, 0.009, 0.015, -0.002, 0.003, -0.001]]
 grouped back into sites: [{'label': 'O', 'position': [0.1, 0.3, 0.2], 'multiplicity': 2, 'split': None, 'uij': [0.012, 0.009, 0.015, 0.002, 0.003, 0.001]}]
-Caught expected NCBadInput('The uij values of the symmetry-equivalent positions of O (0.1, 0.3, 0.2) are not symmetry images of each other')
+Caught expected NCBadInput('The uij values of the symmetry-equivalent positions of "O" (0.1, 0.3, 0.2) are not symmetry images of each other')
 Caught expected NCBadInput('Anisotropic displacements (uij) must be given for all or none of the entries of O')
 printed CIF numbers: [0.012, 0.009, 0.015, 0.0, 0.003, 0.0]
 ueq in cell 5,5.4,6,90,95,90 : [0.0118932, 5.64498e-05]

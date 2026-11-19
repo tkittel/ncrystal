@@ -472,7 +472,7 @@ def test_uij():
                    'O,0.1,0,0.2,0.012,0.009,0.015,0.0003,0.003,0' ] )
     print( 'U12=0.0003 snapped to:', rnd( r['sites'][0]['uij'] ) )
     assert r['sites'][0]['uij'][3] == 0.0
-    with ensure_error( NCBadInput, 'The uij values of the site O (0.1, 0, 0.2)'
+    with ensure_error( NCBadInput, 'The uij values of the site "O" (0.1, 0, 0.2)'
                        ' do not obey the site symmetry' ):
         ncquery( [ 'sgsym', 'positions', *pm,
                    'O,0.1,0,0.2,0.012,0.009,0.015,0.0012,0.003,0' ] )
@@ -482,11 +482,11 @@ def test_uij():
     r = ncquery( [ 'sgsym', 'positions', *pml,
                    'O,0.1,0,0.2,0.012,0.009,0.015,0.001,0.003,0' ] )
     print( 'lenient, printed U12=0.001 snapped to:', rnd( r['sites'][0]['uij'] ) )
-    with ensure_error( NCBadInput, 'The uij values of the site O (0.1, 0, 0.2)'
+    with ensure_error( NCBadInput, 'The uij values of the site "O" (0.1, 0, 0.2)'
                        ' do not obey the site symmetry' ):
         ncquery( [ 'sgsym', 'positions', *pml,
                    'O,0.1,0,0.2,0.0120,0.0090,0.0150,0.0012,0.0030,0.0000' ] )
-    with ensure_error( NCBadInput, 'The uij values of the site O (0.1, 0, 0.2)'
+    with ensure_error( NCBadInput, 'The uij values of the site "O" (0.1, 0, 0.2)'
                        ' do not form a positive definite matrix' ):
         ncquery( [ 'sgsym', 'positions', *pm, 'O,0.1,0,0.2,0.012,-0.009,0.015,0,0.003,0' ] )
     #A general position: the uij at the mirror image (y -> -y), and back:
@@ -504,7 +504,7 @@ def test_uij():
     bad = [ pos[0], pos[1].replace( ',-0.002', ',0.002' ) ]
     assert bad[1] != pos[1]
     with ensure_error( NCBadInput, 'The uij values of the symmetry-equivalent'
-                       ' positions of O (0.1, 0.3, 0.2) are not symmetry'
+                       ' positions of "O" (0.1, 0.3, 0.2) are not symmetry'
                        ' images of each other' ):
         ncquery( [ 'sgsym', 'sites', *pm, *bad ] )
     #Uij must be given for all or none of the entries of a label:

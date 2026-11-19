@@ -357,7 +357,7 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     };
     auto descr = [&labels]( std::size_t ilbl, const Vector& p ) {
       std::ostringstream ss;
-      ss << labels[ilbl] << " (" << fmt( p.x(), "%.6g" ) << ", "
+      ss << '"' << labels[ilbl] << "\" (" << fmt( p.x(), "%.6g" ) << ", "
          << fmt( p.y(), "%.6g" ) << ", " << fmt( p.z(), "%.6g" ) << ")";
       return ss.str();
     };

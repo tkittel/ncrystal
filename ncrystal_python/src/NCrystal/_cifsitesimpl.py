@@ -399,9 +399,9 @@ def _impl_find_sites( cellsg, cif_atoms, setting, *, tols, refine, permissive,
                                                a['occupancy'] ),
                              e['aniso'] ) )
     if dropped:
+        lbls = ', '.join( f'"{x}"' for x in sorted( set( dropped ) ) )
         msg = ( 'The anisotropic displacements of the symmetry equivalent CIF'
-                f' sites {", ".join( sorted( set( dropped ) ) )} are not'
-                ' symmetry images of each other' )
+                f' sites {lbls} are not symmetry images of each other' )
         if not permissive:
             raise _nc_core.NCBadInput( msg + ' (try permissive mode to'
                                        ' discard them)' )
