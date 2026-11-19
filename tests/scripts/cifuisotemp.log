@@ -1,0 +1,90 @@
+==> from the CIF (fields: {'_diffrn_ambient_temperature': '100(2)', '_cell_measurement_temperature': '96(2)'}, chosen: None, permissive: False)
+   # NOTICE: When converting CIF to NCMAT, the Uiso (msd) values in the CIF data
+   #         were assumed to be associated with a temperature of 100K, based on the
+   #         _diffrn_ambient_temperature CIF field ("100(2)"). The
+   #         _cell_measurement_temperature CIF field ("96(2)") was consistent with
+   #         this (less than 5% different).
+   msd .0105 at_temperature 100
+   msd .0123 at_temperature 100
+==> from the CIF, only cell field (fields: {'_cell_measurement_temperature': '150'}, chosen: None, permissive: False)
+   # NOTICE: When converting CIF to NCMAT, the Uiso (msd) values in the CIF data
+   #         were assumed to be associated with a temperature of 150K, based on the
+   #         _cell_measurement_temperature CIF field ("150").
+   msd .0105 at_temperature 150
+   msd .0123 at_temperature 150
+==> no temperature (fields: {}, chosen: None, permissive: False)
+   warning: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
+   # WARNING: When converting CIF to NCMAT, the Uiso (msd) values in the CIF data
+   #          were assumed to be associated with a fallback temperature of 293K,
+   #          since the CIF data specified no temperature. This is likely wrong.
+   msd .0105 at_temperature 293
+   msd .0123 at_temperature 293
+==> absent values (fields: {'_diffrn_ambient_temperature': '?', '_cell_measurement_temperature': '.'}, chosen: None, permissive: False)
+   warning: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
+   # WARNING: When converting CIF to NCMAT, the Uiso (msd) values in the CIF data
+   #          were assumed to be associated with a fallback temperature of 293K,
+   #          since the CIF data specified no temperature. This is likely wrong.
+   msd .0105 at_temperature 293
+   msd .0123 at_temperature 293
+==> inconsistent fields (fields: {'_diffrn_ambient_temperature': '100(2)', '_cell_measurement_temperature': '293(2)'}, chosen: None, permissive: False)
+   ERROR: The _diffrn_ambient_temperature ("100(2)") and _cell_measurement_temperature ("293(2)") CIF fields are inconsistent, so it is unclear with which temperature the Uiso (msd) values are associated. Specify the temperature explicitly, or try permissive mode to use the _diffrn_ambient_temperature value.
+==> inconsistent fields (fields: {'_diffrn_ambient_temperature': '100(2)', '_cell_measurement_temperature': '293(2)'}, chosen: None, permissive: True)
+   warning: The _diffrn_ambient_temperature ("100(2)") and _cell_measurement_temperature ("293(2)") CIF fields are inconsistent, so the Uiso (msd) values are assumed to be associated with a temperature of 100K, based on the former (accepted due to permissive mode).
+   # WARNING: When converting CIF to NCMAT, the Uiso (msd) values in the CIF data
+   #          were assumed to be associated with a temperature of 100K, based on
+   #          the _diffrn_ambient_temperature CIF field ("100(2)"). The
+   #          _cell_measurement_temperature CIF field differed ("293(2)"), an
+   #          inconsistency which was only accepted because the conversion was done
+   #          in permissive mode.
+   msd .0105 at_temperature 100
+   msd .0123 at_temperature 100
+==> invalid field (fields: {'_diffrn_ambient_temperature': '100(2)', '_cell_measurement_temperature': 'room'}, chosen: None, permissive: False)
+   ERROR: The _cell_measurement_temperature CIF field ("room") is not a valid temperature. Specify the temperature of the Uiso (msd) values explicitly, or try permissive mode to ignore it.
+==> invalid field (fields: {'_diffrn_ambient_temperature': '100(2)', '_cell_measurement_temperature': 'room'}, chosen: None, permissive: True)
+   warning: The _cell_measurement_temperature CIF field ("room") is not a valid temperature and is ignored (accepted due to permissive mode).
+   # WARNING: When converting CIF to NCMAT, the Uiso (msd) values in the CIF data
+   #          were assumed to be associated with a temperature of 100K, based on
+   #          the _diffrn_ambient_temperature CIF field ("100(2)"). The
+   #          _cell_measurement_temperature CIF field ("room") was not a valid
+   #          temperature and was ignored, which was only accepted because the
+   #          conversion was done in permissive mode.
+   msd .0105 at_temperature 100
+   msd .0123 at_temperature 100
+==> only invalid field (fields: {'_diffrn_ambient_temperature': '5000'}, chosen: None, permissive: True)
+   warning: The _diffrn_ambient_temperature CIF field ("5000") is not a valid temperature and is ignored (accepted due to permissive mode).
+   warning: The CIF data specifies no valid temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
+   # WARNING: When converting CIF to NCMAT, the Uiso (msd) values in the CIF data
+   #          were assumed to be associated with a fallback temperature of 293K,
+   #          since the CIF data specified no valid temperature. This is likely
+   #          wrong. The _diffrn_ambient_temperature CIF field ("5000") was not a
+   #          valid temperature and was ignored, which was only accepted because
+   #          the conversion was done in permissive mode.
+   msd .0105 at_temperature 293
+   msd .0123 at_temperature 293
+==> zero kelvin field (fields: {'_diffrn_ambient_temperature': '0'}, chosen: None, permissive: False)
+   ERROR: The _diffrn_ambient_temperature CIF field ("0") is not a valid temperature. Specify the temperature of the Uiso (msd) values explicitly, or try permissive mode to ignore it.
+==> chosen (fields: {'_diffrn_ambient_temperature': '100(2)'}, chosen: 300, permissive: False)
+   # NOTICE: When converting CIF to NCMAT, the Uiso (msd) values in the CIF data
+   #         were explicitly chosen to be associated with a temperature of 300K,
+   #         overriding the _diffrn_ambient_temperature CIF field ("100(2)").
+   msd .0105 at_temperature 300
+   msd .0123 at_temperature 300
+==> chosen, no fields (fields: {}, chosen: 300, permissive: False)
+   # NOTICE: When converting CIF to NCMAT, the Uiso (msd) values in the CIF data
+   #         were explicitly chosen to be associated with a temperature of 300K.
+   msd .0105 at_temperature 300
+   msd .0123 at_temperature 300
+==> chosen, inconsistent fields (fields: {'_diffrn_ambient_temperature': '100(2)', '_cell_measurement_temperature': '293(2)'}, chosen: 300, permissive: False)
+   # NOTICE: When converting CIF to NCMAT, the Uiso (msd) values in the CIF data
+   #         were explicitly chosen to be associated with a temperature of 300K,
+   #         overriding the inconsistent _diffrn_ambient_temperature ("100(2)") and
+   #         _cell_measurement_temperature ("293(2)") CIF fields.
+   msd .0105 at_temperature 300
+   msd .0123 at_temperature 300
+==> chosen, invalid (fields: {}, chosen: 0.05, permissive: False)
+   ERROR: Invalid temperature chosen for the Uiso (msd) values: 0.05K (must be at least 0.1K and at most 3000K).
+==> no Uiso values (fields: {'_diffrn_ambient_temperature': '100(2)', '_cell_measurement_temperature': '293(2)'}, chosen: None, permissive: False, no Uiso)
+   (no comment about the Uiso temperature)
+   # WARNING: Fallback (dummy) Debye temperature values were used for 2 atoms!
+   debye_temp 300
+   debye_temp 300

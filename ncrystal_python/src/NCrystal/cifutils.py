@@ -236,13 +236,13 @@ class CIFLoader:
     (either "Uiso" or the anisotropic equivalent), which NCrystal is able to
     convert into a Debye temperature in order to provide a temperature-dependent
     model of dynamics and atomic displacement. However, such "Uiso" information
-    is only useful if one knows at which temperature it was obtained, and that
-    information is almost always absent in most CIF data out there. Thus, in the
-    last step - when using the .create_ncmat(..) or .create_ncmat_composer(..)
-    methods of the CIFLoader object, one should ideally use the uiso_temperature
-    parameter to provide this information to NCrystal (usually after a call to
-    print(cifloader.raw_cif_textdata) to manually inspect the meta-data, read
-    any linked journal papers, etc.).
+    is only useful if one knows at which temperature it was obtained. By default
+    this is taken from the _diffrn_ambient_temperature (or else
+    _cell_measurement_temperature) field of the CIF data, and is otherwise
+    assumed to be 293K (with a warning). When using the .create_ncmat(..) or
+    .create_ncmat_composer(..) methods of the CIFLoader object, the
+    uiso_temperature parameter can be used to specify the temperature
+    explicitly instead.
 
     TODO: Add link here to online tutorial once it is ready.
 
@@ -320,7 +320,7 @@ class CIFLoader:
                                   merge_equiv = merge_equiv,
                                   override_spacegroup = override_spacegroup,
                                   tols = tols, permissive = permissive )
-        assert len(load)==12
+        assert len(load)==13
         self.__cifsrc = load['cifsrc']
         self.__actual_codid = load['actual_codid']
         self.__actual_mpid = load['actual_mpid']
@@ -333,6 +333,8 @@ class CIFLoader:
         self._site2atom = load['site2atom']
         self._sgsetting = load['sgsetting']
         self.__cifdescr = load['cifdescr']
+        self._cif_temperatures = load['cif_temperatures']
+        self._permissive = permissive
         self.__warnlist = tuple( warnlist )
 
     @property
@@ -452,9 +454,6 @@ class CIFLoader:
         c = self.create_ncmat_composer(*args,**kwargs)
         return c.create_ncmat()
 
-    #FIXME: Discuss whether assuming uiso_temperature=300K when it is not
-    #given (so the CIF Uiso values still set the msds) would be better than
-    #the fallback to a Debye temperature of 300K.
     def create_ncmat_composer( self, *,
                                uiso_temperature = None,
                                skip_dyninfo = False,
@@ -466,17 +465,19 @@ class CIFLoader:
         """Setup and return an NCMATComposer object, based on the currently held
         crystal parameters.
 
-        The most important thing to be aware of is that, if you wish to take
-        advantage of any Uiso/biso values found in the CIF data, you must
-        provide the uiso_temperature parameter value (kelvin), to indicate the
-        temperature at which these are valid (most likely after inspecting the
-        .raw_cif_textdata manually for hints about the correct value).
+        Any Uiso/biso values found in the CIF data are used, and the most
+        important thing to be aware of is the temperature at which these are
+        valid. It can be provided with the uiso_temperature parameter (kelvin),
+        and is otherwise taken from the temperature fields of the CIF data, or
+        is assumed to be 293K (with a warning). Inconsistent or invalid
+        temperature fields in the CIF data are errors, unless the CIFLoader was
+        created in permissive mode.
 
         If quiet=True, no informative messages will be emitted.
 
-        The fallback_debye_temp parameter can be used to change the default
-        Debye temperature assigned to atoms, for which Uiso/biso information was
-        not available.
+        The fallback_debye_temp parameter can be used to change the Debye
+        temperature assigned to atoms for which Uiso/biso information was not
+        available.
 
         The other parameters are more esoteric:
 

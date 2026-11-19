@@ -187,6 +187,10 @@ def _select_block( cif_doc ):
 
 _uij_tags = ( 'U_11', 'U_22', 'U_33', 'U_12', 'U_13', 'U_23' )
 
+#Temperature fields (in order of preference):
+cif_temperature_fields = ( '_diffrn_ambient_temperature',
+                           '_cell_measurement_temperature' )
+
 def read_cif( cifdata, *, quiet ):
     """Read CIF data (text). Values are the printed strings (without quotes),
     None if absent or null ("?" or "."). Returns a dict with:
@@ -197,7 +201,10 @@ def read_cif( cifdata, *, quiet ):
       'formula': the chemical formula (_chemical_formula_sum),
       'sites': dicts with keys label, type_symbol, x, y, z, uiso, biso, occ and
                uij (the six aniso values, None if not all given),
-      'atom_type_number_in_cell': the values of that field."""
+      'atom_type_number_in_cell': the values of that field,
+      'temperatures': the printed values of the temperature fields
+                      (_diffrn_ambient_temperature and
+                      _cell_measurement_temperature, None if absent)."""
     _, gemmi_cif = _import_gemmi()
     if not quiet:
         _nc_common.print("Attempting to load CIF data with gemmi")
@@ -272,4 +279,5 @@ def read_cif( cifdata, *, quiet ):
                                 '_symmetry_Int_Tables_number' ),
              'formula': first( '_chemical_formula_sum' ),
              'sites': sites,
-             'atom_type_number_in_cell': [ v for v in column( '_atom_type_number_in_cell' ) ] }
+             'atom_type_number_in_cell': [ v for v in column( '_atom_type_number_in_cell' ) ],
+             'temperatures': { t: first( t ) for t in cif_temperature_fields } }

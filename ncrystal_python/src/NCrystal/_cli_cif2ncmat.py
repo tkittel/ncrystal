@@ -47,16 +47,17 @@ spglib") or conda ("conda install -c conda-forge gemmi spglib").""",descrw)+'\n\
                 """IMPORTANT NOTE: It is important to realise that while most
 CIF files contain crystal structure information, most of them lack appropriate
 information about atomic dynamics (i.e. atomic displacements, Uiso, Biso, mean
-squared displacements, Debye temperature, phonon DOS, ...). Even when available
-as a Uiso (or Biso) value in the CIF data, the CIF data usually does not specify
-which temperature the Uiso value is associated with, making it meaningless. The
---uisotemp parameter can be used to manually specify the temperature at which
-any Uiso in the file is valid (it might of course require the user to perform a
-bit of detective work to figure out the correct value). In other cases, this
-script will simply assign each atom a Debye temperature value of 300K and use
-that for dynamics (the --debyetemp flag can be used to modify this value if
-desired). For more detailed options, one can either manually edit the generated
-NCMAT data, or use the Python API (specifically the CIFAnalyser class from the
+squared displacements, Debye temperature, phonon DOS, ...). Uiso (or Biso)
+values in the CIF data are used, with the temperature at which they are valid
+taken from the _diffrn_ambient_temperature (or else
+_cell_measurement_temperature) field, or otherwise assumed to be 293K (likely
+wrong). The --uisotemp parameter can be used to specify this temperature
+explicitly (it might of course require the user to perform a bit of detective
+work to figure out the correct value). Atoms without Uiso (or Biso) values are
+assigned a Debye temperature of 300K (the --debyetemp flag can be used to
+modify this value if desired). For more detailed options, one can either
+manually edit the generated
+NCMAT data, or use the Python API (specifically the CIFLoader class from the
 NCrystal.cifutils module) which offers more options and flexibility than the
 present script.  """,descrw)+f"""\n\nExample invocations:
 
@@ -91,11 +92,12 @@ present script.  """,descrw)+f"""\n\nExample invocations:
                                   ' can be used with --valplot to force output to a pdf file'))
     value_fallback_debye_temp = 300.0
     parser.add_argument("--debyetemp",default=value_fallback_debye_temp, type=float,metavar='VALUE',
-                        help=wrap( 'Fall-back Debye temperature value (kelvin) to use for all'
-                                   f' atoms (default: {value_fallback_debye_temp}K)' ))
+                        help=wrap( 'Fall-back Debye temperature value (kelvin) to use for'
+                                   f' atoms without Uiso/Biso values (default: {value_fallback_debye_temp}K)' ))
     parser.add_argument("--uisotemp",default=None, type=float,metavar='VALUE',
                         help=wrap( 'Temperature value (kelvin) associated with any atomic displacement (Uiso/Biso) values'
-                                   ' in the input. Without this parameter, Uiso/Biso values in the input will be ignored.' ))
+                                   ' in the input. Without this parameter, it is taken from the _diffrn_ambient_temperature'
+                                   ' (or else _cell_measurement_temperature) CIF field, or otherwise assumed to be 293K.' ))
     parser.add_argument('--quiet','-q',default=False,action='store_true',
                         help=wrap('Silence non-error output (automatic if --output=stdout).'))
     parser.add_argument('--noval',default=False,action='store_true',

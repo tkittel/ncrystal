@@ -70,6 +70,7 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
 
     content = read_cif( cifdata, quiet = quiet )
     result['cif_raw'] = content['cif_raw']
+    result['cif_temperatures'] = content['temperatures']
 
     setting = choose_setting( content, permissive = permissive,
                               override_spacegroup = override_spacegroup,
