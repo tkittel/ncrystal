@@ -66,10 +66,9 @@ the real CHANGELOG at release time, after which this file is dropped).
        python3-ncrystal, python3-ncrystal-verify and ncrystal, the latter
        installing everything), and the debian.yml workflow builds and tests
        them.
-     * Optional Python dependencies: gemmi 0.6.6 or later is now required
-       (older versions silently ignore the origin shift of some CIF space group
-       settings), and ase 3.25.0 or later (3.24.0 fails to read Quantum
-       ESPRESSO output). A missing or too old optional dependency (including
+     * Optional Python dependencies: gemmi 0.6.4, spglib 2.3.1 (both as in
+       Ubuntu 24.04) and ase 3.25.0 or later are now required (ase 3.24.0
+       fails to read Quantum ESPRESSO output). A missing or too old optional dependency (including
        numpy) now gives a clear error saying what to install, and
        ncrystal-verify treats too old dependencies as missing.
      * ncmat2endf requires endf-parserpy 0.19.0 or later, and pins the
