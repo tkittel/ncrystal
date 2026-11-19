@@ -142,7 +142,7 @@ CHANGELOG at release time, after which both files are dropped).
        positions into sites (deducing the setting when SG is a bare
        number) and expand sites into positions.
      * NCMATComposer (and thus cif2ncmat) now writes crystals with a
-       space group as NCMAT v8 with @ATOMSITES (and the setting declared
+       space group with @ATOMSITES (and the setting declared
        in @SPACEGROUP when not the default), using the atomsites query;
        positions which do not have the symmetry of the space group in
        its standard origin are an error at create_ncmat (use
@@ -231,3 +231,30 @@ CHANGELOG at release time, after which both files are dropped).
        implementation, probing the inelas component with vdoslux at most 2
        (never above the material's own) instead of 0, with a fallback to
        the material's own settings, which cfgstr_detect_components lacked.
+
+### NCMAT v8 data library and NCMATComposer output
+
+     * All data library files now use NCMAT v8: explicit space group
+       settings, @ATOMSITES instead of @ATOMPOSITIONS, an explicit final 0
+       in VDOS densities, and @STATEOFMATTER for non-crystalline files (gas
+       for void.ncmat). They give the same results as the older versions of
+       the files.
+     * VDOS input (NCMAT data, the C API, NCMATComposer, hfg2ncmat and
+       vdos2ncmat): excess trailing zeros of the density are ignored, at
+       least 5 values must remain (also for analyseVDOS, which had no
+       minimum), and a last density which is not 0 gets a 0 appended one bin
+       beyond the last point (an error in NCMAT v8). Older files with fewer
+       than 5 values once excess zeros are discounted are now rejected.
+     * NCMATComposer always writes NCMAT v8. Partial site occupancies are
+       written as @ATOMOCCUPANCIES instead of being emulated with sterile
+       Og isotopes. Non-crystalline materials without a state of matter
+       become solid if their dynamics implies it (msd, vdosdebye, or vdos
+       with a warning), else create_ncmat fails.
+     * New NCMATComposer.set_number_format(scalar_rtol=,vector_rtol=): each
+       number is written with the fewest digits within a relative tolerance,
+       with vector_rtol for vectors with at least 20 values (grids also keep
+       their neighbour distances), e.g. vector_rtol=1e-4 for smaller files.
+       Defaults 1e-14 and 1e-6 keep data with up to 14 and 6 digits
+       unchanged. Scalars now always have a leading 0. Short-form energy
+       grids are written as scalars. formatVectorForNCMAT gets the same
+       keyword arguments plus is_grid.
