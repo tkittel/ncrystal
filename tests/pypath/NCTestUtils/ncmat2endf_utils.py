@@ -201,5 +201,6 @@ def get_scatxs_from_endf(endf_fn, *, E ):
                                 trim_edges = True )
 
     c_test.set_density(1.0,'g/cm3')
-    m = c_test.load()
+    c_test.set_state_of_matter('solid')
+    m = c_test.load('incoh_elas=0;coh_elas=0')#only the kernel
     return m.scatter.xsect(E)

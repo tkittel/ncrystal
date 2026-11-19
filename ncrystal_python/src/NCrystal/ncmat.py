@@ -443,20 +443,14 @@ class NCMATComposer:
         strictly of zeroes will be trimmed off (with the exception that the
         lower alpha-edge is almost left alone).
 
-        The effective_temperature parameter (kelvin), and the msd (mean-squared
-        displacement in Aa^2, with msd_at_temperature indicating the temperature
-        in kelvin at which the value applies, when not the kernel temperature)
-        or alternatively the debye_temp (kelvin) parameters needed for the
-        elastic physics of solid materials, emit the corresponding NCMAT v8
-        keywords - and their usage therefore results in NCMAT v8 output. When
-        they are absent, NCrystal will anyway attempt to estimate the values
-        directly from the kernel where needed (NCMAT v8+ only, in the case of
-        msd estimation).
+        The effective_temperature (kelvin) and the msd (mean-squared
+        displacement in Aa^2, with msd_at_temperature the temperature in kelvin
+        at which it applies, when not the kernel temperature) or debye_temp
+        (kelvin) parameters provide what solid materials need for their elastic
+        physics. When absent, NCrystal estimates them from the kernel where
+        needed.
 
         """
-
-        #FIXME: ^^^ The above is too convoluted. Perhaps we should simply always
-        #           emit NCMAT v8 with the NCMATComposer from now on.
 
         return self.__impl.set_dyninfo_scatknl( label = label,
                                                 alphagrid = alphagrid,
