@@ -630,37 +630,37 @@ OUT>@DYNINFO
 OUT>  element X1
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  msd .0179 at_temperature 293
+OUT>  msd 0.0179 at_temperature 293
 OUT>@DYNINFO
 OUT>  element X2
 OUT>  fraction 2/11
 OUT>  type vdosdebye
-OUT>  msd .018166666666667 at_temperature 293
+OUT>  msd 0.0181666666666667 at_temperature 293
 OUT>@DYNINFO
 OUT>  element X3
 OUT>  fraction 4/11
 OUT>  type vdosdebye
-OUT>  msd .021333333333333 at_temperature 293
+OUT>  msd 0.0213333333333333 at_temperature 293
 OUT>@DYNINFO
 OUT>  element Fe
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  msd .0085666666666667 at_temperature 293
+OUT>  msd 0.0085666666666667 at_temperature 293
 OUT>@DYNINFO
 OUT>  element X4
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  msd .033133333333333 at_temperature 293
+OUT>  msd 0.0331333333333333 at_temperature 293
 OUT>@DYNINFO
 OUT>  element X5
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  msd .037333333333333 at_temperature 293
+OUT>  msd 0.037333333333333 at_temperature 293
 OUT>@DYNINFO
 OUT>  element Ni
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  msd .0072 at_temperature 293
+OUT>  msd 0.0072 at_temperature 293
 =========================================================
 ============= CLI >>codid::1000257 --uisotemp=50<< ====================
 Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
@@ -813,37 +813,37 @@ OUT>@DYNINFO
 OUT>  element X1
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  msd .0179 at_temperature 293
+OUT>  msd 0.0179 at_temperature 293
 OUT>@DYNINFO
 OUT>  element X2
 OUT>  fraction 2/11
 OUT>  type vdosdebye
-OUT>  msd .018166666666667 at_temperature 293
+OUT>  msd 0.0181666666666667 at_temperature 293
 OUT>@DYNINFO
 OUT>  element X3
 OUT>  fraction 4/11
 OUT>  type vdosdebye
-OUT>  msd .021333333333333 at_temperature 293
+OUT>  msd 0.0213333333333333 at_temperature 293
 OUT>@DYNINFO
 OUT>  element Fe
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  msd .0085666666666667 at_temperature 293
+OUT>  msd 0.0085666666666667 at_temperature 293
 OUT>@DYNINFO
 OUT>  element X4
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  msd .033133333333333 at_temperature 293
+OUT>  msd 0.0331333333333333 at_temperature 293
 OUT>@DYNINFO
 OUT>  element X5
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  msd .037333333333333 at_temperature 293
+OUT>  msd 0.037333333333333 at_temperature 293
 OUT>@DYNINFO
 OUT>  element Ni
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  msd .0072 at_temperature 293
+OUT>  msd 0.0072 at_temperature 293
 =========================================================================
 ============= CLI >>codid::1000257 --debyetemp=150 --uisotemp=50<< ====================
 Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
@@ -1333,12 +1333,12 @@ OUT>@DYNINFO
 OUT>  element C
 OUT>  fraction 3/5
 OUT>  type vdosdebye
-OUT>  msd .0177 at_temperature 293
+OUT>  msd 0.0177 at_temperature 293
 OUT>@DYNINFO
 OUT>  element D
 OUT>  fraction 2/5
 OUT>  type vdosdebye
-OUT>  msd .019 at_temperature 293
+OUT>  msd 0.019 at_temperature 293
 ======================================================
 ============= CLI >>dummy_D.cif --remap 'D is H'<< ====================
 Attempting to load CIF data with gemmi
@@ -1385,12 +1385,12 @@ OUT>@DYNINFO
 OUT>  element C
 OUT>  fraction 3/5
 OUT>  type vdosdebye
-OUT>  msd .0177 at_temperature 293
+OUT>  msd 0.0177 at_temperature 293
 OUT>@DYNINFO
 OUT>  element H
 OUT>  fraction 2/5
 OUT>  type vdosdebye
-OUT>  msd .019 at_temperature 293
+OUT>  msd 0.019 at_temperature 293
 =======================================================================
 ============= CLI >>dummy_D.cif --remap 'D = H'<< ====================
 Caught expected ArgumentError('invalid --remap syntax in "D = H"')
@@ -1445,12 +1445,12 @@ OUT>@DYNINFO
 OUT>  element C
 OUT>  fraction 3/5
 OUT>  type vdosdebye
-OUT>  msd .0177 at_temperature 293
+OUT>  msd 0.0177 at_temperature 293
 OUT>@DYNINFO
 OUT>  element X1
 OUT>  fraction 2/5
 OUT>  type vdosdebye
-OUT>  msd .019 at_temperature 293
+OUT>  msd 0.019 at_temperature 293
 =================================================================================
 ============= CLI >>codid::9005777 -ostdout --via-ase<< ====================
 NCMAT v8
