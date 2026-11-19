@@ -5,19 +5,19 @@ records the agreed design, updated after the 2026-11 design discussion.
 
 ## Motivation and current state
 
-Neither the NCMAT format nor the C++ core supports partial site occupancy. The
-Python `NCMATComposer` (and hence `ncrystal_cif2ncmat`) emulates an occupancy
-*o* with an `@ATOMDB` mixture: *o* of the real element plus (1-*o*) of a
-hijacked isotope (`Og299`, `Og298`, ...) acting as a "sterile" atom with the
-mass of the element and zero cross sections (see
-`allow_siteoccu_ncmatv5_hack` in `_ncmatimpl.py`).
+Before this work, neither the NCMAT format nor the C++ core supported partial
+site occupancy. The Python `NCMATComposer` (and hence `ncrystal_cif2ncmat`)
+emulated an occupancy *o* with an `@ATOMDB` mixture: *o* of the real element
+plus (1-*o*) of a hijacked isotope (`Og299`, `Og298`, ...) acting as a
+"sterile" atom with the mass of the element and zero cross sections. It now
+writes `@ATOMOCCUPANCIES` instead (step 7 below).
 
-- Scattering is correct: the coherent scattering length becomes o*b, and the
+- Scattering was correct: the coherent scattering length becomes o*b, and the
   mixture variance term 4pi*o(1-o)*b^2 is exactly the disorder ("Laue
   diffuse") scattering of randomly placed vacancies.
-- Bookkeeping is wrong: vacancies count as atoms with full mass (density too
-  high), the composition contains a fake element (breaks Geant4/OpenMC and
-  other downstream users), and the output is a hack other tools can not
+- Bookkeeping was wrong: vacancies counted as atoms with full mass (density too
+  high), the composition contained a fake element (breaking Geant4/OpenMC and
+  other downstream users), and the output was a hack other tools could not
   interpret.
 
 ## Agreed design
@@ -105,9 +105,9 @@ Each step its own commit(s), with tests:
 4. NCMAT v8 parsing of `@ATOMOCCUPANCIES`, with error tests.
 5. JSON query and Python exposure.
 6. Validation tests (see below).
-7. Composer and `cif2ncmat`: write native occupancies (v8 only when needed),
-   read them back in `from_ncmat`/`from_info`, and remove the `Og`
-   workaround.
+7. Composer and `cif2ncmat`: write native occupancies and remove the `Og`
+   workaround (done: the composer always writes NCMAT v8). Still open: read
+   them back in `from_ncmat`/`from_info`.
 8. Documentation: `docs/ncmat_doc.md` (v8 section) and CHANGELOG input.
 
 ## Validation
