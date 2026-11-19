@@ -1,16 +1,16 @@
-==> HfO2_sg14_HafniumOxide.ncmat;temp=0.001;vdoslux=0//O => debye_temp=822.891568987; gamma0=2.23701301925; integral=0.040090116984; msd=0.00276336009932; teff=332.606795354
-==> HfO2_sg14_HafniumOxide.ncmat;temp=0.001;vdoslux=0//Hf => debye_temp=287.253781918; gamma0=6.40833740188; integral=0.0127715833725; msd=0.000709589117804; teff=117.589156839
-==> PbS_sg225_LeadSulfide.ncmat;temp=0.001;vdoslux=0//S => debye_temp=305.560121303; gamma0=1.70969444025; integral=0.0124540125238; msd=0.00371331308826; teff=115.042956794
-==> PbS_sg225_LeadSulfide.ncmat;temp=0.001;vdoslux=0//Pb => debye_temp=114.033459473; gamma0=4.58124022076; integral=0.00284621939022; msd=0.00153965606842; teff=43.7326811704
+==> HfO2_sg14_HafniumOxide.ncmat;temp=0.001;vdoslux=0//O => debye_temp=822.891651151; gamma0=2.25297046179; integral=0.0400901204354; msd=0.00276335982341; teff=332.60685632
+==> HfO2_sg14_HafniumOxide.ncmat;temp=0.001;vdoslux=0//Hf => debye_temp=287.253767983; gamma0=6.45405140397; integral=0.0127715876799; msd=0.000709589152227; teff=117.58915692
+==> PbS_sg225_LeadSulfide.ncmat;temp=0.001;vdoslux=0//S => debye_temp=305.56446101; gamma0=1.72391116398; integral=0.01245443716; msd=0.0037132603508; teff=115.044986406
+==> PbS_sg225_LeadSulfide.ncmat;temp=0.001;vdoslux=0//Pb => debye_temp=114.033460554; gamma0=4.61940044185; integral=0.00284621942471; msd=0.00153965605382; teff=43.7326827559
 ==> ZrO2_sg137_Zirconia.ncmat;temp=0.001;vdoslux=0//O => debye_temp=751.723302854; gamma0=2.08588181929; integral=0.0299490852461; msd=0.0030249770351; teff=316.67678918
 ==> ZrO2_sg137_Zirconia.ncmat;temp=0.001;vdoslux=0//Zr => debye_temp=344.467717823; gamma0=4.55196783374; integral=0.0150709992934; msd=0.00115783633963; teff=149.292161954
-==> Ge3Bi4O12_sg220_BismuthGermanate.ncmat;temp=300;vdoslux=0//O => debye_temp=393.19768356; gamma0=14.151034099; integral=0.0281047168642; msd=0.0184779294086; teff=409.163223474
-==> Ge3Bi4O12_sg220_BismuthGermanate.ncmat;temp=300;vdoslux=0//Ge => debye_temp=269.360711011; gamma0=29.4421940605; integral=0.00907083048765; msd=0.00846850826582; teff=360.867336249
-==> Ge3Bi4O12_sg220_BismuthGermanate.ncmat;temp=300;vdoslux=0//Bi => debye_temp=138.137200662; gamma0=110.112671454; integral=0.0120734788945; msd=0.0110123621871; teff=308.969430116
-==> PbF2-beta_sg225_BetaLeadFlouride.ncmat;temp=300;vdoslux=0//F => debye_temp=375.182063402; gamma0=6.96317732563; integral=0.0119082477043; msd=0.0170237468772; teff=322.469365003
-==> PbF2-beta_sg225_BetaLeadFlouride.ncmat;temp=300;vdoslux=0//Pb => debye_temp=138.48703595; gamma0=49.2988903942; integral=0.00311626563675; msd=0.0110503683276; teff=304.072588944
-==> ZnS_sg216_Sphalerite.ncmat;temp=300;vdoslux=0//S => debye_temp=396.783276027; gamma0=6.11638929928; integral=0.004507440336; msd=0.00906143779293; teff=345.913496676
-==> ZnS_sg216_Sphalerite.ncmat;temp=300;vdoslux=0//Zn => debye_temp=240.030721699; gamma0=16.2334446254; integral=0.00745755438465; msd=0.0117918530082; teff=316.58850441
+==> Ge3Bi4O12_sg220_BismuthGermanate.ncmat;temp=300;vdoslux=0//O => debye_temp=393.194514221; gamma0=14.2215035022; integral=0.0281044461392; msd=0.0184782141617; teff=409.163571896
+==> Ge3Bi4O12_sg220_BismuthGermanate.ncmat;temp=300;vdoslux=0//Ge => debye_temp=269.358867982; gamma0=29.5887506777; integral=0.00907083980505; msd=0.0084686216554; teff=360.866984453
+==> Ge3Bi4O12_sg220_BismuthGermanate.ncmat;temp=300;vdoslux=0//Bi => debye_temp=138.137202031; gamma0=110.655952633; integral=0.0120734791347; msd=0.0110123619701; teff=308.969436022
+==> PbF2-beta_sg225_BetaLeadFlouride.ncmat;temp=300;vdoslux=0//F => debye_temp=375.182063403; gamma0=7.00186164406; integral=0.0119082477044; msd=0.0170237468771; teff=322.469365003
+==> PbF2-beta_sg225_BetaLeadFlouride.ncmat;temp=300;vdoslux=0//Pb => debye_temp=138.48703595; gamma0=49.5727731185; integral=0.00311626563676; msd=0.0110503683276; teff=304.072588944
+==> ZnS_sg216_Sphalerite.ncmat;temp=300;vdoslux=0//S => debye_temp=396.783316839; gamma0=6.15114030255; integral=0.00450744149479; msd=0.00906143601241; teff=345.913502713
+==> ZnS_sg216_Sphalerite.ncmat;temp=300;vdoslux=0//Zn => debye_temp=240.030725641; gamma0=16.3256795791; integral=0.00745755464887; msd=0.0117918526275; teff=316.588506281
 ==> Fe_sg229_Iron-alpha.ncmat;temp=990000.0;vdoslux=0//Fe => debye_temp=433.392535338; gamma0=14254.1708424; integral=0.00960568682606; msd=13.7344744109; teff=990000.00897
 ==> Nylon66or6_C12H22N2O2.ncmat;temp=990000.0;vdoslux=0//H => debye_temp=836.655482663; gamma0=43001.9467677; integral=0.0487739481441; msd=204.189260497; teff=990000.647597
 ==> Nylon66or6_C12H22N2O2.ncmat;temp=990000.0;vdoslux=0//C => debye_temp=399.999917379; gamma0=14857.4274944; integral=0.0114897691286; msd=74.9680281804; teff=990000.008081
@@ -29,20 +29,20 @@
 ==> Nb_sg229.ncmat;temp=0.001;vdoslux=3//Nb => debye_temp=272.33443655; gamma0=1.7182042864; integral=0.00385061729397; msd=0.00143791474617; teff=104.536239795
 ==> V_sg229.ncmat;temp=0.001;vdoslux=3//V => debye_temp=354.572218702; gamma0=2.42109917746; integral=0.0144714759037; msd=0.00201421149862; teff=134.015442915
 ==> Ca_sg225.ncmat;temp=300;vdoslux=3//Ca => debye_temp=206.026698011; gamma0=9.66242872898; integral=0.00356672204113; msd=0.0259977400148; teff=307.456406312
-==> NaF_sg225_SodiumFlouride.ncmat;temp=300;vdoslux=3//F => debye_temp=443.297903617; gamma0=4.84349507947; integral=0.00832783560099; msd=0.0123880721351; teff=331.677470724
-==> NaF_sg225_SodiumFlouride.ncmat;temp=300;vdoslux=3//Na => debye_temp=393.770641828; gamma0=6.06713291692; integral=0.00901666212448; msd=0.0128236264567; teff=326.309324524
-==> Tm2O3_sg206_ThuliumOxide.ncmat;temp=300;vdoslux=3//O => debye_temp=795.049438026; gamma0=3.08821841439; integral=0.0217934125971; msd=0.00510618406569; teff=399.43353102
-==> Tm2O3_sg206_ThuliumOxide.ncmat;temp=300;vdoslux=3//Tm => debye_temp=265.089901708; gamma0=23.9902194599; integral=0.0118694841051; msd=0.00375669694532; teff=314.455070131
-==> CaO2H2_sg164_CalciumHydroxide.ncmat;temp=990000.0;vdoslux=3//H => debye_temp=479.920362615; gamma0=137973.891074; integral=0.0229877827228; msd=620.565830823; teff=990000.74775
-==> CaO2H2_sg164_CalciumHydroxide.ncmat;temp=990000.0;vdoslux=3//O => debye_temp=375.946900161; gamma0=224844.489748; integral=0.0109838724118; msd=63.7121507909; teff=990000.052301
-==> CaO2H2_sg164_CalciumHydroxide.ncmat;temp=990000.0;vdoslux=3//Ca => debye_temp=267.951773635; gamma0=442610.785176; integral=0.0149778095872; msd=50.0676069896; teff=990000.009292
-==> Na4Si3Al3O12Cl_sg218_Sodalite.ncmat;temp=990000.0;vdoslux=3//O => debye_temp=471.597901749; gamma0=41144.4114456; integral=0.0267208668633; msd=40.4884876823; teff=990000.058365
-==> Na4Si3Al3O12Cl_sg218_Sodalite.ncmat;temp=990000.0;vdoslux=3//Na => debye_temp=314.083062285; gamma0=92761.026909; integral=0.00651505893557; msd=63.5261807354; teff=990000.005479
-==> Na4Si3Al3O12Cl_sg218_Sodalite.ncmat;temp=990000.0;vdoslux=3//Al => debye_temp=469.162424398; gamma0=41572.6911526; integral=0.0195997606915; msd=24.258460806; teff=990000.049238
-==> Na4Si3Al3O12Cl_sg218_Sodalite.ncmat;temp=990000.0;vdoslux=3//Si => debye_temp=469.816331459; gamma0=41457.0469913; integral=0.0209129420465; msd=23.2400941447; teff=990000.074642
-==> Na4Si3Al3O12Cl_sg218_Sodalite.ncmat;temp=990000.0;vdoslux=3//Cl => debye_temp=210.656214925; gamma0=206208.245629; integral=0.00614391186347; msd=91.5752385159; teff=990000.002628
-==> TiO2_sg141_Anatase.ncmat;temp=990000.0;vdoslux=3//O => debye_temp=608.520244068; gamma0=19827.7279204; integral=0.0346664422755; msd=24.3178527251; teff=990000.036857
-==> TiO2_sg141_Anatase.ncmat;temp=990000.0;vdoslux=3//Ti => debye_temp=380.242005555; gamma0=50780.1582049; integral=0.0166944057641; msd=20.816463022; teff=990000.017188
+==> NaF_sg225_SodiumFlouride.ncmat;temp=300;vdoslux=3//F => debye_temp=443.300782495; gamma0=4.87158550553; integral=0.00832798208305; msd=0.0123879200657; teff=331.678081962
+==> NaF_sg225_SodiumFlouride.ncmat;temp=300;vdoslux=3//Na => debye_temp=393.772461098; gamma0=6.1023409909; integral=0.00901676706809; msd=0.0128235132011; teff=326.309791458
+==> Tm2O3_sg206_ThuliumOxide.ncmat;temp=300;vdoslux=3//O => debye_temp=795.050505655; gamma0=3.10776723235; integral=0.0217934916025; msd=0.0051061723444; teff=399.433875632
+==> Tm2O3_sg206_ThuliumOxide.ncmat;temp=300;vdoslux=3//Tm => debye_temp=265.089957777; gamma0=24.14212604; integral=0.0118694803213; msd=0.00375669538939; teff=314.455115341
+==> CaO2H2_sg164_CalciumHydroxide.ncmat;temp=990000.0;vdoslux=3//H => debye_temp=479.969344133; gamma0=138244.729608; integral=0.0229925153473; msd=620.439178128; teff=990000.748091
+==> CaO2H2_sg164_CalciumHydroxide.ncmat;temp=990000.0;vdoslux=3//O => debye_temp=375.949073556; gamma0=225329.235785; integral=0.0109840461012; msd=63.7114141419; teff=990000.052327
+==> CaO2H2_sg164_CalciumHydroxide.ncmat;temp=990000.0;vdoslux=3//Ca => debye_temp=267.951896654; gamma0=443569.738579; integral=0.014977908737; msd=50.0675610167; teff=990000.009292
+==> Na4Si3Al3O12Cl_sg218_Sodalite.ncmat;temp=990000.0;vdoslux=3//O => debye_temp=471.610080364; gamma0=41375.4102921; integral=0.0267223160441; msd=40.4863966016; teff=990000.058373
+==> Na4Si3Al3O12Cl_sg218_Sodalite.ncmat;temp=990000.0;vdoslux=3//Na => debye_temp=314.083368206; gamma0=93286.4553348; integral=0.00651508105396; msd=63.526056985; teff=990000.005479
+==> Na4Si3Al3O12Cl_sg218_Sodalite.ncmat;temp=990000.0;vdoslux=3//Al => debye_temp=469.162541635; gamma0=41808.2328556; integral=0.0195997865982; msd=24.2584486824; teff=990000.049238
+==> Na4Si3Al3O12Cl_sg218_Sodalite.ncmat;temp=990000.0;vdoslux=3//Si => debye_temp=469.837570039; gamma0=41688.1851079; integral=0.0209149031324; msd=23.2379930976; teff=990000.074653
+==> Na4Si3Al3O12Cl_sg218_Sodalite.ncmat;temp=990000.0;vdoslux=3//Cl => debye_temp=210.65638061; gamma0=207376.353516; integral=0.00614390100364; msd=91.575094464; teff=990000.002628
+==> TiO2_sg141_Anatase.ncmat;temp=990000.0;vdoslux=3//O => debye_temp=608.523572072; gamma0=19967.1077448; integral=0.0346668035436; msd=24.3175867382; teff=990000.036858
+==> TiO2_sg141_Anatase.ncmat;temp=990000.0;vdoslux=3//Ti => debye_temp=380.24237411; gamma0=51129.9223825; integral=0.016694444752; msd=20.8164226687; teff=990000.017188
 ==> CaCO3_sg62_Aragonite.ncmat;temp=1000000.0;vdoslux=3//C => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
 ==> CaCO3_sg62_Aragonite.ncmat;temp=1000000.0;vdoslux=3//O => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
 ==> CaCO3_sg62_Aragonite.ncmat;temp=1000000.0;vdoslux=3//Ca => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
@@ -50,59 +50,59 @@
 ==> MgO_sg225_Periclase.ncmat;temp=1000000.0;vdoslux=3//Mg => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
 ==> ThO2_sg225_ThoriumDioxide.ncmat;temp=1000000.0;vdoslux=3//O => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
 ==> ThO2_sg225_ThoriumDioxide.ncmat;temp=1000000.0;vdoslux=3//Th => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
-==> vdos_clathrate_H.ncmat;temp=0.001;vdoslux=0//H => debye_temp=1933.40243361; gamma0=4.09608843478; integral=0.999909093334; msd=0.0186684716078; teff=1210.7840784
-==> vdos_clathrate_H.ncmat;temp=300;vdoslux=0//H => debye_temp=1160.93098832; gamma0=9.63195521311; integral=0.999909093334; msd=0.0438989258379; teff=1231.47455842
-==> vdos_clathrate_H.ncmat;temp=990000.0;vdoslux=0//H => debye_temp=1104.52906662; gamma0=25705.8807155; integral=0.999909093334; msd=117.157994006; teff=990000.698865
+==> vdos_clathrate_H.ncmat;temp=0.001;vdoslux=0//H => debye_temp=1933.40243361; gamma0=3.76542238659; integral=0.999909093334; msd=0.0186684716078; teff=1210.7840784
+==> vdos_clathrate_H.ncmat;temp=300;vdoslux=0//H => debye_temp=1160.93098832; gamma0=8.85439373773; integral=0.999909093334; msd=0.0438989258379; teff=1231.47455842
+==> vdos_clathrate_H.ncmat;temp=990000.0;vdoslux=0//H => debye_temp=1104.52906662; gamma0=23630.7150723; integral=0.999909093334; msd=117.157994006; teff=990000.698865
 ==> vdos_clathrate_H.ncmat;temp=1000000.0;vdoslux=0//H => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
-==> vdos_clathrate_H.ncmat;temp=0.001;vdoslux=3//H => debye_temp=1933.40243361; gamma0=4.09608843478; integral=0.999909093334; msd=0.0186684716078; teff=1210.7840784
-==> vdos_clathrate_H.ncmat;temp=300;vdoslux=3//H => debye_temp=1160.93098832; gamma0=9.63195521311; integral=0.999909093334; msd=0.0438989258379; teff=1231.47455842
-==> vdos_clathrate_H.ncmat;temp=990000.0;vdoslux=3//H => debye_temp=1104.52906662; gamma0=25705.8807155; integral=0.999909093334; msd=117.157994006; teff=990000.698865
+==> vdos_clathrate_H.ncmat;temp=0.001;vdoslux=3//H => debye_temp=1933.40243361; gamma0=3.76542238659; integral=0.999909093334; msd=0.0186684716078; teff=1210.7840784
+==> vdos_clathrate_H.ncmat;temp=300;vdoslux=3//H => debye_temp=1160.93098832; gamma0=8.85439373773; integral=0.999909093334; msd=0.0438989258379; teff=1231.47455842
+==> vdos_clathrate_H.ncmat;temp=990000.0;vdoslux=3//H => debye_temp=1104.52906662; gamma0=23630.7150723; integral=0.999909093334; msd=117.157994006; teff=990000.698865
 ==> vdos_clathrate_H.ncmat;temp=1000000.0;vdoslux=3//H => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
-==> vdos_clathrate_O2.ncmat;temp=0.001;vdoslux=0//O => debye_temp=62.2027706726; gamma0=127.322867302; integral=0.00110621643883; msd=0.0365569847335; teff=399.874620813
-==> vdos_clathrate_O2.ncmat;temp=300;vdoslux=0//O => debye_temp=37.7732304798; gamma0=6663.77472873; integral=0.00110621643883; msd=1.91330525449; teff=594.249983877
-==> vdos_clathrate_O2.ncmat;temp=990000.0;vdoslux=0//O => debye_temp=37.77218729; gamma0=21981992.4856; integral=0.00110621643883; msd=6311.47711906; teff=990000.198783
+==> vdos_clathrate_O2.ncmat;temp=0.001;vdoslux=0//O => debye_temp=62.2033194208; gamma0=127.333318783; integral=0.00110622627504; msd=0.0365566622333; teff=399.894539518
+==> vdos_clathrate_O2.ncmat;temp=300;vdoslux=0//O => debye_temp=37.7733984634; gamma0=6664.32127777; integral=0.00110622627504; msd=1.91328824454; teff=594.268174259
+==> vdos_clathrate_O2.ncmat;temp=990000.0;vdoslux=0//O => debye_temp=37.7723552174; gamma0=21983795.3772; integral=0.00110622627504; msd=6311.42100037; teff=990000.198802
 ==> vdos_clathrate_O2.ncmat;temp=1000000.0;vdoslux=0//O => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
-==> vdos_clathrate_O2.ncmat;temp=0.001;vdoslux=3//O => debye_temp=62.2027706726; gamma0=127.322867302; integral=0.00110621643883; msd=0.0365569847335; teff=399.874620813
-==> vdos_clathrate_O2.ncmat;temp=300;vdoslux=3//O => debye_temp=37.7732304798; gamma0=6663.77472873; integral=0.00110621643883; msd=1.91330525449; teff=594.249983877
-==> vdos_clathrate_O2.ncmat;temp=990000.0;vdoslux=3//O => debye_temp=37.77218729; gamma0=21981992.4856; integral=0.00110621643883; msd=6311.47711906; teff=990000.198783
+==> vdos_clathrate_O2.ncmat;temp=0.001;vdoslux=3//O => debye_temp=62.2033194208; gamma0=127.333318783; integral=0.00110622627504; msd=0.0365566622333; teff=399.894539518
+==> vdos_clathrate_O2.ncmat;temp=300;vdoslux=3//O => debye_temp=37.7733984634; gamma0=6664.32127777; integral=0.00110622627504; msd=1.91328824454; teff=594.268174259
+==> vdos_clathrate_O2.ncmat;temp=990000.0;vdoslux=3//O => debye_temp=37.7723552174; gamma0=21983795.3772; integral=0.00110622627504; msd=6311.42100037; teff=990000.198802
 ==> vdos_clathrate_O2.ncmat;temp=1000000.0;vdoslux=3//O => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
-==> vdos_graphiteoxide_D.ncmat;temp=0.001;vdoslux=0//D => debye_temp=1390.58191881; gamma0=4.05799142259; integral=0.000126270152912; msd=0.0129898224166; teff=948.814710743
-==> vdos_graphiteoxide_D.ncmat;temp=300;vdoslux=0//D => debye_temp=1078.27378313; gamma0=7.69165646545; integral=0.000126270152912; msd=0.0246213560284; teff=990.729396092
-==> vdos_graphiteoxide_D.ncmat;temp=990000.0;vdoslux=0//D => debye_temp=1042.46883723; gamma0=20562.5390151; integral=0.000126270152912; msd=65.8216596402; teff=990000.448143
+==> vdos_graphiteoxide_D.ncmat;temp=0.001;vdoslux=0//D => debye_temp=1437.05622149; gamma0=3.93213866223; integral=0.000131922493585; msd=0.012569732423; teff=988.834616305
+==> vdos_graphiteoxide_D.ncmat;temp=300;vdoslux=0//D => debye_temp=1104.94465113; gamma0=7.41488573073; integral=0.000131922493585; msd=0.0237029101943; teff=1028.94988321
+==> vdos_graphiteoxide_D.ncmat;temp=990000.0;vdoslux=0//D => debye_temp=1064.94972829; gamma0=19730.567153; integral=0.000131922493585; msd=63.072025422; teff=990000.480045
 ==> vdos_graphiteoxide_D.ncmat;temp=1000000.0;vdoslux=0//D => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
-==> vdos_graphiteoxide_D.ncmat;temp=0.001;vdoslux=3//D => debye_temp=1390.58191881; gamma0=4.05799142259; integral=0.000126270152912; msd=0.0129898224166; teff=948.814710743
-==> vdos_graphiteoxide_D.ncmat;temp=300;vdoslux=3//D => debye_temp=1078.27378313; gamma0=7.69165646545; integral=0.000126270152912; msd=0.0246213560284; teff=990.729396092
-==> vdos_graphiteoxide_D.ncmat;temp=990000.0;vdoslux=3//D => debye_temp=1042.46883723; gamma0=20562.5390151; integral=0.000126270152912; msd=65.8216596402; teff=990000.448143
+==> vdos_graphiteoxide_D.ncmat;temp=0.001;vdoslux=3//D => debye_temp=1437.05622149; gamma0=3.93213866223; integral=0.000131922493585; msd=0.012569732423; teff=988.834616305
+==> vdos_graphiteoxide_D.ncmat;temp=300;vdoslux=3//D => debye_temp=1104.94465113; gamma0=7.41488573073; integral=0.000131922493585; msd=0.0237029101943; teff=1028.94988321
+==> vdos_graphiteoxide_D.ncmat;temp=990000.0;vdoslux=3//D => debye_temp=1064.94972829; gamma0=19730.567153; integral=0.000131922493585; msd=63.072025422; teff=990000.480045
 ==> vdos_graphiteoxide_D.ncmat;temp=1000000.0;vdoslux=3//D => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
-==> vdos_hydrogen_osc.ncmat;temp=0.001;vdoslux=0//H => debye_temp=70.7827640488; gamma0=134.490587472; integral=0.661283394327; msd=0.509921717094; teff=828.830963715
-==> vdos_hydrogen_osc.ncmat;temp=300;vdoslux=0//H => debye_temp=29.3940021083; gamma0=13225.1009842; integral=0.661283394327; msd=50.1430347607; teff=1024.89037872
-==> vdos_hydrogen_osc.ncmat;temp=990000.0;vdoslux=0//H => debye_temp=29.3932634475; gamma0=43633392.2355; integral=0.661283394327; msd=165436.219066; teff=990000.85232
+==> vdos_hydrogen_osc.ncmat;temp=0.001;vdoslux=0//H => debye_temp=70.7827640517; gamma0=134.524489808; integral=0.661283394355; msd=0.509921717073; teff=828.830963814
+==> vdos_hydrogen_osc.ncmat;temp=300;vdoslux=0//H => debye_temp=29.3940021089; gamma0=13228.4347625; integral=0.661283394355; msd=50.1430347586; teff=1024.89037881
+==> vdos_hydrogen_osc.ncmat;temp=990000.0;vdoslux=0//H => debye_temp=29.3932634481; gamma0=43644391.3243; integral=0.661283394355; msd=165436.219059; teff=990000.85232
 ==> vdos_hydrogen_osc.ncmat;temp=1000000.0;vdoslux=0//H => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
-==> vdos_hydrogen_osc.ncmat;temp=0.001;vdoslux=3//H => debye_temp=70.7827640488; gamma0=134.490587472; integral=0.661283394327; msd=0.509921717094; teff=828.830963715
-==> vdos_hydrogen_osc.ncmat;temp=300;vdoslux=3//H => debye_temp=29.3940021083; gamma0=13225.1009842; integral=0.661283394327; msd=50.1430347607; teff=1024.89037872
-==> vdos_hydrogen_osc.ncmat;temp=990000.0;vdoslux=3//H => debye_temp=29.3932634475; gamma0=43633392.2355; integral=0.661283394327; msd=165436.219066; teff=990000.85232
+==> vdos_hydrogen_osc.ncmat;temp=0.001;vdoslux=3//H => debye_temp=70.7827640517; gamma0=134.524489808; integral=0.661283394355; msd=0.509921717073; teff=828.830963814
+==> vdos_hydrogen_osc.ncmat;temp=300;vdoslux=3//H => debye_temp=29.3940021089; gamma0=13228.4347625; integral=0.661283394355; msd=50.1430347586; teff=1024.89037881
+==> vdos_hydrogen_osc.ncmat;temp=990000.0;vdoslux=3//H => debye_temp=29.3932634481; gamma0=43644391.3243; integral=0.661283394355; msd=165436.219059; teff=990000.85232
 ==> vdos_hydrogen_osc.ncmat;temp=1000000.0;vdoslux=3//H => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
-==> vdos_liquidH2.ncmat;temp=0.001;vdoslux=0//H => debye_temp=92.44444843; gamma0=10.3885012026; integral=0.000690619936925; msd=0.390436301605; teff=49.4112729955
-==> vdos_liquidH2.ncmat;temp=300;vdoslux=0//H => debye_temp=69.6709559853; gamma0=237.772290444; integral=0.000690619936925; msd=8.93631640353; teff=304.181886678
-==> vdos_liquidH2.ncmat;temp=990000.0;vdoslux=0//H => debye_temp=69.6708398148; gamma0=783478.031389; integral=0.000690619936925; msd=29445.8516197; teff=990000.001292
+==> vdos_liquidH2.ncmat;temp=0.001;vdoslux=0//H => debye_temp=92.8130432369; gamma0=10.3730998189; integral=0.000693668009007; msd=0.388885735126; teff=50.6015112181
+==> vdos_liquidH2.ncmat;temp=300;vdoslux=0//H => debye_temp=69.8239421377; gamma0=237.32459294; integral=0.000693668009007; msd=8.89725833169; teff=304.629997127
+==> vdos_liquidH2.ncmat;temp=990000.0;vdoslux=0//H => debye_temp=69.8238101319; gamma0=781998.045074; integral=0.000693668009007; msd=29316.9727406; teff=990000.001438
 ==> vdos_liquidH2.ncmat;temp=1000000.0;vdoslux=0//H => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
-==> vdos_liquidH2.ncmat;temp=0.001;vdoslux=3//H => debye_temp=92.44444843; gamma0=10.3885012026; integral=0.000690619936925; msd=0.390436301605; teff=49.4112729955
-==> vdos_liquidH2.ncmat;temp=300;vdoslux=3//H => debye_temp=69.6709559853; gamma0=237.772290444; integral=0.000690619936925; msd=8.93631640353; teff=304.181886678
-==> vdos_liquidH2.ncmat;temp=990000.0;vdoslux=3//H => debye_temp=69.6708398148; gamma0=783478.031389; integral=0.000690619936925; msd=29445.8516197; teff=990000.001292
+==> vdos_liquidH2.ncmat;temp=0.001;vdoslux=3//H => debye_temp=92.8130432369; gamma0=10.3730998189; integral=0.000693668009007; msd=0.388885735126; teff=50.6015112181
+==> vdos_liquidH2.ncmat;temp=300;vdoslux=3//H => debye_temp=69.8239421377; gamma0=237.32459294; integral=0.000693668009007; msd=8.89725833169; teff=304.629997127
+==> vdos_liquidH2.ncmat;temp=990000.0;vdoslux=3//H => debye_temp=69.8238101319; gamma0=781998.045074; integral=0.000693668009007; msd=29316.9727406; teff=990000.001438
 ==> vdos_liquidH2.ncmat;temp=1000000.0;vdoslux=3//H => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
-==> vdos_orthoD2.ncmat;temp=0.001;vdoslux=0//D => debye_temp=112.727199053; gamma0=59.7332438463; integral=0.549204513653; msd=0.160240051883; teff=706.71481626
-==> vdos_orthoD2.ncmat;temp=300;vdoslux=0//D => debye_temp=75.1939429893; gamma0=1431.58485792; integral=0.549204513653; msd=3.84036119818; teff=890.172928959
-==> vdos_orthoD2.ncmat;temp=990000.0;vdoslux=0//D => debye_temp=75.1809387836; gamma0=4717636.9044; integral=0.549204513653; msd=12655.5052706; teff=990000.513009
+==> vdos_orthoD2.ncmat;temp=0.001;vdoslux=0//D => debye_temp=112.727199123; gamma0=59.7545314937; integral=0.549204514003; msd=0.160240051783; teff=706.714817241
+==> vdos_orthoD2.ncmat;temp=300;vdoslux=0//D => debye_temp=75.1939430133; gamma0=1432.09504406; integral=0.549204514003; msd=3.84036119573; teff=890.172929823
+==> vdos_orthoD2.ncmat;temp=990000.0;vdoslux=0//D => debye_temp=75.1809388075; gamma0=4719318.169; integral=0.549204514003; msd=12655.5052625; teff=990000.513009
 ==> vdos_orthoD2.ncmat;temp=1000000.0;vdoslux=0//D => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
-==> vdos_orthoD2.ncmat;temp=0.001;vdoslux=3//D => debye_temp=112.727199053; gamma0=59.7332438463; integral=0.549204513653; msd=0.160240051883; teff=706.71481626
-==> vdos_orthoD2.ncmat;temp=300;vdoslux=3//D => debye_temp=75.1939429893; gamma0=1431.58485792; integral=0.549204513653; msd=3.84036119818; teff=890.172928959
-==> vdos_orthoD2.ncmat;temp=990000.0;vdoslux=3//D => debye_temp=75.1809387836; gamma0=4717636.9044; integral=0.549204513653; msd=12655.5052706; teff=990000.513009
+==> vdos_orthoD2.ncmat;temp=0.001;vdoslux=3//D => debye_temp=112.727199123; gamma0=59.7545314937; integral=0.549204514003; msd=0.160240051783; teff=706.714817241
+==> vdos_orthoD2.ncmat;temp=300;vdoslux=3//D => debye_temp=75.1939430133; gamma0=1432.09504406; integral=0.549204514003; msd=3.84036119573; teff=890.172929823
+==> vdos_orthoD2.ncmat;temp=990000.0;vdoslux=3//D => debye_temp=75.1809388075; gamma0=4719318.169; integral=0.549204514003; msd=12655.5052625; teff=990000.513009
 ==> vdos_orthoD2.ncmat;temp=1000000.0;vdoslux=3//D => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
-==> vdos_paraH2.ncmat;temp=0.001;vdoslux=0//H => debye_temp=129.269820912; gamma0=73.6414282052; integral=0.556191011628; msd=0.279211870653; teff=981.838544785
-==> vdos_paraH2.ncmat;temp=300;vdoslux=0//H => debye_temp=84.4125773641; gamma0=1606.7177133; integral=0.556191011628; msd=6.09187884151; teff=1161.73266306
-==> vdos_paraH2.ncmat;temp=990000.0;vdoslux=0//H => debye_temp=84.3918552049; gamma0=5293141.042; integral=0.556191011628; msd=20068.9726963; teff=990001.013327
+==> vdos_paraH2.ncmat;temp=0.001;vdoslux=0//H => debye_temp=129.269820918; gamma0=73.6599917075; integral=0.556191011656; msd=0.27921187064; teff=981.838544895
+==> vdos_paraH2.ncmat;temp=300;vdoslux=0//H => debye_temp=84.4125773663; gamma0=1607.12273407; integral=0.556191011656; msd=6.0918788412; teff=1161.73266316
+==> vdos_paraH2.ncmat;temp=990000.0;vdoslux=0//H => debye_temp=84.391855207; gamma0=5294475.33491; integral=0.556191011656; msd=20068.9726953; teff=990001.013327
 ==> vdos_paraH2.ncmat;temp=1000000.0;vdoslux=0//H => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).
-==> vdos_paraH2.ncmat;temp=0.001;vdoslux=3//H => debye_temp=129.269820912; gamma0=73.6414282052; integral=0.556191011628; msd=0.279211870653; teff=981.838544785
-==> vdos_paraH2.ncmat;temp=300;vdoslux=3//H => debye_temp=84.4125773641; gamma0=1606.7177133; integral=0.556191011628; msd=6.09187884151; teff=1161.73266306
-==> vdos_paraH2.ncmat;temp=990000.0;vdoslux=3//H => debye_temp=84.3918552049; gamma0=5293141.042; integral=0.556191011628; msd=20068.9726963; teff=990001.013327
+==> vdos_paraH2.ncmat;temp=0.001;vdoslux=3//H => debye_temp=129.269820918; gamma0=73.6599917075; integral=0.556191011656; msd=0.27921187064; teff=981.838544895
+==> vdos_paraH2.ncmat;temp=300;vdoslux=3//H => debye_temp=84.4125773663; gamma0=1607.12273407; integral=0.556191011656; msd=6.0918788412; teff=1161.73266316
+==> vdos_paraH2.ncmat;temp=990000.0;vdoslux=3//H => debye_temp=84.391855207; gamma0=5294475.33491; integral=0.556191011656; msd=20068.9726953; teff=990001.013327
 ==> vdos_paraH2.ncmat;temp=1000000.0;vdoslux=3//H => NCBadInput: Material temperature (1e+06K) is within the supported range, but the derived effective temperature (1e+06K) is not. Such temperatures at the very top of the supported range are not supported (the effective temperature always exceeds the actual one).

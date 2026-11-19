@@ -564,11 +564,73 @@ double NC::VDOS::checkIsRegularVDOSGrid( const VectD& egrid, const VectD& densit
   return checkIsRegularVDOSGrid( PairDD(egrid.front(),egrid.back()), density, tolerance );
 }
 
+namespace NCRYSTAL_NAMESPACE {
+  namespace VDOS {
+    namespace {
+      //Drops excess trailing zeros (those after the first zero of the final
+      //run of zeros) and their egrid values (or lowers emax, if egrid is
+      //{emin,emax}):
+      void dropExcessTrailingZeros( VectD& egrid, VectD& density )
+      {
+        const std::size_t n = density.size();
+        std::size_t m = n;
+        while ( m >= 2 && density[m-1] == 0.0 && density[m-2] == 0.0 )
+          --m;
+        if ( m == n )
+          return;
+        if ( egrid.size() == 2 ) {
+          const double binwidth = ( egrid.back() - egrid.front() ) / ( n - 1 );
+          egrid.back() = ncfma( binwidth, static_cast<double>( m - 1 ),
+                                egrid.front() );
+        } else {
+          egrid.resize( m );
+        }
+        density.resize( m );
+      }
+    }
+  }
+}
+
+void NC::VDOS::VDOSEval::checkAndStandardiseInput( VectD& egrid,
+                                                   VectD& density,
+                                                   FinalZero final_zero )
+{
+  if ( egrid.size() != 2 && egrid.size() != density.size() )
+    NCRYSTAL_THROW(BadInput,"VDOS egrid must have two values, or one value"
+                   " per density value");
+  dropExcessTrailingZeros( egrid, density );
+  if ( density.size() < 5 )
+    NCRYSTAL_THROW(BadInput,"vdos_density has too few values (>=5 needed,"
+                   " excess trailing zeroes are ignored since NCrystal"
+                   " v5.0.0)");
+  if ( density.back() == 0.0 )
+    return;
+  if ( final_zero == FinalZero::Require )
+    NCRYSTAL_THROW(BadInput,"vdos_density must end with a value of 0");
+  //Append a zero one bin beyond the last point:
+  if ( egrid.size() == 2 ) {
+    egrid.back() += ( egrid.back() - egrid.front() )
+      / static_cast<double>( density.size() - 1 );
+  } else {
+    const double e1 = egrid.back();
+    egrid.push_back( e1 + ( e1 - egrid[egrid.size()-2] ) );
+  }
+  density.push_back( 0.0 );
+}
+
+bool NC::VDOS::VDOSEval::isStandardInput( const VectD& egrid,
+                                          const VectD& density )
+{
+  const std::size_t n = density.size();
+  return ( egrid.size() == 2 || egrid.size() == n ) && n >= 5
+    && density.back() == 0.0 && density[n-2] != 0.0;
+}
+
 std::pair<NC::VectD,NC::VectD> NC::VDOS::regulariseVDOSGrid( const VectD& orig_egrid, const VectD& orig_density )
 {
   static bool s_verbose_vdosregul = ncgetenv_bool("DEBUG_VDOSREGULARISATION");
   const bool extra_verbose = s_verbose_vdosregul;
-  nc_assert_always( orig_density.size() > 2) ;
+  nc_assert_always( VDOSEval::isStandardInput( orig_egrid, orig_density ) );
   nc_assert_always( orig_density.size() < 4000000000) ;
   nc_assert_always( orig_egrid.size()==2
                     || orig_egrid.size() == orig_density.size() );
@@ -787,5 +849,9 @@ std::pair<NC::VectD,NC::VectD> NC::VDOS::regulariseVDOSGrid( const VectD& orig_e
                  << ", " << newEgrid.back() << "]");
 
   nc_assert(newEgrid.size()==2);
+  //The points beyond the original emax have zero density:
+  dropExcessTrailingZeros( newEgrid, newDensity );
+  nc_assert_always( newDensity.size() >= 2 && newDensity.back() == 0.0
+                    && newDensity[newDensity.size()-2] != 0.0 );
   return { newEgrid, newDensity };
 }

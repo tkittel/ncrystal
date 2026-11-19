@@ -1,11 +1,11 @@
 CaO2H2_sg164_CalciumHydroxide.ncmat;temp=3000K
-NCrystal WARNING: VDOS expansion could only reach Emax=2.6017eV and not the target Emax=5eV
+NCrystal WARNING: VDOS expansion could only reach Emax=2.54993eV and not the target Emax=5eV
    ['coh_elas', 'incoh_elas', 'inelas']
    cohelas: CaO2H2_sg164_CalciumHydroxide.ncmat;incoh_elas=0;inelas=0;sans=0;temp=3000
    incohelas: CaO2H2_sg164_CalciumHydroxide.ncmat;coh_elas=0;inelas=0;sans=0;temp=3000
    inelas: CaO2H2_sg164_CalciumHydroxide.ncmat;coh_elas=0;incoh_elas=0;sans=0;temp=3000
 CaO2H2_sg164_CalciumHydroxide.ncmat;temp=5000K
-NCrystal WARNING: VDOS expansion could only reach Emax=0.490569eV and not the target Emax=5eV
+NCrystal WARNING: VDOS expansion could only reach Emax=0.471238eV and not the target Emax=5eV
    ['coh_elas', 'incoh_elas', 'inelas']
    cohelas: CaO2H2_sg164_CalciumHydroxide.ncmat;incoh_elas=0;inelas=0;sans=0;temp=5000
    incohelas: CaO2H2_sg164_CalciumHydroxide.ncmat;coh_elas=0;inelas=0;sans=0;temp=5000
