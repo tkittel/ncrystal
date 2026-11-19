@@ -71,6 +71,8 @@ int main()
     check( a, b, -a * b );
     check( a, b, std::nextafter( -a * b, ( i % 2 ) ? 1e300 : -1e300 ) );
     check( a, b, -a * b * ( 1.0 + std::ldexp( double( i % 1024 ) - 512.0, -60 ) ) );
+    check( ( i % 2 ) ? 0.0 : -0.0, rdbl(-30,30), rdbl(-60,60) );
+    check( rdbl(-30,30), ( i % 2 ) ? -0.0 : 0.0, ( i % 3 ) ? -0.0 : 0.0 );
   }
   //Special values:
   const double sv[] = { 0.0, -0.0, 1.0, -1.0, 1e-310, -1e-310, 1e308, -1e308,
