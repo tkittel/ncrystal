@@ -57,17 +57,19 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr double c12 = 1.0/479001600.0;
       constexpr double c13 = 1.0/6227020800.0;
       constexpr double c14 = 1.0/87178291200.0;
-      double tmp = c14;
-      tmp = ncfma( x, tmp, c13 );
-      tmp = ncfma( x, tmp, c12 );
-      tmp = ncfma( x, tmp, c11 );
-      tmp = ncfma( x, tmp, c10 );
-      tmp = ncfma( x, tmp, c9 );
-      tmp = ncfma( x, tmp, c8 );
-      tmp = ncfma( x, tmp, c7 );
-      tmp = ncfma( x, tmp, c6 );
-      tmp = ncfma( x, tmp, c5 );
-      tmp = ncfma( x, tmp, c4 );
+      //Terms c5..c14 by Estrin's scheme (shorter chain of dependent ncfma),
+      //the leading terms by Horner's method (which keeps the accuracy):
+      const double x2 = x * x;
+      const double x4 = x2 * x2;
+      const double a56 = ncfma( x, c6, c5 );
+      const double a78 = ncfma( x, c8, c7 );
+      const double a910 = ncfma( x, c10, c9 );
+      const double a1112 = ncfma( x, c12, c11 );
+      const double a1314 = ncfma( x, c14, c13 );
+      const double b5 = ncfma( x2, a78, a56 );
+      const double b9 = ncfma( x2, a1112, a910 );
+      const double r = ncfma( x4 * x4, a1314, ncfma( x4, b9, b5 ) );
+      double tmp = ncfma( x, r, c4 );
       tmp = ncfma( x, tmp, c3 );
       return ncfma( x, tmp, c2 );
     }
