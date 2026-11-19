@@ -89,7 +89,7 @@ def vdosdebye():
     print( '\n'.join( line for line in out.splitlines()
                       if not line.startswith('#') ) )
     assert out.startswith( 'NCMAT v8\n' )
-    assert f'msd {msd!r} at_temperature {T!r}'.replace('0.0085','.0085') in out
+    assert f'msd {msd!r} at_temperature {T!r}' in out
     info3 = load( out, cfg = f';dcutoff=0.5;temp={T}' )
     assert abs( info3.atominfos[0].msd - msd ) < 1e-6 * msd
     print( '  round trip preserves the msd' )

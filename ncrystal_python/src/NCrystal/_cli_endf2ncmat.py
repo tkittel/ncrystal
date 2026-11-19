@@ -297,9 +297,10 @@ def format_endf_block_as_ncmatdyninfo_for_principal_element(parsed_endf_data,tem
     res+=f'  temperature {temperature:.10} #NB: ENDF file specified "effective temperature" as {datablock["Teff"]:.10}K\n'
     #NB: Not suggesting an emax value, since it seems to be unreliable! Same for B[4] from above...
     #res+=f"  egrid {parsed_endf_data['pynedata'].info['energy_max']}#Value (in eV) as specified in source ENDF file.\n"#argh... e.g. D2O@300K shows this can't be trusted!!!
-    res += nccore.formatVectorForNCMAT('alphagrid',datablock['alphagrid'])
-    res += nccore.formatVectorForNCMAT('betagrid',datablock['betagrid'])
-    res += nccore.formatVectorForNCMAT('sab_scaled',datablock['sab'])
+    from .ncmat import formatVectorForNCMAT as fmtvect
+    res += fmtvect('alphagrid',datablock['alphagrid'],is_grid=True)
+    res += fmtvect('betagrid',datablock['betagrid'],is_grid=True)
+    res += fmtvect('sab_scaled',datablock['sab'])
     return res
 
 def parseArgs( progname, arglist, return_parser=False ):
