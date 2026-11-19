@@ -22,10 +22,10 @@
 
 # NEEDS: numpy spglib gemmi
 
-# Loads part 1 of 4 of all synthetic CIF files in tests/data/cifsynth (cf.
+# Loads part 1 of 4 of the synthetic CIF files in tests/data/cifsynth (cf.
 # NCTestUtils/cifsynth.py).
 
 import NCTestUtils.cifsynth
 
 if __name__ == '__main__':
-    NCTestUtils.cifsynth.run_all( 0, 4 )
+    NCTestUtils.cifsynth.run_long( 0 )

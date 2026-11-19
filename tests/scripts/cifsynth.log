@@ -127,8 +127,8 @@ cs0263.cif:
   default error: NCBadInput: Split site (CIF label "H1C"): 2 symmetry-equivalent positions 0.45 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
   permissive: SG-59 (59:1), 12 sites, 10 atoms, 7 with uij
 cs0266.cif:
-  default error: NCBadInput: spglib could not analyse the crystal structure (too close distance between atoms)
-  permissive error: NCBadInput: spglib could not analyse the crystal structure (too close distance between atoms)
+  default error: NCBadInput: spglib could not analyse the crystal structure
+  permissive error: NCBadInput: spglib could not analyse the crystal structure
 cs0267.cif:
   default: SG-26 (26:abc), 7 sites, 4 atoms, 0 with uij
 cs0271.cif:

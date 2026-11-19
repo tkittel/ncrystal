@@ -406,8 +406,9 @@ def _impl_spglib_refine_cell( spglib_cell, *, symprec, warnings, msgs,
                                  symprec = symprec )
     symdata = _spglib_call( 'get_symmetry_dataset', orig_cell_copy )
     if not refined_cell or not symdata or refined_cell[0] is None:
-        raise _nc_core.NCBadInput('Could not standardize provided'
-                                  ' crystal structure with spglib')
+        #(spglib<2.7 returns None instead of raising)
+        raise _nc_core.NCBadInput( 'spglib could not analyse the crystal'
+                                   ' structure' )
 
     p = _lattice_vectors_to_params( *refined_cell[0], as_dict = True )
 
@@ -696,8 +697,9 @@ def _find_site_orbits( cellsg, sites, tols ):
     ds = _spglib_call( 'get_symmetry_dataset', ( lattice, positions, types ),
                        symprec = tols['symprec'] )
     if not ds:
-        raise _nc_core.NCBadInput( 'Could not determine symmetry of'
-                                   ' structure with spglib' )
+        #(spglib<2.7 returns None instead of raising)
+        raise _nc_core.NCBadInput( 'spglib could not analyse the crystal'
+                                   ' structure' )
     def get( k ):
         return getattr( ds, k ) if hasattr( ds, k ) else ds[k]
     rots = np.asarray( get('rotations'), dtype = float )
