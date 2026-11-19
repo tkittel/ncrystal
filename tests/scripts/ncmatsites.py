@@ -48,6 +48,21 @@ def as_sites_text( name ):
     text = re.sub( r'^NCMAT v\d+', 'NCMAT v8', text, count = 1, flags = re.MULTILINE )
     text = re.sub( r'^@SPACEGROUP\n.*?\n(?=@)', f'@SPACEGROUP\n  {setting}\n', text, flags = re.MULTILINE|re.DOTALL )
     text = re.sub( r'^@ATOMPOSITIONS\n.*?\n(?=@)', '@ATOMSITES\n' + '\n'.join(lines) + '\n', text, flags = re.MULTILINE|re.DOTALL )
+    #NCMAT v8 requires VDOS curves to end with 0, so write them as NCrystal
+    #uses them (regularised, ending with 0):
+    def vdos_as_used( m ):
+        sec = m.group(0)
+        if 'vdos_density' not in sec:
+            return sec
+        elem = re.search( r'^\s*element\s+(\S+)', sec, re.MULTILINE ).group(1)
+        (emin, emax), dens = info.findDynInfo( elem ).vdosData()
+        sec = re.sub( r'^\s*vdos_egrid.*?(?=^\s*vdos_density)',
+                      f'  vdos_egrid {emin!r} {emax!r}\n', sec,
+                      flags = re.MULTILINE|re.DOTALL )
+        return re.sub( r'^\s*vdos_density[^@]*',
+                       '  vdos_density ' + ' '.join( repr(float(d)) for d in dens ) + '\n',
+                       sec, flags = re.MULTILINE )
+    text = re.sub( r'^@DYNINFO\n[^@]*', vdos_as_used, text, flags = re.MULTILINE )
     return text, info
 
 def same_positions( info1, info2 ):

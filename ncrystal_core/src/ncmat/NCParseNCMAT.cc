@@ -794,11 +794,12 @@ void NC::NCMATParser::handleSectionData_DYNINFO(const Parts& parts, unsigned lin
       NCRYSTAL_THROW2(BadInput,e1<<": no input found in @DYNINFO section (expected in line "<<lineno<<")");
     try {
       m_active_dyninfo->validate( m_data.version );
+      using FZ = VDOS::VDOSEval::FinalZero;
       if ( m_active_dyninfo->dyninfo_type == NCMATData::DynInfo::VDOS )
         VDOS::VDOSEval::checkAndStandardiseInput(
                      m_active_dyninfo->fields.at("vdos_egrid"),
                      m_active_dyninfo->fields.at("vdos_density"),
-                     VDOS::VDOSEval::FinalZero::Append );
+                     m_data.version >= 8 ? FZ::Require : FZ::Append );
     } catch (Error::BadInput&e) {
       NCRYSTAL_THROW2(BadInput,e.what()<<" (problem found in the @DYNINFO section ending in line "<<lineno<<")");
     }
