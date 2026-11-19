@@ -152,6 +152,20 @@ def _import_gemmi( *, sysexit = False ):
     _import_gemmi_cache[1] = importlib.import_module('gemmi.cif')
     return _import_gemmi_cache[0], _import_gemmi_cache[1]
 
+def _decode_json( txt ):
+    #gemmi <= 0.6.5 writes CIF numbers like -.065 as invalid JSON numbers, so
+    #on failure add the missing zeros (outside JSON strings) and retry.
+    import json
+    try:
+        return json.loads( txt )
+    except json.decoder.JSONDecodeError:
+        import re
+        fixed = re.sub( r'("(?:[^"\\]|\\.)*")|(?<![0-9])(-?)\.(?=[0-9])',
+                        lambda m : m.group(1) or m.group(2) + '0.', txt )
+        if fixed == txt:
+            raise
+        return json.loads( fixed )
+
 def _select_block( cif_doc ):
     #The block with the structure (the only one, or the only one with sites):
     if len( cif_doc ) == 0:
@@ -193,7 +207,7 @@ def read_cif( cifdata, *, quiet ):
         raise _nc_core.NCBadInput(f'CIF parsing error (from Gemmi): "{e}"')
     import json
     try:
-        cif_raw = json.loads( cif_doc.as_json() )
+        cif_raw = _decode_json( cif_doc.as_json() )
     except json.decoder.JSONDecodeError as e:
         cif_raw = None
         _nc_common.warn(f'Could not decode raw CIF data to dictionary (Gemmi bug?): JSONDecodeError("{e}")')
