@@ -1190,10 +1190,18 @@ class NCMATComposerImpl:
                                       f' declared state of matter "{som}"')
         if som is None and not is_crystal:
             #NCMAT v8 requires non-crystalline materials to declare the state
-            #of matter. As older formats did, VDOS based ones are solids:
-            if _implies_solid or any( di.get('ditype') in ('vdos','vdosdebye')
-                                      for di in dyninfos_all ):
+            #of matter. As older formats did, assume solid for vdosdebye and
+            #msd, and also for vdos (with a warning, since plugins might use
+            #a VDOS for liquids):
+            _ditypes = { di.get('ditype') for di in dyninfos_all }
+            if _implies_solid or 'vdosdebye' in _ditypes:
                 som = 'solid'
+            elif 'vdos' in _ditypes:
+                som = 'solid'
+                _nc_common.warn('NCMATComposer: no state of matter set'
+                                ' (assuming "solid"). Call'
+                                ' .set_state_of_matter(..) explicitly to'
+                                ' avoid this warning')
             else:
                 raise _nc_core.NCBadInput('Non-crystalline materials must'
                                           ' declare a state of matter: call'
