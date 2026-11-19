@@ -1,4 +1,4 @@
-NCMAT v5
+NCMAT v8
 #
 # Cuprite (Cu2O, cubic, SG-224 / Pn-3m)
 #
@@ -38,14 +38,10 @@ NCMAT v5
 @CELL
   cubic 4.2685
 @SPACEGROUP
-  224
-@ATOMPOSITIONS
+  224:1
+@ATOMSITES
   Cu 1/4 1/4 1/4
-  Cu 3/4 1/4 3/4
-  Cu 1/4 3/4 3/4
-  Cu 3/4 3/4 1/4
   O 0 0 0
-  O 1/2 1/2 1/2
 @DYNINFO
   element  Cu
   fraction 2/3

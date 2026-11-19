@@ -1,4 +1,4 @@
-NCMAT v5
+NCMAT v8
 #
 # Gamma calcium (Ca, bcc, cubic, SG-229 / Im-3m)
 #
@@ -24,9 +24,8 @@ NCMAT v5
   cubic 4.38
 @SPACEGROUP
   229
-@ATOMPOSITIONS
-  Ca   0   0   0
-  Ca 1/2 1/2 1/2
+@ATOMSITES
+  Ca 0 0 0
 @DYNINFO
   element  Ca
   fraction 1

@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Magnesium (hcp).
 #
@@ -20,9 +20,8 @@ NCMAT v4
   angles 90 90 120
 @SPACEGROUP
   194
-@ATOMPOSITIONS
+@ATOMSITES
   Mg 1/3 2/3 1/4
-  Mg 2/3 1/3 3/4
 @DYNINFO
   element  Mg
   fraction 1

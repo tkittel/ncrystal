@@ -31,7 +31,14 @@ import time
 import NCrystalDev as NC
 import NCTestUtils.enable_fpe  # noqa: F401
 import numpy as np
+from NCTestUtils.dirs import get_named_test_data_dir
 from NCTestUtils.env import ncsetenv
+
+
+def ref446_text( fn ):
+    #4.4.6 version of a stdlib file (with @ATOMPOSITIONS, so @SPACEGROUP can be
+    #removed by text editing):
+    return ( get_named_test_data_dir('refnc4d4') / fn ).read_text()
 
 
 # Without a space group, HKL planes are grouped into families by their
@@ -50,7 +57,7 @@ def test_nosgfamilies():
         return res
 
     def check( fn, cfg ):
-        txt = NC.createTextData( f'stdlib::{fn}' ).rawData
+        txt = ref446_text( fn )
         nosg_txt = re.sub( r'@SPACEGROUP\s*\n\s*\d+\s*\n', '', txt )
         assert nosg_txt != txt
         sgfams = families( txt, cfg )
@@ -101,7 +108,7 @@ def test_select():
         return re.sub( r'NCRYSTAL[A-Z]*_FILLHKL', 'NCRYSTAL_FILLHKL', str(e) )
 
     def test( fn, cfg, hkls ):
-        txt = NC.createTextData( f'stdlib::{fn}' ).rawData
+        txt = ref446_text( fn )
         for label, t in ( ( 'SG', txt ), ( 'no SG', strip_sg( txt ) ) ):
             full = planes( t, cfg )
             for hkl in hkls:
@@ -150,7 +157,7 @@ def test_select():
           [ '1,0,4', '0,1,-4', '-1,0,-4', '1,1,3', '1,1,-3', '0,0,6' ] )
 
     #Invalid values:
-    t = NC.createTextData( 'stdlib::Al_sg225.ncmat' ).rawData
+    t = ref446_text( 'Al_sg225.ncmat' )
     for bad in ( '1,1', '1,1,1,1', 'a,b,c', '1.5,1,1', '0,0,0', ' ' ):
         for label, tt in ( ( 'SG', t ), ( 'no SG', strip_sg( t ) ) ):
             try:
@@ -198,7 +205,7 @@ def test_selectphys():
     along the normal, with |q|=2pi/d. For single crystals, the planes of the
     full list must not add anything (they are not in the Bragg condition), but
     for layered crystals they might (due to rotation around the c-axis)."""
-        txt = NC.createTextData( f'stdlib::{fn}' ).rawData
+        txt = ref446_text( fn )
         full = NC.directLoad( txt, 'comp=bragg;' + cfg, doAbsorption = False )
         ekin = NC.wl2ekin( wl )
         k = 2 * math.pi / wl
@@ -256,7 +263,7 @@ def test_selectphys():
 
     #Powder: cross sections below the Bragg thresholds of two selected planes
     #must be proportional to d*|F|^2 (multiplicity 2 for both):
-    al = NC.createTextData( 'stdlib::Al_sg225.ncmat' ).rawData
+    al = ref446_text( 'Al_sg225.ncmat' )
     for t in ( al, strip_sg( al ) ):
         res = []
         for sel in ( '1,1,1', '2,0,0', '-3,1,1' ):
@@ -347,11 +354,11 @@ def test_memlim():
     for fn, cfg in [ ( 'BO3H3_sg2_BoricAcid.ncmat', 'dcutoff=0.5' ),
                      ( 'GaSe_sg194_GalliumSelenide.ncmat', 'dcutoff=0.3' ),
                      ( 'Al2O3_sg167_Corundum.ncmat', 'dcutoff=0.3' ) ]:
-        compare_sg_nosg( fn, NC.createTextData( f'stdlib::{fn}' ).rawData, cfg )
+        compare_sg_nosg( fn, ref446_text( fn ), cfg )
 
     #Memory limit (default 20MB), which must trigger before any time is spent:
-    yag = NC.createTextData( 'stdlib::Y3Al5O12_sg230_YAG.ncmat' ).rawData
-    al = NC.createTextData( 'stdlib::Al_sg225.ncmat' ).rawData
+    yag = ref446_text( 'Y3Al5O12_sg230_YAG.ncmat' )
+    al = ref446_text( 'Al_sg225.ncmat' )
     def expect_error( errtype, txt, cfg, memlim = None ):
         ncsetenv( 'FILLHKL_MEMLIM', memlim )
         t0 = time.time()

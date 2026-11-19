@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Uraninite (UO2)
 #
@@ -28,19 +28,9 @@ NCMAT v4
   cubic 5.4682
 @SPACEGROUP
   225
-@ATOMPOSITIONS
-  U 1/2   0 1/2
-  O 1/4 3/4 3/4
-  O 1/4 1/4 3/4
-  U 1/2 1/2   0
+@ATOMSITES
+  U 0 0 0
   O 1/4 1/4 1/4
-  O 1/4 3/4 1/4
-  U   0   0   0
-  O 3/4 3/4 1/4
-  O 3/4 1/4 1/4
-  U   0 1/2 1/2
-  O 3/4 1/4 3/4
-  O 3/4 3/4 3/4
 @DYNINFO
   element  O
   fraction 2/3

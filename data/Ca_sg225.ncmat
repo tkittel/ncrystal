@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Calcium (fcc)
 #
@@ -18,11 +18,8 @@ NCMAT v4
   cubic 5.576
 @SPACEGROUP
   225
-@ATOMPOSITIONS
-  Ca 1/2 1/2   0
-  Ca 1/2   0 1/2
-  Ca   0 1/2 1/2
-  Ca   0   0   0
+@ATOMSITES
+  Ca 0 0 0
 @DYNINFO
   element  Ca
   fraction 1

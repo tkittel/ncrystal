@@ -1,4 +1,4 @@
-NCMAT v5
+NCMAT v8
 #
 # Thorium (cubic, SG-225 / Fm-3m)
 #
@@ -20,11 +20,8 @@ NCMAT v5
   cubic 5.0843
 @SPACEGROUP
   225
-@ATOMPOSITIONS
-  Th   0 1/2 1/2
-  Th   0   0   0
-  Th 1/2 1/2   0
-  Th 1/2   0 1/2
+@ATOMSITES
+  Th 0 0 0
 @DYNINFO
   element  Th
   fraction 1

@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Zirconium (hcp)
 #
@@ -19,9 +19,8 @@ NCMAT v4
   angles 90 90 120
 @SPACEGROUP
   194
-@ATOMPOSITIONS
+@ATOMSITES
   Zr 1/3 2/3 1/4
-  Zr 2/3 1/3 3/4
 @DYNINFO
   element  Zr
   fraction 1

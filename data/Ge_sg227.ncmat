@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Germanium (Ge)
 #
@@ -17,16 +17,9 @@ NCMAT v4
 @CELL
   cubic 5.65735
 @SPACEGROUP
-  227
-@ATOMPOSITIONS
-  Ge 1/2 1/2 1/2
-  Ge 1/4 1/4 3/4
-  Ge 1/2 0   0
-  Ge 1/4 3/4 1/4
-  Ge 0   1/2 0
-  Ge 3/4 1/4 1/4
-  Ge 0   0   1/2
-  Ge 3/4 3/4 3/4
+  227:1
+@ATOMSITES
+  Ge 0 0 1/2
 @DYNINFO
   element  Ge
   fraction 1

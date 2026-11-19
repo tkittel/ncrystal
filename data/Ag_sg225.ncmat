@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Silver (Ag)
 #
@@ -18,11 +18,8 @@ NCMAT v4
   cubic 4.0862
 @SPACEGROUP
   225
-@ATOMPOSITIONS
-  Ag   0   0   0
-  Ag   0 1/2 1/2
-  Ag 1/2   0 1/2
-  Ag 1/2 1/2   0
+@ATOMSITES
+  Ag 0 0 0
 @DYNINFO
   element  Ag
   fraction 1

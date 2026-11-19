@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Alpha-iron (bcc Fe)
 #
@@ -46,8 +46,7 @@ NCMAT v4
   cubic 2.8676
 @SPACEGROUP
   229
-@ATOMPOSITIONS
-  Fe 1/2 1/2 1/2
+@ATOMSITES
   Fe 0 0 0
 @DYNINFO
   element Fe

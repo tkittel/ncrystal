@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Sodium (bcc)
 #
@@ -19,9 +19,8 @@ NCMAT v4
   cubic 4.2906
 @SPACEGROUP
   229
-@ATOMPOSITIONS
-  Na   0   0   0
-  Na 1/2 1/2 1/2
+@ATOMSITES
+  Na 0 0 0
 @DYNINFO
   element  Na
   fraction 1

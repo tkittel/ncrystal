@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Nickel (fcc)
 #
@@ -21,11 +21,8 @@ NCMAT v4
   cubic 3.52387
 @SPACEGROUP
   225
-@ATOMPOSITIONS
-  Ni 0   1/2 1/2
-  Ni 0   0   0
-  Ni 1/2 1/2 0
-  Ni 1/2 0   1/2
+@ATOMSITES
+  Ni 0 0 0
 @DYNINFO
   element  Ni
   fraction 1

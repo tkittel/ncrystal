@@ -1,4 +1,4 @@
-NCMAT v4
+NCMAT v8
 #
 # Rubidium (bcc)
 #
@@ -20,9 +20,8 @@ NCMAT v4
   cubic 5.605
 @SPACEGROUP
   229
-@ATOMPOSITIONS
-  Rb   0   0   0
-  Rb 1/2 1/2 1/2
+@ATOMSITES
+  Rb 0 0 0
 @DYNINFO
   element  Rb
   fraction 1
