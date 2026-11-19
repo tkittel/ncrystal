@@ -244,14 +244,17 @@ contribution from hydrogen atoms (unless verbose=False).
   type vdosdebye
   debye_temp {debyetemp}
 """
+    from ._ncmatimpl import _standardise_vdos
+    vdos_egrid, vdos_density = _standardise_vdos(
+        [0.001*egrid[debye_cut_bin], 0.001*egrid[-1]], h_vdos[debye_cut_bin:] )
     out+=f"""@DYNINFO
   element  H
   fraction {nH}/{ntot}
   type     vdos
-  vdos_egrid {0.001*egrid[debye_cut_bin]:.8g} {0.001*egrid[-1]:.8g}
 """
-    from .ncmat import formatVectorForNCMAT
-    out += formatVectorForNCMAT('vdos_density',h_vdos[debye_cut_bin:])
+    from ._ncmatimpl import formatVectorForNCMAT
+    out += formatVectorForNCMAT('vdos_egrid',vdos_egrid,'  ',exact=True)
+    out += formatVectorForNCMAT('vdos_density',vdos_density,'  ')
     print ("Generated NCMAT data...")
     print ("Verifying that it can be loaded with NCrystal...")
     from .core import load as nc_load
