@@ -566,9 +566,6 @@ class NCMATComposerImpl:
                              comment = None, fraction = None, trim_edges = False,
                              effective_temperature = None, msd = None,
                              msd_at_temperature = None, debye_temp = None ):
-        #The effective_temperature/msd/msd_at_temperature/debye_temp
-        #parameters emit the corresponding NCMAT v8 @DYNINFO keywords
-        #(and their usage switches the output to NCMAT v8):
         if msd is not None and debye_temp is not None:
             raise _nc_core.NCBadInput('Do not specify both msd and debye_temp')
         if msd_at_temperature is not None and msd is None:
@@ -920,8 +917,6 @@ class NCMATComposerImpl:
                 pass
             elif ditype == 'scatknl':
                 lines += f'temperature {_fmtprecisenum(dyninfo["temperature"])}\n'
-                #NCMAT v8 keywords (their presence makes create_ncmat
-                #emit an NCMAT v8 header):
                 if dyninfo.get('effective_temperature') is not None:
                     _ = _fmtprecisenum(dyninfo['effective_temperature'])
                     lines += f'effective_temperature {_}\n'
@@ -1017,11 +1012,16 @@ class NCMATComposerImpl:
             return
         out = {}
         from collections import Counter as _collections_Counter
+        from fractions import Fraction
         counts = _collections_Counter([e[0] for e in atompos['pos']])
+        #Fractions of the unit cell content, weighted by site occupancy:
+        occumap = atompos.get('occumap',{})
+        weights = { lbl : count * Fraction(occumap.get(lbl,1.0)).limit_denominator(10**6)
+                    for lbl,count in counts.items() }
+        wsum = sum( weights.values() )
         for lbl,count in counts.items():
-            frac = float(count) / natoms
-            gcd = math.gcd(count,natoms)
-            out[ lbl ] = ( frac, ( '1' if count==natoms else f'{count//gcd}/{natoms//gcd}' ), count )
+            f = weights[lbl] / wsum
+            out[ lbl ] = ( float(f), ( '1' if f == 1 else f'{f.numerator}/{f.denominator}' ), count )
         return out
 
     def get_chemical_composition( self, as_str ):
@@ -1158,7 +1158,7 @@ class NCMATComposerImpl:
             if abs( 1.0 - _fracsum ) > 1e-10:
                 raise _nc_core.NCBadInput(f'Invalid material - sum of dyninfo fractions is not 1 (it is {_fracsum})')
 
-        lbl_map,atomdb_lines = determine_labels_and_atomdb( self.__params, fractions = fractions )
+        lbl_map,atomdb_lines,occu_lines = determine_labels_and_atomdb( self.__params, fractions = fractions )
 
         #Crystals with a space group are written with their crystallographic
         #sites (NCMAT v8 @ATOMSITES) rather than all positions:
@@ -1166,6 +1166,8 @@ class NCMATComposerImpl:
         ll  = self.__lines_cellsg( cellsg, atomsites )
         ll += self.__lines_atompos( lbl_map, atompos,
                                     sites = atomsites['sites'] if atomsites else None )
+        if occu_lines:
+            ll += '@ATOMOCCUPANCIES\n' + '\n'.join(occu_lines) + '\n'
         if density:
             _dval,_dunit = density
             _ncmat_dunit = {'g/cm3': 'g_per_cm3',
@@ -1173,17 +1175,8 @@ class NCMATComposerImpl:
                             'atoms/Aa3': 'atoms_per_aa3' }[_dunit]
             ll+=f'@DENSITY\n{_dval} {_ncmat_dunit}\n'
 
-        #NCMAT v8 is needed (and produced) when v8-only dyninfo keywords are
-        #used. The msd keyword (and debye_temp on scatknl) implies a solid,
-        #which v8 requires non-crystalline materials to declare:
+        #The msd keyword (and debye_temp on scatknl) implies a solid:
         dyninfos_all = self.__params.get('dyninfos',{}).values()
-        _needs_v8 = atomsites is not None or any(
-            di.get('ditype')=='msd'
-            or ( di.get('ditype')=='scatknl'
-                 and any( di.get(k) is not None
-                          for k in ('effective_temperature','v8msd',
-                                    'v8debye_temp') ) )
-            for di in dyninfos_all )
         _implies_solid = any( di.get('ditype')=='msd'
                               or ( di.get('ditype')=='scatknl'
                                    and any( di.get(k) is not None
@@ -1195,8 +1188,16 @@ class NCMATComposerImpl:
                                       ' describe atomic displacements in a'
                                       ' solid, which is inconsistent with the'
                                       f' declared state of matter "{som}"')
-        if som is None and _needs_v8 and _implies_solid and not is_crystal:
-            som = 'solid'
+        if som is None and not is_crystal:
+            #NCMAT v8 requires non-crystalline materials to declare the state
+            #of matter. As older formats did, VDOS based ones are solids:
+            if _implies_solid or any( di.get('ditype') in ('vdos','vdosdebye')
+                                      for di in dyninfos_all ):
+                som = 'solid'
+            else:
+                raise _nc_core.NCBadInput('Non-crystalline materials must'
+                                          ' declare a state of matter: call'
+                                          ' .set_state_of_matter(..) first')
         if som is not None:
             assert som in ('solid','liquid','gas')
             ll += f'@STATEOFMATTER\n{som}\n'
@@ -1249,13 +1250,7 @@ class NCMATComposerImpl:
         )
         ll += ld
 
-        if _needs_v8 and not is_crystal and som is None:
-            raise _nc_core.NCBadInput('The effective_temperature parameter'
-                                      ' produces NCMAT v8 data, where'
-                                      ' non-crystalline materials must declare'
-                                      ' a state of matter: call'
-                                      ' .set_state_of_matter(..) first')
-        out=["NCMAT v8" if _needs_v8 else "NCMAT v7"]
+        out=["NCMAT v8"]
         comments = copy.deepcopy(self.__params.get('top_comments',[]))
 
         if natoms_with_fallback_dyninfo:
@@ -1658,7 +1653,7 @@ def _decode_composition(label,*composition):
             ll.append( ( -mfr, nme ) )
     return label, ll
 
-def determine_labels_and_atomdb( _self_params, *, fractions, allow_siteoccu_ncmatv5_hack = True ):
+def determine_labels_and_atomdb( _self_params, *, fractions ):
     compositions = _self_params.get('compositions',{})
     #compositions = copy.deepcopy(compositions)#we will modify a bit below and need to retain immutability
     atomdb = _self_params.get('atomdb',{})
@@ -1702,32 +1697,8 @@ def determine_labels_and_atomdb( _self_params, *, fractions, allow_siteoccu_ncma
 
     lbls_with_nonunit_occu = { lbl for lbl,occu in occumap.items() if occu != 1.0 } if occumap else set()
 
-    #SPECIAL HACK BEGIN
-    if lbls_with_nonunit_occu and not allow_siteoccu_ncmatv5_hack:
-        raise _nc_core.NCBadInput('Can not support site occupancies != 1.0 without the special hack for NCMAT v5 (and allow_siteoccu_ncmatv5_hack was set to False)')
-
-    if lbls_with_nonunit_occu:
-        #Handle via (non-persistent) modifications of compositions + atomdb:
-        atomdb = copy.deepcopy(atomdb)
-    atomdb_hack_comments = []
-    for i,lbl in enumerate(sorted(lbls_with_nonunit_occu)):
-        origelem_mass = calc_mass(lbl,compositions[lbl])
-        compos = compositions[lbl][:]
-        origelem_lbl = lbl if compos is None else _nc_fmt.format_chemform([(v,k) for k,v in compos])
-        assert 0.0 < origelem_mass < 2000.0
-        #In principle I should check this is not already used, but if anyone
-        #actually needs Og999 or thereabouts, they are obviously just trying
-        #to break our hack by being smartasses :-)
-        hijackedIsotope = f'Og{299-i}'
-        assert hijackedIsotope not in atomdb
-        atomdb[hijackedIsotope] = _nc_core.AtomData.fmt_atomdb_str( origelem_mass, 0.0, 0.0, 0.0 )
-        occu = occumap[lbl]
-        compositions[ lbl ] = [ (occu*frac,elem) for frac,elem in compos ] + [ ( 1.0 - occu, hijackedIsotope ) ]
-        atomdb_hack_comments.append ( f'#Note: Emulating site_occupancy={occu:g} for {origelem_lbl} by hijacking {hijackedIsotope} to play the role as "sterile {origelem_lbl}".' )
-    #SPECIAL HACK END
 
     atomdb_lines = []
-    atomdb_lines += atomdb_hack_comments
     for lbl,paramstr in sorted( atomdb.items() ):
         atomdb_lines.append(f'{lbl} {paramstr}')
 
@@ -1756,7 +1727,9 @@ def determine_labels_and_atomdb( _self_params, *, fractions, allow_siteoccu_ncma
             for frac,name in compos:
                 s += f' {frac:.12g} {name}'
             atomdb_lines.append( f'{speciallbl} is{s}')
-    return lblmap,atomdb_lines
+    occu_lines = [ f'{lblmap.get(lbl,lbl)} {_nc_fmt.prettyFmtValue(occumap[lbl])}'
+                   for lbl in sorted(lbls_with_nonunit_occu) ]
+    return lblmap,atomdb_lines,occu_lines
 
 def _is_nonempty_array( x ):
     return hasattr(x,'__len__') and len(x)>0

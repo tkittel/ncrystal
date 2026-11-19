@@ -220,10 +220,17 @@ def test_v8_scatknl_keywords():
     r = r['sabanalyse']
     assert r['teff_extender'] == 450.0
     print('=> v8 keywords roundtrip (teff_extender=450): OK')
-    #no keywords -> still v7:
+    #no keywords -> also v8, so the state of matter is still required:
     c2 = mkc()
-    assert c2.create_ncmat().startswith('NCMAT v7')
-    print('=> plain scatknl composer output remains NCMAT v7: OK')
+    try:
+        c2.create_ncmat()
+    except NC.NCBadInput as e:
+        print(f'=> correctly refused stateless plain scatknl: {e}')
+    else:
+        raise RuntimeError('stateless plain scatknl accepted')
+    c2.set_state_of_matter('liquid')
+    assert c2.create_ncmat().startswith('NCMAT v8')
+    print('=> plain scatknl composer output is NCMAT v8: OK')
 
 if __name__ == '__main__':
     main()
