@@ -170,7 +170,7 @@ def testncmat( verbose ):
     #doall = '--all' in sys.argv[1:]
 
 
-    for testdirname in ('refnc1','refnc2d5'):
+    for testdirname in ('refnc1','refnc2d5','refnc4d4'):
         testdir = get_named_test_data_dir(testdirname)
         for f in sorted(testdir.glob('*.ncmat'),
                         key = lambda p : ( p.name, p ) ):
