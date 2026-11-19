@@ -48,6 +48,18 @@ namespace NCRYSTAL_NAMESPACE {
       VDOSEval( const VDOSData& );
       ~VDOSEval();
 
+      //Handling of a nonzero last density in checkAndStandardiseInput:
+      enum class FinalZero { Require, Append };
+
+      //Brings VDOS input (egrid is {emin,emax} or one value per density) to the
+      //standard form: excess trailing zeros dropped, exactly one final zero.
+      //Throws BadInput if fewer than 5 values remain.
+      static void checkAndStandardiseInput( VectD& egrid, VectD& density,
+                                            FinalZero );
+
+      //Whether VDOS input is in the standard form of checkAndStandardiseInput:
+      static bool isStandardInput( const VectD& egrid, const VectD& density );
+
       //Basic parameters (npts from emin to emax, npts_extended from 0 to emax):
       struct GridInfo { double emin, emax; unsigned npts, npts_extended; };
       GridInfo getGridInfo() const;
@@ -130,7 +142,8 @@ namespace NCRYSTAL_NAMESPACE {
     // points from emin to emax (both positive), which would coincide with zero
     // if the grid was extended downwards by a whole number of bins. The
     // returned egrid is always specified in the compact form with just two
-    // entries, {emin,emax}.
+    // entries, {emin,emax}. Input and returned density are in the standard
+    // form of VDOSEval::checkAndStandardiseInput.
     //
     std::pair<VectD,VectD> regulariseVDOSGrid( const VectD& egrid, const VectD& density );
 

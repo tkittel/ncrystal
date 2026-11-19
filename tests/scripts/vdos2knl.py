@@ -156,8 +156,8 @@ def test_unusual_vdos():
           ( 0.76364, 0.2978, 0.43132, 2.4012, 3.3239,
             3.6522, 3.7056, 3.7329, 3.7392 ) ),
         ( 'vdos_graphiteoxide_D.ncmat', 293.15,
-          ( 18.115, 5.7675, 1.9528, 1.0917, 1.5693,
-            2.7196, 3.1024, 3.3006, 3.3469 ) ),
+          ( 17.447, 5.5562, 1.8823, 1.0576, 1.5333,
+            2.7065, 3.0893, 3.2973, 3.3454 ) ),
         ( 'vdos_hydrogen_osc.ncmat', 14,
           ( 78.324, 35.108, 42.398, 29.249, 27.193,
             26.13, 24.507, 20.873, 20.78 ) ),
@@ -208,7 +208,8 @@ def test_resource_limits():
     #order, leaving it unable to cover neutron energies up to the required
     #0.1eV. The same VDOS works at a higher temperature.
     c = NC.NCMATComposer()
-    c.set_dyninfo_vdos( 'H', vdos_egrid = ( 0.01, 8.0 ), vdos = [ 1.0 ] * 20 )
+    c.set_dyninfo_vdos( 'H', vdos_egrid = ( 0.01, 8.0 ),
+                        vdos = [ 1.0 ] * 19 + [ 0.0 ] )
     c.set_density( 1.0 )
     c.set_state_of_matter( 'solid' )
     NC.registerInMemoryFileData( 'widevdos.ncmat', c.create_ncmat() )

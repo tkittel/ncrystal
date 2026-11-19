@@ -104,10 +104,16 @@ def validate_cfgstr(cfgstr):
     return not any_error
 
 def main():
-    iv_mpath = integrate_vdos_mpmath( 0.1, 0.2, [2.0,2.0],
+    #A VDOS always ends with exactly one zero density (one is appended if
+    #missing, excess ones are ignored). Energies are multiples of 2^-5 eV, so
+    #the three are exactly the same curve:
+    iv_mpath = integrate_vdos_mpmath( 0.125, 0.28125, [2.0]*5 + [0.0],
                                       include_parabola=True )
-    iv_ncrystal = integrate_vdos_ncrystal( 0.1, 0.2, [2.0,2.0] )
-    assert float( iv_ncrystal / iv_mpath - 1.0 ) < 1e-12
+    for emax, dens in ( ( 0.25, [2.0]*5 ),
+                        ( 0.28125, [2.0]*5 + [0.0] ),
+                        ( 0.34375, [2.0]*5 + [0.0]*3 ) ):
+        iv_ncrystal = integrate_vdos_ncrystal( 0.125, emax, dens )
+        assert abs( float( iv_ncrystal / iv_mpath - 1.0 ) ) < 1e-12
 
     cfgstrs = [ f.fullKey for f in NC.browseFiles(factory='stdlib') ]
     saw_errors = False

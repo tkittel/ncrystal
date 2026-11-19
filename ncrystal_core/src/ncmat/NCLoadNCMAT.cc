@@ -481,10 +481,8 @@ NC::Info NC::loadNCMAT( NCMATData&& data,
           auto vdos_density_orig = std::move(e.fields.at("vdos_density"));
 
           //NB: The following code should remain similar to the equivalent code
-          //in ncrystal.cc in ncc::createVDOSDataFromRaw:
-
-          nc_assert_always( vdos_egrid_orig.size()==2 || vdos_egrid_orig.size()==vdos_density_orig.size());
-          nc_assert_always( vdos_density_orig.size() >= 5 );
+          //in ncrystal.cc in ncc::createVDOSDataFromRaw. The parser already
+          //called VDOSEval::checkAndStandardiseInput.
 
           VectD vdos_egrid_reg, vdos_density_reg;
           std::tie(vdos_egrid_reg, vdos_density_reg) = VDOS::regulariseVDOSGrid( vdos_egrid_orig, vdos_density_orig);

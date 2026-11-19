@@ -1,0 +1,36 @@
+Test checkAndStandardiseInput([0.01, 0.05], [1, 2, 3, 2, 1, 0], Require)
+   ->   result: [0.01, 0.05], [1, 2, 3, 2, 1, 0]
+Test checkAndStandardiseInput([0.01, 0.07], [1, 2, 3, 2, 1, 0, 0, 0], Require)
+   ->   result: [0.01, 0.052857142857142859], [1, 2, 3, 2, 1, 0]
+Test checkAndStandardiseInput([0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07], [1, 2, 3, 2, 1, 0, 0], Require)
+   ->   result: [0.01, 0.02, 0.03, 0.04, 0.05, 0.06], [1, 2, 3, 2, 1, 0]
+Test checkAndStandardiseInput([0.01, 0.05], [1, 2, 3, 2, 1], Require)
+   ->   result: BadInput: vdos_density must end with a value of 0
+Test checkAndStandardiseInput([0.01, 0.02, 0.04, 0.08, 0.16], [1, 2, 3, 2, 1], Require)
+   ->   result: BadInput: vdos_density must end with a value of 0
+Test checkAndStandardiseInput([0.01, 0.05], [1, 2, 3, 0, 0], Require)
+   ->   result: BadInput: vdos_density has too few values (>=5 needed, excess trailing zeroes are ignored since NCrystal v5.0.0)
+Test checkAndStandardiseInput([0.01, 0.05], [1, 2, 0, 3, 0], Require)
+   ->   result: [0.01, 0.05], [1, 2, 0, 3, 0]
+Test checkAndStandardiseInput([0.01, 0.05], [0, 0, 0, 0, 0], Require)
+   ->   result: BadInput: vdos_density has too few values (>=5 needed, excess trailing zeroes are ignored since NCrystal v5.0.0)
+Test checkAndStandardiseInput([0.01, 0.02, 0.03], [1, 2, 3, 2, 0], Require)
+   ->   result: BadInput: VDOS egrid must have two values, or one value per density value
+Test checkAndStandardiseInput([0.01, 0.05], [1, 2, 3, 2, 1, 0], Append)
+   ->   result: [0.01, 0.05], [1, 2, 3, 2, 1, 0]
+Test checkAndStandardiseInput([0.01, 0.07], [1, 2, 3, 2, 1, 0, 0, 0], Append)
+   ->   result: [0.01, 0.052857142857142859], [1, 2, 3, 2, 1, 0]
+Test checkAndStandardiseInput([0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07], [1, 2, 3, 2, 1, 0, 0], Append)
+   ->   result: [0.01, 0.02, 0.03, 0.04, 0.05, 0.06], [1, 2, 3, 2, 1, 0]
+Test checkAndStandardiseInput([0.01, 0.05], [1, 2, 3, 2, 1], Append)
+   ->   result: [0.01, 0.060000000000000005], [1, 2, 3, 2, 1, 0]
+Test checkAndStandardiseInput([0.01, 0.02, 0.04, 0.08, 0.16], [1, 2, 3, 2, 1], Append)
+   ->   result: [0.01, 0.02, 0.04, 0.08, 0.16, 0.24], [1, 2, 3, 2, 1, 0]
+Test checkAndStandardiseInput([0.01, 0.05], [1, 2, 3, 0, 0], Append)
+   ->   result: BadInput: vdos_density has too few values (>=5 needed, excess trailing zeroes are ignored since NCrystal v5.0.0)
+Test checkAndStandardiseInput([0.01, 0.05], [1, 2, 0, 3, 0], Append)
+   ->   result: [0.01, 0.05], [1, 2, 0, 3, 0]
+Test checkAndStandardiseInput([0.01, 0.05], [0, 0, 0, 0, 0], Append)
+   ->   result: BadInput: vdos_density has too few values (>=5 needed, excess trailing zeroes are ignored since NCrystal v5.0.0)
+Test checkAndStandardiseInput([0.01, 0.02, 0.03], [1, 2, 3, 2, 0], Append)
+   ->   result: BadInput: VDOS egrid must have two values, or one value per density value

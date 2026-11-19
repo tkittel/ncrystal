@@ -175,9 +175,8 @@ void NC::NCMATData::DynInfo::validate( int theversion ) const
   if ( dyninfo_type==VDOS ) {
 
     //fields specific for type=vdos:
+    //NB: VDOSEval::checkAndStandardiseInput checks the number of values.
     auto& v_dos = fields.at("vdos_density");
-    if ( v_dos.size() < 5 )
-      NCRYSTAL_THROW(BadInput,"too few vdos_density parameters");
     valvector("vdos",v_dos, true);
 
     auto& v_er = fields.at("vdos_egrid");

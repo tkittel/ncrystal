@@ -1,37 +1,37 @@
 === Element: O (mass=16 amu, temperature=293.1K) ===
-vdos_egrid: 0.0105 0.07703
-vdos_density [2016]: front=0.0147 back=~0 min=~0 max=0.9995 sum=385.4
+vdos_egrid: 0.0105 0.07753
+vdos_density [2012]: front=0.0147 back=~0 min=~0 max=0.9999 sum=381.8
 gnexpn maxOrder: 36
 gnexpn alpha2x: 0.06397
 gnexpn suggestedEmax: 1
 gnexpn sabRange: 5.751e-07 189.2 -39.02 16.12
 gnexpn last abRange: n=36 183.2 1275 -71.27 11.55
-gnexpn G1 rawspec [4667]: front=~0 back=~0 min=~0 max=46.68 sum=3.029e+04
+gnexpn G1 rawspec [4653]: front=~0 back=~0 min=~0 max=46.77 sum=3e+04
 knl alphaGrid [110]: front=~0 back=189.2 min=~0 max=189.2 sum=5279
-knl betaGrid [240]: front=-39.15 back=16.4 min=-39.15 max=16.4 sum=-493.9
-knl sab [26400]: front=~0 back=~0 min=~0 max=0.471 sum=1085
+knl betaGrid [240]: front=-39.52 back=16.21 min=-39.52 max=16.21 sum=-497.6
+knl sab [26400]: front=~0 back=~0 min=~0 max=0.4729 sum=1077
 knl suggestedEmax: 1
 std alphaGrid [110]: front=~0 back=189.2 min=~0 max=189.2 sum=5279
-std betaGrid [240]: front=-39.15 back=16.4 min=-39.15 max=16.4 sum=-493.9
-std sab [26400]: front=~0 back=~0 min=~0 max=0.471 sum=1085
+std betaGrid [240]: front=-39.52 back=16.21 min=-39.52 max=16.21 sum=-497.6
+std sab [26400]: front=~0 back=~0 min=~0 max=0.4729 sum=1077
 std suggestedEmax: 1
 alpha range: 0 189.2
-beta range: -39.15 16.4
+beta range: -39.52 16.21
 === Element: Th (mass=232 amu, temperature=293.1K) ===
-vdos_egrid: 0.0095 0.07703
-vdos_density [2027]: front=0.1058 back=~0 min=~0 max=1 sum=130
+vdos_egrid: 0.0095 0.07753
+vdos_density [2042]: front=0.1058 back=~0 min=~0 max=1 sum=130
 gnexpn maxOrder: 27
 gnexpn alpha2x: 0.03787
 gnexpn suggestedEmax: 1
 gnexpn sabRange: 9.714e-07 179.2 -14.66 10.76
 gnexpn last abRange: n=27 187.9 1798 -16.87 10.92
-gnexpn G1 rawspec [4623]: front=~0 back=~0 min=~0 max=137 sum=3e+04
+gnexpn G1 rawspec [4653]: front=~0 back=~0 min=~0 max=137 sum=3e+04
 knl alphaGrid [110]: front=~0 back=179.2 min=~0 max=179.2 sum=4997
-knl betaGrid [240]: front=-14.69 back=10.85 min=-14.69 max=10.85 sum=-64.92
+knl betaGrid [240]: front=-14.69 back=10.85 min=-14.69 max=10.85 sum=-64.99
 knl sab [26400]: front=~0 back=~0 min=~0 max=1.411 sum=3811
 knl suggestedEmax: 1
 std alphaGrid [110]: front=~0 back=179.2 min=~0 max=179.2 sum=4997
-std betaGrid [240]: front=-14.69 back=10.85 min=-14.69 max=10.85 sum=-64.92
+std betaGrid [240]: front=-14.69 back=10.85 min=-14.69 max=10.85 sum=-64.99
 std sab [26400]: front=~0 back=~0 min=~0 max=1.411 sum=3811
 std suggestedEmax: 1
 alpha range: 0 179.2
