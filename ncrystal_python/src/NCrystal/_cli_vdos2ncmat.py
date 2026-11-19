@@ -404,7 +404,7 @@ def main( progname, arglist ):
     if is_linspace:
         egrid_cnt += f'  vdos_egrid {egrid[0]:.14} {egrid[-1]:.14}'
     else:
-        egrid_cnt += formatVectorForNCMAT('vdos_egrid',egrid)
+        egrid_cnt += formatVectorForNCMAT('vdos_egrid',egrid,is_grid=True)
     egrid_cnt += '\n'
     egrid_cnt += formatVectorForNCMAT('vdos_density',density)
 

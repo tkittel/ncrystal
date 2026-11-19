@@ -540,6 +540,19 @@ class NCMATComposer:
         """
         return self.__impl.set_state_of_matter( state_of_matter )
 
+    def set_number_format( self, *, scalar_rtol = None, vector_rtol = None ):
+        """Precision of numbers in the NCMAT data. Each number is written with
+        the fewest digits which keep it within the given relative tolerance (0
+        means exact). The vector_rtol applies to vectors with at least 20
+        values (e.g. VDOS or scattering kernel data), and the scalar_rtol to
+        other numbers. The scalar_rtol can not be larger than vector_rtol, and
+        both must be at most 1e-3. Only values not None are changed. Defaults
+        are 1e-14 and 1e-6, so use for instance vector_rtol=1e-4 to get
+        smaller files.
+        """
+        return self.__impl.set_number_format( scalar_rtol = scalar_rtol,
+                                              vector_rtol = vector_rtol )
+
 
     def add_secondary_phase(self, fraction, cfgstr, normalise = True ):
         """Add a secondary phase to the material, by specifying the phase volume
@@ -807,15 +820,17 @@ class NCMATComposer:
     def _get_impl_obj( self ):
         return self.__impl
 
-def formatVectorForNCMAT(name,values,indent='  '):
+def formatVectorForNCMAT( name, values, indent = '  ', *, scalar_rtol = 1e-14,
+                          vector_rtol = 1e-6, is_grid = False ):
     """Utility function for help in python scripts composing .ncmat files,
        transforming an array of of values into a properly formatted text string,
-       with word-wrapping, usage of <val>r<n> syntax, etc.
+       with word-wrapping, usage of <val>r<n> syntax, etc. Values are written
+       with the precision of NCMATComposer.set_number_format, and is_grid
+       should be set for grids (e.g. vdos_egrid or alphagrid).
     """
     from ._ncmatimpl import formatVectorForNCMAT as _
-    return _( name = name,
-              values = values,
-              indent = indent )
+    return _( name, values, indent, scalar_rtol = scalar_rtol,
+              vector_rtol = vector_rtol, is_grid = is_grid )
 
 def _rawParseNCMAT(text_data_name,*,asJSONStr=False):
     """Parses NCMAT content and returns as Python data structure (a dictionary). The

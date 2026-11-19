@@ -329,6 +329,28 @@ class NCMATComposerImpl:
     def get_state_of_matter( self ):
         return self.__params.get('state_of_matter')
 
+    def get_number_format( self ):
+        return self.__params.get( 'number_format', ( 1e-14, 1e-6 ) )
+
+    def set_number_format( self, *, scalar_rtol, vector_rtol ):
+        if scalar_rtol is None and vector_rtol is None:
+            raise _nc_core.NCBadInput('set_number_format needs scalar_rtol'
+                                      ' and/or vector_rtol')
+        srtol, vrtol = self.get_number_format()
+        if scalar_rtol is not None:
+            srtol = float( scalar_rtol )
+        if vector_rtol is not None:
+            vrtol = float( vector_rtol )
+        for name, r in ( ( 'scalar_rtol', srtol ), ( 'vector_rtol', vrtol ) ):
+            if not ( 0.0 <= r <= 1e-3 ):
+                raise _nc_core.NCBadInput(f'{name} must be in [0,1e-3]'
+                                          f' (got {r:g})')
+        if srtol > vrtol:
+            raise _nc_core.NCBadInput(f'scalar_rtol ({srtol:g}) can not be'
+                                      f' larger than vector_rtol ({vrtol:g})')
+        self.__dirty()
+        self.__params['number_format'] = ( srtol, vrtol )
+
     def set_state_of_matter( self, state_of_matter ):
         if not state_of_matter:
             state_of_matter = None
@@ -483,8 +505,9 @@ class NCMATComposerImpl:
         #("227:1", "14:b1", "17", "17:cab"), as v8 requires explicit choices
         #for the numbers whose default setting has a choice code:
         sgstr = atomsites['spacegroup_setting'] if atomsites else spacegroup
+        from ._fmt import fmt_value_rtol
         def fmt( x ):
-            return _fmtprecisenum( x, strip_leading_zero = False )
+            return fmt_value_rtol( x, self.get_number_format()[0] )
         _sa, _sb, _sc = fmt(c['a']), fmt(c['b']), fmt(c['c'])
         if spacegroup and 195<=spacegroup<=230:
             if not ( _sa == _sb and _sb == _sc ):
@@ -863,8 +886,15 @@ class NCMATComposerImpl:
         lines=''
         natoms_with_fallback_dyninfo = 0
 
-        def formatVector(name,values,exact=False):
-            return formatVectorForNCMAT(name,values,_magic_two_space,exact)
+        from ._fmt import fmt_value_rtol
+        srtol, vrtol = self.get_number_format()
+        def fmts( x ):
+            return fmt_value_rtol( x, srtol )
+        def formatVector( name, values, is_grid = False ):
+            return formatVectorForNCMAT( name, values, _magic_two_space,
+                                         scalar_rtol = srtol,
+                                         vector_rtol = vrtol,
+                                         is_grid = is_grid )
 
         for lbl,fracinfo in sorted(fractions.items()):
             if not isinstance(fracinfo,float) and len(fracinfo)==3:
@@ -896,53 +926,53 @@ class NCMATComposerImpl:
                 #derives the Debye temperature itself, so the value survives
                 #unchanged):
                 lines += 'type vdosdebye\n'
-                lines += ( f'msd {_fmtprecisenum(dyninfo["msd_value"])}'
+                lines += ( f'msd {fmts(dyninfo["msd_value"])}'
                            f' at_temperature'
-                           f' {_fmtprecisenum(dyninfo["msd_temperature"])}\n' )
+                           f' {fmts(dyninfo["msd_temperature"])}\n' )
             else:
                 lines += f'type {ditype}\n'
             if ditype == 'vdosdebye':
-                dt=dyninfo['debye_temp']
-                lines += f'debye_temp {dt:g}\n'
+                lines += f'debye_temp {fmts(dyninfo["debye_temp"])}\n'
             elif ditype == 'vdos':
                 x = dyninfo['vdos_egrid']
                 from ._common import _grid_is_linspace
-                #(egrid written exactly, as it might have been computed by
-                #_standardise_vdos):
-                if len(x)>2 and _grid_is_linspace(x):
-                    x = [ x[0], x[-1] ]
-                lines += formatVector('vdos_egrid',x,exact=True)
+                if len(x)==2 or _grid_is_linspace(x):
+                    lines += f'vdos_egrid {fmts(x[0])} {fmts(x[-1])}\n'
+                else:
+                    lines += formatVector('vdos_egrid',x,is_grid=True)
                 lines += formatVector('vdos_density',dyninfo['vdos'])
             elif ditype in ('sterile','freegas','msd'):
                 pass
             elif ditype == 'scatknl':
-                lines += f'temperature {_fmtprecisenum(dyninfo["temperature"])}\n'
+                lines += f'temperature {fmts(dyninfo["temperature"])}\n'
                 if dyninfo.get('effective_temperature') is not None:
-                    _ = _fmtprecisenum(dyninfo['effective_temperature'])
+                    _ = fmts(dyninfo['effective_temperature'])
                     lines += f'effective_temperature {_}\n'
                 if dyninfo.get('v8msd') is not None:
-                    _ = f'msd {_fmtprecisenum(dyninfo["v8msd"])}'
+                    _ = f'msd {fmts(dyninfo["v8msd"])}'
                     if dyninfo.get('v8msd_at_temperature') is not None:
-                        _att = _fmtprecisenum(dyninfo['v8msd_at_temperature'])
+                        _att = fmts(dyninfo['v8msd_at_temperature'])
                         _ += f' at_temperature {_att}'
                     lines += _ + '\n'
                 if dyninfo.get('v8debye_temp') is not None:
-                    _ = _fmtprecisenum(dyninfo['v8debye_temp'])
+                    _ = fmts(dyninfo['v8debye_temp'])
                     lines += f'debye_temp {_}\n'
                 if dyninfo.get('egrid') is not None:
                     from ._common import _grid_is_linspace
                     x = dyninfo['egrid']
                     if ( len(x) > 3 and _grid_is_linspace(x) ):
-                        lines += f'egrid {_fmtprecisenum(x[0])} {_fmtprecisenum(x[-1])} {len(x)}\n'
+                        lines += f'egrid {fmts(x[0])} {fmts(x[-1])} {len(x)}\n'
                     elif len(x) <= 3:
                         if len(x)==3 and x[0]==0.0 and x[2]==0.0:
                             x = [ x[1] ]#single Emax value
-                        _=' '.join(_fmtprecisenum(e) for e in x)
+                        _=' '.join(fmts(e) for e in x)
                         lines += f'egrid {_}\n'
                     else:
-                        lines += formatVector('egrid',x)
-                lines += formatVector('alphagrid',dyninfo['alphagrid'])
-                lines += formatVector('betagrid',dyninfo['betagrid'])
+                        lines += formatVector('egrid',x,is_grid=True)
+                lines += formatVector('alphagrid',dyninfo['alphagrid'],
+                                      is_grid=True)
+                lines += formatVector('betagrid',dyninfo['betagrid'],
+                                      is_grid=True)
                 if dyninfo['sab'] is not None:
                     assert dyninfo['sab_scaled'] is None
                     lines += formatVector('sab',dyninfo['sab'])
@@ -1173,7 +1203,8 @@ class NCMATComposerImpl:
             _ncmat_dunit = {'g/cm3': 'g_per_cm3',
                             'kg/m3': 'kg_per_m3',
                             'atoms/Aa3': 'atoms_per_aa3' }[_dunit]
-            ll+=f'@DENSITY\n{_dval} {_ncmat_dunit}\n'
+            _ = _nc_fmt.fmt_value_rtol( _dval, self.get_number_format()[0] )
+            ll+=f'@DENSITY\n{_} {_ncmat_dunit}\n'
 
         #The msd keyword (and debye_temp on scatknl) implies a solid:
         dyninfos_all = self.__params.get('dyninfos',{}).values()
@@ -1211,7 +1242,8 @@ class NCMATComposerImpl:
             ll += f'@STATEOFMATTER\n{som}\n'
 
         _t = self.__params.get('temperature',None)
-        _v = f"{_t['value']:.14g}" if _t else None
+        _v = ( _nc_fmt.fmt_value_rtol( _t['value'], self.get_number_format()[0] )
+               if _t else None )
         if _t and ( _t['lock'] or _v != '293.15' ):
             ll += '@TEMPERATURE\n'
             if not _t['lock']:
@@ -1742,10 +1774,6 @@ def determine_labels_and_atomdb( _self_params, *, fractions ):
 def _is_nonempty_array( x ):
     return hasattr(x,'__len__') and len(x)>0
 
-def _fmtprecisenum( v, strip_leading_zero = True ):
-    _ = f'{v:.14g}' if v else '0'
-    return _[1:] if (strip_leading_zero and _.startswith('0.')) else _
-
 def _standardise_vdos( egrid, density ):
     #VDOS curve in NCrystal's standard form (excess trailing zeros dropped, a
     #final zero appended if missing), via the C++ implementation:
@@ -2260,24 +2288,21 @@ def _cifdata_via_ase( data_or_file, ase_format = None, quiet = False ):
         ase_io.write(s, ase_obj, format='cif')
         return s.getvalue().decode()
 
-def formatVectorForNCMAT(name,values,indent,exact=False):
-    #exact: shortest representation which reads back as the same number.
+def formatVectorForNCMAT( name, values, indent = '  ', *, scalar_rtol = 1e-14,
+                          vector_rtol = 1e-6, is_grid = False ):
+    #Values written with the fewest digits within vector_rtol (scalar_rtol for
+    #less than 20 values), see fmt_vector_rtol:
     def provideFormattedEntries():
-        def _fmtnum(num):
-            _ = ( repr(float(num)) if exact else f'{num:g}' ) if num else '0'
-            _ = _.removesuffix('.0')
-            if _.startswith('0.'):
-                _=_[1:]
-            return _
-        from ._numpy import _np
-        v = _np.asarray(values,dtype=float).flatten() if _np else values
-        i, nv = 0, len(v)
+        from ._fmt import fmt_vector_rtol
+        rtol = vector_rtol if len( values ) >= 20 else scalar_rtol
+        fv = fmt_vector_rtol( values, rtol, is_grid = is_grid )
+        i, nv = 0, len(fv)
         while i < nv:
-            fmt_vi=_fmtnum(v[i])
+            fmt_vi=fv[i]
             #check if is repeated:
             irepeat=i
             while irepeat+1<nv:
-                if _fmtnum(v[irepeat+1])==fmt_vi:
+                if fv[irepeat+1]==fmt_vi:
                     irepeat+=1
                 else:
                     break

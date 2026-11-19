@@ -1,0 +1,11 @@
+defaults: 1068 bytes, values within tolerance
+vector_rtol=1e-3: 820 bytes, values within tolerance
+exact: 1807 bytes, values within tolerance
+exact: identical values read back
+set_number_format only changes the given settings
+set_number_format({'scalar_rtol': 1e-05}): BadInput: scalar_rtol (1e-05) can not be larger than vector_rtol (1e-06)
+set_number_format({'vector_rtol': 0.002}): BadInput: vector_rtol must be in [0,1e-3] (got 0.002)
+set_number_format({'scalar_rtol': -1.0}): BadInput: scalar_rtol must be in [0,1e-3] (got -1)
+set_number_format({'vector_rtol': 1e-15}): BadInput: scalar_rtol (1e-14) can not be larger than vector_rtol (1e-15)
+set_number_format({'scalar_rtol': None}): BadInput: set_number_format needs scalar_rtol and/or vector_rtol
+set_number_format(1e-6): TypeError (keyword arguments only)
