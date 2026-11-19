@@ -1,0 +1,34 @@
+data_cs0150
+_chemical_formula_sum 'Tl I4 K2'
+_space_group_IT_number 159
+_symmetry_space_group_name_Hall 'P 3 -2c'
+_symmetry_space_group_name_H-M 'P 3 1 c'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 11.26
+_cell_length_b 11.26
+_cell_length_c 7.22
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-y,x-y,z
+-x+y,-x,z
+y,x,z+1/2
+-x,-x+y,z+1/2
+x-y,-y,z+1/2
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Tl1 Tl+2 0.3334 0.6667 0 1 0.0
+K1 K+1 0 0 0.032 1 0.0
+I1 I-1 0.3334 0.6667 0.5 1 0.0
+K2 K+1 0 0 0.25 1 0.0
+I2 I-1 0.3 0.425 0.008 1 0.0

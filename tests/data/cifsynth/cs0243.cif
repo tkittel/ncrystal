@@ -1,0 +1,44 @@
+data_cs0243
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Cl F H7 N2 Ru'
+_space_group_IT_number 36
+_symmetry_space_group_name_Hall 'C 2c -2c'
+_symmetry_space_group_name_H-M 'C c m 21'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 19.221
+_cell_length_b 7.057
+_cell_length_c 6.815
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-x,-y,z+1/2
+x,-y,z
+-x,y,z+1/2
+x+1/2,y+1/2,z
+-x+1/2,-y+1/2,z+1/2
+x+1/2,-y+1/2,z
+-x+1/2,y+1/2,z+1/2
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+N3 N-3 0.1234 0.207 0.225 1 0.0
+H9 H+1 0.082 0.187 -0.266 1 0.0
+H6 H+1 0.137 0.318 0.14 1 0.0
+H2 H+1 0.244 0.108 0.060 1 0.0
+N2 N-3 0.2253 0 -0.0265 1 0.0
+F2 F-2 0.0585 0.5 -0.0266 1 0.0
+H7 H+1 0.147 0.316 0.189 1 0.0
+H4 H+1 0.15 0.186 0.299 1 0.0
+H8 H+1 0.140 0.189 -0.318 1 0.0
+H3 H+1 0.02 0.399 -0.023 1 0.0
+Cl1 Cl-1 0.24095 0.5 0.0082 1 0.0
+Ru1 Ru+2 0.11468 0 0 1 0.0

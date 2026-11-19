@@ -1,0 +1,64 @@
+data_cs0043
+_chemical_formula_sum 'Si3 Cl Mg4 F12 Al3'
+_space_group_IT_number 218
+_symmetry_space_group_name_Hall 'P -4n 2 3'
+_symmetry_space_group_name_H-M 'P -4 3 n'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 9.152679
+_cell_length_b 9.152679
+_cell_length_c 9.152679
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+-z,x,-y
+-y,z,-x
+-x,y,-z
+1/2+x,1/2-z,1/2-y
+1/2+z,1/2-y,1/2-x
+1/2+y,1/2-x,1/2-z
+1/2+x,1/2+z,1/2+y
+1/2+z,1/2+y,1/2+x
+1/2+y,1/2+x,1/2+z
+-z,-x,y
+-y,-z,x
+-x,-y,z
+z,-x,-y
+y,-z,-x
+x,-y,-z
+1/2-x,1/2+z,1/2-y
+1/2-z,1/2+y,1/2-x
+1/2-y,1/2+x,1/2-z
+1/2-x,1/2-z,1/2+y
+1/2-z,1/2-y,1/2+x
+1/2-y,1/2-x,1/2+z
+z,x,y
+y,z,x
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Mg 0.02022 0.02022 0.02022 0.00151 0.00151 0.00151
+Si 0.00559 0.00548 0.00548 0.00000 0.00000 0.00000
+Al 0.00392 0.00604 0.00604 0.00000 0.00000 0.00000
+F 0.01925 0.00705 0.00918 0.00134 -0.00380 0.00571
+Cl 0.02759 0.02759 0.02759 0.00000 0.00000 0.00000
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+Mg 0.18590 0.18590 0.18590 0.02025
+Si 0.25000 0.00000 0.50000 0.00548
+Al 0.25000 0.50000 0.00000 0.00537
+F 0.14549 0.14521 0.43714 0.01186
+Cl 0.00000 0.00000 0.00000 0.02764

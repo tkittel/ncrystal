@@ -1,0 +1,37 @@
+data_cs0230
+_chemical_formula_sum 'F7 Ga Na2 Si2'
+_space_group_IT_number 4
+_symmetry_space_group_name_Hall 'P 2yb'
+_symmetry_space_group_name_H-M 'P 1 21 1'
+_cell_angle_alpha 90
+_cell_angle_beta 103.7
+_cell_angle_gamma 90
+_cell_length_a 6.80
+_cell_length_b 8.813
+_cell_length_c 6.548
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-x,y+1/2,-z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Na2 Na+1 0.2330 0.4444 0.3194 1 0.0
+F5 F-2 0.9063 -0.0945 0.0698 1 0.0
+F3 F-2 0.3603 0.2281 0.5662 1 0.0
+F6 F-2 0.0730 0.0306 0.4859 1 0.0
+F8 F-2 -0.024 0.2050 -0.8641 1 0.0
+Si3 Si+4 0.0313 0.2194 0.8870 1 0.0
+F1 F-2 0.5531 0.4419 0.3097 1 0.0
+Na1 Na+1 0.4866 0.8805 0.0887 1 0.0
+Si2 Si+4 -0.1049 0.0718 -0.7532 1 0.0
+F4 F-2 0.7989 0.2370 0.7414 1 0.0
+Ga1 Ga+2 0.599 0.2253 0.4806 1 0.0
+F7 F-2 0.1926 0.0992 0.844 1 0.0

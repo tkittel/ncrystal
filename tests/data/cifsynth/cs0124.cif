@@ -1,0 +1,55 @@
+data_cs0124
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'Cs1.002 Ca2.01 F20 Al3 Ti4'
+_space_group_IT_number 215
+_symmetry_space_group_name_Hall 'P -4 2 3'
+_symmetry_space_group_name_H-M 'P -4 3 m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 7.4901
+_cell_length_b 7.4901
+_cell_length_c 7.4901
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+y,-x,-z
+-x,-y,z
+-y,x,-z
+x,-y,-z
+-y,-x,z
+-x,y,-z
+y,x,z
+z,x,y
+x,-z,-y
+-z,-x,y
+-x,z,-y
+z,-x,-y
+-x,-z,y
+-z,x,-y
+x,z,y
+y,z,x
+y,-z,-x
+-z,-y,x
+-y,z,-x
+z,y,x
+-y,-z,x
+-z,y,-x
+z,-y,-x
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Al1 Al+4 0.5 0 0 1 0.0
+F1 F-2 0.1287 0.1287 0.3721 1 0.0
+F3 F-2 0.666 0.666 0.666 1 0.0
+Ca1 Ca+1 0 0.5 0.5 0.67 0.0
+Ti1 Ti+4 0.1342 0.1342 0.1342 1 0.0
+F2 F-2 0.8712 0.8712 0.8712 1 0.0
+Cs1 Cs+1 0.0798 0.5 0.5 0.167 0.0

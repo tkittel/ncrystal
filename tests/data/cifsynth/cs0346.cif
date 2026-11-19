@@ -1,0 +1,39 @@
+data_cs0346
+_chemical_formula_sum 'B10 H14'
+_space_group_IT_number 13
+_space_group_name_Hall '-P 2yc (-1/2*x+z,1/2*x,y)'
+_space_group_name_H-M_alt 'P 1 2/c 1 (c,2*a+c,b)'
+_symmetry_space_group_name_H-M 'P 1 2/c 1 (c,2*a+c,b)'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90.
+_cell_length_a 14.69
+_cell_length_b 21.45
+_cell_length_c 5.82
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+1/2+x,1/2+y,z
+1/2+x,y,-z
++x,1/2+y,-z
+1/2-x,-y,z
+-x,1/2-y,z
+-x,-y,-z
+1/2-x,1/2-y,-z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+B1 0.02216 0.31991 0.00000
+B2 0.10152 0.26811 0.14813
+B3 0.10152 0.26811 -0.14813
+B4 0.10690 0.19284 0.00000
+B5 0.02206 0.21279 0.22996
+B6 0.22784 0.06991 0.50000
+B7 0.14848 0.01811 0.64813
+B8 0.14848 0.01811 0.35187
+B9 0.14310 -0.05716 0.50000
+B10 0.22794 -0.03721 0.72996

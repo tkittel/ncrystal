@@ -1,0 +1,95 @@
+data_cs0517
+_chemical_formula_sum 'C5 Cl F2 H7 N8 P'
+_space_group_crystal_system monoclinic
+_space_group_IT_number 3
+_space_group_name_Hall 'P 2y'
+_space_group_name_H-M_alt 'P 1 2 1'
+_cell_angle_alpha 90
+_cell_angle_beta 110.983(4)
+_cell_angle_gamma 90
+_cell_length_a 18.461(5)
+_cell_length_b 25.259(7)
+_cell_length_c 20.837(6)
+
+loop_
+_space_group_symop_operation_xyz
+'x, y, z'
+'-x, y, -z'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_site_symmetry_order
+_atom_site_calc_flag
+_atom_site_refinement_flags_posn
+_atom_site_refinement_flags_adp
+_atom_site_refinement_flags_occupancy
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+F_1 F 1.0494(9) 0.1708(5) 1.2138(8) 0.133(5) Uani 1 1 d D U . . .
+N_1 N 1.0862(12) 0.1295(7) 1.2011(11) 0.123(7) Uani 1 1 d D U . . .
+HA1_1 H 1.157065 0.086640 1.293884 0.277 Uiso 1 1 calc R U . . .
+C_2 C 1.0337(7) 0.0901(6) 1.1596(7) 0.102(4) Uani 1 1 d D U . . .
+P1_3^a P 0.9505(12) 0.2154(7) 1.3197(8) 0.160(6) Uani 0.5 1 d D U P B 1
+N7_3^a N 0.866(2) 0.2504(15) 1.4766(15) 0.243(19) Uani 0.5 1 d D U P B 1
+Cl10_3^a Cl 0.861(3) 0.2688(17) 1.5363(15) 0.34(2) Uani 0.5 1 d D U P B 1
+HD6_3^b H 0.841184 -0.008098 1.199236 0.261 Uiso 0.5 1 calc R U P B 2
+F_6 F 0.7001(7) 0.4675(5) 0.9345(7) 0.106(4) Uani 1 1 d D U . . .
+C_7 C 0.8002(7) 0.3659(5) 0.9333(7) 0.089(3) Uani 1 1 d D U . . .
+C6_7^b C 0.707(3) 0.2425(17) 0.621(3) 0.185(13) Uani 0.5 1 d D U P E 2
+C_10 C 0.5400(6) 0.5799(5) 0.6902(5) 0.075(3) Uani 1 1 d D U . . .
+N5_11^a N 0.4318(12) 0.6983(10) 0.9246(7) 0.121(9) Uani 0.5 1 d D U P G 1
+N8_11^a N 0.3001(12) 0.7116(14) 0.9223(10) 0.137(10) Uani 0.5 1 d D U P G 1
+NA_12 N 0.4136(8) 0.7614(5) 0.5757(7) 0.076(3) Uani 1 1 d D U . . .
+N_15 N 0.1325(9) 0.9616(7) 0.2477(10) 0.103(5) Uani 1 1 d D U . . .
+C_16 C 0.1020(8) 0.9084(6) 0.2973(9) 0.111(5) Uani 1 1 d D U . . .
+N12_26^b N 0.990(6) 0.535(5) 1.086(6) 0.19(4) Uiso 0.25 1 d D U P L 2
+N15_27^b N 0.257(5) 0.456(4) 0.783(5) 0.27(4) Uiso 0.5 1 d D U P M 2
+H15B_27^b H 0.200124 0.462408 0.744299 0.327 Uiso 0.5 1 calc R U P M 2
+H13B_35^b H 0.923105 -0.131978 1.120171 0.292 Uiso 0.5 1 calc R U P Q -2
+H15B_35^b H 0.990851 -0.116675 0.997257 0.213 Uiso 0.5 1 calc R U P Q -2
+H3C_44^b H 1.115713 0.841496 0.667323 0.238 Uiso 0.5 1 d DR U P U 2
+H3C_47^a H 0.925632 0.782352 0.425185 0.300 Uiso 0.5 1 d DR U P X -1
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+F_1 0.137(12) 0.074(7) 0.165(13) 0.049(8) 0.026(10) 0.026(7)
+N_1 0.108(14) 0.075(9) 0.156(15) 0.020(9) 0.011(11) 0.016(9)
+C_2 0.088(8) 0.073(7) 0.139(10) 0.032(7) 0.032(7) 0.021(7)
+P1_3^a 0.190(16) 0.144(13) 0.134(11) 0.020(10) 0.043(10) 0.037(12)
+N7_3^a 0.28(5) 0.28(4) 0.19(3) 0.04(3) 0.11(3) 0.06(4)
+Cl10_3^a 0.48(6) 0.39(5) 0.23(3) 0.06(3) 0.21(4) 0.12(5)
+F_6 0.103(9) 0.070(6) 0.128(10) 0.034(7) 0.022(7) 0.033(6)
+C_7 0.080(8) 0.069(8) 0.106(9) 0.027(7) 0.020(7) 0.015(6)
+C6_7^b 0.21(2) 0.087(14) 0.23(2) -0.007(16) 0.033(16) 0.016(14)
+C_10 0.071(6) 0.057(5) 0.085(7) 0.024(5) 0.016(5) 0.011(6)
+N5_11^a 0.162(18) 0.11(2) 0.094(11) 0.003(19) 0.053(11) 0.03(2)
+N8_11^a 0.151(18) 0.12(2) 0.149(15) 0.01(2) 0.071(14) 0.01(2)
+NA_12 0.093(8) 0.043(7) 0.094(7) 0.009(6) 0.034(7) 0.012(6)
+N_15 0.093(11) 0.076(11) 0.131(14) 0.041(9) 0.032(9) 0.028(8)
+C_16 0.106(10) 0.091(10) 0.136(13) 0.048(9) 0.045(9) 0.041(8)
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+N C 0.0002 0.0005 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+C N 0.0009 0.0011 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+F O 0.0025 0.0021 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+P S 0.0518 0.0472 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Cl Cl 0.0642 0.0611 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

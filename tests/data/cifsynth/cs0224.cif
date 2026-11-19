@@ -1,0 +1,55 @@
+data_cs0224
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'B2 K O8 Si2'
+_space_group_IT_number 62
+_symmetry_space_group_name_Hall '-P 2c 2n'
+_symmetry_space_group_name_H-M 'P n a m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 8.456
+_cell_length_b 9.197
+_cell_length_c 8.125
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+x,y,1/2-z
+-x,-y,1/2+z
+1/2-x,1/2+y,1/2+z
+1/2+x,1/2-y,1/2-z
+1/2+x,1/2-y,z
+1/2-x,1/2+y,-z
+-x,-y,-z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+K 0.02253 0.01801 0.01996 -0.00073 0.00000 0.00000
+B 0.01431 0.01261 0.01125 -0.00033 0.00000 0.00000
+Si 0.01218 0.00915 0.01012 -0.00020 0.00023 -0.00013
+O1 0.02101 0.01333 0.02699 0.00629 -0.00497 -0.00318
+O2 0.01949 0.01152 0.02081 -0.00430 -0.00702 0.00127
+O3 0.01583 0.01874 0.01547 0.00397 0.00438 0.00286
+O4 0.02558 0.02594 0.01125 0.00795 0.00000 0.00000
+O5 0.01614 0.03422 0.01096 0.00496 0.00000 0.00000
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+K 0.37550 0.08823 0.25000 0.02014
+B 0.24712 0.41437 0.41316 0.01281
+Si 0.04240 0.20208 -0.04557 0.01049
+O1 0.20495 0.07834 0.00448 0.02052
+O2 0.12264 0.37830 -0.04216 0.01730
+O3 0.41386 0.31857 0.08812 0.01671
+O4 0.49811 0.66674 0.25000 0.02084
+O5 0.18444 0.41241 0.25000 0.02038

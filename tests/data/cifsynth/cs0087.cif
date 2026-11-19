@@ -1,0 +1,30 @@
+data_cs0087
+_chemical_formula_sum 'N H4 C2 P'
+_space_group_IT_number 26
+_symmetry_space_group_name_Hall 'P -2 -2b'
+_symmetry_space_group_name_H-M 'P b 21 m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 5.343
+_cell_length_b 7.377
+_cell_length_c 8.348
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-x,y+1/2,-z
+x,y,-z
+-x,y+1/2,z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+P1 P-2 0.0976 -0.0209 0.25 0.5 0.0
+C1 C-3 -0.2641 0.1385 0.402 1 0.0
+N1 N+4 -0.1635 0.0970 0.25 0.5 0.0

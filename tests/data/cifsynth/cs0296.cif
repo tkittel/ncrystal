@@ -1,0 +1,88 @@
+data_cs0296
+_chemical_formula_sum 'Al C F2 H4 N3 Ni'
+_space_group_IT_number 132
+_symmetry_cell_setting tetragonal
+_symmetry_space_group_name_Hall '-P 4c 2c'
+_symmetry_space_group_name_H-M 'P 42/m c m'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 9.9893(3)
+_cell_length_b 9.9893(3)
+_cell_length_c 22.3902(15)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-y, x, z+1/2'
+'-x, -y, z'
+'y, -x, z+1/2'
+'x, -y, -z+1/2'
+'y, x, -z'
+'-x, y, -z+1/2'
+'-y, -x, -z'
+'-x, -y, -z'
+'y, -x, -z-1/2'
+'x, y, -z'
+'-y, x, -z-1/2'
+'-x, y, z-1/2'
+'-y, -x, z'
+'x, -y, z-1/2'
+'y, x, z'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_symmetry_multiplicity
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+N1 N 0.3821(4) 0.3821(4) 0.0867(2) 0.0459(11) Uani 1 2 d S A .
+N2 N 0.2915(3) 0.2915(3) 0.1283(2) 0.0431(10) Uani 1 2 d S . .
+H3 H 0.4146 0.1689 0.1689 0.060 Uiso 0.48(2) 1 calc PR A 1
+N3' N 0.2842(12) 0.1237(11) 0.1210(7) 0.052(3) Uani 0.52(2) 1 d P A 2
+H6 H 0.1277 0.6295 -0.0025 0.081 Uiso 0.239(11) 1 d PR A 1
+H7 H -0.0344 0.7436 0.0056 0.081 Uiso 0.239(11) 1 d PR A 1
+H7' H -0.0393 0.8174 -0.0674 0.085 Uiso 0.261(11) 1 d PR A 2
+Ni1 Ni 0.42262(5) 0.57739(5) 0.0000 0.0365(3) Uani 1 4 d S . .
+C1 C 0.2445(4) 0.7555(4) 0.0000 0.0452(13) Uani 1 4 d S . .
+F1 F 0.3323(3) 0.4765(3) 0.06854(14) 0.0738(9) Uani 1 1 d . . .
+F3 F 0.5000 0.5000 0.2500 1.04(6) Uani 1 8 d S . .
+Al1 Al 0.0000 0.0000 0.2500 0.0384(6) Uani 1 8 d S . .
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+N1 0.0458(16) 0.0458(16) 0.046(3) 0.0007(15) 0.0007(15) 0.000(2)
+N2 0.0406(15) 0.0406(15) 0.048(2) 0.0031(14) 0.0031(14) 0.0033(19)
+N3' 0.044(5) 0.053(5) 0.060(6) 0.007(4) 0.012(5) 0.006(4)
+Ni1 0.0314(4) 0.0314(4) 0.0466(5) 0.000 0.000 0.0051(3)
+C1 0.0360(18) 0.0360(18) 0.063(3) 0.000 0.000 0.002(2)
+F1 0.0677(16) 0.0520(16) 0.101(2) 0.0294(15) 0.0381(15) 0.0204(13)
+F3 1.41(10) 1.41(10) 0.30(5) 0.000 0.000 0.000
+Al1 0.0369(8) 0.0369(8) 0.0414(13) 0.000 0.000 0.000
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+N C 0.0033 0.0016 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Ni Cu 0.3201 1.2651 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+C N 0.0061 0.0033 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+F O 0.0106 0.0060 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Al Si 0.0817 0.0704 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

@@ -1,0 +1,54 @@
+data_cs0403
+_chemical_formula_sum 'Al0.5 Ce D0.086 Cr1.5'
+_space_group_IT_number 194
+_symmetry_space_group_name_Hall '-P 6c 2c'
+_symmetry_space_group_name_H-M 'P 63/m m c'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 5.5871
+_cell_length_b 5.5871
+_cell_length_c 9.1239
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+x-y,x,z+1/2
+-y,x-y,z
+-x,-y,z+1/2
+-x+y,-x,z
+y,-x+y,z+1/2
+-y,-x,-z+1/2
+x-y,-y,-z
+x,x-y,-z+1/2
+y,x,-z
+-x+y,y,-z+1/2
+-x,-x+y,-z
+-x,-y,-z
+-x+y,-x,-z-1/2
+y,-x+y,-z
+x,y,-z-1/2
+x-y,x,-z
+-y,x-y,-z-1/2
+y,x,z-1/2
+-x+y,y,z
+-x,-x+y,z-1/2
+-y,-x,z
+x-y,-y,z-1/2
+x,x-y,z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Ce1 Ce 0.3334 0.6666 0.0605 1 0.0
+D2 D 0.50 0.98 0.62 0.016 0.0
+Al2 Al 0.8316 0.6637 0.25 0.223 0.0
+Cr1 Cr 0 0 0 0.6689 0.0
+Cr2 Cr 0.8316 0.6637 0.25 0.777 0.0
+Al1 Al 0 0 0 0.3307 0.0
+D1 D 0.21 0.4 0.508 0.0064 0.0

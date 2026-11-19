@@ -1,0 +1,55 @@
+data_cs0029
+_chemical_formula_sum 'Co3.44 H4 F9 Al1.56'
+_space_group_IT_number 157
+_symmetry_space_group_name_Hall 'P 3 -2'
+_symmetry_space_group_name_H-M 'P 3 1 m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 5.680
+_cell_length_b 5.680
+_cell_length_c 7.338
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+x-y,-y,z
+-y,x-y,z
+y,x,z
+-x+y,-x,z
+-x,-x+y,z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+CoM1 0.01131 0.01131 0.01553 0.00571 0.00011 0.00000
+AlT1 0.01622 0.01622 0.01074 0.00811 0.00000 0.00000
+CoT1 0.01622 0.01622 0.01074 0.00811 0.00000 0.00000
+F1 0.05825 0.05140 0.02056 0.02513 0.00000 0.00000
+F-h1 0.02513 0.02513 0.00914 0.01256 0.00000 0.00000
+F-h2 0.01828 0.01942 0.01599 0.00914 0.00114 0.00000
+F4 0.02285 0.02285 0.01599 0.01142 0.00000 0.00000
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+_atom_site_type_symbol
+_atom_site_attached_hydrogens
+CoM1 0.66193 0.00000 0.50000 1.00000 0.01268 Co 0
+AlT1 0.33332 0.66668 0.10637 0.78000 0.01439 Al 0
+CoT1 0.33332 0.66668 0.10637 0.22000 0.01439 Co 0
+F1 0.42972 0.00000 0.01316 1.00000 0.04455 F 0
+F-h1 0.00000 0.00000 0.35620 1.00000 0.01942 F 0
+F-h2 0.33208 0.00000 0.65317 1.00000 0.01828 F 0
+F4 0.33332 0.66668 0.36184 1.00000 0.02056 F 0
+H1 0.00000 0.00000 0.19619 1.00000 0.04341 H 0
+H2 0.32835 0.00000 0.76751 1.00000 0.04341 H 0

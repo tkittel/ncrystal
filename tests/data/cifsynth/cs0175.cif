@@ -1,0 +1,48 @@
+data_cs0175
+_journal_year 2000
+_chemical_formula_sum 'B Co H6 Mg O11 S2'
+_space_group_IT_number 178
+_symmetry_space_group_name_Hall 'P 61 2 (0 0 5)'
+_symmetry_space_group_name_H-M 'P 61 2 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 9.916
+_cell_length_b 9.916
+_cell_length_c 16.62
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+x-y,x,z+1/6
+-y,x-y,z+1/3
+-x,-y,z+1/2
+-x+y,-x,z+2/3
+y,-x+y,z+5/6
+-y,-x,-z+5/6
+x-y,-y,-z
+x,x-y,-z+1/6
+y,x,-z+1/3
+-x+y,y,-z+1/2
+-x,-x+y,-z+2/3
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+O3 O-2 0.7130 0.1850 0.0486 1 0.0
+O4 O-2 0.9749 0.1929 0.2410 1 0.0
+H2 H+1 0.69 0.137 0.0966 1 0.0
+O2 O-2 0.0566 0.3971 0.0404 1 0.0
+S1 S+5 0.826 0.2225 0.245 1 0.0
+Co1 Co+2 0.8891 0.44455 0.0833 1 0.0
+Mg1 Mg+1 0.8050 0.1950 -0.0833 1 0.0
+O6 O-2 0.8666 0 0 1 0.0
+O1 O-2 0.8633 0.3830 0.2114 1 0.0
+B1 B+3 0.1489 0.2978 0.25 1 0.0
+H1 H+1 0.605 0.183 0.030 1 0.0
+O5 O-2 0.8184 0.241 0.3363 1 0.0

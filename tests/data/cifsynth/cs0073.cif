@@ -1,0 +1,44 @@
+data_cs0073
+_chemical_formula_sum 'Na2 F4 Si'
+_space_group_IT_number 74
+_symmetry_space_group_name_Hall '-I 2c 2c'
+_symmetry_space_group_name_H-M 'I b m m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 7.98
+_cell_length_b 11.42
+_cell_length_c 5.59
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+1/2+x,1/2+y,1/2+z
+x,y,1/2-z
+1/2+x,1/2+y,-z
+-x,-y,1/2+z
+1/2-x,1/2-y,+z
+x,-y,z
+1/2+x,1/2-y,1/2+z
+-x,y,-z
+1/2-x,1/2+y,1/2-z
+-x,y,1/2+z
+1/2-x,1/2+y,+z
+x,-y,1/2-z
+1/2+x,1/2-y,-z
+-x,-y,-z
+1/2-x,1/2-y,1/2-z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+Si 0.12016 0.12443 0.25000
+Na1 0.23084 0.00000 0.75000
+Na2 0.25000 0.25000 0.75000
+Na3 0.00000 0.37963 0.00000
+F1 0.04389 0.00000 0.25000
+F2 0.48146 0.00000 0.75000
+F3 -0.00402 0.24542 0.25000
+F4 0.24498 0.37489 0.00872

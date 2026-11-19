@@ -1,0 +1,18 @@
+data_cs0020
+_publ_section_title 'Synthetic structure for testing'
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'C8 H24 N2 F4 S'
+_space_group_name_H-M_alt F
+_cell_angle_alpha 90.000
+_cell_angle_beta 90.000
+_cell_angle_gamma 90.000
+_cell_length_a 11.4867
+_cell_length_b 11.4867
+_cell_length_c 11.4867
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+? ? ? ?

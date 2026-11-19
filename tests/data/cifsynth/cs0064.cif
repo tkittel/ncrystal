@@ -1,0 +1,38 @@
+data_cs0064
+_publ_section_title 'Synthetic structure for testing'
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'As3 Rh2'
+_space_group_IT_number 116
+_symmetry_space_group_name_Hall 'P -4 -2c'
+_symmetry_space_group_name_H-M 'P -4 c 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 5.80
+_cell_length_b 5.80
+_cell_length_c 9.397
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+y,-x,-z
+-x,-y,z
+-y,x,-z
+-x,y,z+1/2
+y,x,-z+1/2
+x,-y,z+1/2
+-y,-x,-z+1/2
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Rh2 Rh 0.5 0.5 0.25 1 0.0
+As2 As 0.1827 0.1827 0.75 1 0.0
+Rh3 Rh 0 0 0 1 0.0
+Rh1 Rh 0 0.5 0.3775 1 0.0
+As1 As 0.2299 0.3572 0.0886 1 0.0

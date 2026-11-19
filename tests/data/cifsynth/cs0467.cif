@@ -1,0 +1,72 @@
+data_cs0467
+_journal_year 2000
+_chemical_formula_sum 'C3 F2 H4 N Ni S'
+_space_group_IT_number 85
+_symmetry_cell_setting tetragonal
+_symmetry_space_group_name_Hall '-P 4a'
+_symmetry_space_group_name_H-M 'P 4/n :2'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 17.593(3)
+_cell_length_b 17.593(3)
+_cell_length_c 7.9185(16)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-y+1/2, x, z'
+'-x+1/2, -y+1/2, z'
+'y, -x+1/2, z'
+'-x, -y, -z'
+'y-1/2, -x, -z'
+'x-1/2, y-1/2, -z'
+'-y, x-1/2, -z'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_symmetry_multiplicity
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+Ni1 Ni 0.2500 0.2500 0.2535(4) 0.0100(7) Uani 1 4 d S . .
+S1 S 0.2500 0.7500 0.0000 0.006(3) Uani 1 4 d S . .
+F1 F 0.2500 0.2500 -0.0005(7) 0.0108(15) Uani 1 4 d S . .
+N1 N 0.26356(12) 0.37463(12) 0.2554(2) 0.0113(4) Uani 1 1 d . . .
+C1 C 0.30521(17) 0.39853(16) 0.3747(4) 0.0144(6) Uani 1 1 d . B .
+H1 H 0.3333(5) 0.3668(4) 0.4637(9) 0.0301(18) Uani 1 1 d . . .
+F3A F 0.209(2) 0.4583(6) -0.1839(16) 0.009(4) Uani 0.45(8) 1 d PU A 1
+H5O H 0.3644(7) 0.3411(7) -0.2076(19) 0.024(3) Uani 0.50 1 d P H 2
+C7 C 0.15651(16) 0.57812(16) -0.3973(3) 0.0119(6) Uani 1 1 d . A 2
+C9 C 0.08389(18) 0.50933(17) -0.6257(4) 0.0144(6) Uani 1 1 d . A 2
+H9 H 0.0412(4) 0.4603(4) -0.6666(8) 0.0310(17) Uani 1 1 d . K 2
+H13C H 0.0466(5) 0.5400(5) -0.9581(10) 0.0342(18) Uani 1 1 d . P 2
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+Ni1 0.0095(11) 0.0095(11) 0.0111(16) 0.000 0.000 0.000
+S1 0.004(4) 0.004(4) 0.008(7) 0.000 0.000 0.000
+F1 0.012(2) 0.012(2) 0.007(3) 0.000 0.000 0.000
+N1 0.0120(10) 0.0077(10) 0.0139(10) 0.0003(7) -0.0013(7) -0.0014(8)
+C1 0.0163(15) 0.0113(14) 0.0155(14) 0.0012(11) -0.0064(11) -0.0013(11)
+H1 0.043(5) 0.021(4) 0.026(3) 0.004(3) -0.022(3) -0.004(3)
+F3A 0.005(9) 0.010(4) 0.012(4) 0.002(3) -0.003(4) -0.002(4)
+H5O 0.015(6) 0.026(7) 0.032(7) 0.004(5) 0.000(5) -0.002(5)
+C7 0.0138(14) 0.0116(13) 0.0103(13) 0.0012(9) -0.0003(10) -0.0021(10)
+C9 0.0184(15) 0.0128(14) 0.0117(13) 0.0007(10) -0.0011(11) -0.0035(12)
+H9 0.044(4) 0.028(3) 0.021(3) 0.002(3) -0.007(3) -0.020(3)
+H13C 0.043(5) 0.030(4) 0.030(4) -0.006(3) -0.009(3) -0.002(3)

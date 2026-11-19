@@ -1,0 +1,46 @@
+data_cs0122
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'Mg0.213 Nb0.427 F3 Bi Ti0.36'
+_space_group_IT_number 6
+_symmetry_cell_setting monoclinic
+_symmetry_space_group_name_Hall 'P -2y'
+_symmetry_space_group_name_H-M 'P 1 m 1'
+_cell_angle_alpha 90
+_cell_angle_beta 90.241(4)
+_cell_angle_gamma 90
+_cell_length_a 3.9225(2)
+_cell_length_b 3.9030(2)
+_cell_length_c 3.9641(2)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, -y, z'
+'x, y, z'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_Wyckoff_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_attached_hydrogens
+_atom_site_B_iso_or_equiv
+Bi1 Bi2+ 1 a 0. 0. 0. 1. 0 3.31(9)
+Ti1 Ti4+ 1 b 0.488(3) 0.5 0.513(3) 0.36 0 0.31(9)
+Nb1 Nb5+ 1 b 0.488(3) 0.5 0.513(3) 0.427 0 0.31(9)
+Mg1 Mg2+ 1 b 0.488(3) 0.5 0.513(3) 0.213 0 0.31(9)
+F1 F2- 1 a 0.496(2) 0. 0.524(3) 1. 0 1.02(9)
+F2 F2- 1 b 0.485(3) 0.5 0.011(4) 1. 0 1.6(1)
+F3 F2- 1 b -0.031(2) 0.5 0.564(2) 1. 0 0.23(6)
+
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+Mg2+ 2
+Nb5+ 5
+F2- -2
+Bi2+ 2
+Ti4+ 4

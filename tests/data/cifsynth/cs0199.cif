@@ -1,0 +1,45 @@
+data_cs0199
+_journal_year 2000
+_chemical_formula_sum 'Al2 K Mg O7 Si'
+_space_group_IT_number 40
+_symmetry_space_group_name_Hall 'B -2b 2'
+_symmetry_space_group_name_H-M 'B 2 m b'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 9.520
+_cell_length_b 13.616
+_cell_length_c 13.616
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+1/2+x,y,1/2+z
+x,1/2+y,-z
+1/2+x,1/2+y,1/2-z
+x,1/2-y,z
+1/2+x,1/2-y,1/2+z
+x,-y,-z
+1/2+x,-y,1/2-z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+_atom_site_type_symbol
+_atom_site_attached_hydrogens
+Mg1 0.01590 0.25000 0.84888 0.50000 0.04882 Mg 0
+K1 0.01590 0.25000 0.84888 0.50000 0.04882 K 0
+Si1 0.14053 0.02527 0.89989 0.31000 0.02790 Si 0
+Al1 0.14053 0.02527 0.89989 0.69000 0.02790 Al 0
+Al2 0.83545 0.02489 0.90099 0.69000 0.02790 Al 0
+O1 0.80882 0.08983 0.14760 1.00000 0.03905 O 0
+O2 0.77567 0.10587 0.85792 1.00000 0.05021 O 0
+O9 0.30709 0.25000 0.72426 1.00000 0.04464 O 0
+Wat1 0.52416 0.25000 0.97396 1.00000 0.09206 O 2
+Wat5 0.18627 0.25000 0.01580 0.50000 0.02650 O 2
+Wat6 0.80701 0.25000 0.01570 0.50000 0.04742 O 2
+Wat7 0.52713 0.25000 0.81457 0.50000 0.09206 O 2

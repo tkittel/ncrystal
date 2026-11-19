@@ -1,0 +1,66 @@
+data_cs0036
+_chemical_formula_sum 'N6 Ag3 K Cr C6'
+_space_group_IT_number 149
+_symmetry_cell_setting trigonal
+_symmetry_space_group_name_Hall 'P 3 2'
+_symmetry_space_group_name_H-M 'P 3 1 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 6.6798(10)
+_cell_length_b 6.6798(10)
+_cell_length_c 7.8616(16)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-y, x-y, z'
+'-x+y, -x, z'
+'-y, -x, -z'
+'x, x-y, -z'
+'-x+y, y, -z'
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_occupancy
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+_atom_site_type_symbol
+Ag 0.50168(2) 0.00337(4) 0.5000 0.04567(11) Uani d S 1 . . Ag
+Cr 0.0000 0.0000 0.0000 0.02090(12) Uani d S 1 . . Cr
+K 0.6667 0.3333 0.0000 0.0357(2) Uani d S 1 . . K
+N 0.3298(3) 0.0081(4) 0.2880(2) 0.0354(3) Uani d . 1 . . N
+C 0.2561(3) -0.0002(3) 0.17073(16) 0.0341(3) Uani d . 1 . . C
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Ag 0.05185(13) 0.05184(15) 0.03332(13) 0.02592(8) -0.02054(6) 0.000
+Cr 0.02460(16) 0.02460(16) 0.0135(2) 0.01230(8) 0.000 0.000
+K 0.0347(3) 0.0347(3) 0.0379(5) 0.01733(15) 0.000 0.000
+N 0.0342(10) 0.0396(8) 0.0313(7) 0.0177(9) -0.0062(7) 0.0033(9)
+C 0.0330(7) 0.0408(7) 0.0279(6) 0.0180(7) -0.0054(6) 0.0047(8)
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+N C 0.0033 0.0016 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Ag Ag -0.8971 1.1015 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Cr Mn 0.3368 0.7283 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+C N 0.0061 0.0033 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+K K 0.2009 0.2494 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

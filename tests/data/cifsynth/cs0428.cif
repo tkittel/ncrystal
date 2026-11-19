@@ -1,0 +1,76 @@
+data_cs0428
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'C2 Cl2 H2 N5 Ni'
+_space_group_IT_number 85
+_symmetry_cell_setting tetragonal
+_symmetry_space_group_name_Hall '-P 4a'
+_symmetry_space_group_name_H-M 'P 4/n :2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 17.063(11)
+_cell_length_b 17.063(11)
+_cell_length_c 11.861(8)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'  x,y,z'
+' 1/2-x,1/2-y,z'
+1/2-y,x,z
+' y,1/2-x,z  '
+'  -x,-y,-z'
+1/2+x,1/2+y,-z
+1/2+y,-x,-z
+' -y,1/2+x,-z   '
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Ni1 0.0295(10) 0.0295(10) 0.0375(10) 0.000 0.000 0.000
+C1 0.043(3) 0.039(3) 0.043(4) -.006(3) 0.008(3) 0.003(2)
+C2 0.026(2) 0.030(3) 0.046(3) -.001(2) 0.007(2) -.001(2)
+N1 0.031(3) 0.029(3) 0.042(4) -.001(3) 0.004(3) 0.000(2)
+N9 0.046(4) 0.038(3) 0.062(5) -.012(3) 0.016(3) -.007(3)
+N11 0.071(5) 0.034(4) 0.110(7) -.019(5) 0.035(6) -.015(3)
+N6 0.069(5) 0.055(5) 0.066(5) 0.004(4) 0.024(4) 0.015(4)
+N5 0.090(7) 0.061(5) 0.072(6) -.015(5) 0.035(5) 0.007(5)
+Cl1 0.22(3) 0.66(8) 0.70(7) 0.05(6) -.02(4) 0.05(4)
+Cl2 0.35(5) 0.45(4) 0.53(5) 0.03(4) -.01(4) -.02(3)
+
+loop_
+_atom_site_label
+_atom_site_occupancy
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_thermal_displace_type
+_atom_site_calc_attached_atom
+_atom_site_refinement_flags
+_atom_site_disorder_group
+Ni1 1 0.25 0.25 0.03279(13) 0.0319(5) Uani ? S ?
+C1 1 0.2423(3) 0.3844(3) 0.0505(4) 0.042(5) Uani ? ? ?
+C2 1 0.2924(2) 0.3664(3) -.1390(4) 0.034(4) Uani ? ? ?
+N1 1 0.2993(3) 0.4044(3) -.0340(5) 0.034(5) Uani ? ? ?
+N9 1 0.3229(2) 0.4955(2) 0.0486(3) 0.048(6) Uani ? ? ?
+N11 1 0.3314(2) 0.6175(2) -.0392(3) 0.071(9) Uani ? ? ?
+N6 1 0.1329(2) 0.5106(2) 0.1899(3) 0.063(8) Uani ? ? ?
+N5 1 0.1366(2) 0.4821(2) 0.2843(3) 0.075(10) Uani ? ? ?
+Cl1 0.5 0.365(2) 0.660(3) 0.420(4) 0.53(12) Uani ? ? A
+Cl2 0.5 0.281(2) 0.629(2) 0.375(4) 0.44(8) Uani ? ? A
+H13 1 0.253 0.491 -.218 0.084(1) Uiso C13 ? ?
+H17 1 0.450 0.458 -.452 0.084(1) Uiso C17 ? ?
+
+loop_
+_atom_type_symbol
+_atom_type_scat_source
+N 'SHELX76 (Sheldrick, 1976)'
+H 'SHELX76 (Sheldrick, 1976)'
+C 'SHELX76 (Sheldrick, 1976)'
+Cl 'SHELX76 (Sheldrick, 1976)'
+Ni 'Cromer \& Mann (1968)'

@@ -1,0 +1,100 @@
+data_cs0515
+_chemical_formula_sum 'C9 Cu F4 H9 N'
+_space_group_crystal_system orthorhombic
+_space_group_IT_number 48
+_space_group_name_Hall '-P 2ab 2bc'
+_space_group_name_H-M_alt 'P n n n :2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 13.4947(8)
+_cell_length_b 22.1047(15)
+_cell_length_c 40.484(3)
+
+loop_
+_space_group_symop_operation_xyz
+'x, y, z'
+'-x+1/2, -y+1/2, z'
+'-x+1/2, y, -z+1/2'
+'x, -y+1/2, -z+1/2'
+'-x, -y, -z'
+'x-1/2, y-1/2, -z'
+'x-1/2, -y, z-1/2'
+'-x, y-1/2, z-1/2'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_site_symmetry_order
+_atom_site_calc_flag
+_atom_site_refinement_flags_posn
+_atom_site_refinement_flags_adp
+_atom_site_refinement_flags_occupancy
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+Cu1 Cu 0.4986(2) 0.51459(10) 0.24636(4) 0.1523(12) Uani 1 1 d D U . . .
+F1 F 0.6332(4) 0.5499(2) 0.40848(13) 0.0575(14) Uani 1 1 d . . . . .
+F4 F 0.4931(4) 0.9168(2) 0.41276(11) 0.0497(13) Uani 1 1 d . . . . .
+F5 F 0.584(4) 0.462(3) 0.242(3) 0.278(8) Uani 0.093(14) 1 d D U P A -1
+H9BA H 0.306100 0.452935 0.242440 0.228 Uiso 0.289(15) 1 d DR U P A 1
+N1 N 0.4509(9) 0.5714(5) 0.2867(2) 0.122(3) Uani 1 1 d . U . . .
+C1 C 0.5069(11) 0.6261(6) 0.2988(3) 0.126(4) Uani 1 1 d . U . . .
+H1 H 0.573118 0.628231 0.256939 0.152 Uiso 1 1 calc R U . . .
+C2 C 0.4978(10) 0.6362(5) 0.3033(2) 0.112(3) Uani 1 1 d . U . . .
+H2 H 0.538425 0.658493 0.320382 0.135 Uiso 1 1 calc R U . . .
+C9 C 0.3786(5) 0.7003(3) 0.41014(14) 0.0342(14) Uani 1 1 d . . . . .
+H10 H 0.242487 0.664424 0.413154 0.047 Uiso 1 1 calc R U . . .
+C14 C 0.3777(4) 0.7538(3) 0.49442(14) 0.0311(14) Uani 1 1 d . . . . .
+C24 C 0.5686(5) 0.9218(3) 0.49838(16) 0.0374(15) Uani 1 1 d . . . . .
+H26B H 0.784207 0.950144 0.576746 0.139 Uiso 1 1 calc R U . . .
+C39 C 0.5913(7) 0.5337(4) 0.3893(2) 0.072(3) Uani 1 1 d . . . . .
+H40C H 0.708548 0.548012 0.380078 0.160 Uiso 1 1 calc R U . . .
+H47 H 0.627916 0.955641 0.671327 0.136 Uiso 1 1 calc R U . . .
+C48 C 0.5416(9) 0.9123(5) 0.6553(2) 0.096(4) Uani 1 1 d . . . . .
+H52A H 0.758118 0.418050 0.255249 0.418 Uiso 0.093(14) 1 d R U P A -1
+F10 F 0.751(2) 0.7162(10) 0.5341(7) 0.091(8) Uani 0.25 1 d . U P B 1
+H9AA H 0.283502 0.544179 0.257236 0.237 Uiso 0.711(15) 1 d DG U P A 2
+C52A C 0.6180(19) 0.4242(11) 0.2903(5) 0.279(10) Uani 0.907(14) 1 d D U P A 2
+C53A C 0.5848(15) 0.4652(10) 0.2579(8) 0.278(8) Uani 0.907(14) 1 d D U P A 2
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+Cu1 0.285(3) 0.1139(15) 0.0583(10) -0.0465(10) 0.0637(15) -0.0218(18)
+F1 0.055(3) 0.056(3) 0.062(4) -0.005(3) 0.015(3) 0.017(3)
+F4 0.053(3) 0.054(3) 0.043(3) 0.001(2) -0.002(2) -0.010(3)
+F5 0.420(19) 0.268(15) 0.147(10) -0.062(10) 0.070(13) 0.104(14)
+N1 0.188(8) 0.111(6) 0.066(5) -0.044(5) 0.055(5) -0.030(6)
+C1 0.180(9) 0.127(7) 0.071(5) -0.038(6) 0.056(6) -0.033(7)
+C2 0.161(8) 0.113(6) 0.063(5) -0.046(5) 0.052(5) -0.032(6)
+C9 0.041(4) 0.035(3) 0.026(3) -0.006(3) 0.004(3) 0.006(3)
+C14 0.032(3) 0.034(3) 0.028(3) -0.002(3) 0.001(3) 0.001(3)
+C24 0.037(4) 0.031(3) 0.044(4) -0.007(3) -0.005(3) -0.001(3)
+C39 0.084(7) 0.073(6) 0.058(5) 0.003(5) 0.021(5) 0.036(5)
+C48 0.112(9) 0.110(9) 0.066(7) -0.031(6) -0.034(7) 0.001(7)
+F10 0.091(15) 0.052(12) 0.131(17) 0.048(12) -0.046(14) -0.011(11)
+C52A 0.42(2) 0.271(19) 0.147(14) -0.046(14) 0.037(17) 0.101(18)
+C53A 0.42(2) 0.266(15) 0.147(10) -0.062(10) 0.070(13) 0.102(14)
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+C C 0.0137 0.0067 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Cu Cu -2.7974 3.6876 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+N N 0.0241 0.0134 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+F O 0.0389 0.0241 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

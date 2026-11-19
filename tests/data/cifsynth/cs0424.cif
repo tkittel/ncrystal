@@ -1,0 +1,40 @@
+data_cs0424
+_journal_name_full 'Synthetic Test Data'
+_journal_year 2000
+_chemical_formula_sum 'C2 H4 O2 P3 Pd'
+_space_group_IT_number 14
+_symmetry_cell_setting monoclinic
+_symmetry_space_group_name_Hall '-P 2yn'
+_symmetry_space_group_name_H-M 'P 1 21/n 1'
+_cell_angle_alpha 90
+_cell_angle_beta 93.689(11)
+_cell_angle_gamma 90
+_cell_length_a 5.2450(7)
+_cell_length_b 11.1048(14)
+_cell_length_c 37.451(5)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+1/2+x,1/2-y,1/2+z
+-x,-y,-z
+1/2-x,1/2+y,1/2-z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+P1 .3470(2) .44443(9) .22288(2) .0294(3)
+P5 .0466(2) .39204(10) .31996(3) .0359(3)
+P7 .9627(3) .39584(11) .11159(3) .0506(4)
+C1 .5808(6) .5664(3) .22843(9) .0255(10)
+C10B 1.1407(15) .6516(7) .0561(2) .0458^a^
+Pd .5000 .0 .0 .0275(1)
+O11 .3523(6) .2023(3) .06431(7) .0630(11)
+O22 .2290(6) -.0653(3) -.05673(7) .0686(11)
+H7a -.0640 .4438 .3478 0.874
+H8b .3467 .4788 .3512 0.874
+H9Ab 1.0717 .4842 .0373 .310
+H9Bb 1.3512 .4862 .0606 .563

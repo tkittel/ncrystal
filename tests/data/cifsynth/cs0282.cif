@@ -1,0 +1,31 @@
+data_cs0282
+_journal_year 2000
+_chemical_formula_sum 'N16 H6 D12 C6 Ni2'
+_symmetry_cell_setting tetragonal
+_symmetry_space_group_name_Hall '-P 4'
+_symmetry_space_group_name_H-M 'P 4/m'
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma 90.0
+_cell_length_a 7.0708(3)
+_cell_length_b 7.0708(3)
+_cell_length_c 7.9338(5)
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+Ni(1) .00000 .00000 .00000 .0034(9)
+Ni(2) .50000 .50000 .00000 .0034(9)
+C(1) .2024(8) .1954(8) .00000 .0034(9)
+C(2) .00000 .00000 .2726(11) .0034(9)
+N(1) .3084(12) .3108(12) .00000 .0034(9)
+N(2) .00000 .50000 .3227(10) .0133(18)
+N(3) .1426(9) .4415(10) .4112(8) .029(2)
+D(2) .00000 .50000 .1838(9) .022(2)
+D(3) .2741(12) .3724(10) .3583(11) .032(2)
+H(4) .107(2) .0585(12) .309(2) .034(7)
+H(5) .0585(12) .107(2) .309(2) .034(7)
+H(6) .00000 .149(2) .309(2) .034(7)

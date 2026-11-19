@@ -1,0 +1,48 @@
+data_cs0267
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Bi Ba Mo2 F7'
+_space_group_IT_number 26
+_symmetry_cell_setting orthorhombic
+_symmetry_space_group_name_Hall 'P -2 2a'
+_symmetry_space_group_name_H-M 'P 21 a m'
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma 90.0
+_cell_length_a 5.40454(23)
+_cell_length_b 5.33590(25)
+_cell_length_c 11.1942(6)
+_cod_database_code 123456789
+
+loop_
+_symmetry_equiv_pos_site_id
+_symmetry_equiv_pos_as_xyz
+1 +x,+y,+z
+2 +x+1/2,-y,-z
+3 +x+1/2,-y,+z
+4 +x,+y,-z
+
+loop_
+_atom_site_type_symbol
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_thermal_displace_type
+_atom_site_U_iso_or_equiv
+_atom_site_symmetry_multiplicity
+Ba CS1 0.2426(24) 0.2749(24) 0.5 1.0 Uiso 0.0310(22) 2
+Bi BI2 0.3204(10) 0.2642(15) 0.0 1.0 Uiso 0.0240(18) 2
+Mo NB3 0.2366(11) 0.7697(10) 0.20993(35) 1.0 Uiso 0.0050(8) 4
+F F4 0.2306(17) 0.6840(17) 0.0 1.0 Uiso 0.0196(8) 2
+F F5 0.2412(14) 0.7628(14) 0.3495(5) 1.0 Uiso 0.0196(8) 4
+F F6 0.0187(18) 0.0160(14) 0.1486(6) 1.0 Uiso 0.0196(8) 4
+F F7 0.4372(11) 0.4448(14) 0.1847(6) 1.0 Uiso 0.0196(8) 4
+
+loop_
+_atom_type_symbol
+_atom_type_number_in_cell
+Ba 2.0
+Bi 2.0
+Mo 4.0
+F 14.0

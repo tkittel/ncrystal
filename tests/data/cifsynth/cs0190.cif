@@ -1,0 +1,41 @@
+data_cs0190
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Ca3 O7 Si2'
+_space_group_IT_number 8
+_symmetry_space_group_name_Hall 'B -2'
+_symmetry_space_group_name_H-M 'B 1 1 m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 123.18(1)
+_cell_length_a 6.462(2)
+_cell_length_b 7.074(1)
+_cell_length_c 21.771(4)
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+1/2+x,y,1/2+z
+x,y,-z
+1/2+x,y,1/2-z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+_atom_site_type_symbol
+_atom_site_attached_hydrogens
+Ca1 0.27949 0.44582 0.20307 1.00000 0.01264 Ca 0
+Ca2 0.56798 0.06515 0.05015 0.25000 0.04020 Ca 0
+Ca3 0.75694 0.93704 0.30189 1.00000 0.01034 Ca 0
+Si1 0.77252 0.40448 0.13983 1.00000 0.00804 Si 0
+Si2 0.91056 0.77003 0.05390 1.00000 0.01723 Si 0
+O1 0.76412 0.49632 0.11247 1.00000 0.02068 O 0
+O3 0.97533 0.52546 0.17940 1.00000 0.01264 O 0
+O4 0.51728 0.31334 0.17895 1.00000 0.01723 O 0
+Wat6 0.22050 0.41421 0.11274 1.00000 0.10338 O 2
+O8 0.51580 0.82016 0.17896 1.00000 0.00919 O 0
+Wat1 0.42859 0.27780 -0.02224 0.50000 0.14933 O 2
+Wat2 0.93485 0.25000 0.00000 1.00000 0.08041 O 2

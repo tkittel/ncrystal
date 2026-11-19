@@ -1,0 +1,40 @@
+data_cs0383
+_chemical_formula_sum 'Cs0.93 Pb K0.07 F3'
+_space_group_IT_number 166
+_symmetry_space_group_name_Hall '-P 3* 2'
+_symmetry_space_group_name_H-M 'R -3 m :R'
+_cell_angle_alpha 60.143
+_cell_angle_beta 60.143
+_cell_angle_gamma 60.143
+_cell_length_a 6.2899
+_cell_length_b 6.2899
+_cell_length_c 6.2899
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+z,x,y
+y,z,x
+-y,-x,-z
+-z,-y,-x
+-x,-z,-y
+-x,-y,-z
+-z,-x,-y
+-y,-z,-x
+y,x,z
+z,y,x
+x,z,y
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Pb1 Pb+3 0 0 0 1 0.0
+F1 F-2 -0.23 0.218 0.271 0.5 0.0
+Pb2 Pb+5 0.5 0.5 0.5 1 0.0
+K1 K+1 0.253 0.253 0.253 0.07 0.0
+Cs1 Cs+2 0.253 0.253 0.253 0.93 0.0

@@ -1,0 +1,106 @@
+data_cs0385
+_chemical_formula_sum 'B6 Ce'
+_space_group_IT_number 221
+_symmetry_cell_setting cubic
+_symmetry_space_group_name_Hall '-P 4 2 3'
+_symmetry_space_group_name_H-M 'P m -3 m'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 4.27629(8)
+_cell_length_b 4.27629(8)
+_cell_length_c 4.27629(8)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'z, x, y'
+'y, z, x'
+'x, z, y'
+'y, x, z'
+'z, y, x'
+'x, -y, -z'
+'z, -x, -y'
+'y, -z, -x'
+'x, -z, -y'
+'y, -x, -z'
+'z, -y, -x'
+'-x, y, -z'
+'-z, x, -y'
+'-y, z, -x'
+'-x, z, -y'
+'-y, x, -z'
+'-z, y, -x'
+'-x, -y, z'
+'-z, -x, y'
+'-y, -z, x'
+'-x, -z, y'
+'-y, -x, z'
+'-z, -y, x'
+'-x, -y, -z'
+'-z, -x, -y'
+'-y, -z, -x'
+'-x, -z, -y'
+'-y, -x, -z'
+'-z, -y, -x'
+'-x, y, z'
+'-z, x, y'
+'-y, z, x'
+'-x, z, y'
+'-y, x, z'
+'-z, y, x'
+'x, -y, z'
+'z, -x, y'
+'y, -z, x'
+'x, -z, y'
+'y, -x, z'
+'z, -y, x'
+'x, y, -z'
+'z, x, -y'
+'y, z, -x'
+'x, z, -y'
+'y, x, -z'
+'z, y, -x'
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+_atom_site_aniso_type_symbol
+Ce 0.007223(10) 0.007223(10) 0.007223(10) 0.0 0.0 0.0 Ce
+B 0.00520(8) 0.00520(8) 0.00317(12) 0.0 0.0 0.0 B
+
+loop_
+_atom_site_type_symbol
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_refinement_flags
+_atom_site_occupancy
+Ce Ce 0.5 0.5 0.5 0.5702(2) S 1.0
+B B 0.0 0.0 0.31849(10) 0.357(4) S 1.0
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+Ce3+ cerium -0.249 2.633
+;
+Calculated with a program SFRSCF for each atomic orbital
+calculated with a program GRASP by Dyall, Grant, Johnson,
+Parpia & Plummer (Comp. Phys. Commun. 55, 425-256 (1989))
+;
+B boron 0.001 0.001
+;
+Calculated with a program SFMANN for each atomic orbital
+from atomic orbitals
+by Mann (Loas Alamos Scientific Report, LA3691(1968)).
+;

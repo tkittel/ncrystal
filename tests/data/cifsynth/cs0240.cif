@@ -1,0 +1,44 @@
+data_cs0240
+_journal_year 2000
+_chemical_formula_sum 'N12 H12 Pd2 Fe C8'
+_space_group_crystal_system tetragonal
+_space_group_IT_number 114
+_space_group_name_Hall 'P -4 2n'
+_space_group_name_H-M_alt 'P -4 21 c'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 10.8177(4)
+_cell_length_b 10.8177(4)
+_cell_length_c 5.9278(2)
+
+loop_
+_symmetry_equiv_pos_site_id
+_symmetry_equiv_pos_as_xyz
+1 x,y,z
+2 1/2-x,1/2+y,1/2-z
+3 -y,x,-z
+4 1/2-y,1/2-x,1/2+z
+5 y,-x,-z
+6 1/2+y,1/2+x,1/2+z
+7 -x,-y,z
+8 1/2+x,1/2-y,1/2-z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_thermal_displace_type
+C2 C -0.028 0.6908 0.1611 0.0144 Uiso
+C3 C 0.0210 0.8586 0.3071 0.0144 Uiso
+N4 N -0.1085 0.8511 0.1877 0.0144 Uiso
+N3 N 0.046 0.7251 0.3094 0.0144 Uiso
+N1 N -0.1155 0.7720 0.1036 0.0144 Uiso
+H2 H -0.1483 0.9328 0.190 0.0144 Uiso
+H3 H 0.1100 0.6825 0.3652 0.0144 Uiso
+Pd1 Pd 0 0.5 0.1730 0.0144 Uiso
+Fe1 Fe 0 1 0.5 0.0144 Uiso
+H57 H -0.182721 0.728110 0.002437944 . .

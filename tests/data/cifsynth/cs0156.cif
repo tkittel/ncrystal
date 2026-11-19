@@ -1,0 +1,42 @@
+data_cs0156
+_chemical_formula_sum 'O2 Se'
+_space_group_IT_number 135
+_symmetry_space_group_name_Hall '-P 4c 2ab'
+_symmetry_space_group_name_H-M 'P 42/m b c'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 8.62
+_cell_length_b 8.62
+_cell_length_c 5.209
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-y,x,z+1/2
+-x,-y,z
+y,-x,z+1/2
+x+1/2,-y+1/2,-z
+y+1/2,x+1/2,-z+1/2
+-x+1/2,y+1/2,-z
+-y+1/2,-x+1/2,-z+1/2
+-x,-y,-z
+y,-x,-z-1/2
+x,y,-z
+-y,x,-z-1/2
+-x-1/2,y-1/2,z
+-y-1/2,-x-1/2,z-1/2
+x-1/2,-y-1/2,z
+y-1/2,x-1/2,z-1/2
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+O1 O-2 0.364 0.864 0.25 1 0.0
+Se1 Se+4 0.124 0.209 0 1 0.0
+O2 O-2 0.415 0.33 0 1 0.0

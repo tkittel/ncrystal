@@ -1,0 +1,51 @@
+data_cs0408
+_chemical_formula_sum 'Al F8 Ga2 Na'
+_space_group_IT_number 63
+_symmetry_space_group_name_Hall '-C 2c 2'
+_symmetry_space_group_name_H-M 'C m c m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 17.3686
+_cell_length_b 19.5528
+_cell_length_c 7.22253
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-x,-y,z+1/2
+x,-y,-z
+-x,y,-z+1/2
+-x,-y,-z
+x,y,-z-1/2
+-x,y,z
+x,-y,z-1/2
+x+1/2,y+1/2,z
+-x+1/2,-y+1/2,z+1/2
+x+1/2,-y+1/2,-z
+-x+1/2,y+1/2,-z+1/2
+-x+1/2,-y+1/2,-z
+x+1/2,y+1/2,-z-1/2
+-x+1/2,y+1/2,z
+x+1/2,-y+1/2,z-1/2
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+F9 F-2 0 0.3975 0.25 1 0.0
+F1 F-2 0.1345 0.4087 0.4361 1 0.0
+Ga2 Ga+3 0.1856 0.1862 0.5443 0.1458 0.0
+Na2 Na+1 0.81 0.103 0.233 0.24 0.0
+F3 F-2 0.2727 0.3919 0.4799 1 0.0
+Al1 Al+4 0.19226 0.4380 0.54233 0.8542 0.0
+F7 F-2 0.2277 0.5 0.5 1 0.0
+F5 F-2 0.1794 0.1885 0.75 1 0.0
+F6 F-2 0.1893 0.4130 0.75 1 0.0
+F2 F-2 0.108 0.1859 0.4367 1 0.0
+F8 F-2 0.25 0.25 0.5 1 0.0
+Ga3 Ga+3 0.0902 0.3945 0.25 0.1458 0.0

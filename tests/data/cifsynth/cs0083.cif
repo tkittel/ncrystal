@@ -1,0 +1,70 @@
+data_cs0083
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Si2 Be3 H0.672 F18.34 Al6'
+_space_group_IT_number 192
+_symmetry_space_group_name_Hall '-P 6 2c'
+_symmetry_space_group_name_H-M 'P 6/m c c'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 9.4455
+_cell_length_b 9.4455
+_cell_length_c 9.4245
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+-x,-x+y,1/2+z
+x,x-y,1/2-z
+-x+y,-x,-z
+x-y,x,z
+-y,-x,1/2+z
+y,x,1/2-z
+y,-x+y,-z
+-y,x-y,z
+x-y,-y,1/2+z
+-x+y,y,1/2-z
+x,y,-z
+-x,-y,z
+x,x-y,1/2+z
+-x,-x+y,1/2-z
+x-y,x,-z
+-x+y,-x,z
+y,x,1/2+z
+-y,-x,1/2-z
+-y,x-y,-z
+y,-x+y,z
+-x+y,y,1/2+z
+x-y,-y,1/2-z
+-x,-y,-z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Si 0.00209 0.00209 0.00604 0.00105 0.00000 0.00000
+Be 0.00755 0.00453 0.00685 0.00221 0.00000 0.00000
+Al 0.00407 0.00337 0.00488 0.00267 0.00000 0.00000
+F1 0.00871 0.00860 0.01382 0.00685 0.00000 0.00000
+F2 0.00743 0.00534 0.00650 0.00314 -0.00360 -0.00186
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+_atom_site_type_symbol
+_atom_site_attached_hydrogens
+Si 0.66668 0.33332 0.25000 1.00000 0.00337 Si 0
+Be 0.50000 0.00000 0.25000 1.00000 0.00662 Be 0
+Al 0.40429 0.09816 0.00000 1.00000 0.00372 Al 0
+F1 0.31713 0.22071 0.00000 1.00000 0.00918 F 0
+F2 0.49523 0.14656 0.14690 1.00000 0.00650 F 0
+Ow 0.00000 0.00000 0.25000 0.34000 0.08247 F 0
+H -0.01221 -0.05393 0.33100 0.05600 0.04646 H 0

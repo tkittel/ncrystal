@@ -1,0 +1,89 @@
+data_cs0503
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'C F2 H6 Mn N2'
+_space_group_crystal_system trigonal
+_space_group_IT_number 161
+_space_group_name_Hall 'R 3 -2"c'
+_space_group_name_H-M_alt 'R 3 c :H'
+_symmetry_space_group_name_Hall 'R 3 -2"c'
+_symmetry_space_group_name_H-M 'R 3 c :H'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 7.8627(2)
+_cell_length_b 7.8627(2)
+_cell_length_c 21.9726(7)
+
+loop_
+_space_group_symop_operation_xyz
+'x, y, z'
+'-y, x-y, z'
+'-x+y, -x, z'
+'-y, -x, z+1/2'
+'-x+y, y, z+1/2'
+'x, x-y, z+1/2'
+'x+2/3, y+1/3, z+1/3'
+'-y+2/3, x-y+1/3, z+1/3'
+'-x+y+2/3, -x+1/3, z+1/3'
+'-y+2/3, -x+1/3, z+5/6'
+'-x+y+2/3, y+1/3, z+5/6'
+'x+2/3, x-y+1/3, z+5/6'
+'x+1/3, y+2/3, z+2/3'
+'-y+1/3, x-y+2/3, z+2/3'
+'-x+y+1/3, -x+2/3, z+2/3'
+'-y+1/3, -x+2/3, z+7/6'
+'-x+y+1/3, y+2/3, z+7/6'
+'x+1/3, x-y+2/3, z+7/6'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_site_symmetry_order
+_atom_site_calc_flag
+_atom_site_refinement_flags_posn
+_atom_site_refinement_flags_adp
+_atom_site_refinement_flags_occupancy
+Mn1 Mn 0.3332 0.6668 0.17163(16) 0.01651(18) Uani 1 3 d S T P
+F1 F 0.5598(6) 0.6919(6) 0.23958(6) 0.0288(11) Uani 1 1 d . . .
+F2 F 0.3628(6) 0.4500(6) 0.09485(7) 0.0278(10) Uani 1 1 d . . .
+N1 N 0.5729(7) 0.5727(6) 0.2645(4) 0.0261(5) Uani 1 1 d . . .
+H1 H 0.4359 0.4271 0.2734 0.031 Uiso 1 1 calc R U .
+C1 C 0.746(2) 0.357(4) 0.0788(10) 0.0313(18) Uani 0.3333 1 d . U P
+H1A H 0.8626 0.4402 0.0757 0.038 Uiso 0.3333 1 calc R U P
+H2A H 0.5676 0.2229 0.0174 0.066 Uiso 0.3333 1 d R U P
+H2C H 0.6031 0.4292 0.0531 0.066 Uiso 0.3333 1 d R U P
+N2 N 0.672(7) 0.344(5) 0.1563(7) 0.031(6) Uiso 0.3333 1 d . . P
+H2D H 0.5951 0.4395 0.1471 0.047 Uiso 0.3333 1 calc R U P
+H2E H 0.7785 0.4399 0.1652 0.047 Uiso 0.3333 1 calc R U P
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+Mn1 0.0162(2) 0.0162(2) 0.0171(2) 0.000 0.000 0.00810(10)
+F1 0.029(3) 0.026(2) 0.0312(17) 0.0054(17) -0.0066(18) 0.0143(18)
+F2 0.024(2) 0.026(2) 0.0350(19) -0.0127(19) -0.0056(16) 0.0145(17)
+N1 0.029(3) 0.016(2) 0.0315(12) 0.0078(19) 0.001(2) 0.0088(6)
+C1 0.026(5) 0.020(3) 0.047(4) -0.002(3) 0.003(5) 0.011(5)
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+N C 0.0033 0.0016 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+F O 0.0106 0.0060 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Mn Mn 0.3368 0.7283 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+C N 0.0061 0.0033 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

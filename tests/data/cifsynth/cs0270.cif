@@ -1,0 +1,74 @@
+data_cs0270
+_chemical_formula_sum 'C2 F2 H4 N4'
+_space_group_IT_number 61
+_symmetry_cell_setting orthorhombic
+_symmetry_space_group_name_Hall '-P 2bc 2ac'
+_symmetry_space_group_name_H-M 'P c a b'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 7.3972(10)
+_cell_length_b 10.0682(10)
+_cell_length_c 15.356(3)
+
+loop_
+_symmetry_equiv_pos_as_xyz
++x,+y,+z
+-x,-y,-z
+1/2+x,-y,1/2-z
+1/2-x,+y,1/2+z
+1/2-x,1/2+y,-z
+1/2+x,1/2-y,+z
+-x,1/2-y,1/2+z
++x,1/2+y,1/2-z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+C1 .042(2) .0209(10) .032(2) .0033(10) .0000(10) .0017(10)
+N2 .0326(10) .0268(10) .0301(10) -.0017(10) .0017(10) .0000(10)
+C3 .038(2) .0251(10) .0285(10) -.0017(10) .0000(10) .0008(10)
+N4 .036(2) .0251(10) .0243(10) .0008(10) .0008(10) .0025(10)
+F401 .109(2) .0243(10) .0510(10) .0033(10) -.020(2) .0067(10)
+F402 .090(2) .0460(10) .0326(10) -.0008(10) -.018(2) .0025(10)
+N5 .036(2) .0259(10) .028(2) -.0008(10) .0025(10) -.0008(10)
+N51 .068(3) .029(2) .038(2) -.007(2) -.007(2) -.004(2)
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_thermal_displace_type
+_atom_site_calc_flag
+_atom_site_calc_attached_atom
+_atom_site_type_symbol
+C1 .0669(3) .8667(2) .25556(10) .0317(9) aniso . . C
+N2 .0355(3) .7504(3) .21268(10) .0298(7) aniso . . N
+C3 .0664(3) .6542(2) .26144(10) .0302(8) aniso . . C
+N4 .1211(4) .7116(2) .3289(2) .0285(9) aniso . . N
+F401 .1625(4) .4985(2) .39246(10) .0611(10) aniso . . F
+F402 .2465(4) .6689(2) .45441(10) .056(8) aniso . . F
+N5 .1206(4) .8375(2) .3289(2) .0301(10) aniso . . N
+N51 .1842(6) .9125(3) .4146(2) .0452(10) aniso . . N
+H1 .045(3) .933(3) .252(2) .030(8) iso . . H
+H212 -.127(5) .814(4) .121(3) .075(10) iso . . H
+H213 .037(6) .746(4) .079(2) .092(10) iso . . H
+H512 .210(7) 1.004(5) .372(3) .12(2) iso . . H
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+C Nitrogen .004 .003 'CRYSRULER PACKAGE (Rizzoli89)'
+N Carbon .002 .002 'CRYSRULER PACKAGE (Rizzoli89)'
+F Oxygen .008 .006 'CRYSRULER PACKAGE (Rizzoli89)'
+H Hydrogen .000 .000 'CRYSRULER PACKAGE (Rizzoli89)'

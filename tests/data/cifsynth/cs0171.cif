@@ -1,0 +1,56 @@
+data_cs0171
+_chemical_formula_sum 'Cl2 Tl7 F3'
+_space_group_IT_number 57
+_symmetry_space_group_name_Hall '-P 2a 2ab'
+_symmetry_space_group_name_H-M 'P b m a'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 11.434
+_cell_length_b 13.464
+_cell_length_c 6.272
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+1/2-x,1/2+y,z
+1/2+x,1/2-y,-z
+1/2+x,y,-z
+1/2-x,-y,z
+x,1/2-y,z
+-x,1/2+y,-z
+-x,-y,-z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Tl1 0.02586 0.03444 0.03667 -0.00341 -0.00999 0.00000
+Tl2 0.03114 0.04337 0.03690 -0.01011 -0.01046 -0.00118
+Tl3 0.01927 0.03091 0.04078 0.00000 0.00035 0.00000
+Tl4 0.02045 0.05171 0.04666 0.00000 -0.00035 0.00000
+Tl5 0.02268 0.03455 0.03150 0.00200 -0.00212 -0.00071
+Cl1 0.03397 0.06605 0.03479 0.00670 0.00000 0.00000
+Cl2 0.01963 0.06922 0.03079 0.00000 -0.00047 0.00000
+F1 0.01117 0.04372 0.11071 0.00000 -0.00106 0.00000
+F2 0.03726 0.04572 0.00576 0.00176 0.00129 0.00082
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+Tl1 0.10164 0.58257 0.48514 0.03232
+Tl2 0.29112 0.63760 0.68959 0.03714
+Tl3 0.03245 0.75000 0.14820 0.03032
+Tl4 0.23654 0.25000 0.14154 0.03961
+Tl5 0.00000 0.50000 0.00000 0.02962
+Cl1 0.25000 0.50000 0.06708 0.04490
+Cl2 0.43147 0.75000 0.33877 0.03984
+F1 0.34832 0.75000 -0.14519 0.05524
+F2 -0.01511 0.56872 0.30792 0.02962

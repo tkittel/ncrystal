@@ -1,0 +1,42 @@
+data_cs0104
+_chemical_formula_sum 'C3 Cl F H5 N Re'
+_space_group_IT_number 48
+_symmetry_cell_setting orthorhombic
+_symmetry_space_group_name_Hall '-P 2ab 2bc'
+_symmetry_space_group_name_H-M 'P n n n :2'
+_cell_angle_alpha 90.
+_cell_angle_beta 90.
+_cell_angle_gamma 90.
+_cell_length_a 9.599(2)
+_cell_length_b 10.893(4)
+_cell_length_c 13.657(2)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-x,1/2+y,1/2+z
+1/2+x,-y,1/2+z
+1/2-x,1/2-y,z
+-x,-y,-z
+x,1/2-y,1/2-z
+1/2-x,y,1/2-z
+1/2+x,1/2+y,-z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+Re .2500 .57567(10) .7500 .02641(10)
+Cl .0003(2) .5820(3) .7910(2) .0317(6)
+F(1) .2500 .7500 .7500 .028(4)
+N(1) .0832(8) .6482(9) .4581(5) .029(2)
+C(1) -.0076(12) .7092(9) .3940(7) .038(4)
+C(2) .0827(10) .6584(10) .5572(6) .026(3)
+C(4) .2541(14) .5410(9) .5055(7) .031(3)
+H(2) .023 .706 .597 ?
+H(4) .337 .481 .509 ?
+H(5) .208 .542 .368 ?
+H(6) -.102 .727 .421 ?
+H(8) .023 .791 .375 ?

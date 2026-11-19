@@ -1,0 +1,56 @@
+data_cs0248
+_journal_year 2000
+_chemical_formula_sum 'Ge2 K H4 F8'
+_space_group_IT_number 2
+_symmetry_space_group_name_Hall '-P 1'
+_symmetry_space_group_name_H-M 'P -1'
+_cell_angle_alpha 92.583
+_cell_angle_beta 109.867
+_cell_angle_gamma 109.983
+_cell_length_a 8.173
+_cell_length_b 7.350
+_cell_length_c 5.463
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+-x,-y,-z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+K1 0.01257 0.01267 0.00869 0.00220 0.00229 0.00178
+Ge1 0.01090 0.01141 0.01037 0.00166 0.00282 0.00188
+Ge2 0.01110 0.01119 0.01109 0.00208 0.00272 0.00136
+F1 0.01090 0.01382 0.01152 0.00146 0.00219 0.00219
+F-H2 0.02251 0.02073 0.01508 0.00439 0.00607 0.00136
+F-H3 0.01319 0.02358 0.00733 0.00377 0.00041 -0.00052
+F4 0.01561 0.01738 0.01047 0.00313 0.00198 0.00355
+F-H5 0.01759 0.00890 0.01016 0.00166 -0.00010 0.00156
+F6 0.02095 0.01592 0.01236 0.00575 0.00533 0.00178
+F-H7 0.01854 0.01613 0.01592 0.00313 0.00292 0.00472
+F8 0.01141 0.01738 0.01645 0.00009 0.00272 -0.00052
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_attached_hydrogens
+_atom_site_type_symbol
+K1 0.07822 0.18853 0.31329 0 K
+Ge1 0.35352 0.22723 -0.02459 0 Ge
+Ge2 0.18798 0.77422 0.32635 0 Ge
+F1 0.18575 0.06364 0.00821 0 F
+F-H2 0.38375 0.39209 0.22526 1 F
+F-H3 0.51942 0.20737 0.06461 1 F
+F4 0.31484 0.31176 -0.26908 0 F
+F-H5 0.05672 0.68009 0.02104 1 F
+F6 0.12558 0.89366 0.48126 0 F
+F-H7 0.17937 0.55908 0.48034 1 F
+F8 0.39524 0.85025 0.34253 0 F

@@ -1,0 +1,30 @@
+data_cs0277
+_chemical_formula_sum 'C3 Fe H5 N2 O'
+_symmetry_cell_setting orthorhombic
+_symmetry_space_group_name_Hall 'A 2 -2a'
+_symmetry_space_group_name_H-M 'A m a 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 12.207
+_cell_length_b 11.717
+_cell_length_c 7.408
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+Fe .2500 .23366(10) .0 .0231(2)
+O(1) .2500 .3344(7) -.2105(11) .041(3)
+C(1) .0865(3) .2105(4) -.0019(16) .0339(10)
+C(2) .2500 .3641(8) .1645(14) .034(3)
+C(3) .2500 .1237(9) .1870(15) .027(3)
+N(1) .0730(6) .1570(6) .1684(11) .0425(17)
+N(2) .1589(5) .0677(5) .1661(9) .0321(15)
+H(N1a) .0831 .1954 -.0811 3.3
+H(N1b) .0771 .2937 .0218 3.3
+H(C1b) .0630 .2015 .2500 3.3
+H(N2a) .2500 .4149 .0811 5.6
+H(N2b) .1992 .3599 .2119 5.6

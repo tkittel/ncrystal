@@ -1,0 +1,52 @@
+data_cs0065
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Pb0.9912 K1.56 Cr2 F9 Bi0.6608 Rb1.44'
+_space_group_IT_number 67
+_symmetry_space_group_name_Hall '-A 2b 2b'
+_symmetry_space_group_name_H-M 'A b m m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 5.5672
+_cell_length_b 5.6072
+_cell_length_c 32.441
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+x,-y+1/2,-z
+-x,y,-z
+-x,-y+1/2,z
+-x,-y,-z
+-x,y-1/2,z
+x,-y,z
+x,y-1/2,-z
+x,y+1/2,z+1/2
+x,-y+1,-z+1/2
+-x,y+1/2,-z+1/2
+-x,-y+1,z+1/2
+-x,-y+1/2,-z+1/2
+-x,y,z+1/2
+x,-y+1/2,z+1/2
+x,y,-z+1/2
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+K2 K+2 0.75 0.5 0.25 0.22 0.0
+F2 F-2 0 0.25 0.1648 1 0.0
+F5 F-2 0.75 0 0.25 1 0.0
+K1 K+2 0.7513 0.5 0.12284 0.67 0.0
+F4 F-2 0.835 0.3765 0.0401 0.5 0.0
+Bi1 Bi+2 0.7497 0 0.040 0.33 0.0
+Cr1 Cr+3 0.752 0 0.18709 1 0.0
+F3 F-2 0.749 0 0.1261 1 0.0
+F1 F-2 0.5 0.25 0.2015 1 0.0
+Rb1 Rb+2 0.7513 0.5 0.12284 0.33 0.0
+Rb2 Rb+2 0.75 0.5 0.25 0.78 0.0
+Pb1 Pb+3 0.7497 0 0.040 0.496 0.0

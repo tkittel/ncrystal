@@ -1,0 +1,60 @@
+data_cs0451
+_journal_name_full 'Synthetic Test Data'
+_journal_year 2000
+_chemical_formula_sum 'B3 F6 H K Rb'
+_space_group_IT_number 4
+_symmetry_space_group_name_Hall 'P 2yb'
+_symmetry_space_group_name_H-M 'P 1 21 1'
+_cell_angle_alpha 90
+_cell_angle_beta 119.209
+_cell_angle_gamma 90
+_cell_length_a 6.4528
+_cell_length_b 19.902
+_cell_length_c 6.3710
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+-x,1/2+y,-z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Rb1 0.00935 0.01193 0.01045 -0.00027 0.00551 -0.00032
+K1 0.00935 0.01193 0.01045 -0.00027 0.00551 -0.00032
+B1 0.00831 0.01043 0.00882 0.00102 0.00509 -0.00110
+B3 0.01188 0.01103 0.02172 -0.00059 0.00696 0.00051
+B10 0.01663 0.01332 0.02027 0.00059 0.00780 -0.00025
+F1 0.01001 0.00925 0.01985 -0.00059 0.00645 -0.00110
+F2 0.00755 0.01111 0.01239 0.00170 0.00484 -0.00042
+F6 0.00959 0.01646 0.01035 -0.00017 0.00611 0.00025
+F7 0.00916 0.01849 0.01128 0.00051 0.00619 0.00051
+F-h18 0.01383 0.01230 0.04895 0.00144 0.01035 -0.00110
+F21 0.01111 0.01094 0.01909 -0.00136 0.00602 -0.00229
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+_atom_site_type_symbol
+_atom_site_attached_hydrogens
+Rb1 0.38089 0.72886 0.18785 0.93000 0.01029 Rb 0
+K1 0.38089 0.72886 0.18785 0.07000 0.01029 K 0
+B1 0.39648 0.89325 0.18687 1.00000 0.00882 B 0
+B3 0.18690 0.97972 0.10351 1.00000 0.01544 B 0
+B10 0.40728 0.57950 0.18521 1.00000 0.01722 B 0
+F1 0.05059 0.64523 0.48863 1.00000 0.01340 F 0
+F2 0.72951 0.22852 0.47953 1.00000 0.01035 F 0
+F6 0.94921 0.22913 0.27094 1.00000 0.01162 F 0
+F7 0.43695 0.22923 0.06347 1.00000 0.01247 F 0
+F-h18 0.22259 0.60739 0.09027 1.00000 0.02715 F 0
+F21 0.55328 0.14117 0.31238 1.00000 0.01425 F 0
+H14 0.73002 0.60360 0.33482 1.00000 0.05259 H 0

@@ -1,0 +1,28 @@
+data_cs0379
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'Co Sb2'
+_space_group_IT_number 34
+_symmetry_space_group_name_Hall 'P 2 -2n'
+_symmetry_space_group_name_H-M 'P n n 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 5.6241
+_cell_length_b 6.3037
+_cell_length_c 3.0829
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+1/2+x,1/2-y,1/2+z
+1/2-x,1/2+y,1/2+z
+-x,-y,z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+Co 0.00000 0.00000 0.00000 0.03508
+Sb 0.18750 0.36413 -0.00192 0.02851

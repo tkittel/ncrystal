@@ -1,0 +1,115 @@
+data_cs0459
+_journal_year 2000
+_chemical_formula_sum 'C14 H32 Cl N2 P3 Ti'
+_space_group_IT_number 57
+_symmetry_cell_setting orthorhombic
+_symmetry_space_group_name_Hall '-P 2c 2b'
+_symmetry_space_group_name_H-M 'P b c m'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 8.438(2)
+_cell_length_b 13.797(4)
+_cell_length_c 15.325(3)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-x, -y, z+1/2'
+'x, -y+1/2, -z'
+'-x, y+1/2, -z+1/2'
+'-x, -y, -z'
+'x, y, -z-1/2'
+'-x, y-1/2, z'
+'x, -y-1/2, z-1/2'
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+Ti 0.0321(3) 0.0374(3) 0.0373(3) 0.000 0.000 0.0007(2)
+Cl 0.0330(6) 0.0906(9) 0.1334(11) 0.000 0.000 0.0011(5)
+P11 0.0666(5) 0.0763(5) 0.0455(4) 0.0178(3) -0.0085(3) 0.0103(4)
+C12 0.074(2) 0.082(2) 0.050(2) 0.018(2) 0.0155(14) -0.004(2)
+C13A 0.050(3) 0.059(3) 0.050(3) -0.002(3) 0.017(2) 0.000(3)
+C13B 0.046(3) 0.057(4) 0.066(4) 0.016(3) 0.016(3) -0.013(3)
+P14 0.0531(6) 0.0366(5) 0.0833(7) 0.000 0.000 -0.0075(4)
+C15 0.060(2) 0.036(2) 0.093(3) 0.000 0.000 0.010(2)
+C16 0.041(3) 0.053(3) 0.073(4) -0.013(2) 0.008(2) 0.007(2)
+N10 0.0321(14) 0.0381(15) 0.043(2) 0.000 0.000 -0.0010(11)
+N2 0.045(2) 0.045(2) 0.050(2) -0.0065(14) 0.000 0.000
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_thermal_displace_type
+_atom_site_occupancy
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_disorder_group
+Ti Ti 0.16082(6) 0.07161(4) 0.2500 0.0356(2) Uani 1 d S .
+Cl Cl 0.46224(12) 0.08543(10) 0.2500 0.0857(4) Uani 1 d S .
+P11 P 0.17159(9) -0.00132(6) 0.37504(5) 0.0627(3) Uani 1 d . .
+C12 C -0.0349(4) -0.0350(3) 0.3684(2) 0.0686(9) Uani 1 d . .
+H2AA H -0.0850(4) -0.0810(3) 0.3760(2) 0.102(26) Uiso 0.50 calc PR 1
+H2AB H -0.0886(4) -0.0281(3) 0.4540(2) 0.067(18) Uiso 0.50 calc PR 1
+H2BA H -0.0902(4) -0.0809(3) 0.4236(2) 0.119(29) Uiso 0.50 calc PR 2
+H2BB H -0.0774(4) 0.0281(3) 0.4111(2) 0.074(20) Uiso 0.50 calc PR 2
+C13A C -0.1192(6) 0.0352(4) 0.3279(4) 0.0533(13) Uani 0.50 d P 1
+H3AA H -0.1317(6) 0.1196(4) 0.3819(4) 0.066(18) Uiso 0.50 calc PR 1
+H3AB H -0.2538(6) 0.0471(4) 0.3298(4) 0.071(18) Uiso 0.50 calc PR 1
+C13B C -0.1242(6) -0.0077(4) 0.2865(4) 0.0563(15) Uani 0.50 d P 2
+H3BA H -0.2457(6) 0.0059(4) 0.3091(4) 0.057(15) Uiso 0.50 calc PR 2
+H3BB H -0.1220(6) -0.0898(4) 0.2728(4) 0.059(17) Uiso 0.50 calc PR 2
+P14 P 0.15023(12) 0.21542(7) 0.2500 0.0577(3) Uani 1 d S .
+C15 C -0.0498(5) 0.2499(3) 0.2500 0.0632(11) Uani 1 d S .
+H15A H -0.0778(5) 0.2949(3) 0.2986 0.043(14) Uiso 0.50 calc PR .
+H15B H -0.0781(5) 0.2540(3) 0.2053 0.107(26) Uiso 0.50 calc PR .
+C16 C -0.1183(6) 0.1622(4) 0.2986(4) 0.0559(14) Uani 0.50 d P .
+H16A H -0.1315(6) 0.1611(4) 0.3283(4) 0.066(18) Uiso 0.50 calc PR .
+H16B H -0.2558(6) 0.1692(4) 0.2748(4) 0.028(12) Uiso 0.50 calc PR .
+N10 N -0.0878(3) 0.0622(2) 0.2500 0.0375(6) Uani 1 d S .
+N2 N 0.4867(4) 0.2500 0.5000 0.0467(7) Uani 1 d S .
+C21A C 0.6286(10) 0.2879(7) 0.5207(6) 0.055(2) Uiso 0.342(7) d P .
+C22A C 0.4917(13) 0.1708(8) 0.5419(9) 0.065(3) Uiso 0.342(7) d P .
+C23A C 0.3276(10) 0.2928(7) 0.5234(6) 0.056(2) Uiso 0.342(7) d P .
+C24A C 0.4806(12) 0.2293(7) 0.4125(6) 0.067(3) Uiso 0.342(7) d P .
+C21B C 0.3265(21) 0.2564(16) 0.4649(14) 0.058(5) Uiso 0.158(7) d P .
+C22B C 0.6295(18) 0.2563(13) 0.4653(11) 0.045(5) Uiso 0.158(7) d P .
+C23B C 0.4755(23) 0.3277(13) 0.5632(12) 0.056(6) Uiso 0.158(7) d P .
+C24B C 0.4612(26) 0.1661(16) 0.5862(22) 0.068(6) Uiso 0.158(7) d P .
+C25 C 0.1965(6) 0.2574(6) 0.4931(7) 0.060(2) Uiso 0.50 d P .
+C25B C 0.1658(37) 0.2448(35) 0.4533(25) 0.063(8) Uiso 0.10 d P .
+C26 C 0.7914(36) 0.2870(21) 0.5026(25) 0.072(8) Uiso 0.13 d P .
+C26B C 0.7704(6) 0.2451(13) 0.5059(7) 0.063(2) Uiso 0.50 d P .
+C27 C 0.5011(15) 0.1929(9) 0.6669(7) 0.074(3) Uiso 0.35 d P .
+C27B C 0.5883(129) 0.3282(76) 0.3543(69) 0.105(27) Uiso 0.05 d P .
+C27C C 0.4535(15) 0.1677(12) 0.6201(10) 0.069(3) Uiso 0.30 d P .
+C28 C 0.4522(28) 0.0859(18) 0.5480(18) 0.071(6) Uiso 0.15 d P .
+C28B C 0.4612(74) 0.1005(58) 0.6296(46) 0.085(18) Uiso 0.06 d P .
+C28C C 0.5066(28) 0.0889(15) 0.5069(15) 0.069(5) Uiso 0.17 d P .
+H21 H 0.5769(50) 0.3078(29) 0.5764(28) 0.105(12) Uiso 1 d . .
+H23 H 0.3810(41) 0.3135(29) 0.5882(29) 0.087(11) Uiso 1 d . .
+H22 H 0.6167(76) 0.3738(46) 0.5046(41) 0.183(23) Uiso 1 d . .
+H24 H 0.3751(65) 0.1202(42) 0.4942(36) 0.146(17) Uiso 1 d . .
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+C C 0.0033 0.0016 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Cl Cl 0.1484 0.1585 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Ti V 0.3005 0.5294 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+N N 0.0061 0.0033 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+P S 0.1246 0.1234 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

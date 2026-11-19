@@ -1,0 +1,30 @@
+data_cs0034
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'C6 N3 O P Pt'
+_symmetry_cell_setting trigonal
+_symmetry_space_group_name_H-M 'P 32 1 2'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 120.00
+_cell_length_a 10.308
+_cell_length_b 10.308
+_cell_length_c 19.043
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_attached_hydrogens
+Pt -0.08227 0.45888 0.0 0
+P -0.2499 0.4982 0.04628 0
+N1 -0.1978 0.7510 0.0851 2
+N2 -0.0021 0.7328 0.0835 0
+N4 0.5633 0.9169 0.0851 0
+C1 -0.1235 0.6660 0.0837 0
+C2 0.1824 0.6660 0.0850 0
+C3 0.5803 1.0464 0.0949 1
+C4 0.4604 1.0781 0.0987 1
+C6 0.2953 0.8290 0.0812 0
+C11 0.2797 0.3741 0.0838 1
+O1 0.8748 1.0401 0.0949 2

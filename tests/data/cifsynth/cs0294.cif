@@ -1,0 +1,36 @@
+data_cs0294
+_publ_section_title 'Synthetic structure for testing'
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'K F5 Al V'
+_space_group_IT_number 15
+_symmetry_space_group_name_Hall '-A 2ya'
+_symmetry_space_group_name_H-M 'A 1 2/a 1'
+_cell_angle_alpha 90
+_cell_angle_beta 113.348
+_cell_angle_gamma 90
+_cell_length_a 7.0821
+_cell_length_b 8.8288
+_cell_length_c 6.5869
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+x,1/2+y,1/2+z
+1/2+x,-y,z
+1/2+x,1/2-y,1/2+z
+1/2-x,y,-z
+1/2-x,1/2+y,1/2-z
+-x,-y,-z
+-x,1/2-y,1/2-z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+K 0.25000 0.17025 0.00000
+V 0.50000 0.00000 0.50000
+Al 0.75000 0.20763 0.00000
+F1 0.75000 0.04139 0.50000
+F3 0.91482 0.08691 0.16487
+F5 0.37859 0.20594 0.37270

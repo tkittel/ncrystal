@@ -1,0 +1,24 @@
+data_cs0203
+_journal_year 2000
+_chemical_formula_sum 'Ca2 Fe F7 Si2'
+_symmetry_cell_setting tetragonal
+_symmetry_space_group_name_Hall 'P -4 2ab'
+_symmetry_space_group_name_H-M 'P -4 21 m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 7.6609(6)
+_cell_length_b 7.6609(6)
+_cell_length_c 4.9091(3)
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+Ca .32806(10) .172 .5125(2)
+Fe 0 0 0
+Si .14632(10) .354 .9372(2)
+F(1) 0 .5 .8144(10)
+F(2) .1467(3) .3533 .2605(7)
+F(3) .0759(4) .1870(3) .7785(5)

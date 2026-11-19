@@ -1,0 +1,41 @@
+data_cs0109
+_chemical_formula_sum 'Pd0.317 Zn0.561 Te'
+_space_group_IT_number 119
+_symmetry_space_group_name_Hall 'I -4 -2'
+_symmetry_space_group_name_H-M 'I -4 m 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 4.56
+_cell_length_b 4.56
+_cell_length_c 6.158
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+y,-x,-z
+-x,-y,z
+-y,x,-z
+-x,y,z
+y,x,-z
+x,-y,z
+-y,-x,-z
+x+1/2,y+1/2,z+1/2
+y+1/2,-x+1/2,-z+1/2
+-x+1/2,-y+1/2,z+1/2
+-y+1/2,x+1/2,-z+1/2
+-x+1/2,y+1/2,z+1/2
+y+1/2,x+1/2,-z+1/2
+x+1/2,-y+1/2,z+1/2
+-y+1/2,-x+1/2,-z+1/2
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+Te1 Te-2 0 0 0 1
+Zn1 Zn+3 0 0.5 0.25 0.561
+Pd1 Pd+1 0 0.5 0.25 0.317

@@ -1,0 +1,21 @@
+data_cs0521
+_cell_length_a 4.4562
+_cell_length_b 4.4562
+_cell_length_c 10.9039
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma 120.0
+_symmetry_space_group_name_H-M 'P 1'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+Ga0 Ga 0.000700000000 0.333400000000 0.360100000000
+Ga1 Ga 0.667366666667 0.666733333333 0.693433333333
+Ga2 Ga 0.334033333333 0.000066666667 0.026766666667
+I3 I 0.333100000000 0.000600000000 0.776600000000
+I4 I 0.999766666667 0.333933333333 0.109933333333
+I5 I 0.666433333333 0.667266666667 0.443266666667

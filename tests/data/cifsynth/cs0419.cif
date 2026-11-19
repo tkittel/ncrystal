@@ -1,0 +1,36 @@
+data_cs0419
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'N6 H6 Br8 Co3 C6'
+_space_group_IT_number 147
+_symmetry_space_group_name_Hall '-P 3'
+_symmetry_space_group_name_H-M 'P -3'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 10.17
+_cell_length_b 10.17
+_cell_length_c 6.30
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-y,x-y,z
+-x+y,-x,z
+-x,-y,-z
+y,-x+y,-z
+x-y,x,-z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Br2 Br-1 0.4708 0.3807 0.7558 1 0.0
+Co2 Co+3 0.6666 0.3334 0.8572 1 0.0
+Br1 Br-1 0.6666 0.3334 0.2036 1 0.0
+C1 C-3 0.1793 0.1419 0.1865 1 0.0
+N1 N+2 0.2959 0.2226 0.2526 1 0.0
+Co1 Co+2 0 0 0 1 0.0

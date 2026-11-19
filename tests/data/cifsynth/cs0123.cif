@@ -1,0 +1,57 @@
+data_cs0123
+_chemical_formula_sum 'C2 Na2'
+_space_group_IT_number 142
+_symmetry_space_group_name_Hall 'I 4bw 2aw -1bw'
+_symmetry_space_group_name_H-M 'I 41/a c d :1'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 6.500
+_cell_length_b 6.500
+_cell_length_c 12.217
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-y,x+1/2,z+1/4
+-x+1/2,-y+1/2,z+1/2
+y+1/2,-x,z+3/4
+x,-y+1/2,-z+3/4
+y+1/2,x+1/2,-z
+-x+1/2,y,-z+1/4
+-y,-x,-z+1/2
+-x,-y+1/2,-z+1/4
+y,-x,-z
+x-1/2,y,-z-1/4
+-y-1/2,x+1/2,-z-1/2
+-x,y,z-1/2
+-y-1/2,-x,z+1/4
+x-1/2,-y+1/2,z
+y,x+1/2,z-1/4
+x+1/2,y+1/2,z+1/2
+-y+1/2,x+1,z+3/4
+-x+1,-y+1,z+1
+y+1,-x+1/2,z+5/4
+x+1/2,-y+1,-z+5/4
+y+1,x+1,-z+1/2
+-x+1,y+1/2,-z+3/4
+-y+1/2,-x+1/2,-z+1
+-x+1/2,-y+1,-z+3/4
+y+1/2,-x+1/2,-z+1/2
+x,y+1/2,-z+1/4
+-y,x+1,-z
+-x+1/2,y+1/2,z
+-y,-x+1/2,z+3/4
+x,-y+1,z+1/2
+y+1/2,x+1,z+1/4
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+C1 C-1 0.0635 0.0635 0.25 1 0.0
+Na1 Na+1 0.25 -0.19 0.125 1 0.0

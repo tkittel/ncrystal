@@ -1,0 +1,53 @@
+data_cs0402
+_publ_section_title 'Synthetic structure for testing'
+_journal_year 2000
+_chemical_formula_sum 'Ge H O5 Bi Zn'
+_space_group_IT_number 19
+_symmetry_space_group_name_Hall 'P 2ac 2ab'
+_symmetry_space_group_name_H-M 'P 21 21 21'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 7.449
+_cell_length_b 9.122
+_cell_length_c 5.921
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+-x,1/2+y,1/2-z
+1/2+x,1/2-y,-z
+1/2-x,-y,1/2+z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Bi 0.01527 0.01595 0.02330 -0.00011 0.00034 0.00091
+Zn 0.01991 0.02172 0.01312 -0.00339 0.00260 -0.00079
+Ge 0.01007 0.01199 0.01222 -0.00023 0.00057 -0.00079
+O1 0.01244 0.02036 0.01697 0.00113 0.00453 0.00339
+O2 0.01584 0.01810 0.03281 0.00339 0.00113 0.00339
+O3 0.02036 0.02376 0.01697 -0.00226 -0.00113 -0.00566
+O4 0.01584 0.01358 0.01471 -0.00113 0.00113 0.00226
+O5 0.01697 0.00792 0.00905 -0.00226 0.00113 0.00226
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+Bi 0.35291 0.18165 0.01456 0.01821
+Zn 0.22355 0.52183 0.22351 0.01821
+Ge 0.39364 0.81289 -0.02555 0.01143
+O1 0.43202 0.43303 0.48011 0.01697
+O2 0.30085 0.08223 0.43221 0.02263
+O3 0.15148 0.26588 0.72757 0.02036
+O4 0.59954 0.19441 0.72311 0.01471
+O5 0.09783 0.55891 0.51730 0.01131
+H 0.02435 0.47769 0.47471 0.15159

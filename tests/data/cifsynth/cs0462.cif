@@ -1,0 +1,87 @@
+data_cs0462
+_chemical_formula_sum 'C4 F3 H14 N Te2'
+_space_group_IT_number 7
+_symmetry_cell_setting monoclinic
+_symmetry_space_group_name_Hall 'P -2yc'
+_symmetry_space_group_name_H-M 'P 1 c 1'
+_cell_angle_alpha 90.00
+_cell_angle_beta 118.593(8)
+_cell_angle_gamma 90.00
+_cell_length_a 20.0043(12)
+_cell_length_b 7.8929(3)
+_cell_length_c 20.0873(12)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'x, -y, z+1/2'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_symmetry_multiplicity
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+Te1 Te 0.11509(2) 0.96274(3) 0.161897(9) 0.04889(8) Uani 1 1 d DU . .
+Te4 Te 0.62922(2) 0.99831(3) 0.66454(2) 0.05276(9) Uani 1 1 d DU . .
+F1 F -0.1347(1) 0.8612(3) -0.11688(1) 0.04535(6) Uani 1 1 d U . .
+H1 H -0.1749 0.7826 -0.11514 0.0675 Uiso 1 1 calc RD . .
+C7 C -0.12668(5) 0.99631(3) -0.07383(6) 0.0332(9) Uani 1 1 d U . .
+H4 H 0.1626 1.3349 -0.0199 0.049 Uiso 1 1 calc R . .
+N1 N 0.09292(7) 1.50000(3) 0.04699(5) 0.03318(7) Uani 1 1 d U . .
+H10A H 0.1325 1.6208 -0.0023 0.061 Uiso 1 1 calc R . .
+F11 F 0.09226(1) 1.53739(3) 0.252298(2) 0.04867(7) Uani 1 1 d U . .
+C13 C -0.12500(2) 1.82395(5) 0.21675(8) 0.0442(9) Uani 1 1 d U . .
+H15 H -0.2092 1.6289 0.2869 0.062 Uiso 1 1 calc R . .
+H19B H -0.2435 2.0931 0.0399 0.056 Uiso 1 1 calc R . .
+H20B H -0.1457 2.2425 0.1676 0.101 Uiso 1 1 calc R . .
+H20C H -0.0742 2.1662 0.2428 0.101 Uiso 1 1 calc R . .
+F22 F 0.57463(1) 1.43556(3) 0.24015(1) 0.0564(6) Uani 1 1 d DU . .
+C25 C 0.34622(6) 1.36587(4) 0.24079(6) 0.04646(9) Uani 1 1 d DU . .
+C36 C 0.55148(7) 1.03562(4) 0.38221(7) 0.03321(9) Uani 1 1 d DU . .
+H36 H 0.5335 0.9617 0.3772 0.043 Uiso 1 1 calc R . .
+H38A H 0.4546 1.5425 0.5444 0.093 Uiso 1 1 calc R . .
+H39C H 0.5367 1.6743 0.4647 0.050 Uiso 1 1 calc R . .
+H24W H 0.2086 0.8681 0.3243 0.062 Uiso 1 1 d GD . .
+H11W H -0.2412 0.5756 -0.1752 0.062 Uiso 1 1 d GD . .
+H13W H 0.6984 1.7803 0.3749 0.092 Uiso 1 1 d GD . .
+H22W H 0.1898 1.2586 0.2938 0.062 Uiso 1 1 d GD . .
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+Te1 0.0466(19) 0.0454(17) 0.0543(18) -0.0058(15) 0.0238(15) -0.0048(16)
+Te4 0.050(2) 0.0441(18) 0.072(2) -0.0032(15) 0.0343(17) -0.0100(15)
+F1 0.042(7) 0.043(7) 0.051(7) -0.008(4) 0.023(4) -0.007(4)
+C7 0.033(9) 0.033(10) 0.032(10) 0.000(4) 0.013(6) -0.001(4)
+N1 0.031(8) 0.030(8) 0.037(8) -0.004(4) 0.014(5) 0.002(4)
+F11 0.049(8) 0.048(8) 0.054(8) 0.007(4) 0.028(5) 0.012(4)
+C13 0.046(10) 0.039(10) 0.042(10) 0.001(4) 0.017(6) -0.001(4)
+F22 0.046(7) 0.056(7) 0.067(7) -0.012(4) 0.029(5) -0.001(4)
+C25 0.044(9) 0.046(10) 0.050(9) -0.006(4) 0.022(6) 0.004(4)
+C36 0.037(9) 0.033(9) 0.034(9) 0.000(4) 0.014(6) 0.006(4)
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+C C 0.0033 0.0016 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+N N 0.0061 0.0033 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+F O 0.0106 0.0060 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Te I -0.4742 1.8119 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

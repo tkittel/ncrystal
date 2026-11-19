@@ -1,0 +1,29 @@
+data_cs0010
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Co F4 Re'
+_space_group_IT_number 1
+_space_group_name_Hall 'P 1'
+_space_group_name_H-M_alt 'P 1'
+_cell_angle_alpha 90.000000
+_cell_angle_beta 90.000000
+_cell_angle_gamma 90.000000
+_cell_length_a 4.7958(16)
+_cell_length_b 5.837(2)
+_cell_length_c 5.085(3)
+
+loop_
+_space_group_symop_operation_xyz
+'x, y, z'
+
+loop_
+_atom_site_label
+_atom_site_occupancy
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_adp_type
+_atom_site_U_iso_or_equiv
+Co 1.0 0.500000 0.658704 0.250000 Uiso 0.276103
+Re 0.9017 0.000000 0.157526 0.250000 Uiso 0.296235
+F 0.8564 0.198113 0.118810 0.917712 Uiso ?
+F 1.000 0.242777 0.373616 0.388213 Uiso 0.222203

@@ -1,0 +1,39 @@
+data_cs0193
+_chemical_formula_sum 'O7 Rb3 Ti2'
+_space_group_IT_number 76
+_symmetry_space_group_name_Hall 'P 4w'
+_symmetry_space_group_name_H-M 'P 41'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 6.744
+_cell_length_b 6.744
+_cell_length_c 24.51
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-y,x,z+1/4
+-x,-y,z+1/2
+y,-x,z+3/4
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Rb2 Rb+2 0.500 0.1670 0.1591 1 0.0
+Rb1 Rb+2 -0.2908 0.3143 0 1 0.0
+O13 O-2 0.125 0.142 0.166 1 0.0
+Ti3 Ti+5 0.2317 0.3936 0.04 1 0.0
+O6 O-2 0.390 0.876 0.092 1 0.0
+O12 O-2 -0.124 0.441 0.168 1 0.0
+Rb3 Rb+2 0.3190 -0.0665 -0.0005 1 0.0
+O7 O-2 -0.292 0.831 0.162 1 0.0
+O4 O-2 -0.303 0.626 0.053 1 0.0
+O8 O-2 0.322 0.584 0.001 1 0.0
+Ti1 Ti+5 -0.1663 0.7831 0.0122 1 0.0
+O14 O-2 -0.208 0.208 0.088 1 0.0

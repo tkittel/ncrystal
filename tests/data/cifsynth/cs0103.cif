@@ -1,0 +1,33 @@
+data_cs0103
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'H O3 S Sb'
+_space_group_IT_number 9
+_symmetry_space_group_name_Hall 'I -2yc'
+_symmetry_space_group_name_H-M 'I 1 c 1'
+_cell_angle_alpha 90
+_cell_angle_beta 99.7
+_cell_angle_gamma 90
+_cell_length_a 4.856
+_cell_length_b 12.745
+_cell_length_c 6.390
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+x,-y,z+1/2
+x+1/2,y+1/2,z+1/2
+x+1/2,-y+1/2,z+1
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+O2 O-2 0.2688 0.047 0.683 1 0.0
+Sb1 Sb+2 0.047 0.1295 0.204 1 0.0
+O1 O-2 0.745 0.0472 0.9123 1 0.0
+O3 O-2 0.329 0.161 1.0044 1 0.0
+S1 S+3 -0.0415 0.6248 0.3380 1 0.0

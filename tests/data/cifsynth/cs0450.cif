@@ -1,0 +1,365 @@
+data_cs0450
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Ce2 Fe4 O2 V4'
+_space_group_IT_number 14
+_symmetry_cell_setting monoclinic
+_symmetry_space_group_name_Hall '-P 2ybc (-1/4*x+1/2*z,1/2*x,y)'
+_symmetry_space_group_name_H-M 'P 1 21/c 1 (2*c,2*a+c,b)'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 89.994(17)
+_cell_length_a 8.0572(16)
+_cell_length_b 5.3731(14)
+_cell_length_c 5.7030(12)
+
+loop_
+_space_group_symop_id
+_space_group_symop_operation_xyz
+1 x,y,z
+2 -x+0.25,-y,z+0.5
+3 x+0.25,y+0.5,z
+4 -x+0.5,-y+0.5,z+0.5
+5 x+0.5,y,z
+6 -x+0.75,-y,z+0.5
+7 x+0.75,y+0.5,z
+8 -x,-y+0.5,z+0.5
+9 -x,-y,-z
+10 x+0.25,y,-z+0.5
+11 -x+0.25,-y+0.5,-z
+12 x+0.5,y+0.5,-z+0.5
+13 -x+0.5,-y,-z
+14 x+0.75,y,-z+0.5
+15 -x+0.75,-y+0.5,-z
+16 x,y+0.5,-z+0.5
+
+loop_
+_space_group_symop_ssg_id
+_space_group_symop_ssg_operation_algebraic
+1 x1,x2,x3,x4
+2 -x1+1/4,-x2,x3+1/2,-x4+1/4
+3 -x1,-x2,-x3,-x4+1/2
+4 x1,x2+1/2,-x3+1/2,x4
+5 x1+1/2,x2,x3,x4+1/2
+6 -x1+3/4,-x2,x3+1/2,-x4+3/4
+7 -x1+1/2,-x2,-x3,-x4
+8 x1+1/2,x2+1/2,-x3+1/2,x4+1/2
+9 x1+3/4,x2+1/2,x3,x4+1/4
+10 -x1,-x2+1/2,x3+1/2,-x4+1/2
+11 -x1+3/4,-x2+1/2,-x3,-x4+3/4
+12 x1+3/4,x2,-x3+1/2,x4+1/4
+13 x1+1/4,x2+1/2,x3,x4+3/4
+14 -x1+1/2,-x2+1/2,x3+1/2,-x4
+15 -x1+1/4,-x2+1/2,-x3,-x4+1/4
+16 x1+1/4,x2,-x3+1/2,x4+3/4
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_adp_type
+_atom_site_U_iso_or_equiv
+_atom_site_symmetry_multiplicity
+_atom_site_occupancy
+_atom_site_calc_flag
+Ce1 Ce 0.000612(18) -0.00641(3) -0.00445(2) Uani 0.00332(4) 16 0.125 d
+Ce3 Ce 0.00488(4) -0.22293(5) 0.03429(5) Uani 0.00794(6) 16 0.0417 d
+V11 V 0.25 0 0.5 Uani 0.00197(10) 8 0.0217(8) d
+Fe11 Fe 0.25 0 0.5 Uani 0.00197(10) 8 0.0200(8) d
+Fe12 Fe 0.25 0 0.5 Uani 0.00197(10) 16 0.0057(7) d
+V13 V 0.25 0 0.5 Uani 0.00197(10) 16 0.0416(6) d
+Fe13 Fe 0.25 0 0.5 Uani 0.00197(10) 16 0.0001(6) d
+V21 V 0.75 0 0.5 Uani 0.00171(10) 8 0.0217(8) d
+V22 V 0.75 0 0.5 Uani 0.00171(10) 16 0.0371(6) d
+Fe23 Fe 0.75 0 0.5 Uani 0.00171(10) 16 0.0017(6) d
+O1 O 0.0002(2) -0.0056(3) 0.5377(3) Uani 0.0052(3) 16 0.2083 d
+O3 O 0.78543(19) 0.2127(3) 0.2163(2) Uani 0.0053(3) 16 0.25 d
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_type_symbol
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Ce1 Ce 0.00229(7) 0.00441(7) 0.00325(7) 0.00034(8) -0.00015(6) -0.00145(3)
+Ce3 Ce 0.00130(8) 0.01519(12) 0.00733(9) 0.00110(11) -0.00009(12) -0.00584(8)
+V11 V 0.00236(17) 0.0018(2) 0.00165(17) 0.0000(3) -0.00083(19) -0.00008(12)
+Fe11 Fe 0.00236(17) 0.0018(2) 0.00165(17) 0.0000(3) -0.00083(19) -0.00008(12)
+Fe12 Fe 0.00236(17) 0.0018(2) 0.00165(17) 0.0000(3) -0.00083(19) -0.00008(12)
+V13 V 0.00236(17) 0.0018(2) 0.00165(17) 0.0000(3) -0.00083(19) -0.00008(12)
+Fe13 Fe 0.00236(17) 0.0018(2) 0.00165(17) 0.0000(3) -0.00083(19) -0.00008(12)
+V21 V 0.00236(17) 0.00167(19) 0.00113(17) -0.0002(3) -0.00048(19) 0.00026(12)
+V22 V 0.00236(17) 0.00167(19) 0.00113(17) -0.0002(3) -0.00048(19) 0.00026(12)
+Fe23 Fe 0.00236(17) 0.00167(19) 0.00113(17) -0.0002(3) -0.00048(19) 0.00026(12)
+O1 O 0.0031(5) 0.0052(6) 0.0071(5) -0.0006(6) 0.0003(4) -0.0009(4)
+O3 O 0.0069(6) 0.0049(6) 0.0039(5) 0.0002(4) 0.0007(4) 0.0024(4)
+
+loop_
+_atom_site_displace_Fourier_atom_site_label
+_atom_site_displace_Fourier_axis
+_atom_site_displace_Fourier_wave_vector_seq_id
+_atom_site_displace_Fourier_param_cos
+_atom_site_displace_Fourier_param_sin
+Ti11 x 1 0 -0.0056(3)
+Ti11 y 1 0 0.1276(3)
+Ti11 z 1 0 -0.0781(3)
+Ti11 x 2 0 0
+Ti11 y 2 0 0
+Ti11 z 2 0 0
+Ti11 x 3 0 0
+Ti11 y 3 0 0
+Ti11 z 3 0 0
+Ti11 x 4 0 0
+Ti11 y 4 0 0
+Ti11 z 4 0 0
+Ti11 x 5 0 0
+Ti11 y 5 0 0
+Ti11 z 5 0 0
+Ti11 x 6 0 0.00243(18)
+Ti11 y 6 0 0.02424(15)
+Ti11 z 6 0 0.02846(13)
+Fe11 x 1 0 -0.0056(3)
+Fe11 y 1 0 0.1276(3)
+Fe11 z 1 0 -0.0781(3)
+Fe11 x 2 0 0
+Fe11 y 2 0 0
+Fe11 z 2 0 0
+Fe11 x 3 0 0
+Fe11 y 3 0 0
+Fe11 z 3 0 0
+Fe11 x 4 0 0
+Fe11 y 4 0 0
+Fe11 z 4 0 0
+Fe11 x 5 0 0
+Fe11 y 5 0 0
+Fe11 z 5 0 0
+Fe11 x 6 0 0.00243(18)
+Fe11 y 6 0 0.02424(15)
+Fe11 z 6 0 0.02846(13)
+Ti12 x 1 0 -0.0056(3)
+Ti12 y 1 0 0.1276(3)
+Ti12 z 1 0 -0.0781(3)
+Ti12 x 2 0 0
+Ti12 y 2 0 0
+Ti12 z 2 0 0
+Ti12 x 3 0 0
+Ti12 y 3 0 0
+Ti12 z 3 0 0
+Ti12 x 4 0 0
+Ti12 y 4 0 0
+Ti12 z 4 0 0
+Ti12 x 5 0 0
+Ti12 y 5 0 0
+Ti12 z 5 0 0
+Ti12 x 6 0 0.00243(18)
+Ti12 y 6 0 0.02424(15)
+Ti12 z 6 0 0.02846(13)
+Fe12 x 1 0 -0.0056(3)
+Fe12 y 1 0 0.1276(3)
+Fe12 z 1 0 -0.0781(3)
+Fe12 x 2 0 0
+Fe12 y 2 0 0
+Fe12 z 2 0 0
+Fe12 x 3 0 0
+Fe12 y 3 0 0
+Fe12 z 3 0 0
+Fe12 x 4 0 0
+Fe12 y 4 0 0
+Fe12 z 4 0 0
+Fe12 x 5 0 0
+Fe12 y 5 0 0
+Fe12 z 5 0 0
+Fe12 x 6 0 0.00243(18)
+Fe12 y 6 0 0.02424(15)
+Fe12 z 6 0 0.02846(13)
+Ti13 x 1 0 -0.0056(3)
+Ti13 y 1 0 0.1276(3)
+Ti13 z 1 0 -0.0781(3)
+Ti13 x 2 0 0
+Ti13 y 2 0 0
+Ti13 z 2 0 0
+Ti13 x 3 0 0
+Ti13 y 3 0 0
+Ti13 z 3 0 0
+Ti13 x 4 0 0
+Ti13 y 4 0 0
+Ti13 z 4 0 0
+Ti13 x 5 0 0
+Ti13 y 5 0 0
+Ti13 z 5 0 0
+Ti13 x 6 0 0.00243(18)
+Ti13 y 6 0 0.02424(15)
+Ti13 z 6 0 0.02846(13)
+Fe13 x 1 0 -0.0056(3)
+Fe13 y 1 0 0.1276(3)
+Fe13 z 1 0 -0.0781(3)
+Fe13 x 2 0 0
+Fe13 y 2 0 0
+Fe13 z 2 0 0
+Fe13 x 3 0 0
+Fe13 y 3 0 0
+Fe13 z 3 0 0
+Fe13 x 4 0 0
+Fe13 y 4 0 0
+Fe13 z 4 0 0
+Fe13 x 5 0 0
+Fe13 y 5 0 0
+Fe13 z 5 0 0
+Fe13 x 6 0 0.00243(18)
+Fe13 y 6 0 0.02424(15)
+Fe13 z 6 0 0.02846(13)
+Ti21 x 1 0 0.0020(3)
+Ti21 y 1 0 0.1441(3)
+Ti21 z 1 0 -0.0855(2)
+Ti21 x 2 0 0
+Ti21 y 2 0 0
+Ti21 z 2 0 0
+Ti21 x 3 0 0
+Ti21 y 3 0 0
+Ti21 z 3 0 0
+Ti21 x 4 0 0
+Ti21 y 4 0 0
+Ti21 z 4 0 0
+Ti21 x 5 0 0
+Ti21 y 5 0 0
+Ti21 z 5 0 0
+Ti21 x 6 0 -0.00151(18)
+Ti21 y 6 0 0.02327(15)
+Ti21 z 6 0 0.02908(12)
+Fe21 x 1 0 0.0020(3)
+Fe21 y 1 0 0.1441(3)
+Fe21 z 1 0 -0.0855(2)
+Fe21 x 2 0 0
+Fe21 y 2 0 0
+Fe21 z 2 0 0
+Fe21 x 3 0 0
+Fe21 y 3 0 0
+Fe21 z 3 0 0
+Fe21 x 4 0 0
+Fe21 y 4 0 0
+Fe21 z 4 0 0
+Fe21 x 5 0 0
+Fe21 y 5 0 0
+Fe21 z 5 0 0
+Fe21 x 6 0 -0.00151(18)
+Fe21 y 6 0 0.02327(15)
+Fe21 z 6 0 0.02908(12)
+Ti22 x 1 0 0.0020(3)
+Ti22 y 1 0 0.1441(3)
+Ti22 z 1 0 -0.0855(2)
+Ti22 x 2 0 0
+Ti22 y 2 0 0
+Ti22 z 2 0 0
+Ti22 x 3 0 0
+Ti22 y 3 0 0
+Ti22 z 3 0 0
+Ti22 x 4 0 0
+Ti22 y 4 0 0
+Ti22 z 4 0 0
+Ti22 x 5 0 0
+Ti22 y 5 0 0
+Ti22 z 5 0 0
+Ti22 x 6 0 -0.00151(18)
+Ti22 y 6 0 0.02327(15)
+Ti22 z 6 0 0.02908(12)
+Fe22 x 1 0 0.0020(3)
+Fe22 y 1 0 0.1441(3)
+Fe22 z 1 0 -0.0855(2)
+Fe22 x 2 0 0
+Fe22 y 2 0 0
+Fe22 z 2 0 0
+Fe22 x 3 0 0
+Fe22 y 3 0 0
+Fe22 z 3 0 0
+Fe22 x 4 0 0
+Fe22 y 4 0 0
+Fe22 z 4 0 0
+Fe22 x 5 0 0
+Fe22 y 5 0 0
+Fe22 z 5 0 0
+Fe22 x 6 0 -0.00151(18)
+Fe22 y 6 0 0.02327(15)
+Fe22 z 6 0 0.02908(12)
+Ti23 x 1 0 0.0020(3)
+Ti23 y 1 0 0.1441(3)
+Ti23 z 1 0 -0.0855(2)
+Ti23 x 2 0 0
+Ti23 y 2 0 0
+Ti23 z 2 0 0
+Ti23 x 3 0 0
+Ti23 y 3 0 0
+Ti23 z 3 0 0
+Ti23 x 4 0 0
+Ti23 y 4 0 0
+Ti23 z 4 0 0
+Ti23 x 5 0 0
+Ti23 y 5 0 0
+Ti23 z 5 0 0
+Ti23 x 6 0 -0.00151(18)
+Ti23 y 6 0 0.02327(15)
+Ti23 z 6 0 0.02908(12)
+Fe23 x 1 0 0.0020(3)
+Fe23 y 1 0 0.1441(3)
+Fe23 z 1 0 -0.0855(2)
+Fe23 x 2 0 0
+Fe23 y 2 0 0
+Fe23 z 2 0 0
+Fe23 x 3 0 0
+Fe23 y 3 0 0
+Fe23 z 3 0 0
+Fe23 x 4 0 0
+Fe23 y 4 0 0
+Fe23 z 4 0 0
+Fe23 x 5 0 0
+Fe23 y 5 0 0
+Fe23 z 5 0 0
+Fe23 x 6 0 -0.00151(18)
+Fe23 y 6 0 0.02327(15)
+Fe23 z 6 0 0.02908(12)
+
+loop_
+_atom_site_Fourier_wave_vector_seq_id
+_jana_atom_site_fourier_wave_vector_q1_coeff
+1 1
+2 2
+3 3
+4 4
+5 5
+6 6
+
+loop_
+_atom_site_occ_special_func_atom_site_label
+_atom_site_occ_special_func_crenel_c
+_atom_site_occ_special_func_crenel_w
+La1 0 0.125
+La2 0.107847(4) 0.0417
+La3 -0.102247(4) 0.0417
+Ti11 0 0.0417
+Fe11 0 0.0417
+Ti12 0.0417 0.0417
+Fe12 0.0417 0.0417
+Ti13 0.0833 0.0417
+Fe13 0.0833 0.0417
+Ti21 0 0.0417
+Fe21 0 0.0417
+Ti22 0.0417 0.0417
+Fe22 0.0417 0.0417
+Ti23 0.0833 0.0417
+Fe23 0.0833 0.0417
+O1 0 0.2083
+O2 0 0.25
+O3 0 0.25
+
+loop_
+_atom_type_symbol
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+Fe 0.3463 0.8444 'International Tables Vol C tables 4.2.6.8 and 6.1.1.1'
+Ce -0.2871 2.4523 'International Tables Vol C tables 4.2.6.8 and 6.1.1.1'
+O 0.0106 0.0060 'International Tables Vol C tables 4.2.6.8 and 6.1.1.1'
+V 0.2776 0.4457 'International Tables Vol C tables 4.2.6.8 and 6.1.1.1'

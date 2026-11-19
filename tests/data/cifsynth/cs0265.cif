@@ -1,0 +1,48 @@
+data_cs0265
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'Co0.5 Na0.5 O5 V2'
+_space_group_crystal_system orthorhombic
+_space_group_IT_number 63
+_space_group_name_Hall '-B 2 2b'
+_space_group_name_H-M_alt 'B b m m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 10.217
+_cell_length_b 10.487
+_cell_length_c 3.909
+
+loop_
+_space_group_symop_id
+_space_group_symop_operation_xyz
+1 x,y,z
+2 -x,y+1/2,-z
+3 -x,-y,z
+4 x,-y+1/2,-z
+5 -x,-y,-z
+6 x,-y-1/2,z
+7 x,y,-z
+8 -x,y-1/2,z
+9 x+1/2,y,z+1/2
+10 -x+1/2,y+1/2,-z+1/2
+11 -x+1/2,-y,z+1/2
+12 x+1/2,-y+1/2,-z+1/2
+13 -x+1/2,-y,-z+1/2
+14 x+1/2,-y-1/2,z+1/2
+15 x+1/2,y,-z+1/2
+16 -x+1/2,y-1/2,z+1/2
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+V1 V+4 0.1523 0.5585 0 1 0.0
+O1 O-2 0.7640 0.25 0 1 0.0
+Co1 Co+2 0.1795 0.25 0 0.5 0.0
+Na1 Na+2 0.1795 0.25 0 0.5 0.0
+O2 O-2 0.0610 0.0971 0 1 0.0
+O3 O-2 0.3068 0.0659 0 1 0.0

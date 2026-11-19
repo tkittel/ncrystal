@@ -1,0 +1,36 @@
+data_cs0223
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Cs0.4 H2 O4 P Sr0.6'
+_space_group_IT_number 11
+_symmetry_space_group_name_Hall '-P 2yb'
+_symmetry_space_group_name_H-M 'P 1 21/m 1'
+_cell_angle_alpha 90
+_cell_angle_beta 108.26
+_cell_angle_gamma 90
+_cell_length_a 4.9938
+_cell_length_b 6.4954
+_cell_length_c 8.045
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-x,y+1/2,-z
+-x,-y,-z
+x,-y-1/2,z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+P1 P+5 0.5442 0.75 0.2533 1 0.0
+H1 H+1 0.2114 0.75 0.3666 1 0.0
+O1 O-2 0.3815 0.75 0.4000 1 0.0
+Sr1 Sr+1 0.03811 0.25 0.25325 0.6 0.0
+O2 O-2 0.8432 0.75 0.3368 1 0.0
+O3 O-2 0.4165 0.9600 0.1226 1 0.0
+Cs1 Cs+1 0.03811 0.25 0.25325 0.4 0.0
+H2 H+1 0.48 1.0025 0.0045 0.5 0.0

@@ -1,0 +1,50 @@
+data_cs0371
+_chemical_formula_sum 'C H3 N6 S Se'
+_symmetry_cell_setting tetragonal
+_symmetry_space_group_name_Hall 'P 43n 2nw'
+_symmetry_space_group_name_H-M 'P 41 21 2'
+_cell_angle_alpha 90.000(10)
+_cell_angle_beta 90.000(8)
+_cell_angle_gamma 90.000(8)
+_cell_length_a 9.3312(7)
+_cell_length_b 9.3312(10)
+_cell_length_c 29.146(4)
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Se .0794(2) .0702(2) .0488(2) -.0181(2) .0000(2) -.0187(2)
+S .0411(4) .0511(4) .0410(4) .0049(4) .0008(4) -.0069(3)
+C1 .0433(10) .052(2) .0344(10) .0067(10) .0000(10) -.0044(10)
+N1 .056(2) .051(2) .033(2) -.008(2) -.002(2) -.002(2)
+N3 .048(2) .052(2) .053(2) .011(2) -.002(2) -.009(2)
+N5 .044(2) .048(2) .039(2) .007(2) .004(2) -.006(2)
+N10 .044(2) .059(2) .063(2) .009(2) .001(2) .009(2)
+N11 .040(2) .069(2) .069(2) .001(2) -.014(2) .014(2)
+N14 .037(2) .046(2) .0344(10) -.0011(10) .001(2) .0089(10)
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_thermal_displace_type
+_atom_site_calc_flag
+Se .14672(5) .10115(4) .228556(10) .06617(10) Uani ?
+S -.00737(8) -.00210(9) .14492(3) .0444(2) Uani ?
+C1 -.1053(3) -.1430(3) .06520(8) .0436(7) Uani ?
+N1 .1439(4) .0054(4) .18933(10) .0464(9) Uani ?
+N3 .2091(4) -.1486(4) .11398(10) .0511(10) Uani ?
+N5 .0184(4) -.1724(4) .05953(10) .0439(9) Uani ?
+N10 -.7321(4) .0237(4) .01587(10) .0555(10) Uani ?
+N11 -.7613(4) -.0596(4) -.02217(10) .0600(10) Uani ?
+N14 -.4762(3) -.0595(3) .00082(10) .0387(8) Uani ?
+H3n -.303(4) -.104(3) .0129(10) .067(10) Uiso ?
+H2 .3548 -.0816 .1830 .0617 Uiso calc
+H12 -.6834 -.1534 -.0873 .0685 Uiso calc

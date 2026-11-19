@@ -1,0 +1,44 @@
+data_cs0329
+_journal_year 2000
+_chemical_formula_sum 'F H5 N6'
+_space_group_IT_number 9
+_space_group_name_Hall 'C -2yac'
+_space_group_name_H-M_alt 'C 1 n 1'
+_symmetry_cell_setting monoclinic
+_symmetry_Int_Tables_number 9
+_symmetry_space_group_name_H-M 'C 1 n 1'
+_cell_angle_alpha 90.0000
+_cell_angle_beta 90.5085(41)
+_cell_angle_gamma 90.0000
+_cell_length_a 19.302(18)
+_cell_length_b 41.580(39)
+_cell_length_c 7.1033(67)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+x+1/2,-y,z+1/2
+x+1/2,y+1/2,z
+x,-y+1/2,z+1/2
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+H1 H -0.03312 -0.32515 -0.03298 0.00000 Uiso 1.00
+N2 N 0.00376 -0.32527 0.04889 0.00000 Uiso 1.00
+N5 N 0.04214 -0.38367 0.08866 0.00000 Uiso 1.00
+N24 N -0.15629 -0.21571 -0.20018 0.00000 Uiso 1.00
+N25 N -0.05214 -0.23659 -0.06633 0.00000 Uiso 1.00
+N31 N 0.13312 -0.39508 0.25678 0.00000 Uiso 1.00
+H49 H -0.08981 -0.40873 -0.37324 0.00000 Uiso 1.00
+H68 H 0.28775 -0.17517 0.71096 0.00000 Uiso 1.00
+N72 N -0.21592 -0.07744 -0.28883 0.00000 Uiso 1.00
+H80 H -0.16443 -0.07783 -0.57286 0.00000 Uiso 1.00
+F92 F -0.21574 -0.04984 -0.40829 0.00000 Uiso 1.00
+H95 H -0.45689 -0.21070 -0.66624 0.00000 Uiso 1.00

@@ -1,0 +1,43 @@
+data_cs0412
+_journal_year 2000
+_chemical_formula_sum 'Ni Zn Te2'
+_space_group_IT_number 122
+_symmetry_space_group_name_Hall 'I -4 2bw'
+_symmetry_space_group_name_H-M 'I -4 2 d'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 6.254
+_cell_length_b 6.254
+_cell_length_c 12.43
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+y,-x,-z
+-x,-y,z
+-y,x,-z
+x,-y+1/2,-z+1/4
+-y+1/2,-x,z+3/4
+-x,y+1/2,-z+1/4
+y+1/2,x,z+3/4
+x+1/2,y+1/2,z+1/2
+y+1/2,-x+1/2,-z+1/2
+-x+1/2,-y+1/2,z+1/2
+-y+1/2,x+1/2,-z+1/2
+x+1/2,-y+1,-z+3/4
+-y+1,-x+1/2,z+5/4
+-x+1/2,y+1,-z+3/4
+y+1,x+1/2,z+5/4
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Ni1 Ni+1 0 0 0 1 0.0
+Te1 Te-2 0.25 0.25 0.125 1 0.0
+Zn1 Zn+3 0 0 0.5 1 0.0

@@ -1,0 +1,23 @@
+data_cs0120
+_chemical_formula_sum 'F8 W3'
+_symmetry_cell_setting orthorhombic
+_symmetry_space_group_name_Hall 'C 2 2'
+_symmetry_space_group_name_H-M 'C 2 2 2'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 6.540
+_cell_length_b 10.68
+_cell_length_c 3.890
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+W1 .0 .0 .0
+W2 .0 .337 .0
+F1 .0 .5 .0
+F2 .0 .0 .5
+F3 .0 .288 .5
+F4 .171 .163 .158

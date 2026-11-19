@@ -1,0 +1,44 @@
+data_cs0166
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'F2 Fe6 Rb4'
+_space_group_IT_number 80
+_symmetry_space_group_name_Hall 'I 4bw'
+_symmetry_space_group_name_H-M 'I 41'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 19.373
+_cell_length_b 19.373
+_cell_length_c 13.972
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-y,x+1/2,z+1/4
+-x+1/2,-y+1/2,z+1/2
+y+1/2,-x,z+3/4
+x+1/2,y+1/2,z+1/2
+-y+1/2,x+1,z+3/4
+-x+1,-y+1,z+1
+y+1,-x+1/2,z+5/4
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Fe4 Fe+3 0 0 0.8720 1 0.0
+Rb8 Rb+2 -0.0763 -0.1704 0.7495 1 0.0
+Fe8 Fe+3 -0.091 -0.244 0.5052 1 0.0
+Rb5 Rb+2 0.1641 -0.0772 0.2503 1 0.0
+Fe5 Fe+3 0.2443 -0.0777 0.0025 1 0.0
+Rb3 Rb+2 0.0893 -0.118 -0.0055 1 0.0
+F1 F-1 0.254 -0.13 0.255 1 0.0
+Rb6 Rb+2 0.1624 -0.0754 0.75 1 0.0
+Fe2 Fe+3 0 0 0.6359 1 0.0
+Fe7 Fe+3 -0.0853 -0.2415 0.0077 1 0.0
+Fe1 Fe+3 0 0 0.1509 1 0.0
+F2 F-1 0.275 -0.175 0.718 1 0.0
