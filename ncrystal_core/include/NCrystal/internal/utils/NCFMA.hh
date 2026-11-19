@@ -83,8 +83,12 @@ inline double NCrystal::softFMA( double a, double b, double c ) noexcept
   //can overflow or underflow:
   constexpr unsigned lo = 1023u-400u, hi = 1023u+400u;
   const bool cok = ( ec - lo <= hi - lo ) || ( ( bc << 1 ) == 0 );
-  if ( !( ( ea - lo <= hi - lo ) & ( eb - lo <= hi - lo ) & cok ) )
+  if ( !( ( ea - lo <= hi - lo ) & ( eb - lo <= hi - lo ) & cok ) ) {
+    //Exact product (zero or nan), so a single addition is correctly rounded:
+    if ( a == 0.0 || b == 0.0 )
+      return a * b + c;
     return std::fma( a, b, c );
+  }
   //Exact product uh+ul=a*b:
   const double uh = a * b;
   constexpr double splitter = 134217729.0;//2^27+1
