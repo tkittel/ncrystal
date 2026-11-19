@@ -26,6 +26,95 @@ def fmt( value ):
     s = repr( float( value ) or 0.0 )
     return s.removesuffix('.0')
 
+def _fmt_ndigits( x, nd, strip_leading_zero ):
+    #x (nonzero) with nd significant digits (17: exactly), e.g. "0.25"
+    #(".25" with strip_leading_zero):
+    if nd >= 17:
+        s = repr( x )
+    else:
+        s = f'{x:.{nd}g}'
+        if 'e' in s:
+            alt = repr( float( s ) )#same value, sometimes shorter ("300")
+            if len( alt.removesuffix('.0') ) < len( s ):
+                s = alt
+    s = s.removesuffix('.0')
+    if strip_leading_zero:
+        if s.startswith('0.'):
+            s = s[1:]
+        elif s.startswith('-0.'):
+            s = '-' + s[2:]
+    return s
+
+def fmt_vector_rtol( values, rtol, *, is_grid = False,
+                     strip_leading_zero = True ):
+    """Texts for values, each with the fewest significant digits which read
+    back within the relative tolerance rtol of the value (exactly if rtol is
+    0). Zeros are written as "0". For a grid, more digits are used where needed
+    so neighbouring values also keep their differences within rtol."""
+    from ._numpy import _ensure_numpy, _np
+    _ensure_numpy()
+    x = _np.asarray( values, dtype = float ).ravel()
+    nonzero = x != 0.0
+    #Estimate the needed number of digits (17: exact), and flag values where
+    #one digit less is within float noise of the tolerance:
+    nd = _np.full( x.shape, 17, dtype = int )
+    try_fewer = _np.zeros( x.shape, dtype = bool )
+    if rtol > 0.0 and nonzero.any():
+        ax = _np.abs( x[nonzero] )
+        e = _np.floor( _np.log10( ax ) )
+        e -= ( 10.0**e > ax )
+        e += ( 10.0**( e + 1 ) <= ax )
+        def rounding_error( d ):
+            unit = 10.0**( e - d + 1 )
+            return _np.abs( _np.round( ax / unit ) * unit - ax )
+        ndnz = _np.full( ax.shape, 17, dtype = int )
+        for d in range( 16, 0, -1 ):
+            ndnz[ rounding_error( d ) <= rtol * ax ] = d
+        nd[nonzero] = ndnz
+        try_fewer[nonzero] = ( ( ndnz > 1 ) & ( rounding_error( ndnz - 1 )
+                                                <= ( rtol + 1e-15 ) * ax ) )
+    def fmt( i, d = None ):
+        return ( _fmt_ndigits( float( x[i] ), int( nd[i] if d is None else d ),
+                               strip_leading_zero )
+                 if x[i] != 0.0 else '0' )
+    res = [ fmt( i ) for i in range( len( x ) ) ]
+    def within( idx, texts ):
+        y = _np.array( [ float( t ) for t in texts ], dtype = float )
+        return _np.abs( y - x[idx] ) <= rtol * _np.abs( x[idx] )
+    def fix_values( bad_indices ):
+        for i in bad_indices:
+            nd[i] = min( 17, nd[i] + 1 )
+            res[i] = fmt( i )
+    #The estimate can be one off near rounding boundaries. Add digits where
+    #needed, then remove where possible:
+    idx = _np.nonzero( nonzero )[0]
+    while len( idx ):
+        idx = idx[ ~within( idx, [ res[i] for i in idx ] ) ]
+        fix_values( idx )
+    idx = _np.nonzero( try_fewer & ( nd > 1 ) & ( nd < 17 ) )[0]
+    while len( idx ):
+        texts = [ fmt( i, nd[i] - 1 ) for i in idx ]
+        ok = within( idx, texts )
+        for i, t in zip( idx[ok], _np.asarray( texts, dtype = object )[ok] ):
+            nd[i] -= 1
+            res[i] = t
+        idx = idx[ ok & ( nd[idx] > 1 ) ]
+    if is_grid and rtol > 0.0:
+        while True:
+            y = _np.array( [ float( r ) for r in res ] )
+            dx = _np.diff( x )
+            bad = _np.nonzero( _np.abs( _np.diff( y ) - dx )
+                               > rtol * _np.abs( dx ) )[0]
+            if not len( bad ):
+                break
+            fix_values( set( bad ) | set( bad + 1 ) )
+    return res
+
+def fmt_value_rtol( x, rtol, *, strip_leading_zero = False ):
+    """Text for x as from fmt_vector_rtol."""
+    return fmt_vector_rtol( [ x ], rtol,
+                            strip_leading_zero = strip_leading_zero )[0]
+
 def find_fraction( x, tol = 1e-15, max_denom = 1000000 ):
     import fractions
     f = fractions.Fraction.from_float( x )
