@@ -43,8 +43,20 @@ namespace NCRYSTAL_NAMESPACE {
     {
       NCRYSTAL_FMADISPATCH_WINFMA_FORWARD(vdosScatKnlAccumulate,(sab,aFact,c,n));
       nc_assert( buffersDisjoint( sab, n, aFact, n ) );
-      for ( std::size_t i = 0; i < n; ++i )
+#ifdef __wasm__
+      //ncfma is slow in wasm, so skip elements where it would return sab[i]
+      //unchanged: |aFact[i]*c| below half an ulp of sab[i], with a margin for
+      //rounding and underflow. Constants are 2^55 and 2^-1021:
+      constexpr double k1 = 36028797018963968.0;
+      constexpr double k2 = 2.0 * std::numeric_limits<double>::min();
+#endif
+      for ( std::size_t i = 0; i < n; ++i ) {
+#ifdef __wasm__
+        if ( ncabs( aFact[i] * c ) * k1 + k2 < ncabs( sab[i] ) )
+          continue;
+#endif
         sab[i] = ncfma( aFact[i], c, sab[i] );
+      }
     }
 
 #ifndef NCRYSTAL_WIN_FMA
