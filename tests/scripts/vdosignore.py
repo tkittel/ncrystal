@@ -40,6 +40,7 @@ def main(do_plot):
     matbase = NCMATComposer()
     matbase.set_density(2.7,'g/cm3')
     matbase.set_dyninfo_vdos('Al',*extract_alvdosdata())
+    matbase.set_state_of_matter('solid')
 
     wls = _np_linspace( 0.0, 6.0, 1000 if do_plot else 20 )
     if do_plot:
