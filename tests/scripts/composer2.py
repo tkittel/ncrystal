@@ -215,7 +215,7 @@ def test_v8_scatknl_keywords():
     txt = c.create_ncmat()
     assert txt.startswith('NCMAT v8')
     assert '\n  effective_temperature 450\n' in txt
-    assert '\n  msd .05\n' in txt
+    assert '\n  msd 0.05\n' in txt
     r = q( ['sab','analyse',c.register_as('comp_v8.ncmat',''),''] )
     r = r['sabanalyse']
     assert r['teff_extender'] == 450.0
