@@ -105,12 +105,12 @@ namespace NCRYSTAL_NAMESPACE {
     constexpr bool empty() const noexcept { return m_size==0; }
 
     //Access data:
-    constexpr const char * begin() const ncnoexceptndebug { return nc_assert_rv(m_data), m_data; }
-    constexpr const char * end() const ncnoexceptndebug { return nc_assert_rv(m_data), m_data + m_size; }
-    constexpr char operator[](size_type idx) const noexcept { return nc_assert_rv(m_data), m_data[idx]; }
-    char at(size_type idx) const ncnoexceptndebug { return nc_assert_rv(m_data&&idx<m_size), m_data[idx]; }
-    constexpr char front() const ncnoexceptndebug { return nc_assert_rv(m_data&&m_size>0), m_data[0]; }
-    constexpr char back() const ncnoexceptndebug { return nc_assert_rv(m_data&&m_size>0), m_data[m_size - 1]; }
+    constexpr const char * begin() const ncnoexceptndebug { nc_assert(m_data); return m_data; }
+    constexpr const char * end() const ncnoexceptndebug { nc_assert(m_data); return m_data + m_size; }
+    constexpr char operator[](size_type idx) const ncnoexceptndebug { nc_assert(m_data); return m_data[idx]; }
+    char at(size_type idx) const ncnoexceptndebug { nc_assert(m_data&&idx<m_size); return m_data[idx]; }
+    constexpr char front() const ncnoexceptndebug { nc_assert(m_data&&m_size>0); return m_data[0]; }
+    constexpr char back() const ncnoexceptndebug { nc_assert(m_data&&m_size>0); return m_data[m_size - 1]; }
 
     //Create trimmed view with any leading or trailing whitespace removed:
     StrView trimmed() const;

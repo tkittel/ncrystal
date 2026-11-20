@@ -250,26 +250,25 @@ namespace NCRYSTAL_NAMESPACE {
 namespace NCRYSTAL_NAMESPACE {
 
   inline constexpr std::size_t constexpr_strlen( const char* cstr ) noexcept {
-    //C++11 compatible => needs single recursive statement.
-    return *cstr ? 1 + constexpr_strlen(cstr + 1) : 0;
+    std::size_t n = 0;
+    while ( cstr[n] )
+      ++n;
+    return n;
   }
 
   inline constexpr bool constexpr_cstrequal( const char * c1, const char * c2 ) noexcept {
-    return ( *c1 != *c2
-             ? false
-             : ( *c1 ? constexpr_cstrequal(c1+1,c2+1) : true ) );
+    for ( ; *c1 == *c2; ++c1, ++c2 )
+      if ( !*c1 )
+        return true;
+    return false;
   }
 
   inline constexpr std::int64_t constexpr_strcmp( const char* c1, std::size_t l1, const char* c2, std::size_t l2 ) noexcept
   {
-    //C++11 compatible => needs single recursive statement.
-    return ( l1==0
-             ? ( l2==0 ? 0 : -1 )
-             : ( l2==0
-                 ? 1
-                 : ( c1[0]==c2[0] ? constexpr_strcmp(c1+1,l1-1,c2+1,l2-1) : c1[0]-c2[0] )
-                 )
-             );
+    for ( ; l1 && l2; ++c1, ++c2, --l1, --l2 )
+      if ( *c1 != *c2 )
+        return *c1 - *c2;
+    return l1 ? 1 : ( l2 ? -1 : 0 );
   }
 
   inline bool isSimpleASCII(const char * cstr, AllowTabs allow_tab, AllowNewLine allow_newline) noexcept

@@ -599,8 +599,8 @@ namespace NCRYSTAL_NAMESPACE {
     Iterator m_begin, m_end;
   };
 
-  template<class T> inline ValRange<T> ncrange(T n) { return ValRange<T>(n); }
-  template<class T> inline ValRange<T> ncrange(T l, T n) { return ValRange<T>(l,n); }
+  template<class T> inline constexpr ValRange<T> ncrange(T n) { return ValRange<T>(n); }
+  template<class T> inline constexpr ValRange<T> ncrange(T l, T n) { return ValRange<T>(l,n); }
 
   //Type-safe access to underlying int value of enum:
   template<class TEnum>

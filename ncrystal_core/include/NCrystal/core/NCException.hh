@@ -134,12 +134,6 @@ namespace NCRYSTAL_NAMESPACE {
 #ifdef nc_assert2
 #  undef nc_assert2
 #endif
-#ifdef nc_assert_rv
-#  undef nc_assert_rv
-#endif
-#ifdef nc_assert_always_rv
-#  undef nc_assert_always_rv
-#endif
 
 #define ncrystal_str(s) #s
 #define ncrystal_xstr(s) ncrystal_str(s)
@@ -153,28 +147,6 @@ namespace NCRYSTAL_NAMESPACE {
 #  define nc_assert(x) do {} while(0)
 #  define nc_assert2(x) do { (void)sizeof(x); } while(0)//use but dont evaluate x
 #endif
-
-namespace NCRYSTAL_NAMESPACE {
-  namespace assert_details {
-    //For C++11 constexpr function a separate nc_assert(..) statement won't
-    //work. Instead one can use "return nc_assert_rv(foo), bar;"
-    inline constexpr int assert_always_fct_impl( bool x, const char * msg,  const char * file, unsigned line )
-    {
-      return  x ? 1 : throw ::NCrystal::Error::LogicError(msg,file,line);
-    }
-#ifndef NDEBUG
-    inline constexpr int assert_fct_impl( bool x, const char * msg,  const char * file, unsigned line )
-    {
-      return  x ? 1 : throw ::NCrystal::Error::LogicError(msg,file,line);
-    }
-#  define nc_assert_rv(x) ::NCrystal::assert_details::assert_fct_impl( !!(x), "Assertion failure: " ncrystal_xstr(x), __FILE__,__LINE__)
-#else
-    inline constexpr bool assert_fct_impl() noexcept { return true; }
-#  define nc_assert_rv(x) ::NCrystal::assert_details::assert_fct_impl()
-#endif
-#define nc_assert_always_rv(x) ::NCrystal::assert_details::assert_always_fct_impl( !!(x), "Assertion failure: " ncrystal_xstr(x), __FILE__,__LINE__)
-  }
-}
 
 #ifdef nc_not_implemented
 #  undef nc_not_implemented
