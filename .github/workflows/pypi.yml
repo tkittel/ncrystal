@@ -109,9 +109,11 @@ jobs:
         run: python -m "NCrystal.test" cmdline
 
       #workaround (cf. https://github.com/IAEA-NDS/endf-parserpy/issues/42):
-      - name: Set INSTALL_ENDF_PARSERPY_CPP=no
-        if: matrix.os == 'ubuntu-24.04-arm' || matrix.os == 'macos-15-intel'
-        run: echo "INSTALL_ENDF_PARSERPY_CPP=no" >> $GITHUB_ENV
+      #Not needed since endf-parserpy 0.19 has wheels for all our runners, but
+      #kept in case they are missing again:
+      #- name: Set INSTALL_ENDF_PARSERPY_CPP=no
+        #if: matrix.os == 'ubuntu-24.04-arm' || matrix.os == 'macos-15-intel'
+        #run: echo "INSTALL_ENDF_PARSERPY_CPP=no" >> $GITHUB_ENV
 
       - name: Pip install extra deps
         if: matrix.os != 'windows-11-arm'
