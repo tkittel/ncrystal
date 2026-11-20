@@ -246,30 +246,18 @@ namespace NCRYSTAL_NAMESPACE {
     //Get smart pointer to current object (object MUST be already managed by
     //shared pointer, e.g. created with NCrystal::makeSO or std::make_shared):
     shared_obj<Derived> shared_obj_from_this() {
-#  if nc_cplusplus >= 201703L
       auto shptr = this->weak_from_this().lock();
       if (!shptr)
         NCRYSTAL_THROW( LogicError, "shared_obj_from_this() does not work since this"
                         " instance is not managed by std::shared_ptr / NCrystal::shared_obj" );
       return shptr;
-#else
-      //Actually undefined behaviour to call this pre-C++17, if object was not
-      //allocated as shared pointer:
-      return this->shared_from_this();
-#endif
     }
     shared_obj<const Derived> shared_obj_from_this() const {
-#  if nc_cplusplus >= 201703L
       auto shptr = this->weak_from_this().lock();
       if (!shptr)
         NCRYSTAL_THROW( LogicError, "shared_obj_from_this() does not work since this"
                         " instance is not managed by std::shared_ptr / NCrystal::shared_obj" );
       return shptr;
-#else
-      //Actually undefined behaviour to call this pre-C++17, if object was not
-      //allocated as shared pointer:
-      return this->shared_from_this();
-#endif
     }
 
   };
