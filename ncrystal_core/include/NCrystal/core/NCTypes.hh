@@ -844,9 +844,7 @@ namespace NCRYSTAL_NAMESPACE {
   inline constexpr EnergyDomain::EnergyDomain(NeutronEnergy el,NeutronEnergy eh) ncnoexceptndebug
     : elow(el), ehigh(eh)
   {
-#if nc_cplusplus >= 201703L
     nc_assert( elow.dbl() <= ehigh.dbl() );
-#endif
   }
 
   inline constexpr EnergyDomain::EnergyDomain(EnergyDomain::no_check_t, NeutronEnergy el,NeutronEnergy eh) noexcept
@@ -856,9 +854,7 @@ namespace NCRYSTAL_NAMESPACE {
 
   inline constexpr bool EnergyDomain::contains( NeutronEnergy ekin ) const ncnoexceptndebug
   {
-#if nc_cplusplus >= 201703L
     nc_assert( elow.dbl() <= ehigh.dbl() );
-#endif
     //nc_as_const to get constexpr .dbl in before C++17:
     return !isNull() && ( nc_as_const(ekin).dbl() >= elow.dbl() ) && ( nc_as_const(ekin).dbl() <= ehigh.dbl() );
     //NB: More efficient version might trigger FPE's:
