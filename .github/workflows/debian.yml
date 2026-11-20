@@ -1,8 +1,8 @@
 name: debian
 
-#Builds Debian packages from devel/packaging/debian, checks them with lintian,
-#installs them and runs the package tests (debian/tests) via autopkgtest. Also
-#for Ubuntu 24.04, with devel/packaging/ubuntu2404.patch applied.
+#Builds Debian packages from devel/packaging/debian (via prepare-debian), checks
+#them with lintian, installs them and runs the package tests (debian/tests) via
+#autopkgtest. Also for Ubuntu 24.04, with devel/packaging/ubuntu2404.patch.
 
 on:
   push:
@@ -16,6 +16,8 @@ jobs:
         include:
           - { os: ubuntu-latest,    arch: amd64, image: 'debian:trixie', dist: trixie }
           - { os: ubuntu-24.04-arm, arch: arm64, image: 'debian:trixie', dist: trixie }
+          - { os: ubuntu-latest,    arch: amd64, image: 'ubuntu:26.04',  dist: ubuntu2604 }
+          - { os: ubuntu-24.04-arm, arch: arm64, image: 'ubuntu:26.04',  dist: ubuntu2604 }
           - { os: ubuntu-latest,    arch: amd64, image: 'ubuntu:24.04',  dist: ubuntu2404 }
           - { os: ubuntu-24.04-arm, arch: arm64, image: 'ubuntu:24.04',  dist: ubuntu2404 }
     name: ${{ matrix.dist }}-${{ matrix.arch }}
@@ -42,17 +44,15 @@ jobs:
     - name: Prepare source tree
       run: |
         mkdir -p ci-logs
-        cp -r src/devel/packaging/debian src/debian
         cd src
         v="$(cat VERSION)-1~ci${{ github.run_number }}"
-        d=unstable
         if [ "${{ matrix.dist }}" == "ubuntu2404" ]; then
-          mkdir -p debian/patches
-          cp devel/packaging/ubuntu2404.patch debian/patches/
-          echo ubuntu2404.patch > debian/patches/series
+          devel/packaging/prepare-debian --ubuntu2404
           v="${v}~ubuntu24.04"
-          d=noble
+        else
+          devel/packaging/prepare-debian
         fi
+        d="$(dpkg-parsechangelog -S Distribution)"
         DEBFULLNAME="NCrystal CI" DEBEMAIL="ncrystal-developers@cern.ch" \
           dch --create --package ncrystal --newversion "$v" \
           --distribution "$d" --force-distribution "CI build." \
