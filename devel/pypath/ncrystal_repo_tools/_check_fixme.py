@@ -28,6 +28,7 @@ def main():
     whitelist = {
         'tests/scripts/vdos2ncmat.log' : 2,
         '.github/workflows/fix'+'me.yml' : 1,
+        'AGENTS.md' : 1,#check name in the list of checks
     }
     actually_ignored = []
     for f in all_files_iter():
