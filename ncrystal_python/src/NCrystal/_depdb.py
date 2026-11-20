@@ -28,7 +28,7 @@
 #name: ( min_version, import_check, pypi_pkgname, conda_pkgname )
 deps = {
     'ase': ( '3.25.0', 'ase.io', 'ase', 'ase' ),
-    'endf-parserpy': ( '0.17.0', 'endf_parserpy', 'endf-parserpy', 'endf-parserpy' ),
+    'endf-parserpy': ( '0.19.0', 'endf_parserpy', 'endf-parserpy', 'endf-parserpy' ),
     'gemmi': ( '0.6.6', 'gemmi', 'gemmi', 'gemmi' ),
     'matplotlib': ( '3.6.0', 'matplotlib.pyplot', 'matplotlib', 'matplotlib' ),
     'numpy': ( '1.22', 'numpy', 'numpy', 'numpy' ),
