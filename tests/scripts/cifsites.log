@@ -55,3 +55,12 @@
    unparsable operation, permissive=False: rejected: The symmetry operations listed in the CIF data could not be parsed (Invalid symmetry operation "x+500/999,y,z": translations must be multiples of 1/24). Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk). This file was written by pymatgen, as are Materials Project downloads. For Materials Project entries, the "Conventional Standard" CIF download from the website works, or pass the ID as "mpid::<number>" instead of a file name to have NCrystal download that itself.
    unparsable operation, permissive=True: rejected: The unit cell parameters are not compatible with the space group of the CIF data (15), and refining the structure gives space group 2. If the declared symmetry is trusted, try again with a larger tolerance (tol).
    operations of a tabulated smaller group: rejected: The symmetry operations listed in the CIF data are those of space group 2, but the space group symbol "C 1 2/c 1" is that of space group 15. Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk). This file was written by pymatgen, as are Materials Project downloads. For Materials Project entries, the "Conventional Standard" CIF download from the website works, or pass the ID as "mpid::<number>" instead of a file name to have NCrystal download that itself.
+== triclinic, P1, refine_with_spglib=True: sg=1 natoms=2
+   Si1                      mult=1 occu=1 uiso=0.01
+   O1                       mult=1 occu=1 uiso=0.015
+   warning: The structure has no symmetry beyond space group 1 (P1). This is rare for real crystals and might indicate a supercell or low-precision coordinates. Be wary! [warn#14]
+== triclinic, P1, refine_with_spglib=False: sg=1 natoms=2
+   Si1                      mult=1 occu=1 uiso=0.01
+   O1                       mult=1 occu=1 uiso=0.015
+   warning: Structure refinement and verification with spglib was disabled due to explicit request. [warn#15]
+   warning: The structure has space group 1 (P1), and was not checked for further symmetry. Be wary! [warn#16]
