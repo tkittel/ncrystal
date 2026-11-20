@@ -26,11 +26,7 @@
 #include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 #include "NCrystal/internal/vdos/NCVDOSEval.hh"
 #include <sstream>
-#if nc_cplusplus >= 201703L
-#  include <functional>//for std::invoke
-#else
-#  define NCPARSENCMAT_CALL_MEMBER_FN(objectaddr,ptrToMember)  ((*objectaddr).*(ptrToMember))
-#endif
+#include <functional>//for std::invoke
 namespace NC = NCrystal;
 
 namespace NCRYSTAL_NAMESPACE {
@@ -321,11 +317,7 @@ void NC::NCMATParser::parseFile( TextData::Iterator itLine, TextData::Iterator i
 
       //Close current section by sending it an empty parts list (and previous line number where that section ended).
       parts.clear();
-#if nc_cplusplus >= 201703L
       std::invoke(itSection->second,*this,parts,lineno-1);
-#else
-      NCPARSENCMAT_CALL_MEMBER_FN(this,itSection->second)(parts,lineno-1);
-#endif
 
       //Guard against repeating an existing section (unless DYNINFO or custom sections, where it is allowed)
       bool multiple_sections_allowed = ( is_custom_section || new_section=="DYNINFO" );
@@ -385,20 +377,12 @@ void NC::NCMATParser::parseFile( TextData::Iterator itLine, TextData::Iterator i
     }
 
     //Line inside active section was succesfully parsed.
-#if nc_cplusplus >= 201703L
     std::invoke(itSection->second,*this,parts,lineno);
-#else
-    NCPARSENCMAT_CALL_MEMBER_FN(this,itSection->second)(parts,lineno);
-#endif
   }
 
   //End of input. Close current section by sending it an empty parts list.
   parts.clear();
-#if nc_cplusplus >= 201703L
   std::invoke(itSection->second,*this,parts,lineno);
-#else
-  NCPARSENCMAT_CALL_MEMBER_FN(this,itSection->second)(parts,lineno);
-#endif
 
 }
 
