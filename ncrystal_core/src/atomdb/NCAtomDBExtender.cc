@@ -84,7 +84,7 @@ void NC::AtomDBExtender::addData( const NC::VectS& words, unsigned format_versio
       //important that next line is nc_assert_always, not just nc_assert!!!:
       nc_assert_always( safe_str2dbl(words.at(ifirstword),fraction) && !(fraction<=0) && !(fraction>1.0) );
       totalfraction.add(fraction);
-      components.emplace_back( fraction, lookupWithErrorMsg(words.at(ifirstword+1)) );
+      components.push_back( AtomData::Component{ fraction, lookupWithErrorMsg(words.at(ifirstword+1)) } );
     }
     //1e-9 here, 1e-10 in NCAtomUtils.cc (so safe to assert here):
     nc_assert(valueInInterval(1.0-1e-9,1.0+1e-9,totalfraction.sum()));

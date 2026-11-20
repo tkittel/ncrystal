@@ -91,7 +91,6 @@ namespace NCRYSTAL_NAMESPACE {
     struct NCRYSTAL_API Component {
       double fraction = -1.0;
       AtomDataSP data;
-      Component(double fr,AtomDataSP);//constructor needed for C++11
     };
     unsigned nComponents() const;
     const Component& getComponent(unsigned iComponent) const;
@@ -263,11 +262,6 @@ inline NCrystal::SigmaFree NCrystal::AtomData::freeCoherentXS() const
 inline NCrystal::SigmaFree NCrystal::AtomData::freeIncoherentXS() const
 {
   return incoherentXS().free(m_m);
-}
-
-inline NCrystal::AtomData::Component::Component(double fr,AtomDataSP sp)
-  : fraction(fr), data(std::move(sp))
-{
 }
 
 inline unsigned NCrystal::AtomData::nComponents() const

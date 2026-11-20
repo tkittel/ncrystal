@@ -74,14 +74,15 @@ namespace NCRYSTAL_NAMESPACE {
           new_composition.reserve( atomlist.size() );
           for ( const auto& ai : atomlist ) {
             nc_assert( ai.numberOfPositions() > 0 );
-            new_composition.emplace_back( ai.averageNumberOfAtoms() / ntot,
-                                          ai.atom() );
+            new_composition.push_back( Info::CompositionEntry{
+                ai.averageNumberOfAtoms() / ntot, ai.atom() } );
           }
         } else {
           //From dynamics
           new_composition.reserve( dynamics.value().size() );
           for ( auto& di : dynamics.value() )
-            new_composition.emplace_back( di->fraction(), di->atom() );
+            new_composition.push_back( Info::CompositionEntry{
+                di->fraction(), di->atom() } );
         }
         composition = std::move(new_composition);
       }
