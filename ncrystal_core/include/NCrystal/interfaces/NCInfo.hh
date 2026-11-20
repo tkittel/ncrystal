@@ -90,7 +90,6 @@ namespace NCRYSTAL_NAMESPACE {
     struct NCRYSTAL_API CompositionEntry {
       double fraction = -1.0;//Molar fraction (aka by-number-of-atoms fraction)
       IndexedAtomData atom;//NB: will contain invalid index on multiphase object
-      CompositionEntry(double fr,IndexedAtomData);//constructor needed for C++11
     };
     typedef std::vector<CompositionEntry> Composition;
     const Composition& getComposition() const;
@@ -599,10 +598,6 @@ namespace NCRYSTAL_NAMESPACE {
     singlePhaseOnly("atom data by atom index");
     nc_assert( ai.get() < m_data->atomDataSPs.size());
     return IndexedAtomData{m_data->atomDataSPs[ai.get()],{ai}};
-  }
-  inline Info::CompositionEntry::CompositionEntry(double fr,IndexedAtomData iad)
-    : fraction(fr), atom(std::move(iad))
-  {
   }
   inline void Info::singlePhaseOnly(const char*what) const
   {
