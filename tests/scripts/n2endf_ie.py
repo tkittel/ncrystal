@@ -39,10 +39,10 @@ def main():
     from NCTestUtils.common import ensure_error
     msg = ( 'The Python package "endf-parserpy", needed for ENDF files,'
             ' could not be imported (I am a bad endf_parserpy module).'
-            ' NCrystal requires endf-parserpy>=0.17.0, which is available on'
-            ' PyPI ("python3 -m pip install \'endf-parserpy>=0.17.0\'") and'
+            ' NCrystal requires endf-parserpy>=0.19.0, which is available on'
+            ' PyPI ("python3 -m pip install \'endf-parserpy>=0.19.0\'") and'
             ' conda-forge ("conda install -c conda-forge'
-            ' \'endf-parserpy>=0.17.0\'").' )
+            ' \'endf-parserpy>=0.19.0\'").' )
     with ensure_error(ImportError,msg):
         ncrun('ncmat2endf','Al_sg225.ncmat;temp=350K')
 
