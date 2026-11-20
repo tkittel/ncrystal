@@ -305,9 +305,6 @@ namespace NCRYSTAL_NAMESPACE {
     double value = 1.0;
     bool operator==( const DensityState& ) const;
     void validate() const;
-    //For C++11:
-    DensityState() = default;
-    DensityState( Type tt, double vv ) : type(tt), value(vv) {}
   };
   NCRYSTAL_API std::ostream& operator<<( std::ostream&, const DensityState& );
 

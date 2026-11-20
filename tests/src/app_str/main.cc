@@ -361,6 +361,19 @@ void test_str2dblconverter()
 }
 
 int main(int,char**) {
+  //constexpr string helpers and ShortStr::constexpr_make work at compile time:
+  static_assert( NC::constexpr_strlen("hello") == 5, "" );
+  static_assert( NC::constexpr_strlen("") == 0, "" );
+  static_assert( NC::constexpr_cstrequal("ab","ab"), "" );
+  static_assert( !NC::constexpr_cstrequal("ab","abc"), "" );
+  static_assert( NC::constexpr_strcmp("ab",2,"abc",3) < 0, "" );
+  static_assert( NC::constexpr_strcmp("b",1,"a",1) > 0, "" );
+  static_assert( NC::constexpr_strcmp("",0,"",0) == 0, "" );
+  {
+    constexpr auto s = NC::ShortStr<8>::constexpr_make("foo");
+    static_assert( s.size() == 3, "" );
+    std::cout<<"constexpr ShortStr: \""<<s<<"\""<<std::endl;
+  }
   std::cout<<"test_split begin"<<std::endl;
   test_split();
   std::cout<<"test_split end"<<std::endl;

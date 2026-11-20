@@ -38,10 +38,8 @@ namespace NCRYSTAL_NAMESPACE {
         return current;//no change
       if ( !current.has_value() || ds.type != DensityState::Type::SCALEFACTOR )
         return ds;//override existing
-      //scale existing, keeping type (not just a single return statement here due to c++11 compat.):
-      DensityState newds;
-      newds.type = current.value().type;
-      newds.value = current.value().value * ds.value;
+      //scale existing, keeping type:
+      DensityState newds{ current.value().type, current.value().value * ds.value };
       newds.validate();
       return newds;
     }
@@ -1260,21 +1258,15 @@ void NC::MatCfg::set_density( const DensityState& ds ) {
     m_impl2.modify()->m_densityState.set( newds );
 }
 
-namespace NCRYSTAL_NAMESPACE {
-  namespace {
-    //C++11 is annoying, hence this helper:
-    void set_density_helper( MatCfg& cfg, DensityState::Type type, double val )
-    {
-      DensityState ds;
-      ds.type = type;
-      ds.value = val;
-      cfg.set_density(ds);
-    }
-  }
+void NC::MatCfg::set_density( const Density& val )
+{
+  set_density( DensityState{ DensityState::Type::DENSITY, val.dbl() } );
 }
 
-void NC::MatCfg::set_density( const Density& val ) { set_density_helper(*this,DensityState::Type::DENSITY, val.dbl()); }
-void NC::MatCfg::set_density( const NumberDensity& val ) { set_density_helper( *this, DensityState::Type::NUMBERDENSITY, val.dbl() ); }
+void NC::MatCfg::set_density( const NumberDensity& val )
+{
+  set_density( DensityState{ DensityState::Type::NUMBERDENSITY, val.dbl() } );
+}
 
 const NC::DataSourceName& NC::MatCfg::getDataSourceName() const
 {

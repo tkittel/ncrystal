@@ -108,13 +108,15 @@ namespace NCRYSTAL_NAMESPACE {
     inline constexpr const double&
     BasketValBufDbl::operator[]( std::size_t i ) const ncnoexceptndebug
     {
-      return nc_assert_rv(i<basket_N), data[i];
+      nc_assert(i<basket_N);
+      return data[i];
     }
 
     inline constexpr const int&
     BasketValBufInt::operator[]( std::size_t i ) const ncnoexceptndebug
     {
-      return nc_assert_rv(i<basket_N), data[i];
+      nc_assert(i<basket_N);
+      return data[i];
     }
   }
 }
