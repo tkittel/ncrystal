@@ -20,7 +20,7 @@ Vcs-Git: https://github.com/mctools/ncrystal.git
 Vcs-Browser: https://github.com/mctools/ncrystal
 Rules-Requires-Root: no
 
-Package: libncrystal4
+Package: libncrystal@SOMAJOR@
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -36,7 +36,7 @@ Package: libncrystal-dev
 Section: libdevel
 Architecture: any
 Multi-Arch: same
-Depends: libncrystal4 (= ${binary:Version}), ${misc:Depends}
+Depends: libncrystal@SOMAJOR@ (= ${binary:Version}), ${misc:Depends}
 Description: thermal neutron transport in crystals and other materials (headers)
  NCrystal is a library for thermal neutron transport in crystals and other
  materials, used by Monte Carlo simulation codes and analysis tools.
@@ -46,8 +46,8 @@ Description: thermal neutron transport in crystals and other materials (headers)
 Package: python3-ncrystal
 Section: python
 Architecture: all
-Depends: libncrystal4 (>= ${source:Version}),
-         libncrystal4 (<< ${source:Version}.1~),
+Depends: libncrystal@SOMAJOR@ (>= ${source:Version}),
+         libncrystal@SOMAJOR@ (<< ${source:Version}.1~),
          ${python3:Depends},
          ${misc:Depends}
 Suggests: python3-matplotlib (>= 3.6.0),
