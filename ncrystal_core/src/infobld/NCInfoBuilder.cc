@@ -582,8 +582,9 @@ namespace NCRYSTAL_NAMESPACE {
           Info::Composition comp;
           comp.reserve(atomdata2frac.size());
           for ( auto& e : atomdata2frac ) {
-            comp.emplace_back( e.second.sum(),
-                               IndexedAtomData{e.first,AtomIndex::createInvalidObject()});
+            comp.push_back( Info::CompositionEntry{
+                e.second.sum(),
+                IndexedAtomData{e.first,AtomIndex::createInvalidObject()} } );
           }
           out.composition = std::move(comp);
         }
@@ -708,8 +709,9 @@ NC::Info::Composition NC::InfoBuilder::buildCompositionFromChemForm( const std::
     auto atom = AtomDB::getNaturalElement( n_smb.second.Z() );
     if ( !atom )
       NCRYSTAL_THROW2(DataLoadError,"Does not have data for element with Z="<<n_smb.second.Z());
-    composition.emplace_back( n_smb.first / double(nelem_tot),
-                              IndexedAtomData{atom,AtomIndex{static_cast<AtomIndex::value_type>(composition.size())}} );
+    composition.push_back( Info::CompositionEntry{
+        n_smb.first / double(nelem_tot),
+        IndexedAtomData{atom,AtomIndex{static_cast<AtomIndex::value_type>(composition.size())}} } );
   }
   return composition;
 }
