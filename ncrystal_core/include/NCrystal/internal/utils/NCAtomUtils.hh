@@ -58,8 +58,8 @@ namespace NCRYSTAL_NAMESPACE {
     unsigned Z() const;
     unsigned A() const;
 
-    ncconstexpr17 bool operator==( const AtomSymbol& ) const noexcept;
-    ncconstexpr17 bool operator<( const AtomSymbol& ) const noexcept;
+    constexpr bool operator==( const AtomSymbol& ) const noexcept;
+    constexpr bool operator<( const AtomSymbol& ) const noexcept;
 
   private:
     unsigned m_z = 0, m_a = 0;
@@ -116,12 +116,12 @@ inline NCrystal::AtomSymbol::AtomSymbol(const std::string& ss)
     longInit(ss);
 }
 
-inline ncconstexpr17 bool NCrystal::AtomSymbol::operator==( const AtomSymbol& o ) const noexcept
+inline constexpr bool NCrystal::AtomSymbol::operator==( const AtomSymbol& o ) const noexcept
 {
   return m_z == o.m_z && m_a == o.m_a;
 }
 
-inline ncconstexpr17 bool NCrystal::AtomSymbol::operator<( const AtomSymbol& o ) const noexcept
+inline constexpr bool NCrystal::AtomSymbol::operator<( const AtomSymbol& o ) const noexcept
 {
   return m_z == o.m_z ? (m_a < o.m_a) : ( m_z < o.m_z);
 }

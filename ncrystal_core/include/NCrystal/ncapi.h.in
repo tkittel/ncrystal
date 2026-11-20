@@ -167,16 +167,7 @@ namespace NCrystal = NCRYSTAL_NAMESPACE;
 #  else
 #    define nc_cplusplus __cplusplus
 #  endif
-/* For decorating with constexpr only in C++17 and later, or noexcept only in */
-/* non-dbg builds:                                                            */
-#  ifdef ncconstexpr17
-#    undef ncconstexpr17
-#  endif
-#  if nc_cplusplus >= 201703L
-#    define ncconstexpr17 constexpr
-#  else
-#    define ncconstexpr17
-#  endif
+/* For decorating with noexcept or constexpr only in non-dbg builds:         */
 #  ifdef ncnoexceptndebug
 #    undef ncnoexceptndebug
 #  endif
@@ -192,14 +183,6 @@ namespace NCrystal = NCRYSTAL_NAMESPACE;
 #    define ncconstexprndebug
 #  else
 #    define ncconstexprndebug constexpr
-#  endif
-#  ifdef ncnodiscard17
-#    undef ncnodiscard17
-#  endif
-#  if nc_cplusplus >= 201703L
-#    define ncnodiscard17 [[nodiscard]]
-#  else
-#    define ncnodiscard17
 #  endif
 #  ifdef nclikely
 #    undef nclikely

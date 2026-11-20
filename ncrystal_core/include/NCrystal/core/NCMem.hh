@@ -78,31 +78,31 @@ namespace NCRYSTAL_NAMESPACE {
     using shared_ptr_type = std::shared_ptr<T>;
 
     constexpr shared_obj() = delete;//Can not be default constructed
-    explicit ncconstexpr17 shared_obj( T* t ) : m_shptr(t) { check_nonnull(); }//unsafe if not explict
-    ncconstexpr17 shared_obj( std::shared_ptr<T> sp ) : m_shptr(std::move(sp)) { check_nonnull(); }
-    ncconstexpr17 shared_obj( std::unique_ptr<T> up ) : m_shptr(std::move(up)) { check_nonnull(); }
+    explicit constexpr shared_obj( T* t ) : m_shptr(t) { check_nonnull(); }//unsafe if not explict
+    constexpr shared_obj( std::shared_ptr<T> sp ) : m_shptr(std::move(sp)) { check_nonnull(); }
+    constexpr shared_obj( std::unique_ptr<T> up ) : m_shptr(std::move(up)) { check_nonnull(); }
 
     //If T is const, we can construct from non-const objects:
     template<typename U = T>
-    ncconstexpr17 shared_obj( std::shared_ptr<element_type_nocv> sp, typename std::enable_if<std::is_const<U>::value>::type* = nullptr ) : m_shptr(std::move(sp)) { check_nonnull(); }
+    constexpr shared_obj( std::shared_ptr<element_type_nocv> sp, typename std::enable_if<std::is_const<U>::value>::type* = nullptr ) : m_shptr(std::move(sp)) { check_nonnull(); }
     template<typename U = T>
-    ncconstexpr17 shared_obj( std::unique_ptr<element_type_nocv> up, typename std::enable_if<std::is_const<U>::value>::type* = nullptr ) : m_shptr(std::move(up)) { check_nonnull(); }
+    constexpr shared_obj( std::unique_ptr<element_type_nocv> up, typename std::enable_if<std::is_const<U>::value>::type* = nullptr ) : m_shptr(std::move(up)) { check_nonnull(); }
     template<typename U = T>
-    ncconstexpr17 shared_obj( element_type_nocv* t, typename std::enable_if<std::is_const<U>::value>::type* = nullptr ) : m_shptr(t) { check_nonnull(); }
+    constexpr shared_obj( element_type_nocv* t, typename std::enable_if<std::is_const<U>::value>::type* = nullptr ) : m_shptr(t) { check_nonnull(); }
     template<typename U = T>
     constexpr shared_obj( const shared_obj<element_type_nocv>& so, typename std::enable_if<std::is_const<U>::value>::type* = nullptr ) noexcept : m_shptr(so) { }
 
-    ncconstexpr17 shared_obj( const shared_obj& ) = default;
-    ncconstexpr17 shared_obj& operator=( const shared_obj& ) = default;
-    ncconstexpr17 shared_obj( shared_obj&& ) = default;
-    ncconstexpr17 shared_obj& operator=( shared_obj&& ) = default;
+    constexpr shared_obj( const shared_obj& ) = default;
+    constexpr shared_obj& operator=( const shared_obj& ) = default;
+    constexpr shared_obj( shared_obj&& ) = default;
+    constexpr shared_obj& operator=( shared_obj&& ) = default;
 
     //Disallow initialisation/assignment from nullptr:
     shared_obj & operator= ( decltype(nullptr) ) = delete;
     shared_obj( decltype(nullptr) ) = delete;
 
     //Explicit getters:
-    ncconstexpr17 T* get() noexcept { return m_shptr.get(); }
+    constexpr T* get() noexcept { return m_shptr.get(); }
     constexpr const T* get() const noexcept { return m_shptr.get(); }
     constexpr const std::shared_ptr<T>& getsp() const noexcept { return m_shptr; }
     constexpr const optional_shared_obj<T>& optional() const noexcept { return m_shptr; }//same, different names
@@ -119,25 +119,25 @@ namespace NCRYSTAL_NAMESPACE {
     constexpr bool operator<( const shared_obj& o ) const noexcept { return m_shptr < o.m_shptr; }
 
     //deref:
-    ncconstexpr17 T* operator->() noexcept { return m_shptr.get(); }
+    constexpr T* operator->() noexcept { return m_shptr.get(); }
     constexpr const T* operator->() const noexcept { return m_shptr.get(); }
-    ncconstexpr17 T& operator*() noexcept { return *m_shptr; }
+    constexpr T& operator*() noexcept { return *m_shptr; }
     constexpr const T& operator*() const noexcept { return *m_shptr; }
 
     //Automatic conversions:
     constexpr operator const T&() const noexcept { return *m_shptr; }
-    ncconstexpr17 operator T&() noexcept { return *m_shptr; }
+    constexpr operator T&() noexcept { return *m_shptr; }
     constexpr operator std::shared_ptr<const T>() const noexcept { return m_shptr; }
-    ncconstexpr17 operator std::shared_ptr<T>() noexcept { return m_shptr; }
+    constexpr operator std::shared_ptr<T>() noexcept { return m_shptr; }
     constexpr operator std::weak_ptr<const T>() const noexcept { return m_shptr; }
-    ncconstexpr17 operator std::weak_ptr<T>() noexcept { return m_shptr; }
+    constexpr operator std::weak_ptr<T>() noexcept { return m_shptr; }
 
     //Conversion to pointer is explicit to avoid footgun "const Info* info =
     //NC::createInfo(..)". The footgun is still available for references (const
     //Info& info = ...), but that is a necessary tradeoff since the implicit
     //conversion to a reference is so useful when calling functions:
     explicit constexpr operator const T*() const noexcept { return m_shptr.get(); }
-    explicit ncconstexpr17 operator T*() noexcept { return m_shptr.get(); }
+    explicit constexpr operator T*() noexcept { return m_shptr.get(); }
 
     //If T is non-const, we can convert to const object:
     template<class U = T>
@@ -149,7 +149,7 @@ namespace NCRYSTAL_NAMESPACE {
     //Move/copy/assign to base class pointer (in shared_obj or std::shared_ptr)
     //should be ok (only compiles if T* can be assigned from TOther*):
     template<class TOther>
-    ncconstexpr17 shared_obj& operator=( shared_obj<TOther>&& o ) ncnoexceptndebug {
+    constexpr shared_obj& operator=( shared_obj<TOther>&& o ) ncnoexceptndebug {
       m_shptr = std::move(o).detail_consume_shptr();
 #ifndef NDEBUG
       check_nonnull();
@@ -158,23 +158,23 @@ namespace NCRYSTAL_NAMESPACE {
     }
 
     template<class TOther>
-    ncconstexpr17 shared_obj( shared_obj<TOther>&& o ) noexcept : m_shptr(std::move(o).detail_consume_shptr()) {}
+    constexpr shared_obj( shared_obj<TOther>&& o ) noexcept : m_shptr(std::move(o).detail_consume_shptr()) {}
 
     template<class TOther>
-    ncconstexpr17 shared_obj& operator=( const shared_obj<TOther>& o ) noexcept
+    constexpr shared_obj& operator=( const shared_obj<TOther>& o ) noexcept
     {
       m_shptr = o.m_shptr;
       return *this;
     }
 
     template<class TOther>
-    ncconstexpr17 shared_obj( std::shared_ptr<TOther>&& sp ) : m_shptr(std::move(sp)) { check_nonnull(); }
+    constexpr shared_obj( std::shared_ptr<TOther>&& sp ) : m_shptr(std::move(sp)) { check_nonnull(); }
 
     template<class TOther>
-    ncconstexpr17 shared_obj( const std::shared_ptr<TOther>& sp ) : m_shptr(sp) { check_nonnull(); }
+    constexpr shared_obj( const std::shared_ptr<TOther>& sp ) : m_shptr(sp) { check_nonnull(); }
 
     template<class TOther>
-    ncconstexpr17 shared_obj& operator=( std::shared_ptr<TOther>&& sp )
+    constexpr shared_obj& operator=( std::shared_ptr<TOther>&& sp )
     {
       m_shptr = std::move(sp);
       check_nonnull();
@@ -182,7 +182,7 @@ namespace NCRYSTAL_NAMESPACE {
     }
 
     template<class TOther>
-    ncconstexpr17 shared_obj& operator=( const std::shared_ptr<TOther>& sp )
+    constexpr shared_obj& operator=( const std::shared_ptr<TOther>& sp )
     {
       m_shptr = sp;
       check_nonnull();
@@ -190,10 +190,10 @@ namespace NCRYSTAL_NAMESPACE {
     }
 
     template<class TOther>
-    ncconstexpr17 shared_obj( const shared_obj<TOther>& o ) noexcept : m_shptr(o.getsp()) {}
+    constexpr shared_obj( const shared_obj<TOther>& o ) noexcept : m_shptr(o.getsp()) {}
 
     template<class TOther>
-    ncconstexpr17 operator std::shared_ptr<TOther>() noexcept { return m_shptr; }
+    constexpr operator std::shared_ptr<TOther>() noexcept { return m_shptr; }
 
     template<class TOther>
     constexpr operator std::shared_ptr<const TOther>() const noexcept { return m_shptr; }
@@ -218,7 +218,7 @@ namespace NCRYSTAL_NAMESPACE {
     }
 
   private:
-    ncconstexpr17 void check_nonnull() const
+    constexpr void check_nonnull() const
     {
       if (!m_shptr)
         NCRYSTAL_THROW(BadInput,"Attempt to initialise shared_obj<T> object with null pointer is illegal");
@@ -231,7 +231,7 @@ namespace NCRYSTAL_NAMESPACE {
     constexpr shared_obj( std::shared_ptr<T>&& sp, guaranteed_non_null_t ) noexcept : m_shptr(std::move(sp)) {}
   public:
     //Don't use this! Only for casting functions above:
-    ncconstexpr17 std::shared_ptr<T>&& detail_consume_shptr() && noexcept { return std::move(m_shptr); }
+    constexpr std::shared_ptr<T>&& detail_consume_shptr() && noexcept { return std::move(m_shptr); }
   };
 
   //Efficient/safe creation of shared_object's (similar to std::make_unique/std::make_shared):

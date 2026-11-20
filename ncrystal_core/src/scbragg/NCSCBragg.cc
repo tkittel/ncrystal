@@ -46,7 +46,7 @@ struct NC::SCBragg::pimpl {
     ReflectionFamily & operator= ( ReflectionFamily && ) = default;
     ReflectionFamily( ReflectionFamily && ) = default;
 
-    ncconstexpr17 bool operator<( const ReflectionFamily & o ) const ncnoexceptndebug
+    constexpr bool operator<( const ReflectionFamily & o ) const ncnoexceptndebug
     {
       //sort by d-spacing (secondarily by xsfact for reproducibility):
       if ( o.inv2d!=inv2d ) return o.inv2d > inv2d;

@@ -58,8 +58,8 @@ namespace NCRYSTAL_NAMESPACE {
 
     TextDataPath( const std::string& );
     TextDataPath( const char * );
-    ncconstexpr17 const std::string& path() const noexcept { return m_path; }
-    ncconstexpr17 const std::string& fact() const noexcept { return m_fact; }
+    constexpr const std::string& path() const noexcept { return m_path; }
+    constexpr const std::string& fact() const noexcept { return m_fact; }
     std::string toString() const;//as "fact::path" if fact set, else "path"
     bool operator<( const TextDataPath& ) const noexcept;
     bool operator==( const TextDataPath& ) const noexcept;
@@ -93,12 +93,12 @@ namespace NCRYSTAL_NAMESPACE {
   public:
     enum SpecialCase { Unable, OnlyOnExplicitRequest };
     constexpr Priority( SpecialCase ) noexcept;
-    ncconstexpr17 Priority( const uint_fast32_t priority_value );
+    constexpr Priority( const uint_fast32_t priority_value );
     constexpr bool canServiceRequest() const;
     constexpr bool needsExplicitRequest() const;
     constexpr uint_fast32_t priority() const;
     constexpr Priority( const Priority& ) noexcept = default;
-    ncconstexpr17 Priority& operator=( const Priority& ) = default;
+    constexpr Priority& operator=( const Priority& ) = default;
     constexpr bool operator==( const Priority& ) const noexcept;
     constexpr bool operator!=( const Priority& ) const noexcept;
   private:
@@ -148,7 +148,7 @@ namespace NCRYSTAL_NAMESPACE {
   inline constexpr bool Priority::operator==( const Priority& o ) const noexcept { return m_value == o.m_value; }
   inline constexpr bool Priority::operator!=( const Priority& o ) const noexcept { return m_value != o.m_value; }
 
-  inline ncconstexpr17 Priority::Priority( const uint_fast32_t ppp ) : m_value{ 4*ppp + 0x1 }
+  inline constexpr Priority::Priority( const uint_fast32_t ppp ) : m_value{ 4*ppp + 0x1 }
   {
     if (!(ppp>=1&&ppp<=1000000000))
       NCRYSTAL_THROW(BadInput,"Priority must be in range 1-1000000000");

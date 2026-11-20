@@ -94,7 +94,7 @@ namespace NCRYSTAL_NAMESPACE {
       //throw BadInput in case of syntax errors, unknown variable names, or
       //forbidden characters. Note that the applyStrCfg returns a list of any
       //top level parameters encountered (it otherwise ignores them).
-      ncnodiscard17 static TopLvlVarList applyStrCfg( CfgData&, StrView );
+      [[nodiscard]] static TopLvlVarList applyStrCfg( CfgData&, StrView );
 
       //Output stream support:
       static void stream( const CfgData&, std::ostream&, const VarIdFilter& filter );
@@ -120,9 +120,9 @@ namespace NCRYSTAL_NAMESPACE {
       static void apply( CfgData&, const CfgData&, VarIdFilter = nullptr );
 
       //Check how many variables are set:
-      ncnodiscard17 static ncconstexpr17 size_type size(const CfgData&) noexcept;
-      ncnodiscard17 static ncconstexpr17 bool empty(const CfgData&) noexcept;
-      ncnodiscard17 static bool empty( const CfgData&, const VarIdFilter& );//check if empty after filtering
+      [[nodiscard]] static constexpr size_type size(const CfgData&) noexcept;
+      [[nodiscard]] static constexpr bool empty(const CfgData&) noexcept;
+      [[nodiscard]] static bool empty( const CfgData&, const VarIdFilter& );//check if empty after filtering
 
       //Check if given variable has a value set:
       static bool hasValueSet( const CfgData&, VarId );
@@ -252,7 +252,7 @@ namespace NCRYSTAL_NAMESPACE {
       //or if not oriented) and return SCOrientation object. Using template to
       //avoid direct dependencies here:
       template<class TSCOrientation>
-      ncnodiscard17 static TSCOrientation createSCOrientation(const CfgData&);
+      [[nodiscard]] static TSCOrientation createSCOrientation(const CfgData&);
 
     private:
       template<class TBufCreateFct>
@@ -274,12 +274,12 @@ namespace NCRYSTAL_NAMESPACE {
 namespace NCRYSTAL_NAMESPACE {
   namespace Cfg {
 
-    ncnodiscard17 inline ncconstexpr17 CfgManip::size_type CfgManip::size( const CfgData& data ) noexcept
+    [[nodiscard]] inline constexpr CfgManip::size_type CfgManip::size( const CfgData& data ) noexcept
     {
       return data().size();
     }
 
-    ncnodiscard17 inline ncconstexpr17 bool CfgManip::empty( const CfgData& data ) noexcept
+    [[nodiscard]] inline constexpr bool CfgManip::empty( const CfgData& data ) noexcept
     {
       return data().empty();
     }
@@ -293,7 +293,7 @@ namespace NCRYSTAL_NAMESPACE {
       return false;
     }
 
-    ncnodiscard17 inline bool CfgManip::empty( const CfgData& data, const VarIdFilter& filter )
+    [[nodiscard]] inline bool CfgManip::empty( const CfgData& data, const VarIdFilter& filter )
     {
       if ( data().empty() || !filter )
         return data().empty();
@@ -450,7 +450,7 @@ namespace NCRYSTAL_NAMESPACE {
     }
 
     template<class TSCOrientation>
-    ncnodiscard17 inline TSCOrientation CfgManip::createSCOrientation( const CfgData& data )
+    [[nodiscard]] inline TSCOrientation CfgManip::createSCOrientation( const CfgData& data )
     {
       //Validate the 4 relevant parameters and create SCOrientation object (if relevant).
       auto bufptr_mos = searchBuf( data, VarId::mos );
