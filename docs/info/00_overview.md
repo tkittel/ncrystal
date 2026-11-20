@@ -2,7 +2,7 @@
 
 ## Summary
 
-NCrystal is a C++11 library (with C and Python interfaces and command-line
+NCrystal is a C++17 library (with C and Python interfaces and command-line
 tools, no third-party dependencies, Apache 2.0) that provides the
 thermal-neutron physics of materials to Monte Carlo transport and
 ray-tracing codes: for a material described by a short configuration

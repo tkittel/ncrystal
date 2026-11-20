@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-NCrystal is a C++ (C++11+, no third-party deps) library for thermal neutron scattering in crystals and other materials, with C and Python interfaces, CLI tools (`nctool`, `ncrystal-config`, ...) and `.ncmat` data files (format: `docs/ncmat_doc.md`). Materials are selected with cfg-strings such as `Al_sg225.ncmat;temp=10C`.
+NCrystal is a C++ (C++17+, no third-party deps) library for thermal neutron scattering in crystals and other materials, with C and Python interfaces, CLI tools (`nctool`, `ncrystal-config`, ...) and `.ncmat` data files (format: `docs/ncmat_doc.md`). Materials are selected with cfg-strings such as `Al_sg225.ncmat;temp=10C`.
 
 ## Branch
 
@@ -61,9 +61,9 @@ Code is split into small components, one directory each in `ncrystal_core/src/<c
 
 ## C++ style for new code
 
-Target C++11, two-space indent, max 80 columns (not a strict rule: may be exceeded, but only very rarely, where wrapping would really hurt readability), `//` comments only (never `/*..*/`), `m_` prefix for data members, short variable names. Code should be concise and efficient, and give identical results across platforms (no `long double`). Project idioms:
+Target C++17, two-space indent, max 80 columns (not a strict rule: may be exceeded, but only very rarely, where wrapping would really hurt readability), `//` comments only (never `/*..*/`), `m_` prefix for data members, short variable names. Code should be concise and efficient, and give identical results across platforms (no `long double`). Project idioms:
 
-- Types: `VectD` (`std::vector<double>`), `PairDD`, `kInfinity`, `Span` (C++11 `std::span`, accepts a `VectD`), `Optional<T>` (like `std::optional`, use `NullOpt`, `.emplace()`, `.has_value()`, `.value()`).
+- Types: `VectD` (`std::vector<double>`), `PairDD`, `kInfinity`, `Span` (like C++20 `std::span`, accepts a `VectD`), `Optional<T>` (like `std::optional`, use `NullOpt`, `.emplace()`, `.has_value()`, `.value()`).
 - `NCDefs.hh` and `NCMem.hh` (pulled in essentially everywhere indirectly) already include a large set of standard headers (`<limits>`, `<cmath>`, `<vector>`, `<algorithm>`, `<memory>`, `<type_traits>`, ... -- check them before assuming a `#include` is needed). Don't add a redundant explicit include for something they already provide.
 - Use `ncmax`, `ncmin`, `ncabs` instead of `std::fmax/fmin/fabs`.
 - Use `nc_assert(..)` for internal invariants rather than throwing explicit exceptions (it is compiled out with `NDEBUG`; `nc_assert_always` is not). Errors caused by user input or data are the exception: they use `NCRYSTAL_THROW2(BadInput, "..." << x)` (also `CalcError`, `DataLoadError`, `MissingInfo`, `FileNotFound`), and `LogicError` is for internal errors.
@@ -92,7 +92,7 @@ File layout conventions:
 - Every source file carries the licence banner (checked by `ncdevtool check`).
 - The marker word spelled "fix"+"me" (any capitalisation) is used for work-in-progress notes on this branch, but the marker check in `ncdevtool check` flags every occurrence, so it must all be resolved before merging to `main`. Don't add new ones unless asked.
 - User-visible changes get an entry at the top of `CHANGELOG`.
-- CI covers many compilers/platforms and Python 3.9-3.14, so stay within C++11 in core and Python 3.9 in the Python package.
+- CI covers many compilers/platforms and Python 3.9-3.14, so stay within C++17 in core and Python 3.9 in the Python package. The C API (`ncrystal.h`) must stay usable from C90 and C++11.
 - Follow DRY, KISS and YAGNI. Keep all prose simple and short: docstrings, help texts, comments, changelog entries, commit messages.
 - AI agents: never commit anything without an explicit go-ahead.
 
