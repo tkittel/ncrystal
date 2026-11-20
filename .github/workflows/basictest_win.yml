@@ -159,7 +159,7 @@ jobs:
         echo "Custom compilation of downstream C filter code succeeded"
 
         echo "Compiling C++ code"
-        cl my_cpp_code.cpp %BUILDFLAGS% /EHsc
+        cl my_cpp_code.cpp %BUILDFLAGS% /std:c++17 /EHsc
         if %errorlevel% neq 0 exit /b %errorlevel%
         echo "Custom compilation of downstream C++ code succeeded"
 
@@ -199,18 +199,13 @@ jobs:
         if %errorlevel% neq 0 exit /b %errorlevel%
         echo "Custom compilation of downstream C code succeeded"
 
-        echo "Compiling C++ code again (c++14)"
-        cl my_cpp_code.cpp %BUILDFLAGS% /std:c++14 /EHsc
-        if %errorlevel% neq 0 exit /b %errorlevel%
-        echo "Custom compilation of downstream C++ code succeeded"
-
-        echo "Compiling C++ code again (c++17)"
-        cl my_cpp_code.cpp %BUILDFLAGS% /std:c++17 /EHsc
-        if %errorlevel% neq 0 exit /b %errorlevel%
-        echo "Custom compilation of downstream C++ code succeeded"
-
         echo "Compiling C++ code again (c++20)"
         cl my_cpp_code.cpp %BUILDFLAGS% /std:c++20 /EHsc
+        if %errorlevel% neq 0 exit /b %errorlevel%
+        echo "Custom compilation of downstream C++ code succeeded"
+
+        echo "Compiling C++ code again (c++latest)"
+        cl my_cpp_code.cpp %BUILDFLAGS% /std:c++latest /EHsc
         if %errorlevel% neq 0 exit /b %errorlevel%
         echo "Custom compilation of downstream C++ code succeeded"
 

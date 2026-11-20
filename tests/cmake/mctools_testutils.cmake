@@ -299,7 +299,7 @@ function(
       #Shared library to be loaded by python ctypes
       add_library( ${name} MODULE ${srcfiles} )
       if ( is_cxx )
-        target_compile_features( ${name} PRIVATE cxx_std_11 )
+        target_compile_features( ${name} PRIVATE cxx_std_17 )
       endif()
       set_target_properties(
         ${name} PROPERTIES
@@ -368,7 +368,7 @@ function(
     mctools_testutils_internal_getsrcfiles( srcfiles is_cxx "${appdir}" "OFF" )
     add_executable( ${bn} ${srcfiles})
     if ( is_cxx )
-      target_compile_features( ${bn} PRIVATE cxx_std_11 )
+      target_compile_features( ${bn} PRIVATE cxx_std_17 )
     endif()
     mctools_apply_strict_comp_properties( ${bn} )
     #Same extra flags as the library (e.g. -fp-model=precise for Intel, whose

@@ -341,12 +341,12 @@ ncfind_relinstpath( NCrystal_relpath_CMAKEDIR2DATAFILESDIR "${NCrystal_DATAFILES
 #file(RELATIVE_PATH NCrystal_relpath_CMAKEDIR2DATAFILESDIR   "${PROJECT_BINARY_DIR}/${NCrystal_CMAKEDIR}" "${PROJECT_BINARY_DIR}/${NCrystal_DATAFILESDIR}")
 
 #Dummy interface target for common properties. Note that the interface is always
-#built with C++11 compatible compiler (which CMake will choose from a wide
+#built with C++17 compatible compiler (which CMake will choose from a wide
 #variety depending on platform and other targets,
-#i.e. C++11/C++14/C++17/gnu++11/...).
+#i.e. C++17/C++20/gnu++17/...).
 
 add_library( ncrystal_common INTERFACE )
-target_compile_features( ncrystal_common INTERFACE cxx_std_11 )
+target_compile_features( ncrystal_common INTERFACE cxx_std_17 )
 
 #Properties for executables (can't transfer all properties via INTERFACE
 #targets, so we need this variable-based workaround):
@@ -478,31 +478,28 @@ set( MCTOOLS_EXTRA_STRICT_COMP_FLAGS_MSVC "/WD4324")
 set( STRICT_CPPSTD OFF )
 set( STRICT_CSTD OFF )
 if ( NCRYSTAL_BUILD_STRICT )
-  #We also want to test the C-example with strict C standard (90, 99, 11). For
-  #simplicity we simply pick a C standard value based on the provided c++
+  #We also want to test the C-example with strict C standard (90, 99, 11, 17).
+  #For simplicity we simply pick a C standard value based on the provided c++
   #standard, in a way which allows us to cover the various C standards.
-  if ( NCRYSTAL_BUILD_STRICT STREQUAL "11"
+  if ( NCRYSTAL_BUILD_STRICT STREQUAL "17"
       OR NCRYSTAL_BUILD_STRICT STREQUAL "ON" )
     set( STRICT_CSTD 90 )
-    set( STRICT_CPPSTD 11 )
-  elseif ( NCRYSTAL_BUILD_STRICT STREQUAL "14" )
-    set( STRICT_CSTD 99 )
-    set( STRICT_CPPSTD 14 )
-  elseif ( NCRYSTAL_BUILD_STRICT STREQUAL "17" )
-    set( STRICT_CSTD 11 )
     set( STRICT_CPPSTD 17 )
   elseif ( NCRYSTAL_BUILD_STRICT STREQUAL "20" )
-    if( "${CMAKE_VERSION}" VERSION_LESS "3.21" )
-      message(FATAL_ERROR "NCRYSTAL_BUILD_STRICT=20 requires cmake 3.21")
-    endif()
-    set( STRICT_CSTD 17 )#needs cmake 3.21
+    set( STRICT_CSTD 99 )
     set( STRICT_CPPSTD 20 )
   elseif ( NCRYSTAL_BUILD_STRICT STREQUAL "23" )
-    if( "${CMAKE_VERSION}" VERSION_LESS "3.21" )
-      message(FATAL_ERROR "NCRYSTAL_BUILD_STRICT=23 requires cmake 3.21")
+    if( "${CMAKE_VERSION}" VERSION_LESS "3.20" )
+      message(FATAL_ERROR "NCRYSTAL_BUILD_STRICT=23 requires cmake 3.20")
+    endif()
+    set( STRICT_CSTD 11 )
+    set( STRICT_CPPSTD 23 )#needs cmake 3.20
+  elseif ( NCRYSTAL_BUILD_STRICT STREQUAL "26" )
+    if( "${CMAKE_VERSION}" VERSION_LESS "3.25" )
+      message(FATAL_ERROR "NCRYSTAL_BUILD_STRICT=26 requires cmake 3.25")
     endif()
     set( STRICT_CSTD 17 )#needs cmake 3.21
-    set( STRICT_CPPSTD 23 )#needs cmake 3.20
+    set( STRICT_CPPSTD 26 )#needs cmake 3.25
   else()
     #should have been caught earlier:
     message( FATAL_ERROR "Unexpected value of NCRYSTAL_BUILD_STRICT" )
@@ -556,8 +553,8 @@ else()
   add_library( NCrystal SHARED ${ncpkg_all_ncrystal_lib_srcfiles} )
 endif()
 
-#Make sure client code will use at least c++11:
-target_compile_features( NCrystal INTERFACE cxx_std_11 )
+#Make sure client code will use at least c++17:
+target_compile_features( NCrystal INTERFACE cxx_std_17 )
 
 if ( ncrystal_threads_lib )
   message( STATUS "Thread support will be enabled.")

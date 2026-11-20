@@ -27,7 +27,9 @@ jobs:
           - { mode: 'installtest', buildtype: 'Release'  }
     name: ${{ matrix.mode }}-${{ matrix.buildtype }}
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    #Note November 2026: moved to ubuntu-24.04, as its libstdc++ 12 makes the
+    #                    intel compilers fail on deprecations in C++17 mode.
     #Note March 2025: ubuntu-20.04 was retired, so updated to next oldest
     #                 (ubuntu-22.04). This time it seemed to work!
     #Old note: August 2024 the intel oneapi compilers did not work on ubuntu-22.04

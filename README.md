@@ -39,7 +39,7 @@ at:
 
   https://github.com/mctools/ncrystal/wiki/Data-library
 
-Supporting compilation with all modern C++ standards (C++11 and later), the code
+Supporting compilation with all modern C++ standards (C++17 and later), the code
 has no third-party dependencies and is available under the highly liberal open
 source Apache 2.0 license (see NOTICE and LICENSE files for usage conditions and
 the INSTALL file for build and installation instructions). NCrystal was
