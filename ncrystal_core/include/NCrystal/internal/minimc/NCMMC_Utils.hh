@@ -99,9 +99,9 @@ namespace NCRYSTAL_NAMESPACE {
                         const char* fmtstr = nullptr );
 
       //returns macroscocopic XS, or attenuation coefficient, in units of
-      //1/m. NB, using nc_as_const for pre C++17:
+      //1/m:
       inline constexpr double macroXSFactor( NumberDensity nd ) noexcept {
-        return 100.0 * nc_as_const(nd).dbl();
+        return 100.0 * nd.dbl();
       }
 
       inline double fast_sqrt_clippos( double x ) noexcept {
