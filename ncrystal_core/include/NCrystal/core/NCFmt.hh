@@ -72,16 +72,32 @@ namespace NCRYSTAL_NAMESPACE {
     ShortStr( ShortStr&& ) = default;
     ShortStr& operator=( ShortStr&& ) = default;
 
-    //The following can be used to create constexpr objects from string literals
-    //(i.e. constexpr auto sv = ShortStr::make("foo")): For now it is NOT
-    //constexpr, due to limitations in C++11. This could be revisited if needed.
+    //Create from a string literal (or a char array with or without a final
+    //null char):
     template<size_type N>
     static ShortStr make( const char (&cdata)[N] )
     {
       return ShortStr( &cdata[0], ( cdata[N-1]=='\0' ? N-1 : N ) );
     }
 
+    //Create constexpr objects from string literals, e.g.
+    //constexpr auto sv = ShortStr<8>::constexpr_make("foo"):
+    template<size_type N>
+    static constexpr ShortStr constexpr_make( const char (&cstr)[N] )
+    {
+      static_assert( N <= NMAX, "String too long for ShortStr" );
+      return ShortStr( literal_t{}, cstr, N - 1 );
+    }
+
   private:
+    struct literal_t {};
+    constexpr ShortStr( literal_t, const char * c, size_type n )
+      : m_size(n), m_data{}
+    {
+      nc_assert( c[n] == '\0' );//string literal
+      for ( auto i : ncrange( n ) )
+        m_data[i] = c[i];
+    }
     using TData = std::array<char,NMAX>;
     size_type m_size;
     TData m_data;

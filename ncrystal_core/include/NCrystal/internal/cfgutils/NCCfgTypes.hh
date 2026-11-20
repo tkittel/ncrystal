@@ -108,7 +108,8 @@ namespace NCRYSTAL_NAMESPACE {
         //Next fct won't actually get called
         static constexpr value_type dvon( NullOptType )
         {
-          return nc_assert_always_rv(false),*(value_type*)(nullptr);// cppcheck-suppress nullPointer
+          nc_assert_always(false);
+          return *(value_type*)(nullptr);// cppcheck-suppress nullPointer
         }
         static constexpr value_type dvon( const value_type& v ) { return v; }
       };

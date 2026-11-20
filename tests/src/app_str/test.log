@@ -1,3 +1,4 @@
+constexpr ShortStr: "foo"
 test_split begin
 "" splits to 0 parts (settings: no options):
 "" splits to 1 parts (settings: sep=;):
