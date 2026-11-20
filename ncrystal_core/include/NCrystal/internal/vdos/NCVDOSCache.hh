@@ -65,7 +65,7 @@ namespace NCRYSTAL_NAMESPACE {
       EnergyGridPtr( NullOptType ) {}
 
       const std::shared_ptr<const VectD>& dataShPtr() const { return m_data; }
-      ncconstexpr17 UniqueIDValue getUniqueID() const noexcept { return m_uid; }
+      constexpr UniqueIDValue getUniqueID() const noexcept { return m_uid; }
 
       EnergyGridPtr clone() const {
         EnergyGridPtr v( NullOpt );

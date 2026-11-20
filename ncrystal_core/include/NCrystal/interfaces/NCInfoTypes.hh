@@ -108,7 +108,7 @@ namespace NCRYSTAL_NAMESPACE {
     static constexpr const char * unit() noexcept { return ""; }
     static AtomIndex createInvalidObject();
     constexpr bool isInvalid() const noexcept;
-    ncconstexpr17 void validate() const noexcept {}
+    constexpr void validate() const noexcept {}
     //NB: Since unsigned is only guaranteed to be at least 16bit, the underlying
     //value representing invalid indices might be as low as 65535 (of course, in
     //practice it is usually 4294967295).
@@ -143,8 +143,8 @@ namespace NCRYSTAL_NAMESPACE {
     //////////////////////////////////////////////////////////////////////////////
 
     //Always contains info about atomic compositions:
-    ncconstexpr17 const IndexedAtomData& indexedAtomData() const noexcept { return m_iad; }
-    ncconstexpr17 const IndexedAtomData& atom() const noexcept { return m_iad; }
+    constexpr const IndexedAtomData& indexedAtomData() const noexcept { return m_iad; }
+    constexpr const IndexedAtomData& atom() const noexcept { return m_iad; }
     AtomDataSP atomDataSP() const noexcept { return m_iad.atomDataSP; }
     const AtomData& atomData() const ncnoexceptndebug { return m_iad.data(); }
 
@@ -182,10 +182,10 @@ namespace NCRYSTAL_NAMESPACE {
     //Mean-square-displacements (a.k.a. "U_iso") in angstrom^2 is optional. Note
     //that this is the displacement projected onto a linear axis, for direct
     //usage in isotropic Debye-Waller factors:
-    ncconstexpr17 const Optional<double>& msd() const noexcept { return m_msd; }
+    constexpr const Optional<double>& msd() const noexcept { return m_msd; }
 
     //Debye temperature is optional::
-    ncconstexpr17 const Optional<DebyeTemperature>& debyeTemp() const noexcept { return m_dt; }
+    constexpr const Optional<DebyeTemperature>& debyeTemp() const noexcept { return m_dt; }
 
     //Corresponding DynamicInfo object on the same Info (returns nullptr if not available):
     const DynamicInfo* correspondingDynamicInfo() const { return m_dyninfo; }

@@ -66,27 +66,27 @@ namespace NCRYSTAL_NAMESPACE {
     TinyVector( TinyVector&& );
     TinyVector& operator=( TinyVector&& );
 
-    ncconstexpr17 TValue* data() noexcept;
-    ncconstexpr17 const TValue* data() const noexcept;
-    ncconstexpr17 TValue* begin() noexcept;
-    ncnodiscard17 ncconstexpr17 TValue* end() noexcept;
+    constexpr TValue* data() noexcept;
+    constexpr const TValue* data() const noexcept;
+    constexpr TValue* begin() noexcept;
+    [[nodiscard]] constexpr TValue* end() noexcept;
     constexpr const TValue* begin() const noexcept;
-    ncnodiscard17 constexpr const TValue* end() const noexcept;
+    [[nodiscard]] constexpr const TValue* end() const noexcept;
     constexpr const TValue* cbegin() const noexcept { return begin(); }
-    ncnodiscard17 constexpr const TValue* cend() const noexcept { return end(); }
-    ncnodiscard17 ncconstexpr17 const value_type& operator[]( size_type ) const noexcept;
-    ncnodiscard17 ncconstexpr17 value_type& operator[]( size_type ) noexcept;
-    ncnodiscard17 ncconstexpr17 const value_type& at( size_type ) const;//checks and throws std::out_of_range
-    ncnodiscard17 ncconstexpr17 value_type& at( size_type );//checks and throws std::out_of_range
-    ncnodiscard17 ncconstexpr17 TValue& front() noexcept { return *begin(); }
-    ncnodiscard17 constexpr const TValue& front() const noexcept { return *begin(); }
-    ncnodiscard17 ncconstexpr17 TValue& back() noexcept { return begin()[m_size-1]; }
-    ncnodiscard17 constexpr const TValue& back() const noexcept { return begin()[m_size-1]; }
+    [[nodiscard]] constexpr const TValue* cend() const noexcept { return end(); }
+    [[nodiscard]] constexpr const value_type& operator[]( size_type ) const noexcept;
+    [[nodiscard]] constexpr value_type& operator[]( size_type ) noexcept;
+    [[nodiscard]] constexpr const value_type& at( size_type ) const;//checks and throws std::out_of_range
+    [[nodiscard]] constexpr value_type& at( size_type );//checks and throws std::out_of_range
+    [[nodiscard]] constexpr TValue& front() noexcept { return *begin(); }
+    [[nodiscard]] constexpr const TValue& front() const noexcept { return *begin(); }
+    [[nodiscard]] constexpr TValue& back() noexcept { return begin()[m_size-1]; }
+    [[nodiscard]] constexpr const TValue& back() const noexcept { return begin()[m_size-1]; }
 
     ///////////////////////////////////////////////////////////////////////////
     //Various standard methods:
-    ncnodiscard17 constexpr size_type size() const noexcept { return m_size; }
-    ncnodiscard17 constexpr bool empty() const noexcept { return m_size==0; }
+    [[nodiscard]] constexpr size_type size() const noexcept { return m_size; }
+    [[nodiscard]] constexpr bool empty() const noexcept { return m_size==0; }
     constexpr size_type capacity() const noexcept { return NMAX; }
     void shrink_to_fit() const noexcept {}
     void reserve( size_type ) const noexcept {}
@@ -157,29 +157,29 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template<class TValue, std::size_t NMAX>
-  inline ncconstexpr17 TValue* TinyVector<TValue,NMAX>::data() noexcept
+  inline constexpr TValue* TinyVector<TValue,NMAX>::data() noexcept
   { return reinterpret_cast<TValue*>(&m_data[0]); }
 
   template<class TValue, std::size_t NMAX>
-  inline ncconstexpr17 const TValue* TinyVector<TValue,NMAX>::data() const noexcept
+  inline constexpr const TValue* TinyVector<TValue,NMAX>::data() const noexcept
   { return reinterpret_cast<const TValue*>(&m_data[0]); }
 
   template<class TValue, std::size_t NMAX>
-  inline ncconstexpr17 TValue* TinyVector<TValue,NMAX>::begin() noexcept { return data(); }
+  inline constexpr TValue* TinyVector<TValue,NMAX>::begin() noexcept { return data(); }
 
   template<class TValue, std::size_t NMAX>
-  ncnodiscard17 inline ncconstexpr17 TValue* TinyVector<TValue,NMAX>::end() noexcept { return data() + size(); }
+  [[nodiscard]] inline constexpr TValue* TinyVector<TValue,NMAX>::end() noexcept { return data() + size(); }
 
   template<class TValue, std::size_t NMAX>
   inline constexpr const TValue* TinyVector<TValue,NMAX>::begin() const noexcept { return data(); }
 
   template<class TValue, std::size_t NMAX>
-  ncnodiscard17 inline constexpr const TValue* TinyVector<TValue,NMAX>::end() const noexcept { return data() + size(); }
+  [[nodiscard]] inline constexpr const TValue* TinyVector<TValue,NMAX>::end() const noexcept { return data() + size(); }
 
 
 
   template<class TValue, std::size_t NMAX>
-  ncnodiscard17 inline ncconstexpr17 const typename TinyVector<TValue,NMAX>::value_type&
+  [[nodiscard]] inline constexpr const typename TinyVector<TValue,NMAX>::value_type&
   TinyVector<TValue,NMAX>::operator[]( size_type i ) const noexcept
   {
     assert(i<m_size);
@@ -187,7 +187,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template<class TValue, std::size_t NMAX>
-  ncnodiscard17 inline ncconstexpr17 typename TinyVector<TValue,NMAX>::value_type&
+  [[nodiscard]] inline constexpr typename TinyVector<TValue,NMAX>::value_type&
   TinyVector<TValue,NMAX>::operator[]( size_type i ) noexcept
   {
     assert(i<m_size);
@@ -195,7 +195,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template<class TValue, std::size_t NMAX>
-  ncnodiscard17 inline ncconstexpr17 const typename TinyVector<TValue,NMAX>::value_type&
+  [[nodiscard]] inline constexpr const typename TinyVector<TValue,NMAX>::value_type&
   TinyVector<TValue,NMAX>::at( size_type i ) const
   {
     if ( i >= m_size )
@@ -204,7 +204,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template<class TValue, std::size_t NMAX>
-  ncnodiscard17 inline ncconstexpr17 typename TinyVector<TValue,NMAX>::value_type&
+  [[nodiscard]] inline constexpr typename TinyVector<TValue,NMAX>::value_type&
   TinyVector<TValue,NMAX>::at( size_type i )
   {
     if ( i >= m_size )

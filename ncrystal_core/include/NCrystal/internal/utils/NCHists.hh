@@ -56,8 +56,8 @@ namespace NCRYSTAL_NAMESPACE {
         }
         const double& operator[](size_type i) const { return this->at(i); }
         double& operator[](size_type i) { return this->at(i); }
-        ncconstexpr17 EmptyVect& operator=( const EmptyVect&) { return *this; }
-        ncconstexpr17 EmptyVect& operator=( const std::vector<double>&) { return *this; }
+        constexpr EmptyVect& operator=( const EmptyVect&) { return *this; }
+        constexpr EmptyVect& operator=( const std::vector<double>&) { return *this; }
       };
       struct EmptyPairDD { void swap( PairDD& ) {} };
       inline double pair_first( const PairDD& p ) { return p.first; }

@@ -102,28 +102,28 @@ namespace NCRYSTAL_NAMESPACE {
         basketfields_validateIfDbg(b.fields,b.nused);
       }
 
-      ncnodiscard17 inline NeutronEnergy
+      [[nodiscard]] inline NeutronEnergy
       ekin_obj( const NeutronBasketFields& f, std::size_t i ) ncnoexceptndebug
       {
         nc_assert( i < basket_N );
         return NeutronEnergy{ f.ekin.data[i] };
       }
 
-      ncnodiscard17 inline NeutronEnergy
+      [[nodiscard]] inline NeutronEnergy
       ekin_obj( const NeutronBasket& nb, std::size_t i ) ncnoexceptndebug
       {
         nc_assert( i < nb.size() );
         return ekin_obj( nb.fields, i );
       }
 
-      ncnodiscard17 inline NeutronDirection
+      [[nodiscard]] inline NeutronDirection
       dir_obj( const NeutronBasketFields& f, std::size_t i ) ncnoexceptndebug
       {
         nc_assert( i < basket_N );
         return NeutronDirection{ f.ux[i], f.uy[i], f.uz[i] };
       }
 
-      ncnodiscard17 inline NeutronDirection
+      [[nodiscard]] inline NeutronDirection
       dir_obj( const NeutronBasket& nb, std::size_t i ) ncnoexceptndebug
       {
         nc_assert( i < nb.size() );

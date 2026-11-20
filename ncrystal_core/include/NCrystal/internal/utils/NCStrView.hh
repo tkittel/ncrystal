@@ -90,8 +90,8 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Only mutable operation is move/copy assignment (so the objects can be
     //meaningfully kept in containers):
-    ncconstexpr17 StrView& operator=( const StrView& o ) noexcept;
-    ncconstexpr17 StrView& operator=( StrView&& o ) noexcept;
+    constexpr StrView& operator=( const StrView& o ) noexcept;
+    constexpr StrView& operator=( StrView&& o ) noexcept;
 
     //Check if the view has a value or not. If it does not, data() will return a
     //nullptr, and no methods should be used except the assignment operators.
@@ -257,8 +257,8 @@ namespace NCRYSTAL_NAMESPACE {
   inline constexpr bool StrView::has_value() const noexcept { return m_data!=nullptr; }
   inline constexpr StrView::StrView( const StrView& o ) noexcept : m_data(o.m_data), m_size(o.m_size) {}
   inline constexpr StrView::StrView( StrView&& o ) noexcept : m_data(o.m_data), m_size(o.m_size) {}
-  inline ncconstexpr17 StrView& StrView::operator=( const StrView& o ) noexcept { return m_data=o.m_data, m_size=o.m_size, *this; }
-  inline ncconstexpr17 StrView& StrView::operator=( StrView&& o ) noexcept { return m_data=o.m_data, m_size=o.m_size, *this; }
+  inline constexpr StrView& StrView::operator=( const StrView& o ) noexcept { return m_data=o.m_data, m_size=o.m_size, *this; }
+  inline constexpr StrView& StrView::operator=( StrView&& o ) noexcept { return m_data=o.m_data, m_size=o.m_size, *this; }
   inline std::string StrView::to_string() const { nc_assert(m_data!=nullptr); return std::string(m_data,m_size); }
 
   inline constexpr std::int64_t
