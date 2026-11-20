@@ -64,15 +64,11 @@ def import_endfparserpy():
     return _cacheimport[0]
 
 def create_endfparserpy_parser( **kwargs ):
-    """Create endf_parserpy.EndfParserPy(**kwargs). Versions before 0.18
-    cache compiled recipes in the user's cache dir unless cache_dir=False,
-    while 0.18+ never caches and warns if cache_dir is given at all."""
-    import re
+    """Create endf_parserpy.EndfParserPy(**kwargs), pinned to the layout of
+    endf-parserpy 0.19, so later layout changes do not break our code."""
     endf_parserpy,_,_ = import_endfparserpy()
-    m = re.match(r'(\d+)\.(\d+)', endf_parserpy.__version__)
-    if not m or ( int(m.group(1)), int(m.group(2)) ) < ( 0, 18 ):
-        kwargs['cache_dir'] = False
-    return endf_parserpy.EndfParserPy( **kwargs )
+    return endf_parserpy.EndfParserPy( endf_format = 'endf6-ext@0.19',
+                                       **kwargs )
 
 def _endf_roundoff(x):
     #
