@@ -168,28 +168,28 @@ namespace NCRYSTAL_NAMESPACE {
     //Or just create a Span from the vector and loop over that, which is
     //equivalent.
 
-    ncnodiscard17 ncconstexpr17 TValue* data() noexcept;
-    ncnodiscard17 ncconstexpr17 const TValue* data() const noexcept;
-    ncnodiscard17 ncconstexpr17 TValue* begin() noexcept;
-    ncnodiscard17 ncconstexpr17 TValue* end() noexcept;
-    ncnodiscard17 constexpr const TValue* begin() const noexcept;
-    ncnodiscard17 constexpr const TValue* end() const noexcept;
-    ncnodiscard17 constexpr const TValue* cbegin() const noexcept { return begin(); }
-    ncnodiscard17 constexpr const TValue* cend() const noexcept { return end(); }
-    ncnodiscard17 ncconstexpr17 const value_type& operator[]( size_type ) const noexcept;
-    ncnodiscard17 ncconstexpr17 value_type& operator[]( size_type ) noexcept;
-    ncnodiscard17 ncconstexpr17 const value_type& at( size_type ) const;//checks and throws std::out_of_range
-    ncnodiscard17 ncconstexpr17 value_type& at( size_type );//checks and throws std::out_of_range
-    ncnodiscard17 ncconstexpr17 TValue& front() noexcept { return *begin(); }
-    ncnodiscard17 constexpr const TValue& front() const noexcept { return *begin(); }
-    ncnodiscard17 ncconstexpr17 TValue& back() noexcept { return *std::prev(end()); }
-    ncnodiscard17 constexpr const TValue& back() const noexcept { return *std::prev(end()); }
+    [[nodiscard]] constexpr TValue* data() noexcept;
+    [[nodiscard]] constexpr const TValue* data() const noexcept;
+    [[nodiscard]] constexpr TValue* begin() noexcept;
+    [[nodiscard]] constexpr TValue* end() noexcept;
+    [[nodiscard]] constexpr const TValue* begin() const noexcept;
+    [[nodiscard]] constexpr const TValue* end() const noexcept;
+    [[nodiscard]] constexpr const TValue* cbegin() const noexcept { return begin(); }
+    [[nodiscard]] constexpr const TValue* cend() const noexcept { return end(); }
+    [[nodiscard]] constexpr const value_type& operator[]( size_type ) const noexcept;
+    [[nodiscard]] constexpr value_type& operator[]( size_type ) noexcept;
+    [[nodiscard]] constexpr const value_type& at( size_type ) const;//checks and throws std::out_of_range
+    [[nodiscard]] constexpr value_type& at( size_type );//checks and throws std::out_of_range
+    [[nodiscard]] constexpr TValue& front() noexcept { return *begin(); }
+    [[nodiscard]] constexpr const TValue& front() const noexcept { return *begin(); }
+    [[nodiscard]] constexpr TValue& back() noexcept { return *std::prev(end()); }
+    [[nodiscard]] constexpr const TValue& back() const noexcept { return *std::prev(end()); }
 
     ///////////////////////////////////////////////////////////////////////////
     //Various standard methods:
-    ncnodiscard17 constexpr size_type size() const noexcept;
-    ncnodiscard17 constexpr bool empty() const noexcept;
-    ncnodiscard17 ncconstexpr17 size_type capacity() const noexcept;
+    [[nodiscard]] constexpr size_type size() const noexcept;
+    [[nodiscard]] constexpr bool empty() const noexcept;
+    [[nodiscard]] constexpr size_type capacity() const noexcept;
 
     ///////////////////////////////////////////////////////////////////////////
     //Insert or remove elements:
@@ -307,14 +307,14 @@ namespace NCRYSTAL_NAMESPACE {
       void * m_begin;
     protected:
       SV_CacheBegin( void * b ) : m_begin{b} {}
-      ncconstexpr17 void setBeginPtr( void* p ) noexcept { m_begin = p; }
-      ncconstexpr17 void* beginPtr() const noexcept { return m_begin; }
+      constexpr void setBeginPtr( void* p ) noexcept { m_begin = p; }
+      constexpr void* beginPtr() const noexcept { return m_begin; }
     };
     class NCRYSTAL_API SV_Empty {
     protected:
       SV_Empty( void * ) {}
-      ncconstexpr17 void setBeginPtr( void* ) noexcept {}
-      ncconstexpr17 void* beginPtr() const noexcept { return nullptr; }
+      constexpr void setBeginPtr( void* ) noexcept {}
+      constexpr void* beginPtr() const noexcept { return nullptr; }
     };
 
     template<class TValue>
@@ -355,12 +355,12 @@ namespace NCRYSTAL_NAMESPACE {
       size_type m_capacity;
     public:
       DetachedHeap(TValue*b,TValue*e,size_type cc) : m_begin(b), m_end(e), m_capacity(cc) {}
-      ncconstexpr17 TValue * begin() noexcept
+      constexpr TValue * begin() noexcept
       {
         assert( m_begin != nullptr );
         return m_begin;
       }
-      ncconstexpr17 TValue * end() noexcept
+      constexpr TValue * end() noexcept
       {
         assert( m_end != nullptr );
         return m_end;
@@ -439,7 +439,7 @@ namespace NCRYSTAL_NAMESPACE {
       //member is active.
       return static_cast<void*>(&(THIS->m_data));
     }
-    static ncconstexpr17 void setBeginPtrSmallData(SmallVector * THIS) noexcept
+    static constexpr void setBeginPtrSmallData(SmallVector * THIS) noexcept
     {
       THIS->setBeginPtr(smallDataBegin(THIS));
     }
@@ -645,7 +645,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template<class TValue, std::size_t NSMALL, SVMode MODE>
-  ncnodiscard17 inline ncconstexpr17 TValue* SmallVector<TValue,NSMALL,MODE>::data() noexcept
+  [[nodiscard]] inline constexpr TValue* SmallVector<TValue,NSMALL,MODE>::data() noexcept
   {
     if (detail::SVUseFast<TValue,MODE>())
       return static_cast<TValue*>(this->beginPtr());
@@ -655,7 +655,7 @@ namespace NCRYSTAL_NAMESPACE {
       return m_data.large.data;
   }
   template<class TValue, std::size_t NSMALL, SVMode MODE>
-  ncnodiscard17 inline ncconstexpr17 const TValue* SmallVector<TValue,NSMALL,MODE>::data() const noexcept {
+  [[nodiscard]] inline constexpr const TValue* SmallVector<TValue,NSMALL,MODE>::data() const noexcept {
     if (detail::SVUseFast<TValue,MODE>())
       return static_cast<const TValue*>(this->beginPtr());
     if ( Impl::small(this) ) nclikely
@@ -665,20 +665,20 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template<class TValue, std::size_t NSMALL, SVMode MODE>
-  ncnodiscard17 inline constexpr typename SmallVector<TValue,NSMALL,MODE>::size_type
+  [[nodiscard]] inline constexpr typename SmallVector<TValue,NSMALL,MODE>::size_type
   SmallVector<TValue,NSMALL,MODE>::size() const noexcept
   {
     return m_count;
   }
 
   template<class TValue, std::size_t NSMALL, SVMode MODE>
-  ncnodiscard17 inline constexpr bool SmallVector<TValue,NSMALL,MODE>::empty() const noexcept
+  [[nodiscard]] inline constexpr bool SmallVector<TValue,NSMALL,MODE>::empty() const noexcept
   {
     return m_count == 0;
   }
 
   template<class TValue, std::size_t NSMALL, SVMode MODE>
-  ncnodiscard17 inline ncconstexpr17 const typename SmallVector<TValue,NSMALL,MODE>::value_type&
+  [[nodiscard]] inline constexpr const typename SmallVector<TValue,NSMALL,MODE>::value_type&
   SmallVector<TValue,NSMALL,MODE>::operator[]( size_type i ) const noexcept
   {
     assert(i<m_count);
@@ -686,7 +686,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template<class TValue, std::size_t NSMALL, SVMode MODE>
-  ncnodiscard17 inline ncconstexpr17 typename SmallVector<TValue,NSMALL,MODE>::value_type&
+  [[nodiscard]] inline constexpr typename SmallVector<TValue,NSMALL,MODE>::value_type&
   SmallVector<TValue,NSMALL,MODE>::operator[]( size_type i ) noexcept
   {
     assert(i<m_count);
@@ -694,7 +694,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template<class TValue, std::size_t NSMALL, SVMode MODE>
-  ncnodiscard17 inline ncconstexpr17 const typename SmallVector<TValue,NSMALL,MODE>::value_type& SmallVector<TValue,NSMALL,MODE>::at( size_type i ) const
+  [[nodiscard]] inline constexpr const typename SmallVector<TValue,NSMALL,MODE>::value_type& SmallVector<TValue,NSMALL,MODE>::at( size_type i ) const
   {
     if ( i >= m_count )
       throw std::out_of_range("SmallVector::at(): index out of out of range");
@@ -702,7 +702,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template<class TValue, std::size_t NSMALL, SVMode MODE>
-  ncnodiscard17 inline ncconstexpr17 typename SmallVector<TValue,NSMALL,MODE>::value_type& SmallVector<TValue,NSMALL,MODE>::at( size_type i )
+  [[nodiscard]] inline constexpr typename SmallVector<TValue,NSMALL,MODE>::value_type& SmallVector<TValue,NSMALL,MODE>::at( size_type i )
   {
     if ( i >= m_count )
       throw std::out_of_range("SmallVector::at(): index out of out of range");
@@ -710,16 +710,16 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template<class TValue, std::size_t NSMALL, SVMode MODE>
-  ncnodiscard17 inline ncconstexpr17 TValue* SmallVector<TValue,NSMALL,MODE>::begin() noexcept { return data(); }
+  [[nodiscard]] inline constexpr TValue* SmallVector<TValue,NSMALL,MODE>::begin() noexcept { return data(); }
 
   template<class TValue, std::size_t NSMALL, SVMode MODE>
-  ncnodiscard17 inline ncconstexpr17 TValue* SmallVector<TValue,NSMALL,MODE>::end() noexcept { return data() + size(); }
+  [[nodiscard]] inline constexpr TValue* SmallVector<TValue,NSMALL,MODE>::end() noexcept { return data() + size(); }
 
   template<class TValue, std::size_t NSMALL, SVMode MODE>
-  ncnodiscard17 inline constexpr const TValue* SmallVector<TValue,NSMALL,MODE>::begin() const noexcept { return data(); }
+  [[nodiscard]] inline constexpr const TValue* SmallVector<TValue,NSMALL,MODE>::begin() const noexcept { return data(); }
 
   template<class TValue, std::size_t NSMALL, SVMode MODE>
-  ncnodiscard17 inline constexpr const TValue* SmallVector<TValue,NSMALL,MODE>::end() const noexcept { return data() + size(); }
+  [[nodiscard]] inline constexpr const TValue* SmallVector<TValue,NSMALL,MODE>::end() const noexcept { return data() + size(); }
 
 
   template<class TValue, std::size_t NSMALL, SVMode MODE>
@@ -760,7 +760,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template<class TValue, std::size_t NSMALL, SVMode MODE>
-  ncnodiscard17 inline ncconstexpr17 typename SmallVector<TValue,NSMALL,MODE>::size_type
+  [[nodiscard]] inline constexpr typename SmallVector<TValue,NSMALL,MODE>::size_type
   SmallVector<TValue,NSMALL,MODE>::capacity() const noexcept
   {
     if ( Impl::small(this) ) nclikely

@@ -34,7 +34,7 @@ namespace NCRYSTAL_NAMESPACE {
   enum class AllowTabs { Yes, No };
   enum class AllowNewLine { Yes, No };
   constexpr bool isSimpleASCII(char ch, AllowTabs = AllowTabs::Yes, AllowNewLine = AllowNewLine::Yes) noexcept;
-  ncconstexpr17 bool isSimpleASCII(const char* str_begin, std::size_t len, AllowTabs = AllowTabs::Yes, AllowNewLine = AllowNewLine::Yes) noexcept;
+  constexpr bool isSimpleASCII(const char* str_begin, std::size_t len, AllowTabs = AllowTabs::Yes, AllowNewLine = AllowNewLine::Yes) noexcept;
   bool isSimpleASCII(const std::string&, AllowTabs = AllowTabs::Yes, AllowNewLine = AllowNewLine::Yes) noexcept;
   bool isSimpleASCII(const char*, AllowTabs = AllowTabs::Yes, AllowNewLine = AllowNewLine::Yes) noexcept;
 
@@ -281,7 +281,7 @@ namespace NCRYSTAL_NAMESPACE {
     return true;
   }
 
-  inline ncconstexpr17 bool isSimpleASCII(const char* str_begin, std::size_t len, AllowTabs allow_tab, AllowNewLine allow_newline) noexcept
+  inline constexpr bool isSimpleASCII(const char* str_begin, std::size_t len, AllowTabs allow_tab, AllowNewLine allow_newline) noexcept
   {
     auto c = str_begin;
     auto cE = c+len;

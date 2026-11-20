@@ -33,39 +33,39 @@ namespace NCRYSTAL_NAMESPACE {
 
     using StronglyTypedFixedVector::StronglyTypedFixedVector;
 
-    ncconstexpr17 Vector operator*(const Vector&) const;
-    ncconstexpr17 Vector operator* (double ) const;
-    ncconstexpr17 Vector operator/ (double ) const;
-    ncconstexpr17 Vector& operator*= (double );
-    ncconstexpr17 Vector& operator+= (const Vector&);
-    ncconstexpr17 Vector& operator-= (const Vector&);
-    ncconstexpr17 Vector& operator/= (double );
+    constexpr Vector operator*(const Vector&) const;
+    constexpr Vector operator* (double ) const;
+    constexpr Vector operator/ (double ) const;
+    constexpr Vector& operator*= (double );
+    constexpr Vector& operator+= (const Vector&);
+    constexpr Vector& operator-= (const Vector&);
+    constexpr Vector& operator/= (double );
 
-    ncconstexpr17 Vector operator-() const;
-    ncconstexpr17 Vector operator+( const Vector&) const;
-    ncconstexpr17 Vector operator-( const Vector&) const;
+    constexpr Vector operator-() const;
+    constexpr Vector operator+( const Vector&) const;
+    constexpr Vector operator-( const Vector&) const;
 
     Vector unit() const;//slow
     void normalise();//better
-    ncconstexpr17 Vector cross(const Vector&) const;
-    ncconstexpr17 void cross_inplace(const Vector&);
+    constexpr Vector cross(const Vector&) const;
+    constexpr void cross_inplace(const Vector&);
     constexpr double dot(const Vector&) const;
     double angle(const Vector&) const;//slow
     double angle_highres(const Vector&) const;//very slow, but precise even for small angles
     double mag() const;//slow
     constexpr double mag2() const;//better
     void setMag( double );//slow
-    ncconstexpr17 bool isParallel(const Vector&, double epsilon = 1e-10) const;
-    ncconstexpr17 bool isOrthogonal(const Vector&, double epsilon = 1e-10) const;
+    constexpr bool isParallel(const Vector&, double epsilon = 1e-10) const;
+    constexpr bool isOrthogonal(const Vector&, double epsilon = 1e-10) const;
     bool isUnitVector(double tolerance = 1e-10) const;
     constexpr bool isStrictNullVector() const noexcept;
 
     constexpr const double& x() const noexcept { return m_data[0]; }
     constexpr const double& y() const noexcept { return m_data[1]; }
     constexpr const double& z() const noexcept { return m_data[2]; }
-    ncconstexpr17 double& x() noexcept { return m_data[0]; }
-    ncconstexpr17 double& y() noexcept { return m_data[1]; }
-    ncconstexpr17 double& z() noexcept { return m_data[2]; }
+    constexpr double& x() noexcept { return m_data[0]; }
+    constexpr double& y() noexcept { return m_data[1]; }
+    constexpr double& z() noexcept { return m_data[2]; }
 
     //Sort x, then y, the z (assumes no NaN):
     constexpr int lexCmp( const Vector& ) const noexcept;
@@ -94,7 +94,7 @@ inline constexpr double NCrystal::Vector::dot(const NCrystal::Vector& o) const
   return m_data[0]*o.m_data[0]+m_data[1]*o.m_data[1]+m_data[2]*o.m_data[2];
 }
 
-inline ncconstexpr17 NCrystal::Vector& NCrystal::Vector::operator+=( const NCrystal::Vector& o)
+inline constexpr NCrystal::Vector& NCrystal::Vector::operator+=( const NCrystal::Vector& o)
 {
   m_data[0] += o.m_data[0];
   m_data[1] += o.m_data[1];
@@ -102,7 +102,7 @@ inline ncconstexpr17 NCrystal::Vector& NCrystal::Vector::operator+=( const NCrys
   return *this;
 }
 
-inline ncconstexpr17 NCrystal::Vector& NCrystal::Vector::operator-=( const NCrystal::Vector& o)
+inline constexpr NCrystal::Vector& NCrystal::Vector::operator-=( const NCrystal::Vector& o)
 {
   m_data[0] -= o.m_data[0];
   m_data[1] -= o.m_data[1];
@@ -110,7 +110,7 @@ inline ncconstexpr17 NCrystal::Vector& NCrystal::Vector::operator-=( const NCrys
   return *this;
 }
 
-inline ncconstexpr17 NCrystal::Vector& NCrystal::Vector::operator*= (double f)
+inline constexpr NCrystal::Vector& NCrystal::Vector::operator*= (double f)
 {
   m_data[0] *= f;
   m_data[1] *= f;
@@ -118,7 +118,7 @@ inline ncconstexpr17 NCrystal::Vector& NCrystal::Vector::operator*= (double f)
   return *this;
 }
 
-inline ncconstexpr17 NCrystal::Vector& NCrystal::Vector::operator/= (double f)
+inline constexpr NCrystal::Vector& NCrystal::Vector::operator/= (double f)
 {
   const double ff(1.0/f);
   m_data[0] *= ff;
@@ -127,25 +127,25 @@ inline ncconstexpr17 NCrystal::Vector& NCrystal::Vector::operator/= (double f)
   return *this;
 }
 
-inline ncconstexpr17 NCrystal::Vector NCrystal::Vector::operator/ (double f) const
+inline constexpr NCrystal::Vector NCrystal::Vector::operator/ (double f) const
 {
   const double ff(1.0/f);
   return Vector( m_data[0]*ff, m_data[1]*ff, m_data[2]*ff );
 }
 
-inline ncconstexpr17 NCrystal::Vector NCrystal::Vector::operator* (double f) const
+inline constexpr NCrystal::Vector NCrystal::Vector::operator* (double f) const
 {
   return Vector( m_data[0]*f, m_data[1]*f, m_data[2]*f );
 }
 
-inline ncconstexpr17 NCrystal::Vector NCrystal::Vector::operator*(const NCrystal::Vector& o) const
+inline constexpr NCrystal::Vector NCrystal::Vector::operator*(const NCrystal::Vector& o) const
 {
   return Vector( m_data[1]*o.m_data[2] - m_data[2]*o.m_data[1],
                  m_data[2]*o.m_data[0] - m_data[0]*o.m_data[2],
                  m_data[0]*o.m_data[1] - m_data[1]*o.m_data[0] );
 }
 
-inline ncconstexpr17 void NCrystal::Vector::cross_inplace(const Vector&o)
+inline constexpr void NCrystal::Vector::cross_inplace(const Vector&o)
 {
   double xx = m_data[1]*o.m_data[2] - m_data[2]*o.m_data[1];
   double yy = m_data[2]*o.m_data[0] - m_data[0]*o.m_data[2];
@@ -154,17 +154,17 @@ inline ncconstexpr17 void NCrystal::Vector::cross_inplace(const Vector&o)
   m_data[1] = yy;
 }
 
-inline ncconstexpr17 NCrystal::Vector NCrystal::Vector::operator-() const
+inline constexpr NCrystal::Vector NCrystal::Vector::operator-() const
 {
   return Vector( -m_data[0], -m_data[1], -m_data[2] );
 }
 
-inline ncconstexpr17 NCrystal::Vector NCrystal::Vector::operator+( const NCrystal::Vector& o ) const
+inline constexpr NCrystal::Vector NCrystal::Vector::operator+( const NCrystal::Vector& o ) const
 {
   return Vector( m_data[0]+o.m_data[0], m_data[1]+o.m_data[1], m_data[2]+o.m_data[2] );
 }
 
-inline ncconstexpr17 NCrystal::Vector NCrystal::Vector::operator-( const NCrystal::Vector& o ) const
+inline constexpr NCrystal::Vector NCrystal::Vector::operator-( const NCrystal::Vector& o ) const
 {
   return Vector( m_data[0]-o.m_data[0], m_data[1]-o.m_data[1], m_data[2]-o.m_data[2] );
 }
@@ -208,12 +208,12 @@ inline void NCrystal::Vector::normalise()
   *this /= std::sqrt(themag2);
 }
 
-inline ncconstexpr17 NCrystal::Vector NCrystal::Vector::cross(const NCrystal::Vector& o) const
+inline constexpr NCrystal::Vector NCrystal::Vector::cross(const NCrystal::Vector& o) const
 {
   return *this * o;
 }
 
-inline ncconstexpr17 bool NCrystal::Vector::isParallel(const NCrystal::Vector& vec2, double epsilon) const
+inline constexpr bool NCrystal::Vector::isParallel(const NCrystal::Vector& vec2, double epsilon) const
 {
   //NB: using '>' rather than '>=' to have null-vectors never be parallel to
   //anything (including themselves, which we could of course check against).
@@ -221,7 +221,7 @@ inline ncconstexpr17 bool NCrystal::Vector::isParallel(const NCrystal::Vector& v
   return dp*dp > mag2() * vec2.mag2() * ( 1.0 - epsilon);
 }
 
-inline ncconstexpr17 bool NCrystal::Vector::isOrthogonal(const Vector& vec2, double epsilon) const
+inline constexpr bool NCrystal::Vector::isOrthogonal(const Vector& vec2, double epsilon) const
 {
   //NB: using '<' rather than '<=' to have null-vectors never be orthogonal to
   //anything.

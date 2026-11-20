@@ -106,7 +106,7 @@ namespace NCRYSTAL_NAMESPACE {
       {
       }
 
-      ncconstexpr17 const AtomData& atomData() const noexcept { return m_atomDataSO; }
+      constexpr const AtomData& atomData() const noexcept { return m_atomDataSO; }
 
       const std::string& displayLabel() const noexcept
       {

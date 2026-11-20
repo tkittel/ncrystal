@@ -71,8 +71,8 @@ namespace NCRYSTAL_NAMESPACE {
     RawStrData( RawStrData&& ) noexcept;
     RawStrData& operator=( RawStrData&& ) noexcept;
 
-    ncconstexpr17 const char * begin() const noexcept { return m_b; }
-    ncconstexpr17 const char * end() const noexcept { return m_e; }
+    constexpr const char * begin() const noexcept { return m_b; }
+    constexpr const char * end() const noexcept { return m_e; }
 
     //Calculate simple checksum of the data:
     uint64_t calcCheckSum() const;
@@ -145,7 +145,7 @@ namespace NCRYSTAL_NAMESPACE {
               Optional<DataSourceName> = NullOpt,
               Optional<LastKnownOnDiskAbsPath> = NullOpt );
 
-    ncconstexpr17 const TextDataUID& dataUID() const noexcept;
+    constexpr const TextDataUID& dataUID() const noexcept;
 
     //Data type ("ncmat", "lau", ...):
     const std::string& dataType() const noexcept;
@@ -176,11 +176,11 @@ namespace NCRYSTAL_NAMESPACE {
       //string allocation.
       using value_type = std::string;
       Iterator& operator++();
-      ncconstexpr17 const value_type* operator->() const noexcept;
-      ncconstexpr17 const value_type& operator*() const noexcept;
-      ncconstexpr17 bool operator==(const Iterator&) const noexcept;
-      ncconstexpr17 bool operator!=(const Iterator&) const noexcept;
-      ncconstexpr17 bool operator<(const Iterator&) const noexcept;
+      constexpr const value_type* operator->() const noexcept;
+      constexpr const value_type& operator*() const noexcept;
+      constexpr bool operator==(const Iterator&) const noexcept;
+      constexpr bool operator!=(const Iterator&) const noexcept;
+      constexpr bool operator<(const Iterator&) const noexcept;
       Iterator( const Iterator& );
       Iterator& operator=( const Iterator& );
       Iterator( Iterator&& );
@@ -290,7 +290,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
 
-  inline ncconstexpr17 const TextDataUID& TextData::dataUID() const noexcept { return m_uid; }
+  inline constexpr const TextDataUID& TextData::dataUID() const noexcept { return m_uid; }
 
   inline TextData::Iterator::Iterator(const char * data, is_end_t)
     : m_data(data), m_nextData(data)
@@ -321,11 +321,11 @@ namespace NCRYSTAL_NAMESPACE {
     return *this;
   }
 
-  inline ncconstexpr17 const TextData::Iterator::value_type* TextData::Iterator::operator->() const noexcept { return &m_buf; }
-  inline ncconstexpr17 const TextData::Iterator::value_type& TextData::Iterator::operator*() const noexcept { return m_buf; }
-  inline ncconstexpr17 bool TextData::Iterator::operator==(const Iterator& o) const noexcept { return m_data == o.m_data; }
-  inline ncconstexpr17 bool TextData::Iterator::operator!=(const Iterator& o) const noexcept { return m_data != o.m_data; }
-  inline ncconstexpr17 bool TextData::Iterator::operator<(const Iterator& o) const noexcept { return m_data < o.m_data; }
+  inline constexpr const TextData::Iterator::value_type* TextData::Iterator::operator->() const noexcept { return &m_buf; }
+  inline constexpr const TextData::Iterator::value_type& TextData::Iterator::operator*() const noexcept { return m_buf; }
+  inline constexpr bool TextData::Iterator::operator==(const Iterator& o) const noexcept { return m_data == o.m_data; }
+  inline constexpr bool TextData::Iterator::operator!=(const Iterator& o) const noexcept { return m_data != o.m_data; }
+  inline constexpr bool TextData::Iterator::operator<(const Iterator& o) const noexcept { return m_data < o.m_data; }
 
   inline TextData::Iterator::Iterator( const Iterator& o )
   {

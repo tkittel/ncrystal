@@ -214,7 +214,7 @@ namespace NCRYSTAL_NAMESPACE {
     //Move-only to avoid two objects with same ID (another option would be to
     //generate a new ID for the copied-to object).
 
-    ncconstexpr17 UniqueIDValue getUniqueID() const noexcept { return {m_uid}; }
+    constexpr UniqueIDValue getUniqueID() const noexcept { return {m_uid}; }
 
     UniqueID();
     ~UniqueID() = default;
@@ -247,12 +247,12 @@ namespace NCRYSTAL_NAMESPACE {
     using value_type = T;
 
     //Construct with value:
-    ncconstexpr17 Optional( T&& ) noexcept(std::is_nothrow_move_constructible<T>::value);
+    constexpr Optional( T&& ) noexcept(std::is_nothrow_move_constructible<T>::value);
 
     //Assign/construct value-less:
     constexpr Optional() noexcept;
     constexpr Optional( NullOptType ) noexcept;
-    ncconstexpr17 Optional& operator=( NullOptType ) noexcept;
+    constexpr Optional& operator=( NullOptType ) noexcept;
 
     //Clear value:
     void reset() noexcept;
@@ -279,8 +279,8 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Access value:
     constexpr bool has_value() const noexcept { return m_hasValue; }
-    ncconstexpr17 T& value() ncnoexceptndebug { nc_assert(m_hasValue); return m_value; }
-    ncconstexpr17 const T& value() const ncnoexceptndebug { nc_assert(m_hasValue); return m_value; }
+    constexpr T& value() ncnoexceptndebug { nc_assert(m_hasValue); return m_value; }
+    constexpr const T& value() const ncnoexceptndebug { nc_assert(m_hasValue); return m_value; }
 
     template<class U>
     constexpr T value_or(U&& u) const;
@@ -360,14 +360,14 @@ namespace NCRYSTAL_NAMESPACE {
     //takes care of the MT-safe detaching as needed).
 
     class Modifier;
-    ncnodiscard17 Modifier modify() { return Modifier{*this,true}; }
+    [[nodiscard]] Modifier modify() { return Modifier{*this,true}; }
     constexpr const T* operator->() const noexcept { return &m_data->t; }
     constexpr const T& operator*() const noexcept { return m_data->t; }
 
     //If completely sure there is only one thread accessing the instance
     //(e.g. in the constructor of the class having a COWPimpl data member),
     //modifications can be done without locking first:
-    ncnodiscard17 Modifier modifyWithoutLocking() { return Modifier{*this,false}; }
+    [[nodiscard]] Modifier modifyWithoutLocking() { return Modifier{*this,false}; }
 
     //Fully supports copy and move operations, through cheap multi-thread safe
     //shallow copying (the overhead is a mutex lock).
@@ -391,8 +391,8 @@ namespace NCRYSTAL_NAMESPACE {
       Modifier(Modifier&&o);
       Modifier& operator=(Modifier&&o);
       void reset();//Early release of lock and any refs to COWPimpl object (careful!)
-      ncconstexpr17 T* operator->() noexcept { return &m_data->t; }
-      ncconstexpr17 T& operator*() noexcept { return m_data->t; }
+      constexpr T* operator->() noexcept { return &m_data->t; }
+      constexpr T& operator*() noexcept { return m_data->t; }
     };
   };
 
@@ -413,7 +413,7 @@ namespace NCRYSTAL_NAMESPACE {
   //lowest bits will only affect the result when the generated values are low
   //(e.g. the lowest 3 bits will only matter when the generated value is below
   //0.004):
-  NCRYSTAL_API ncconstexpr17 double randUInt64ToFP01( std::uint64_t );
+  NCRYSTAL_API constexpr double randUInt64ToFP01( std::uint64_t );
 
   struct NCRYSTAL_API no_init_t {};
   constexpr no_init_t no_init = no_init_t{};
@@ -436,43 +436,43 @@ namespace NCRYSTAL_NAMESPACE {
     using const_reverse_iterator = typename stdarray_type::const_reverse_iterator;
 
     static constexpr size_type size() noexcept { return N; }
-    ncconstexpr17 TValue* data() noexcept { return m_data.data(); }
+    constexpr TValue* data() noexcept { return m_data.data(); }
     constexpr const TValue* data() const noexcept { return m_data.data(); }
 
     //Default construct (will zero-initialise):
-    explicit ncconstexpr17 FixedVector() noexcept;
+    explicit constexpr FixedVector() noexcept;
 
     //Constructor which will NOT zero-initialise:
-    explicit ncconstexpr17 FixedVector( no_init_t ) noexcept;
+    explicit constexpr FixedVector( no_init_t ) noexcept;
 
     //For convenience we provide special constructors and setters for 2-vectors
     //and 3-vectors (using one of these with a wrong length vector type will
     //result in a compile-time error):
     template<decltype(N) U = N, typename = typename std::enable_if<U==2>::type>
-    ncconstexpr17 FixedVector(double xx, double yy) noexcept { m_data = { xx, yy }; }
+    constexpr FixedVector(double xx, double yy) noexcept { m_data = { xx, yy }; }
     template<decltype(N) U = N, typename = typename std::enable_if<U==3>::type>
-    ncconstexpr17 FixedVector(double xx, double yy, double zz) noexcept { m_data = { xx, yy, zz }; }
+    constexpr FixedVector(double xx, double yy, double zz) noexcept { m_data = { xx, yy, zz }; }
     template<decltype(N) U = N, typename = typename std::enable_if<U==2>::type>
-    ncconstexpr17 void set(double xx, double yy) noexcept { m_data = { xx, yy }; }
+    constexpr void set(double xx, double yy) noexcept { m_data = { xx, yy }; }
     template<decltype(N) U = N, typename = typename std::enable_if<U==3>::type>
-    ncconstexpr17 void set(double xx, double yy, double zz) noexcept { m_data = { xx, yy, zz }; }
+    constexpr void set(double xx, double yy, double zz) noexcept { m_data = { xx, yy, zz }; }
 
     //Interoperability with std::array:
     explicit constexpr FixedVector(const stdarray_type& o) noexcept;
-    explicit ncconstexpr17 operator stdarray_type&() noexcept { return m_data; }
+    explicit constexpr operator stdarray_type&() noexcept { return m_data; }
     explicit constexpr operator const stdarray_type&() const noexcept { return m_data; }
-    ncconstexpr17 stdarray_type& array() noexcept { return m_data; }
+    constexpr stdarray_type& array() noexcept { return m_data; }
     constexpr const stdarray_type& array() const noexcept { return m_data; }
 
     //Interoperability with C arrays:
     explicit constexpr FixedVector(const carray_type& xyz) noexcept;
-    ncconstexpr17 void applyTo( carray_type& ) const noexcept;
+    constexpr void applyTo( carray_type& ) const noexcept;
 
     //Access:
-    ncconstexpr17 value_type operator[]( size_type i ) const ncnoexceptndebug { nc_assert(i<N); return m_data[i]; }
-    ncconstexpr17 value_type& operator[]( size_type i ) ncnoexceptndebug { nc_assert(i<N); return m_data[i]; }
-    ncconstexpr17 value_type at( size_type i ) const  { return m_data.at(i); }
-    ncconstexpr17 value_type& at( size_type i ) { return m_data.at(i); }
+    constexpr value_type operator[]( size_type i ) const ncnoexceptndebug { nc_assert(i<N); return m_data[i]; }
+    constexpr value_type& operator[]( size_type i ) ncnoexceptndebug { nc_assert(i<N); return m_data[i]; }
+    constexpr value_type at( size_type i ) const  { return m_data.at(i); }
+    constexpr value_type& at( size_type i ) { return m_data.at(i); }
 
     //Comparisons:
 #if nc_cplusplus >= 202002L
@@ -488,18 +488,18 @@ namespace NCRYSTAL_NAMESPACE {
 #endif
 
     //Support standard iteration:
-    ncconstexpr17 const_iterator begin() const noexcept { return m_data.cbegin(); }
-    ncconstexpr17 const_iterator end() const noexcept { return m_data.cend(); }
-    ncconstexpr17 const_iterator cbegin() const noexcept { return m_data.cbegin(); }
-    ncconstexpr17 const_iterator cend() const noexcept { return m_data.cend(); }
-    ncconstexpr17 iterator begin() noexcept { return m_data.begin(); }
-    ncconstexpr17 iterator end() noexcept { return m_data.end(); }
-    ncconstexpr17 const_reverse_iterator rbegin() const noexcept { return m_data.crbegin(); }
-    ncconstexpr17 const_reverse_iterator rend() const noexcept { return m_data.crend(); }
-    ncconstexpr17 const_reverse_iterator crbegin() const noexcept { return m_data.crbegin(); }
-    ncconstexpr17 const_reverse_iterator crend() const noexcept { return m_data.crend(); }
-    ncconstexpr17 reverse_iterator rbegin() noexcept { return m_data.rbegin(); }
-    ncconstexpr17 reverse_iterator rend() noexcept { return m_data.rend(); }
+    constexpr const_iterator begin() const noexcept { return m_data.cbegin(); }
+    constexpr const_iterator end() const noexcept { return m_data.cend(); }
+    constexpr const_iterator cbegin() const noexcept { return m_data.cbegin(); }
+    constexpr const_iterator cend() const noexcept { return m_data.cend(); }
+    constexpr iterator begin() noexcept { return m_data.begin(); }
+    constexpr iterator end() noexcept { return m_data.end(); }
+    constexpr const_reverse_iterator rbegin() const noexcept { return m_data.crbegin(); }
+    constexpr const_reverse_iterator rend() const noexcept { return m_data.crend(); }
+    constexpr const_reverse_iterator crbegin() const noexcept { return m_data.crbegin(); }
+    constexpr const_reverse_iterator crend() const noexcept { return m_data.crend(); }
+    constexpr reverse_iterator rbegin() noexcept { return m_data.rbegin(); }
+    constexpr reverse_iterator rend() noexcept { return m_data.rend(); }
 
   protected:
     stdarray_type m_data;
@@ -528,15 +528,15 @@ namespace NCRYSTAL_NAMESPACE {
     //vtables). Returns a copy, since accessing an object through a reference
     //to another class type is UB (strict aliasing). The copy is const, so
     //attempts to modify the original through it fail to compile:
-    template<class TOther> ncconstexpr17 const TOther as() const noexcept;
+    template<class TOther> constexpr const TOther as() const noexcept;
 
   private:
     template<class TOther>
-    static ncconstexpr17 void ensureCompatible() noexcept;
+    static constexpr void ensureCompatible() noexcept;
   };
 
   template <class TValue, std::size_t N>
-  ncconstexpr17 std::ostream& operator<<(std::ostream& os,
+  constexpr std::ostream& operator<<(std::ostream& os,
                                          const FixedVector<TValue,N>& dir);
 
 
@@ -593,8 +593,8 @@ namespace NCRYSTAL_NAMESPACE {
     public:
       constexpr const value_type* operator->() const noexcept { return &m_v; }
       constexpr const value_type& operator*() const noexcept { return m_v; }
-      ncconstexpr17 Iterator operator++() noexcept { ++m_v; return Iterator(m_v); }
-      ncconstexpr17 Iterator operator++(int) noexcept { Iterator r(m_v); ++m_v; return r; }
+      constexpr Iterator operator++() noexcept { ++m_v; return Iterator(m_v); }
+      constexpr Iterator operator++(int) noexcept { Iterator r(m_v); ++m_v; return r; }
       constexpr bool operator==(const Iterator& o) const noexcept { return m_v == o.m_v; }
       constexpr bool operator!=(const Iterator& o) const noexcept { return m_v != o.m_v; }
       constexpr bool operator<(const Iterator& o) const noexcept { return m_v < o.m_v; }
@@ -934,13 +934,13 @@ namespace NCRYSTAL_NAMESPACE {
   inline void dummy_markused_global_constants() { markused(kInfinity);  }
 
   template <class TValue, std::size_t N>
-  inline ncconstexpr17 FixedVector<TValue,N>::FixedVector() noexcept
+  inline constexpr FixedVector<TValue,N>::FixedVector() noexcept
   {
     m_data.fill(0.0);
   }
 
   template <class TValue, std::size_t N>
-  inline ncconstexpr17 FixedVector<TValue,N>::FixedVector( no_init_t ) noexcept
+  inline constexpr FixedVector<TValue,N>::FixedVector( no_init_t ) noexcept
   {
   }
 
@@ -957,7 +957,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template <class TValue, std::size_t N>
-  inline ncconstexpr17 void FixedVector<TValue,N>::applyTo( carray_type& a ) const noexcept
+  inline constexpr void FixedVector<TValue,N>::applyTo( carray_type& a ) const noexcept
   {
     static_assert(sizeof(a)==N*sizeof(TValue),"");
     std::copy(std::begin(m_data), std::end(m_data), std::begin(a));
@@ -965,7 +965,7 @@ namespace NCRYSTAL_NAMESPACE {
 
   template <class Derived, class TValue, std::size_t N>
   template<class TOther>
-  inline ncconstexpr17 void StronglyTypedFixedVector<Derived,TValue,N>::ensureCompatible() noexcept
+  inline constexpr void StronglyTypedFixedVector<Derived,TValue,N>::ensureCompatible() noexcept
   {
     //Verify our class and TOther are compatible for the as<..>() method.
     static_assert( N == TOther::size(), "incompatible types (incompatible size)" );
@@ -988,7 +988,7 @@ namespace NCRYSTAL_NAMESPACE {
 
   template <class Derived, class TValue, std::size_t N>
   template<class TOther>
-  ncconstexpr17 const TOther StronglyTypedFixedVector<Derived,TValue,N>::as() const noexcept
+  constexpr const TOther StronglyTypedFixedVector<Derived,TValue,N>::as() const noexcept
   {
     return ensureCompatible<TOther>(), TOther( this->m_data );
   }
@@ -998,7 +998,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template <class TValue, std::size_t N>
-  inline ncconstexpr17 std::ostream& operator<< (std::ostream& os,
+  inline constexpr std::ostream& operator<< (std::ostream& os,
                                                  const FixedVector<TValue,N>& dir)
   {
     if ( N==0 )
@@ -1032,7 +1032,7 @@ namespace NCRYSTAL_NAMESPACE {
       return *this;
     }
 
-    ncconstexpr17 Optional& operator=( NullOptType ) noexcept
+    constexpr Optional& operator=( NullOptType ) noexcept
     {
       this->reset();
       return *this;
@@ -1059,7 +1059,7 @@ namespace NCRYSTAL_NAMESPACE {
       return *this;
     }
 
-    ncconstexpr17 Optional( const T& t ) noexcept(std::is_nothrow_copy_constructible<T>::value)
+    constexpr Optional( const T& t ) noexcept(std::is_nothrow_copy_constructible<T>::value)
     {
       asBase().m_hasValue = true;
       new(&(asBase().m_value))T(t);
@@ -1116,7 +1116,7 @@ namespace NCRYSTAL_NAMESPACE {
   //be UB.
 
   template<class T,bool bcopy>
-  inline ncconstexpr17 Optional<T,bcopy>::Optional(T&& t) noexcept(std::is_nothrow_move_constructible<T>::value)
+  inline constexpr Optional<T,bcopy>::Optional(T&& t) noexcept(std::is_nothrow_move_constructible<T>::value)
     : m_hasValue(true) { new(&m_value)T(std::move(t)); }
 
   template<class T,bool bcopy>
@@ -1127,7 +1127,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template<class T,bool bcopy>
-  inline ncconstexpr17 Optional<T,bcopy>& Optional<T,bcopy>::operator=( NullOptType ) noexcept
+  inline constexpr Optional<T,bcopy>& Optional<T,bcopy>::operator=( NullOptType ) noexcept
   {
     reset();
     return *this;
@@ -1289,7 +1289,7 @@ namespace NCRYSTAL_NAMESPACE {
     } while(true);
   }
 
-  inline ncconstexpr17 double randUInt64ToFP01( std::uint64_t x )
+  inline constexpr double randUInt64ToFP01( std::uint64_t x )
   {
     //A note about the implementation: xoroshiro authors recommend: "(x >> 11) *
     //0x1.0p-53".  This selects all k*(2^53) for k=0..(2^53-1) with equal
