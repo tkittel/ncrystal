@@ -540,17 +540,6 @@ namespace NCRYSTAL_NAMESPACE {
                                          const FixedVector<TValue,N>& dir);
 
 
-  //std::as_const is only available in C++17 and std::add_const_t only in C++14:
-  template< class T >
-  using nc_add_const_t = typename std::add_const<T>::type;
-  template <class T>
-  constexpr nc_add_const_t<T>& nc_as_const(T& t) noexcept { return t; }
-
-  //Substitute for std::map::try_emplace which only available in C++17. For
-  //simplicity we only implement the version which copies the key:
-  template <class TMap, class ... Args>
-  std::pair<typename TMap::iterator, bool> nc_map_try_emplace( TMap&, const typename TMap::key_type&, Args&&... );
-
   //For overriding existing keys (like m[k]=v but without default constructed value):
   template <class TMap, class ... Args>
   void nc_map_force_emplace( TMap&, const typename TMap::key_type&, Args&&... );
@@ -1457,15 +1446,9 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   template <class TMap, class ... Args>
-  inline std::pair<typename TMap::iterator, bool> nc_map_try_emplace( TMap& themap, const typename TMap::key_type& key, Args&&... args )
-  {
-    return themap.try_emplace(key, std::forward<Args>(args)... );
-  }
-
-  template <class TMap, class ... Args>
   inline void nc_map_force_emplace( TMap& themap, const typename TMap::key_type& key, Args&&... args )
   {
-    auto res = nc_map_try_emplace( themap, key, std::forward<Args>(args)... );
+    auto res = themap.try_emplace( key, std::forward<Args>(args)... );
     if ( !res.second ) {
       //was not inserted, must override existing (note that try_emplace
       //crucially guarantees that args were not moved from already!):
