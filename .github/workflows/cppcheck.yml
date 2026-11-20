@@ -23,7 +23,7 @@ jobs:
     needs: [ ncdevtool_check ]
     strategy:
       matrix:
-        strictflag: [11, 17]
+        strictflag: [17, 20]
         os: [ubuntu-latest, macos-latest,windows-latest]
 
     name: ${{ matrix.os }}.strict${{ matrix.strictflag }}
