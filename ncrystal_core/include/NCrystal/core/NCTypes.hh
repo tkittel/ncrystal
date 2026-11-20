@@ -740,19 +740,17 @@ namespace NCRYSTAL_NAMESPACE {
     return wl2ksq(m_value);
   }
 
-  //Using nc_as_const so it can also be constexpr in C++11 [update: they can't
-  //all anyway, since std::sqrt is not constexpr and so ekin2wl is not]:
   inline NeutronWavelength::NeutronWavelength(NeutronEnergy ekin) noexcept
-    : EncapsulatedValue(ekin2wl(nc_as_const(ekin).get())) {}
+    : EncapsulatedValue(ekin2wl(ekin.get())) {}
   inline constexpr NeutronEnergy::NeutronEnergy(NeutronWavelength wl) noexcept
-    : EncapsulatedValue(wl2ekin(nc_as_const(wl).get())) {}
+    : EncapsulatedValue(wl2ekin(wl.get())) {}
   inline constexpr MosaicityFWHM::MosaicityFWHM(MosaicitySigma mos) noexcept
-    : EncapsulatedValue( nc_as_const(mos).get() * kSigma2FWHM ) {}
+    : EncapsulatedValue( mos.get() * kSigma2FWHM ) {}
   inline constexpr MosaicitySigma::MosaicitySigma(MosaicityFWHM mos) noexcept
-    : EncapsulatedValue( nc_as_const(mos).get() * kFWHM2Sigma ) {}
+    : EncapsulatedValue( mos.get() * kFWHM2Sigma ) {}
 
   inline constexpr Length::Length(NeutronWavelength wl) noexcept
-    : EncapsulatedValue( nc_as_const(wl).get() * angstrom ) {}
+    : EncapsulatedValue( wl.get() * angstrom ) {}
 
   inline constexpr NeutronWavelength Length::as_wavelength() const noexcept
   {
@@ -789,12 +787,12 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   inline constexpr SigmaBound::SigmaBound( SigmaFree sf, AtomMass mass ) noexcept
-    : EncapsulatedValue<SigmaBound>( detail::pow2( ( const_neutron_mass_amu + nc_as_const(mass).get() ) / nc_as_const(mass).get() ) * nc_as_const(sf).get() )
+    : EncapsulatedValue<SigmaBound>( detail::pow2( ( const_neutron_mass_amu + mass.get() ) / mass.get() ) * sf.get() )
   {
   }
 
   inline constexpr SigmaFree::SigmaFree( SigmaBound sb, AtomMass mass ) noexcept
-    : EncapsulatedValue<SigmaFree>( detail::pow2( nc_as_const(mass).get() / ( const_neutron_mass_amu + nc_as_const(mass).get() ) ) * nc_as_const(sb).get() )
+    : EncapsulatedValue<SigmaFree>( detail::pow2( mass.get() / ( const_neutron_mass_amu + mass.get() ) ) * sb.get() )
   {
   }
 
@@ -854,10 +852,9 @@ namespace NCRYSTAL_NAMESPACE {
   inline constexpr bool EnergyDomain::contains( NeutronEnergy ekin ) const ncnoexceptndebug
   {
     nc_assert( elow.dbl() <= ehigh.dbl() );
-    //nc_as_const to get constexpr .dbl in before C++17:
-    return !isNull() && ( nc_as_const(ekin).dbl() >= elow.dbl() ) && ( nc_as_const(ekin).dbl() <= ehigh.dbl() );
+    return !isNull() && ( ekin.dbl() >= elow.dbl() ) && ( ekin.dbl() <= ehigh.dbl() );
     //NB: More efficient version might trigger FPE's:
-    //    return ( nc_as_const(ekin).dbl()-elow.dbl() ) * ( nc_as_const(ekin).dbl()-ehigh.dbl() ) <= 0.0;
+    //    return ( ekin.dbl()-elow.dbl() ) * ( ekin.dbl()-ehigh.dbl() ) <= 0.0;
   }
 
 
@@ -943,7 +940,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 
   inline constexpr SLDContrast::SLDContrast( ScatLenDensity rho1, ScatLenDensity rho2 ) noexcept
-    : SLDContrast( constexpr_abs( nc_as_const(rho1).dbl()-nc_as_const(rho2).dbl() ) )
+    : SLDContrast( constexpr_abs( rho1.dbl()-rho2.dbl() ) )
   {
   }
 
