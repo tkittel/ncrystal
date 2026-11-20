@@ -887,11 +887,64 @@ void run()
     const auto orbit = expand( "194", s );
     REQUIRE( orbit.positions.size() == 2 );
     REQUIRE( orbit.siteSymmetryOrder == 12 );
-    REQUIRE( pdist( orbit.positions.front(),
-                    NC::Vector( 1.0/3, 2.0/3, 0.25 ) ) < 1e-14 );
+    REQUIRE( orbit.positions.front() == NC::Vector( 1.0/3, 2.0/3, 0.25 ) );
   }
   std::cout << "  194 site (0.3333, 0.6667, 0.25) etc.: symmetrised to"
             << " (1/3, 2/3, 1/4)" << std::endl;
+  //Also with more digits than the exact expansion handles (z off by 1e-10,
+  //within the tolerances), still giving exactly the doubles of 1/3, 2/3 and
+  //1/4 (as all coordinates fixed by the site symmetry):
+  for ( auto s : { NC::Vector( 0.333333333, 0.666666667, 0.2500000001 ),
+                   NC::Vector( 0.3333333333333, 0.6666666666667, 0.25 ) } ) {
+    const auto orbit = expand( "194", s );
+    REQUIRE( orbit.positions.size() == 2 );
+    REQUIRE( orbit.positions.front() == NC::Vector( 1.0/3, 2.0/3, 0.25 ) );
+    REQUIRE( orbit.positions.back() == NC::Vector( 2.0/3, 1.0/3, 0.75 ) );
+  }
+  std::cout << "  194 site (0.333333333, 0.666666667, 0.2500000001) etc.:"
+            << " symmetrised to (1/3, 2/3, 1/4)" << std::endl;
+  //In all settings, sites with coordinates k/24 (many of them special
+  //positions) and the same sites moved by about 1e-11 (expanded in doubles,
+  //not exactly) give the same values for all coordinates fixed by the site
+  //symmetry, while the others move by about 1e-11:
+  {
+    std::size_t nfixed = 0, nfree = 0;
+    std::uint64_t lcg = 1;
+    auto rnd24 = [&lcg]()
+    {
+      lcg = lcg * 6364136223846793005ULL + 1442695040888963407ULL;
+      return static_cast<double>( ( lcg >> 33 ) % 24 ) / 24.0;
+    };
+    for ( std::uint16_t hn = 1; hn <= 530; ++hn ) {
+      const auto& sym = NC::SGSymmetry::get(
+                                NC::SpaceGroup{ NC::SpaceGroupSettingIdx{ hn } } );
+      for ( int isite = 0; isite < 10; ++isite ) {
+        const NC::Vector s( rnd24(), rnd24(), rnd24() );
+        const NC::Vector s2( s.x() + 1.1e-11, s.y() + 3.7e-11,
+                             s.z() + 8.3e-11 );
+        const auto o1 = NC::expandSiteToOrbit( sym, s );
+        const auto o2 = NC::expandSiteToOrbit( sym, s2 );
+        REQUIRE( o1.positions.size() == o2.positions.size() );
+        for ( auto& p : o1.positions ) {
+          const NC::Vector* q = nullptr;
+          for ( auto& e : o2.positions )
+            if ( !q || pdist( p, e ) < pdist( p, *q ) )
+              q = &e;
+          const double a[3] = { p.x(), p.y(), p.z() };
+          const double b[3] = { q->x(), q->y(), q->z() };
+          for ( auto i : NC::ncrange( 3 ) ) {
+            const double d = NC::ncabs( b[i] - a[i]
+                                        - std::round( b[i] - a[i] ) );
+            REQUIRE( d == 0.0 || ( d > 1e-13 && d < 1e-9 ) );
+            ++( d == 0.0 ? nfixed : nfree );
+          }
+        }
+      }
+    }
+    REQUIRE( nfixed > 1000 && nfree > 10000 );
+    std::cout << "  sites k/24 in all settings: fixed coordinates identical"
+              << " when expanded in doubles" << std::endl;
+  }
   //3 digits are rejected:
   expectBad( "194", NC::Vector( 0.333, 0.667, 0.25 ) );
   expectBad( "227:2", NC::Vector( 0.125, 0.125, 0.12 ) );
