@@ -49,6 +49,9 @@
 #ifndef ncrystal_api_h
 #  include "NCrystal/ncapi.h"
 #endif
+#if nc_cplusplus < 201703L
+#  error "NCrystal C++ API requires C++17 or later (with MSVC use /std:c++17 or later)"
+#endif
 #ifndef NCrystal_NCException_hh
 #  include "NCrystal/core/NCException.hh"
 #endif

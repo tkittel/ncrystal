@@ -37,9 +37,9 @@ echo "Build dir was: ${TGT}/bld"
 
 #Test downstream compilation:
 BUILDFLAGS=$("${TGT}/inst/bin/ncrystal-config" --show buildflags)
-c++ -std=c++11 ${SRCDIR}/examples/ncrystal_example_cpp.cc ${BUILDFLAGS} -o ${TGT}/app_cpp
+c++ -std=c++17 ${SRCDIR}/examples/ncrystal_example_cpp.cc ${BUILDFLAGS} -o ${TGT}/app_cpp
 ${TGT}/app_cpp
-c++ -std=c++11 ${SRCDIR}/examples/ncrystal_example_customphysics.cc ${BUILDFLAGS} -o ${TGT}/app_customphysics
+c++ -std=c++17 ${SRCDIR}/examples/ncrystal_example_customphysics.cc ${BUILDFLAGS} -o ${TGT}/app_customphysics
 ${TGT}/app_customphysics
 #Due to missing c++ stdlib symbols otherwise, we link with it here:
 c++ -std=c++11 ${SRCDIR}/examples/ncrystal_example_c.c ${BUILDFLAGS} -o ${TGT}/app_c

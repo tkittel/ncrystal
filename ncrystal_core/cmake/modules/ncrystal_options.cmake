@@ -44,7 +44,7 @@ bool_option( NCRYSTAL_ENABLE_EXAMPLES  "Whether to build and install various exa
 enum_option( NCRYSTAL_ENABLE_DATA      "Whether to include the standard data library files (possibly EMBED'ed into the binary)." "EMBED" "ON" "OFF" )
 bool_option( NCRYSTAL_MODIFY_RPATH     "Whether to try to set RPATH in installed binaries (if disabled all special RPATH handling is skipped)." "ON" )
 bool_option( NCRYSTAL_ENABLE_DYNLOAD   "Enable dynamic plugin loading capabilities." "${_ncdef_dynload}" )
-enum_option( NCRYSTAL_BUILD_STRICT     "Stricter build (primarily for testing). Can optionally select specific C++ standard." "OFF" "ON" "11" "14" "17" "20" "23" )
+enum_option( NCRYSTAL_BUILD_STRICT     "Stricter build (primarily for testing). Can optionally select specific C++ standard." "OFF" "ON" "17" "20" "23" "26" )
 bool_option( NCRYSTAL_ENABLE_CPACK     "Includes CPack and sets relevant meta-data." "OFF" )
 bool_option( NCRYSTAL_QUIET            "Produce less status messages during configuration." "OFF" )
 bool_option( NCRYSTAL_SKIP_INSTALL     "Set to prevent any installation targets from being created." "OFF" )

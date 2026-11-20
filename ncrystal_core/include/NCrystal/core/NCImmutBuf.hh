@@ -168,7 +168,8 @@ namespace NCRYSTAL_NAMESPACE {
     static_assert( LOCALBUF_MINSIZE <= 1024*1024, "" );
     static_assert( BUF_ALIGNMENT >= 1, "" );
     static_assert( BUF_ALIGNMENT <= 1024*1024, "" );
-    static_assert( std::is_trivial<TMetaData>::value, "");
+    static_assert( std::is_trivially_default_constructible<TMetaData>::value
+                   && std::is_trivially_copyable<TMetaData>::value, "");
     static_assert( std::is_trivially_destructible<TMetaData>::value, "");
     static_assert( std::is_trivially_copyable<TMetaData>::value, "");
     static_assert( std::is_nothrow_destructible<TMetaData>::value, "");
