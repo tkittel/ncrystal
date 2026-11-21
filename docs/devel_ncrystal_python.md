@@ -143,7 +143,7 @@ must contain only this file, with the message
   lazy per-factory physics loading, all formatting; `query_data`; element
   types `DataEntry`, `PhysicsProps`; `AtomDBBrowser`/`query_atomdb` for
   `["util","atomdb"]`), built on the C++ JSON queries
-  `["util","browsedb",FACT,(I,N,)("cheap")]`, `["util","browsefactories"]`
+  `["util","browsedb",FACT,(I,N,)("cheap")]`, `["test","browsefactories"]`
   and `["util","factorythreads"]` (`src/query/NCBrowseQuery.cc`). Loading
   runs in parallel via `FactoryJobs`, with temporary threads ("nthreads=N"
   query arg) only if the user did not configure factory threads (explicit
