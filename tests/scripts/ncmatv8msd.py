@@ -20,7 +20,7 @@
 ##                                                                            ##
 ################################################################################
 
-# NEEDS: numpy spglib
+# NEEDS: numpy
 
 # The NCMAT v8 msd keyword of vdosdebye and scatknl @DYNINFO sections ("msd
 # <value> [at_temperature <T>]"), in files and as written by

@@ -74,12 +74,12 @@ class NCMATComposer:
 
     To ensure high data quality and reliability, all crystalline materials will
     by default have their crystal structure verified for consistency with the
-    indicated spacegroup, before it is converted to NCMAT data. For that reason,
-    the third-party module "spglib" must be installed in order for this
-    verification to take place (note that the .refine_crystal_structure() method
-    can also be invoked before the material is used, to detect the spacegroup in
-    if it was not provided). Fortunately, "spglib" is available both on PyPI and
-    in the conda-forge conda channel.
+    indicated spacegroup, before it is converted to NCMAT data. Positions near
+    special positions are then written exactly on them (as when the data is
+    loaded). The .refine_crystal_structure() method can also be invoked before
+    the material is used, to detect the spacegroup if it was not provided, which
+    requires the third-party module "spglib" (available both on PyPI and in the
+    conda-forge conda channel).
 
     """
 
@@ -594,11 +594,12 @@ class NCMATComposer:
         stays within half of it, and writing the data again gives the same
         text. The vector_rtol applies to vectors with at least 20 values (e.g.
         VDOS or scattering kernel data), and the scalar_rtol to other numbers.
-        The scalar_rtol can not be larger than vector_rtol, and both must be
-        at most 1e-3. Only values not None are changed. Defaults are 1e-13 (14
-        digits, keeping rounding noise from calculations out of the data) and
-        1e-6 (7 digits), so use for instance vector_rtol=1e-4 to get smaller
-        files.
+        Atom positions use scalar_rtol as an absolute tolerance instead (their
+        rounding noise is absolute). The scalar_rtol can not be larger than
+        vector_rtol, and both must be at most 1e-3. Only values not None are
+        changed. Defaults are 1e-13 (14 digits, keeping rounding noise from
+        calculations out of the data) and 1e-6 (7 digits), so use for instance
+        vector_rtol=1e-4 to get smaller files.
         """
         return self.__impl.set_number_format( scalar_rtol = scalar_rtol,
                                               vector_rtol = vector_rtol )
@@ -826,12 +827,16 @@ class NCMATComposer:
         composition, spacegroup, etc.).
 
         Unless verify_crystal_structure=False (not recommended!) any crystalline
-        material will have its structure verified by calling
-        .verify_crystal_structure(), possibly raising an exception in case of
-        issues found. Depending on the scenario, it might be possible to prevent
+        material will have its structure verified (without spglib): the cell
+        parameters and positions must have the symmetry of the space group, and
+        not a higher symmetry in the same coordinates, otherwise an exception
+        is raised. Depending on the scenario, it might be possible to prevent
         this by calling .refine_crystal_structure(), which will hopefully fix it
         up before verification (but be vigilant and double-check that the
         refinement did not simply hide some fundamental flaw of the input data).
+        A higher symmetry which needs another cell (e.g. a supercell) is only
+        detected by .verify_crystal_structure() and .refine_crystal_structure()
+        (which use spglib).
         """
         return self.__impl.create_ncmat( cfg_params = cfg_params,
                                          meta_data = meta_data,

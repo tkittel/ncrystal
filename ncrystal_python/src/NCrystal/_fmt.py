@@ -102,50 +102,6 @@ def find_fraction( x, tol = 1e-15, max_denom = 1000000 ):
     else:
         return None
 
-def prettyFmtValue(x):
-    """Recognises common fractions in truncated values like '0.33333333' or
-    '0.4166667' and formats them as '1/3' and '5/12'. This not only saves space,
-    but can also reinject accuracy in atom positions (which seems to be a clear
-    improvement in all cases tested so far). Additionally also performs
-    optimisations for storage efficiency, in particular omitting leading 0s
-    with no information value (e.g. "0.2341" becomes ".2341").
-
-    """
-    assert 0.0 <= x <= 1.0
-    if x==0.0:
-        return '0'
-    if x==1.0:
-        return '1'
-    if x==0.5:
-        return '1/2'
-    def stripleading0(s):
-        return ( s[1:] if (len(s) > 2 and s.startswith('0.')) else s )
-    xfmt = stripleading0(f'{x:.13g}')#.14g leads to irreproducibility issues in
-    #our tests but there are sooo many numbers ending with 3333.... or
-    #666667.... that we can safely "snap" these to their correct values:
-    if xfmt[0]=='.' and xfmt.endswith('33333') and len(xfmt)<18:
-        xfmt += '3'*(18-len(xfmt))
-    if xfmt[0]=='.' and xfmt.endswith('66667') and len(xfmt)<18:
-        xfmt = xfmt[:-1]+'6'*(18-len(xfmt))+'7'
-    ff = find_fraction( x, tol = 1e-14, max_denom = 40 )
-    if ff is not None and ff[1]!=1:
-        assert ff[1] > 0
-        v = ff[0] / ff[1]
-        v_dbfmt = f'{ff[0]}/{ff[1]}'
-        #check if credible that the numbers are identical (must be close AND the str
-        #representations must be consistent with truncation):
-        expected_at_prec = stripleading0((f'%.{len(xfmt)-1}g')%v)
-        if abs(v-x)<1e-7 and expected_at_prec == xfmt:
-            return v_dbfmt
-        if abs(v-x)<1e-14:
-            return v_dbfmt
-    #No fraction found:
-    if xfmt.isdigit() and float( xfmt ) != x:
-        #abort, we don't want 0.99999999999 to print as '1' (which would then be
-        #mapped to 0 in a unit cell):
-        return stripleading0(f'{x:.19g}')
-    return xfmt
-
 def _hill_sort( chemform ):
     #takes chemform like [('Al',2'),('O',3)]  and sorts in order of Hill system notation
 

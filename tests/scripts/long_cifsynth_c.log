@@ -318,7 +318,7 @@ cs0486.cif:
 cs0488.cif:
   default error: NCBadInput: Split site (CIF label "O1S"): 3 symmetry-equivalent positions 0.01 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
   permissive: SG-173 (173), 12 sites, 12 atoms, 5 with uij
-NCrystal WARNING: Split site "O" (0.00010000000000000005,0.0006999999999999,0.7701): 3 symmetry-equivalent positions 0.01 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
+NCrystal WARNING: Split site "O" (0.0001,0.0007,0.7701): 3 symmetry-equivalent positions 0.01 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
   material: 3624 hkl families, dmax=9.339
 cs0489.cif:
   default: SG-132 (132), 20 sites, 20 atoms, 14 with uij

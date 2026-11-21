@@ -3427,10 +3427,9 @@ DUMPING endf dict begin
               37 -> '                                                                  '
               38 -> 'Atoms per unit cell: 4xAl                                         '
               39 -> '                                                                  '
-              40 -> 'NOTICE: crystal structure was verified with spglib to be self-    '
-              41 -> 'consistent.                                                       '
-              42 -> '******************************************************************'
-          'NWD' -> 47
+              40 -> 'NOTICE: crystal structure was verified to be self-consistent.     '
+              41 -> '******************************************************************'
+          'NWD' -> 46
           'MFx' -> {1: 1}
           'MTx' -> {1: 451}
           'NCx' -> {1: 5}

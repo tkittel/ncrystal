@@ -14,7 +14,7 @@ NCMAT v8
 #
 # WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 #
-# NOTICE: crystal structure was verified with spglib to be self-consistent.
+# NOTICE: crystal structure was verified to be self-consistent.
 #
 @CELL
   cubic 4.05
@@ -113,7 +113,7 @@ NCMAT v8
 #
 # WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 #
-# NOTICE: crystal structure was verified with spglib to be self-consistent.
+# NOTICE: crystal structure was verified to be self-consistent.
 #
 @CELL
   cubic 4.05
@@ -143,7 +143,7 @@ NCMAT v8
 #
 # Atoms per unit cell: 4xAl
 #
-# NOTICE: crystal structure was verified with spglib to be self-consistent.
+# NOTICE: crystal structure was verified to be self-consistent.
 #
 @CELL
   cubic 4.05
@@ -178,7 +178,7 @@ NCMAT v8
 #
 # Atoms per unit cell: 4xAl
 #
-# NOTICE: crystal structure was verified with spglib to be self-consistent.
+# NOTICE: crystal structure was verified to be self-consistent.
 #
 @CELL
   cubic 4.04958

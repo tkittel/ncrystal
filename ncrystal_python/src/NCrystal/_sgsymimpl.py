@@ -32,7 +32,6 @@ __all__ = []
 import copy
 import math
 
-from . import _common as _nc_common
 from . import _stablemath as _nc_stablemath
 from . import core as _nc_core
 
@@ -283,43 +282,6 @@ def _sgspec( sgno, alpha ):
     or "166:r" (rhombohedral axes, judged from the cell angle alpha)."""
     return f'{sgno}:r' if _uses_rhombohedral_axes( sgno, alpha ) else str(sgno)
 
-def _check_cell_sg_consistency( sgnumber, a, b, c, alpha, beta, gamma ):
-    sgclass = _nc_common._classifySG(int(sgnumber))
-    if sgclass in ( 'orthorhombic', 'tetragonal', 'cubic'):
-        if sgclass=='cubic' and ( a!=b or a!=c ):
-            raise _nc_core.NCBadInput(f'Cubic space group {sgnumber} requires cell parameters a==b==c (found a={a:g}, b={b:g}, c={c:g})')
-        if not all( (_ == 90) for _ in (alpha, beta, gamma) ):
-            raise _nc_core.NCBadInput(f'Space group {sgnumber} requires cell parameters alpha=beta=gamma=90 '
-                                +f'(found alpha={alpha}, beta={beta}, gamma={gamma})')
-    elif _uses_rhombohedral_axes( sgnumber, alpha ):
-        if not ( a == b == c and alpha == beta == gamma and alpha < 120 ):
-            raise _nc_core.NCBadInput(f'Space group {sgnumber} in rhombohedral'
-                                      ' axes requires cell parameters a=b=c'
-                                      ' and alpha=beta=gamma<120 (found'
-                                      f' a={a:g}, b={b:g}, c={c:g},'
-                                      f' alpha={alpha}, beta={beta},'
-                                      f' gamma={gamma})')
-        return
-    elif sgclass in ('trigonal','hexagonal'):
-        if not ( alpha == 90 and beta == 90 and gamma == 120 ):
-            raise _nc_core.NCBadInput(f'Space group {sgnumber} requires cell parameters alpha=beta=90 and gamma=120 '
-                                +f'(found alpha={alpha}, beta={beta}, gamma={gamma})')
-    elif sgclass == 'monoclinic':
-        #(which two angles are 90 depends on the unique axis of the setting,
-        #which is verified precisely when the data is loaded)
-        if not ( all( (0<_<180) for _ in ( alpha, beta, gamma ) )
-                 and sum( (_ == 90) for _ in ( alpha, beta, gamma ) ) >= 2 ):
-            raise _nc_core.NCBadInput(f'Space group {sgnumber} requires two'
-                                      ' cell angles of 90 degrees (found'
-                                      f' alpha={alpha}, beta={beta},'
-                                      f' gamma={gamma})')
-    else:
-        if not all( (0<a<180) for a in ( alpha, beta, gamma ) ):
-            raise _nc_core.NCBadInput('Unit cell must have all angles between 0 and 180'
-                                +f' (found alpha={alpha}, beta={beta}, gamma={gamma})')
-    if int(sgnumber) >= 75 and a!=b:
-        raise _nc_core.NCBadInput(f'Space group {sgnumber} requires cell parameters a==b (found a={a:g}, b={b:g}, c={c:g})')
-
 def _spglib_refine_cell( spglib_cell, symprec = 0.01 ):
     assert spglib_cell
     p_orig = _lattice_vectors_to_params( *spglib_cell[0], as_dict = True )
@@ -436,14 +398,23 @@ def _np_is_identity( m ):
     return all( abs( m[i][j] - (1.0 if i==j else 0.0) ) < 1e-9
                 for i in range(3) for j in range(3) )
 
+def _fmt_fractional_coordinates( values, atol ):
+    """Texts of fractional coordinates in [0,1) for data files (cf. the C++
+    SgFmt::fractionalCoordinate), from a single query."""
+    from ._fmt import _hexdoubles, _strquery
+    hx = _hexdoubles( values )
+    if not hx:
+        return []
+    return _strquery( [ 'sgsym', 'fmtcoords', repr( float( atol ) ),
+                        hx ] ).split( ' ' )
+
 def _remap_fract_pos(x):
     x = float(x)
     if -1.0<=x<0.0:
         x += 1.0
     if 1.0<=x<2.0:
         x -= 1.0
-    #Snap numerical noise near the cell edges (e.g. 7e-17 or 1-1e-16) to 0:
-    return 0.0 if ( abs( x ) < 1e-12 or abs( x - 1.0 ) < 1e-12 ) else x
+    return 0.0 if x == 1.0 else x#(x+1.0 can round to 1.0)
 
 def _unit_cell_point_dist( p1, p2 ):
     return math.sqrt( _unit_cell_point_distsq( p1, p2 ) )
@@ -841,11 +812,8 @@ def _refine_sites( cellsg, sites, tols ):
         elif o['aniso_ok']:
             uf = _transform_frac_tensor( tr[0], _cif_to_frac(
                 sites[r]['aniso'], cellsg ) )
-            u = _frac_to_cif( uf, newcell )
-            #Remove numerical noise (from components which should be zero):
-            umax = max( abs( v ) for v in u.values() )
-            e['aniso'] = { k: ( 0.0 if abs( v ) < 1e-12 * umax else v )
-                           for k, v in u.items() }
+            #(snapped to the site symmetry when written by the composer):
+            e['aniso'] = _frac_to_cif( uf, newcell )
         res.append( e )
     return { 'cellsg': newcell, 'sgsymb_hm': d['sgsymb_hm'],
              'warnings': d['warnings'], 'msgs': d['msgs'],

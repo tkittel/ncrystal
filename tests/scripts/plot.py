@@ -20,7 +20,7 @@
 ##                                                                            ##
 ################################################################################
 
-# NEEDS: numpy spglib
+# NEEDS: numpy
 
 # Dedicated test for various plotting code, to increase test coverage.
 
