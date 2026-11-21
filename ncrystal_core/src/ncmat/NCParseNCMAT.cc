@@ -943,9 +943,8 @@ void NC::NCMATParser::handleSectionData_DYNINFO(const Parts& parts, unsigned lin
   if ( !parse_target )
     NCRYSTAL_THROW2(BadInput,descr()<<": Unexpected content in line "<<lineno<<": "<<parts.front());
   nc_assert_always( itParseToVect != itParseToVectE );
-  std::size_t idx = (itParseToVect-parts.begin());
   std::string tmp_strcache0, tmp_strcache1;
-  for (; itParseToVect!=itParseToVectE; ++itParseToVect,++idx) {
+  for (; itParseToVect!=itParseToVectE; ++itParseToVect) {
     double val;
     const std::string * srcnumstr = &(*itParseToVect);
     const std::string * srcrepeatstr = nullptr;
