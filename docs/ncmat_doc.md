@@ -83,7 +83,12 @@ means).
 ## The @CELL section ##
 
 The lattice parameters of the crystal. The format is as shown in the example,
-but the order of `length` and `angles` can be reversed if desired.
+but the order of `length` and `angles` can be reversed if desired. With a
+@SPACEGROUP section, the cell must be the conventional unit cell as used for
+that space group in the International Tables (see the @SPACEGROUP section), not
+a primitive cell. For centred lattices it thus contains several lattice points,
+e.g. a face-centred cubic crystal like aluminium is described by its cubic cell,
+which contains 4 lattice points.
 
 ## The @ATOMPOSITIONS section ##
 
