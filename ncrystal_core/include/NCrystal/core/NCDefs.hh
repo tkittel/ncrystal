@@ -42,15 +42,15 @@
 #include <atomic>
 #include <ostream>
 #include <cstring>
-#if nc_cplusplus >= 202002L
-#  include <compare>
-#endif
 
 #ifndef ncrystal_api_h
 #  include "NCrystal/ncapi.h"
 #endif
 #if nc_cplusplus < 201703L
 #  error "NCrystal C++ API requires C++17 or later (with MSVC use /std:c++17 or later)"
+#endif
+#if nc_cplusplus >= 202002L
+#  include <compare>
 #endif
 #ifndef NCrystal_NCException_hh
 #  include "NCrystal/core/NCException.hh"
