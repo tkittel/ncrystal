@@ -251,11 +251,11 @@ CHANGELOG at release time, after which both files are dropped).
        become solid if their dynamics implies it (msd, vdosdebye, or vdos
        with a warning), else create_ncmat fails.
      * New NCMATComposer.set_number_format(scalar_rtol=,vector_rtol=): each
-       number is written with the fewest digits within a relative tolerance,
-       with vector_rtol for vectors with at least 20 values (grids also keep
-       their neighbour distances), e.g. vector_rtol=1e-4 for smaller files.
-       Defaults 1e-14 and 1e-6 keep data with up to 14 and 6 digits
-       unchanged. Scalars now always have a leading 0. Short-form energy
+       number is rounded to the significant digits for a relative tolerance
+       (writing the data again gives the same text), with vector_rtol for
+       vectors with at least 20 values (grids also keep their neighbour
+       distances), e.g. vector_rtol=1e-4 for smaller files. Defaults 1e-13
+       and 1e-6 keep data with up to 14 and 7 digits unchanged. Scalars now always have a leading 0. Short-form energy
        grids are written as scalars. formatVectorForNCMAT gets the same
        keyword arguments plus is_grid.
      * The C++ API now requires C++17 or later (CMake targets require
