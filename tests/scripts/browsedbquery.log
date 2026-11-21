@@ -219,4 +219,4 @@ Caught expected NCBadInput('Invalid browsedb query (usage: ["util","browsedb",FA
 Caught expected NCBadInput('Invalid nthreads in browsedb query: "x"')
 Caught expected NCBadInput('Invalid chunk index I in browsedb query: "a"')
 Caught expected NCBadInput('Invalid util query: ["util","atomdb","x"] (no arguments should come after: ["util","atomdb"])')
-Caught expected NCBadInput('Invalid util query: ["util","browsefactories","virtual"] (no arguments should come after: ["util","browsefactories"])')
+Caught expected NCBadInput('Invalid test query: ["test","browsefactories","virtual"] (no arguments should come after: ["test","browsefactories"])')

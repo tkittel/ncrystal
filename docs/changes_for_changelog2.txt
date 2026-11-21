@@ -242,6 +242,9 @@ CHANGELOG at release time, after which both files are dropped).
        implementation, probing the inelas component with vdoslux at most 2
        (never above the material's own) instead of 0, with a fallback to
        the material's own settings, which cfgstr_detect_components lacked.
+     * New JSON query category ["test",...] for queries only used by tests.
+       The ["util","wl2ekin",...] and ["util","ekin2wl",...] queries moved
+       there (use the Python or C API functions instead).
 
 ### NCMAT v8 data library and NCMATComposer output
 

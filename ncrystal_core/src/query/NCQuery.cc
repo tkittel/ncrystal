@@ -28,6 +28,7 @@
 #include "NCUtilQuery.hh"
 #include "NCSGSymQuery.hh"
 #include "NCCIFQuery.hh"
+#include "NCTestQuery.hh"
 #include "NCQueryImpl.hh"
 
 namespace NC = NCrystal;
@@ -46,6 +47,7 @@ void NC::JSONQuery( std::ostream& os, const Query& query )
   constexpr auto sv_matcfg = StrView::make("matcfg");
   constexpr auto sv_sgsym = StrView::make("sgsym");
   constexpr auto sv_cif = StrView::make("cif");
+  constexpr auto sv_test = StrView::make("test");
 
   if ( key == sv_mmc ) {
     MiniMC::Query::JSONQuery( os, query );
@@ -54,7 +56,8 @@ void NC::JSONQuery( std::ostream& os, const Query& query )
       NCRYSTAL_THROW2(BadInput, "Invalid JSON query (no arguments"
                       " should follow key \"list\")");
     os << "[\"version\", \"util\", \"mmc\", \"sab\", \"vdos\","
-          " \"isomacroxstable\", \"matcfg\", \"sgsym\", \"cif\"]";
+          " \"isomacroxstable\", \"matcfg\", \"sgsym\", \"cif\","
+          " \"test\"]";
   } else if ( key == sv_version ) {
     queryimpl_version( os, query );
   } else if ( key == sv_util ) {
@@ -67,6 +70,8 @@ void NC::JSONQuery( std::ostream& os, const Query& query )
     SGSymQuery::JSONQuery( os, query );
   } else if ( key == sv_cif ) {
     CIFQuery::JSONQuery( os, query );
+  } else if ( key == sv_test ) {
+    TestQuery::JSONQuery( os, query );
   } else if ( key == sv_isomacroxstable ) {
     XSTable::JSONQuery( os, query );
   } else if ( key == sv_matcfg ) {
