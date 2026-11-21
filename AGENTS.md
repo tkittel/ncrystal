@@ -93,6 +93,7 @@ File layout conventions:
 - Every source file carries the licence banner (checked by `ncdevtool check`).
 - The marker word spelled "fix"+"me" (any capitalisation) is used for work-in-progress notes on this branch, but the marker check in `ncdevtool check` flags every occurrence, so it must all be resolved before merging to `main`. Don't add new ones unless asked.
 - User-visible changes get an entry at the top of `CHANGELOG`.
+- Prefer British English spellings in code, comments and docs (e.g. "centring", as in the International Tables).
 - CI covers many compilers/platforms and Python 3.9-3.14, so stay within C++17 in core and Python 3.9 in the Python package. The C API (`ncrystal.h`) must stay usable from C90 and C++11.
 - Follow DRY, KISS and YAGNI. Keep all prose simple and short: docstrings, help texts, comments, changelog entries, commit messages.
 - AI agents: never commit anything without an explicit go-ahead.
