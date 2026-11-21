@@ -1037,21 +1037,39 @@ class NCMATComposerImpl:
         return plot_xsect( ms, **kwargs_plot_xsect )
 
     def __determine_atompos_fractions( self, atompos ):
+        #Fractions of the (average) unit cell content: exact fractions from the
+        #atom counts, and the site occupancies if all are written as fractions
+        #(cf. _occupancy_texts), otherwise from the occupancies as written and
+        #formatted like other numbers:
         natoms = len(atompos['pos']) if atompos else 0
         if not natoms:
             return
-        out = {}
         from collections import Counter as _collections_Counter
         from fractions import Fraction
         counts = _collections_Counter([e[0] for e in atompos['pos']])
-        #Fractions of the unit cell content, weighted by site occupancy:
-        occumap = atompos.get('occumap',{})
-        weights = { lbl : count * Fraction(occumap.get(lbl,1.0)).limit_denominator(10**6)
-                    for lbl,count in counts.items() }
-        wsum = sum( weights.values() )
-        for lbl,count in counts.items():
-            f = weights[lbl] / wsum
-            out[ lbl ] = ( float(f), ( '1' if f == 1 else f'{f.numerator}/{f.denominator}' ), count )
+        occutxt = _occupancy_texts( atompos.get('occumap',{}),
+                                    self.get_number_format()[0] )
+        out = {}
+        if all( '/' in t for t in occutxt.values() ):
+            w = { lbl : count * Fraction( occutxt.get( lbl, 1 ) )
+                  for lbl,count in counts.items() }
+            wsum = sum( w.values() )
+            for lbl,count in counts.items():
+                f = w[lbl] / wsum
+                out[ lbl ] = ( float(f), ( '1' if f == 1
+                                           else f'{f.numerator}/{f.denominator}' ),
+                               count )
+            return out
+        w = { lbl : count * ( _nc_fmt._parse_text( occutxt[lbl] )
+                              if lbl in occutxt else 1.0 )
+              for lbl,count in counts.items() }
+        wsum = math.fsum( v for _,v in sorted( w.items() ) )
+        lbls = list( counts )
+        vals = [ w[lbl] / wsum for lbl in lbls ]
+        texts = _nc_fmt.fmt_vector_rtol( vals, self.get_number_format()[0],
+                                         max_denominator = 40 )
+        for lbl, v, t in zip( lbls, vals, texts ):
+            out[ lbl ] = ( v, t, counts[lbl] )
         return out
 
     def get_chemical_composition( self, as_str ):
@@ -1771,9 +1789,20 @@ def determine_labels_and_atomdb( _self_params, *, fractions ):
                 strip_leading_zero = False )
             s = ''.join( f' {t} {name}' for t,(frac,name) in zip(ftxt,compos) )
             atomdb_lines.append( f'{speciallbl} is{s}')
-    occu_lines = [ f'{lblmap.get(lbl,lbl)} {_nc_fmt.prettyFmtValue(occumap[lbl])}'
+    occutxt = _occupancy_texts( occumap or {},
+                                _self_params.get( 'number_format',
+                                                  _default_number_format )[0] )
+    occu_lines = [ f'{lblmap.get(lbl,lbl)} {occutxt[lbl]}'
                    for lbl in sorted(lbls_with_nonunit_occu) ]
     return lblmap,atomdb_lines,occu_lines
+
+def _occupancy_texts( occumap, rtol ):
+    #Texts of the site occupancies in @ATOMOCCUPANCIES (exact fractions with
+    #denominators up to 40 where they are such fractions within the precision):
+    lbls = sorted( occumap )
+    texts = _nc_fmt.fmt_vector_rtol( [ float( occumap[lbl] ) for lbl in lbls ],
+                                     rtol, max_denominator = 40 )
+    return dict( zip( lbls, texts ) )
 
 def _is_nonempty_array( x ):
     return hasattr(x,'__len__') and len(x)>0
