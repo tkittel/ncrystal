@@ -630,9 +630,20 @@ NC::SGSiteOrbit NC::expandSiteToOrbit( const SGSymmetry& sym,
       return res;
   }
 
-  //Otherwise in doubles:
+  //Otherwise in doubles, except that coordinates which do not depend on the
+  //input site (e.g. those of special positions) are set to their exact values,
+  //correctly rounded. Each coordinate is tracked as C.s/n+K/(24n), with s the
+  //(wrapped) input site, n the order of its stabiliser and integers C and K,
+  //so these are the coordinates with C=0:
   const Vector site = wrapPos( input_site );
   const auto& ops = sym.operations();
+  using IRow = std::array<std::int64_t,3>;
+  auto coord = []( Vector& v, unsigned i ) -> double&
+  {
+    return i == 0 ? v.x() : ( i == 1 ? v.y() : v.z() );
+  };
+  std::array<IRow,3> sumC = {};
+  IRow sumK = { 0, 0, 0 };
 
   //Symmetrise: average (the nearest periodic copies of) the images of the
   //site under the operations which map it onto itself. These operations
@@ -641,26 +652,54 @@ NC::SGSiteOrbit NC::expandSiteToOrbit( const SGSymmetry& sym,
   Vector sum( 0.0, 0.0, 0.0 );
   unsigned nstab = 0;
   for ( auto& op : ops ) {
-    const Vector img = op.apply( site );
+    Vector img = op.apply( site );
     const Vector d = periodicDiff( img, site );
     const double dist = ncmax( ncabs( d.x() ), ncabs( d.y() ),
                                ncabs( d.z() ) );
     if ( dist < site_merge_tol ) {
       sum += site + d;
       ++nstab;
+      //(site+d is img shifted by -round(img-site)):
+      img -= site;
+      for ( auto i : ncrange( 3u ) ) {
+        for ( auto j : ncrange( 3u ) )
+          sumC[i][j] += op.rot( i, j );
+        sumK[i] += op.trans( i ) - SymOp::tdenom
+          * static_cast<std::int64_t>( std::round( coord( img, i ) ) );
+      }
     } else if ( dist < site_distinct_tol ) {
       throwNearSpecial( site, dist );
     }
   }
   nc_assert_always( nstab >= 1 );//at least the identity
-  const Vector symsite = wrapPos( sum * ( 1.0 / nstab ) );
+  const std::int64_t den = SymOp::tdenom * static_cast<std::int64_t>( nstab );
+  //Coordinate i of op applied to the symmetrised site, exact if C=0:
+  auto exactCoord = [&]( const SymOp& op, unsigned i, double& x )
+  {
+    std::int64_t k = static_cast<std::int64_t>( nstab ) * op.trans( i );
+    for ( auto j : ncrange( 3u ) ) {
+      std::int64_t c = 0;
+      for ( auto l : ncrange( 3u ) )
+        c += op.rot( i, l ) * sumC[l][j];
+      if ( c != 0 )
+        return;
+      k += op.rot( i, j ) * sumK[j];
+    }
+    k %= den;
+    x = static_cast<double>( k < 0 ? k + den : k ) / static_cast<double>( den );
+  };
+  Vector symsite = wrapPos( sum * ( 1.0 / nstab ) );
+  for ( auto i : ncrange( 3u ) )
+    exactCoord( SymOp(), i, coord( symsite, i ) );
 
   //Expand the symmetrised site, keeping the first occurrence of each
   //distinct position (all pairs of distinct positions must be clearly
   //separated):
   SGSiteOrbit res;
   for ( auto& op : ops ) {
-    const Vector img = wrapPos( op.apply( symsite ) );
+    Vector img = wrapPos( op.apply( symsite ) );
+    for ( auto i : ncrange( 3u ) )
+      exactCoord( op, i, coord( img, i ) );
     bool found = false;
     for ( auto& p : res.positions ) {
       const double dist = periodicDist( img, p );
