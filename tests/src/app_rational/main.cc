@@ -28,7 +28,7 @@
 
 namespace NCRYSTAL_NAMESPACE {
   namespace detail {
-    //Private to the sgsym component (NCSGExactOrbit.hh):
+    //Declared in the private header src/sgsym/NCSGExactOrbit.hh:
     Optional<std::pair<std::int64_t,std::int64_t>>
     rationalFromDouble( double x, std::int64_t maxDenominator );
   }

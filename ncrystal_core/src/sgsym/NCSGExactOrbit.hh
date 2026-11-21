@@ -23,8 +23,9 @@
 
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 
-//Internals of expandSiteToOrbit (private to the sgsym component, the detail
-//namespace keeps them accessible to unit tests).
+//Internals of expandSiteToOrbit: its tolerances and its exact-arithmetic
+//variant for rational site coordinates. In namespace detail rather than
+//file-local, so unit tests can reach them.
 
 namespace NCRYSTAL_NAMESPACE {
   namespace detail {
