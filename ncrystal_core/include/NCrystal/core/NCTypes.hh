@@ -209,13 +209,12 @@ namespace NCRYSTAL_NAMESPACE {
   //    Shmueli, U., Hall, S. R. & Grosse-Kunstleve, R. W. (2010).
   //    "Space-group symbols for numeric and symbolic computations."
   //    International Tables for Crystallography, Volume B: Reciprocal
-  //    Space, 3rd ed., Appendix A1.4.2, pp. 122-134 (Table A1.4.2.7).
+  //    Space, Appendix A1.4.2, pp. 122-134 (Table A1.4.2.7).
   //
   //That table has 530 rows, and the setting is thus efficiently encoded as the
   //row number, i.e. an integral value from 1 to 530 (both included). We shall
   //refer to this value as the "setting index" (notice that this is instead
-  //called the "Hall number" in spglib). The sgsym component provides the
-  //corresponding space group information.
+  //called the "Hall number" in spglib).
 
   class NCRYSTAL_API SpaceGroupSettingIdx final
     : public EncapsulatedValue<SpaceGroupSettingIdx,std::uint16_t> {
