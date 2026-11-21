@@ -28,6 +28,12 @@ namespace NCRYSTAL_NAMESPACE {
     //Checks shared by all query entry points (non-empty, no forbidden
     //characters, no leading dashes). Throws BadInput:
     void validateQuery( const Query& );
+
+    //Doubles from 16 hex digits each: the 8 bytes of the IEEE 754 value in
+    //little-endian order (as from Python's struct.pack('<d',x).hex()). For
+    //passing many numbers to queries exactly and without slow text
+    //conversions. Throws BadInput for invalid texts:
+    VectD decodeHexDoubles( StrView );
   }
 }
 

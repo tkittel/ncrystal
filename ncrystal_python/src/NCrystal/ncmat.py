@@ -541,14 +541,17 @@ class NCMATComposer:
         return self.__impl.set_state_of_matter( state_of_matter )
 
     def set_number_format( self, *, scalar_rtol = None, vector_rtol = None ):
-        """Precision of numbers in the NCMAT data. Each number is written with
-        the fewest digits which keep it within the given relative tolerance (0
-        means exact). The vector_rtol applies to vectors with at least 20
-        values (e.g. VDOS or scattering kernel data), and the scalar_rtol to
-        other numbers. The scalar_rtol can not be larger than vector_rtol, and
-        both must be at most 1e-3. Only values not None are changed. Defaults
-        are 1e-14 and 1e-6, so use for instance vector_rtol=1e-4 to get
-        smaller files.
+        """Precision of numbers in the NCMAT data. Each number is rounded to
+        the significant digits for the given relative tolerance (the fewest n
+        with 10^(1-n) <= rtol, or exact if more than 15 would be needed), so it
+        stays within half of it, and writing the data again gives the same
+        text. The vector_rtol applies to vectors with at least 20 values (e.g.
+        VDOS or scattering kernel data), and the scalar_rtol to other numbers.
+        The scalar_rtol can not be larger than vector_rtol, and both must be
+        at most 1e-3. Only values not None are changed. Defaults are 1e-13 (14
+        digits, keeping rounding noise from calculations out of the data) and
+        1e-6 (7 digits), so use for instance vector_rtol=1e-4 to get smaller
+        files.
         """
         return self.__impl.set_number_format( scalar_rtol = scalar_rtol,
                                               vector_rtol = vector_rtol )

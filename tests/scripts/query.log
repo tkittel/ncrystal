@@ -109,7 +109,8 @@ Caught expected NCBadInput('Invalid JSON query key: "foo"')
  'atomdb',
  'eqrefl',
  'sgsym',
- 'jsontest']
+ 'jsontest',
+ 'numfmt']
 ===========================================
 ============= CLI >>sab list<< ====================
 ['analyse',

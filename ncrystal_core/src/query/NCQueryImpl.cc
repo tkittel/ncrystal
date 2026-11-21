@@ -53,3 +53,36 @@ void NC::QueryImpl::validateQuery( const Query& query )
                       " character. Problem found in: \"" << e << '"' );
   }
 }
+
+NC::VectD NC::QueryImpl::decodeHexDoubles( StrView s )
+{
+  static_assert( std::numeric_limits<double>::is_iec559
+                 && sizeof(double) == sizeof(std::uint64_t), "" );
+  if ( s.size() % 16 != 0 )
+    NCRYSTAL_THROW2(BadInput,"Invalid hex encoded doubles (length "
+                    << s.size() << " is not a multiple of 16)");
+  auto hexval = [&s]( char c ) -> std::uint64_t
+  {
+    if ( c >= '0' && c <= '9' )
+      return static_cast<std::uint64_t>( c - '0' );
+    if ( c >= 'a' && c <= 'f' )
+      return static_cast<std::uint64_t>( c - 'a' + 10 );
+    if ( c >= 'A' && c <= 'F' )
+      return static_cast<std::uint64_t>( c - 'A' + 10 );
+    NCRYSTAL_THROW2(BadInput,"Invalid character in hex encoded doubles: \""
+                    << s << '"');
+  };
+  VectD res;
+  res.reserve( s.size() / 16 );
+  const char * c = s.data_begin();
+  while ( c != s.data_begin() + s.size() ) {
+    //Byte k (two hex digits) holds bits 8k..8k+7:
+    std::uint64_t u = 0;
+    for ( unsigned k = 0; k < 8; ++k, c += 2 )
+      u |= ( ( hexval( c[0] ) << 4 ) | hexval( c[1] ) ) << ( 8 * k );
+    double d;
+    std::memcpy( &d, &u, sizeof(d) );
+    res.push_back( d );
+  }
+  return res;
+}

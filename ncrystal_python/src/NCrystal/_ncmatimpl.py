@@ -330,7 +330,7 @@ class NCMATComposerImpl:
         return self.__params.get('state_of_matter')
 
     def get_number_format( self ):
-        return self.__params.get( 'number_format', ( 1e-14, 1e-6 ) )
+        return self.__params.get( 'number_format', _default_number_format )
 
     def set_number_format( self, *, scalar_rtol, vector_rtol ):
         if scalar_rtol is None and vector_rtol is None:
@@ -1763,9 +1763,13 @@ def determine_labels_and_atomdb( _self_params, *, fractions ):
             assert compos[0][0]==1.0
             atomdb_lines.append( f'{speciallbl} is {compos[0][1]}')
         else:
-            s=''
-            for frac,name in compos:
-                s += f' {frac:.12g} {name}'
+            #(with the number format, but without fractions p/q which the
+            #NCMAT format does not allow in the @ATOMDB section):
+            ftxt = _nc_fmt.fmt_vector_rtol(
+                [ frac for frac,name in compos ],
+                _self_params.get( 'number_format', _default_number_format )[0],
+                strip_leading_zero = False )
+            s = ''.join( f' {t} {name}' for t,(frac,name) in zip(ftxt,compos) )
             atomdb_lines.append( f'{speciallbl} is{s}')
     occu_lines = [ f'{lblmap.get(lbl,lbl)} {_nc_fmt.prettyFmtValue(occumap[lbl])}'
                    for lbl in sorted(lbls_with_nonunit_occu) ]
@@ -2288,10 +2292,17 @@ def _cifdata_via_ase( data_or_file, ase_format = None, quiet = False ):
         ase_io.write(s, ase_obj, format='cif')
         return s.getvalue().decode()
 
-def formatVectorForNCMAT( name, values, indent = '  ', *, scalar_rtol = 1e-14,
-                          vector_rtol = 1e-6, is_grid = False ):
-    #Values written with the fewest digits within vector_rtol (scalar_rtol for
-    #less than 20 values), see fmt_vector_rtol:
+#Default relative tolerances (scalar_rtol, vector_rtol) of the number format
+#(cf. NCMATComposer.set_number_format). The scalar one gives 14 significant
+#digits, so rounding noise from calculations does not reach the data:
+_default_number_format = ( 1e-13, 1e-6 )
+
+def formatVectorForNCMAT( name, values, indent = '  ', *,
+                          scalar_rtol = _default_number_format[0],
+                          vector_rtol = _default_number_format[1],
+                          is_grid = False ):
+    #Values written with the digits for vector_rtol (scalar_rtol for less than
+    #20 values), see fmt_vector_rtol:
     def provideFormattedEntries():
         from ._fmt import fmt_vector_rtol
         rtol = vector_rtol if len( values ) >= 20 else scalar_rtol
