@@ -31,7 +31,7 @@ namespace NCRYSTAL_NAMESPACE {
   //    Shmueli, U., Hall, S. R. & Grosse-Kunstleve, R. W. (2010).
   //    "Space-group symbols for numeric and symbolic computations."
   //    International Tables for Crystallography, Volume B: Reciprocal
-  //    Space, 3rd ed., Appendix A1.4.2, pp. 122-134 (Table A1.4.2.7).
+  //    Space, Appendix A1.4.2, pp. 122-134 (Table A1.4.2.7).
   //
   //Each entry holds the first three columns of a row.
 
