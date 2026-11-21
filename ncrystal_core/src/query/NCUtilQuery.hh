@@ -26,10 +26,12 @@
 #include "NCrystal/threads/NCFactThreads.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
+#include "NCrystal/internal/utils/NCNumFmt.hh"
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
 #include "NCrystal/internal/phys_utils/NCEqRefl.hh"
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCUtilQuery_FMA.hh"
+#include "NCQueryImpl.hh"
 #include <chrono>
 
 namespace NCRYSTAL_NAMESPACE {
@@ -240,13 +242,14 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr auto sv_atompositions = StrView::make("atompositions");
       constexpr auto sv_sgsym = StrView::make("sgsym");
       constexpr auto sv_jsontest = StrView::make("jsontest");
+      constexpr auto sv_numfmt = StrView::make("numfmt");
       if ( key == sv_list ) {
         if ( nargs != 0 )
           invalid("no arguments should come after: [\"util\",\"list\"]");
         os<<"[\"wl2ekin\", \"ekin2wl\", \"mathval\", \"fmadiagnose\","
           " \"kinutils\", \"browsedb\", \"browsefactories\","
           " \"factorythreads\", \"atomdb\", \"eqrefl\", \"sgsym\","
-          " \"jsontest\"]";
+          " \"jsontest\", \"numfmt\"]";
       } else if ( key == sv_eqrefl ) {
         //["util","eqrefl",MODE,SG,"h1,k1,l1","h2,k2,l2",...]: For each
         //requested hkl, return the list of reflections considered
@@ -526,6 +529,38 @@ namespace NCRYSTAL_NAMESPACE {
         streamJSON( os, ( key==sv_wl2ekin
                           ? wl2ekin( val )
                           : ekin2wl( val ) ) );
+      } else if ( key == sv_numfmt ) {
+        //["util","numfmt",RTOL,GRID,STRIP,MAXDEN,HEXVALUES]: texts of the
+        //values from fmtRelTolVector (GRID and STRIP 0 or 1, values encoded
+        //as for QueryImpl::decodeHexDoubles), as a single JSON string with
+        //the texts separated by spaces (cheap to decode for long vectors):
+        auto isBool = []( const StrView& e ) { return e == "0" || e == "1"; };
+        if ( nargs != 5 || !isBool( arg(1) ) || !isBool( arg(2) ) )
+          invalid("correct usage: [\"util\",\"numfmt\",RTOL,GRID,STRIP,"
+                  "MAXDEN,HEXVALUES]");
+        auto r = arg(0).toDbl();
+        if ( !r.has_value() || !( r.value() >= 0.0 && r.value() <= 1e-3 ) )
+          invalid("RTOL must be in [0,1e-3]");
+        auto maxden = arg(3).toInt();
+        if ( !maxden.has_value() || maxden.value() < 0
+             || maxden.value() > 1000 )
+          invalid("MAXDEN must be an integer in [0,1000]");
+        const VectD x = QueryImpl::decodeHexDoubles( arg(4) );
+        for ( auto v : x )
+          if ( !std::isfinite( v ) )
+            invalid("values must be finite");
+        const auto texts
+          = fmtRelTolVector( x, r.value(), arg(1) == "1", arg(2) == "1",
+                             static_cast<unsigned>( maxden.value() ) );
+        std::string res;
+        for ( auto& t : texts ) {
+          if ( !res.empty() )
+            res += ' ';
+          res += t;
+        }
+        //(no characters needing JSON escapes, so no need for streamJSON,
+        //which is slow for long strings):
+        os << '"' << res << '"';
       } else if ( key == sv_mathval ) {
         if ( nargs != 1 || arg(0) != "kpowx" )
           invalid("Only supported mathval arg is for now [\"kpowx\"]");

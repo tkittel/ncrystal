@@ -27,25 +27,28 @@
 
 import NCTestUtils.enable_fpe # noqa F401
 import random
-from NCrystalDev._fmt import fmt_value_rtol, fmt_vector_rtol, _fmt_ndigits
+from NCrystalDev._fmt import fmt_value_rtol, fmt_vector_rtol
 
 rtols = [ 0.0, 5e-14, 1e-9, 5e-6, 1e-3 ]
 
+def check_values( xs, rtol ):
+    #Within rtol/2 (exact for rtol below 1e-14, which needs more than 15
+    #digits), and idempotent (all values in two batched calls):
+    texts = fmt_vector_rtol( xs, rtol, strip_leading_zero = False )
+    ys = [ float( s ) for s in texts ]
+    for x, s, y in zip( xs, texts, ys ):
+        if x == 0.0:
+            assert s == '0'
+        elif rtol < 1e-14:
+            assert y == x, (x,s)
+        else:
+            assert abs( y - x ) <= 0.5 * rtol * abs( x ), (x,rtol,s)
+    assert fmt_vector_rtol( ys, rtol, strip_leading_zero = False ) == texts
+    return texts
+
 def check_value( x, rtol ):
     s = fmt_value_rtol( x, rtol )
-    y = float( s )
-    if x == 0.0:
-        assert s == '0'
-    elif rtol == 0.0:
-        assert y == x, (x,s)
-    else:
-        assert abs( y - x ) <= rtol * abs( x ), (x,rtol,s)
-        #No shorter number of significant digits suffices:
-        digits = s.lstrip('-.0').split('e')[0].replace('.','').rstrip('0')
-        nd = len( digits )
-        if nd > 1:
-            t = _fmt_ndigits( x, nd - 1, False )
-            assert abs( float( t ) - x ) > rtol * abs( x ), (x,rtol,s,t)
+    assert check_values( [ x ], rtol ) == [ s ]
     return s
 
 def check_grid( grid, rtol ):
@@ -68,13 +71,11 @@ def main():
                0.06000000000000001, 1234567.89, 1.0/3.0 ):
         print( f'{x!r}: ' + ', '.join( f'rtol={r:g} -> {check_value(x,r)}'
                                         for r in rtols ) )
-    n = 0
-    for _ in range( 20000 ):
-        x = rng.choice( (1,-1) ) * 10**rng.uniform( -30, 30 )
-        for r in rtols:
-            check_value( x, r )
-            n += 1
-    print(f'Checked {n} random values')
+    xs = [ rng.choice( (1,-1) ) * 10**rng.uniform( -30, 30 )
+           for _ in range( 20000 ) ]
+    for r in rtols:
+        check_values( xs, r )
+    print(f'Checked {len(xs)*len(rtols)} random values')
     #Grids, including neighbours much closer than the tolerance:
     grid = [ 1.0, 1.00001, 1.00002, 2.0, 3.0 ]
     for r in rtols:

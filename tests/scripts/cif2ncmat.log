@@ -822,12 +822,12 @@ OUT>@DYNINFO
 OUT>  element X2
 OUT>  fraction 2/11
 OUT>  type vdosdebye
-OUT>  msd 0.0181666666666667 at_temperature 50
+OUT>  msd 0.018166666666667 at_temperature 50
 OUT>@DYNINFO
 OUT>  element X3
 OUT>  fraction 4/11
 OUT>  type vdosdebye
-OUT>  msd 0.0213333333333333 at_temperature 50
+OUT>  msd 0.021333333333333 at_temperature 50
 OUT>@DYNINFO
 OUT>  element Fe
 OUT>  fraction 1/11
@@ -837,7 +837,7 @@ OUT>@DYNINFO
 OUT>  element X4
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  msd 0.0331333333333333 at_temperature 50
+OUT>  msd 0.033133333333333 at_temperature 50
 OUT>@DYNINFO
 OUT>  element X5
 OUT>  fraction 1/11
@@ -1050,12 +1050,12 @@ OUT>@DYNINFO
 OUT>  element X2
 OUT>  fraction 2/11
 OUT>  type vdosdebye
-OUT>  msd 0.0181666666666667 at_temperature 50
+OUT>  msd 0.018166666666667 at_temperature 50
 OUT>@DYNINFO
 OUT>  element X3
 OUT>  fraction 4/11
 OUT>  type vdosdebye
-OUT>  msd 0.0213333333333333 at_temperature 50
+OUT>  msd 0.021333333333333 at_temperature 50
 OUT>@DYNINFO
 OUT>  element Fe
 OUT>  fraction 1/11
@@ -1065,7 +1065,7 @@ OUT>@DYNINFO
 OUT>  element X4
 OUT>  fraction 1/11
 OUT>  type vdosdebye
-OUT>  msd 0.0331333333333333 at_temperature 50
+OUT>  msd 0.033133333333333 at_temperature 50
 OUT>@DYNINFO
 OUT>  element X5
 OUT>  fraction 1/11
@@ -2243,7 +2243,7 @@ OUT>#
 OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
 OUT>#
 OUT>@CELL
-OUT>  lengths 4.0583788225477 !! 3.32151998105306
+OUT>  lengths 4.0583788225477 !! 3.3215199810531
 OUT>  angles 90 90 90
 OUT>@SPACEGROUP
 OUT>  139
