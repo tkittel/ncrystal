@@ -63,6 +63,7 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
   constexpr auto sv_fromhm = StrView::make("fromhm");
   constexpr auto sv_fromnumber = StrView::make("fromnumber");
   constexpr auto sv_cell = StrView::make("cell");
+  constexpr auto sv_fmtcoords = StrView::make("fmtcoords");
   //Settings as a JSON list like ["14:b1","14:b2"]:
   auto streamSettings = [&os]( const std::vector<SpaceGroup>& v ) {
     os << '[';
@@ -79,7 +80,8 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     if ( nargs != 0 )
       invalid("no arguments should come after: [\"sgsym\",\"list\"]");
     os<<"[\"info\", \"sites\", \"positions\", \"fromops\","
-      " \"fromhall\", \"fromhm\", \"fromnumber\", \"cell\"]";
+      " \"fromhall\", \"fromhm\", \"fromnumber\", \"cell\","
+      " \"fmtcoords\"]";
   } else if ( key == sv_fromops ) {
     //["sgsym","fromops",OP,...]: the settings with exactly these symmetry
     //operations (like "x,-y,z+1/2", cf. SymOp, with a "@" prefix if starting
@@ -89,6 +91,25 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     for ( auto i : ncrange( nargs ) )
       ops.emplace_back( argNoAt(i) );
     streamSettings( settingsFromOperations( ops ) );
+  } else if ( key == sv_fmtcoords ) {
+    //["sgsym","fmtcoords",ATOL,HEXVALUES]: texts of fractional coordinates
+    //for data files (cf. SgFmt::fractionalCoordinate), with the values
+    //encoded as for QueryImpl::decodeHexDoubles, as a single JSON string
+    //with the texts separated by spaces:
+    if ( nargs != 2 )
+      invalid( "correct usage: [\"sgsym\",\"fmtcoords\",ATOL,HEXVALUES]" );
+    auto atol = arg(0).toDbl();
+    if ( !atol.has_value() || !( atol.value() >= 0.0 ) )
+      invalid( "ATOL must be a number >= 0" );
+    std::string res;
+    for ( auto x : QueryImpl::decodeHexDoubles( arg(1) ) ) {
+      if ( !res.empty() )
+        res += ' ';
+      res += SgFmt::fractionalCoordinate( x, atol.value() );
+    }
+    //(no characters needing JSON escapes, so no need for streamJSON, which
+    //is slow for long strings):
+    os << '"' << res << '"';
   } else if ( key == sv_cell ) {
     //["sgsym","cell","strict|lenient",SG,a,b,c,alpha,beta,gamma]: the cell
     //parameters snapped to the constraints of the setting SG (parsed in strict
@@ -204,10 +225,13 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     //["sgsym","sites",MODE,SG,TOL,CELL,ENTRY,...]: the inverse, grouping unit
     //cell positions (entries as above, with uij at each position) into sites,
     //one per orbit: {"spacegroup_setting":"227:2","is_default_setting":b,
+    //"higher_symmetry":[settings with more operations, in the same
+    //coordinates, whose symmetry the cell and positions also have],
     //"sites":[{"label":..,"position":[x,y,z],"multiplicity":n,"split":..,
     //"uij":..},...]}, with the representative position (the first of the
-    //orbit, sorted) and its uij (snapped, and the uij at the other positions
-    //must be its symmetry images). In relaxed mode the setting is moreover
+    //orbit, sorted, snapped to its site symmetry, cf. expandSiteToOrbit) and
+    //its uij (snapped, and the uij at the other positions must be its
+    //symmetry images). In relaxed mode the setting is moreover
     //deduced from the positions among all settings of the number with the
     //same axes (so a bare number finds e.g. an origin choice 2 structure),
     //while in strict mode the positions must have the symmetry of exactly the
@@ -391,6 +415,32 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
                            setting.value().toString(), JSONDictPos::FIRST );
       streamJSONDictEntry( os, "is_default_setting",
                            setting.value().isDefaultSetting() );
+      //Settings with more operations (in the same coordinates) whose
+      //symmetry the cell and the positions (deviation below 1e-4) also have:
+      os << ",\"higher_symmetry\":[";
+      {
+        bool firsthigher = true;
+        for ( auto& cand : settingsWithMoreOperations( setting.value() ) ) {
+          CellParameters cp = cell;
+          try {
+            SGSymmetry::get( cand ).cellConstraints().complete( cp );
+          } catch ( Error::BadInput& ) {
+            continue;
+          }
+          if ( !( cp.a == cell.a && cp.b == cell.b && cp.c == cell.c
+                  && cp.alpha == cell.alpha && cp.beta == cell.beta
+                  && cp.gamma == cell.gamma ) )
+            continue;
+          if ( !( checkStructureSymmetry( cand, positions ).maxDeviation
+                  <= 1e-4 ) )
+            continue;
+          if ( !firsthigher )
+            os << ',';
+          firsthigher = false;
+          streamJSON( os, cand.toString() );
+        }
+      }
+      os << ']';
       os << ",\"sites\":[";
       bool first = true;
       for ( auto ilbl : ncrange( labels.size() ) ) {
@@ -430,7 +480,7 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
           first = false;
           streamJSONDictEntry( os, "label", labels[ilbl], JSONDictPos::FIRST );
           os << ",\"position\":";
-          streamPos( rep );
+          streamPos( expanded.positions.front() );
           streamJSONDictEntry( os, "multiplicity",
                                static_cast<unsigned>( orbit.size() ) );
           os << ",\"split\":";
