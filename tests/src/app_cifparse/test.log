@@ -1,0 +1,386 @@
+==== Syntax ====
+items and loop (both modes):
+  data_a @1
+    _x: U[1]@2
+    _y: U[2.5(3)]@3
+    _l1 (loop col 0/2): U[a]@6 U[c]@7
+    _l2 (loop col 1/2): U[b]@6 U[d]@7
+    _z: U[-1e-3]@8
+quoted (both modes):
+  data_q @1
+    _s1: S[a dog's life]@2
+    _s2: D[say "hi"!]@3
+    _s3: S[it''s]@4
+    _s4: S[]@5
+    _s5: D[]@6
+    _s6: S[tab after]@7
+    _s7: S[x"y]@8
+    _s8: D[x'y]@8
+    _s9: S[ ]@9
+    _s10: S[a'b]@10
+backslash (both modes):
+  data_b @1
+    _x (loop col 0/2): S[an embedded \]@2
+    _y (loop col 1/2): U[quote']@2
+text fields (both modes):
+  data_t @1
+    _t1: T[foo]@3
+    _t2: T[ foo\n  bar]@6
+    _t5: T[ a;b\n x ; y\n ;]@10
+    _t6: T[trailing  ]@15
+    _t7: T['q' "d" # not a comment]@18
+unquoted (both modes):
+  data_u @1
+    _u1: U[;abc]@2
+    _u2: U[a;b]@3
+    _u3: U[a'b"c]@4
+    _u4: ?[?]@5
+    _u5: .[.]@6
+    _u6: S[?]@7
+    _u7: S[.]@8
+    _u8: D[?]@9
+    _u9: U[;]@10
+    _u10: U[?a]@11
+    _u11: U[.5]@12
+    _u12: U[a#b]@13
+    _u13: U[a_b]@14
+    _u14: U[..]@15
+reserved (both modes):
+  data_r @1
+    _r1: U[loop_x]@2
+    _r2: U[global_x]@3
+    _r3: U[stop_x]@4
+    _r4: S[loop_]@5
+    _r5: D[data_x]@6
+    _r6: U[xdata_]@7
+    _r7: S[save_]@8
+    _r8: U[dat_]@9
+    _r9: T[data_]@11
+case (both modes):
+  data_Up @1
+    _Tag: U[VaLuE]@2
+    _L1 (loop col 0/2): U[A]@3
+    _l2 (loop col 1/2): U[b]@3
+  data_x @4
+    _y: U[Z]@4
+names (both modes):
+  data_a'b"c#d$e;f[g]h_ @1
+    _t'a"g#$;[]_: U[1]@2
+comments (both modes):
+  data_c#x @5
+    _a#b: U[1#c]@7
+    _b: U[2]@8
+    _c: U[3]@11
+    _l (loop col 0/1): U[1]@14 U[2]@16 U[3]@18
+    _d: S[x'#y]@19
+comment after header (both modes):
+  data_x @1
+    _a: U[1]@2
+# in loop values (both modes):
+  data_x @1
+    _label (loop col 0/2): U[N1T#]@3 U[C#1]@4
+    _type (loop col 1/2): U[Cp#2Yb]@3 S[a#b]@4
+tabs (both modes):
+  data_tab @1
+    _a: U[1]@1
+    _b (loop col 0/2): U[x]@1
+    _c (loop col 1/2): S[y]@1
+no final eol (both modes):
+  data_e @1
+    _a: U[1]@2
+    _b: U[last]@3
+no final eol quoted (both modes):
+  data_e @1
+    _a: S[last]@2
+no final eol textfield (both modes):
+  data_e @1
+    _a: T[x]@3
+loop at end (both modes):
+  data_e @1
+    _a (loop col 0/2): U[1]@2 U[3]@2
+    _b (loop col 1/2): U[2]@2 U[4]@2
+loop at end 2 (both modes):
+  data_e @1
+    _a (loop col 0/2): U[1]@2 U[3]@2
+    _b (loop col 1/2): U[2]@2 U[4]@2
+CRLF (both modes):
+  data_w @1
+    _a: U[1]@2
+    _t: T[x\ny]@4
+    _b: U[2]@7
+CR (both modes):
+  data_m @1
+    _a: U[1]@2
+    _t: T[x\ny]@4
+    _b: U[2]@7
+mixed (both modes):
+  data_x @1
+    _a: U[1]@2
+    _t: T[x\ny\nz\n]@4
+    _b: U[2]@9
+    _c: U[3]@10
+CR blank lines (both modes):
+  data_x @1
+    _a: U[1]@4
+    _b: U[2]@6
+    _c: U[3]@8
+blocks (both modes):
+  data_1 @1
+    _a: U[1]@1
+  data_2 @1
+    _a: U[2]@1
+  data_3 @2
+  data_4 @3
+    _b: U[x]@3
+==== Errors ====
+cif2: Caught expected BadInput(Invalid CIF data in "test" (line 1): CIF 2.0 data is not supported)
+save frame: Caught expected BadInput(Invalid CIF data in "test" (line 2): save frames are not supported)
+save end: Caught expected BadInput(Invalid CIF data in "test" (line 3): save frames are not supported)
+global: Caught expected BadInput(Invalid CIF data in "test" (line 1): global_ is not supported (CIF 1.1 syntax, paragraph 33))
+global in block: Caught expected BadInput(Invalid CIF data in "test" (line 3): global_ is not supported (CIF 1.1 syntax, paragraph 33))
+stop: Caught expected BadInput(Invalid CIF data in "test" (line 2): stop_ is not supported (CIF 1.1 syntax, paragraph 11))
+empty: Caught expected BadInput(Invalid CIF data in "test" (line 1): no data block found)
+only comments: Caught expected BadInput(Invalid CIF data in "test" (line 4): no data block found)
+only whitespace: Caught expected BadInput(Invalid CIF data in "test" (line 3): no data block found)
+unterminated single: Caught expected BadInput(Invalid CIF data in "test" (line 2): unterminated single-quoted value)
+unterminated single (embedded): Caught expected BadInput(Invalid CIF data in "test" (line 2): unterminated single-quoted value)
+unterminated single (comment): Caught expected BadInput(Invalid CIF data in "test" (line 2): unterminated single-quoted value)
+unterminated double: Caught expected BadInput(Invalid CIF data in "test" (line 2): unterminated double-quoted value)
+unterminated text field: Caught expected BadInput(Invalid CIF data in "test" (line 3): unterminated text field)
+unterminated text field (eof): Caught expected BadInput(Invalid CIF data in "test" (line 3): unterminated text field)
+text field end: Caught expected BadInput(Invalid CIF data in "test" (line 4): text field terminator ";" not followed by white space)
+value instead of tag: Caught expected BadInput(Invalid CIF data in "test" (line 2): value "2" where a tag is expected)
+value instead of tag (quoted): Caught expected BadInput(Invalid CIF data in "test" (line 3): value "2" where a tag is expected)
+value instead of tag (text field): Caught expected BadInput(Invalid CIF data in "test" (line 3): value "some text..." where a tag is expected)
+tag without value: Caught expected BadInput(Invalid CIF data in "test" (line 2): tag _a without a value)
+tag without value (eof): Caught expected BadInput(Invalid CIF data in "test" (line 3): tag _b without a value)
+tag without value (eof, comment): Caught expected BadInput(Invalid CIF data in "test" (line 2): tag _a without a value)
+tag before block: Caught expected BadInput(Invalid CIF data in "test" (line 1): tag _a before the first data block)
+value before block: Caught expected BadInput(Invalid CIF data in "test" (line 2): value "1" before the first data block)
+loop before block: Caught expected BadInput(Invalid CIF data in "test" (line 1): loop_ before the first data block)
+loop without tags: Caught expected BadInput(Invalid CIF data in "test" (line 2): loop_ without tags)
+loop without tags (eof): Caught expected BadInput(Invalid CIF data in "test" (line 2): loop_ without tags)
+loop without values: Caught expected BadInput(Invalid CIF data in "test" (line 2): loop without values)
+loop with tag after tags: Caught expected BadInput(Invalid CIF data in "test" (line 2): loop has 1 values, which is not a multiple of its 3 tags)
+loop without values (eof): Caught expected BadInput(Invalid CIF data in "test" (line 2): loop without values)
+loop without values (loop): Caught expected BadInput(Invalid CIF data in "test" (line 2): loop without values)
+loop value count: Caught expected BadInput(Invalid CIF data in "test" (line 2): loop has 3 values, which is not a multiple of its 2 tags)
+duplicate tag: Caught expected BadInput(Invalid CIF data in "test" (line 4): duplicate tag _A in block (first in line 2))
+duplicate tag (loop): Caught expected BadInput(Invalid CIF data in "test" (line 3): duplicate tag _A in block (first in line 2))
+duplicate tag (in loop): Caught expected BadInput(Invalid CIF data in "test" (line 2): duplicate tag _aB in block (first in line 2))
+duplicate tag (first reported): Caught expected BadInput(Invalid CIF data in "test" (line 5): duplicate tag _A in block (first in line 3))
+duplicate block: Caught expected BadInput(Invalid CIF data in "test" (line 4): duplicate block name data_AB (first in line 1))
+reserved word loop_ as value: Caught expected BadInput(Invalid CIF data in "test" (line 2): reserved word loop_ used as an unquoted value (of tag _a))
+reserved word data_ as value: Caught expected BadInput(Invalid CIF data in "test" (line 2): reserved word data_y used as an unquoted value (of tag _a))
+reserved word save_ as value: Caught expected BadInput(Invalid CIF data in "test" (line 2): reserved word save_ used as an unquoted value (of tag _a))
+reserved word global_ as value: Caught expected BadInput(Invalid CIF data in "test" (line 2): reserved word GLOBAL_ used as an unquoted value (of tag _a))
+reserved word stop_ as value: Caught expected BadInput(Invalid CIF data in "test" (line 2): reserved word stop_ used as an unquoted value (of tag _a))
+reserved char [: Caught expected BadInput(Invalid CIF data in "test" (line 2): unquoted value starting with reserved character "[")
+reserved char ]: Caught expected BadInput(Invalid CIF data in "test" (line 2): unquoted value starting with reserved character "]")
+reserved char $: Caught expected BadInput(Invalid CIF data in "test" (line 2): unquoted value starting with reserved character "$")
+empty block name: Caught expected BadInput(Invalid CIF data in "test" (line 1): empty block name)
+empty tag name: Caught expected BadInput(Invalid CIF data in "test" (line 2): tag "_" without a name)
+non-ASCII in tag: Caught expected BadInput(Invalid CIF data in "test" (line 2): byte 0xC3 is not allowed outside values and comments)
+non-ASCII in block name: Caught expected BadInput(Invalid CIF data in "test" (line 1): byte 0xC3 is not allowed outside values and comments)
+control char in tag: Caught expected BadInput(Invalid CIF data in "test" (line 2): byte 0x0B is not allowed outside values and comments)
+non-ASCII before block: Caught expected BadInput(Invalid CIF data in "test" (line 1): value "\xC3\xA9data_x" before the first data block)
+==== Lenient ====
+line of 2048 chars accepted in both modes
+line of 2049 chars (lenient):
+  data_x @1
+    _a: U[vvvvvvvvvv...(2046 chars)]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 2): line longer than 2048 characters)
+line of 2049 chars (CRLF) (lenient):
+  data_x @1
+    _a: U[vvvvvvvvvv...(2046 chars)]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 2): line longer than 2048 characters)
+last line of 2049 chars (lenient):
+  data_x @1
+    _a: U[vvvvvvvvvv...(2046 chars)]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 2): line longer than 2048 characters)
+comment line of 2049 chars (lenient):
+  data_x @1
+    _a: U[1]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 3): line longer than 2048 characters)
+text field line of 2049 chars (lenient):
+  data_x @1
+    _a: T[tttttttttt...(2048 chars)]@3
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 3): line longer than 2048 characters)
+tag and block name of 75 chars (both modes):
+  data_nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn @1
+    _tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt: U[1]@2
+tag of 76 chars (lenient):
+  data_x @1
+    _ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt: U[1]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 2): tag longer than 75 characters)
+loop tag of 76 chars (lenient):
+  data_x @1
+    _a (loop col 0/2): U[1]@2
+    _ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt (loop col 1/2): U[2]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 2): tag longer than 75 characters)
+block name of 76 chars (lenient):
+  data_nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn @1
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 1): block name longer than 75 characters)
+non-ASCII unquoted (lenient):
+  data_x @1
+    _a: U[caf\xC3\xA9]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 2): byte 0xC3 is not in the CIF 1.1 character set (printable ASCII, tab and line endings))
+non-ASCII first char (lenient):
+  data_x @1
+    _a: U[\xC3\xA9t\xC3\xA9]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 2): byte 0xC3 is not in the CIF 1.1 character set (printable ASCII, tab and line endings))
+non-ASCII single-quoted (lenient):
+  data_x @1
+    _a: S[caf\xC3\xA9 x]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 2): byte 0xC3 is not in the CIF 1.1 character set (printable ASCII, tab and line endings))
+non-ASCII double-quoted (lenient):
+  data_x @1
+    _a: D[\xE2\x84\xAB]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 2): byte 0xE2 is not in the CIF 1.1 character set (printable ASCII, tab and line endings))
+non-ASCII text field (lenient):
+  data_x @1
+    _a: T[\xC3\x85ngstr\xC3\xB6m]@3
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 3): byte 0xC3 is not in the CIF 1.1 character set (printable ASCII, tab and line endings))
+non-ASCII comment (lenient):
+  data_x @1
+    _a: U[1]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 2): byte 0xC3 is not in the CIF 1.1 character set (printable ASCII, tab and line endings))
+non-ASCII comment before block (lenient):
+  data_x @2
+    _a: U[1]@3
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 1): byte 0xC3 is not in the CIF 1.1 character set (printable ASCII, tab and line endings))
+text field, empty first line (lenient):
+  data_x @1
+    _t1: T[foo]@3
+    _t2: T[]@7
+    _t3: T[]@10
+    _t4: T[foo\nbar]@14
+    _t5: T[foo]@19
+text field, empty first line (strict):
+  data_x @1
+    _t1: T[\nfoo]@3
+    _t2: T[]@7
+    _t3: T[\n]@10
+    _t4: T[\nfoo\nbar]@14
+    _t5: T[\nfoo]@19
+text field, content after opening ; (both modes):
+  data_x @1
+    _t1: T[foo\nbar]@3
+    _t2: T[ \nfoo]@7
+BOM (lenient):
+  data_x @1
+    _a: U[1]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 1): byte 0xEF is not in the CIF 1.1 character set (printable ASCII, tab and line endings))
+BOM and comment (lenient):
+  data_x @2
+    _a: U[1]@3
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 1): byte 0xEF is not in the CIF 1.1 character set (printable ASCII, tab and line endings))
+BOM and text field (lenient):
+  data_x @1
+    _a: T[x]@3
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 1): byte 0xEF is not in the CIF 1.1 character set (printable ASCII, tab and line endings))
+BOM in block: Caught expected BadInput(Invalid CIF data in "test" (line 2): value "\xEF\xBB\xBF_a" where a tag is expected)
+non-ASCII in reserved word as value: Caught expected BadInput(Invalid CIF data in "test" (line 2): reserved word save_caf\xC3\xA9 used as an unquoted value (of tag _a))
+no BOM (both modes):
+  data_x @1
+    _a: U[1]@2
+VT in value (lenient):
+  data_x @1
+    _a: U[a\x0Bb]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 2): byte 0x0B is not in the CIF 1.1 character set (printable ASCII, tab and line endings))
+FF in comment (lenient):
+  data_x @1
+    _a: U[1]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 2): byte 0x0C is not in the CIF 1.1 character set (printable ASCII, tab and line endings))
+DEL in value (lenient):
+  data_x @1
+    _a: S[\x7F]@2
+  strict: Caught expected BadInput(Invalid CIF data in "test" (line 2): byte 0x7F is not in the CIF 1.1 character set (printable ASCII, tab and line endings))
+==== Lookup ====
+block names: One two
+data_One _cell_a: U[1.0]@2
+data_two _cell_a: U[5.0]@11
+_atom_site_x: U[0.1]@7 U[0.2]@8 U[0.3]@9
+row 0: U[Al1]@7 U[0.1]@7
+row 1: U[Al2]@8 U[0.2]@8
+row 2: U[Al3]@9 U[0.3]@9
+==== filterValuesByPrefixes ====
+no filter:
+  data_k @1
+    _cell_a: U[1]@2
+    _symmetry_x: S[abc]@3
+    _other: T[text\nfield]@5
+    _atom_site_label (loop col 0/2): U[A]@9 U[B]@9
+    _atom_site_x (loop col 1/2): U[1]@9 U[2]@9
+    _geom_a (loop col 0/2): U[1]@11 U[3]@12
+    _geom_b (loop col 1/2): U[2]@11 U[4]@12
+    _CELL_B: U[3]@13
+    _foo (loop col 0/2): U[1]@14
+    _Cell_c (loop col 1/2): U[2]@14
+  data_k2 @15
+    _other: U[1]@16
+    _cell_a: U[2]@17
+filter:
+  data_k @1
+    _cell_a: U[1]@2
+    _symmetry_x: (not loaded)
+    _other: (not loaded)
+    _atom_site_label (loop col 0/2): U[A]@9 U[B]@9
+    _atom_site_x (loop col 1/2): U[1]@9 U[2]@9
+    _geom_a: (not loaded)
+    _geom_b: (not loaded)
+    _CELL_B: U[3]@13
+    _foo (loop col 0/2): U[1]@14
+    _Cell_c (loop col 1/2): U[2]@14
+  data_k2 @15
+    _other: (not loaded)
+    _cell_a: U[2]@17
+empty filter:
+  data_k @1
+    _cell_a: (not loaded)
+    _symmetry_x: (not loaded)
+    _other: (not loaded)
+    _atom_site_label: (not loaded)
+    _atom_site_x: (not loaded)
+    _geom_a: (not loaded)
+    _geom_b: (not loaded)
+    _CELL_B: (not loaded)
+    _foo: (not loaded)
+    _Cell_c: (not loaded)
+  data_k2 @15
+    _other: (not loaded)
+    _cell_a: (not loaded)
+  _cell_a kept
+  _symmetry_x filtered
+  _other filtered
+  _atom_site_label kept
+  _atom_site_x kept
+  _geom_a filtered
+  _geom_b filtered
+  _CELL_B kept
+  _foo kept
+  _Cell_c kept
+  _other filtered
+  _cell_a kept
+LogicError: Values of CIF tag _geom_a in block data_k were not loaded (filtered out)
+error in filtered loop: Caught expected BadInput(Invalid CIF data in "test" (line 3): loop has 3 values, which is not a multiple of its 2 tags)
+==== Moves ====
+after moves:
+  data_m @1
+    _a: S[x]@2
+    _t: T[l1\nl2]@4
+    _l (loop col 0/2): U[a]@7 U[b]@7
+    _v (loop col 1/2): U[1]@7 U[2]@7
+==== Large ====
+no filter: 2001 blocks
+  block1234: U[1234.5]@3705 S[v1234]@3706
+  row 0: U[X0]@6008 U[0.0]@6008 U[0e-6]@6008
+  row 1: U[X1]@6009 U[0.1]@6009 U[1e-6]@6009
+  row 123456: U[X123456]@129464 U[0.123456]@129464 U[123456e-6]@129464
+  row 399999: U[X399999]@406007 U[0.399999]@406007 U[399999e-6]@406007
+  _junk_a last: U[399999]@806008
+with filter: 2001 blocks
+  row 0: U[X0]@6008 U[0.0]@6008 U[0e-6]@6008
+  row 1: U[X1]@6009 U[0.1]@6009 U[1e-6]@6009
+  row 123456: U[X123456]@129464 U[0.123456]@129464 U[123456e-6]@129464
+  row 399999: U[X399999]@406007 U[0.399999]@406007 U[399999e-6]@406007
