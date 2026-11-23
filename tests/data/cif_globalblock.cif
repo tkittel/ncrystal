@@ -1,0 +1,278 @@
+##############################################################################
+###                                                                        ###
+###        Synthetic test data (not from any publication)                  ###
+###                                                                        ###
+##############################################################################
+#                                                                            #
+# This file is invented test data for NCrystal. Its layout follows that of   #
+# older journal supplementary CIF files: a comment banner, the structure in  #
+# one data block, and the publication details only in a final data_global    #
+# block. All names, numbers and texts are made up.                           #
+#                                                                            #
+##############################################################################
+
+data_I
+_audit_creation_method     'TESTXL-1 CIF writer, edited test template'
+_audit_conform_dict_name     cif_core.dic
+_audit_conform_dict_version     2.4
+_chemical_name_systematic
+;
+Dipotassium hydrogen test phosphate monohydrate
+;
+_chemical_formula_moiety     '2(K +), H P O4 2-, H2 O'
+_chemical_formula_sum     'H3 K2 O5 P'
+_chemical_formula_structural     'K2 (H P O4) (H2 O)'
+_chemical_formula_iupac     'K2 [H P O4] , H2 O'
+_chemical_formula_weight     192.19
+_symmetry_cell_setting     monoclinic
+_symmetry_space_group_name_H-M     'P 1 21/c 1'
+_symmetry_space_group_name_hall     '-P 2ybc'
+loop_
+    _symmetry_equiv_pos_as_xyz
+    'x, y, z'
+    '-x, y+1/2, -z+1/2'
+    '-x, -y, -z'
+    'x, -y-1/2, z-1/2'
+_cell_length_a     6.1234(3)
+_cell_length_b     11.4321(6)
+_cell_length_c     7.8765(4)
+_cell_angle_alpha     90.00
+_cell_angle_beta     104.321(2)
+_cell_angle_gamma     90.00
+_cell_volume     534.17(5)
+_cell_formula_units_Z     4
+_cell_measurement_reflns_used     1234
+_cell_measurement_theta_min     3.1
+_cell_measurement_theta_max     27.5
+_cell_measurement_temperature     123(2)
+_cell_measurement_pressure     ?
+_cell_special_details
+;
+Cell parameters from a test refinement of invented reflections.
+;
+_exptl_crystal_description     prism
+_exptl_crystal_colour     colourless
+_exptl_crystal_size_max     0.21
+_exptl_crystal_size_mid     0.12
+_exptl_crystal_size_min     0.08
+_exptl_crystal_density_diffrn     2.390
+_exptl_crystal_density_method     'not measured'
+_exptl_crystal_F_000     384
+_exptl_absorpt_coefficient_mu     1.987
+_exptl_absorpt_correction_type     multi-scan
+_exptl_absorpt_process_details     '(TESTABS; Tester, 2009)'
+_exptl_absorpt_correction_T_min     0.6789
+_exptl_absorpt_correction_T_max     0.8567
+_exptl_special_details
+;
+?
+;
+_diffrn_ambient_temperature     123(2)
+_diffrn_radiation_type     MoK\a
+_diffrn_radiation_wavelength     0.71073
+_diffrn_radiation_source     'fine-focus sealed tube'
+_diffrn_radiation_monochromator     graphite
+_diffrn_measurement_device_type     'Test diffractometer'
+_diffrn_measurement_device     '95mm CCD camera on \k-goniostat'
+_diffrn_measurement_method     'CCD rotation images, thick slices'
+_diffrn_detector_area_resol_mean     9
+_diffrn_reflns_number     4321
+_diffrn_reflns_av_R_equivalents     0.0312
+_diffrn_reflns_theta_min     3.12
+_diffrn_reflns_theta_max     27.49
+_diffrn_reflns_theta_full     27.49
+_diffrn_measured_fraction_theta_max     0.991
+_diffrn_measured_fraction_theta_full     0.991
+_diffrn_reflns_limit_h_min     -7
+_diffrn_reflns_limit_h_max     7
+_diffrn_reflns_limit_k_min     -14
+_diffrn_reflns_limit_k_max     14
+_diffrn_reflns_limit_l_min     -10
+_diffrn_reflns_limit_l_max     10
+_refine_special_details
+;
+Refinement of F^2^ against ALL invented reflections. The weighted R-factor
+wR and goodness of fit S are based on F^2^, conventional R-factors R are
+based on F, with F set to zero for negative F^2^. The threshold expression
+of F^2^ > \s(F^2^) is used only for calculating R-factors(gt) etc. and is
+not relevant to the choice of reflections for refinement. R-factors based
+on F^2^ are statistically about twice as large as those based on F, and R-
+factors based on ALL data will be even larger.
+;
+_reflns_number_total     1222
+_reflns_number_gt     1111
+_reflns_threshold_expression     I>2\s(I)
+_refine_ls_structure_factor_coef     Fsqd
+_refine_ls_matrix_type     full
+_refine_ls_R_factor_all     0.0251
+_refine_ls_R_factor_gt     0.0219
+_refine_ls_wR_factor_gt     0.0543
+_refine_ls_wR_factor_ref     0.0561
+_refine_ls_goodness_of_fit_ref     1.071
+_refine_ls_restrained_S_all     1.070
+_refine_ls_number_reflns     1222
+_refine_ls_number_parameters     82
+_refine_ls_number_restraints     3
+_refine_ls_number_constraints     ?
+_refine_ls_hydrogen_treatment     mixed
+_refine_ls_weighting_scheme     calc
+_refine_ls_weighting_details
+'calc w = 1/[\s^2^(Fo^2^)+(0.0234P)^2^+0.4321P] where P = (Fo^2^+2Fc^2^)/3'
+_atom_sites_solution_hydrogens     difmap
+_atom_sites_solution_primary     direct
+_atom_sites_solution_secondary     difmap
+_refine_ls_shift/su_max     0.001
+_refine_ls_shift/su_mean     0.000
+_refine_diff_density_max     0.432
+_refine_diff_density_min     -0.345
+_refine_ls_extinction_method     none
+loop_
+    _atom_type_symbol
+    _atom_type_description
+    _atom_type_scat_dispersion_real
+    _atom_type_scat_dispersion_imag
+    _atom_type_scat_source
+    H H 0 0 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+    K K 0.2009 0.2494 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+    O O 0.0106 0.006 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+    P P 0.1023 0.0942 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+_computing_data_collection     'TESTCOLLECT (Tester, 2001)'
+_computing_cell_refinement     'TESTSCALE (Example & Tester, 2002)'
+_computing_data_reduction     'TESTREDUCE (Example & Tester 2002) and TESTSCALE'
+_computing_structure_solution     'TESTSOLVE (Example, 2003)'
+_computing_structure_refinement     'TESTXL (Example, 2003)'
+_computing_molecular_graphics     'TESTDRAW (Tester, 2004)'
+_computing_publication_material     'TESTPUB (Example, 2005)'
+loop_
+    _atom_site_type_symbol
+    _atom_site_label
+    _atom_site_fract_x
+    _atom_site_fract_y
+    _atom_site_fract_z
+    _atom_site_U_iso_or_equiv
+    _atom_site_adp_type
+    _atom_site_calc_flag
+    _atom_site_refinement_flags
+    _atom_site_occupancy
+    _atom_site_disorder_assembly
+    _atom_site_disorder_group
+    K K1 0.12345(6) 0.43210(3) 0.23456(5) 0.01234(10) Uani d . 1 . .
+    K K2 0.65432(6) -0.12345(3) 0.34567(5) 0.01345(10) Uani d . 1 . .
+    P P1 0.23456(7) 0.15678(4) 0.45678(6) 0.00987(11) Uani d . 1 . .
+    O O1 0.3456(2) 0.24567(11) 0.6123(2) 0.0145(3) Uani d . 1 . .
+    O O2 0.0123(2) 0.08765(11) 0.4567(2) 0.0156(3) Uani d . 1 . .
+    O O3 0.4123(2) 0.07654(11) 0.3987(2) 0.0167(3) Uani d . 1 . .
+    O O4 0.1987(2) 0.23456(11) 0.2876(2) 0.0178(3) Uani d . 1 . .
+    O O1W 0.7654(2) 0.38765(12) 0.0987(2) 0.0201(3) Uani d . 1 . .
+    H H4 0.12(4) 0.276(2) 0.31(3) 0.030(7) Uiso d . 1 . .
+    H H1W 0.78(4) 0.341(2) 0.02(3) 0.035(7) Uiso d D 1 . .
+    H H2W 0.88(3) 0.412(2) 0.13(3) 0.036(7) Uiso d D 1 . .
+loop_
+    _atom_site_aniso_label
+    _atom_site_aniso_U_11
+    _atom_site_aniso_U_22
+    _atom_site_aniso_U_33
+    _atom_site_aniso_U_12
+    _atom_site_aniso_U_13
+    _atom_site_aniso_U_23
+    K1 0.0123(2) 0.0121(2) 0.0127(2) -0.00012(14) 0.00321(15) 0.00045(14)
+    K2 0.0134(2) 0.0132(2) 0.0138(2) 0.00023(14) 0.00412(15) -0.00034(14)
+    P1 0.0098(2) 0.0096(2) 0.0103(2) 0.00011(16) 0.00234(17) -0.00023(16)
+    O1 0.0144(7) 0.0142(7) 0.0149(7) -0.0012(5) 0.0034(6) -0.0023(5)
+    O2 0.0155(7) 0.0153(7) 0.0161(7) 0.0013(5) 0.0045(6) 0.0011(5)
+    O3 0.0166(7) 0.0164(7) 0.0172(7) -0.0014(5) 0.0056(6) 0.0012(5)
+    O4 0.0177(7) 0.0175(7) 0.0183(7) 0.0015(6) 0.0067(6) -0.0013(5)
+    O1W 0.0200(8) 0.0198(8) 0.0206(8) 0.0016(6) 0.0078(6) 0.0014(6)
+_geom_special_details
+;
+All s.u.'s (except the s.u. in the dihedral angle between two l.s. planes)
+are estimated using the full covariance matrix. The cell s.u.'s are taken
+into account individually in the estimation of s.u.'s in distances, angles
+and torsion angles; correlations between s.u.'s in cell parameters are only
+used when they are defined by crystal symmetry.
+;
+loop_
+    _geom_bond_atom_site_label_1
+    _geom_bond_atom_site_label_2
+    _geom_bond_site_symmetry_2
+    _geom_bond_distance
+    _geom_bond_publ_flag
+    P1 O1 . 1.5123(15) ?
+    P1 O2 . 1.5234(15) ?
+    P1 O3 . 1.5345(15) ?
+    P1 O4 . 1.5876(15) ?
+    K1 O1 3_666 2.7654(15) ?
+    K2 O1W 2_645 2.8765(16) ?
+loop_
+    _geom_angle_atom_site_label_1
+    _geom_angle_atom_site_label_2
+    _geom_angle_atom_site_label_3
+    _geom_angle_site_symmetry_1
+    _geom_angle_site_symmetry_3
+    _geom_angle
+    _geom_angle_publ_flag
+    O1 P1 O2 . . 111.23(9) ?
+    O1 P1 O3 . . 110.98(9) ?
+    O2 P1 O4 . . 106.54(8) ?
+    O1 K1 O1W 3_666 . 87.65(5) ?
+loop_
+    _geom_hbond_atom_site_label_D
+    _geom_hbond_atom_site_label_H
+    _geom_hbond_atom_site_label_A
+    _geom_hbond_site_symmetry_A
+    _geom_hbond_distance_DH
+    _geom_hbond_distance_HA
+    _geom_hbond_distance_DA
+    _geom_hbond_angle_DHA
+    O4 H4 O2 2_545 0.82(3) 1.79(3) 2.6012(19) 170(3)
+    O1W H1W O3 4_565 0.84(2) 1.95(2) 2.7765(19) 168(3)
+    O1W H2W O1 1_655 0.83(2) 2.01(2) 2.8321(19) 172(3)
+
+data_global
+_journal_date_recd_electronic     2009-01-15
+_journal_date_accepted     2009-02-20
+_journal_name_full     'Journal of Synthetic Test Data, Section T'
+_journal_year     2009
+_journal_volume     12
+_journal_issue      3
+_journal_page_first     t11
+_journal_page_last     t12
+_journal_paper_category     QT
+_journal_coeditor_code     TT0001
+_publ_contact_author_name     'Alpha Tester'
+_publ_contact_author_address
+;
+Institut f\"ur Testkristallographie
+Testuniversit\"at Testheim
+Teststra\"se 1
+T-12345 Testheim
+Testland
+;
+_publ_contact_author_email     'a.tester@test.invalid'
+_publ_contact_author_fax     '+00 000 00 0000'
+_publ_contact_author_phone     '+00 000 00 0001'
+_publ_section_title
+;
+Synthetic test structure of K~2~[HPO~4~]\\cdotH~2~O with the publication
+data in a separate block
+;
+loop_
+    _publ_author_name
+    _publ_author_footnote
+    _publ_author_address
+    'Tester, Alpha' .
+;
+Institut f\"ur Testkristallographie,
+Testuniversit\"at Testheim,
+Teststra\"se 1,
+T-12345 Testheim,
+Testland
+;
+    'Example, Beta' .
+;
+Institut f\"ur Testkristallographie,
+Testuniversit\"at Testheim,
+Teststra\"se 1,
+T-12345 Testheim,
+Testland
+;

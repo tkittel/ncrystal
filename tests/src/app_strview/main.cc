@@ -57,7 +57,49 @@ void test_splitting()
   test(" ;");
 }
 
+void test_uncased()
+{
+  using SV = NC::StrView;
+  auto cmp = []( SV a, SV b )
+  {
+    const int c = a.compareUncased( b );
+    std::cout << "SV(\"" << a << "\").compareUncased(\"" << b << "\") = "
+              << ( c < 0 ? "<0" : ( c > 0 ? ">0" : "0" ) ) << std::endl;
+    nc_assert_always( ( c < 0 ) == ( b.compareUncased( a ) > 0 ) );
+    nc_assert_always( ( c == 0 ) == ( b.compareUncased( a ) == 0 ) );
+    return c;
+  };
+  nc_assert_always( cmp( "_Cell_Length_A", "_cell_length_a" ) == 0 );
+  nc_assert_always( cmp( "abc", "ABC" ) == 0 );
+  nc_assert_always( cmp( "", "" ) == 0 );
+  nc_assert_always( cmp( "a", "" ) > 0 );
+  nc_assert_always( cmp( "ab", "ABC" ) < 0 );
+  nc_assert_always( cmp( "abd", "ABC" ) > 0 );
+  //As if lower case, i.e. '_' (95) before letters (97-122) also against
+  //upper case letters (65-90):
+  nc_assert_always( cmp( "A", "_" ) > 0 );
+  nc_assert_always( cmp( "[", "z" ) < 0 );
+  //Only ASCII letters are folded:
+  nc_assert_always( SV( "\xC3\x84" ).compareUncased( "\xC3\xA4" ) != 0 );
+  nc_assert_always( cmp( "@", "`" ) != 0 );
+  auto sw = []( SV a, SV b )
+  {
+    const bool r = a.startswithUncased( b );
+    std::cout << "SV(\"" << a << "\").startswithUncased(\"" << b << "\") = "
+              << r << std::endl;
+    return r;
+  };
+  nc_assert_always( sw( "_ATOM_SITE_label", "_atom_site_" ) );
+  nc_assert_always( sw( "_atom_site_label", "_Atom_Site_" ) );
+  nc_assert_always( sw( "abc", "" ) );
+  nc_assert_always( sw( "", "" ) );
+  nc_assert_always( !sw( "_atom_sit", "_atom_site_" ) );
+  nc_assert_always( !sw( "_atom_sites", "_atom_site_" ) );
+  nc_assert_always( !sw( "", "a" ) );
+}
+
 int main() {
+  test_uncased();
   fctA( "test str lit" );
   std::string stdstr("test std::string");
   fctA( stdstr );

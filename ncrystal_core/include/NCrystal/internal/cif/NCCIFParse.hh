@@ -105,6 +105,8 @@ namespace NCRYSTAL_NAMESPACE {
     public:
       StrView name() const;
       std::uint32_t line() const;//line of the data_ header
+      const Document& document() const { return *m_doc; }
+      std::size_t index() const { return m_block; }//in the Document
 
       //Whether the tag is present in the block (loaded or filtered out):
       bool has( StrView tag ) const;
