@@ -184,6 +184,7 @@ def main():
         test('sab','surveyor','@1@2@x','@1@2')
     test_atomsites()
     test_cif()
+    test_uniquestructprov()
     test_cli('test','wl2ekin','1.8')
     test_cli('test','ekin2wl','0.025')
     test_cli('test','eqrefl','relaxed','149','1,2,3','1,1,0')
@@ -508,6 +509,84 @@ def test_cif():
     with ensure_error( NCBadInput,
                        'Invalid cif query: ["cif","bla"] (unknown key)' ):
         ncquery( [ 'cif', 'bla' ] )
+
+def test_uniquestructprov():
+    #Items of the CIF block with a crystal structure, as [text,line] (cf. the
+    #unit test app_cifitems):
+    cif = """data_info
+_journal_name_full 'From data_info'
+data_s
+_cell_length_a 4.05(1)
+_cell_length_b 4.05(1)
+_cell_length_c 4.05(1)
+_cell_angle_beta 90.0
+_space_group_name_H-M_alt 'F m -3 m'
+_symmetry_space_group_name_H-M 'F m 3 m'
+_space_group_IT_number 225
+_chemical_formula_sum 'Al'
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+Al1 Al 0 0 0 ?
+Al2 Al 0.5 0.5 0.5 0.01
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Al1 ? ? ? ? ? ?
+Al2 0.01 0.01 0.01 0 0 0
+_publ_section_title 'A title'
+loop_ _publ_author_name 'Doe, J.' 'Roe, R.'
+_cod_database_code 1234567
+"""
+    test( 'cif', 'uniquestructprov', 'permissive', 'RAWDATA', 'q.cif',
+          'RAWDATA', cif )
+    for name, shown in ( ( 'q.cif', 'q.cif' ), ( '', 'raw CIF data' ) ):
+        with ensure_error( NCBadInput, f'Invalid CIF data in "{shown}"'
+                           ' (data_s, line 29): anisotropic displacements of'
+                           ' "Al1" are all "?" or ".". Use permissive mode to'
+                           ' ignore such entries.' ):
+            ncquery( [ 'cif', 'uniquestructprov', 'strict', 'RAWDATA', name,
+                       'RAWDATA', cif ] )
+    import NCrystalDev as NC
+    NC.registerInMemoryFileData( 'query_test.cif', """data_x
+_cell_length_a 3
+_cell_length_b 3
+_cell_length_c 3
+_atom_site_label Fe1
+_atom_site_fract_x 0
+_atom_site_fract_y 0
+_atom_site_fract_z 0
+""" )
+    test( 'cif', 'uniquestructprov', 'strict', 'query_test.cif' )
+    #Synthetic file with the publication only in a data_global block:
+    from NCTestUtils.dirs import test_data_dir
+    r = ncquery( [ 'cif', 'uniquestructprov', 'strict',
+                   str( test_data_dir / 'cif_globalblock.cif' ) ] )
+    print( 'cif_globalblock.cif: block', r['block'], 'provenance_block',
+           r['provenance_block'] )
+    import pprint
+    pprint.pprint( r['provenance'] )
+    for bad in ( [], [ 'strict' ], [ '1', 'x.cif' ],
+                 [ 'strict', 'RAWDATA' ], [ 'strict', 'RAWDATA', 'x' ],
+                 [ 'strict', 'RAWDATA', 'n', 'x', 'y' ],
+                 [ 'strict', 'x', 'y' ] ):
+        with ensure_error( NCBadInput, 'Invalid cif query: '
+                           + json.dumps( [ 'cif', 'uniquestructprov' ] + bad,
+                                         separators = ( ',', ':' ) )
+                           + ' (correct usage: ["cif","uniquestructprov",'
+                           'PERMISSIVE,NAME] or ["cif","uniquestructprov",'
+                           'PERMISSIVE,"RAWDATA",NAME,"RAWDATA",TEXT], with'
+                           ' PERMISSIVE "strict" or "permissive")' ):
+            ncquery( [ 'cif', 'uniquestructprov', *bad ] )
 
 def rnd( o ):
     #Round floats (also nested) to 10 digits, for platform-stable printouts:

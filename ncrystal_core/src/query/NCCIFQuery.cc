@@ -20,9 +20,215 @@
 
 #include "NCCIFQuery.hh"
 #include "NCrystal/internal/cif/NCCIFUtils.hh"
+#include "NCrystal/internal/cif/NCCIFItems.hh"
+#include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 
 namespace NC = NCrystal;
+
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    namespace NCC = CIF;
+
+    //A value as [text,line], or null for "?" and ".":
+    void streamValue( std::ostream& os, const NCC::Value& v )
+    {
+      if ( NCC::isNull( v ) ) {
+        os << "null";
+        return;
+      }
+      os << '[';
+      streamJSON( os, v.text );
+      os << ',' << v.line << ']';
+    }
+
+    //Values (all, or the rows not in skip, which is sorted) as a list:
+    template<class TValues>
+    void streamValues( std::ostream& os, const TValues& v,
+                       const std::vector<std::uint32_t>& skip = {} )
+    {
+      os << '[';
+      bool first = true;
+      auto itSkip = skip.begin();
+      for ( auto i : ncrange( v.size() ) ) {
+        if ( itSkip != skip.end() && *itSkip == i ) {
+          ++itSkip;
+          continue;
+        }
+        if ( !first )
+          os << ',';
+        first = false;
+        streamValue( os, v[i] );
+      }
+      os << ']';
+    }
+
+    //Entry "tag":value of a dict (with a leading comma unless first):
+    void streamKey( std::ostream& os, StrView key, bool& first )
+    {
+      if ( !first )
+        os << ',';
+      first = false;
+      streamJSON( os, key );
+      os << ':';
+    }
+
+    template<class T>
+    void streamAlternatives( std::ostream& os, const T& alts )
+    {
+      os << '[';
+      bool first = true;
+      for ( auto& a : alts ) {
+        if ( !first )
+          os << ',';
+        first = false;
+        os << "{\"tag\":";
+        streamJSON( os, a.tag );
+        os << ",\"value\":";
+        streamValue( os, a.value );
+        os << '}';
+      }
+      os << ']';
+    }
+
+    //Items of a structure block under their CIF tags: single items as
+    //"_tag":value (cell angles absent from the data have line 0), the site
+    //and aniso columns as "_tag":[values] in "atom_site" and "atom_site_aniso"
+    //(with "form" "U" or "B", without skipped rows), and "symmetry" with an
+    //entry per tag present (current tag first). Absent items are omitted:
+    void streamStructure( std::ostream& os, const NCC::StructureItems& s )
+    {
+      constexpr const char* cellTags[] = {
+        "_cell_length_a", "_cell_length_b", "_cell_length_c",
+        "_cell_angle_alpha", "_cell_angle_beta", "_cell_angle_gamma" };
+      os << '{';
+      bool first = true;
+      for ( auto i : ncrange( 6 ) ) {
+        streamKey( os, cellTags[i], first );
+        streamValue( os, s.cell[i] );
+      }
+
+      streamKey( os, "atom_site", first );
+      {
+        const auto& t = s.sites;
+        const std::pair<const char*,const NCC::ValueColumn*> cols[] = {
+          { "_atom_site_label", &t.label },
+          { "_atom_site_fract_x", &t.fractX },
+          { "_atom_site_fract_y", &t.fractY },
+          { "_atom_site_fract_z", &t.fractZ },
+          { "_atom_site_type_symbol", &t.typeSymbol },
+          { "_atom_site_U_iso_or_equiv", &t.uIsoOrEquiv },
+          { "_atom_site_B_iso_or_equiv", &t.bIsoOrEquiv },
+          { "_atom_site_occupancy", &t.occupancy } };
+        os << '{';
+        bool f2 = true;
+        for ( auto& c : cols ) {
+          if ( c.second->empty() )
+            continue;
+          streamKey( os, c.first, f2 );
+          streamValues( os, *c.second );
+        }
+        os << '}';
+      }
+
+      if ( s.aniso.has_value() ) {
+        const auto& a = s.aniso.value();
+        const bool isU = ( a.form == NCC::StructureItems::AnisoForm::U );
+        constexpr const char* ij[] = { "11", "22", "33", "12", "13", "23" };
+        streamKey( os, "atom_site_aniso", first );
+        os << "{\"form\":" << ( isU ? "\"U\"" : "\"B\"" )
+           << ",\"_atom_site_aniso_label\":";
+        streamValues( os, a.label, a.skippedRows );
+        for ( auto i : ncrange( 6 ) ) {
+          os << ",\"_atom_site_aniso_" << ( isU ? 'U' : 'B' ) << '_' << ij[i]
+             << "\":";
+          streamValues( os, a.components[i], a.skippedRows );
+        }
+        os << '}';
+      }
+
+      streamKey( os, "symmetry", first );
+      os << "{\"operations\":[";
+      {
+        bool f2 = true;
+        for ( auto& o : s.operations ) {
+          if ( !f2 )
+            os << ',';
+          f2 = false;
+          os << "{\"tag\":";
+          streamJSON( os, o.tag );
+          os << ",\"values\":";
+          streamValues( os, o.values );
+          os << '}';
+        }
+      }
+      os << "],\"hm\":";
+      streamAlternatives( os, s.hmSymbol );
+      os << ",\"hall\":";
+      streamAlternatives( os, s.hallSymbol );
+      os << ",\"number\":";
+      streamAlternatives( os, s.itNumber );
+      os << '}';
+
+      auto optional = [&os,&first]( const char* key,
+                                    const Optional<NCC::Value>& v )
+      {
+        if ( !v.has_value() )
+          return;
+        streamKey( os, key, first );
+        streamValue( os, v.value() );
+      };
+      optional( "_chemical_formula_sum", s.formulaSum );
+      if ( !s.atomTypeNumberInCell.empty() ) {
+        streamKey( os, "_atom_type_number_in_cell", first );
+        streamValues( os, s.atomTypeNumberInCell );
+      }
+      optional( "_diffrn_ambient_temperature", s.ambientTemperature );
+      optional( "_cell_measurement_temperature", s.measurementTemperature );
+      os << '}';
+    }
+
+    //Provenance items under their CIF tags (as for streamStructure):
+    void streamProvenance( std::ostream& os, const NCC::ProvenanceItems& p )
+    {
+      os << '{';
+      bool first = true;
+      auto tagged = [&os,&first]( const Optional<NCC::TaggedValue>& v )
+      {
+        if ( !v.has_value() )
+          return;
+        streamKey( os, v.value().tag, first );
+        streamValue( os, v.value().value );
+      };
+      auto optional = [&os,&first]( const char* key,
+                                    const Optional<NCC::Value>& v )
+      {
+        if ( !v.has_value() )
+          return;
+        streamKey( os, key, first );
+        streamValue( os, v.value() );
+      };
+      tagged( p.title );
+      if ( p.authors.has_value() ) {
+        streamKey( os, p.authors.value().tag, first );
+        streamValues( os, p.authors.value().values );
+      }
+      tagged( p.journal );
+      tagged( p.year );
+      tagged( p.doi );
+      optional( "_cod_database_code", p.codDatabaseCode );
+      optional( "_[local]_ncrystal_mp_database_code", p.mpDatabaseCode );
+      optional( "_audit_creation_method", p.auditCreationMethod );
+      optional( "_audit_creation_date", p.auditCreationDate );
+      if ( !p.auditAuthors.empty() ) {
+        streamKey( os, "_audit_author_name", first );
+        streamValues( os, p.auditAuthors );
+      }
+      optional( "_cod_original_formula_sum", p.codOriginalFormulaSum );
+      os << '}';
+    }
+  }
+}
 
 void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
 {
@@ -60,10 +266,11 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
   constexpr auto sv_list = StrView::make("list");
   constexpr auto sv_numbers = StrView::make("numbers");
   constexpr auto sv_elements = StrView::make("elements");
+  constexpr auto sv_uniquestructprov = StrView::make("uniquestructprov");
   if ( key == sv_list ) {
     if ( nargs != 0 )
       invalid("no arguments should come after: [\"cif\",\"list\"]");
-    os << "[\"numbers\", \"elements\"]";
+    os << "[\"numbers\", \"elements\", \"uniquestructprov\"]";
   } else if ( key == sv_numbers ) {
     //["cif","numbers","RAWDATA",LIST]: printed CIF numbers (e.g.
     //"0.0283(4)") as [[value,rounding error],...], with null for strings
@@ -112,6 +319,63 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
         os << "null";
     }
     os << ']';
+  } else if ( key == sv_uniquestructprov ) {
+    //["cif","uniquestructprov",PERMISSIVE,SRC]: the items of the only block
+    //with a crystal structure (cf. findUniqueStructProvItems), parsed in
+    //lenient mode (cf. CIFParseLenient), with PERMISSIVE "strict" or
+    //"permissive" (cf. CIFPermissive), and SRC either the name of a TextData
+    //or "RAWDATA",NAME,"RAWDATA",TEXT (the CIF data and its name, which can
+    //be empty). Result: {"block":name,"block_line":n,"structure":{...},
+    //"provenance":{...}|null,"provenance_block":name|null}, with values as
+    //[text,line] (line 0 for an absent cell angle) or null for "?" and ".",
+    //and items under their CIF tags: the cell and other single items
+    //"_tag":value, the site and aniso columns "_tag":[values] in "atom_site"
+    //and "atom_site_aniso" (with "form" "U" or "B", without rows ignored in
+    //permissive mode), and "symmetry":{"operations":[{"tag":..,"values":
+    //[..]}],"hm":[{"tag":..,"value":..}],"hall":[..],"number":[..]} (current
+    //tag first). "provenance_block" is the other block from which absent
+    //provenance items were taken, if any. Absent optional items are omitted:
+    const auto usage = "correct usage: [\"cif\",\"uniquestructprov\","
+      "PERMISSIVE,NAME] or [\"cif\",\"uniquestructprov\",PERMISSIVE,"
+      "\"RAWDATA\",NAME,\"RAWDATA\",TEXT], with PERMISSIVE \"strict\" or"
+      " \"permissive\"";
+    const bool raw = ( nargs == 5 && arg(1) == sv_rawdata
+                       && arg(3) == sv_rawdata );
+    if ( !( raw || ( nargs == 2 && arg(1) != sv_rawdata ) )
+         || ( arg(0) != "strict" && arg(0) != "permissive" ) )
+      invalid( usage );
+    const bool permissive = ( arg(0) == "permissive" );
+    const std::string rawname = ( raw && !arg(2).empty() ? arg(2).to_string()
+                                  : std::string( "raw CIF data" ) );
+    auto td = ( raw
+                ? makeSO<const TextData>( RawStrData( arg(4).to_string() ),
+                                          TextData::DataType{ "cif" },
+                                          DataSourceName( rawname ) )
+                : FactImpl::createTextData(
+                  TextDataPath( arg(1).to_string() ) ) );
+    const auto doc = NCC::Document::parse( std::move( td ),
+                                           NCC::CIFParseLenient::YES );
+    const auto r = NCC::findUniqueStructProvItems(
+      doc, ( permissive ? NCC::CIFPermissive::YES : NCC::CIFPermissive::NO ) );
+    const auto b = r.structureItems.block( doc );
+    os << "{\"block\":";
+    streamJSON( os, b.name() );
+    os << ",\"block_line\":" << b.line() << ",\"structure\":";
+    streamStructure( os, r.structureItems );
+    os << ",\"provenance\":";
+    Optional<NCC::BlockView> other;
+    if ( r.provenanceItems.has_value() ) {
+      streamProvenance( os, r.provenanceItems.value() );
+      other = r.provenanceItems.value().otherBlock( doc );
+    } else {
+      os << "null";
+    }
+    os << ",\"provenance_block\":";
+    if ( other.has_value() )
+      streamJSON( os, other.value().name() );
+    else
+      os << "null";
+    os << '}';
   } else {
     invalid("unknown key");
   }
