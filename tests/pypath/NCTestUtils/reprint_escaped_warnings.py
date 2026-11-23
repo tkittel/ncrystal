@@ -39,7 +39,7 @@ _c._add_warn_counts_to_msgs[0] = True
 
 def printWarnings( message, category, *args, **kwargs ):
     import NCrystalDev._common as nc_common
-    msg,cat = nc_common.WarningSpy._fmtwarning( message, category )
+    msg,cat = nc_common._fmt_pywarning( message, category )
     print(f'CAUGHT ESCAPED WARNING ({cat}): {msg}')
 
 warnings.showwarning = printWarnings

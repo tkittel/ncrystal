@@ -275,8 +275,8 @@ def create_argparser_for_sphinx( progname ):
 def main( progname, arglist ):
     args = _parseArgs( progname, arglist )
     if args.quiet:
-        from ._common import WarningSpy, modify_ncrystal_print_fct_ctxmgr
-        with modify_ncrystal_print_fct_ctxmgr('block'), WarningSpy( block = True ):
+        from .msg import MsgCtrl
+        with MsgCtrl( block = ['info','warning','raw'] ):
             _main_impl(args)
     else:
         _main_impl(args)

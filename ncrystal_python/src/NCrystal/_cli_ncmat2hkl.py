@@ -155,8 +155,8 @@ def main( progname, arglist ):
         _main_impl(args,do_quiet,override_prec)
 
     if do_quiet:
-        from ._common import modify_ncrystal_print_fct_ctxmgr
-        with modify_ncrystal_print_fct_ctxmgr('block'):
+        from .msg import MsgCtrl
+        with MsgCtrl( block = ['info','warning','raw'] ):
             invoke()
     else:
         invoke()

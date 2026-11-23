@@ -172,7 +172,10 @@ def _mp_get_cifdata( mpid, quiet = False, apikey = None ):
     if apikey is None:
         apikey = _getMaterialsProjectAPIKEY()
 
-    with _nc_common.WarningSpy(blockfct = lambda msg, cat : cat in ('PendingDeprecationWarning','DeprecationWarning') ):
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter( 'ignore', DeprecationWarning )
+        warnings.simplefilter( 'ignore', PendingDeprecationWarning )
         try:
             import mp_api.client  #NB: This might trigger a spurious FPE
         except ImportError:
@@ -180,15 +183,15 @@ def _mp_get_cifdata( mpid, quiet = False, apikey = None ):
                               ' fix this (perhaps with a command like "conda install -c conda-forge mp-api"'
                               ' or "python3 -mpip install mp-api").')
 
-    with _nc_common.WarningSpy(
-            blockfct= ( lambda msg, cat : msg.lower()
-                        .startswith('mpcontribs-client not installed') ) ), mp_api.client.MPRester(apikey) as mpr:
-        s = mpr.get_structure_by_material_id( f'mp-{mpid}', conventional_unit_cell=True )
-        #Without the symprec argument in the next line, we get an unrefined P1
-        #structure:
-        result = s.to(fmt='cif',symprec=1e-4, significant_figures=15, angle_tolerance=5.0, refine_struct=True)
-        #But we want to sanity check that this refinement gives the same spacegroup result as listed in the MP database:
-        mp_expected_sg_number = s.get_space_group_info()[1]
+    with warnings.catch_warnings():
+        warnings.filterwarnings( 'ignore', '(?i)mpcontribs-client not installed' )
+        with mp_api.client.MPRester(apikey) as mpr:
+            s = mpr.get_structure_by_material_id( f'mp-{mpid}', conventional_unit_cell=True )
+            #Without the symprec argument in the next line, we get an unrefined
+            #P1 structure:
+            result = s.to(fmt='cif',symprec=1e-4, significant_figures=15, angle_tolerance=5.0, refine_struct=True)
+            #But we want to sanity check that this refinement gives the same spacegroup result as listed in the MP database:
+            mp_expected_sg_number = s.get_space_group_info()[1]
     sg_checked = False
     errmsg = f'Unable to reliably determine spacegroup when trying to retrieve structure for mp-{mpid} from materialsproject.org'
     for ll in result.splitlines():

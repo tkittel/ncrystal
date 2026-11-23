@@ -363,8 +363,8 @@ def main( progname, arglist ):
     if args.doc:
         do_quiet = False
     if do_quiet:
-        from ._common import WarningSpy, modify_ncrystal_print_fct_ctxmgr
-        with modify_ncrystal_print_fct_ctxmgr('block'), WarningSpy( block = True ):
+        from .msg import MsgCtrl
+        with MsgCtrl( block = ['info','warning','raw'] ):
             _main_impl(progname,args)
     else:
         _main_impl(progname,args)

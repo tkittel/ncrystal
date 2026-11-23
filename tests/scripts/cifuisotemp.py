@@ -28,10 +28,10 @@
 
 import contextlib
 import io
-import warnings
 
 import NCrystalDev as NC
 import NCrystalDev.cifutils as nc_cifutils
+from NCrystalDev.msg import MsgCtrl
 
 
 def cifdata( fields, with_uiso = True ):
@@ -50,8 +50,7 @@ def cifdata( fields, with_uiso = True ):
 def test( descr, fields, *, chosen = None, permissive = False, with_uiso = True ):
     print( f'==> {descr} (fields: {fields}, chosen: {chosen},'
            f' permissive: {permissive}{"" if with_uiso else ", no Uiso"})' )
-    with warnings.catch_warnings( record = True ) as wl:
-        warnings.simplefilter( 'always' )
+    with MsgCtrl( spy = ['warning'], block = ['warning'] ) as mc:
         try:
             with contextlib.redirect_stdout( io.StringIO() ):
                 lc = nc_cifutils.CIFLoader( cifdata( fields, with_uiso ),
@@ -60,8 +59,8 @@ def test( descr, fields, *, chosen = None, permissive = False, with_uiso = True 
         except NC.NCBadInput as e:
             print( f'   ERROR: {e}' )
             txt = None
-    for w in wl:
-        print( f'   warning: {w.message}' )
+    for msg, _ in mc.warnings:
+        print( f'   warning: {msg}' )
     if txt is None:
         return
     lines = txt.splitlines()

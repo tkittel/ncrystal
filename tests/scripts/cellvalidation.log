@@ -21,12 +21,12 @@ Rhombohedral axes with 4.7 4.7 4.7 / 57.3 57.3 58 rejected
 Rhombohedral axes with 4.7 4.7 4.7 / 125 125 125 rejected
 Diamond in origin choice 1: 0 warnings
 Diamond in origin choice 2: 0 warnings
-Diamond with one atom moved by 0.001: ['NCrystal WARNING: Atom positions deviate slightly from the symmetry of space group 227 (largest deviation of a symmetry image from an atom of the same type: 0.001 in fractional coordinates). Assuming the symmetric structure (specify positions with more precision to avoid this warning).']
+Diamond with one atom moved by 0.001: ['Atom positions deviate slightly from the symmetry of space group 227 (largest deviation of a symmetry image from an atom of the same type: 0.001 in fractional coordinates). Assuming the symmetric structure (specify positions with more precision to avoid this warning).']
 Diamond with one atom moved by 0.02: Atom positions are not consistent with space group 227 in any of its settings (largest deviation of a symmetry image from an atom of the same type: 0.02 in fractional coordinates). Either the space group or the positions are wrong.
 P312 structure as SG-149: []
 P312 structure declared as SG-150: Atom positions are not consistent with space group 150 in any of its settings (largest deviation of a symmetry image from an atom of the same type: 0.3 in fractional coordinates). Either the space group or the positions are wrong.
 P2 with 2-fold along c: setting 3:c
 P2 with 2-fold along c and gamma=100: setting 3:c gamma 100.0
-NCrystal WARNING: Split site "O" (0.1,0.005,0.2): 2 symmetry-equivalent positions 0.054 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
 Split site with occupancy 1/2: 3 positions
+  warning: Split site "O" (0.1,0.005,0.2): 2 symmetry-equivalent positions 0.054 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
 Caught expected NCBadInput('At most one of the 2 symmetry-equivalent positions of the site (0.1, 0.005, 0.2) within 0.5 Aa (the closest 0.054 Aa apart) can be occupied, so its occupancy must be at most 1/2 (got 1). For sites on special positions, specify coordinates with sufficient precision, preferably as exact fractions like 1/3.')

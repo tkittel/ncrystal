@@ -379,8 +379,9 @@ def _query( facts, counts, *, physics, nthreads, quiet, progress ):
     ntotal = sum( counts[f] for f in facts )
     extra = ( ( f'nthreads={nthreads}', ) if physics else ('cheap',) )
     data, ndone = [], 0
-    from ._msg import _suppress_msgs_ctx
-    msgctx = _suppress_msgs_ctx() if ( physics and quiet ) else _nullctx()
+    from .msg import MsgCtrl
+    msgctx = ( MsgCtrl( block = ['info','warning','raw'] ) if ( physics and quiet )
+               else _nullctx() )
     with msgctx:
         for f in facts:
             #Smaller chunks if progress reporting is needed:

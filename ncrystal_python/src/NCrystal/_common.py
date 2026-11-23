@@ -21,8 +21,8 @@
 
 """Module with internal utilities used by several NCrystal modules"""
 
-#Common print function for NCrystal modules (allowing one to capture and
-#redirect the output of NCrystal):
+#The print function used for all output of NCrystal (allowing one to capture
+#and redirect it, cf. also print(..) and NCrystal.msg below):
 
 def _builtin_print():
     import builtins
@@ -30,10 +30,6 @@ def _builtin_print():
 
 _stdprint = [_builtin_print()]
 
-def print(*args,**kwargs):
-    _stdprint[0](*args,**kwargs)
-
-#TODO: Overlaps somewhat with the (more complete) _setMsgHandler from _msg.py:
 def set_ncrystal_print_fct( fct ):
     oldfct = _stdprint[0]
     _stdprint[0] = fct or _builtin_print()
@@ -104,50 +100,92 @@ def ncsetenv( name, val ):
     else:
         os.environ[varname] = str(val)
 
-class modify_ncrystal_print_fct_ctxmgr:
-    """Context manager for modifying the print function (for instance to block
-    output temporarily)"""
-    def __init__(self, fct ):
-        if fct == 'block':
-            def fct( *a, **kw ):
-                pass
-        self.__fct = fct
+#Messages: notices via infomsg(..), warnings via warn(..) and raw output via
+#print(..) (the counterparts of NCRYSTAL_MSG, NCRYSTAL_WARN and NCRYSTAL_RAWOUT
+#in C++, whose messages also end up here via _msg.py) are first passed to all
+#active NCrystal.msg.MsgCtrl contexts (which may collect them), and then
+#printed via the print function (with a prefix for notices and warnings), or
+#sent to a logger (cf. NCrystal.msg.use_logging and MsgCtrl).
 
-    def __enter__(self):
-        self.__orig = get_ncrystal_print_fct()
-        set_ncrystal_print_fct( self.__fct )
+_msg_parts = ( 'info', 'warning', 'raw' )
+_msg_global = { 'logger' : None, 'include_raw' : False }
+_msg_default_prefix = { 'info' : 'NCrystal: ', 'warning' : 'NCrystal WARNING: ' }
+_active_msgctrls = []#active MsgCtrl objects, outermost first
 
-    def __exit__(self,*args,**kwargs):
-        set_ncrystal_print_fct( self.__orig )
-        self.__orig = None
-        self.__fct = None
-
-
-class capture_print_ctxmgr:
-    """Context manager for capturing printouts"""
-    def __init__(self ):
-        log = []
-        def printlog(*args, sep=' ', end='\n', file=None, flush=False):
-            log.append( sep.join(str(a) for a in args)
-                        + ('' if end is None else end) )
-        self.__log = log
-        self.__fct = printlog
-    def __enter__(self):
-        self.__orig = get_ncrystal_print_fct()
-        set_ncrystal_print_fct( self.__fct )
-        return self
-    def __exit__(self,*args,**kwargs):
-        set_ncrystal_print_fct( self.__orig )
-        self.__orig = None
-        self.__fct = None
-        return False
-    @property
-    def data(self):
-        return self.__log
+def infomsg(msg):
+    #Emit a notice (printed as "NCrystal: <msg>" by default).
+    _emit( 'info', str(msg) )
 
 def warn(msg):
-    """Emit NCrystalUserWarning via standard warnings.warn function"""
-    _warn_impl( msg, stacklevel = 3 )
+    #Emit a warning (printed as "NCrystal WARNING: <msg>" by default).
+    _emit( 'warning', str(msg) )
+
+def print(*args,**kwargs):
+    #Raw output (like the builtin print, but via the print function of
+    #NCrystal and active MsgCtrl contexts).
+    if not _active_msgctrls and not ( _msg_global['logger']
+                                      and _msg_global['include_raw'] ):
+        _stdprint[0](*args,**kwargs)
+        return
+    sep, end = kwargs.get('sep',' '), kwargs.get('end','\n')
+    text = ( ( ' ' if sep is None else sep ).join( str(a) for a in args )
+             + ( '\n' if end is None else end ) )
+    _emit( 'raw', text, ( args, kwargs ) )
+
+def _emit( part, text, rawcall = None ):
+    ctrls = _active_msgctrls
+    show = True
+    for c in ctrls:
+        if not c._take( part, text, 'NCrystalWarning' ):
+            show = False
+    if not show or any( part in c._block for c in ctrls ):
+        return
+    #Settings of the innermost context which has them:
+    logger, include_raw = _msg_global['logger'], _msg_global['include_raw']
+    prefix = _msg_default_prefix.get( part )
+    for c in ctrls:
+        if c._logger is not None:
+            logger = c._logger or None
+        if c._include_raw is not None:
+            include_raw = c._include_raw
+        if c._prefix.get( part ) is not None:
+            prefix = c._prefix[part]
+    if logger is not None and any( part in c._ignore_logging for c in ctrls ):
+        logger = None
+    if part == 'raw':
+        if logger is not None and include_raw:
+            logger.info( text.removesuffix('\n') )
+        else:
+            args, kwargs = rawcall
+            _stdprint[0]( *args, **kwargs )
+    elif logger is not None:
+        ( logger.info if part == 'info' else logger.warning )( text )
+    else:
+        _stdprint[0]( f'{prefix}{text}' )
+
+def _fmt_pywarning( message, category ):
+    #Python warning as (message,category) strings:
+    catname = None
+    if category is not None:
+        catname = str(getattr(category,'__name__',category)).strip()
+    elif isinstance(message,Warning):
+        catname = str(message.__class__.__name__).strip()
+    if not catname:
+        catname='Warning'
+    return ( ( str(message).strip() or '<no message>'), catname )
+
+_orig_showwarning = [None]
+
+def _msgctrl_showwarning( message, category, *args, **kwargs ):
+    #warnings.showwarning while a MsgCtrl handling warnings is active:
+    msg_str, cat_str = _fmt_pywarning( message, category )
+    ctrls = _active_msgctrls
+    show = True
+    for c in ctrls:
+        if not c._take( 'warning', msg_str, cat_str ):
+            show = False
+    if show and not any( 'warning' in c._block for c in ctrls ):
+        return _orig_showwarning[0]( message, category, *args, **kwargs )
 
 def warn_once(msg):
     """Like warn(..), but only the first time it is called with a given
@@ -173,68 +211,6 @@ def _warn_impl( msg, stacklevel ):
 #Hook to avoid repeated warnings to be silenced during unit tests, by appending
 #a warning number to them:
 _add_warn_counts_to_msgs = [False,0]
-
-class WarningSpy:
-    """Context manager which spies on any warnings emitted via warnings
-    module and returns list of messages and categories.
-
-    It does so by temporarily intercepting the warnings.showwarning
-    function.
-
-    Usage example:
-        with WarningSpy() as warnlist:
-            fct()
-        print( "Warnings emitted:", warnlist )
-    """
-
-    def __init__(self,block=False,blockfct = None):
-        assert not ( bool(block) and blockfct )
-        self.__block = bool(block)
-        self.__blockfct = blockfct
-        self.__state = None
-
-    def __enter__(self):
-        #Make sure we create our own warnings.catch_warnings context
-        #manager. This not only has the advantage of automatically restoring the
-        #global warnings states (including the showwarning and simplefilter
-        #function) upon __exit__, but also means that global warning
-        #suppressions etc. will be temporarily disabled.
-        self.__state = {}
-        s = self.__state
-        import warnings
-        s['warncntxmgr'] = warnings.catch_warnings()
-        s['warncntxmgr'].__enter__()
-        s['orig'] = warnings.showwarning
-        warnings.showwarning = self.__spy
-        warnings.simplefilter("always")
-        s['l'] = []
-        return s['l']
-
-    def __exit__(self,*args,**kwargs):
-        assert self.__state
-        import warnings
-        warnings.showwarning = self.__state['orig']#not strictly needed since next line will also restore it
-        self.__state['warncntxmgr'].__exit__()
-        self.__state = None
-
-    @staticmethod
-    def _fmtwarning( message, category ):
-        catname = None
-        if category is not None:
-            catname = str(getattr(category,'__name__',category)).strip()
-        elif isinstance(message,Warning):
-            catname = str(message.__class__.__name__).strip()
-        if not catname:
-            catname='Warning'
-        return ( ( str(message).strip() or '<no message>'), catname )
-
-    def __spy( self, message, category, *args, **kwargs ):
-        #only store string objects, to decouple lifetimes of more complex objects:
-        msg_str, cat_str = WarningSpy._fmtwarning( message, category )
-        self.__state['l'].append( ( msg_str, cat_str ) )
-        do_block = self.__block or ( self.__blockfct and self.__blockfct(msg_str, cat_str) )
-        if not do_block:
-            return self.__state['orig']( message, category, *args, **kwargs )
 
 def _split_trailing_digit( s ):
     if not s or not s[-1].isdigit():

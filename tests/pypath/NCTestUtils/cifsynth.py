@@ -31,10 +31,10 @@
 # summary is printed. For some files, the material is also created.
 
 import pathlib
-import warnings
 
 import NCrystalDev as NC
 import NCrystalDev.cifutils as nc_cifutils
+from NCrystalDev.msg import MsgCtrl
 
 from .dirs import get_named_test_data_dir
 
@@ -120,14 +120,13 @@ def _errmsg( e ):
     return msg
 
 def _load( f, permissive ):
-    with warnings.catch_warnings( record = True ) as wl:
-        warnings.simplefilter( 'always' )
+    with MsgCtrl( spy = ['warning'], block = ['warning'] ) as mc:
         try:
             lc = nc_cifutils.CIFLoader( f, quiet = True,
                                         permissive = permissive )
         except NC.NCException as e:
             return None, _errmsg( e ), []
-    return lc, None, [ str( w.message ) for w in wl ]
+    return lc, None, [ msg for msg, _ in mc.warnings ]
 
 def _summary( lc ):
     sg = lc.cellsg.get( 'spacegroup', {} )

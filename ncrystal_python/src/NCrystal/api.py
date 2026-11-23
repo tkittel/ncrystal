@@ -44,6 +44,7 @@ from .ncmat import NCMATComposer, formatVectorForNCMAT # noqa F401
 from .plugins import hasFactory, browsePlugins # noqa F401
 from ._testimpl import * # noqa: F403
 from .vdos import createVDOSDebye, debyeIsotropicMSD, PhononDOSAnalyser, debyeTempFromIsotropicMSD, analyseVDOS # noqa F401
+from .msg import use_logging # noqa F401
 
 #Some modules are left out on purpose (due to esoteric usage or non-standard
 #dependencies that most users might not need):

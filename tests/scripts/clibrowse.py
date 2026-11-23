@@ -25,7 +25,7 @@
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
 import NCrystalDev.cli as nc_cli
-from NCrystalDev._common import capture_print_ctxmgr
+from NCrystalDev.msg import MsgCtrl
 from NCTestUtils.common import ensure_error
 import os
 import shlex
@@ -74,9 +74,9 @@ _ncmat_crystal = """NCMAT v7
 
 def run( *args, show = True ):
     print(f"============= CLI >>browse {shlex.join(args)}<< =============")
-    with capture_print_ctxmgr() as cap:
+    with MsgCtrl( spy = ['raw'], block = ['raw'] ) as cap:
         nc_cli.run('browse',*args)
-    out = ''.join(cap.data)
+    out = ''.join(cap.raw)
     out = out.replace('\x1b','<ESC>')#make color codes visible in log
     if show:
         print(out,end='')

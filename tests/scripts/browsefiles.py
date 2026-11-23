@@ -24,7 +24,7 @@ import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
 import contextlib
 import io
-from NCrystalDev._common import capture_print_ctxmgr
+from NCrystalDev.msg import MsgCtrl
 
 #Testing presence of data "files", as well as their sorting.
 
@@ -67,8 +67,8 @@ else:
 
 #browseFiles(dump=True) must use the (redirectable) NCrystal print:
 _leaked = io.StringIO()
-with contextlib.redirect_stdout(_leaked), capture_print_ctxmgr() as _cap:
+with contextlib.redirect_stdout(_leaked), MsgCtrl( spy = ['raw'], block = ['raw'] ) as _cap:
     NC.browseFiles(dump=True,factory='stdlib')
 assert not _leaked.getvalue(), 'output bypassed NCrystal print'
-assert _cap.data and _cap.data[0].startswith('==> ')
+assert _cap.raw and _cap.raw[0].startswith('==> ')
 print('browseFiles(dump=True) output redirected OK')

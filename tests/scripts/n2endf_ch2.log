@@ -6,9 +6,9 @@
  'force': True,
  'material_name': 'CH2',
  'ncmat_cfg': 'Polyethylene_CH2.ncmat;vdoslux=1'}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#1]
+NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 Initialise nuclear data...
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): ENDF output will not contain a Bragg diffraction component [warn#2]
+NCrystal WARNING: ENDF output will not contain a Bragg diffraction component
 Write ENDF file tsl_H_in_CH2.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 38, 'TAPEDESCR': 'Created with ncmat2endf'}}

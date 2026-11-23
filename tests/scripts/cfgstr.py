@@ -64,12 +64,13 @@ def test_print_redirection():
     import contextlib
     import io
 
-    from NCrystalDev._common import capture_print_ctxmgr
+    from NCrystalDev.msg import MsgCtrl
     leaked = io.StringIO()
-    with contextlib.redirect_stdout(leaked), capture_print_ctxmgr() as cap:
+    with contextlib.redirect_stdout(leaked), MsgCtrl( spy = ['raw'],
+                                                      block = ['raw'] ) as cap:
         nc_cfgstr.generateCfgStrDoc('print')
     assert not leaked.getvalue(), 'output bypassed NCrystal print'
-    assert ''.join(cap.data) == nc_cfgstr.generateCfgStrDoc('txt_full') + '\n'
+    assert ''.join(cap.raw) == nc_cfgstr.generateCfgStrDoc('txt_full') + '\n'
     print('generateCfgStrDoc("print") output redirected OK')
 
 def test_type_erasure():
