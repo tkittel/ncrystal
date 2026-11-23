@@ -186,7 +186,7 @@ ueq in cell 5.0(1),5.4(2),6.0(1),90,95.0(3),90 : [0.0118932, 5.35699e-05]
 ueq in cell 5.0(1),5.4(2),6.0(1),90.0(1),95.0(3),90 : [0.0118932, 5.41477e-05]
 
 >>> Sending query: ['cif', 'list']
-['numbers', 'elements']
+['numbers', 'elements', 'uniquestructprov']
 
 >>> Sending query: ['cif', 'numbers', 'RAWDATA', '@0.0283@2344@1.234e-2(6)@3400e-6@-0.000@0@0.000(2)@?@.@1,5@1.2(3)e-4@1e999']
 [[0.0283, 5e-05],
@@ -254,6 +254,84 @@ Caught expected NCBadInput('Invalid cif query: ["cif","elements","typesymbol","R
 Caught expected NCBadInput('Invalid cif query: ["cif","numbers","1.0"] (correct usage: ["cif","numbers","RAWDATA",LIST])')
 Caught expected NCBadInput('Invalid cif query: ["cif","numbers","RAWDATA",""] (correct usage: ["cif","numbers","RAWDATA",LIST])')
 Caught expected NCBadInput('Invalid cif query: ["cif","bla"] (unknown key)')
+
+>>> Sending query: ['cif', 'uniquestructprov', 'permissive', 'RAWDATA', 'q.cif', 'RAWDATA', "data_info\\n_journal_name_full 'From data_info'\\ndata_s\\n_cell_length_a 4.05(1)\\n_cell_length_b 4.05(1)\\n_cell_length_c 4.05(1)\\n_cell_angle_beta 90.0\\n_space_group_name_H-M_alt 'F m -3 m'\\n_symmetry_space_group_name_H-M 'F m 3 m'\\n_space_group_IT_number 225\\n_chemical_formula_sum 'Al'\\nloop_\\n_atom_site_label\\n_atom_site_type_symbol\\n_atom_site_fract_x\\n_atom_site_fract_y\\n_atom_site_fract_z\\n_atom_site_U_iso_or_equiv\\nAl1 Al 0 0 0 ?\\nAl2 Al 0.5 0.5 0.5 0.01\\nloop_\\n_atom_site_aniso_label\\n_atom_site_aniso_U_11\\n_atom_site_aniso_U_22\\n_atom_site_aniso_U_33\\n_atom_site_aniso_U_12\\n_atom_site_aniso_U_13\\n_atom_site_aniso_U_23\\nAl1 ? ? ? ? ? ?\\nAl2 0.01 0.01 0.01 0 0 0\\n_publ_section_title 'A title'\\nloop_ _publ_author_name 'Doe, J.' 'Roe, R.'\\n_cod_database_code 1234567\\n"]
+NCrystal WARNING: Ignoring anisotropic displacements of "Al1" in CIF data in "q.cif" (data_s, line 29), which are all "?" or "."
+{'block': 's',
+ 'block_line': 3,
+ 'provenance': {'_cod_database_code': ['1234567', 33],
+                '_journal_name_full': ['From data_info', 2],
+                '_publ_author_name': [['Doe, J.', 32], ['Roe, R.', 32]],
+                '_publ_section_title': ['A title', 31]},
+ 'provenance_block': 'info',
+ 'structure': {'_cell_angle_alpha': ['90', 0],
+               '_cell_angle_beta': ['90.0', 7],
+               '_cell_angle_gamma': ['90', 0],
+               '_cell_length_a': ['4.05(1)', 4],
+               '_cell_length_b': ['4.05(1)', 5],
+               '_cell_length_c': ['4.05(1)', 6],
+               '_chemical_formula_sum': ['Al', 11],
+               'atom_site': {'_atom_site_U_iso_or_equiv': [None, ['0.01', 20]],
+                             '_atom_site_fract_x': [['0', 19], ['0.5', 20]],
+                             '_atom_site_fract_y': [['0', 19], ['0.5', 20]],
+                             '_atom_site_fract_z': [['0', 19], ['0.5', 20]],
+                             '_atom_site_label': [['Al1', 19], ['Al2', 20]],
+                             '_atom_site_type_symbol': [['Al', 19],
+                                                        ['Al', 20]]},
+               'atom_site_aniso': {'_atom_site_aniso_U_11': [['0.01', 30]],
+                                   '_atom_site_aniso_U_12': [['0', 30]],
+                                   '_atom_site_aniso_U_13': [['0', 30]],
+                                   '_atom_site_aniso_U_22': [['0.01', 30]],
+                                   '_atom_site_aniso_U_23': [['0', 30]],
+                                   '_atom_site_aniso_U_33': [['0.01', 30]],
+                                   '_atom_site_aniso_label': [['Al2', 30]],
+                                   'form': 'U'},
+               'symmetry': {'hall': [],
+                            'hm': [{'tag': '_space_group_name_H-M_alt',
+                                    'value': ['F m -3 m', 8]},
+                                   {'tag': '_symmetry_space_group_name_H-M',
+                                    'value': ['F m 3 m', 9]}],
+                            'number': [{'tag': '_space_group_IT_number',
+                                        'value': ['225', 10]}],
+                            'operations': []}}}
+Caught expected NCBadInput('Invalid CIF data in "q.cif" (data_s, line 29): anisotropic displacements of "Al1" are all "?" or ".". Use permissive mode to ignore such entries.')
+Caught expected NCBadInput('Invalid CIF data in "raw CIF data" (data_s, line 29): anisotropic displacements of "Al1" are all "?" or ".". Use permissive mode to ignore such entries.')
+
+>>> Sending query: ['cif', 'uniquestructprov', 'strict', 'query_test.cif']
+{'block': 'x',
+ 'block_line': 1,
+ 'provenance': None,
+ 'provenance_block': None,
+ 'structure': {'_cell_angle_alpha': ['90', 0],
+               '_cell_angle_beta': ['90', 0],
+               '_cell_angle_gamma': ['90', 0],
+               '_cell_length_a': ['3', 2],
+               '_cell_length_b': ['3', 3],
+               '_cell_length_c': ['3', 4],
+               'atom_site': {'_atom_site_fract_x': [['0', 6]],
+                             '_atom_site_fract_y': [['0', 7]],
+                             '_atom_site_fract_z': [['0', 8]],
+                             '_atom_site_label': [['Fe1', 5]]},
+               'symmetry': {'hall': [],
+                            'hm': [],
+                            'number': [],
+                            'operations': []}}}
+cif_globalblock.cif: block I provenance_block global
+{'_audit_creation_method': ['TESTXL-1 CIF writer, edited test template', 15],
+ '_journal_name_full': ['Journal of Synthetic Test Data, Section T', 234],
+ '_journal_year': ['2009', 235],
+ '_publ_author_name': [['Tester, Alpha', 263], ['Example, Beta', 271]],
+ '_publ_section_title': ['Synthetic test structure of '
+                         'K~2~[HPO~4~]\\\\cdotH~2~O with the publication\n'
+                         'data in a separate block',
+                         255]}
+Caught expected NCBadInput('Invalid cif query: ["cif","uniquestructprov"] (correct usage: ["cif","uniquestructprov",PERMISSIVE,NAME] or ["cif","uniquestructprov",PERMISSIVE,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive")')
+Caught expected NCBadInput('Invalid cif query: ["cif","uniquestructprov","strict"] (correct usage: ["cif","uniquestructprov",PERMISSIVE,NAME] or ["cif","uniquestructprov",PERMISSIVE,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive")')
+Caught expected NCBadInput('Invalid cif query: ["cif","uniquestructprov","1","x.cif"] (correct usage: ["cif","uniquestructprov",PERMISSIVE,NAME] or ["cif","uniquestructprov",PERMISSIVE,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive")')
+Caught expected NCBadInput('Invalid cif query: ["cif","uniquestructprov","strict","RAWDATA"] (correct usage: ["cif","uniquestructprov",PERMISSIVE,NAME] or ["cif","uniquestructprov",PERMISSIVE,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive")')
+Caught expected NCBadInput('Invalid cif query: ["cif","uniquestructprov","strict","RAWDATA","x"] (correct usage: ["cif","uniquestructprov",PERMISSIVE,NAME] or ["cif","uniquestructprov",PERMISSIVE,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive")')
+Caught expected NCBadInput('Invalid cif query: ["cif","uniquestructprov","strict","RAWDATA","n","x","y"] (correct usage: ["cif","uniquestructprov",PERMISSIVE,NAME] or ["cif","uniquestructprov",PERMISSIVE,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive")')
+Caught expected NCBadInput('Invalid cif query: ["cif","uniquestructprov","strict","x","y"] (correct usage: ["cif","uniquestructprov",PERMISSIVE,NAME] or ["cif","uniquestructprov",PERMISSIVE,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive")')
 ============= CLI >>test wl2ekin 1.8<< ====================
 0.025248213035
 ===========================================
