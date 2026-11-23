@@ -1,3 +1,19 @@
+SV("_Cell_Length_A").compareUncased("_cell_length_a") = 0
+SV("abc").compareUncased("ABC") = 0
+SV("").compareUncased("") = 0
+SV("a").compareUncased("") = >0
+SV("ab").compareUncased("ABC") = <0
+SV("abd").compareUncased("ABC") = >0
+SV("A").compareUncased("_") = >0
+SV("[").compareUncased("z") = <0
+SV("@").compareUncased("`") = <0
+SV("_ATOM_SITE_label").startswithUncased("_atom_site_") = 1
+SV("_atom_site_label").startswithUncased("_Atom_Site_") = 1
+SV("abc").startswithUncased("") = 1
+SV("").startswithUncased("") = 1
+SV("_atom_sit").startswithUncased("_atom_site_") = 0
+SV("_atom_sites").startswithUncased("_atom_site_") = 0
+SV("").startswithUncased("a") = 0
 test str lit
 test std::string
 test std::string.c_str()

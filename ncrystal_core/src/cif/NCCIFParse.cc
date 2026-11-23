@@ -53,29 +53,6 @@ namespace NCRYSTAL_NAMESPACE {
         return std::string( "0x" ) + hex[u / 16] + hex[u % 16];
       }
 
-      inline char lowerASCII( char c )
-      {
-        return ( c >= 'A' && c <= 'Z' ) ? char( c - 'A' + 'a' ) : c;
-      }
-
-      int ciCompare( StrView a, StrView b )
-      {
-        const std::size_t n = std::min( a.size(), b.size() );
-        for ( std::size_t i = 0; i < n; ++i ) {
-          auto ca = static_cast<unsigned char>( lowerASCII( a[i] ) );
-          auto cb = static_cast<unsigned char>( lowerASCII( b[i] ) );
-          if ( ca != cb )
-            return ca < cb ? -1 : 1;
-        }
-        return a.size() == b.size() ? 0 : ( a.size() < b.size() ? -1 : 1 );
-      }
-
-      bool ciStartsWith( StrView s, StrView prefix )
-      {
-        return ( s.size() >= prefix.size()
-                 && ciCompare( s.substr( 0, prefix.size() ), prefix ) == 0 );
-      }
-
       //Sort indices of named objects case-insensitively (ties in index
       //order), and return the pair of equal names whose second has the
       //lowest index, if any:
@@ -86,14 +63,14 @@ namespace NCRYSTAL_NAMESPACE {
       {
         std::sort( b, e, [&getName]( std::uint32_t i, std::uint32_t j )
         {
-          const int c = ciCompare( getName( i ), getName( j ) );
+          const int c = getName( i ).compareUncased( getName( j ) );
           return c == 0 ? i < j : c < 0;
         } );
         Optional<std::pair<std::uint32_t,std::uint32_t>> res;
         for ( auto it = b; it != e && std::next( it ) != e; ++it ) {
           const auto i = *it;
           const auto j = *std::next( it );
-          if ( ciCompare( getName( i ), getName( j ) ) == 0
+          if ( getName( i ).compareUncased( getName( j ) ) == 0
                && ( !res.has_value() || j < res.value().second ) )
             res.emplace( i, j );
         }
@@ -420,7 +397,7 @@ NCC::Document::Parser::Token NCC::Document::Parser::lexWord()
                    + c + "\"" );
   //Reserved words (CIF 1.1 syntax, paragraphs 11 and 57; "data_" and
   //"save_" as prefixes):
-  if ( ciStartsWith( w, "data_" ) ) {
+  if ( w.startswithUncased( "data_" ) ) {
     if ( extra )
       throwBadByte( m_line, w );
     t.type = TokType::Data;
@@ -432,13 +409,13 @@ NCC::Document::Parser::Token NCC::Document::Parser::lexWord()
       throwBadInput( m_line, "block name longer than 75 characters" );
     return t;
   }
-  if ( ciStartsWith( w, "save_" ) )
+  if ( w.startswithUncased( "save_" ) )
     t.type = TokType::Save;
-  else if ( ciCompare( w, "loop_" ) == 0 )
+  else if ( w.compareUncased( "loop_" ) == 0 )
     t.type = TokType::Loop;
-  else if ( ciCompare( w, "global_" ) == 0 )
+  else if ( w.compareUncased( "global_" ) == 0 )
     t.type = TokType::Global;
-  else if ( ciCompare( w, "stop_" ) == 0 )
+  else if ( w.compareUncased( "stop_" ) == 0 )
     t.type = TokType::Stop;
   if ( t.type != TokType::Value )
     return t;
@@ -455,7 +432,7 @@ bool NCC::Document::Parser::storeValues( StrView tag ) const
   if ( !m_filterPrefixes.has_value() )
     return true;
   for ( auto& p : m_filterPrefixes.value() )
-    if ( ciStartsWith( tag, p ) )
+    if ( tag.startswithUncased( p ) )
       return true;
   return false;
 }
@@ -554,7 +531,7 @@ void NCC::Document::Parser::addMPNoteFallback()
   auto& d = m_doc;
   const auto& b = d.m_blocks.back();
   for ( auto i : ncrange( b.tagBegin, u32( d.m_tags.size(), m_line ) ) )
-    if ( ciCompare( vectAt( d.m_tags, i ).name, s_mpTag ) == 0 )
+    if ( vectAt( d.m_tags, i ).name.compareUncased( s_mpTag ) == 0 )
       return;
   const auto& raw = d.m_data->rawData();
   const StrView all( raw.begin(), raw.end() - raw.begin() );
@@ -722,9 +699,10 @@ NC::Optional<std::uint32_t> NCC::BlockView::findTag( StrView tag ) const
   auto le = lb + b.nTags;
   auto it = std::lower_bound( lb, le, tag, [&d]( std::uint32_t i, StrView key )
   {
-    return ciCompare( vectAt( d.m_tags, i ).name, key ) < 0;
+    return vectAt( d.m_tags, i ).name.compareUncased( key ) < 0;
   } );
-  if ( it == le || ciCompare( vectAt( d.m_tags, *it ).name, tag ) != 0 )
+  if ( it == le
+       || vectAt( d.m_tags, *it ).name.compareUncased( tag ) != 0 )
     return NullOpt;
   return *it;
 }
@@ -766,8 +744,8 @@ NC::Optional<std::size_t> NCC::LoopView::column( StrView tag ) const
 {
   const auto& it = vectAt( m_doc->m_items, m_item );
   for ( auto i : ncrange( it.nTags ) )
-    if ( ciCompare( vectAt( m_doc->m_tags, it.tagBegin + i ).name,
-                    tag ) == 0 )
+    if ( vectAt( m_doc->m_tags, it.tagBegin + i ).name
+         .compareUncased( tag ) == 0 )
       return std::size_t( i );
   return NullOpt;
 }
@@ -778,9 +756,10 @@ NC::Optional<NCC::BlockView> NCC::Document::findBlock( StrView name ) const
   auto it = std::lower_bound( m_blockLookup.begin(), le, name,
                               [this]( std::uint32_t i, StrView key )
   {
-    return ciCompare( vectAt( m_blocks, i ).name, key ) < 0;
+    return vectAt( m_blocks, i ).name.compareUncased( key ) < 0;
   } );
-  if ( it == le || ciCompare( vectAt( m_blocks, *it ).name, name ) != 0 )
+  if ( it == le
+       || vectAt( m_blocks, *it ).name.compareUncased( name ) != 0 )
     return NullOpt;
   return BlockView( this, *it );
 }

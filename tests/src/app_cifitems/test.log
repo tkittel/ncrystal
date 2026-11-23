@@ -1,0 +1,525 @@
+==== Structure ====
+minimal (absent angles):
+  (block data_min)
+  cell: [4]@2 [4]@3 [4]@4 [90]@0 [90]@0 [90]@0
+  sites: label [Al1]@10 [O1]@11
+    x [0]@10 [0.25]@11
+    y [0]@10 [0.25]@11
+    z [0]@10 [0.25]@11
+    type -
+    uiso -
+    biso -
+    occ -
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance: none
+full:
+  (block data_full)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@27 [O1]@28
+    x [0]@27 [0.25]@28
+    y [0]@27 [0.25]@28
+    z [0]@27 [0.25]@28
+    type [Al3+]@27 [O2-]@28
+    uiso [0.01(1)]@27 [?]@28
+    biso -
+    occ [1]@27 [.]@28
+  operations: _space_group_symop_operation_xyz=[x,y,z]@13 [-x,-y,-z]@13 | _symmetry_equiv_pos_as_xyz=[x, y, z]@14 [-x, -y, -z]@14
+  hm: _space_group_name_H-M_alt=[P 63/m m c]@8
+  hall: _symmetry_space_group_name_Hall=[-P 6c 2c]@12
+  number: _space_group_IT_number=[194]@10 | _symmetry_Int_Tables_number=[149]@11
+  formula: [Al O]@15
+  atom type numbers: [2]@18 [2]@18
+  temperatures: [293(2)]@16 -
+ provenance:
+  (block data_full, other block -)
+  title: _publ_section_title=[A title]@30
+  authors: _publ_author_name=[Doe, J.]@33 [Roe, R.]@33
+  journal: _journal_name_full=[J. Test]@34
+  year: _journal_year=[2001]@35
+  doi: _journal_paper_doi=[10.1000/x]@36
+  cod: [1234567]@37
+  mp: [mp-149]@41
+  audit: [by hand]@38 [2020-01-01]@39 -
+  original formula: [Al2 O2]@40
+single site (no loop), same symmetry operations in both tags:
+  (block data_one)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Fe]@8
+    x [0]@9
+    y [0]@10
+    z [1/2]@11
+    type -
+    uiso -
+    biso -
+    occ -
+  operations: _space_group_symop_operation_xyz=[x,y,z]@12
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance: none
+only deprecated symmetry tags:
+  (block data_dep)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  operations: _symmetry_equiv_pos_as_xyz=[x,y,z]@17
+  hm: _symmetry_space_group_name_H-M=[P 1]@15
+  hall: -
+  number: _symmetry_Int_Tables_number=[1]@16
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance: none
+==== Aniso ====
+U:
+  (block data_u)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  aniso (U): label [O1]@23
+    [1]@23
+    [2]@23
+    [3]@23
+    [4]@23
+    [5]@23
+    [6]@23
+    skipped rows:
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance: none
+B in the loop of the sites:
+NCrystal WARNING: Ignoring anisotropic displacements of "O1" in CIF data in "test.cif" (data_b, line 20), which are all "?" or "."
+  (block data_b)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@19 [O1]@20
+    x [0]@19 [0.5]@20
+    y [0]@19 [0.5]@20
+    z [0]@19 [0.5]@20
+    type -
+    uiso -
+    biso -
+    occ -
+  aniso (B): label [Al1]@19 [O1]@20
+    [1]@19 [?]@20
+    [1]@19 [?]@20
+    [1]@19 [?]@20
+    [0]@19 [?]@20
+    [0]@19 [?]@20
+    [0]@19 [?]@20
+    skipped rows: 1
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance: none
+all unknown (strict): Caught expected BadInput(Invalid CIF data in "test.cif" (data_n, line 24): anisotropic displacements of "O1" are all "?" or ".". Use permissive mode to ignore such entries.)
+all unknown (permissive):
+NCrystal WARNING: Ignoring anisotropic displacements of "O1" in CIF data in "test.cif" (data_n, line 24), which are all "?" or "."
+  (block data_n)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  aniso (U): label [Al1]@23 [O1]@24
+    [1]@23 [?]@24
+    [2]@23 [.]@24
+    [3]@23 [?]@24
+    [4]@23 [?]@24
+    [5]@23 [?]@24
+    [6]@23 [?]@24
+    skipped rows: 1
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance: none
+unknown label: Caught expected BadInput(Invalid CIF data in "test.cif" (data_x, line 23): the label "Al2" of anisotropic displacements is not the label of a site)
+missing component (strict): Caught expected BadInput(Invalid CIF data in "test.cif" (data_x): anisotropic displacements lack the tag _atom_site_aniso_U_11. Use permissive mode to ignore the anisotropic displacements.)
+missing component (permissive):
+NCrystal WARNING: Ignoring the anisotropic displacements in CIF data in "test.cif" (data_x), which lack the tag _atom_site_aniso_U_11
+  (block data_x)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance: none
+beta: Caught expected BadInput(Invalid CIF data in "test.cif" (data_x, line 15): anisotropic displacements given as beta (tag _atom_site_aniso_beta_11) are not supported)
+U and B: Caught expected BadInput(Invalid CIF data in "test.cif" (data_x, line 24): anisotropic displacements given both as U and as B)
+no aniso label (strict): Caught expected BadInput(Invalid CIF data in "test.cif" (data_x): anisotropic displacements lack the tag _atom_site_aniso_label. Use permissive mode to ignore the anisotropic displacements.)
+no aniso label (permissive):
+NCrystal WARNING: Ignoring the anisotropic displacements in CIF data in "test.cif" (data_x), which lack the tag _atom_site_aniso_label
+  (block data_x)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance: none
+==== Errors ====
+no structure: Caught expected BadInput(Invalid CIF data in "test.cif": no data block has a crystal structure (tags _atom_site_...))
+two structures: Caught expected BadInput(Invalid CIF data in "test.cif": several data blocks have a crystal structure (data_a, data_b))
+broken second structure: Caught expected BadInput(Invalid CIF data in "test.cif" (data_b): missing tag _cell_length_a)
+missing cell length: Caught expected BadInput(Invalid CIF data in "test.cif" (data_a): missing tag _cell_length_c)
+unknown cell length: Caught expected BadInput(Invalid CIF data in "test.cif" (data_a, line 2): tag _cell_length_a must have a single value which is not "?" or ".")
+unknown cell angle: Caught expected BadInput(Invalid CIF data in "test.cif" (data_a, line 5): tag _cell_angle_beta must have a single value which is not "?" or ".")
+cell length in a loop: Caught expected BadInput(Invalid CIF data in "test.cif" (data_a, line 4): tag _cell_length_a must have a single value which is not "?" or ".")
+missing coordinate: Caught expected BadInput(Invalid CIF data in "test.cif" (data_a): missing tag _atom_site_fract_z)
+unknown coordinate: Caught expected BadInput(Invalid CIF data in "test.cif" (data_a, line 8): tag _atom_site_fract_y has a value "?" or ".")
+column in another loop: Caught expected BadInput(Invalid CIF data in "test.cif" (data_a, line 15): tag _atom_site_occupancy must be in the same loop as _atom_site_label)
+symmetry symbol in a loop: Caught expected BadInput(Invalid CIF data in "test.cif" (data_a, line 15): tag _space_group_name_Hall must have a single value)
+==== Provenance ====
+primary citation fallback:
+  (block data_c)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance:
+  (block data_c, other block -)
+  title: _citation_title=[Primary title]@23
+  authors: _citation_author_name=[Prim, A.]@25 [Prim, B.]@25
+  journal: _journal_name_full=[J. Publ.]@26
+  year: _citation_year=[1999]@23
+  doi: _citation_doi=[10.1/primary]@23
+  cod: -
+  mp: -
+  audit: - - -
+  original formula: -
+no primary citation:
+  (block data_c)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance: none
+no provenance:
+  (block data_n)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance: none
+several values:
+NCrystal WARNING: Ignoring _journal_year in CIF data in "test.cif" (data_c, line 15), which has several values
+  (block data_c)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance:
+  (block data_c, other block -)
+  title: -
+  authors: -
+  journal: _journal_name_full=[J. X]@16
+  year: -
+  doi: -
+  cod: -
+  mp: -
+  audit: - - -
+  original formula: -
+provenance only:
+  (block data_p, other block -)
+  title: -
+  authors: -
+  journal: -
+  year: _journal_year=[2000]@1
+  doi: -
+  cod: -
+  mp: -
+  audit: - - -
+  original formula: -
+==== Provenance from another block ====
+cif_globalblock.cif:
+  (block data_I)
+  cell: [6.1234(3)]@36 [11.4321(6)]@37 [7.8765(4)]@38 [90.00]@39 [104.321(2)]@40 [90.00]@41
+  sites: label [K1]@159 [K2]@160 [P1]@161 [O1]@162 [O2]@163 [O3]@164 [O4]@165 [O1W]@166 [H4]@167 [H1W]@168 [H2W]@169
+    x [0.12345(6)]@159 [0.65432(6)]@160 [0.23456(7)]@161 [0.3456(2)]@162 [0.0123(2)]@163 [0.4123(2)]@164 [0.1987(2)]@165 [0.7654(2)]@166 [0.12(4)]@167 [0.78(4)]@168 [0.88(3)]@169
+    y [0.43210(3)]@159 [-0.12345(3)]@160 [0.15678(4)]@161 [0.24567(11)]@162 [0.08765(11)]@163 [0.07654(11)]@164 [0.23456(11)]@165 [0.38765(12)]@166 [0.276(2)]@167 [0.341(2)]@168 [0.412(2)]@169
+    z [0.23456(5)]@159 [0.34567(5)]@160 [0.45678(6)]@161 [0.6123(2)]@162 [0.4567(2)]@163 [0.3987(2)]@164 [0.2876(2)]@165 [0.0987(2)]@166 [0.31(3)]@167 [0.02(3)]@168 [0.13(3)]@169
+    type [K]@159 [K]@160 [P]@161 [O]@162 [O]@163 [O]@164 [O]@165 [O]@166 [H]@167 [H]@168 [H]@169
+    uiso [0.01234(10)]@159 [0.01345(10)]@160 [0.00987(11)]@161 [0.0145(3)]@162 [0.0156(3)]@163 [0.0167(3)]@164 [0.0178(3)]@165 [0.0201(3)]@166 [0.030(7)]@167 [0.035(7)]@168 [0.036(7)]@169
+    biso -
+    occ [1]@159 [1]@160 [1]@161 [1]@162 [1]@163 [1]@164 [1]@165 [1]@166 [1]@167 [1]@168 [1]@169
+  aniso (U): label [K1]@178 [K2]@179 [P1]@180 [O1]@181 [O2]@182 [O3]@183 [O4]@184 [O1W]@185
+    [0.0123(2)]@178 [0.0134(2)]@179 [0.0098(2)]@180 [0.0144(7)]@181 [0.0155(7)]@182 [0.0166(7)]@183 [0.0177(7)]@184 [0.0200(8)]@185
+    [0.0121(2)]@178 [0.0132(2)]@179 [0.0096(2)]@180 [0.0142(7)]@181 [0.0153(7)]@182 [0.0164(7)]@183 [0.0175(7)]@184 [0.0198(8)]@185
+    [0.0127(2)]@178 [0.0138(2)]@179 [0.0103(2)]@180 [0.0149(7)]@181 [0.0161(7)]@182 [0.0172(7)]@183 [0.0183(7)]@184 [0.0206(8)]@185
+    [-0.00012(14)]@178 [0.00023(14)]@179 [0.00011(16)]@180 [-0.0012(5)]@181 [0.0013(5)]@182 [-0.0014(5)]@183 [0.0015(6)]@184 [0.0016(6)]@185
+    [0.00321(15)]@178 [0.00412(15)]@179 [0.00234(17)]@180 [0.0034(6)]@181 [0.0045(6)]@182 [0.0056(6)]@183 [0.0067(6)]@184 [0.0078(6)]@185
+    [0.00045(14)]@178 [-0.00034(14)]@179 [-0.00023(16)]@180 [-0.0023(5)]@181 [0.0011(5)]@182 [0.0012(5)]@183 [-0.0013(5)]@184 [0.0014(6)]@185
+    skipped rows:
+  operations: _symmetry_equiv_pos_as_xyz=[x, y, z]@32 [-x, y+1/2, -z+1/2]@33 [-x, -y, -z]@34 [x, -y-1/2, z-1/2]@35
+  hm: _symmetry_space_group_name_H-M=[P 1 21/c 1]@28
+  hall: _symmetry_space_group_name_Hall=[-P 2ybc]@29
+  number: -
+  formula: [H3 K2 O5 P]@23
+  atom type numbers: -
+  temperatures: [123(2)]@70 [123(2)]@47
+ provenance:
+  (block data_I, other block data_global)
+  title: _publ_section_title=[Synthetic test structure of K~2~[HPO~4~]\\cdotH~2~O with the publication
+data in a separate block]@255
+  authors: _publ_author_name=[Tester, Alpha]@263 [Example, Beta]@271
+  journal: _journal_name_full=[Journal of Synthetic Test Data, Section T]@234
+  year: _journal_year=[2009]@235
+  doi: -
+  cod: -
+  mp: -
+  audit: [TESTXL-1 CIF writer, edited test template]@15 - -
+  original formula: -
+cif_globalblock_two.cif: Caught expected BadInput(Invalid CIF data in "cif_globalblock_two.cif": several data blocks have a crystal structure (data_I, data_II))
+structure block items first:
+  (block data_s)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance:
+  (block data_s, other block data_g)
+  title: -
+  authors: -
+  journal: -
+  year: _journal_year=[2000]@18
+  doi: -
+  cod: -
+  mp: -
+  audit: [by hand]@15 - -
+  original formula: -
+no structure block provenance:
+  (block data_s)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance:
+  (block data_s, other block data_g)
+  title: -
+  authors: -
+  journal: -
+  year: _journal_year=[2000]@16
+  doi: -
+  cod: -
+  mp: -
+  audit: - - -
+  original formula: -
+two other blocks (not used):
+  (block data_s)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance:
+  (block data_s, other block -)
+  title: -
+  authors: -
+  journal: -
+  year: -
+  doi: -
+  cod: -
+  mp: -
+  audit: [by hand]@15 - -
+  original formula: -
+other block without usable items is ignored:
+  (block data_s)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance:
+  (block data_s, other block data_g)
+  title: -
+  authors: -
+  journal: -
+  year: _journal_year=[2000]@17
+  doi: -
+  cod: -
+  mp: -
+  audit: [by hand]@15 - -
+  original formula: -
+other block items all present already:
+  (block data_s)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance:
+  (block data_s, other block -)
+  title: -
+  authors: -
+  journal: -
+  year: -
+  doi: -
+  cod: -
+  mp: -
+  audit: [by hand]@15 - -
+  original formula: -
+==== Block access ====
+Caught expected LogicError(CIF items used with a Document other than the one they were extracted from)

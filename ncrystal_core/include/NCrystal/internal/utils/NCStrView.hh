@@ -167,6 +167,12 @@ namespace NCRYSTAL_NAMESPACE {
     bool startswith( char ) const;
     bool endswith( char ) const;
 
+    //Ignoring the case of ASCII letters (e.g. for CIF tags): three-way
+    //comparison (negative, zero or positive, ordering as if all letters were
+    //lower case) and prefix test:
+    int compareUncased( StrView ) const noexcept;
+    bool startswithUncased( StrView ) const noexcept;
+
     //find/contains/contains_any functionality. Note that contains_any or
     //find_first_of are not as efficient as for std::string since we have to
     //implement it without the otherwise efficient std::strpbrk, which expects a
@@ -385,6 +391,31 @@ namespace NCRYSTAL_NAMESPACE {
     nc_assert(o.m_data);
     nc_assert(o.m_size);
     return o.m_size <= m_size && std::memcmp( m_data + (m_size - o.m_size), o.m_data, o.m_size ) == 0;
+  }
+
+  inline int StrView::compareUncased( StrView o ) const noexcept
+  {
+    auto lower = []( char c )
+    {
+      return static_cast<unsigned char>( ( c >= 'A' && c <= 'Z' )
+                                         ? c - 'A' + 'a' : c );
+    };
+    const std::size_t n = ( m_size < o.m_size ? m_size : o.m_size );
+    for ( std::size_t i = 0; i < n; ++i ) {
+      if ( m_data[i] == o.m_data[i] )
+        continue;
+      const auto a = lower( m_data[i] );
+      const auto b = lower( o.m_data[i] );
+      if ( a != b )
+        return a < b ? -1 : 1;
+    }
+    return m_size == o.m_size ? 0 : ( m_size < o.m_size ? -1 : 1 );
+  }
+
+  inline bool StrView::startswithUncased( StrView o ) const noexcept
+  {
+    return ( o.m_size <= m_size
+             && StrView( m_data, o.m_size ).compareUncased( o ) == 0 );
   }
 
   inline bool StrView::startswith( char ch ) const
