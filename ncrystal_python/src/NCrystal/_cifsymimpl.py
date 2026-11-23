@@ -33,7 +33,7 @@ from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
 from ._cifreadimpl import CIFContent
 
-_rawargs = _nc_sgsymimpl._rawargs
+_rawlist = _nc_sgsymimpl._rawlist
 
 
 def _query( *args ):
@@ -49,8 +49,8 @@ def snapped_cell( setting, cell ):
     #Returns the sgsym cell query result ({'cell':..,'error_msg':..}) for the
     #cell (dict of printed values) in the setting, with lenient tolerances.
     return _query( 'sgsym', 'cell', 'lenient', '0', setting,
-                   *_rawargs( cell[k] for k in ( 'a', 'b', 'c',
-                                                 'alpha', 'beta', 'gamma' ) ) )
+                   *( e for k in ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' )
+                      for e in ( 'RAWDATA', cell[k] ) ) )
 
 def _symbol_settings( cif_content ):
     #Settings from the space group symbol (Hall, else H-M, else IT number), and
@@ -59,12 +59,12 @@ def _symbol_settings( cif_content ):
     descr = None
     if cif_content.hall:
         descr = f'Hall symbol "{cif_content.hall}"'
-        s = _query( 'sgsym', 'fromhall', *_rawargs( [ cif_content.hall ] ) )
+        s = _query( 'sgsym', 'fromhall', 'RAWDATA', cif_content.hall )
         if s:
             return s, descr
     if cif_content.hm:
         descr = f'space group symbol "{cif_content.hm}"'
-        s = _query( 'sgsym', 'fromhm', *_rawargs( [ cif_content.hm ] ) )
+        s = _query( 'sgsym', 'fromhm', 'RAWDATA', cif_content.hm )
         if s:
             return s, descr
     n = cif_content.itnumber
@@ -109,9 +109,9 @@ def determine_setting( cif_content, *, permissive, override_spacegroup ):
     if override_spacegroup:
         o = str( override_spacegroup )
         _nc_common.warn(f'Overriding spacegroup to "{o}" due to explicit request')
-        s = _query( 'sgsym', 'fromhm', *_rawargs( [ o ] ) )
+        s = _query( 'sgsym', 'fromhm', 'RAWDATA', o )
         if not s:
-            r = _query( 'sgsym', 'setting', '0', *_rawargs( [ o ] ) )
+            r = _query( 'sgsym', 'setting', '0', 'RAWDATA', o )
             if r['status'] == 'syntax':
                 raise _nc_core.NCBadInput( f'Invalid override_spacegroup "{o}":'
                                            ' neither the H-M symbol of a'
@@ -125,7 +125,7 @@ def determine_setting( cif_content, *, permissive, override_spacegroup ):
     ops = cif_content.listed_ops
     symsettings, symdescr = _symbol_settings( cif_content )
     if ops:
-        r = _query( 'sgsym', 'fromops', '0', *_rawargs( ops ) )
+        r = _query( 'sgsym', 'fromops', '0', *_rawlist( ops ) )
         s = r['settings']
         if r['error_msg'] is not None:
             why = f'could not be parsed ({r["error_msg"]})'

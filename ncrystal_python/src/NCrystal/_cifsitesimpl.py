@@ -36,7 +36,7 @@ from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
 from ._cifreadimpl import CIFContent
 
-_rawargs = _nc_sgsymimpl._rawargs
+_rawlist = _nc_sgsymimpl._rawlist
 
 
 def _query( *args ):
@@ -53,8 +53,8 @@ def _query_sites( c, labelled_positions ):
     #in the cell c (cellsg dict), from the sgsym sites query:
     q = [ 'sgsym', 'sites', 'relaxed',
           _nc_sgsymimpl._sgspec( c['spacegroup']['number'], c['alpha'] ),
-          'lenient', _nc_sgsymimpl._cellarg( c ) ]
-    q += _rawargs( f'{lbl},{float(x)!r},{float(y)!r},{float(z)!r},'
+          'lenient', 'RAWDATA', _nc_sgsymimpl._cellarg( c ) ]
+    q += _rawlist( f'{lbl},{float(x)!r},{float(y)!r},{float(z)!r},'
                    f'{float(o)!r}' for lbl,(x,y,z),o in labelled_positions )
     return _query( *q )
 
@@ -62,8 +62,9 @@ def _orbit_positions( cellsg, setting, pos, occupancy ):
     #All positions of the orbit of pos, in the space group setting:
     x, y, z = ( float(v) for v in pos )
     site, = _query( 'sgsym', 'positions', 'strict', setting, 'lenient',
-                    _nc_sgsymimpl._cellarg( cellsg ),
-                    f'X,{x!r},{y!r},{z!r},{float(occupancy)!r}' )['sites']
+                    'RAWDATA', _nc_sgsymimpl._cellarg( cellsg ),
+                    *_rawlist( [ ( f'X,{x!r},{y!r},{z!r},'
+                                   f'{float(occupancy)!r}' ) ] ) )['sites']
     return [ tuple( _nc_sgsymimpl._remap_fract_pos(v) for v in p )
              for p in site['positions'] ]
 
@@ -86,11 +87,10 @@ def _expand( setting, cell, entries ):
     #The sgsym positions query for entries (label, x, y, z, occupancy, uij),
     #with lenient tolerances (values as printed strings or numbers):
     return _query( 'sgsym', 'positions', 'strict', setting, 'lenient',
-                   *_rawargs( [ _cellarg( cell ) ]
-                              + [ ','.join( [ str( e ) for e in en[:5] ]
-                                            + ( list( en[5] ) if en[5]
-                                                else [] ) )
-                                  for en in entries ] ) )['sites']
+                   'RAWDATA', _cellarg( cell ),
+                   *_rawlist( ','.join( [ str( e ) for e in en[:5] ]
+                                        + ( list( en[5] ) if en[5] else [] ) )
+                              for en in entries ) )['sites']
 
 def _site_numbers( sites ):
     #The printed numbers of the sites (string -> (value, rounding error) or
@@ -100,7 +100,7 @@ def _site_numbers( sites ):
                      if s[k] is not None }
                    | { v for s in sites for v in ( s['uij'] or [] ) } )
     return dict( zip( strs, ( tuple( v ) if v else None for v in
-                              _query( 'cif', 'numbers', *_rawargs( strs ) ) ) ) )
+                              _query( 'cif', 'numbers', *_rawlist( strs ) ) ) ) )
 
 def _element_markers( sites, formula ):
     #Element (or isotope, e.g. "H2" for deuterium) of each CIF site (dicts,
@@ -111,12 +111,11 @@ def _element_markers( sites, formula ):
     def marker( e ):
         return elementZToName( e[0] ) + ( str( e[1] ) if e[1] else '' )
     elems = _query( 'cif', 'elements', 'typesymbol',
-                    *_rawargs( s['type_symbol'] or '?' for s in sites ) )
+                    *_rawlist( s['type_symbol'] or '?' for s in sites ) )
     missing = [ i for i, e in enumerate( elems ) if e is None ]
     if missing:
-        fromlbl = _query( 'cif', 'elements', 'label',
-                          *_rawargs( [ formula or '' ]
-                                     + [ sites[i]['label'] for i in missing ] ) )
+        fromlbl = _query( 'cif', 'elements', 'label', 'RAWDATA', formula or '',
+                          *_rawlist( sites[i]['label'] for i in missing ) )
         examples = {}
         for i, e in zip( missing, fromlbl ):
             lbl = sites[i]['label']

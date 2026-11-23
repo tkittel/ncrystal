@@ -271,8 +271,9 @@ def test_atomsites():
     #set_atompos with a given setting checks exactly that setting:
     allpos = [ ('Si',p[0],p[1],p[2]) for p in
                NC.misc.evaluate_query([ 'sgsym', 'positions','strict',
-                                       '227:2','strict','5.43,5.43,5.43,90,90,90',
-                                       'Si,0.125,0.125,0.125'])['sites'][0]['positions'] ]
+                                       '227:2','strict',
+                                       'RAWDATA','5.43,5.43,5.43,90,90,90',
+                                       'RAWDATA','@Si,0.125,0.125,0.125'])['sites'][0]['positions'] ]
     print('all positions with 227:2:',
           natoms( mk( '227:2', allpos, use_sites = False ) ),'atoms')
     try:

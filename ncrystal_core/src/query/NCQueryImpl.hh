@@ -29,12 +29,6 @@ namespace NCRYSTAL_NAMESPACE {
     //characters, no leading dashes). Throws BadInput:
     void validateQuery( const Query& );
 
-    //Each pair of arguments "RAWDATA",X replaced by the items in X, which
-    //starts with a separator character followed by the items separated by it
-    //(e.g. "@-0.1(2)@0.5"). For query sections receiving raw data (like
-    //printed CIF values), which may contain characters otherwise forbidden:
-    Query expandRawData( const Query& );
-
     //Doubles from 16 hex digits each: the 8 bytes of the IEEE 754 value in
     //little-endian order (as from Python's struct.pack('<d',x).hex()). For
     //passing many numbers to queries exactly and without slow text

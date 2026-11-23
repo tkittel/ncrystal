@@ -264,11 +264,11 @@ def _uses_rhombohedral_axes( sgnumber, alpha ):
     return ( int(sgnumber) in ( 146, 148, 155, 160, 161, 166, 167 )
              and alpha != 90 )
 
-def _rawargs( items ):
-    #Returns query arguments passing the items (e.g. printed CIF values like
-    #"-0.12(3)") verbatim: "RAWDATA" and the items joined by a separator not in
-    #any of them, which is also the first character (cf. the sgsym and cif
-    #queries).
+def _rawlist( items ):
+    #Returns query arguments passing a list of items (e.g. printed CIF values
+    #like "-0.12(3)") verbatim to the sgsym and cif queries: "RAWDATA" and the
+    #items joined by a separator not in any of them, which is also the first
+    #character. No arguments for an empty list.
     items = [ str( e ) for e in items ]
     if not items:
         return []

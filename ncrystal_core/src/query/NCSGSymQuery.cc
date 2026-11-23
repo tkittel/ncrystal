@@ -29,9 +29,8 @@
 
 namespace NC = NCrystal;
 
-void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
+void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& query )
 {
-  const Query query = QueryImpl::expandRawData( rawquery );
   auto invalid = [&query](const char * reason){
     std::ostringstream ss;
     ss << "Invalid sgsym query: ";
@@ -48,11 +47,20 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
   //shift off the "sgsym" and key entries:
   const auto& key = query.at(1).trimmed();
   auto arg = [&query]( std::size_t i ) { return query.at(i+2); };
-  //Arguments which may start with "-" are given with a "@" prefix:
-  auto argNoAt = [&arg]( std::size_t i ) {
-    return arg(i).startswith('@') ? arg(i).substr(1) : arg(i);
-  };
   const std::size_t nargs = static_cast<std::size_t>(query.size()-2);
+  //Whether the argument at position i is "RAWDATA" (followed by the raw
+  //argument, cf. QueryImpl::validateQuery):
+  constexpr auto sv_rawdata = StrView::make("RAWDATA");
+  auto isRaw = [&arg,nargs,sv_rawdata]( std::size_t i ) {
+    return i + 1 < nargs && arg(i) == sv_rawdata;
+  };
+  //Items of a (non-empty) list argument: a separator character followed by
+  //the items separated by it (e.g. "@x,y,z@-x,-y,-z"):
+  auto listItems = []( StrView l )
+  {
+    nc_assert( !l.empty() );
+    return l.substr(1).split( l.front() );
+  };
 
   constexpr auto sv_list = StrView::make("list");
   constexpr auto sv_info = StrView::make("info");
@@ -84,17 +92,20 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
       " \"fromhall\", \"fromhm\", \"fromnumber\", \"cell\","
       " \"fmtcoords\", \"setting\"]";
   } else if ( key == sv_fromops ) {
-    //["sgsym","fromops",DOTHROW,OP,...]: the settings with exactly these
-    //symmetry operations (like "x,-y,z+1/2", cf. SymOp, with a "@" prefix if
-    //starting with "-"), as {"settings":["14:b1",...],"error_msg":null}. If
-    //an operation can not be parsed, a BadInput is thrown if DOTHROW is 1,
-    //and if it is 0 the result is {"settings":[],"error_msg":".."}:
-    if ( nargs < 1 || ( arg(0) != "0" && arg(0) != "1" ) )
-      invalid( "correct usage: [\"sgsym\",\"fromops\",0|1,OP,...]" );
+    //["sgsym","fromops",DOTHROW,"RAWDATA",OPLIST]: the settings with exactly
+    //the symmetry operations in the list OPLIST (like "x,-y,z+1/2", cf.
+    //SymOp), as {"settings":["14:b1",...],"error_msg":null}. If an operation
+    //can not be parsed, a BadInput is thrown if DOTHROW is 1, and if it is 0
+    //the result is {"settings":[],"error_msg":".."}:
+    if ( nargs != 3 || ( arg(0) != "0" && arg(0) != "1" ) || !isRaw(1)
+         || arg(2).empty() )
+      invalid( "correct usage: [\"sgsym\",\"fromops\",0|1,\"RAWDATA\","
+               "OPLIST]" );
+    const auto items = listItems( arg(2) );
     std::vector<SymOp> ops;
-    ops.reserve( nargs - 1 );
-    for ( auto i : ncrange( std::size_t(1), nargs ) ) {
-      auto r = tryParseSymOp( argNoAt(i) );
+    ops.reserve( items.size() );
+    for ( auto& e : items ) {
+      auto r = tryParseSymOp( e );
       if ( !r.op.has_value() ) {
         if ( arg(0) == "1" )
           NCRYSTAL_THROW(BadInput,r.errorMsg);
@@ -127,24 +138,27 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     //is slow for long strings):
     os << '"' << res << '"';
   } else if ( key == sv_cell ) {
-    //["sgsym","cell",TOL,DOTHROW,SG,a,b,c,alpha,beta,gamma]: the cell
-    //parameters snapped to the constraints of the setting SG (parsed in strict
-    //mode) with TOL "strict" or "lenient" (cf. SGCellConstraints::snap), as
-    //{"cell":{"a":..,...,"gamma":..},"error_msg":null}. If they do not fit, a
-    //BadInput is thrown if DOTHROW is 1, and if it is 0 the result is
-    //{"cell":null,"error_msg":".."}. The values may be printed CIF numbers
-    //(e.g. "4.123(2)"), whose rounding errors are then used with lenient
-    //tolerances:
+    //["sgsym","cell",TOL,DOTHROW,SG,"RAWDATA",a,"RAWDATA",b,...,"RAWDATA",
+    //gamma]: the cell parameters snapped to the constraints of the setting SG
+    //(parsed in strict mode) with TOL "strict" or "lenient" (cf.
+    //SGCellConstraints::snap), as {"cell":{"a":..,...,"gamma":..},
+    //"error_msg":null}. If they do not fit, a BadInput is thrown if DOTHROW
+    //is 1, and if it is 0 the result is {"cell":null,"error_msg":".."}. The
+    //values may be printed CIF numbers (e.g. "4.123(2)"), whose rounding
+    //errors are then used with lenient tolerances:
     const auto usage = "correct usage: [\"sgsym\",\"cell\","
-      "\"strict|lenient\",0|1,SG,a,b,c,alpha,beta,gamma]";
-    if ( nargs != 9 || ( arg(0) != "strict" && arg(0) != "lenient" )
+      "\"strict|lenient\",0|1,SG,\"RAWDATA\",a,\"RAWDATA\",b,\"RAWDATA\",c,"
+      "\"RAWDATA\",alpha,\"RAWDATA\",beta,\"RAWDATA\",gamma]";
+    if ( nargs != 15 || ( arg(0) != "strict" && arg(0) != "lenient" )
          || ( arg(1) != "0" && arg(1) != "1" ) )
       invalid( usage );
     const bool lenient = ( arg(0) == "lenient" );
     const bool dothrow = ( arg(1) == "1" );
     double v[6], e[6];
     for ( auto i : ncrange( 6 ) ) {
-      auto x = parseCIFNumber( arg( 3 + i ) );
+      if ( !isRaw( 3 + 2 * i ) )
+        invalid( usage );
+      auto x = parseCIFNumber( arg( 4 + 2 * i ) );
       if ( !x.has_value() )
         invalid( usage );
       v[i] = x.value().value;
@@ -175,28 +189,26 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     streamJSONDictEntry( os, "gamma", r.gamma, JSONDictPos::LAST );
     os << ",\"error_msg\":null}";
   } else if ( key == sv_fromhall || key == sv_fromhm ) {
-    //["sgsym","fromhall",SYMBOL] and ["sgsym","fromhm",SYMBOL]: the settings
-    //matching a Hall or Hermann-Mauguin symbol (cf. NCSGIdentify.hh, with a
-    //"@" prefix if starting with "-"), as ["14:b1",...]:
-    if ( nargs != 1 )
+    //["sgsym","fromhall","RAWDATA",SYMBOL] and ["sgsym","fromhm","RAWDATA",
+    //SYMBOL]: the settings matching a Hall or Hermann-Mauguin symbol (cf.
+    //NCSGIdentify.hh), as ["14:b1",...]:
+    if ( nargs != 2 || !isRaw(0) )
       invalid( key == sv_fromhall
-               ? "correct usage: [\"sgsym\",\"fromhall\",SYMBOL]"
-               : "correct usage: [\"sgsym\",\"fromhm\",SYMBOL]" );
-    streamSettings( key == sv_fromhall ? settingsFromHallSymbol( argNoAt(0) )
-                    : settingsFromHMSymbol( argNoAt(0) ) );
+               ? "correct usage: [\"sgsym\",\"fromhall\",\"RAWDATA\",SYMBOL]"
+               : "correct usage: [\"sgsym\",\"fromhm\",\"RAWDATA\",SYMBOL]" );
+    streamSettings( key == sv_fromhall ? settingsFromHallSymbol( arg(1) )
+                    : settingsFromHMSymbol( arg(1) ) );
   } else if ( key == sv_setting ) {
-    //["sgsym","setting",DOTHROW,SG]: the space group setting SG (parsed in
-    //strict mode, cf. SpaceGroupParseMode, with a "@" prefix if starting with
-    //"-"), as {"setting":"70:1","status":
-    //"ok","error_msg":null}. If SG is not a setting, a BadInput is thrown if
-    //DOTHROW is 1, and if it is 0 the result has "setting":null, the
-    //"error_msg", and "status" "syntax" (SG not of the form "N" or
+    //["sgsym","setting",DOTHROW,"RAWDATA",SG]: the space group setting SG
+    //(parsed in strict mode, cf. SpaceGroupParseMode), as {"setting":"70:1",
+    //"status":"ok","error_msg":null}. If SG is not a setting, a BadInput is
+    //thrown if DOTHROW is 1, and if it is 0 the result has "setting":null,
+    //the "error_msg", and "status" "syntax" (SG not of the form "N" or
     //"N:choice" with N in 1..230) or "nosetting" (of that form, but no such
     //setting), cf. tryParseSpaceGroup:
-    if ( nargs != 2 || ( arg(0) != "0" && arg(0) != "1" ) )
-      invalid( "correct usage: [\"sgsym\",\"setting\",0|1,SG]" );
-    const auto r = tryParseSpaceGroup( argNoAt(1),
-                                       SpaceGroupParseMode::Strict );
+    if ( nargs != 3 || ( arg(0) != "0" && arg(0) != "1" ) || !isRaw(1) )
+      invalid( "correct usage: [\"sgsym\",\"setting\",0|1,\"RAWDATA\",SG]" );
+    const auto r = tryParseSpaceGroup( arg(2), SpaceGroupParseMode::Strict );
     if ( !r.setting.has_value() && arg(0) == "1" )
       NCRYSTAL_THROW(BadInput,r.errorMsg);
     using St = SpaceGroupParseResult::Status;
@@ -267,11 +279,12 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     }
     os << "]}";
   } else if ( key == sv_sites || key == sv_positions ) {
-    //["sgsym","positions",MODE,SG,TOL,CELL,ENTRY,...]: expand sites into all
-    //their positions in the setting SG (parsed in MODE "strict" or
-    //"relaxed", cf. SpaceGroupParseMode), in the cell CELL
+    //["sgsym","positions",MODE,SG,TOL,"RAWDATA",CELL,"RAWDATA",ENTRYLIST]:
+    //expand sites into all their positions in the setting SG (parsed in MODE
+    //"strict" or "relaxed", cf. SpaceGroupParseMode), in the cell CELL
     //("a,b,c,alpha,beta,gamma"), with the site tolerances TOL ("strict" or
-    //"lenient", cf. SGSiteTolerances). Each ENTRY is a site,
+    //"lenient", cf. SGSiteTolerances). ENTRYLIST is a list (a separator
+    //character followed by the entries separated by it) of sites,
     //"lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]" (occupancy default 1,
     //the first given for a label applies to all of its entries; uij as Ustd,
     //cf. NCUijUtils.hh). Numbers may be printed CIF numbers (e.g.
@@ -284,7 +297,8 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     //...]}, where "split" describes a split site (cf. expandSiteToOrbit),
     //"ueq" is that of the given uij (cf. calcUeqWithRoundingError) and "uijs"
     //are the tensors at the positions.
-    //["sgsym","sites",MODE,SG,TOL,CELL,ENTRY,...]: the inverse, grouping unit
+    //["sgsym","sites",MODE,SG,TOL,"RAWDATA",CELL,"RAWDATA",ENTRYLIST]: the
+    //inverse, grouping unit
     //cell positions (entries as above, with uij at each position) into sites,
     //one per orbit: {"spacegroup_setting":"227:2","is_default_setting":b,
     //"higher_symmetry":[settings with more operations, in the same
@@ -302,16 +316,17 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     const auto usage = ( tosites
                          ? "correct usage: [\"sgsym\",\"sites\","
                          "\"strict|relaxed\",SG,\"strict|lenient\","
-                         "\"a,b,c,alpha,beta,gamma\","
-                         "\"lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]\","
-                         "...]"
+                         "\"RAWDATA\",\"a,b,c,alpha,beta,gamma\",\"RAWDATA\","
+                         "\"@lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]"
+                         "@...\"]"
                          : "correct usage: [\"sgsym\",\"positions\","
                          "\"strict|relaxed\",SG,\"strict|lenient\","
-                         "\"a,b,c,alpha,beta,gamma\","
-                         "\"lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]\","
-                         "...]" );
-    if ( nargs < 5 || ( arg(0) != "strict" && arg(0) != "relaxed" )
-         || ( arg(2) != "strict" && arg(2) != "lenient" ) )
+                         "\"RAWDATA\",\"a,b,c,alpha,beta,gamma\",\"RAWDATA\","
+                         "\"@lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]"
+                         "@...\"]" );
+    if ( nargs != 7 || ( arg(0) != "strict" && arg(0) != "relaxed" )
+         || ( arg(2) != "strict" && arg(2) != "lenient" ) || !isRaw(3)
+         || !isRaw(5) || arg(6).empty() )
       invalid( usage );
     const bool strict = ( arg(0) == "strict" );
     const bool lenient = ( arg(2) == "lenient" );
@@ -327,7 +342,7 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     };
     CellParameters cell, cellerr{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
     {
-      auto parts = arg(3).splitTrimmed(',');
+      auto parts = arg(4).splitTrimmed(',');
       if ( parts.size() != 6 )
         invalid( usage );
       double v[6], e[6];
@@ -360,8 +375,8 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     std::vector<std::string> labels;
     std::vector<std::vector<Entry>> entries;
     std::vector<double> occupancies;//(per label)
-    for ( auto i : ncrange( std::size_t(4), nargs ) ) {
-      auto parts = arg(i).splitTrimmed(',');
+    for ( auto& entry : listItems( arg(6) ) ) {
+      auto parts = entry.splitTrimmed(',');
       const std::size_t np = parts.size();
       if ( np != 4 && np != 5 && np != 10 && np != 11 )
         invalid( usage );

@@ -48,7 +48,7 @@ def _expected_atom_count( cif_content ):
     v = cif_content.atom_type_number_in_cell
     if not v or any( e is None for e in v ):
         return None
-    n = evaluate_query( [ 'cif', 'numbers', *_nc_sgsymimpl._rawargs( v ) ] )
+    n = evaluate_query( [ 'cif', 'numbers', *_nc_sgsymimpl._rawlist( v ) ] )
     if any( e is None for e in n ):
         return None#(values which are not numbers)
     return sum( e[0] for e in n )
@@ -87,7 +87,7 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
         expect_sgno = int( setting.split(':')[0] )
         keys = ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' )
         vals = evaluate_query( [ 'cif', 'numbers',
-                                 *_nc_sgsymimpl._rawargs( cell[k]
+                                 *_nc_sgsymimpl._rawlist( cell[k]
                                                           for k in keys ) ] )
         cellsg = { k: v[0] for k, v in zip( keys, vals ) }
     info = evaluate_query( [ 'sgsym', 'info', 'strict', setting ] )

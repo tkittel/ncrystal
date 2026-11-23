@@ -789,10 +789,12 @@ class NCMATComposerImpl:
             sgspec = _nc_sgsymimpl._sgspec( newcell['spacegroup'],
                                             newcell['alpha'] )
             q = evaluate_query( [ 'sgsym', 'sites', 'relaxed', sgspec,
-                                  'strict', _nc_sgsymimpl._cellarg( newcell ) ]
-                                + [ f'{lbl},{x!r},{y!r},{z!r},'
+                                  'strict', 'RAWDATA',
+                                  _nc_sgsymimpl._cellarg( newcell ) ]
+                                + _nc_sgsymimpl._rawlist(
+                                    f'{lbl},{x!r},{y!r},{z!r},'
                                     f'{float( occumap.get( lbl, 1.0 ) )!r}'
-                                    for lbl, x, y, z in allpos ] )
+                                    for lbl, x, y, z in allpos ) )
             from collections import Counter
             if ( Counter( s['label'] for s in q['sites'] )
                  != Counter( expanded[e['index']].key for e in res_sites ) ):
@@ -954,10 +956,10 @@ class NCMATComposerImpl:
         from .misc import evaluate_query
         occumap = atompos.get('occumap',{})
         query = [ 'sgsym', 'positions', 'strict', sgspec, 'strict',
-                  _nc_sgsymimpl._cellarg( self.__params['cellsg'] ) ]
-        query += [ f'{lbl},{x!r},{y!r},{z!r},'
-                   f'{float( occumap.get( lbl, 1.0 ) )!r}'
-                   for lbl,x,y,z in atompos['sites'] ]
+                  'RAWDATA', _nc_sgsymimpl._cellarg( self.__params['cellsg'] ) ]
+        query += _nc_sgsymimpl._rawlist( f'{lbl},{x!r},{y!r},{z!r},'
+                                         f'{float( occumap.get( lbl, 1.0 ) )!r}'
+                                         for lbl,x,y,z in atompos['sites'] )
         pos = [ ( s['label'], _nc_sgsymimpl._remap_fract_pos(p[0]),
                   _nc_sgsymimpl._remap_fract_pos(p[1]),
                   _nc_sgsymimpl._remap_fract_pos(p[2]) )
@@ -1036,7 +1038,8 @@ class NCMATComposerImpl:
         keys = ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' )
         given = [ float( cellsg[k] ) for k in keys ]
         snapped = evaluate_query( [ 'sgsym', 'cell', 'strict', '1', setting ]
-                                  + [ repr( v ) for v in given ] )['cell']
+                                  + [ e for v in given
+                                      for e in ( 'RAWDATA', repr( v ) ) ] )['cell']
         if any( snapped[k] != v for k, v in zip( keys, given ) ):
             exp = ', '.join( f'{k}={snapped[k]:g}' for k in keys )
             raise _nc_core.NCBadInput( 'The cell parameters are not consistent'
@@ -1071,15 +1074,17 @@ class NCMATComposerImpl:
             #The sites as snapped to their site symmetry (positions and uij),
             #i.e. as they will be used when the NCMAT data is loaded:
             uijs = atompos.get('uij') or [ None ] * len( atompos['sites'] )
-            query = [ 'sgsym', 'positions', 'strict', sgspec, 'strict',
-                      _nc_sgsymimpl._cellarg( cellsg ) ]
+            entries = []
             for (lbl,x,y,z),u in zip( atompos['sites'], uijs ):
                 occu = float( atompos.get('occumap',{}).get( lbl, 1.0 ) )
                 e = f'{lbl},{x!r},{y!r},{z!r},{occu!r}'
                 if u is not None:
                     e += ''.join( f',{float(v)!r}' for v in u )
-                query.append( e )
-            q = evaluate_query( query )['sites']
+                entries.append( e )
+            q = evaluate_query( [ 'sgsym', 'positions', 'strict', sgspec,
+                                  'strict', 'RAWDATA',
+                                  _nc_sgsymimpl._cellarg( cellsg ),
+                                  *_nc_sgsymimpl._rawlist( entries ) ] )['sites']
             sites = [ ( s['label'], tuple( s['positions'][0] ),
                         s['multiplicity'] ) for s in q ]
             return { 'spacegroup_setting': setting['spacegroup'],
@@ -1865,10 +1870,10 @@ def _sites_of_positions( cellsg, atompos ):
                    else str(sg) )
     occumap = atompos.get('occumap',{})
     query = [ 'sgsym', 'sites', mode, sgspec, 'strict',
-              _nc_sgsymimpl._cellarg( cellsg ) ]
-    query += [ f'{lbl},{x!r},{y!r},{z!r},'
-               f'{float( occumap.get( lbl, 1.0 ) )!r}'
-               for lbl,x,y,z in atompos['pos'] ]
+              'RAWDATA', _nc_sgsymimpl._cellarg( cellsg ) ]
+    query += _nc_sgsymimpl._rawlist( f'{lbl},{x!r},{y!r},{z!r},'
+                                     f'{float( occumap.get( lbl, 1.0 ) )!r}'
+                                     for lbl,x,y,z in atompos['pos'] )
     return evaluate_query( query )
 
 def _sgspec_for_sites( cellsg ):
