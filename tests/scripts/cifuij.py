@@ -163,13 +163,16 @@ def scenario( cellname, descr, uiso, expect_ok, **kw ):
         #and sgsym positions queries):
         cif_content = read_cif( p1bar_cif( c, uiso ), quiet = True )
         s, = cif_content.sites
-        ( ui, ui_err ), = evaluate_query( [ 'cif', 'numbers', s['uiso'] ] )
+        ( ui, ui_err ), = evaluate_query( [ 'cif', 'numbers', 'RAWDATA',
+                                            '@' + s['uiso'] ] )
         q, = evaluate_query( [ 'sgsym', 'positions', 'strict', '2', 'lenient',
+                               'RAWDATA',
                                ','.join( cif_content.cell[k] for k in
                                          ( 'a', 'b', 'c', 'alpha', 'beta',
                                            'gamma' ) ),
-                               ','.join( [ 'X', s['x'], s['y'], s['z'] ]
-                                         + s['uij'] ) ] )['sites']
+                               'RAWDATA',
+                               '@' + ','.join( [ 'X', s['x'], s['y'], s['z'] ]
+                                               + s['uij'] ) ] )['sites']
         ue, ue_err = q['ueq']
         print( f'  {descr}: printed Uiso {ui:.6g} (rounding error {ui_err:.3g}),'
                f' Ueq {ue:.6g} (rounding error {ue_err:.3g})' )

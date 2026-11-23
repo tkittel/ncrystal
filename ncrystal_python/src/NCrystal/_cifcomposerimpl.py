@@ -215,9 +215,9 @@ def _uiso_temperature( cifloader, chosen ):
 
 def _cif_temperature( value ):
     #Printed CIF number (e.g. "100(2)") as float, or None if not a number:
-    from ._sgsymimpl import _rawargs
+    from ._sgsymimpl import _rawlist
     from .misc import evaluate_query
-    r = evaluate_query( [ 'cif', 'numbers', *_rawargs( [ value ] ) ] )[0]
+    r = evaluate_query( [ 'cif', 'numbers', *_rawlist( [ value ] ) ] )[0]
     return float( r[0] ) if r else None
 
 def _consistent_temperatures( a, b ):

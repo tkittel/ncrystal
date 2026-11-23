@@ -32,8 +32,8 @@ import json
 import pathlib
 from NCrystalDev.misc import evaluate_query as ncquery
 
-def raw( *items ):
-    #Items passed verbatim as one argument (cf. the sgsym and cif queries):
+def rawlist( *items ):
+    #List argument passing the items verbatim (cf. the sgsym and cif queries):
     return [ 'RAWDATA', '@' + '@'.join( items ) ]
 
 def safefmt(s):
@@ -201,74 +201,89 @@ def main():
                       ' specified: 227:1 (default), 227:2)'):
         test_cli('sgsym','info','strict','227')
     test_cli('sgsym','list')
-    #Settings from operations and symbols ("@" prefix for a leading "-"):
-    test_cli('sgsym','fromops','1','x,y,z','@-x,-y,-z')
-    test_cli('sgsym','fromops','1','x,y,z','@-x+1/2,-y+1/2,-z+1/2')#(origin shift)
-    test_cli('sgsym','fromops','0','x,y,z','x+1/5,y,z')#(not a multiple of 1/24)
+    #Settings from operations and symbols:
+    test_cli('sgsym','fromops','1',*rawlist('x,y,z','-x,-y,-z'))
+    test_cli('sgsym','fromops','1',*rawlist('x,y,z','-x+1/2,-y+1/2,-z+1/2'))#(origin shift)
+    test_cli('sgsym','fromops','0',*rawlist('x,y,z','x+1/5,y,z'))#(not a multiple of 1/24)
     #An operation which can not be parsed, with DOTHROW=0 and 1:
-    test_cli('sgsym','fromops','0','x,y,z','x,y,q')
-    test_cli('sgsym','fromops','0','x,y,z','x+y,y,z')
+    test_cli('sgsym','fromops','0',*rawlist('x,y,z','x,y,q'))
+    test_cli('sgsym','fromops','0',*rawlist('x,y,z','x+y,y,z'))
     with ensure_error(NCBadInput,'Invalid symmetry operation "x,y,q":'
                       ' unexpected character'):
-        test_cli('sgsym','fromops','1','x,y,z','x,y,q')
-    with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","fromops",'
-                      '"x,y,z"] (correct usage: ["sgsym","fromops",0|1,OP,'
-                      '...])'):
-        test_cli('sgsym','fromops','x,y,z')
-    test_cli('sgsym','fromhall','@-P 2ybc')
-    test_cli('sgsym','fromhm','P 21/c')
-    test_cli('sgsym','fromhm','R -3 m')
-    test_cli('sgsym','fromhm','C m c e')
-    test_cli('sgsym','fromhm','C -1')#(no tabulated setting)
+        test_cli('sgsym','fromops','1',*rawlist('x,y,z','x,y,q'))
+    test_cli('sgsym','fromhall','RAWDATA','-P 2ybc')
+    test_cli('sgsym','fromhm','RAWDATA','P 21/c')
+    test_cli('sgsym','fromhm','RAWDATA','R -3 m')
+    test_cli('sgsym','fromhm','RAWDATA','C m c e')
+    test_cli('sgsym','fromhm','RAWDATA','C -1')#(no tabulated setting)
     test_cli('sgsym','fromnumber','227')
     test_cli('sgsym','fromnumber','14')
     #A setting, or with DOTHROW=0 the reason it is none:
-    test_cli('sgsym','setting','0','70:1')
-    test_cli('sgsym','setting','1','225')
-    test_cli('sgsym','setting','0','70:9')
-    test_cli('sgsym','setting','0','70')
-    test_cli('sgsym','setting','0','F d d d')
+    test_cli('sgsym','setting','0','RAWDATA','70:1')
+    test_cli('sgsym','setting','1','RAWDATA','225')
+    test_cli('sgsym','setting','0','RAWDATA','70:9')
+    test_cli('sgsym','setting','0','RAWDATA','70')
+    test_cli('sgsym','setting','0','RAWDATA','F d d d')
     with ensure_error(NCBadInput,'Invalid space group specification: "70:9"'
                       ' (not a setting of space group 70, the settings are:'
                       ' 70:1 (default), 70:2)'):
-        test_cli('sgsym','setting','1','70:9')
+        test_cli('sgsym','setting','1','RAWDATA','70:9')
     with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","setting","2",'
-                      '"70:1"] (correct usage: ["sgsym","setting",0|1,SG])'):
-        test_cli('sgsym','setting','2','70:1')
+                      '"RAWDATA","70:1"] (correct usage: ["sgsym","setting",'
+                      '0|1,"RAWDATA",SG])'):
+        test_cli('sgsym','setting','2','RAWDATA','70:1')
     test_cli('sgsym','fromnumber','225')
     for bad in ( '0', '231', 'x', '1.0' ):
         with ensure_error( NCBadInput, 'Invalid sgsym query: ["sgsym",'
                            f'"fromnumber","{bad}"] (correct usage: ["sgsym",'
                            '"fromnumber",N], with N in 1..230)' ):
             ncquery( [ 'sgsym', 'fromnumber', bad ] )
-    test( 'sgsym','fromhall',*raw('-P 2ybc') )#(raw data: no "@" needed)
-    test( 'sgsym','fromops','1','x,y,z',*raw('-x,-y,-z','x+1/2,y,z') )
-    test( 'sgsym','fromops','1',*raw('x,y,z','-x,-y,-z'),'@x+1/2,y,z' )
-    test( 'sgsym','fromops','1','RAWDATA','|x,y,z|-x,-y,-z' )
-    for bad in ( [ 'RAWDATA' ], [ 'RAWDATA', '' ] ):
-        with ensure_error(NCBadInput,'Invalid JSON query ("RAWDATA" must be'
-                          ' followed by a separator character and the items'
-                          ' separated by it)'):
-            ncquery( [ 'sgsym', 'fromops', '1', 'x,y,z', *bad ] )
+    test( 'sgsym','fromops','1','RAWDATA','|x,y,z|-x,-y,-z|x+1/2,y,z' )
+    for bad in ( [ 'x,y,z' ], [ '1', 'x,y,z' ], [ '1', 'RAWDATA' ],
+                 [ '1', 'RAWDATA', '' ], [ '1', 'RAWDATA', '@x,y,z', '@-x,-y,-z' ] ):
+        with ensure_error(NCBadInput,'Invalid sgsym query: '
+                          + json.dumps( [ 'sgsym', 'fromops' ] + bad,
+                                        separators = ( ',', ':' ) )
+                          + ' (correct usage: ["sgsym","fromops",0|1,"RAWDATA",'
+                          'OPLIST])'):
+            ncquery( [ 'sgsym', 'fromops', *bad ] )
     #Cell parameters snapped to the constraints of a setting (printed values
     #with rounding errors with lenient tolerances):
-    test_cli('sgsym','cell','lenient','0','225',*raw('4.123(2)','4.124','4.1234','90','90.0','90'))
-    test_cli('sgsym','cell','strict','1','194','3','3','5','90','90','120')
-    test_cli('sgsym','cell','strict','0','225','4.123','4.124','4.123','90','90','90')
+    def cellargs( *v ):
+        return [ e for x in v for e in ( 'RAWDATA', x ) ]
+    test_cli('sgsym','cell','lenient','0','225',*cellargs('4.123(2)','4.124','4.1234','90','90.0','90'))
+    test_cli('sgsym','cell','strict','1','194',*cellargs('3','3','5','90','90','120'))
+    test_cli('sgsym','cell','strict','0','225',*cellargs('4.123','4.124','4.123','90','90','90'))
     with ensure_error(NCBadInput,'Lattice parameters a and b must be equal for'
                       ' this space group (got a=4.123 and b=4.124)'):
-        test_cli('sgsym','cell','strict','1','225','4.123','4.124','4.123','90','90','90')
+        test_cli('sgsym','cell','strict','1','225',*cellargs('4.123','4.124','4.123','90','90','90'))
     with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","cell","lenient",'
-                      '"0","225","4.1","4.1","4.1","90","90","x"] (correct usage:'
-                      ' ["sgsym","cell","strict|lenient",0|1,SG,a,b,c,alpha,beta,gamma])'):
-        test_cli('sgsym','cell','lenient','0','225','4.1','4.1','4.1','90','90','x')
+                      '"0","225","4.1","4.1","4.1","90","90","90"] (correct usage:'
+                      ' ["sgsym","cell","strict|lenient",0|1,SG,"RAWDATA",a,'
+                      '"RAWDATA",b,"RAWDATA",c,"RAWDATA",alpha,"RAWDATA",beta,'
+                      '"RAWDATA",gamma])'):
+        test_cli('sgsym','cell','lenient','0','225','4.1','4.1','4.1','90','90','90')
     with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","cell","lenient",'
-                      '"2","225","4.1","4.1","4.1","90","90","90"] (correct usage:'
-                      ' ["sgsym","cell","strict|lenient",0|1,SG,a,b,c,alpha,beta,gamma])'):
-        test_cli('sgsym','cell','lenient','2','225','4.1','4.1','4.1','90','90','90')
-    with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","fromhm"]'
-                      ' (correct usage: ["sgsym","fromhm",SYMBOL])'):
-        test_cli('sgsym','fromhm')
+                      '"0","225","RAWDATA","4.1","RAWDATA","4.1","RAWDATA","4.1",'
+                      '"RAWDATA","90","RAWDATA","90","RAWDATA","x"] (correct usage:'
+                      ' ["sgsym","cell","strict|lenient",0|1,SG,"RAWDATA",a,'
+                      '"RAWDATA",b,"RAWDATA",c,"RAWDATA",alpha,"RAWDATA",beta,'
+                      '"RAWDATA",gamma])'):
+        test_cli('sgsym','cell','lenient','0','225',*cellargs('4.1','4.1','4.1','90','90','x'))
+    with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","cell","lenient",'
+                      '"2","225","RAWDATA","4.1","RAWDATA","4.1","RAWDATA","4.1",'
+                      '"RAWDATA","90","RAWDATA","90","RAWDATA","90"] (correct usage:'
+                      ' ["sgsym","cell","strict|lenient",0|1,SG,"RAWDATA",a,'
+                      '"RAWDATA",b,"RAWDATA",c,"RAWDATA",alpha,"RAWDATA",beta,'
+                      '"RAWDATA",gamma])'):
+        test_cli('sgsym','cell','lenient','2','225',*cellargs('4.1','4.1','4.1','90','90','90'))
+    for bad in ( [], [ 'P 21/c' ] ):
+        with ensure_error(NCBadInput,'Invalid sgsym query: '
+                          + json.dumps( [ 'sgsym', 'fromhm' ] + bad,
+                                        separators = ( ',', ':' ) )
+                          + ' (correct usage: ["sgsym","fromhm","RAWDATA",'
+                          'SYMBOL])'):
+            ncquery( [ 'sgsym', 'fromhm', *bad ] )
     with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","foo"]'
                       ' (unknown key)'):
         test_cli('sgsym','foo')
@@ -405,40 +420,45 @@ def test_atomsites():
     #["sgsym","positions",...] expands sites, ["sgsym","sites",...]
     #groups positions into sites (diamond in origin choice 2):
     site = 'Si,0.125,0.125,0.125'
-    cell = '5.43,5.43,5.43,90,90,90'
-    r = ncquery( [ 'sgsym', 'positions','strict','227:2','strict',cell,site] )
+    cell = [ 'RAWDATA', '5.43,5.43,5.43,90,90,90' ]
+    r = ncquery( [ 'sgsym', 'positions','strict','227:2','strict',*cell,
+                   *rawlist(site)] )
     s, = r['sites']
     print( f'227:2 site {site} -> {len(s["positions"])} positions' )
     assert s['multiplicity'] == len( s['positions'] ) == 8
     assert s['split'] is None and s['uij'] is None and s['uijs'] is None
     pos = [ f'Si,{x!r},{y!r},{z!r}' for x,y,z in s['positions'] ]
-    test( 'sgsym','sites','strict','227:2','strict',cell,*pos )
+    test( 'sgsym','sites','strict','227:2','strict',*cell,*rawlist(*pos) )
     #Relaxed: the setting is deduced from the positions:
-    r = ncquery( [ 'sgsym', 'sites','relaxed','227','strict',cell,*pos] )
+    r = ncquery( [ 'sgsym', 'sites','relaxed','227','strict',*cell,
+                   *rawlist(*pos)] )
     print( 'relaxed 227 -> setting', r['spacegroup_setting'] )
     assert r['spacegroup_setting'] == '227:2'
     with ensure_error( NCBadInput, 'Atom positions are not consistent with'
                        ' space group 227:1 (largest deviation of a symmetry'
                        ' image from an atom of the same type: 0.25 in'
                        ' fractional coordinates)' ):
-        ncquery( [ 'sgsym', 'sites','strict','227:1','strict',cell,*pos] )
+        ncquery( [ 'sgsym', 'sites','strict','227:1','strict',*cell,
+                   *rawlist(*pos)] )
     with ensure_error( NCBadInput, 'Invalid sgsym query: ["sgsym","sites",'
                        '"227:2","Si,0.125,0.125,0.125"] (correct usage:'
                        ' ["sgsym","sites","strict|relaxed",SG,"strict|lenient",'
-                       '"a,b,c,alpha,beta,gamma",'
-                       '"lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]",...])' ):
+                       '"RAWDATA","a,b,c,alpha,beta,gamma","RAWDATA",'
+                       '"@lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]@..."])' ):
         ncquery( [ 'sgsym', 'sites','227:2',site] )
     with ensure_error( NCBadInput, 'Invalid sgsym query: ["sgsym","positions",'
-                       '"strict","227:2","strict","5.43,5.43,5.43,90,90,90",'
-                       '"Si,0.125,0.125,0.125,1,2"] (correct usage:'
+                       '"strict","227:2","strict","RAWDATA",'
+                       '"5.43,5.43,5.43,90,90,90","RAWDATA",'
+                       '"@Si,0.125,0.125,0.125,1,2"] (correct usage:'
                        ' ["sgsym","positions","strict|relaxed",SG,'
-                       '"strict|lenient","a,b,c,alpha,beta,gamma",'
-                       '"lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]",...])' ):#(6 fields)
-        ncquery( [ 'sgsym', 'positions','strict','227:2','strict',cell,
-                   'Si,0.125,0.125,0.125,1,2'] )
+                       '"strict|lenient","RAWDATA","a,b,c,alpha,beta,gamma",'
+                       '"RAWDATA",'
+                       '"@lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]@..."])' ):#(6 fields)
+        ncquery( [ 'sgsym', 'positions','strict','227:2','strict',*cell,
+                   *rawlist('Si,0.125,0.125,0.125,1,2')] )
     #A split site (two positions 0.054 Aa apart, about a mirror plane of Pm):
-    pm = [ 'strict','6:b','lenient','5,5.4,6,90,90,90' ]
-    r = ncquery( [ 'sgsym', 'positions', *pm, 'O,0.1,0.005,0.2,0.5' ] )
+    pm = [ 'strict','6:b','lenient','RAWDATA','5,5.4,6,90,90,90' ]
+    r = ncquery( [ 'sgsym', 'positions', *pm, *rawlist('O,0.1,0.005,0.2,0.5') ] )
     print( 'split site:', rnd( r['sites'] ) )
     with ensure_error( NCBadInput, 'At most one of the 2 symmetry-equivalent'
                        ' positions of the site (0.1, 0.005, 0.2) within 0.5 Aa'
@@ -447,33 +467,44 @@ def test_atomsites():
                        ' special positions, specify coordinates with'
                        ' sufficient precision, preferably as exact fractions'
                        ' like 1/3.' ):
-        ncquery( [ 'sgsym', 'positions', *pm, 'O,0.1,0.005,0.2' ] )
+        ncquery( [ 'sgsym', 'positions', *pm, *rawlist('O,0.1,0.005,0.2') ] )
     test_uij()
 
 def test_cif():
     test( 'cif', 'list' )
-    test( 'cif', 'numbers', *raw( '0.0283', '2344', '1.234e-2(6)', '3400e-6',
+    test( 'cif', 'numbers', *rawlist( '0.0283', '2344', '1.234e-2(6)', '3400e-6',
                                   '-0.000', '0', '0.000(2)', '?', '.', '1,5',
                                   '1.2(3)e-4', '1e999' ) )
-    test( 'cif', 'elements', 'typesymbol', *raw( 'O2-', 'Fe3+', 'CO', 'Co',
+    test( 'cif', 'elements', 'typesymbol', *rawlist( 'O2-', 'Fe3+', 'CO', 'Co',
                                                  'D', 'T+', 'Mn3.614+', 'Fe0',
                                                  'O-2', 'D+1', 'Ag+1', '?',
                                                  'Xx', 'O2+-', 'O+-2',
                                                  'O-2-' ) )
-    test( 'cif', 'elements', 'label', *raw( 'Ca Co0.5 O3 C2 H Cl', 'CaM1',
-                                            'OA1', 'Fe12', 'D1', 'Ow1', 'X1',
+    test( 'cif', 'elements', 'label', 'RAWDATA', 'Ca Co0.5 O3 C2 H Cl',
+          *rawlist( 'CaM1', 'OA1', 'Fe12', 'D1', 'Ow1', 'X1',
                                             'C', 'Co1', 'CO1', 'Cl(1)', 'Cs1',
                                             'H01a', 'CL1', 'CA1' ) )
-    test( 'cif', 'elements', 'label', 'Al2O3' )
-    test( 'cif', 'elements', 'label', 'not a formula', 'Al1' )
-    for bad in ( [], [ 'label' ], [ 'bla', 'X' ] ):
+    test( 'cif', 'elements', 'label', 'RAWDATA', 'Al2O3' )
+    test( 'cif', 'elements', 'label', 'RAWDATA', 'not a formula',
+          *rawlist( 'Al1' ) )
+    test( 'cif', 'numbers' )
+    for bad in ( [], [ 'label' ], [ 'label', 'Al2O3' ], [ 'bla', 'X' ],
+                 [ 'typesymbol', 'Al' ], [ 'typesymbol', 'RAWDATA', '' ],
+                 [ 'typesymbol', *rawlist( 'Al' ), 'Fe' ] ):
         with ensure_error( NCBadInput, 'Invalid cif query: '
                            + json.dumps( [ 'cif', 'elements' ] + bad,
                                          separators = ( ',', ':' ) )
                            + ' (correct usage: ["cif","elements","typesymbol",'
-                           'STR,...] or ["cif","elements","label",FORMULA,'
-                           'STR,...])' ):
+                           '"RAWDATA",LIST] or ["cif","elements","label",'
+                           '"RAWDATA",FORMULA,"RAWDATA",LIST])' ):
             ncquery( [ 'cif', 'elements', *bad ] )
+    for bad in ( [ '1.0' ], [ 'RAWDATA', '' ] ):
+        with ensure_error( NCBadInput, 'Invalid cif query: '
+                           + json.dumps( [ 'cif', 'numbers' ] + bad,
+                                         separators = ( ',', ':' ) )
+                           + ' (correct usage: ["cif","numbers","RAWDATA",'
+                           'LIST])' ):
+            ncquery( [ 'cif', 'numbers', *bad ] )
     with ensure_error( NCBadInput,
                        'Invalid cif query: ["cif","bla"] (unknown key)' ):
         ncquery( [ 'cif', 'bla' ] )
@@ -491,43 +522,43 @@ def rnd( o ):
 def test_uij():
     #Anisotropic displacements (uij, as Ustd): on the mirror plane of Pm
     #(y=0), U12 and U23 must vanish:
-    pm = [ 'strict','6:b','strict','5,5.4,6,90,95,90' ]
+    pm = [ 'strict','6:b','strict','RAWDATA','5,5.4,6,90,95,90' ]
     sym = 'O,0.1,0,0.2,0.012,0.009,0.015,0,0.003,0'
-    r = ncquery( [ 'sgsym', 'positions', *pm, sym ] )
+    r = ncquery( [ 'sgsym', 'positions', *pm, *rawlist( sym ) ] )
     s, = r['sites']
     print( 'uij on the mirror plane:', rnd( s['uij'] ), 'multiplicity', s['multiplicity'] )
     assert s['multiplicity'] == 1 and s['uijs'] == [ s['uij'] ]
     #Slightly off (U12 2% of the largest component) is snapped, more is an error:
     r = ncquery( [ 'sgsym', 'positions', *pm,
-                   'O,0.1,0,0.2,0.012,0.009,0.015,0.0003,0.003,0' ] )
+                   *rawlist( 'O,0.1,0,0.2,0.012,0.009,0.015,0.0003,0.003,0' ) ] )
     print( 'U12=0.0003 snapped to:', rnd( r['sites'][0]['uij'] ) )
     assert r['sites'][0]['uij'][3] == 0.0
     with ensure_error( NCBadInput, 'The uij values of the site "O" (0.1, 0, 0.2)'
                        ' do not obey the site symmetry' ):
         ncquery( [ 'sgsym', 'positions', *pm,
-                   'O,0.1,0,0.2,0.012,0.009,0.015,0.0012,0.003,0' ] )
+                   *rawlist( 'O,0.1,0,0.2,0.012,0.009,0.015,0.0012,0.003,0' ) ] )
     #With lenient tolerances, the rounding errors of printed numbers are also
     #accepted (here U12=0.0012 printed with rounding error 0.0005 each):
-    pml = [ 'strict','6:b','lenient','5,5.4,6,90,95,90' ]
+    pml = [ 'strict','6:b','lenient','RAWDATA','5,5.4,6,90,95,90' ]
     r = ncquery( [ 'sgsym', 'positions', *pml,
-                   'O,0.1,0,0.2,0.012,0.009,0.015,0.001,0.003,0' ] )
+                   *rawlist( 'O,0.1,0,0.2,0.012,0.009,0.015,0.001,0.003,0' ) ] )
     print( 'lenient, printed U12=0.001 snapped to:', rnd( r['sites'][0]['uij'] ) )
     with ensure_error( NCBadInput, 'The uij values of the site "O" (0.1, 0, 0.2)'
                        ' do not obey the site symmetry' ):
         ncquery( [ 'sgsym', 'positions', *pml,
-                   'O,0.1,0,0.2,0.0120,0.0090,0.0150,0.0012,0.0030,0.0000' ] )
+                   *rawlist( 'O,0.1,0,0.2,0.0120,0.0090,0.0150,0.0012,0.0030,0.0000' ) ] )
     with ensure_error( NCBadInput, 'The uij values of the site "O" (0.1, 0, 0.2)'
                        ' do not form a positive definite matrix' ):
-        ncquery( [ 'sgsym', 'positions', *pm, 'O,0.1,0,0.2,0.012,-0.009,0.015,0,0.003,0' ] )
+        ncquery( [ 'sgsym', 'positions', *pm, *rawlist( 'O,0.1,0,0.2,0.012,-0.009,0.015,0,0.003,0' ) ] )
     #A general position: the uij at the mirror image (y -> -y), and back:
     r = ncquery( [ 'sgsym', 'positions', *pm,
-                   'O,0.1,0.3,0.2,0.5,0.012,0.009,0.015,0.002,0.003,0.001' ] )
+                   *rawlist( 'O,0.1,0.3,0.2,0.5,0.012,0.009,0.015,0.002,0.003,0.001' ) ] )
     s, = r['sites']
     print( 'uij at the two positions of a general site:', rnd( s['uijs'] ) )
     assert s['uijs'][1][3] < 0.0 and s['uijs'][1][5] < 0.0
     pos = [ 'O,' + ','.join( repr(v) for v in p ) + ',0.5,'
             + ','.join( repr(v) for v in u ) for p, u in zip( s['positions'], s['uijs'] ) ]
-    r = ncquery( [ 'sgsym', 'sites', *pm, *pos ] )
+    r = ncquery( [ 'sgsym', 'sites', *pm, *rawlist( *pos ) ] )
     print( 'grouped back into sites:', rnd( r['sites'] ) )
     assert r['sites'][0]['multiplicity'] == 2
     #Tensors at the two positions which are not symmetry images of each other:
@@ -536,27 +567,29 @@ def test_uij():
     with ensure_error( NCBadInput, 'The uij values of the symmetry-equivalent'
                        ' positions of "O" (0.1, 0.3, 0.2) are not symmetry'
                        ' images of each other' ):
-        ncquery( [ 'sgsym', 'sites', *pm, *bad ] )
+        ncquery( [ 'sgsym', 'sites', *pm, *rawlist( *bad ) ] )
     #Uij must be given for all or none of the entries of a label:
     with ensure_error( NCBadInput, 'Anisotropic displacements (uij) must be'
                        ' given for all or none of the entries of O' ):
-        ncquery( [ 'sgsym', 'sites', *pm, pos[0], 'O,0.1,0.7,0.2,0.5' ] )
+        ncquery( [ 'sgsym', 'sites', *pm,
+                   *rawlist( pos[0], 'O,0.1,0.7,0.2,0.5' ) ] )
     #Printed CIF numbers with uncertainties are accepted:
     r = ncquery( [ 'sgsym', 'positions', *pml,
-                   *raw( 'O,0.1000(3),0,0.2000(2),0.0120(4),0.0090(3),'
-                         '0.0150(5),0,0.0030(2),0' ) ] )
+                   *rawlist( 'O,0.1000(3),0,0.2000(2),0.0120(4),0.0090(3),'
+                             '0.0150(5),0,0.0030(2),0' ) ] )
     print( 'printed CIF numbers:', rnd( r['sites'][0]['uij'] ) )
     #Ueq and its rounding error from the printed tensor and cell (here the
     #angles 90 printed without uncertainty are exact):
     for c in ( '5,5.4,6,90,95,90', '5.0(1),5.4(2),6.0(1),90,95.0(3),90',
                '5.0(1),5.4(2),6.0(1),90.0(1),95.0(3),90' ):
         r = ncquery( [ 'sgsym', 'positions', 'strict', '6:b', 'lenient',
-                       *raw( c, 'O,0.1,0.3,0.2,0.0120(4),0.0090(3),0.0150(5),'
-                             '0.0020(2),0.0030(2),0.0010(1)' ) ] )
+                       'RAWDATA', c,
+                       *rawlist( 'O,0.1,0.3,0.2,0.0120(4),0.0090(3),0.0150(5),'
+                                 '0.0020(2),0.0030(2),0.0010(1)' ) ] )
         print( 'ueq in cell', c, ':', [ float( f'{v:.6g}' )
                                          for v in r['sites'][0]['ueq'] ] )
     r = ncquery( [ 'sgsym', 'positions', 'strict', '6:b', 'strict',
-                   '5,5.4,6,90,95,90', 'O,0.1,0.3,0.2' ] )
+                   'RAWDATA', '5,5.4,6,90,95,90', *rawlist( 'O,0.1,0.3,0.2' ) ] )
     assert r['sites'][0]['ueq'] is None
 
 if __name__ == '__main__':
