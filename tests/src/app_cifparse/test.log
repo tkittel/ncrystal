@@ -371,6 +371,30 @@ after moves:
     _t: T[l1\nl2]@4
     _l (loop col 0/2): U[a]@7 U[b]@7
     _v (loop col 1/2): U[1]@7 U[2]@7
+==== MP note fallback ====
+note (added to the last block) (both modes):
+  data_a @1
+    _x: U[1]@1
+  data_b @2
+    _y: U[2]@2
+    _[local]_ncrystal_mp_database_code: U[mp-149]@4
+note without final line ending (both modes):
+  data_a @1
+    _x: U[1]@1
+    _[local]_ncrystal_mp_database_code: U[mp-55]@2
+tag already present (both modes):
+  data_a @1
+    _[LOCAL]_ncrystal_mp_database_code: U[mp-7]@2
+note too early (both modes):
+  data_a @1
+    _x: U[1]@1
+not an id (both modes):
+  data_a @1
+    _x: U[1]@1
+filtered out:
+  data_a @1
+    _x: U[1]@1
+    _[local]_ncrystal_mp_database_code: (not loaded)
 ==== Large ====
 no filter: 2001 blocks
   block1234: U[1234.5]@3705 S[v1234]@3706
