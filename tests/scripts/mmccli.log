@@ -879,7 +879,7 @@ NCrystal MiniMC results:
 
 ===========================================
 ============= CLI >>-i bla_qemu.json.gz --dump --tally=e,l<< ====================
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Indicated tallies missing in input: l [warn#1]
+NCrystal WARNING: Indicated tallies missing in input: l
 NCrystal MiniMC results:
    inputs cfg:
      material : "solid::GdO3/1gcm3"
@@ -1155,7 +1155,7 @@ CALLING ResultOf[plt.gca(..)].semilogy()
 CALLING plt.show()
 ===========================================
 ============= CLI >>void.ncmat 2Aa -e tally=<< ====================
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): No tallies are available to plot. [warn#2]
+NCrystal WARNING: No tallies are available to plot.
 ===========================================
 ============= CLI >>void.ncmat 2Aa -e tallybreakdown=0 --plot<< ====================
 Plotting tally: theta

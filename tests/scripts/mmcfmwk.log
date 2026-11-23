@@ -779,7 +779,7 @@ CALLING ResultOf[plt.gca(..)].set_title('"circular;n=1e6;z=-0.005;wl=2;r=0.005" 
 CALLING ResultOf[plt.gca(..)].legend([FakeHandle],['Transmitted (100%)'])
 CALLING ResultOf[plt.gca(..)].semilogy()
 CALLING plt.show()
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): No tallies were enabled. [warn#1]
+NCrystal WARNING: No tallies were enabled.
 CALLING plt.subplots()
 CALLING plt.gca()
 CALLING ResultOf[plt.gca(..)].plot(['0.0', '0.003', '0.006', '...', '15.0', '15.0', '15.0'],['0.0', '0.0', '0.0', '...', '0.0', '0.0', '0.0'],color='#5DA5DA',label='Scattering')

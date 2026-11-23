@@ -27,22 +27,16 @@ functions in _common.py).
 """
 
 def _default_pymsghandler( msg, msgtype ):
-    from ._common import print
+    #Messages from the C++ library: notices (NCRYSTAL_MSG), warnings
+    #(NCRYSTAL_WARN) and raw output (NCRYSTAL_RAWOUT):
+    from . import _common
     if msgtype == 0:
-        #Info
-        print(f"NCrystal: {msg}")
+        _common.infomsg(msg)
     elif msgtype == 1:
-        #Warning:
-        #TODO: Consider default action here:
-        if False:
-            from ._common import warn
-            warn(msg)
-        else:
-            print(f"NCrystal WARNING: {msg}")
+        _common.warn(msg)
     else:
-        #Raw output:
         assert msgtype == 2
-        print(msg,end='')
+        _common.print(msg,end='')
 
 #TODO: Overlaps somewhat with the (py-only) set_ncrystal_print_fct from _common.py:
 
@@ -56,14 +50,6 @@ def _setMsgHandler( handler ):
     _rawfct['setmsghandler'](handler)
     _was_set[0] = True
     _current[0] = handler
-
-class _suppress_msgs_ctx:
-    #Temporarily discard all messages from the C++ library.
-    def __enter__( self ):
-        self.__orig = _current[0]
-        _setMsgHandler( lambda msg, msgtype : None )
-    def __exit__( self, *a, **kw ):
-        _setMsgHandler( self.__orig )
 
 def _setDefaultPyMsgHandlerIfNotSet():
     if not _was_set[0]:

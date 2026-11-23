@@ -16,9 +16,9 @@
  'force': True,
  'include_gif': True,
  'ncmat_cfg': 'Si_sg227.ncmat;vdoslux=1;incoh_elas=false'}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#1]
+NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 Initialise nuclear data...
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): ENDF output will not contain any incoherent elastic component [warn#2]
+NCrystal WARNING: ENDF output will not contain any incoherent elastic component
 Write ENDF file tsl_Si.endf ...
 Files created:
   tsl_Si.endf : Si with fraction 1
@@ -37,7 +37,7 @@ Created (or not) file tsl_Si.endf with fraction 1
  'include_gif': True,
  'ncmat_cfg': 'SiO2-alpha_sg154_AlphaQuartz.ncmat',
  'verbosity': 3}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#3]
+NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 Initialise nuclear data...
 Designated incoherent: Si
 >>> alpha points: 280, alpha range: (0, 832)
@@ -597,7 +597,7 @@ Created (or not) file tsl_Si_in_UnknownCompound.endf with fraction 0.333333
  'include_gif': True,
  'ncmat_cfg': 'SiO2-alpha_sg154_AlphaQuartz.ncmat',
  'verbosity': 3}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#4]
+NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 Initialise nuclear data...
 >>> alpha points: 280, alpha range: (0, 832)
 >>> beta points: 384, beta range: (0, 1.5e+02)
@@ -1178,9 +1178,9 @@ Created (or not) file tsl_Si_in_UnknownCompound.endf with fraction 0.333333
  'ncmat_cfg': 'SiO2-alpha_sg154_AlphaQuartz.ncmat',
  'othertemps': 400,
  'verbosity': 3}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#5]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Creating non standard S(a,b) with LASYM = 3 [warn#6]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it. [warn#7]
+NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
+NCrystal WARNING: Creating non standard S(a,b) with LASYM = 3
+NCrystal WARNING: Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it.
 Initialise nuclear data...
 >>> alpha points: 280, alpha range: (0, 832)
 >>> beta points: 384, beta range: (0, 1.5e+02)

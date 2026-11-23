@@ -1,0 +1,94 @@
+==> Default: printed
+NCrystal: a notice
+NCrystal WARNING: a warning
+NCrystal WARNING: a warning
+raw output
+NCrystal WARNING: NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).
+==> Captured by the print function:
+   captured: NCrystal: a notice
+   captured: NCrystal WARNING: a warning
+   captured: NCrystal WARNING: a warning
+   captured: raw output
+   captured: NCrystal WARNING: NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).
+==> use_logging(): notices and warnings logged
+LOG INFO NCrystal: a notice
+LOG WARNING NCrystal: a warning
+LOG WARNING NCrystal: a warning
+raw output
+LOG WARNING NCrystal: NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).
+==> use_logging(include_raw=True): raw output logged too
+LOG INFO NCrystal: a notice
+LOG WARNING NCrystal: a warning
+LOG WARNING NCrystal: a warning
+LOG INFO NCrystal: raw output
+LOG WARNING NCrystal: NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).
+==> MsgCtrl collects regardless of logging:
+   collected: info=['a notice'] warnings=[('a warning', 'NCrystalWarning'), ('a warning', 'NCrystalWarning'), ('NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).', 'NCrystalWarning')] raw=['raw output\n']
+==> MsgCtrl(logger=False) prints despite use_logging():
+NCrystal: a notice
+NCrystal WARNING: a warning
+NCrystal WARNING: a warning
+raw output
+NCrystal WARNING: NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).
+==> ignore_logging=["warning"] (and inner contexts can not undo it):
+NCrystal: a notice
+NCrystal WARNING: a warning
+NCrystal WARNING: a warning
+raw output
+NCrystal WARNING: NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).
+==> MsgCtrl(logger=<custom logger>, include_raw=True):
+LOG INFO myapp: a notice
+LOG WARNING myapp: a warning
+LOG WARNING myapp: a warning
+LOG INFO myapp: raw output
+LOG WARNING myapp: NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).
+==> Inner MsgCtrl(logger=False) wins:
+NCrystal: a notice
+NCrystal WARNING: a warning
+NCrystal WARNING: a warning
+raw output
+NCrystal WARNING: NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).
+==> After use_logging(False), printed again:
+NCrystal: a notice
+NCrystal WARNING: a warning
+NCrystal WARNING: a warning
+raw output
+NCrystal WARNING: NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).
+==> Prefixes (each context its own, innermost wins):
+a notice
+WARNING: a warning
+WARNING: a warning
+raw output
+WARNING: NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).
+INNER: a notice
+WARNING: a warning
+WARNING: a warning
+raw output
+WARNING: NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).
+WARNING: outer again
+==> Nested: outer blocks and collects, inner dedups and collects:
+   inner: info=['a notice'] warnings=[('a warning', 'NCrystalWarning'), ('NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).', 'NCrystalWarning')] raw=['raw output\n']
+   outer: info=['a notice', 'a notice'] warnings=[('a warning', 'NCrystalWarning'), ('a warning', 'NCrystalWarning'), ('NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).', 'NCrystalWarning'), ('a warning', 'NCrystalWarning'), ('a warning', 'NCrystalWarning'), ('NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).', 'NCrystalWarning'), ('after inner', 'NCrystalWarning')] raw=['raw output\n', 'raw output\n']
+==> block is cumulative (inner can not unblock):
+NCrystal WARNING: a warning
+NCrystal WARNING: a warning
+NCrystal WARNING: NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).
+==> Inner blocks, outer still collects:
+   inner: info=[] warnings=[('blocked by inner', 'NCrystalWarning'), ('a python warning', 'UserWarning')] raw=[]
+   outer: info=[] warnings=[('blocked by inner', 'NCrystalWarning'), ('a python warning', 'UserWarning')] raw=[]
+==> Python warnings are shown unless blocked:
+CAUGHT ESCAPED WARNING (UserWarning): a python warning, shown
+   mc: info=[] warnings=[('a python warning, shown', 'UserWarning')] raw=[]
+==> Each context starts with a clean slate:
+   context 0: info=[] warnings=[('same', 'NCrystalWarning')] raw=[]
+   context 1: info=[] warnings=[('same', 'NCrystalWarning')] raw=[]
+==> Single string accepted as parts:
+   mc: info=[] warnings=[] raw=['x\n']
+==> Errors:
+Caught expected NCBadInput("Invalid MsgCtrl spy part(s): ['bla'] (must be among ['info', 'warning', 'raw'])")
+Caught expected NCBadInput('MsgCtrl logger must be None, False, True or a logging.Logger')
+==> cli.run with msg_style="api" (dump output blocked):
+NCrystal WARNING: NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).
+==> cli.run with msg_style="cli" (dump output blocked):
+WARNING: NCMATLoader: Loading NCMAT data which has Debye temperatures for elements with VDOS curves available (this might give sub-optimal MSD values).
+Caught expected NCBadInput('Invalid msg_style: "bla" (must be "api" or "cli")')

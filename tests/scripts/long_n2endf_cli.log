@@ -143,8 +143,8 @@ The list of supported meta-data keys and their meaning is:
 
 =======================================================
 ============= CLI >>'stdlib::Al_sg225.ncmat;vdoslux=1' -vvv -f -e scaled --totsab --asymsab<< ====================
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#1]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Creating non standard S(a,b) with LASYM = 3 [warn#2]
+NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
+NCrystal WARNING: Creating non standard S(a,b) with LASYM = 3
 Initialise nuclear data...
 >>> alpha points: 110, alpha range: (0, 824)
 >>> beta points: 139, beta range: (0, 87)
@@ -158,7 +158,7 @@ Files created:
 Suggested material density: 2.698645565 g/cm^3
 ==================================================================================================================
 ============= CLI >>'stdlib::Al_sg225.ncmat;vdoslux=1' -f --now --dir=some/out/dir --index mymat.json<< ====================
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#3]
+NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 Initialise nuclear data...
 Write ENDF file tsl_Al.endf ...
 Files created:

@@ -1004,9 +1004,9 @@ Suggested material density: 5.663552326 g/cm^3
 =====================================================================================================================================
 ============= CLI >>'Bi_sg166.ncmat;comp=inelas;temp=77K;vdoslux=0' -m 'AUTH:J. Doe'<< ====================
 Initialise nuclear data...
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): ENDF output will not contain a Bragg diffraction component [warn#1]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): ENDF output will not contain any incoherent elastic component [warn#2]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): No coherent elastic data or incoherent elastic data found: only inelastic data will be written [warn#3]
+NCrystal WARNING: ENDF output will not contain a Bragg diffraction component
+NCrystal WARNING: ENDF output will not contain any incoherent elastic component
+NCrystal WARNING: No coherent elastic data or incoherent elastic data found: only inelastic data will be written
 Write ENDF file tsl_Bi.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}

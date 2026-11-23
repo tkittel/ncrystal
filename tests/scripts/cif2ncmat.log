@@ -175,7 +175,7 @@ OC3 0.27350 0.51260 0.09310
 ============= CLI >>codid::9005777 --nomerge<< ====================
 Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 Attempting to load CIF data with gemmi
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#1]
+NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
@@ -203,7 +203,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#1]
+OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
+OUT>#                     element content was guessed from their label (Ca from
+OUT>#                     CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 15 atoms!
 OUT>#
@@ -340,7 +342,7 @@ OUT>  debye_temp 300
 ============= CLI >>codid::9005777<< ====================
 Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 Attempting to load CIF data with gemmi
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#2]
+NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
@@ -368,7 +370,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#2]
+OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
+OUT>#                     element content was guessed from their label (Ca from
+OUT>#                     CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
@@ -417,7 +421,7 @@ OUT>  debye_temp 300
 ============= CLI >>codid::9005777 --uisotemp=50<< ====================
 Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 Attempting to load CIF data with gemmi
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#3]
+NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
@@ -445,7 +449,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#3]
+OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
+OUT>#                     element content was guessed from their label (Ca from
+OUT>#                     CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
@@ -494,7 +500,7 @@ OUT>  debye_temp 300
 ============= CLI >>codid::9005777 --debyetemp=50<< ====================
 Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 Attempting to load CIF data with gemmi
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#4]
+NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
@@ -522,7 +528,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#4]
+OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
+OUT>#                     element content was guessed from their label (Ca from
+OUT>#                     CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
@@ -572,7 +580,7 @@ OUT>  debye_temp 50
 Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 Attempting to load CIF data with gemmi
 Self-consistency of structure was verified by spglib
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#5]
+NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
 Verifying that resulting ncmat data can be loaded
 Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
 OUT>NCMAT v8
@@ -604,7 +612,10 @@ OUT>#          since the CIF data specified no temperature. This is likely wrong
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#5]
+OUT>#   NCrystalWarning : The CIF data specifies no temperature, so its Uiso (msd)
+OUT>#                     values are assumed to be associated with a fallback
+OUT>#                     temperature of 293K. Specify the temperature explicitly,
+OUT>#                     as this is likely wrong.
 OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
@@ -755,7 +766,7 @@ OUT>  msd 0.0072 at_temperature 50
 Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 Attempting to load CIF data with gemmi
 Self-consistency of structure was verified by spglib
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#6]
+NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
 Verifying that resulting ncmat data can be loaded
 Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
 OUT>NCMAT v8
@@ -787,7 +798,10 @@ OUT>#          since the CIF data specified no temperature. This is likely wrong
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#6]
+OUT>#   NCrystalWarning : The CIF data specifies no temperature, so its Uiso (msd)
+OUT>#                     values are assumed to be associated with a fallback
+OUT>#                     temperature of 293K. Specify the temperature explicitly,
+OUT>#                     as this is likely wrong.
 OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
@@ -1064,7 +1078,7 @@ OUT>     .0462663 .0247447 .0118274 .00659815 .00298692 0
 ============= CLI >>codid::9005777 --dynamics stdlib::CaSiO3_sg2_Wollastonite.ncmat<< ====================
 Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 Attempting to load CIF data with gemmi
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#7]
+NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
@@ -1092,7 +1106,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#7]
+OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
+OUT>#                     element content was guessed from their label (Ca from
+OUT>#                     CaM1, Si from Si1, O from OA1)
 OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
@@ -1293,7 +1309,7 @@ OUT>  debye_temp 300
 ============= CLI >>dummy_D.cif<< ====================
 Attempting to load CIF data with gemmi
 Self-consistency of structure was verified by spglib
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#8]
+NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
 Verifying that resulting ncmat data can be loaded
 Writing autogen_C3D2_sg221.ncmat
 OUT>NCMAT v8
@@ -1318,7 +1334,10 @@ OUT>#          since the CIF data specified no temperature. This is likely wrong
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#8]
+OUT>#   NCrystalWarning : The CIF data specifies no temperature, so its Uiso (msd)
+OUT>#                     values are assumed to be associated with a fallback
+OUT>#                     temperature of 293K. Specify the temperature explicitly,
+OUT>#                     as this is likely wrong.
 OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
@@ -1343,7 +1362,7 @@ OUT>  msd 0.019 at_temperature 293
 ============= CLI >>dummy_D.cif --remap 'D is H'<< ====================
 Attempting to load CIF data with gemmi
 Self-consistency of structure was verified by spglib
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#9]
+NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
 Verifying that resulting ncmat data can be loaded
 Writing autogen_C3H2_sg221.ncmat
 OUT>NCMAT v8
@@ -1370,7 +1389,10 @@ OUT>#          since the CIF data specified no temperature. This is likely wrong
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#9]
+OUT>#   NCrystalWarning : The CIF data specifies no temperature, so its Uiso (msd)
+OUT>#                     values are assumed to be associated with a fallback
+OUT>#                     temperature of 293K. Specify the temperature explicitly,
+OUT>#                     as this is likely wrong.
 OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
@@ -1401,7 +1423,7 @@ Caught expected ArgumentError('Conflicting options')
 ============= CLI >>dummy_D.cif --remap 'D is 0.6 H 0.4 D'<< ====================
 Attempting to load CIF data with gemmi
 Self-consistency of structure was verified by spglib
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#10]
+NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
 Verifying that resulting ncmat data can be loaded
 Writing autogen_C15D4H6_sg221.ncmat
 OUT>NCMAT v8
@@ -1428,7 +1450,10 @@ OUT>#          since the CIF data specified no temperature. This is likely wrong
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#10]
+OUT>#   NCrystalWarning : The CIF data specifies no temperature, so its Uiso (msd)
+OUT>#                     values are assumed to be associated with a fallback
+OUT>#                     temperature of 293K. Specify the temperature explicitly,
+OUT>#                     as this is likely wrong.
 OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
@@ -1562,7 +1587,7 @@ OUT>     .0462663 .0247447 .0118274 .00659815 .00298692 0
 ============= CLI >>codid::9005777 --atomdata 'Si 28.09u::4.1491fm 0.004b 0.171b'<< ====================
 Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 Attempting to load CIF data with gemmi
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#11]
+NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
@@ -1590,7 +1615,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#11]
+OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
+OUT>#                     element content was guessed from their label (Ca from
+OUT>#                     CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
@@ -1641,7 +1668,7 @@ OUT>  debye_temp 300
 ============= CLI >>codid::9005777 --atomdata 'Si 28.09u 0fm 0b 0b'<< ====================
 Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 Attempting to load CIF data with gemmi
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#12]
+NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
@@ -1669,7 +1696,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#12]
+OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
+OUT>#                     element content was guessed from their label (Ca from
+OUT>#                     CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
@@ -1722,7 +1751,7 @@ Caught expected ArgumentError('invalid --atomdata syntax in "Si 28.09 0fm 0b 0b"
 ============= CLI >>codid::9005777 --atomdata 'Si 28.09u 0fm 0b 0b' --atomdata 'Ca 128.09u 0fm 0b 0b'<< ====================
 Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 Attempting to load CIF data with gemmi
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#13]
+NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
@@ -1750,7 +1779,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#13]
+OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
+OUT>#                     element content was guessed from their label (Ca from
+OUT>#                     CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
@@ -1819,7 +1850,7 @@ UNITTEST: Would invoke nc_cifutils.produce_validation_plots with pdf_target= bla
 ============================================================================================================
 ============= CLI >>Wyckoff1963_Sulphor_0011255.cif<< ====================
 Attempting to load CIF data with gemmi
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1) [warn#14]
+NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1)
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_S_sg70.ncmat
@@ -1842,7 +1873,8 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1) [warn#14]
+OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
+OUT>#                     element content was guessed from their label (S from S1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#
@@ -1867,8 +1899,8 @@ OUT>  debye_temp 300
 ==========================================================================
 ============= CLI >>Wyckoff1963_Sulphor_0011255.cif --spacegroup 'F d d d:1'<< ====================
 Attempting to load CIF data with gemmi
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Overriding spacegroup to "F d d d:1" due to explicit request [warn#15]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1) [warn#16]
+NCrystal WARNING: Overriding spacegroup to "F d d d:1" due to explicit request
+NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1)
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_S_sg70.ncmat
@@ -1891,8 +1923,10 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : Overriding spacegroup to "F d d d:1" due to explicit request [warn#15]
-OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1) [warn#16]
+OUT>#   NCrystalWarning : Overriding spacegroup to "F d d d:1" due to explicit
+OUT>#                     request
+OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
+OUT>#                     element content was guessed from their label (S from S1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#
@@ -1917,8 +1951,8 @@ OUT>  debye_temp 300
 ===================================================================================================
 ============= CLI >>Wyckoff1963_Sulphor_0011255.cif --spacegroup 'F d d d:2'<< ====================
 Attempting to load CIF data with gemmi
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Overriding spacegroup to "F d d d:2" due to explicit request [warn#17]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1) [warn#18]
+NCrystal WARNING: Overriding spacegroup to "F d d d:2" due to explicit request
+NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1)
 Self-consistency of structure was verified by spglib
 Verifying that resulting ncmat data can be loaded
 Writing autogen_S_sg70.ncmat
@@ -1941,8 +1975,10 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalUserWarning : Overriding spacegroup to "F d d d:2" due to explicit request [warn#17]
-OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1) [warn#18]
+OUT>#   NCrystalWarning : Overriding spacegroup to "F d d d:2" due to explicit
+OUT>#                     request
+OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
+OUT>#                     element content was guessed from their label (S from S1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#

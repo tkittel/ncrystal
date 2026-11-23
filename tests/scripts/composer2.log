@@ -345,7 +345,7 @@ P1 primitive cell: 6 sites
 Bragg reflections identical to direct C2/c: 1857 families
 Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Anisotropic displacements (uij) dropped for Si, since tensors of equivalent sites are not symmetry images of each other [warn#1]
+NCrystal WARNING: Anisotropic displacements (uij) dropped for Si, since tensors of equivalent sites are not symmetry images of each other
 @CELL
   lengths 9.7 8.9 5.3
   angles 90 105.6 90
@@ -354,7 +354,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): Anisotropic displacements (uij) dr
 @ATOMSITES
   O 1/2 .91 1/4 uij 0.02 0.014 0.017 0 0.004 0
   Si .61 .73 .37
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The symprec parameter of NCMATComposer.refine_crystal_structure and .verify_crystal_structure is obsolete. Please use tol_symprec instead. [warn#2]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The symprec parameter of NCMATComposer.refine_crystal_structure and .verify_crystal_structure is obsolete. Please use tol_symprec instead. [warn#1]
 Caught expected NCBadInput('Do not specify both symprec and tol_symprec')
 Caught expected NCBadInput('Invalid tol_symprec value: 0.6 (must not exceed 0.5Aa)')
 symprec alias OK

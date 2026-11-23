@@ -167,7 +167,7 @@ CALLING ResultOf[plt.gca(..)].set_ylabel('DOS (arbitrary scale)')
 CALLING ResultOf[plt.gca(..)].legend()
 CALLING ResultOf[plt.gca(..)].grid()
 CALLING plt.show()
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): NCMATComposer: no state of matter set (assuming "solid"). Call .set_state_of_matter(..) explicitly to avoid this warning [warn#1]
+NCrystal WARNING: NCMATComposer: no state of matter set (assuming "solid"). Call .set_state_of_matter(..) explicitly to avoid this warning
 >>>> Plotting di with show_orig_data=True
 >>>> di.plot_vdos O
 CALLING plt.subplots()
@@ -222,7 +222,7 @@ CALLING ResultOf[plt.gca(..)].legend()
 CALLING ResultOf[plt.gca(..)].grid()
 CALLING plt.show()
 >>>> plot_xsect #3 (void ekin)
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Could not set log scale since curves are 0.0 everywhere [warn#2]
+NCrystal WARNING: Could not set log scale since curves are 0.0 everywhere
 CALLING plt.subplots()
 CALLING plt.gca()
 CALLING ResultOf[plt.gca(..)].plot(['3.64e-07', '3.64e-07', '3.65e-07', '...', '0.0362', '0.0363', '0.0364'],['0.0', '0.0', '0.0', '...', '0.0', '0.0', '0.0'],color='#5DA5DA',label='Scattering')
@@ -245,7 +245,7 @@ CALLING ResultOf[plt.gca(..)].plot(['0.0', '0.003', '0.006', '...', '15.0', '15.
 CALLING ResultOf[plt.gca(..)].plot(['0.0', '0.003', '0.006', '...', '15.0', '15.0', '15.0'],['0.0', '0.0', '0.0', '...', '0.0', '0.0', '0.0'],color='#F15854',label='Total')
 CALLING ResultOf[plt.gca(..)].set_xlabel('Neutron wavelength (angstrom)')
 CALLING ResultOf[plt.gca(..)].set_ylabel('Cross section per atom (barn)')
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): ymin/ymax parameters would lead to a plot range of [5.0,0.1]. Reverting to [0.0,1.0]. [warn#3]
+NCrystal WARNING: ymin/ymax parameters would lead to a plot range of [5.0,0.1]. Reverting to [0.0,1.0].
 CALLING ResultOf[plt.gca(..)].set_ylim(0.0,1.0)
 CALLING ResultOf[plt.gca(..)].set_xlim(0.0,15.0)
 CALLING ResultOf[plt.gca(..)].set_title('void.ncmat')

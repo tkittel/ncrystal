@@ -9,7 +9,7 @@
 == rutile, P1, unrotated tensor copies, permissive: sg=136 natoms=2
    Ti1_0,Ti1_1              mult=2 occu=1 uiso=0.00533333
    O1_0,O1_1,O1_2,O1_3      mult=4 occu=1 uiso=0.008
-   warning: The anisotropic displacements of the symmetry equivalent CIF sites "O1_0", "O1_1", "O1_2", "O1_3", "Ti1_0", "Ti1_1" are not symmetry images of each other (discarded due to permissive mode) [warn#1]
+   warning: The anisotropic displacements of the symmetry equivalent CIF sites "O1_0", "O1_1", "O1_2", "O1_3", "Ti1_0", "Ti1_1" are not symmetry images of each other (discarded due to permissive mode)
 == rutile, P1, Ti occupancies 0.46/0.54: sg=65 natoms=3
    Ti1_0                    mult=2 occu=0.46 uiso=0.00533333 aniso=0.0055 0.0065 0.004 0 0 0
    Ti1_1                    mult=2 occu=0.54 uiso=0.00533333 aniso=0.0065 0.0055 0.004 0 0 0
@@ -33,12 +33,12 @@
 == rutile, unparsable operation, permissive: sg=136 natoms=2
    Ti1                      mult=2 occu=1 uiso=0.00533333 aniso=0.006 0.006 0.004 0.0005 0 0
    O1                       mult=4 occu=1 uiso=0.008 aniso=0.009 0.009 0.006 -0.003 0 0
-   warning: The symmetry operations listed in the CIF data could not be parsed (Invalid symmetry operation "x+500/999,y,z": translations must be multiples of 1/24), so the space group symbol "P 42/m n m" is used (accepted due to permissive mode) [warn#2]
+   warning: The symmetry operations listed in the CIF data could not be parsed (Invalid symmetry operation "x+500/999,y,z": translations must be multiples of 1/24), so the space group symbol "P 42/m n m" is used (accepted due to permissive mode)
 == rutile, gamma=90.002: sg=136 natoms=2
    Ti1                      mult=2 occu=1 uiso=0.00533332 aniso=0.006 0.006 0.004 0.0005 0 0
    O1                       mult=4 occu=1 uiso=0.00800007 aniso=0.009 0.009 0.006 -0.003 0 0
-   warning: Structure received minor corrections by spglib (at the 0.0011111% level) [warn#3]
-   warning: The unit cell parameters do not exactly fit the space group of the CIF data (136), so the structure was refined to exactly consistent cell parameters [warn#4]
+   warning: Structure received minor corrections by spglib (at the 0.0011111% level)
+   warning: The unit cell parameters do not exactly fit the space group of the CIF data (136), so the structure was refined to exactly consistent cell parameters
    rutile, gamma=90.5: rejected: The unit cell parameters are not compatible with the space group of the CIF data (136), and refining the structure gives space group 65. If the declared symmetry is trusted, try again with a larger tolerance (tol).
    rutile, gamma=90.5, no uij: rejected: The unit cell parameters are not compatible with the space group of the CIF data (136), and refining the structure gives space group 65. If the declared symmetry is trusted, try again with a larger tolerance (tol).
 == C2/c: sg=15 natoms=2
@@ -58,9 +58,9 @@
 == triclinic, P1, refine_with_spglib=True: sg=1 natoms=2
    Si1                      mult=1 occu=1 uiso=0.01
    O1                       mult=1 occu=1 uiso=0.015
-   warning: The structure has no symmetry beyond space group 1 (P1). This is rare for real crystals and might indicate a supercell or low-precision coordinates. Be wary! [warn#14]
+   warning: The structure has no symmetry beyond space group 1 (P1). This is rare for real crystals and might indicate a supercell or low-precision coordinates. Be wary!
 == triclinic, P1, refine_with_spglib=False: sg=1 natoms=2
    Si1                      mult=1 occu=1 uiso=0.01
    O1                       mult=1 occu=1 uiso=0.015
-   warning: Structure refinement and verification with spglib was disabled due to explicit request. [warn#15]
-   warning: The structure has space group 1 (P1), and was not checked for further symmetry. Be wary! [warn#16]
+   warning: Structure refinement and verification with spglib was disabled due to explicit request.
+   warning: The structure has space group 1 (P1), and was not checked for further symmetry. Be wary!

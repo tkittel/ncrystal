@@ -23,6 +23,7 @@
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev._common as nc_common
 import NCrystalDev._fmt as nc_fmt
+from NCrystalDev.msg import MsgCtrl
 import os
 from NCrystalDev._ncmatimpl import _extractInitialHeaderCommentsFromNCMATData
 
@@ -60,9 +61,9 @@ testcf( [('Al',1/3),('Cr',2/3)])
 #ncpprint (must go via nc_common.print and support do_sort):
 _d = {'b':[1,2],'a':{'z':1,'y':2}}
 for _ds in (False,True):
-    with nc_common.capture_print_ctxmgr() as _cap:
+    with MsgCtrl( spy = ['raw'], block = ['raw'] ) as _cap:
         nc_common.ncpprint(_d,do_sort=_ds)
-    print(f'ncpprint(do_sort={_ds}):',repr(''.join(_cap.data)))
+    print(f'ncpprint(do_sort={_ds}):',repr(''.join(_cap.raw)))
 
 #ncsetenv must use the same env var names as ncgetenv (and C++), also for
 #namespaced builds without namespaced env vars (simulated by forcing the flag):

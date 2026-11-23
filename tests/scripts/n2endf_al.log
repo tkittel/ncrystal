@@ -7,8 +7,8 @@
  'material_name': 'Al',
  'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1',
  'othertemps': 350}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#1]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it. [warn#2]
+NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
+NCrystal WARNING: Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it.
 Initialise nuclear data...
 Write ENDF file tsl_Al_in_Al.endf ...
 DUMPING endf dict begin
@@ -428,8 +428,8 @@ Created (or not) file tsl_Al_in_Al.endf with fraction 1
  'material_name': 'Al',
  'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1;knllux=3',
  'othertemps': 350}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#3]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it. [warn#4]
+NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
+NCrystal WARNING: Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it.
 Initialise nuclear data...
 Write ENDF file tsl_Al_in_Al.endf ...
 DUMPING endf dict begin
@@ -850,8 +850,8 @@ Created (or not) file tsl_Al_in_Al.endf with fraction 1
  'ncmat_cfg': 'AlN_sg186_AluminumNitride.ncmat;vdoslux=1',
  'othertemps': 350,
  'verbosity': 3}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#5]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it. [warn#6]
+NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
+NCrystal WARNING: Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it.
 Initialise nuclear data...
 Designated incoherent: Al
 >>> alpha points: 110, alpha range: (0, 824)
@@ -1678,7 +1678,7 @@ Created (or not) file tsl_Al_in_AlN.endf with fraction 0.5
  'material_name': 'Al2O3',
  'ncmat_cfg': 'Al2O3_sg167_Corundum.ncmat;vdoslux=1',
  'verbosity': 3}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#7]
+NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 Initialise nuclear data...
 >>> alpha points: 110, alpha range: (0, 824)
 >>> beta points: 150, beta range: (0, 1.3e+02)
@@ -2232,8 +2232,8 @@ Created (or not) file tsl_Al_in_Al2O3.endf with fraction 0.4
  'ncmat_cfg': 'Al4C3_sg166_AluminiumCarbide.ncmat;vdoslux=1',
  'othertemps': 350,
  'verbosity': 3}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#8]
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it. [warn#9]
+NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
+NCrystal WARNING: Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it.
 Initialise nuclear data...
 >>> alpha points: 110, alpha range: (0, 823)
 >>> beta points: 152, beta range: (0, 1.5e+02)
@@ -3348,7 +3348,7 @@ Created (or not) file tsl_Al_in_Al.endf with fraction 1
  'force': True,
  'material_name': 'Al',
  'ncmat_cfg': 'Al_with_a_Very_Very_Ver_Very_Very_Very_Very_Ver_Very_Very_Very_Very_Ver_Very_Very_Long_Name.ncmat;vdoslux=1'}
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Temperature not explicitly given in the cfg-string, using T=293.15K [warn#10]
+NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 Initialise nuclear data...
 Write ENDF file tsl_Al_in_Al.endf ...
 DUMPING endf dict begin

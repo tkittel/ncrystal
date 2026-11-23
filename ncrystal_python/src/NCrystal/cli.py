@@ -52,7 +52,7 @@ def cli_tool_lookup( name ):
     from ._cliimpl import cli_tool_lookup_impl
     return cli_tool_lookup_impl( name )
 
-def run( toolname, *arguments ):
+def run( toolname, *arguments, msg_style = 'api' ):
     """Can be used to invoke ncrystal command-line tools such as nctool,
     ncrystal_ncmat2cpp, ncrystal_hfg2ncmat, etc. directly via the Python API
     without the need for spawning separate subprocesses or actually using a
@@ -68,17 +68,33 @@ def run( toolname, *arguments ):
 
     $> ncrystal_ncmat2cpp Al_sg225.ncmat -o myal.cpp
 
+    With msg_style='api' (the default), notices and warnings appear as from
+    any other NCrystal Python function (cf. the NCrystal.msg module), while
+    with msg_style='cli' they are printed exactly as when running the tool in
+    the terminal (also when NCrystal.use_logging() was called).
+
     """
+    if msg_style not in ('api','cli'):
+        from .exceptions import NCBadInput
+        raise NCBadInput(f'Invalid msg_style: "{msg_style}" (must be "api" or'
+                         ' "cli")')
 
     from ._cliimpl import _resolve_cmd_and_import_climod
     climod, argv = _resolve_cmd_and_import_climod( toolname, arguments )
 
-    from ._cliimpl import _cli_call_from_pyapi_ctx, ctxmgr_modify_argparse_creation
+    from ._cliimpl import (
+        _cli_call_from_pyapi_ctx,
+        _cli_msgctrl,
+        ctxmgr_modify_argparse_creation,
+    )
+    from .msg import MsgCtrl
+    msgctrl = ( _cli_msgctrl( ignore_logging = ['info','warning','raw'] )
+                if msg_style == 'cli' else MsgCtrl() )
     try:
         with _cli_call_from_pyapi_ctx(), ctxmgr_modify_argparse_creation(
                 exit_on_error=False,
                 redirect_stderr_to_stdout=True,
-        ):
+        ), msgctrl:
             climod.main(argv)
     except SystemExit as e:
         #Map SystemExit to either a clean return or a RuntimeError.

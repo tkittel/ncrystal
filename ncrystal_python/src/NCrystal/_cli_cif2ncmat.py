@@ -190,8 +190,8 @@ def main( progname, arglist ):
     do_quiet = ( args.quiet or args.output == 'stdout' or args.showcif )
 
     if do_quiet:
-        from ._common import modify_ncrystal_print_fct_ctxmgr
-        with modify_ncrystal_print_fct_ctxmgr('block'):
+        from .msg import MsgCtrl
+        with MsgCtrl( block = ['info','warning','raw'] ):
             _main_impl(args,do_quiet)
     else:
         _main_impl(args,do_quiet)
@@ -215,7 +215,8 @@ def _main_impl( args, do_quiet ):
     if args.via_ase:
         nc_ncmatimpl._import_ase( sysexit = True )
 
-    with nc_common.WarningSpy( block = do_quiet):
+    from .msg import MsgCtrl
+    with MsgCtrl( block = ['warning'] if do_quiet else None ):
         if args.valplot:
             _unit_test = nc_common.ncgetenv_bool('CIF2NCMAT_UNITTEST_NOPLOT')
             pdf_target = None

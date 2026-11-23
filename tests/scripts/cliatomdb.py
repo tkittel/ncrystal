@@ -24,16 +24,16 @@
 
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev.cli as nc_cli
-from NCrystalDev._common import capture_print_ctxmgr
+from NCrystalDev.msg import MsgCtrl
 from NCTestUtils.common import ensure_error
 import argparse
 import shlex
 
 def run( *args, show = True ):
     print(f"============= CLI >>atomdb {shlex.join(args)}<< =============")
-    with capture_print_ctxmgr() as cap:
+    with MsgCtrl( spy = ['raw'], block = ['raw'] ) as cap:
         nc_cli.run('atomdb',*args)
-    out = ''.join(cap.data)
+    out = ''.join(cap.raw)
     if show:
         print(out,end='')
     return out

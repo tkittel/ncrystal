@@ -45,7 +45,9 @@ def _impl_create_ncmat_composer( cifloader, *,
                                  quiet,
                                  remap,
                                  no_formula_check ):
-    with _nc_common.WarningSpy( block = quiet ) as extra_ana_warnings:
+    from .msg import MsgCtrl
+    with MsgCtrl( spy = ['warning'],
+                  block = ['warning'] if quiet else None ) as mc:
         composer = _impl_create_ncmat_composer_internal( cifloader = cifloader,
                                                          uiso_temperature = uiso_temperature,
                                                          skip_dyninfo = skip_dyninfo,
@@ -55,35 +57,45 @@ def _impl_create_ncmat_composer( cifloader, *,
         if not skip_dyninfo and fallback_debye_temp and fallback_debye_temp > 0.0:
             composer.allow_fallback_dyninfo( fallback_debye_temp )
 
-    def fmtwarnings( warnings, descrtxt, nwmax ):
-        ll=[]
-        if not warnings:
-            return ll
-        ll.append(f'Notice: The following WARNINGS were emitted {descrtxt}:')
-        ll.append('')
-
-        wleft=warnings[::-1]
-        while wleft:
-            w = wleft.pop()
-            ncount = 1 + wleft.count(w)
-            if ncount > 1:
-                wleft = [e for e in wleft if e!=w]
-            wmsg,wcat = w
-            wmsg = [e.strip() for e in wmsg.splitlines() if e.strip()]
-            s0 = f'  {wcat} :' if ncount==1 else f'  ({ncount}x) {wcat} : '
-            for i,m in enumerate(wmsg):
-                if i==nwmax:
-                    break
-                pref=s0 if i==0 else ' '*(len(s0))
-                if i+1==nwmax and len(wmsg)>nwmax:
-                    m=f'<{len(wmsg)-nwmax} lines of output hidden>'
-                ll.append(f'{pref} {m}')
-        return ll
-
-    composer.add_comments( fmtwarnings( list(cifloader.warnings) + extra_ana_warnings,
-                                        'when loading the CIF data',nwmax=10),
+    composer.add_comments( _fmt_warnings_for_comments(
+        list(cifloader.warnings) + mc.warnings,
+        'when loading the CIF data', nwmax = 10 ),
                            add_empty_line_divider = True )
     return composer
+
+def _fmt_warnings_for_comments( warnings, descrtxt, nwmax ):
+    #Comment lines listing (message,category) warnings, wrapped:
+    import textwrap
+    ll=[]
+    if not warnings:
+        return ll
+    ll.append(f'Notice: The following WARNINGS were emitted {descrtxt}:')
+    ll.append('')
+
+    wleft=warnings[::-1]
+    while wleft:
+        w = wleft.pop()
+        ncount = 1 + wleft.count(w)
+        if ncount > 1:
+            wleft = [e for e in wleft if e!=w]
+        wmsg,wcat = w
+        wmsg = [e.strip() for e in wmsg.splitlines() if e.strip()]
+        s0 = f'  {wcat} :' if ncount==1 else f'  ({ncount}x) {wcat} :'
+        #Wrapped to 80 columns (incl. the "# " of comments), but with at
+        #least 50 for the text, and at most nwmax lines:
+        textwidth = max( 50, 80 - 2 - len(s0) - 1 )
+        parts = []
+        for m in wmsg:
+            parts += textwrap.wrap( m, width = textwidth,
+                                    break_long_words = False,
+                                    break_on_hyphens = False )
+        if len(parts) > nwmax:
+            hidden = ' '.join( parts[nwmax-1:] )
+            parts = parts[:nwmax-1]
+            parts.append( f'<{len(hidden)} more characters hidden>' )
+        for i, part in enumerate( parts ):
+            ll.append( f'{s0 if i==0 else " "*len(s0)} {part}' )
+    return ll
 
 def _stdatomname( name ):
     return {'D':'H2','T':'H3'}.get(name,name)

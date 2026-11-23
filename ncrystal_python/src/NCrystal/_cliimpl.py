@@ -40,9 +40,9 @@ Notably, command line scripts implemented in their _cli_*.py modules, should:
 * The entry point should be a function def main(argv) which should use the
   "@cli_entry_point" decorator:
 * As all other code in NCrystal Python modules, do not use the normal print
-  function, but instead use the print(..) function from the ._common
-  module. Likewise, warning's should be emitted via the warn(..) function from
-  that module.
+  function, but instead use the print(..) function from the ._common module
+  for the output of the tool, and infomsg(..) and warn(..) from there for
+  notices (e.g. "Writing <file>") and warnings.
 
     @cli_entry_point
     def main( argv = None ):
@@ -56,6 +56,10 @@ __all__ = []
 def warn(*a,**kw):
     from ._common import warn
     warn(*a,**kw)
+
+def infomsg(*a,**kw):
+    from ._common import infomsg
+    infomsg(*a,**kw)
 
 def print(*a,**kw):
     from ._common import print
@@ -213,6 +217,11 @@ class _cli_call_from_pyapi_ctx:
     def __exit__(self,*a,**kw):
         _cli_entry_points_called_from_actual_cmdline[0] = self.__orig
 
+def _cli_msgctrl( **kwargs ):
+    #Message settings of command-line tools run in the terminal:
+    from .msg import MsgCtrl
+    return MsgCtrl( info_prefix = '', warning_prefix = 'WARNING: ', **kwargs )
+
 def cli_entry_point(func):
     def mainfct( argv = None ):
         #Called from python-API:
@@ -227,7 +236,6 @@ def cli_entry_point(func):
             return func( progname, arglist )
         #Called from actual command-line, so we translate warnings and
         #exceptions to more suitable printouts:
-        from ._common import WarningSpy
         from .exceptions import NCException
         if argv is None:
             import sys
@@ -240,12 +248,7 @@ def cli_entry_point(func):
         while '--show-exceptions' in arglist:
             arglist.remove('--show-exceptions')
             warn_escape=True
-        def block_warnings(msg_str, cat_str):
-            if cat_str == 'NCrystalUserWarning':
-                print(f'WARNING: {msg_str}')
-                return True
-            return False
-        with WarningSpy(blockfct=block_warnings):
+        with _cli_msgctrl():
             try:
                 func( progname, arglist )
             except NCException as e:

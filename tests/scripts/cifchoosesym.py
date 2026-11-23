@@ -30,7 +30,7 @@ import NCrystalDev as NC
 from NCrystalDev._cifreadimpl import CIFContent
 from NCrystalDev._cifsymimpl import determine_setting
 from NCrystalDev.misc import evaluate_query
-from NCrystalDev._common import WarningSpy
+from NCrystalDev.msg import MsgCtrl
 
 cubic = { 'a': '5.43', 'b': '5.43', 'c': '5.43',
           'alpha': '90', 'beta': '90', 'gamma': '90' }
@@ -50,7 +50,7 @@ def content( cell, ops = None, hall = None, hm = None, itnumber = None,
                        atom_type_number_in_cell = [], temperatures = {} )
 
 def test( descr, c, permissive = False, override = None ):
-    with WarningSpy( block = True ) as warnings:
+    with MsgCtrl( spy = ['warning'], block = ['warning'] ) as mc:
         try:
             s = determine_setting( c, permissive = permissive,
                                    override_spacegroup = override )
@@ -59,7 +59,7 @@ def test( descr, c, permissive = False, override = None ):
             s = None
         else:
             print( f'{descr}: {s}' )
-    for w, _ in warnings:
+    for w, _ in mc.warnings:
         print( f'   warning: {w}' )
     return s
 

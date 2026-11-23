@@ -25,6 +25,7 @@
 
 import NCrystalDev as NC
 import NCTestUtils.enable_fpe  # noqa: F401
+from NCrystalDev.msg import MsgCtrl
 from NCTestUtils.common import ensure_error
 
 
@@ -160,12 +161,10 @@ def test_structure_symmetry():
     #warning, larger ones an error. The setting is deduced, so e.g. both
     #origin choices of diamond are fine, but the symmetry-equivalent
     #reflections of the deduced setting must be those NCrystal assumes:
-    from NCrystalDev._common import capture_print_ctxmgr
     def load_warnings( *args ):
-        with capture_print_ctxmgr() as cap:
+        with MsgCtrl( spy = ['warning'], block = ['warning'] ) as mc:
             load( *args )
-        return [ line.strip() for line in cap.data
-                 if 'WARNING' in line and 'space group' in line ]
+        return [ msg for msg, _ in mc.warnings if 'space group' in msg ]
     def load_error( *args ):
         try:
             load( *args )
@@ -217,7 +216,6 @@ def test_split_sites():
     #A disordered O atom split over two positions 0.054 Aa apart (about the
     #mirror plane y=0 of Pm): allowed (with a warning) for occupancy 1/2, but
     #not for occupancy 1 (both positions can not be occupied together):
-    import warnings
     def text( occu ):
         return f"""NCMAT v8
 @CELL
@@ -241,13 +239,12 @@ def test_split_sites():
   type vdosdebye
   debye_temp 300
 """
-    with warnings.catch_warnings( record = True ) as wl:
-        warnings.simplefilter( 'always' )
+    with MsgCtrl( spy = ['warning'], block = ['warning'] ) as mc:
         si = NC.directLoad( text( '1/2' ), doScatter = False,
                             doAbsorption = False ).info.structure_info
     print( f'Split site with occupancy 1/2: {si["n_positions"]} positions' )
-    for w in wl:
-        print( '  warning:', str( w.message ) )
+    for msg, _ in mc.warnings:
+        print( '  warning:', msg )
     with ensure_error( NC.NCBadInput, 'At most one of the 2 symmetry-equivalent'
                        ' positions of the site (0.1, 0.005, 0.2) within 0.5 Aa'
                        ' (the closest 0.054 Aa apart) can be occupied, so its'
