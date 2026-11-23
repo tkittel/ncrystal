@@ -469,21 +469,46 @@ namespace {
     const std::string data = "data_m\n_a 'x'\n_t\n;l1\r\nl2\r\n;\n"
       "loop_ _l _v a 1 b 2\n";
     auto d1 = parse( data );
+    const auto uid = d1.getUniqueID();
     const std::string ref = dumpStr( d1 );
     const char* tptr = d1.block( 0 ).values( "_t" )[0].text.data_begin();
     const char* aptr = d1.block( 0 ).values( "_a" )[0].text.data_begin();
     NCC::Document d2( std::move( d1 ) );
+    REQUIRE( d2.getUniqueID() == uid );
     REQUIRE( dumpStr( d2 ) == ref );
     REQUIRE( d2.block( 0 ).values( "_t" )[0].text.data_begin() == tptr );
     REQUIRE( d2.block( 0 ).values( "_a" )[0].text.data_begin() == aptr );
     auto d3 = parse( "data_other _x 1" );
+    REQUIRE( d3.getUniqueID() != uid );
     auto col = d2.block( 0 ).values( "_v" );
     d3 = std::move( d2 );
+    REQUIRE( d3.getUniqueID() == uid );
     REQUIRE( dumpStr( d3 ) == ref );
     REQUIRE( col.size() == 2 && col[1].text == "2" );
     REQUIRE( d3.block( 0 ).values( "_t" )[0].text == "l1\nl2" );
     REQUIRE( d3.block( 0 ).values( "_a" )[0].text.data_begin() == aptr );
     std::cout << "after moves:\n" << ref;
+  }
+
+  void testMPNote()
+  {
+    //NB: Fallback for the materialsproject.org note, cf. Document::parse:
+    std::cout << "==== MP note fallback ====\n";
+    const std::string note = "# Note from NCrystal.cifutils: Data from"
+      " materialsproject.org / mp-";
+    showStrict( "note (added to the last block)",
+                "data_a _x 1\r\ndata_b _y 2\r\n\r\n" + note + "149\r\n" );
+    showStrict( "note without final line ending",
+                "data_a _x 1\n" + note + "55" );
+    showStrict( "tag already present", "data_a\n"
+                "_[LOCAL]_ncrystal_mp_database_code mp-7\n" + note + "8\n" );
+    showStrict( "note too early", "data_a _x 1\n" + note + "9\n#"
+                + std::string( 500, 'x' ) + "\n" );
+    showStrict( "not an id", "data_a _x 1\n" + note + "\n" + note + "1x\n" );
+    constexpr NC::StrView prefixes[] = { NC::StrView::make( "_x" ) };
+    std::cout << "filtered out:\n"
+              << dumpStr( parse( "data_a _x 1\n" + note + "3\n", Lenient::NO,
+                                 NC::Span<const NC::StrView>( prefixes ) ) );
   }
 
   void testLarge()
@@ -559,6 +584,7 @@ int main()
   testLookup();
   testFilter();
   testMoves();
+  testMPNote();
   testLarge();
   return 0;
 }

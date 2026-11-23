@@ -150,7 +150,14 @@ namespace NCRYSTAL_NAMESPACE {
       //deviations named above, a leading UTF-8 byte-order mark (EF BB BF) is
       //skipped, and a text field with nothing after the opening ";" on its
       //line does not include that line's ending (";\nfoo\n;" gives "foo",
-      //strictly it is "\nfoo"):
+      //strictly it is "\nfoo").
+      //
+      //NB: Fallback for CIF data downloaded from materialsproject.org by
+      //older NCrystal versions, which only noted the id in a final comment
+      //("# Note from NCrystal.cifutils: Data from materialsproject.org /
+      //mp-<digits>", searched in the last 500 bytes): if the last block lacks
+      //the tag _[local]_ncrystal_mp_database_code, it is added with the value
+      //"mp-<digits>" from the note.
       static Document parse( shared_obj<const TextData>,
                              CIFParseLenient = CIFParseLenient::YES,
                              Optional<Span<const StrView>>
@@ -160,6 +167,8 @@ namespace NCRYSTAL_NAMESPACE {
       BlockView block( std::size_t i ) const;
       Optional<BlockView> findBlock( StrView name ) const;//case-insensitive
       const DataSourceName& dataSourceName() const;
+      //Unique per parsed document (kept when moved):
+      UniqueIDValue getUniqueID() const noexcept;
       Document( Document&& ) = default;
       Document& operator=( Document&& ) = default;
     private:
@@ -187,6 +196,7 @@ namespace NCRYSTAL_NAMESPACE {
         std::uint32_t lookupBegin;//range in m_lookup has nTags entries
       };
       shared_obj<const TextData> m_data;
+      UniqueID m_uid;
       std::set<std::string> m_normalised;//text fields with changed endings
       std::vector<Value> m_values;
       std::vector<Tag> m_tags;
@@ -275,6 +285,10 @@ namespace NCRYSTAL_NAMESPACE {
     inline const DataSourceName& Document::dataSourceName() const
     {
       return m_data->dataSourceName();
+    }
+    inline UniqueIDValue Document::getUniqueID() const noexcept
+    {
+      return m_uid.getUniqueID();
     }
   }
 }

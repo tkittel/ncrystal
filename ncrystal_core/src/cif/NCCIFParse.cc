@@ -135,6 +135,13 @@ namespace NCRYSTAL_NAMESPACE {
 
       constexpr std::uint32_t s_maxU32
         = std::numeric_limits<std::uint32_t>::max();
+
+      //NB: MP note fallback, cf. Document::parse:
+      constexpr auto s_mpTag
+        = StrView::make("_[local]_ncrystal_mp_database_code");
+      constexpr auto s_mpNote
+        = StrView::make("# Note from NCrystal.cifutils: Data from"
+                        " materialsproject.org / mp-");
     }
 
     class Document::Parser {
@@ -183,6 +190,7 @@ namespace NCRYSTAL_NAMESPACE {
       //Parse the loop starting at the loop_ token t, leaving t at the first
       //token after the loop:
       void parseLoop( Token& t );
+      void addMPNoteFallback();
       //Finish the last block: tag lookup table, and duplicate tag check:
       void endBlock();
       [[noreturn]] void throwUnexpectedToken( const Token&,
@@ -539,6 +547,48 @@ void NCC::Document::Parser::parseLoop( Token& t )
                              doStore ? nInFile : 0, nInFile, true, doStore } );
 }
 
+void NCC::Document::Parser::addMPNoteFallback()
+{
+  //NB: MP note fallback, cf. Document::parse. Called at the end of the data,
+  //before ending the last block:
+  auto& d = m_doc;
+  const auto& b = d.m_blocks.back();
+  for ( auto i : ncrange( b.tagBegin, u32( d.m_tags.size(), m_line ) ) )
+    if ( ciCompare( vectAt( d.m_tags, i ).name, s_mpTag ) == 0 )
+      return;
+  const auto& raw = d.m_data->rawData();
+  const StrView all( raw.begin(), raw.end() - raw.begin() );
+  const std::size_t n = std::min<std::size_t>( all.size(), 500 );
+  const StrView tail = all.substr( all.size() - n );
+  const auto pos = tail.find( s_mpNote );
+  if ( pos == StrView::npos )
+    return;
+  const auto ib = pos + s_mpNote.size() - 3;//at "mp-"
+  auto ie = ib + 3;
+  while ( ie < tail.size() && tail[ie] >= '0' && tail[ie] <= '9' )
+    ++ie;
+  if ( ie == ib + 3 || ( ie < tail.size() && !isWhiteSpace( tail[ie] ) ) )
+    return;
+  //Line of the note (m_line is the last line):
+  std::uint32_t line = m_line;
+  char prev = '\0';
+  for ( char c : tail.substr( pos ) ) {
+    if ( c == '\r' || ( c == '\n' && prev != '\r' ) )
+      --line;
+    prev = c;
+  }
+  const auto item = u32( d.m_items.size(), line );
+  const auto valueBegin = u32( d.m_values.size(), line );
+  addTag( Token{ TokType::Tag, s_mpTag, ValueKind::Unquoted, line, false },
+          item, 0 );
+  const bool k = storeValues( s_mpTag );
+  if ( k )
+    d.m_values.push_back( Value{ tail.substr( ib, ie - ib ),
+                                 ValueKind::Unquoted, line } );
+  d.m_items.push_back( Item{ u32( d.m_tags.size() - 1, line ), 1, valueBegin,
+                             k ? 1u : 0u, 1, false, k } );
+}
+
 void NCC::Document::Parser::endBlock()
 {
   auto& d = m_doc;
@@ -624,6 +674,8 @@ NCC::Document NCC::Document::Parser::parse()
         throwUnexpectedToken( t, "where a tag is expected" );
       }
     }
+    if ( t.type == TokType::End )
+      addMPNoteFallback();
     endBlock();
   }
   nc_assert_always( t.type == TokType::End );
