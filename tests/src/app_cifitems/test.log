@@ -114,7 +114,7 @@ U:
   temperatures: - -
  provenance: none
 B in the loop of the sites:
-NCrystal WARNING: Ignoring anisotropic displacements of "O1" in CIF data in "test.cif" (data_b, line 20), which are all "?" or "."
+WARNING-CALLBACK: Ignoring anisotropic displacements of "O1" in CIF data in "test.cif" (data_b, line 20), which are all "?" or "."
   (block data_b)
   cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
   sites: label [Al1]@19 [O1]@20
@@ -143,7 +143,7 @@ NCrystal WARNING: Ignoring anisotropic displacements of "O1" in CIF data in "tes
  provenance: none
 all unknown (strict): Caught expected BadInput(Invalid CIF data in "test.cif" (data_n, line 24): anisotropic displacements of "O1" are all "?" or ".". Use permissive mode to ignore such entries.)
 all unknown (permissive):
-NCrystal WARNING: Ignoring anisotropic displacements of "O1" in CIF data in "test.cif" (data_n, line 24), which are all "?" or "."
+WARNING-CALLBACK: Ignoring anisotropic displacements of "O1" in CIF data in "test.cif" (data_n, line 24), which are all "?" or "."
   (block data_n)
   cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
   sites: label [Al1]@13 [O1]@14
@@ -173,7 +173,7 @@ NCrystal WARNING: Ignoring anisotropic displacements of "O1" in CIF data in "tes
 unknown label: Caught expected BadInput(Invalid CIF data in "test.cif" (data_x, line 23): the label "Al2" of anisotropic displacements is not the label of a site)
 missing component (strict): Caught expected BadInput(Invalid CIF data in "test.cif" (data_x): anisotropic displacements lack the tag _atom_site_aniso_U_11. Use permissive mode to ignore the anisotropic displacements.)
 missing component (permissive):
-NCrystal WARNING: Ignoring the anisotropic displacements in CIF data in "test.cif" (data_x), which lack the tag _atom_site_aniso_U_11
+WARNING-CALLBACK: Ignoring the anisotropic displacements in CIF data in "test.cif" (data_x), which lack the tag _atom_site_aniso_U_11
   (block data_x)
   cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
   sites: label [Al1]@13 [O1]@14
@@ -196,7 +196,7 @@ beta: Caught expected BadInput(Invalid CIF data in "test.cif" (data_x, line 15):
 U and B: Caught expected BadInput(Invalid CIF data in "test.cif" (data_x, line 24): anisotropic displacements given both as U and as B)
 no aniso label (strict): Caught expected BadInput(Invalid CIF data in "test.cif" (data_x): anisotropic displacements lack the tag _atom_site_aniso_label. Use permissive mode to ignore the anisotropic displacements.)
 no aniso label (permissive):
-NCrystal WARNING: Ignoring the anisotropic displacements in CIF data in "test.cif" (data_x), which lack the tag _atom_site_aniso_label
+WARNING-CALLBACK: Ignoring the anisotropic displacements in CIF data in "test.cif" (data_x), which lack the tag _atom_site_aniso_label
   (block data_x)
   cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
   sites: label [Al1]@13 [O1]@14
@@ -296,7 +296,7 @@ no provenance:
   temperatures: - -
  provenance: none
 several values:
-NCrystal WARNING: Ignoring _journal_year in CIF data in "test.cif" (data_c, line 15), which has several values
+WARNING-CALLBACK: Ignoring _journal_year in CIF data in "test.cif" (data_c, line 15), which has several values
   (block data_c)
   cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
   sites: label [Al1]@13 [O1]@14

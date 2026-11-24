@@ -35,6 +35,12 @@ namespace {
 
   using Permissive = NCC::CIFPermissive;
 
+  //Warnings are passed to this function (and so appear in the log):
+  const NCC::CIFWarnFct warnfct = []( const std::string& w )
+  {
+    std::cout << "WARNING-CALLBACK: " << w << std::endl;
+  };
+
   NCC::Document parse( const std::string& s,
                        const char* name = "test.cif" )
   {
@@ -165,7 +171,7 @@ namespace {
   {
     std::cout << title << ":\n";
     auto doc = parse( s, name );
-    auto r = NCC::findUniqueStructProvItems( doc, perm );
+    auto r = NCC::findUniqueStructProvItems( doc, perm, warnfct );
     std::cout << "  (block data_" << r.structureItems.block( doc ).name()
               << ")\n";
     dump( r.structureItems );
@@ -185,7 +191,7 @@ namespace {
     nctest::ensureError<NC::Error::BadInput>( [&s,perm,name]()
     {
       auto doc = parse( s, name );
-      NCC::findUniqueStructProvItems( doc, perm );
+      NCC::findUniqueStructProvItems( doc, perm, warnfct );
     } );
   }
 
@@ -319,11 +325,12 @@ namespace {
     show( "several values", "data_c\n" + cell + site
           + "loop_ _journal_year 2000 2001\n_journal_name_full 'J. X'\n" );
     auto doc = parse( "data_p _journal_year 2000\ndata_q _journal_year ?\n" );
-    REQUIRE( !NCC::getStructureItems( doc.block( 0 ), Permissive::NO )
-             .has_value() );
-    REQUIRE( !NCC::getProvenanceItems( doc.block( 1 ) ).has_value() );
+    REQUIRE( !NCC::getStructureItems( doc.block( 0 ), Permissive::NO,
+                                      warnfct ).has_value() );
+    REQUIRE( !NCC::getProvenanceItems( doc.block( 1 ),
+                                       warnfct ).has_value() );
     std::cout << "provenance only:\n";
-    dump( NCC::getProvenanceItems( doc.block( 0 ) ).value(), doc );
+    dump( NCC::getProvenanceItems( doc.block( 0 ), warnfct ).value(), doc );
   }
 
   void testOtherBlock()
@@ -354,7 +361,7 @@ namespace {
   {
     std::cout << "==== Block access ====\n";
     auto doc = parse( "data_other _x 1\ndata_s\n" + cell + site );
-    auto r = NCC::findUniqueStructProvItems( doc, Permissive::NO );
+    auto r = NCC::findUniqueStructProvItems( doc, Permissive::NO, warnfct );
     REQUIRE( r.structureItems.block( doc ).name() == "s" );
     REQUIRE( !r.provenanceItems.has_value() );
     NCC::Document moved( std::move( doc ) );
