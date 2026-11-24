@@ -20,7 +20,6 @@
 
 
 #include "NCrystal/internal/cif/NCCIFItems.hh"
-#include "NCrystal/internal/utils/NCMsg.hh"
 
 namespace NC = NCrystal;
 namespace NCC = NCrystal::CIF;
@@ -52,23 +51,36 @@ namespace NCRYSTAL_NAMESPACE {
       }
 
       //The value of a single item, NullOpt if absent or "?" or ".". Several
-      //values (a loop) are an error, or ignored with a warning if !strict:
-      Optional<Value> single( BlockView b, StrView tag, bool strict = true )
+      //values (a loop) are an error, or ignored with a warning if a warning
+      //function is given:
+      Optional<Value> singleImpl( BlockView b, StrView tag,
+                                  const CIFWarnFct* warnfct )
       {
         const auto v = b.values( tag );
         if ( v.empty() )
           return NullOpt;
         if ( v.size() != 1 ) {
-          if ( strict )
+          if ( !warnfct )
             throwItemError( b, v[0].line, "tag " + tag.to_string()
                             + " must have a single value" );
-          NCRYSTAL_WARN( "Ignoring " << tag << " in " << where( b, v[0].line )
-                         << ", which has several values" );
+          (*warnfct)( "Ignoring " + tag.to_string() + " in "
+                      + where( b, v[0].line ) + ", which has several values" );
           return NullOpt;
         }
         if ( isNull( v[0] ) )
           return NullOpt;
         return v[0];
+      }
+
+      Optional<Value> single( BlockView b, StrView tag )
+      {
+        return singleImpl( b, tag, nullptr );
+      }
+
+      Optional<Value> singleOrWarn( BlockView b, StrView tag,
+                                    const CIFWarnFct& warnfct )
+      {
+        return singleImpl( b, tag, &warnfct );
       }
 
       //Columns: same size and in the same loop (or all single values) as
@@ -145,7 +157,8 @@ namespace NCRYSTAL_NAMESPACE {
 
       Optional<StructureItems::Aniso> getAniso( BlockView b,
                                                 const ValueColumn& siteLabels,
-                                                CIFPermissive permissive )
+                                                CIFPermissive permissive,
+                                                const CIFWarnFct& warnfct )
       {
         using Aniso = StructureItems::Aniso;
         for ( auto i : { 11, 22, 33, 12, 13, 23 } ) {
@@ -173,15 +186,16 @@ namespace NCRYSTAL_NAMESPACE {
                           " displacements given both as U and as B" );
         const auto& tags = ( hasU ? s_anisoU : s_anisoB );
         //Missing tags: an error, or ignore all aniso data if permissive:
-        auto missing = [&b,permissive]( StrView tag ) -> bool
+        auto missing = [&b,permissive,&warnfct]( StrView tag ) -> bool
         {
           const std::string what = ( "anisotropic displacements lack the tag "
                                      + tag.to_string() );
           if ( permissive == CIFPermissive::NO )
             throwItemError( b, 0, what + ". Use permissive mode to ignore the"
                             " anisotropic displacements." );
-          NCRYSTAL_WARN( "Ignoring the anisotropic displacements in "
-                         << where( b, 0 ) << ", which lack the tag " << tag );
+          warnfct( "Ignoring the anisotropic displacements in "
+                   + where( b, 0 ) + ", which lack the tag "
+                   + tag.to_string() );
           return true;
         };
         Aniso res;
@@ -230,11 +244,9 @@ namespace NCRYSTAL_NAMESPACE {
                             + lbl.text.to_string() + "\" are all \"?\" or"
                             " \".\". Use permissive mode to ignore such"
                             " entries." );
-          NCRYSTAL_WARN( "Ignoring anisotropic displacements of \""
-                         << lbl.text << "\" in CIF data in \""
-                         << b.document().dataSourceName() << "\" (data_"
-                         << b.name() << ", line " << lbl.line
-                         << "), which are all \"?\" or \".\"" );
+          warnfct( "Ignoring anisotropic displacements of \""
+                   + lbl.text.to_string() + "\" in " + where( b, lbl.line )
+                   + ", which are all \"?\" or \".\"" );
           res.skippedRows.push_back( static_cast<std::uint32_t>( r ) );
         }
         return res;
@@ -340,8 +352,12 @@ NCC::ProvenanceItems::otherBlock( const Document& doc ) const
 }
 
 NC::Optional<NCC::StructureItems>
-NCC::getStructureItems( BlockView b, CIFPermissive permissive )
+NCC::getStructureItems( BlockView b, CIFPermissive permissive,
+                        const CIFWarnFct& warnfct )
 {
+#ifndef NDEBUG
+  nc_assert_always( bool(warnfct) );
+#endif
   bool hasStructure = false;
   for ( auto i : ncrange( b.nTags() ) ) {
     const auto t = b.tag( i );
@@ -399,7 +415,7 @@ NCC::getStructureItems( BlockView b, CIFPermissive permissive )
                           + " has a value \"?\" or \".\"" );
   }
 
-  res.aniso = getAniso( b, s.label, permissive );
+  res.aniso = getAniso( b, s.label, permissive, warnfct );
 
   addAlternatives( b, "_space_group_symop_operation_xyz",
                    "_symmetry_equiv_pos_as_xyz", res.operations );
@@ -417,10 +433,17 @@ NCC::getStructureItems( BlockView b, CIFPermissive permissive )
   return Optional<StructureItems>( std::move( res ) );
 }
 
-NC::Optional<NCC::ProvenanceItems> NCC::getProvenanceItems( BlockView b )
+NC::Optional<NCC::ProvenanceItems>
+NCC::getProvenanceItems( BlockView b, const CIFWarnFct& warnfct )
 {
+#ifndef NDEBUG
+  nc_assert_always( bool(warnfct) );
+#endif
   auto res = ItemsFactory::provenance( b );
-  auto single1 = [&b]( StrView tag ) { return single( b, tag, false ); };
+  auto single1 = [&b,&warnfct]( StrView tag )
+  {
+    return singleOrWarn( b, tag, warnfct );
+  };
 
   //Row of the primary citation:
   constexpr auto primary = StrView::make("primary");
@@ -495,16 +518,20 @@ NC::Optional<NCC::ProvenanceItems> NCC::getProvenanceItems( BlockView b )
   return res;
 }
 
-NCC::StructProvItems NCC::findUniqueStructProvItems( const Document& doc,
-                                                     CIFPermissive permissive )
+NCC::StructProvItems
+NCC::findUniqueStructProvItems( const Document& doc, CIFPermissive permissive,
+                                const CIFWarnFct& warnfct )
 {
+#ifndef NDEBUG
+  nc_assert_always( bool(warnfct) );
+#endif
   Optional<StructureItems> found;
   std::string names;
   std::size_t n = 0;
   std::vector<std::uint32_t> others;//blocks without a structure
   for ( auto i : ncrange( doc.nBlocks() ) ) {
     const auto b = doc.block( i );
-    auto s = getStructureItems( b, permissive );
+    auto s = getStructureItems( b, permissive, warnfct );
     if ( !s.has_value() ) {
       others.push_back( static_cast<std::uint32_t>( i ) );
       continue;
@@ -521,11 +548,11 @@ NCC::StructProvItems NCC::findUniqueStructProvItems( const Document& doc,
                      << doc.dataSourceName() << "\": " << why );
   }
   const auto b = found.value().block( doc );
-  auto prov = getProvenanceItems( b );
+  auto prov = getProvenanceItems( b, warnfct );
   //Missing items from the only block without a structure with provenance:
   Optional<ProvenanceItems> other;
   for ( auto i : others ) {
-    auto p = getProvenanceItems( doc.block( i ) );
+    auto p = getProvenanceItems( doc.block( i ), warnfct );
     if ( !p.has_value() )
       continue;
     if ( other.has_value() ) {

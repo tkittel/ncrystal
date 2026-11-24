@@ -326,7 +326,8 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
     //"permissive" (cf. CIFPermissive), and SRC either the name of a TextData
     //or "RAWDATA",NAME,"RAWDATA",TEXT (the CIF data and its name, which can
     //be empty). Result: {"block":name,"block_line":n,"structure":{...},
-    //"provenance":{...}|null,"provenance_block":name|null}, with values as
+    //"provenance":{...}|null,"provenance_block":name|null,"warnings":[..]},
+    //with values as
     //[text,line] (line 0 for an absent cell angle) or null for "?" and ".",
     //and items under their CIF tags: the cell and other single items
     //"_tag":value, the site and aniso columns "_tag":[values] in "atom_site"
@@ -334,7 +335,8 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
     //permissive mode), and "symmetry":{"operations":[{"tag":..,"values":
     //[..]}],"hm":[{"tag":..,"value":..}],"hall":[..],"number":[..]} (current
     //tag first). "provenance_block" is the other block from which absent
-    //provenance items were taken, if any. Absent optional items are omitted:
+    //provenance items were taken, if any, and "warnings" the list of warnings
+    //(which are not emitted). Absent optional items are omitted:
     const auto usage = "correct usage: [\"cif\",\"uniquestructprov\","
       "PERMISSIVE,NAME] or [\"cif\",\"uniquestructprov\",PERMISSIVE,"
       "\"RAWDATA\",NAME,\"RAWDATA\",TEXT], with PERMISSIVE \"strict\" or"
@@ -355,8 +357,10 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
                   TextDataPath( arg(1).to_string() ) ) );
     const auto doc = NCC::Document::parse( std::move( td ),
                                            NCC::CIFParseLenient::YES );
+    std::vector<std::string> warnings;
     const auto r = NCC::findUniqueStructProvItems(
-      doc, ( permissive ? NCC::CIFPermissive::YES : NCC::CIFPermissive::NO ) );
+      doc, ( permissive ? NCC::CIFPermissive::YES : NCC::CIFPermissive::NO ),
+      [&warnings]( const std::string& w ) { warnings.push_back( w ); } );
     const auto b = r.structureItems.block( doc );
     os << "{\"block\":";
     streamJSON( os, b.name() );
@@ -375,6 +379,8 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
       streamJSON( os, other.value().name() );
     else
       os << "null";
+    os << ",\"warnings\":";
+    streamJSON( os, warnings );
     os << '}';
   } else {
     invalid("unknown key");

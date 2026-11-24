@@ -37,6 +37,10 @@ namespace NCRYSTAL_NAMESPACE {
     //several values (with a warning). All values refer into the Document,
     //which must outlive the items (moving it is fine).
 
+    //Warnings are passed to a function supplied by the caller (never to
+    //NCRYSTAL_WARN), so callers can record them (e.g. for NCMAT comments):
+    using CIFWarnFct = std::function<void(const std::string&)>;
+
     //Whether getStructureItems accepts some flaws in the data (with
     //warnings), as described below. Errors which permissive mode would avoid
     //end with a hint to use it:
@@ -164,11 +168,13 @@ namespace NCRYSTAL_NAMESPACE {
     //structure (no tag starting with _atom_site_ or _atom_sites_). Throws
     //BadInput, with the data source name, block and line, if the items are
     //not as described above:
-    Optional<StructureItems> getStructureItems( BlockView, CIFPermissive );
+    Optional<StructureItems> getStructureItems( BlockView, CIFPermissive,
+                                                const CIFWarnFct& );
 
     //The provenance items of the block, or NullOpt if it has none (i.e. no
     //usable value of any of the provenance tags above):
-    Optional<ProvenanceItems> getProvenanceItems( BlockView );
+    Optional<ProvenanceItems> getProvenanceItems( BlockView,
+                                                  const CIFWarnFct& );
 
     //The structure items of the only block of the document with a crystal
     //structure (all blocks with one are validated), and its provenance items.
@@ -181,7 +187,8 @@ namespace NCRYSTAL_NAMESPACE {
       Optional<ProvenanceItems> provenanceItems;
     };
     StructProvItems findUniqueStructProvItems( const Document&,
-                                               CIFPermissive );
+                                               CIFPermissive,
+                                               const CIFWarnFct& );
   }
 }
 
