@@ -42,9 +42,9 @@ CHANGELOG at release time, after which both files are dropped).
        matching the hexagonal/rhombohedral axes) and the positions are
        checked against exactly that setting.
      * New "sgsym" JSON query section: ["sgsym","info",SG] (operations
-       and rotation parts of a setting), ["sgsym","fromops",OP,...],
-       ["sgsym","fromhall",SYMBOL] and ["sgsym","fromhm",SYMBOL]
-       (settings with these operations or matching a symbol), and
+       and rotation parts of a setting), ["sgsym","fromops",...],
+       ["sgsym","fromhall",...] and ["sgsym","fromhm",...] (settings
+       with given operations or matching a symbol), and
        ["sgsym","cell",...] (cell parameters snapped to the constraints
        of a setting, with strict or lenient tolerances).
      * JSON query strings may contain any characters, also a leading "-"
