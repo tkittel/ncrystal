@@ -27,7 +27,6 @@
 # (printed strings) used by the rest of the CIF loading.
 
 import NCTestUtils.enable_fpe # noqa F401
-import NCTestUtils.reprint_escaped_warnings # noqa F401
 import NCrystalDev as NC
 from NCrystalDev._cifreadimpl import read_cif, _decode_json
 

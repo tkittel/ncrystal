@@ -31,7 +31,6 @@ from NCTestUtils.env import ncsetenv
 from NCTestUtils import dirs
 from NCTestUtils.common import ensure_error
 from NCTestUtils.threads import hide_nothreads_warnings
-import NCTestUtils.reprint_escaped_warnings # noqa F401
 import pprint
 import math
 def main(do_plot, do_update):

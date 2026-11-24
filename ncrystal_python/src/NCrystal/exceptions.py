@@ -31,13 +31,13 @@ __all__ = [
     'NCFileNotFound',
     'NCLogicError',
     'NCMissingInfo',
-    'NCrystalUserWarning',
+    'NCrystalFutureWarning',
     'nc_assert' ]
 
-class NCrystalUserWarning( UserWarning ):
-    """UserWarning's emitted from NCrystal code"""
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args,**kwargs)
+class NCrystalFutureWarning( FutureWarning ):
+    """Warnings about deprecated NCrystal functionality, emitted via the
+    warnings module (other warnings from NCrystal are messages, cf. the
+    NCrystal.msg module)."""
 
 class NCException(RuntimeError):
     """Base class for all exceptions raised by NCrystal code"""

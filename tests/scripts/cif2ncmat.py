@@ -28,8 +28,7 @@ import shlex
 from argparse import ArgumentError
 
 import NCTestUtils.enable_fpe
-import NCTestUtils.enable_testdatapath
-import NCTestUtils.reprint_escaped_warnings  # noqa F401
+import NCTestUtils.enable_testdatapath  # noqa F401
 from NCTestUtils.common import (
     ensure_error,
     print_text_file_with_snipping,

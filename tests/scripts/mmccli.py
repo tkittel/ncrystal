@@ -28,7 +28,6 @@ import NCrystalDev.cli as nc_cli
 import NCrystalDev._common as nc_common
 from NCrystalDev.exceptions import NCBadInput
 
-import NCTestUtils.reprint_escaped_warnings # noqa F401
 from NCTestUtils.env import ncsetenv
 from NCTestUtils.common import ensure_error
 

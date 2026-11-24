@@ -187,30 +187,14 @@ def _msgctrl_showwarning( message, category, *args, **kwargs ):
     if show and not any( 'warning' in c._block for c in ctrls ):
         return _orig_showwarning[0]( message, category, *args, **kwargs )
 
-def warn_once(msg):
-    """Like warn(..), but only the first time it is called with a given
-    message (e.g. for obsolete functionality used in loops)."""
-    m = str(msg)
-    if m in _warned_once:
-        return
-    _warned_once.add(m)
-    _warn_impl( m, stacklevel = 3 )
-
-_warned_once = set()
-
-def _warn_impl( msg, stacklevel ):
+def warn_deprecated( msg, stacklevel = 3 ):
+    #Emit an NCrystalFutureWarning about deprecated functionality via the
+    #warnings module, attributed to the caller of the function calling this
+    #(or higher up, with a larger stacklevel).
     import warnings
 
-    from .exceptions import NCrystalUserWarning
-    m = str(msg)
-    if _add_warn_counts_to_msgs[0]:
-        _add_warn_counts_to_msgs[1] += 1
-        m = f'{m} [warn#{_add_warn_counts_to_msgs[1]}]'
-    warnings.warn( NCrystalUserWarning(m), stacklevel = stacklevel )
-
-#Hook to avoid repeated warnings to be silenced during unit tests, by appending
-#a warning number to them:
-_add_warn_counts_to_msgs = [False,0]
+    from .exceptions import NCrystalFutureWarning
+    warnings.warn( NCrystalFutureWarning( str(msg) ), stacklevel = stacklevel )
 
 def _split_trailing_digit( s ):
     if not s or not s[-1].isdigit():

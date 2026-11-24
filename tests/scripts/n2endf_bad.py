@@ -23,7 +23,6 @@
 # NEEDS: numpy endf-parserpy
 
 import NCTestUtils.enable_fpe # noqa F401
-import NCTestUtils.reprint_escaped_warnings # noqa F401
 
 from argparse import ArgumentError
 from NCrystalDev.ncmat2endf import EndfMetaData

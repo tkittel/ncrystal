@@ -1,4 +1,4 @@
-NCrystal WARNING: The NCrystal._mmc module is obsolete. Please use the NCrystal.minimc module instead (more info at https://github.com/mctools/ncrystal/wiki/minimc).
+CAUGHT ESCAPED WARNING (NCrystalFutureWarning): The NCrystal._mmc module is obsolete. Please use the NCrystal.minimc module instead (more info at https://github.com/mctools/ncrystal/wiki/minimc).
 NCrystal WARNING: The quick_diffraction_pattern(..) function is obsolete. Please migrate your code to use the NCrystal.minimc.run(..) function instead (more info at https://github.com/mctools/ncrystal/wiki/minimc).
 CALLING plt.subplots()
 CALLING plt.gca()
