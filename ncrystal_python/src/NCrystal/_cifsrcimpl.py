@@ -136,7 +136,8 @@ def _cod_get_cifdata( codid, quiet = False ):
         if result or not mirror_urls:
             break
         nextdescr = '/'.join(mirror_urls[0].split('/')[0:-1])+'/'
-        _nc_common.infomsg(f'Retrieval failed. Trying mirror at: {nextdescr}')
+        if not quiet:
+            _nc_common.infomsg(f'Retrieval failed. Trying mirror at: {nextdescr}')
 
     assert result is not None
 
