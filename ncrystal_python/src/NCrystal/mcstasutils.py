@@ -387,78 +387,9 @@ def cfgstr_detect_components( cfgstr ):
     from .misc import cfgstr_detect_components as cdc
     return cdc(cfgstr)
 
-def _main( argv ):
-    #NOTE: This usage here is obsolete!!! We keep it around a bit longer, so we
-    #have a chance to update the documentation and examples everywhere.
-
-    if False:
-        #After ~1 year or so, emit the following instead:
-        raise SystemExit(
-            'Please use the dedicated ncrystal_mcstasunion or'
-            ' ncrystal_ncmat2hkl cmdline scripts instead of'
-            ' "python -mNCrystal.mcstasutils"'
-        )
-
-
-
-    args = argv[1:]
-    if args and isinstance(args[0],bytes):
-        args = [e.decode() for e in args]
-    def usage(*,err):
-        if err:
-            print("ERROR - wrong usage!")
-            print()
-        import os
-        pn=os.path.basename(argv[0])
-        if pn.endswith('.py'):
-            pn = pn[0:-3]
-        print("""Usage:
-
-  NOTE: THIS USAGE IS OBSOLETE!!!!!!!! PLEASE USE THE ncrystal_mcstasunion OR ncrystal_ncmat2hkl SCRIPTS INSTEAD!!
-  NOTE: THIS USAGE IS OBSOLETE!!!!!!!! PLEASE USE THE ncrystal_mcstasunion OR ncrystal_ncmat2hkl SCRIPTS INSTEAD!!
-  NOTE: THIS USAGE IS OBSOLETE!!!!!!!! PLEASE USE THE ncrystal_mcstasunion OR ncrystal_ncmat2hkl SCRIPTS INSTEAD!!
-
-  --help|-h                         Show these instructions
-
-  --union [--split] NAME CFGSTR     Output McStas-Union code to define material
-                                    with NAME based on specified NCrystal CFGSTR.
-                                    Providing --split will split NCrystal processes
-                                    into physics types at the McStas-Union level,
-                                    rather than internally in NCrystal.
-
-  --laz CFGSTR                      Convert NCrystal CFGSTR to McStas .laz format
-                                    for PowderN.
-
-  --lau CFGSTR                      Convert NCrystal CFGSTR to McStas .lau format
-                                    for Single_crystal.
-
-  NOTE: THIS USAGE IS OBSOLETE!!!!!!!! PLEASE USE THE ncrystal_mcstasunion OR ncrystal_ncmat2hkl SCRIPTS INSTEAD!!
-  NOTE: THIS USAGE IS OBSOLETE!!!!!!!! PLEASE USE THE ncrystal_mcstasunion OR ncrystal_ncmat2hkl SCRIPTS INSTEAD!!
-  NOTE: THIS USAGE IS OBSOLETE!!!!!!!! PLEASE USE THE ncrystal_mcstasunion OR ncrystal_ncmat2hkl SCRIPTS INSTEAD!!
-
-""")
-        raise SystemExit(1 if err else 0)
-    def err():
-        usage(err=True)
-    if '-h' in args or '--help' in args:
-        usage(err=False)
-    if not args or len(args)<2:
-        err()
-    if args[0] == '--union':
-        dosplit = False
-        if '--split' in args:
-            args.remove('--split')
-            dosplit=True
-        if len(args)<3:
-            err()
-        print(cfgstr_2_union_instrument_code( cfgstr=';'.join(args[2:]), name=args[1], split_by_physics = dosplit ))
-        return
-    if args[0] in ('--laz','--lau'):
-        for e in cfgstr_2_hkl( cfgstr=';'.join(args[1:]),tgtformat=args[0][2:]):
-            print(e)
-        return
-    err()
-
 if __name__ == '__main__':
-    import sys
-    _main(sys.argv)
+    raise SystemExit(
+        'Please use the dedicated ncrystal_mcstasunion or'
+        ' ncrystal_ncmat2hkl cmdline scripts instead of'
+        ' "python -mNCrystal.mcstasutils"'
+    )
