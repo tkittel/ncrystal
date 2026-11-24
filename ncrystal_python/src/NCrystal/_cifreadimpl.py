@@ -217,7 +217,7 @@ def read_cif( cifdata, *, quiet ):
     #Returns the CIFContent of the CIF text cifdata.
     gemmi, gemmi_cif = _import_gemmi()
     if not quiet:
-        _nc_common.print("Attempting to load CIF data with gemmi")
+        _nc_common.infomsg("Attempting to load CIF data with gemmi")
     try:
         cif_doc = gemmi_cif.read_string( cifdata )
     except ( ValueError, RuntimeError ) as e:

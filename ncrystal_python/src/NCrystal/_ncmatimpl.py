@@ -218,7 +218,7 @@ class NCMATComposerImpl:
     @staticmethod
     def _ase_io_read( obj, quiet, fmt = None ):
         if not quiet:
-            _nc_common.print('Trying to load object via ase.io.read')
+            _nc_common.infomsg('Trying to load object via ase.io.read')
         _ase, ase_io = _import_ase()
         return ase_io.read( obj, format = fmt )
 
@@ -763,7 +763,7 @@ class NCMATComposerImpl:
         r = _nc_sgsymimpl._refine_sites( cellsg, expanded, tols )
         if not quiet:
             for m in r['msgs']:
-                _nc_common.print(m)
+                _nc_common.infomsg(m)
             for w in r['warnings']:
                 _nc_common.warn(w)
         newcell = r['cellsg']
@@ -853,7 +853,7 @@ class NCMATComposerImpl:
         assert len(d)==9
         if mode_refine and not quiet:
             for m in d['msgs']:
-                _nc_common.print(m)
+                _nc_common.infomsg(m)
             for w in d['warnings']:
                 _nc_common.warn(w)
         if mode_refine:
@@ -2133,7 +2133,7 @@ def _cifdata_via_ase( data_or_file, ase_format = None, quiet = False ):
     import io
     ase,ase_io = _import_ase()
     ase_obj = data_or_file if (ase_format=='ase' or NCMATComposerImpl._is_ase_like_object( data_or_file )) else None
-    prfct = ( lambda *a, **kwa : None ) if quiet else _nc_common.print
+    prfct = ( lambda msg : None ) if quiet else _nc_common.infomsg
 
     if not ase_obj and hasattr( data_or_file, 'load_data' ) and hasattr( data_or_file, 'codid' ) and hasattr( data_or_file, 'mpid' ):
         #assume object is CIFSource object:

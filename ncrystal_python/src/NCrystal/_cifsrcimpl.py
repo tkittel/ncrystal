@@ -80,7 +80,7 @@ def _use_local_cif_cache( fn, text_data = None, quiet = False ):
     if text_data:
         #store data into local cache:
         if not quiet:
-            _nc_common.print(f"Adding {fn} to local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR")
+            _nc_common.infomsg(f"Adding {fn} to local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR")
         p.mkdir(parents=True, exist_ok=True)
         pfn_tmp = p / f'{fn}_tmp_{os.getpid()}'
         _nc_common.write_text(pfn_tmp,text_data)
@@ -97,11 +97,11 @@ def _use_local_cif_cache( fn, text_data = None, quiet = False ):
     if ( now-mtime ) > timelim:
         #entry expired:
         if not quiet:
-            _nc_common.print(f"Ignoring (and removing) expired {fn} from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR")
+            _nc_common.infomsg(f"Ignoring (and removing) expired {fn} from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR")
         pfn.unlink()
         return notfound()
     if not quiet:
-        _nc_common.print(f"Getting {fn} from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR")
+        _nc_common.infomsg(f"Getting {fn} from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR")
     return pfn.read_text()
 
 _cod_cache = []
@@ -110,7 +110,7 @@ def _cod_get_cifdata( codid, quiet = False ):
     for _codid, _result in _cod_cache:
         if codid == _codid:
             if not quiet:
-                _nc_common.print(f"Using cached Crystallography Open Database result for entry {codid}")
+                _nc_common.infomsg(f"Using cached Crystallography Open Database result for entry {codid}")
             return _result
     cache_fn = f'cod_{int(codid)}.cif'
     #check file cache:
@@ -118,7 +118,7 @@ def _cod_get_cifdata( codid, quiet = False ):
     if c:
         return c
     if not quiet:
-        _nc_common.print(f"Querying the Crystallography Open Database for entry {codid}")
+        _nc_common.infomsg(f"Querying the Crystallography Open Database for entry {codid}")
 
     mirror_urls = [
         "https://www.crystallography.net/cod/%i.cif",#canonical first
@@ -136,7 +136,7 @@ def _cod_get_cifdata( codid, quiet = False ):
         if result or not mirror_urls:
             break
         nextdescr = '/'.join(mirror_urls[0].split('/')[0:-1])+'/'
-        _nc_common.print(f'Retrival failed. Trying mirror at: {nextdescr}')
+        _nc_common.infomsg(f'Retrieval failed. Trying mirror at: {nextdescr}')
 
     assert result is not None
 
@@ -158,7 +158,7 @@ def _mp_get_cifdata( mpid, quiet = False, apikey = None ):
     for _mpid, _result in _mp_cache:
         if mpid == _mpid:
             if not quiet:
-                _nc_common.print(f"Using cached materialsproject.org result for entry mp-{mpid}")
+                _nc_common.infomsg(f"Using cached materialsproject.org result for entry mp-{mpid}")
             return _result
     #check file cache:
     cache_fn = f'mp_{mpid}.cif'
@@ -167,7 +167,7 @@ def _mp_get_cifdata( mpid, quiet = False, apikey = None ):
         return c
 
     if not quiet:
-        _nc_common.print(f"Querying materialsproject.org for entry mp-{mpid}")
+        _nc_common.infomsg(f"Querying materialsproject.org for entry mp-{mpid}")
 
     if apikey is None:
         apikey = _getMaterialsProjectAPIKEY()

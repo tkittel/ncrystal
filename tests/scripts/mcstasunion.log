@@ -211,7 +211,7 @@ AT (0,0,0) ABSOLUTE
 
 ===========================================
 ============= CLI >>MyMat 'Al_sg225.ncmat;temp=20K;vdoslux=0;dcutoff=0.5' -o myblafile.c<< ====================
-Wrote: myblafile.c
+NCrystal: Wrote: myblafile.c
 ===========================================
 Contents of myblafile.c: ========================================
 

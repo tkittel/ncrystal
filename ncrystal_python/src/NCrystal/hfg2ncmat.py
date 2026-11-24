@@ -156,9 +156,9 @@ contribution from hydrogen atoms (unless verbose=False).
         debyetemp = _default_debye_temp()
 
     if verbose:
-        from ._common import print
+        from ._common import infomsg
     else:
-        def print(*args,**kwargs):
+        def infomsg(msg):
             pass
 
     spec_parsed = _parseHydrogenBindingSpecification(spec)
@@ -230,11 +230,11 @@ contribution from hydrogen atoms (unless verbose=False).
     c.set_dyninfo_vdos( 'H', [ 0.001*egrid[debye_cut_bin], 0.001*egrid[-1] ],
                         h_vdos[debye_cut_bin:], fraction = nH/ntot )
     out = c.create_ncmat()
-    print ("Generated NCMAT data...")
-    print ("Verifying that it can be loaded with NCrystal...")
+    infomsg("Generated NCMAT data...")
+    infomsg("Verifying that it can be loaded with NCrystal...")
     from .core import load as nc_load
     loaded_mat = nc_load(out)
-    print ("Succesfully loaded...")
+    infomsg("Succesfully loaded...")
 
     breakdown = []
     for di in loaded_mat.info.dyninfos:
@@ -243,10 +243,10 @@ contribution from hydrogen atoms (unless verbose=False).
             sigma = di.atomData.coherentXS() if cohtype=='coherent' else di.atomData.incoherentXS()
             breakdown+=[(di.fraction*sigma,key)]
     sigma_tot = sum(s for s,k in breakdown)
-    print("Contribution breakdown based on composition:")
+    infomsg("Contribution breakdown based on composition:")
     for s,key in sorted(breakdown,reverse=True):
-        print (f"  Contribution to bound scattering XS from {key.ljust(14)}"
-               f" is {s*100.0/sigma_tot:5.2f} %")
+        infomsg(f"  Contribution to bound scattering XS from {key.ljust(14)}"
+                f" is {s*100.0/sigma_tot:5.2f} %")
         if key=='H (incoherent)':
             contrib_incH = s/sigma_tot
 

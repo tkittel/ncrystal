@@ -22,7 +22,7 @@
 """Command-line tool for browsing NCrystal's database of isotopes and natural
 elements."""
 
-from ._cliimpl import cli_entry_point, create_ArgumentParser, print
+from ._cliimpl import cli_entry_point, create_ArgumentParser, infomsg, print
 
 
 def climod_metadata():
@@ -126,7 +126,7 @@ def main( progname, arglist ):
         print( a.to_json(), end = '' )
         return
     if not a:
-        print('No matching entries found.')
+        infomsg('No matching entries found.')
         return
     if args.ncmat:
         print( '@ATOMDB' )

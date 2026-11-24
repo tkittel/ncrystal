@@ -21,7 +21,7 @@
 
 """Command-line tool for browsing and searching the available data."""
 
-from ._cliimpl import cli_entry_point, create_ArgumentParser, print
+from ._cliimpl import cli_entry_point, create_ArgumentParser, infomsg, print
 
 
 def climod_metadata():
@@ -381,10 +381,10 @@ def _browser( args ):
     return sel
 
 def _print_no_matches( args ):
-    print('No matching data found.')
+    infomsg('No matching data found.')
     sugg = _suggestions( args )
     if sugg:
-        print(f'Did you mean: {", ".join(sugg)}?')
+        infomsg(f'Did you mean: {", ".join(sugg)}?')
 
 def _suggestions( args ):
     #Suggest similar names if name patterns alone matched nothing:

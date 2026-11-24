@@ -22,6 +22,7 @@
 """Implementation of the built-in tests."""
 
 __all__ = ['test', 'test_all', 'test_cmdline']
+from ._common import infomsg as _nc_infomsg
 from ._common import print as _nc_print
 
 
@@ -29,28 +30,25 @@ def test( verbose = False ):
     """Quick test that NCrystal works as expected in the current installation."""
     _actualtest( verbose = verbose )
     if verbose!='quiet':
-        _nc_print("Tests completed succesfully")
+        _nc_infomsg("Tests completed succesfully")
 
 def test_cmdline( verbose = False ):
     """Quick test that NCrystal command-line scripts are present and working in
     the current installation."""
     _actual_test_cmdline( verbose = verbose )
     if verbose!='quiet':
-        _nc_print("Tests completed succesfully")
+        _nc_infomsg("Tests completed succesfully")
 
 def test_all( verbose = False ):
     """Run both test() and test_cmdline()."""
     _actualtest( verbose = verbose )
     _actual_test_cmdline( verbose = verbose )
     if verbose!='quiet':
-        _nc_print("Tests completed succesfully")
+        _nc_infomsg("Tests completed succesfully")
 
 def _get_prfct( verbose ):
     if verbose and verbose != 'quiet':
-        def prt(  *a, **kw ):
-            kw['flush'] = True
-            return _nc_print('::NCrystalTest::',*a,**kw)
-        return prt
+        return _nc_infomsg
     else:
         return lambda *a, **kw : None
 
@@ -451,7 +449,7 @@ def _actual_test_cmdline( verbose ):
         cmd = shlex.split(cmd)
         cmd[0] = cli_tool_lookup( cmd[0] )['shellcmd']
         cmd = shlex.join(cmd)
-        prfct('Trying to run:',cmd)
+        prfct(f'Trying to run: {cmd}')
         ok, _output = _run_cmd(cmd)
         if not ok:
             raise RuntimeError(f'Command failed: {cmd}')

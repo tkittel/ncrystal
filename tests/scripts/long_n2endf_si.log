@@ -17,12 +17,12 @@
  'include_gif': True,
  'ncmat_cfg': 'Si_sg227.ncmat;vdoslux=1;incoh_elas=false'}
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
-Initialise nuclear data...
+NCrystal: Initialise nuclear data...
 NCrystal WARNING: ENDF output will not contain any incoherent elastic component
-Write ENDF file tsl_Si.endf ...
-Files created:
-  tsl_Si.endf : Si with fraction 1
-Suggested material density: 2.329452931 g/cm^3
+NCrystal: Write ENDF file tsl_Si.endf ...
+NCrystal: Files created:
+NCrystal:   tsl_Si.endf : Si with fraction 1
+NCrystal: Suggested material density: 2.329452931 g/cm^3
 ncmat2endf fct returned:
 {'density': 2.329452931413,
  'files': [{'component': 'Si', 'file': 'tsl_Si.endf', 'fraction': 1.0}],
@@ -38,19 +38,19 @@ Created (or not) file tsl_Si.endf with fraction 1
  'ncmat_cfg': 'SiO2-alpha_sg154_AlphaQuartz.ncmat',
  'verbosity': 3}
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
-Initialise nuclear data...
-Designated incoherent: Si
->>> alpha points: 280, alpha range: (0, 832)
->>> beta points: 384, beta range: (0, 1.5e+02)
->>> alpha points: 280, alpha range: (0, 833)
->>> beta points: 386, beta range: (0, 1.3e+02)
->>> Interpolating T=293.15K for O
->>> Interpolating T=293.15K for Si
->> Prepare elastic approximations
->> Scaled elastic mode for O in compound: designated coherent atom, dividing by frac^2=0.4444444444444444
->> Scaled elastic mode for Si in compound: incoherent
-> Generate MF7
-Write ENDF file tsl_O_in_UnknownCompound.endf ...
+NCrystal: Initialise nuclear data...
+NCrystal: Designated incoherent: Si
+NCrystal: >>> alpha points: 280, alpha range: (0, 832)
+NCrystal: >>> beta points: 384, beta range: (0, 1.5e+02)
+NCrystal: >>> alpha points: 280, alpha range: (0, 833)
+NCrystal: >>> beta points: 386, beta range: (0, 1.3e+02)
+NCrystal: >>> Interpolating T=293.15K for O
+NCrystal: >>> Interpolating T=293.15K for Si
+NCrystal: >> Prepare elastic approximations
+NCrystal: >> Scaled elastic mode for O in compound: designated coherent atom, dividing by frac^2=0.4444444444444444
+NCrystal: >> Scaled elastic mode for Si in compound: incoherent
+NCrystal: > Generate MF7
+NCrystal: Write ENDF file tsl_O_in_UnknownCompound.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -321,8 +321,8 @@ DUMPING endf dict begin
           'SFI' -> {1: {1: 3.7453669744478906}}
           'AWRI' -> {1: {1: 15.861863000643206}}
 DUMPING endf dict end
-> Generate MF7
-Write ENDF file tsl_Si_in_UnknownCompound.endf ...
+NCrystal: > Generate MF7
+NCrystal: Write ENDF file tsl_Si_in_UnknownCompound.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -573,10 +573,10 @@ DUMPING endf dict begin
           'SFI' -> {1: {1: 2.0196331189251038}}
           'AWRI' -> {1: {1: 27.844240511513284}}
 DUMPING endf dict end
-Files created:
-  tsl_O_in_UnknownCompound.endf : O with fraction 2/3
-  tsl_Si_in_UnknownCompound.endf : Si with fraction 1/3
-Suggested material density: 2.648643136 g/cm^3
+NCrystal: Files created:
+NCrystal:   tsl_O_in_UnknownCompound.endf : O with fraction 2/3
+NCrystal:   tsl_Si_in_UnknownCompound.endf : Si with fraction 1/3
+NCrystal: Suggested material density: 2.648643136 g/cm^3
 ncmat2endf fct returned:
 {'density': 2.648643135744,
  'files': [{'component': 'O',
@@ -598,18 +598,18 @@ Created (or not) file tsl_Si_in_UnknownCompound.endf with fraction 0.333333
  'ncmat_cfg': 'SiO2-alpha_sg154_AlphaQuartz.ncmat',
  'verbosity': 3}
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
-Initialise nuclear data...
->>> alpha points: 280, alpha range: (0, 832)
->>> beta points: 384, beta range: (0, 1.5e+02)
->>> alpha points: 280, alpha range: (0, 833)
->>> beta points: 386, beta range: (0, 1.3e+02)
->>> Interpolating T=293.15K for O
->>> Interpolating T=293.15K for Si
->> Prepare elastic approximations
->> Principal elastic mode for O: coherent
->> Principal elastic mode for Si: coherent
-> Generate MF7
-Write ENDF file tsl_O_in_UnknownCompound.endf ...
+NCrystal: Initialise nuclear data...
+NCrystal: >>> alpha points: 280, alpha range: (0, 832)
+NCrystal: >>> beta points: 384, beta range: (0, 1.5e+02)
+NCrystal: >>> alpha points: 280, alpha range: (0, 833)
+NCrystal: >>> beta points: 386, beta range: (0, 1.3e+02)
+NCrystal: >>> Interpolating T=293.15K for O
+NCrystal: >>> Interpolating T=293.15K for Si
+NCrystal: >> Prepare elastic approximations
+NCrystal: >> Principal elastic mode for O: coherent
+NCrystal: >> Principal elastic mode for Si: coherent
+NCrystal: > Generate MF7
+NCrystal: Write ENDF file tsl_O_in_UnknownCompound.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -880,8 +880,8 @@ DUMPING endf dict begin
           'SFI' -> {1: {1: 3.7453669744478906}}
           'AWRI' -> {1: {1: 15.861863000643206}}
 DUMPING endf dict end
-> Generate MF7
-Write ENDF file tsl_Si_in_UnknownCompound.endf ...
+NCrystal: > Generate MF7
+NCrystal: Write ENDF file tsl_Si_in_UnknownCompound.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -1152,10 +1152,10 @@ DUMPING endf dict begin
           'SFI' -> {1: {1: 2.0196331189251038}}
           'AWRI' -> {1: {1: 27.844240511513284}}
 DUMPING endf dict end
-Files created:
-  tsl_O_in_UnknownCompound.endf : O with fraction 2/3
-  tsl_Si_in_UnknownCompound.endf : Si with fraction 1/3
-Suggested material density: 2.648643136 g/cm^3
+NCrystal: Files created:
+NCrystal:   tsl_O_in_UnknownCompound.endf : O with fraction 2/3
+NCrystal:   tsl_Si_in_UnknownCompound.endf : Si with fraction 1/3
+NCrystal: Suggested material density: 2.648643136 g/cm^3
 ncmat2endf fct returned:
 {'density': 2.648643135744,
  'files': [{'component': 'O',
@@ -1181,20 +1181,20 @@ Created (or not) file tsl_Si_in_UnknownCompound.endf with fraction 0.333333
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 NCrystal WARNING: Creating non standard S(a,b) with LASYM = 3
 NCrystal WARNING: Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it.
-Initialise nuclear data...
->>> alpha points: 280, alpha range: (0, 832)
->>> beta points: 384, beta range: (0, 1.5e+02)
->>> alpha points: 280, alpha range: (0, 833)
->>> beta points: 386, beta range: (0, 1.3e+02)
->>> Interpolating T=293.15K for O
->>> Interpolating T=293.15K for Si
->>> Interpolating T=400K for O
->>> Interpolating T=400K for Si
->> Prepare elastic approximations
->> Principal elastic mode for O: coherent
->> Principal elastic mode for Si: coherent
-> Generate MF7
-Write ENDF file tsl_O_in_UnknownCompound.endf ...
+NCrystal: Initialise nuclear data...
+NCrystal: >>> alpha points: 280, alpha range: (0, 832)
+NCrystal: >>> beta points: 384, beta range: (0, 1.5e+02)
+NCrystal: >>> alpha points: 280, alpha range: (0, 833)
+NCrystal: >>> beta points: 386, beta range: (0, 1.3e+02)
+NCrystal: >>> Interpolating T=293.15K for O
+NCrystal: >>> Interpolating T=293.15K for Si
+NCrystal: >>> Interpolating T=400K for O
+NCrystal: >>> Interpolating T=400K for Si
+NCrystal: >> Prepare elastic approximations
+NCrystal: >> Principal elastic mode for O: coherent
+NCrystal: >> Principal elastic mode for Si: coherent
+NCrystal: > Generate MF7
+NCrystal: Write ENDF file tsl_O_in_UnknownCompound.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -1614,8 +1614,8 @@ DUMPING endf dict begin
           'SFI' -> {1: {1: 3.7453669744478906}}
           'AWRI' -> {1: {1: 15.861863000643206}}
 DUMPING endf dict end
-> Generate MF7
-Write ENDF file tsl_Si_in_UnknownCompound.endf ...
+NCrystal: > Generate MF7
+NCrystal: Write ENDF file tsl_Si_in_UnknownCompound.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -2035,9 +2035,9 @@ DUMPING endf dict begin
           'SFI' -> {1: {1: 2.0196331189251038}}
           'AWRI' -> {1: {1: 27.844240511513284}}
 DUMPING endf dict end
-Files created:
-  tsl_O_in_UnknownCompound.endf : O with fraction 2/3
-  tsl_Si_in_UnknownCompound.endf : Si with fraction 1/3
+NCrystal: Files created:
+NCrystal:   tsl_O_in_UnknownCompound.endf : O with fraction 2/3
+NCrystal:   tsl_Si_in_UnknownCompound.endf : Si with fraction 1/3
 ncmat2endf fct returned:
 {'density': 2.648643135744,
  'files': [{'component': 'O',

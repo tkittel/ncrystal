@@ -78,14 +78,14 @@ options:
 {"major":123,"minor":45,"patch":6,"int":123045006,"list":[123,45,6],"str":"123.45.6"}
 ===========================================
 ============= CLI >>version -o tmp_test_file.json<< ====================
-Wrote: tmp_test_file.json
+NCrystal: Wrote: tmp_test_file.json
 ===========================================
 Contents of tmp_test_file.json: ========================================
 {"major":123,"minor":45,"patch":6,"int":123045006,"list":[123,45,6],"str":"123.45.6"}
 ============= CLI >>list -o tmp_test_file.json<< ====================
 Caught expected RuntimeError('File already exists (use --force to overwrite): tmp_test_file.json')
 ============= CLI >>list -o tmp_test_file.json --force<< ====================
-Wrote: tmp_test_file.json
+NCrystal: Wrote: tmp_test_file.json
 ===========================================
 Contents of tmp_test_file.json: ========================================
 ["version", "util", "mmc", "sab", "vdos", "isomacroxstable", "matcfg", "sgsym", "cif", "test"]

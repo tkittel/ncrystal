@@ -8,16 +8,16 @@
  'material_name': 'CH2',
  'ncmat_cfg': 'Polyethylene_as_an_amorphous_polymeric_material_consisting_of_a_long_chain_of_carbon_atoms_with_two_hydrogen_atoms_for_each_of_those_carbon_atoms_thus_yielding_the_formula_CH2.ncmat;vdoslux=1'}
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
-Initialise nuclear data...
+NCrystal: Initialise nuclear data...
 NCrystal WARNING: ENDF output will not contain a Bragg diffraction component
 NCrystal WARNING: Desciption contains lines too long for ENDF. Will break lines and use "+LINECONT+" to mark line continuations
-Write ENDF file tsl_H_in_CH2.endf ...
+NCrystal: Write ENDF file tsl_H_in_CH2.endf ...
 NCrystal WARNING: Desciption contains lines too long for ENDF. Will break lines and use "+LINECONT+" to mark line continuations
-Write ENDF file tsl_C_in_CH2.endf ...
-Files created:
-  tsl_H_in_CH2.endf : H with fraction 2/3
-  tsl_C_in_CH2.endf : C with fraction 1/3
-Suggested material density: 0.92 g/cm^3
+NCrystal: Write ENDF file tsl_C_in_CH2.endf ...
+NCrystal: Files created:
+NCrystal:   tsl_H_in_CH2.endf : H with fraction 2/3
+NCrystal:   tsl_C_in_CH2.endf : C with fraction 1/3
+NCrystal: Suggested material density: 0.92 g/cm^3
 ncmat2endf fct returned:
 {'density': 0.92,
  'files': [{'component': 'H',

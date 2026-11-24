@@ -173,13 +173,13 @@ OC2 0.27130 0.87040 0.09380
 OC3 0.27350 0.51260 0.09310
 ===================================================================
 ============= CLI >>codid::9005777 --nomerge<< ====================
-Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
+NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
-Unit cell was transformed to the standard setting by spglib
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_CaO3Si_sg2_cod9005777.ncmat
+NCrystal: Unit cell was transformed to the standard setting by spglib
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_CaO3Si_sg2_cod9005777.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
@@ -340,13 +340,13 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 ===================================================================
 ============= CLI >>codid::9005777<< ====================
-Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
+NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
-Unit cell was transformed to the standard setting by spglib
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_CaO3Si_sg2_cod9005777.ncmat
+NCrystal: Unit cell was transformed to the standard setting by spglib
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_CaO3Si_sg2_cod9005777.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
@@ -419,13 +419,13 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 =========================================================
 ============= CLI >>codid::9005777 --uisotemp=50<< ====================
-Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
+NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
-Unit cell was transformed to the standard setting by spglib
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_CaO3Si_sg2_cod9005777.ncmat
+NCrystal: Unit cell was transformed to the standard setting by spglib
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_CaO3Si_sg2_cod9005777.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
@@ -498,13 +498,13 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 =======================================================================
 ============= CLI >>codid::9005777 --debyetemp=50<< ====================
-Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
+NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
-Unit cell was transformed to the standard setting by spglib
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_CaO3Si_sg2_cod9005777.ncmat
+NCrystal: Unit cell was transformed to the standard setting by spglib
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_CaO3Si_sg2_cod9005777.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
@@ -577,12 +577,12 @@ OUT>  type vdosdebye
 OUT>  debye_temp 50
 ========================================================================
 ============= CLI >>codid::1000257<< ====================
-Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
-Self-consistency of structure was verified by spglib
+NCrystal: Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Self-consistency of structure was verified by spglib
 NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
-Verifying that resulting ncmat data can be loaded
-Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># F7FeNa2Ni (orthorombic, SG-74)
@@ -674,11 +674,11 @@ OUT>  type vdosdebye
 OUT>  msd 0.0072 at_temperature 293
 =========================================================
 ============= CLI >>codid::1000257 --uisotemp=50<< ====================
-Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
+NCrystal: Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># F7FeNa2Ni (orthorombic, SG-74)
@@ -763,12 +763,12 @@ OUT>  type vdosdebye
 OUT>  msd 0.0072 at_temperature 50
 =======================================================================
 ============= CLI >>codid::1000257 --debyetemp=150<< ====================
-Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
-Self-consistency of structure was verified by spglib
+NCrystal: Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Self-consistency of structure was verified by spglib
 NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
-Verifying that resulting ncmat data can be loaded
-Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># F7FeNa2Ni (orthorombic, SG-74)
@@ -860,11 +860,11 @@ OUT>  type vdosdebye
 OUT>  msd 0.0072 at_temperature 293
 =========================================================================
 ============= CLI >>codid::1000257 --debyetemp=150 --uisotemp=50<< ====================
-Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
+NCrystal: Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># F7FeNa2Ni (orthorombic, SG-74)
@@ -949,11 +949,11 @@ OUT>  type vdosdebye
 OUT>  msd 0.0072 at_temperature 50
 =======================================================================================
 ============= CLI >>mpid::55<< ====================
-Getting mp_55.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_Sn_sg139_mp55.ncmat
+NCrystal: Getting mp_55.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_Sn_sg139_mp55.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># Sn (tetragonal, SG-139)
@@ -990,10 +990,10 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 ===================================================
 ============= CLI >>mpid::55 --noval<< ====================
-Getting mp_55.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
-Self-consistency of structure was verified by spglib
-Writing autogen_Sn_sg139_mp55.ncmat
+NCrystal: Getting mp_55.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Writing autogen_Sn_sg139_mp55.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># Sn (tetragonal, SG-139)
@@ -1030,11 +1030,11 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 ===========================================================
 ============= CLI >>mpid::55 --dynamics stdlib::Sn_sg141.ncmat<< ====================
-Getting mp_55.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_Sn_sg139_mp55.ncmat
+NCrystal: Getting mp_55.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_Sn_sg139_mp55.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># Sn (tetragonal, SG-139)
@@ -1076,13 +1076,13 @@ OUT>     .796909 .678025 .547771 .432472 .32284 .240839 .17676 .123845 .0778986
 OUT>     .0462663 .0247447 .0118274 .00659815 .00298692 0
 =====================================================================================
 ============= CLI >>codid::9005777 --dynamics stdlib::CaSiO3_sg2_Wollastonite.ncmat<< ====================
-Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
+NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
-Unit cell was transformed to the standard setting by spglib
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_CaO3Si_sg2_cod9005777.ncmat
+NCrystal: Unit cell was transformed to the standard setting by spglib
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_CaO3Si_sg2_cod9005777.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
@@ -1223,12 +1223,12 @@ OC2 0.27130 0.87040 0.09380
 OC3 0.27350 0.51260 0.09310
 ===================================================================
 ============= CLI >>QE_pw_Al.out --via-ase<< ====================
-Attempting to load data via ASE
-Attempting to load CIF data with gemmi
-Unit cell was transformed to the standard setting by spglib
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_Al_sg225.ncmat
+NCrystal: Attempting to load data via ASE
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Unit cell was transformed to the standard setting by spglib
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_Al_sg225.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># Al (cubic, SG-225)
@@ -1263,12 +1263,12 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 =================================================================
 ============= CLI >>QE_pw_Al.out --via-ase --remap 'Al is 0.99 Al 0.01 Cr'<< ====================
-Attempting to load data via ASE
-Attempting to load CIF data with gemmi
-Unit cell was transformed to the standard setting by spglib
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_Al99Cr_sg225.ncmat
+NCrystal: Attempting to load data via ASE
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Unit cell was transformed to the standard setting by spglib
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_Al99Cr_sg225.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># Al99Cr (cubic, SG-225)
@@ -1307,11 +1307,11 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 =================================================================================================
 ============= CLI >>dummy_D.cif<< ====================
-Attempting to load CIF data with gemmi
-Self-consistency of structure was verified by spglib
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Self-consistency of structure was verified by spglib
 NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
-Verifying that resulting ncmat data can be loaded
-Writing autogen_C3D2_sg221.ncmat
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_C3D2_sg221.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># C3D2 (cubic, SG-221)
@@ -1360,11 +1360,11 @@ OUT>  type vdosdebye
 OUT>  msd 0.019 at_temperature 293
 ======================================================
 ============= CLI >>dummy_D.cif --remap 'D is H'<< ====================
-Attempting to load CIF data with gemmi
-Self-consistency of structure was verified by spglib
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Self-consistency of structure was verified by spglib
 NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
-Verifying that resulting ncmat data can be loaded
-Writing autogen_C3H2_sg221.ncmat
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_C3H2_sg221.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># C3H2 (cubic, SG-221)
@@ -1421,11 +1421,11 @@ Caught expected ArgumentError('Conflicting options')
 ============= CLI >>--valplot stdlib::Al_sg225.ncmat --via-ase<< ====================
 Caught expected ArgumentError('Conflicting options')
 ============= CLI >>dummy_D.cif --remap 'D is 0.6 H 0.4 D'<< ====================
-Attempting to load CIF data with gemmi
-Self-consistency of structure was verified by spglib
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Self-consistency of structure was verified by spglib
 NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
-Verifying that resulting ncmat data can be loaded
-Writing autogen_C15D4H6_sg221.ncmat
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_C15D4H6_sg221.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># C15D4H6 (cubic, SG-221)
@@ -1539,11 +1539,11 @@ NCMAT v8
   debye_temp 300
 ============================================================================
 ============= CLI >>mpid::55 --dynamics stdlib::Sn_sg141.ncmat -obla.ncmat<< ====================
-Getting mp_55.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing bla.ncmat
+NCrystal: Getting mp_55.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing bla.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># Sn (tetragonal, SG-139)
@@ -1585,13 +1585,13 @@ OUT>     .796909 .678025 .547771 .432472 .32284 .240839 .17676 .123845 .0778986
 OUT>     .0462663 .0247447 .0118274 .00659815 .00298692 0
 =================================================================================================
 ============= CLI >>codid::9005777 --atomdata 'Si 28.09u::4.1491fm 0.004b 0.171b'<< ====================
-Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
+NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
-Unit cell was transformed to the standard setting by spglib
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_CaO3Si_sg2_cod9005777.ncmat
+NCrystal: Unit cell was transformed to the standard setting by spglib
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_CaO3Si_sg2_cod9005777.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
@@ -1666,13 +1666,13 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 ========================================================================================================
 ============= CLI >>codid::9005777 --atomdata 'Si 28.09u 0fm 0b 0b'<< ====================
-Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
+NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
-Unit cell was transformed to the standard setting by spglib
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_CaO3Si_sg2_cod9005777.ncmat
+NCrystal: Unit cell was transformed to the standard setting by spglib
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_CaO3Si_sg2_cod9005777.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
@@ -1749,13 +1749,13 @@ OUT>  debye_temp 300
 ============= CLI >>codid::9005777 --atomdata 'Si 28.09 0fm 0b 0b'<< ====================
 Caught expected ArgumentError('invalid --atomdata syntax in "Si 28.09 0fm 0b 0b"')
 ============= CLI >>codid::9005777 --atomdata 'Si 28.09u 0fm 0b 0b' --atomdata 'Ca 128.09u 0fm 0b 0b'<< ====================
-Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-Attempting to load CIF data with gemmi
+NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
+NCrystal: Attempting to load CIF data with gemmi
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
-Unit cell was transformed to the standard setting by spglib
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_CaO3Si_sg2_cod9005777.ncmat
+NCrystal: Unit cell was transformed to the standard setting by spglib
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_CaO3Si_sg2_cod9005777.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># CaO3Si (triclinic, SG-2)
@@ -1849,11 +1849,11 @@ UNITTEST: Would invoke nc_cifutils.produce_validation_plots with pdf_target= ncr
 UNITTEST: Would invoke nc_cifutils.produce_validation_plots with pdf_target= bla.pdf
 ============================================================================================================
 ============= CLI >>Wyckoff1963_Sulphor_0011255.cif<< ====================
-Attempting to load CIF data with gemmi
+NCrystal: Attempting to load CIF data with gemmi
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1)
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_S_sg70.ncmat
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_S_sg70.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># S (orthorombic, SG-70)
@@ -1898,12 +1898,12 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 ==========================================================================
 ============= CLI >>Wyckoff1963_Sulphor_0011255.cif --spacegroup 'F d d d:1'<< ====================
-Attempting to load CIF data with gemmi
+NCrystal: Attempting to load CIF data with gemmi
 NCrystal WARNING: Overriding spacegroup to "F d d d:1" due to explicit request
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1)
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_S_sg70.ncmat
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_S_sg70.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># S (orthorombic, SG-70)
@@ -1950,12 +1950,12 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 ===================================================================================================
 ============= CLI >>Wyckoff1963_Sulphor_0011255.cif --spacegroup 'F d d d:2'<< ====================
-Attempting to load CIF data with gemmi
+NCrystal: Attempting to load CIF data with gemmi
 NCrystal WARNING: Overriding spacegroup to "F d d d:2" due to explicit request
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1)
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_S_sg70.ncmat
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_S_sg70.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># S (orthorombic, SG-70)
@@ -2002,10 +2002,10 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 ===================================================================================================
 ============= CLI >>mp_55_unrefined_conventional.cif<< ====================
-Attempting to load CIF data with gemmi
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_Sn_sg139.ncmat
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_Sn_sg139.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># Sn (tetragonal, SG-139)
@@ -2041,11 +2041,11 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 ===========================================================================
 ============= CLI >>mp_55_unrefined_primitive.cif<< ====================
-Attempting to load CIF data with gemmi
-Unit cell was transformed to the standard setting by spglib
-Self-consistency of structure was verified by spglib
-Verifying that resulting ncmat data can be loaded
-Writing autogen_Sn_sg139.ncmat
+NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Unit cell was transformed to the standard setting by spglib
+NCrystal: Self-consistency of structure was verified by spglib
+NCrystal: Verifying that resulting ncmat data can be loaded
+NCrystal: Writing autogen_Sn_sg139.ncmat
 OUT>NCMAT v8
 OUT>#
 OUT># Sn (tetragonal, SG-139)

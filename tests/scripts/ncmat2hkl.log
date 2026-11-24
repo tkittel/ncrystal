@@ -897,7 +897,7 @@ SC XS max-abs-diff converted lau vs. original < 1e-07?: yes
 
 
 ============= CLI >>--format=laz 'stdlib::Y2SiO5_sg15_YSO.ncmat;dcutoff=2.0' -o dummy.laz --override-prec=10<< ====================
-Wrote dummy.laz
+NCrystal: Wrote dummy.laz
 OUTFILE># File created by NCrystal v<current>
 OUTFILE>#
 OUTFILE># ncrystal_cfgstr "stdlib::Y2SiO5_sg15_YSO.ncmat;dcutoff=2"
@@ -1141,7 +1141,7 @@ SC XS max-abs-diff converted laz vs. original < 1e-07?: yes
 
 
 ============= CLI >>--format=lau 'stdlib::Y2SiO5_sg15_YSO.ncmat;dcutoff=2.0' -o dummy.lau --override-prec=10<< ====================
-Wrote dummy.lau
+NCrystal: Wrote dummy.lau
 OUTFILE># File created by NCrystal v<current>
 OUTFILE>#
 OUTFILE># ncrystal_cfgstr "stdlib::Y2SiO5_sg15_YSO.ncmat;dcutoff=2"
@@ -3486,7 +3486,7 @@ SC XS max-abs-diff converted lau vs. original < 1e-07?: yes
 
 
 ============= CLI >>--format=laz stdlib::C_sg194_pyrolytic_graphite.ncmat -o dummy.laz --override-prec=10<< ====================
-Wrote dummy.laz
+NCrystal: Wrote dummy.laz
 OUTFILE># File created by NCrystal v<current>
 OUTFILE>#
 OUTFILE># ncrystal_cfgstr "stdlib::C_sg194_pyrolytic_graphite.ncmat;lcaxis=0,0,1"
@@ -3690,7 +3690,7 @@ SC XS max-abs-diff converted laz vs. original < 1e-07?: yes
 
 
 ============= CLI >>--format=lau stdlib::C_sg194_pyrolytic_graphite.ncmat -o dummy.lau --override-prec=10<< ====================
-Wrote dummy.lau
+NCrystal: Wrote dummy.lau
 OUTFILE># File created by NCrystal v<current>
 OUTFILE>#
 OUTFILE># ncrystal_cfgstr "stdlib::C_sg194_pyrolytic_graphite.ncmat;lcaxis=0,0,1"
@@ -4226,7 +4226,7 @@ Caught expected ArgumentError('Please specify output type with --format, either 
 ============= CLI >>stdlib::Al_sg225.ncmat --format LAU --override-prec=10<< ====================
 Caught expected ArgumentError("argument --format/-f: invalid choice: 'LAU' (choose from 'laz', 'lau')")
 ============= CLI >>'stdlib::Al_sg225.ncmat;dcutoff=0.6' --format lau -o dummy.lau --override-prec=10<< ====================
-Wrote dummy.lau
+NCrystal: Wrote dummy.lau
 OUTFILE># File created by NCrystal v<current>
 OUTFILE>#
 OUTFILE># ncrystal_cfgstr "stdlib::Al_sg225.ncmat;dcutoff=0.6"

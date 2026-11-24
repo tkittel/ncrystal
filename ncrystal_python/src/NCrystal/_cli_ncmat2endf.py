@@ -19,7 +19,7 @@
 ##                                                                            ##
 ################################################################################
 
-from ._cliimpl import cli_entry_point, create_ArgumentParser
+from ._cliimpl import cli_entry_point, create_ArgumentParser, infomsg
 
 
 def climod_metadata():
@@ -307,7 +307,7 @@ def _main_impl( args ):
     if args.jsonindex:
         import json
         r_json = json.dumps( r, indent = 4 ).rstrip() + '\n'
-        print(f'Writing index file: {args.jsonindex.name}')
+        infomsg(f'Writing index file: {args.jsonindex.name}')
         args.jsonindex.write_text( r_json )
 
 def gen_metadata_doc():

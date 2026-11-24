@@ -21,7 +21,7 @@
 
 import pathlib
 
-from ._cliimpl import cli_entry_point, create_ArgumentParser, print
+from ._cliimpl import cli_entry_point, create_ArgumentParser, infomsg, print
 from ._common import write_text
 from .constants import constant_boltzmann, constant_planck
 from .vdos import vdos_units_2_eV
@@ -237,7 +237,7 @@ def getVDOSFromNCMAT(fn):
         for di in di_vdos:
             dl=di.atomData.displayLabel()
             if dl!=select:
-                print(f"NB: Ignoring (due to selection) VDOS for element {dl} in file {fn}.")
+                infomsg(f"NB: Ignoring (due to selection) VDOS for element {dl} in file {fn}.")
             else:
                 ll+=[di]
         if not ll:
@@ -274,7 +274,7 @@ def main( progname, arglist ):
     np = _np
 
     assert len(egrid) == len(density)
-    print (f"Loaded VDOS with {len(density)} grid points from {args_file_basename}")
+    infomsg(f"Loaded VDOS with {len(density)} grid points from {args_file_basename}")
 
     np = get_numpy()
     def numpy_is_sorted(a):
@@ -283,11 +283,12 @@ def main( progname, arglist ):
         return np.all(a[:-1] < a[1:])
 
     if not numpy_is_strongly_sorted(egrid):
-        for i in range(len(egrid)-1):
-            if not egrid[i] < egrid[i+1]:
-                print("Problems detected in egrid points with values ",egrid[i],"and",egrid[i+1])
+        bad = [ f'({egrid[i]:g}, {egrid[i+1]:g})'
+                for i in range(len(egrid)-1) if not egrid[i] < egrid[i+1] ]
         raise RuntimeError('ERROR: egrid values (first column) of input file are not in sorted'
-                         +' (ascending) order, or there are identical elements.')
+                           ' (ascending) order, or there are identical elements.'
+                           ' Problematic pairs: ' + ', '.join(bad[:3])
+                           + ( ', ...' if len(bad) > 3 else '' ) )
 
     cutoffs=[]
     if args.cutoff:
@@ -298,7 +299,7 @@ def main( progname, arglist ):
             assert i==0 or egrid[i-1]<c
             assert egrid[i]>=c
             cutoffs+=[ (i, egrid[i] ) ]
-            print(f" => Mapping cutoff value of {c} to grid point at {cutoffs[-1][1]}")
+            infomsg(f" => Mapping cutoff value of {c} to grid point at {cutoffs[-1][1]}")
 
 
     if ( ( args.forceregular or not args.plot )
@@ -385,7 +386,7 @@ def main( progname, arglist ):
                 is_linspace=False
                 break
         if is_linspace:
-            print('NB: Detected linearly spaced input egrid')
+            infomsg('NB: Detected linearly spaced input egrid')
 
     #normalise so unity at highest point (gives smaller file sizes):
     density /= density.max()
@@ -426,7 +427,7 @@ def main( progname, arglist ):
         content += egrid_cnt
         content += '\n'
         write_text( outfn, content )
-        print(f"Wrote {outfn}")
+        infomsg(f"Wrote {outfn}")
 
 def applyCutoff(egrid,density,cutoffs):
     if cutoffs:
@@ -443,12 +444,9 @@ def regularise(egrid,density,n):
         i += 1
     safepeel = i-2
     if safepeel>=1:
-        print (f"Ignoring {safepeel} last points while regularising since last {safepeel+1} points are 0.")
+        infomsg(f"Ignoring {safepeel} last points while regularising since last {safepeel+1} points are 0.")
         egrid,density = egrid[0:-(safepeel)],density[0:-(safepeel)]
     emin,emax=egrid[0],egrid[-1]
-    print('old range',emin,emax)
-    THZ = constant_planck*1e12
-    print('old range [THZ]',emin/THZ,emax/THZ)
 
     np = get_numpy()
     for k in range(1,1000000000):
@@ -466,7 +464,7 @@ def regularise(egrid,density,n):
         nbins -= 1
         n -= 1
         new_emax -= binwidth
-    print (f" ==> Choosing regular grid with n={n} pts from emin={emin} to emax={new_emax} ({new_emax-emax} beyond old emax)")
+    infomsg(f" ==> Choosing regular grid with n={n} pts from emin={emin} to emax={new_emax} ({new_emax-emax} beyond old emax)")
     assert new_emax >= emax-binwidth*1.001e-3
     from ._numpy import _np_linspace
     new_egrid = _np_linspace(emin,new_emax,n)
@@ -474,5 +472,8 @@ def regularise(egrid,density,n):
     assert abs(round(test)-test)<1e-6,f'{test}'
     np = get_numpy()
     new_density = np.interp(new_egrid,egrid,density, left=0.0, right=0.0)
-    print('last density values in new grid:',new_density[-5:])
+    THZ = constant_planck*1e12
+    infomsg(f'Regularised VDOS grid from old range [{emin:g}, {emax:g}] eV'
+            f' ([{emin/THZ:g}, {emax/THZ:g}] THz). Last density values in'
+            f' new grid: {", ".join(f"{e:g}" for e in new_density[-5:])}')
     return new_egrid,new_density

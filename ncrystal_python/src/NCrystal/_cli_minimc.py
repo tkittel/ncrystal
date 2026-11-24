@@ -19,7 +19,7 @@
 ##                                                                            ##
 ################################################################################
 
-from ._cliimpl import cli_entry_point, create_ArgumentParser, print
+from ._cliimpl import cli_entry_point, create_ArgumentParser, infomsg, print
 
 
 def climod_metadata():
@@ -470,10 +470,10 @@ def _main_impl( progname, args ):
             ncwarn('No tallies are available to plot.')
         for t in tallies:
             if ( tally_show_filter is None ) or tally_show_filter(t.name):
-                print(f"Plotting tally: {t.name}")
+                infomsg(f"Plotting tally: {t.name}")
                 t.plot()
             else:
-                print(f"Skipping tally: {t.name}")
+                infomsg(f"Skipping tally: {t.name}")
 
     if args.dump:
         assert res is not None
@@ -501,4 +501,4 @@ def _main_impl( progname, args ):
                                          f' {args.outputfile}')
             assert args.outputfile.parent.is_dir()
             args.outputfile.write_bytes(data)
-            print(f"Wrote: {args.outputfile.name}")
+            infomsg(f"Wrote: {args.outputfile.name}")

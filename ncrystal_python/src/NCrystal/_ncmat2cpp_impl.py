@@ -206,13 +206,13 @@ def files2cppcode(infiles,
     #step to embed the standard lib), we should be a bit more careful:
     orig_print_fct = _sys_print
     if quiet:
-        def print(*a,**kw):
+        def info(msg):
             pass
     elif run_standalone:
-        print = _sys_print
+        info = _sys_print
     else:
-        from ._cliimpl import print
-        orig_print_fct = print
+        from ._cliimpl import infomsg as info
+        from ._cliimpl import print as orig_print_fct
 
     if regfctname is None:
         regfctname = _default_regfctname
@@ -276,7 +276,7 @@ def files2cppcode(infiles,
     for data in datalist:
         #for p in [pathlib.Path(f) for f in infiles]:
         fn= data['name']
-        print(f"ncmat2cpp : Processing {fn}")
+        info(f"ncmat2cpp : Processing {fn}")
         assert fn not in seen, f"ERROR: Multiple files in input named: {fn}"
         seen.add(fn)
 
@@ -327,12 +327,11 @@ def files2cppcode(infiles,
 
         if validate:
             assert not run_standalone,"standalone mode prevents --validate"
-            print(f"Trying to validate: {fn}")
             from .misc import MaterialSource
             MaterialSource( raw_text_data ).load( doInfo = True,
                                                   doScatter = False,
                                                   doAbsorption = False )
-            print('  -> OK')
+            info(f'Validated: {fn}')
 
         lines = list(raw_text_data.splitlines())
         assert lines,f"file was empty: {fn}"
@@ -414,7 +413,7 @@ def files2cppcode(infiles,
         else:
             from ._common import write_text
             write_text(of,out)
-        print(f'Wrote: {of}')
+        info(f'Wrote: {of}')
     return out
 
 #Sphinx doc function. Signature always the following:

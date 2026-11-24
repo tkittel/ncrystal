@@ -208,7 +208,7 @@ class CIFSource:
             return self.__textdata
         if self.__fp is not None:
             if not quiet:
-                _nc_common.print(f"Loading data from file {self.__fp.name}")
+                _nc_common.infomsg(f"Loading data from file {self.__fp.name}")
             return self.__fp.read_text()
         if self.__mpid is not None:
             return _mp_get_cifdata( self.__mpid, quiet = quiet, apikey = mp_apikey )
@@ -541,7 +541,7 @@ def produce_validation_plots( files, verbose_lbls = True, pdf_target = None,
 
     if pdf and not already_pdfpages:
         pdf.close()
-        _nc_common.print(f"created {pdf_target}")
+        _nc_common.infomsg(f"Created {pdf_target}")
 
 def produce_validation_plot( data_or_file, verbose_lbls = True, line_width_scale = 1,
                              quiet = False, xlabel = None, legend_args = None, do_newfig = True,
@@ -605,11 +605,11 @@ def produce_validation_plot( data_or_file, verbose_lbls = True, line_width_scale
     elif '/' in fn:
         fn = fn.split('/')[-1]
     if not quiet:
-        _nc_common.print(f'Attempting to validate {fn}')
+        _nc_common.infomsg(f'Attempting to validate {fn}')
 
     if not mc.info.isCrystalline():
         if not quiet:
-            _nc_common.print(f"Ignoring non-crystalline material {fn}")
+            _nc_common.infomsg(f"Ignoring non-crystalline material {fn}")
         return
 
     def _extractID(s,pattern):
@@ -722,7 +722,7 @@ def produce_validation_plot( data_or_file, verbose_lbls = True, line_width_scale
 
         si = mc.info.structure_info if mc.info.hasStructureInfo() else None
         if not quiet:
-            _nc_common.print(f'Structure[{lbl}]:',si)
+            _nc_common.infomsg(f'Structure[{lbl}]: {si}')
         if si and verbose_lbls:
             sgno=si.get('spacegroup',None)
             lbl += ( f' (SG-{sgno or "unspecified"},'

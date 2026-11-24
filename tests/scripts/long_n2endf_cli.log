@@ -1,15 +1,15 @@
 ============= CLI >>'stdlib::Al_sg225.ncmat;temp=350K;vdoslux=1' -vvv -n Al -f -e greater '--mdata={"ALAB": "MyLab"}'<< ====================
-Initialise nuclear data...
->>> alpha points: 110, alpha range: (0, 695)
->>> beta points: 137, beta range: (0, 76)
->>> Interpolating T=350.0K for Al
->> Prepare elastic approximations
->> Principal elastic mode for Al: coherent
-> Generate MF7
-Write ENDF file tsl_Al_in_Al.endf ...
-Files created:
-  tsl_Al_in_Al.endf : Al with fraction 1
-Suggested material density: 2.698645565 g/cm^3
+NCrystal: Initialise nuclear data...
+NCrystal: >>> alpha points: 110, alpha range: (0, 695)
+NCrystal: >>> beta points: 137, beta range: (0, 76)
+NCrystal: >>> Interpolating T=350.0K for Al
+NCrystal: >> Prepare elastic approximations
+NCrystal: >> Principal elastic mode for Al: coherent
+NCrystal: > Generate MF7
+NCrystal: Write ENDF file tsl_Al_in_Al.endf ...
+NCrystal: Files created:
+NCrystal:   tsl_Al_in_Al.endf : Al with fraction 1
+NCrystal: Suggested material density: 2.698645565 g/cm^3
 ============================================================================================================================================
 ============= CLI >>-h<< ====================
 usage: ncrystal_ncmat2endf CFGSTR [--elas MODE] [--name NAME] [--mdata DATA]
@@ -145,26 +145,26 @@ The list of supported meta-data keys and their meaning is:
 ============= CLI >>'stdlib::Al_sg225.ncmat;vdoslux=1' -vvv -f -e scaled --totsab --asymsab<< ====================
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 NCrystal WARNING: Creating non standard S(a,b) with LASYM = 3
-Initialise nuclear data...
->>> alpha points: 110, alpha range: (0, 824)
->>> beta points: 139, beta range: (0, 87)
->>> Interpolating T=293.15K for Al
->> Prepare elastic approximations
->> Scaled elastic mode for single atom Al: coherent
-> Generate MF7
-Write ENDF file tsl_Al.endf ...
-Files created:
-  tsl_Al.endf : Al with fraction 1
-Suggested material density: 2.698645565 g/cm^3
+NCrystal: Initialise nuclear data...
+NCrystal: >>> alpha points: 110, alpha range: (0, 824)
+NCrystal: >>> beta points: 139, beta range: (0, 87)
+NCrystal: >>> Interpolating T=293.15K for Al
+NCrystal: >> Prepare elastic approximations
+NCrystal: >> Scaled elastic mode for single atom Al: coherent
+NCrystal: > Generate MF7
+NCrystal: Write ENDF file tsl_Al.endf ...
+NCrystal: Files created:
+NCrystal:   tsl_Al.endf : Al with fraction 1
+NCrystal: Suggested material density: 2.698645565 g/cm^3
 ==================================================================================================================
 ============= CLI >>'stdlib::Al_sg225.ncmat;vdoslux=1' -f --now --dir=some/out/dir --index mymat.json<< ====================
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
-Initialise nuclear data...
-Write ENDF file tsl_Al.endf ...
-Files created:
-  tsl_Al.endf : Al with fraction 1
-Suggested material density: 2.698645565 g/cm^3
-Writing index file: mymat.json
+NCrystal: Initialise nuclear data...
+NCrystal: Write ENDF file tsl_Al.endf ...
+NCrystal: Files created:
+NCrystal:   tsl_Al.endf : Al with fraction 1
+NCrystal: Suggested material density: 2.698645565 g/cm^3
+NCrystal: Writing index file: mymat.json
 ============================================================================================================================
 Content of mymat.json:
 {

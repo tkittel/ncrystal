@@ -23,7 +23,13 @@ import math
 import os
 
 from . import _common as nccommon
-from ._cliimpl import cli_entry_point, create_ArgumentParser, print, warn
+from ._cliimpl import (
+    cli_entry_point,
+    create_ArgumentParser,
+    infomsg,
+    print,
+    warn,
+)
 
 
 def climod_metadata():
@@ -289,7 +295,7 @@ def std_main( progname, arglist ):
         from .cfgstr import generateCfgStrDoc
         print(generateCfgStrDoc( 'txt_full' if full else 'txt_short' ),end='')
         if not full:
-            print("NOTE: Condensed output generated. Specify --doc twice for more details.")
+            infomsg("NOTE: Condensed output generated. Specify --doc twice for more details.")
         return
 
     if args.extract:
@@ -396,7 +402,7 @@ def std_main( progname, arglist ):
         d['CreationDate'] = today
         d['ModDate'] = today
         pdf.close()
-        print(f"created {_pdffilename}")
+        infomsg(f"Created {_pdffilename}")
 
 def create_ekins(npoints,range_override):
     from ._numpy import _np_geomspace
