@@ -242,6 +242,9 @@ def main_impl():
     run('-s','togo|nomatch','-f','virtual')
     run('my.*mat')
     run('mytest','othermat')#several patterns: any of them
+    #--quiet: only the requested data
+    run('-q','-f','virtual','mycrystl')
+    run('--quiet','mytest')
     test_physics()
     test_lazlau()
     test_examples()

@@ -222,6 +222,15 @@ def _cli_msgctrl( **kwargs ):
     from .msg import MsgCtrl
     return MsgCtrl( info_prefix = '', warning_prefix = 'WARNING: ', **kwargs )
 
+def quiet_ctx( enabled ):
+    #For --quiet: block notices, warnings and raw output. Wrap only the work,
+    #and print the requested data outside.
+    if not enabled:
+        import contextlib
+        return contextlib.nullcontext()
+    from .msg import MsgCtrl
+    return MsgCtrl( block = ['info','warning','raw'] )
+
 def cli_entry_point(func):
     def mainfct( argv = None ):
         #Called from python-API:

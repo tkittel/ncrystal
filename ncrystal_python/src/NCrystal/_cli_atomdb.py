@@ -22,7 +22,13 @@
 """Command-line tool for browsing NCrystal's database of isotopes and natural
 elements."""
 
-from ._cliimpl import cli_entry_point, create_ArgumentParser, infomsg, print
+from ._cliimpl import (
+    cli_entry_point,
+    create_ArgumentParser,
+    infomsg,
+    print,
+    quiet_ctx,
+)
 
 
 def climod_metadata():
@@ -79,6 +85,9 @@ def _create_parser( progname ):
                                ' entries as JSON.'))
     parser.add_argument('--ncmat', action='store_true',
                         help=h('Output in NCMAT @ATOMDB format.'))
+    parser.add_argument('--quiet','-q', action='store_true',
+                        help=h('Silence all output except the requested'
+                               ' data.'))
     return parser
 
 def parseArgs( progname, arglist, return_parser = False ):
@@ -120,17 +129,21 @@ def create_argparser_for_sphinx( progname ):
 @cli_entry_point
 def main( progname, arglist ):
     args = parseArgs( progname, arglist )
+    with quiet_ctx( args.quiet ):
+        out = _main_impl( args )
+    if out:
+        print( out, end = '' )
+
+def _main_impl( args ):
+    #Returns the requested output (or None):
     from .atomdata import AtomDBBrowser
     a = AtomDBBrowser( *args.elements, where = args.conditions )
     if args.json:
-        print( a.to_json(), end = '' )
-        return
+        return a.to_json()
     if not a:
         infomsg('No matching entries found.')
-        return
+        return None
     if args.ncmat:
-        print( '@ATOMDB' )
-        for ll in a.atomdb_lines():
-            print( f'  {ll}' )
-        return
-    print( a.table(), end = '' )
+        return ''.join( f'{ll}\n' for ll in
+                        ['@ATOMDB'] + [ f'  {e}' for e in a.atomdb_lines() ] )
+    return a.table()

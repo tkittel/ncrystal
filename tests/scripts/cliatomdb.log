@@ -15,6 +15,7 @@ other options:
   --cond-help  Show the properties usable in conditions and exit.
   --json       Output all properties of the selected entries as JSON.
   --ncmat      Output in NCMAT @ATOMDB format.
+  --quiet, -q  Silence all output except the requested data.
 
 examples:
   ncrystal_atomdb He B10                  # natural He and its isotopes, and B10
@@ -59,6 +60,7 @@ other options:
   --cond-help  Show the properties usable in conditions and exit.
   --json       Output all properties of the selected entries as JSON.
   --ncmat      Output in NCMAT @ATOMDB format.
+  --quiet, -q  Silence all output except the requested data.
 
 examples:
   ncrystal_atomdb He B10                  # natural He and its isotopes, and B10
@@ -147,6 +149,13 @@ H2     1  2  2.01410177811  6.671  5.5923     2.05   7.642  0.000519
 H3     1  3  3.01604928199  4.792  2.8856     0.14   3.026         0
 ============= CLI >>atomdb 'absxs > 1e9'<< =============
 NCrystal: No matching entries found.
+============= CLI >>atomdb 'absxs > 1e9' -q<< =============
+============= CLI >>atomdb He --quiet<< =============
+LABEL  Z  A             MASS    COHSL     COHXS  INCOHXS    SCATXS    ABSXS
+-----  -  -  ---------------  -------  --------  -------  --------  -------
+He     2  0  4.0026018729265  3.26548  1.339997        0  1.339997  0.00747
+He3    2  3    3.01602932265     5.74     4.140      1.6      5.74     5333
+He4    2  4    4.00260325413     3.26     1.336        0     1.336        0
 ============= CLI >>atomdb He B10<< =============
   -> 6 lines of output
 ============= CLI >>atomdb 'absxs>1000'<< =============
