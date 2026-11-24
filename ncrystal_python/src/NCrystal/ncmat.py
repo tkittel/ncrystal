@@ -898,10 +898,11 @@ def _symprec_alias( symprec, tol_symprec ):
     #symprec is the obsolete name of tol_symprec:
     if symprec is None:
         return tol_symprec
-    from ._common import warn_once
-    warn_once( 'The symprec parameter of NCMATComposer.refine_crystal_structure'
-               ' and .verify_crystal_structure is obsolete. Please use'
-               ' tol_symprec instead.' )
+    from ._common import warn_deprecated
+    warn_deprecated( 'The symprec parameter of'
+                     ' NCMATComposer.refine_crystal_structure and'
+                     ' .verify_crystal_structure is obsolete. Please use'
+                     ' tol_symprec instead.', stacklevel = 4 )
     if tol_symprec is not None:
         from .exceptions import NCBadInput
         raise NCBadInput( 'Do not specify both symprec and tol_symprec' )

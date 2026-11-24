@@ -26,10 +26,9 @@
 # gives the same text), the dynamic info fractions, and the verification of
 # the space group (including a higher symmetry in the same coordinates).
 
-import NCTestUtils.reprint_escaped_warnings # noqa F401
+import NCrystalDev as NC
 from NCTestUtils.common import ensure_error
 
-import NCrystalDev as NC
 
 def lines( c, *starts ):
     return [ ll.strip() for ll in c.create_ncmat().splitlines()

@@ -380,9 +380,10 @@ def cfgstr_2_hkl(*, cfgstr, tgtformat, verbose=True, fp_format = '%.14g' ):
 
 def cfgstr_detect_components( cfgstr ):
     """OBSOLETE"""
-    _nc_warn('The cfgstr_detect_components(..) method is now in the'
-             ' NCrystal.misc module. Please stop using it from'
-             ' the NCrystal.mcstasutils module.')
+    from ._common import warn_deprecated
+    warn_deprecated('The cfgstr_detect_components(..) method is now in the'
+                    ' NCrystal.misc module. Please stop using it from'
+                    ' the NCrystal.mcstasutils module.')
     from .misc import cfgstr_detect_components as cdc
     return cdc(cfgstr)
 

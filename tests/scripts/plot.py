@@ -27,7 +27,6 @@
 import NCrystalDev.core as nccore
 import NCrystalDev.plot as ncplot
 import NCrystalDev.vdos as ncvdos
-import NCTestUtils.reprint_escaped_warnings  # noqa F401
 from NCrystalDev._numpy import _np_linspace
 from NCrystalDev.exceptions import NCBadInput, NCLogicError
 from NCrystalDev.misc import AnyVDOS

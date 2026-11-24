@@ -30,7 +30,6 @@
 # their space group.
 
 import NCTestUtils.enable_fpe # noqa F401
-import NCTestUtils.reprint_escaped_warnings # noqa F401
 import numpy as np
 import NCrystalDev as NC
 import NCrystalDev._sgsymimpl as sgs

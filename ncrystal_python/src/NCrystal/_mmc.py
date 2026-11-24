@@ -23,11 +23,12 @@
 
 __all__ = ['quick_diffraction_pattern','runsim_diffraction_pattern']
 
-from ._common import warn as _ncwarn
+from ._common import warn_deprecated as _warn_deprecated
 
-_ncwarn('The NCrystal._mmc module is obsolete.'
-        ' Please use the NCrystal.minimc module instead (more info'
-        ' at https://github.com/mctools/ncrystal/wiki/minimc).')
+_warn_deprecated('The NCrystal._mmc module is obsolete.'
+                 ' Please use the NCrystal.minimc module instead (more info'
+                 ' at https://github.com/mctools/ncrystal/wiki/minimc).',
+                 stacklevel = 2 )
 
 def runsim_diffraction_pattern( *a, **kwargs ):
     """Obsolete function. Calling it now will result in an error.
