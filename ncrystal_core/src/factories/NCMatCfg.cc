@@ -927,6 +927,7 @@ bool NC::MatCfg::get_sans() const { return CfgManip::get_sans( m_impl->readVar(C
 std::string NC::MatCfg::get_inelas() const { return CfgManip::get_inelas( m_impl->readVar(Cfg::VarId::inelas) ).to_string(); }
 std::string NC::MatCfg::get_infofactory() const { return CfgManip::get_infofactory( m_impl->readVar(Cfg::VarId::infofactory) ).to_string(); }
 std::string NC::MatCfg::get_scatfactory() const { return CfgManip::get_scatfactory( m_impl->readVar(Cfg::VarId::scatfactory) ).to_string(); }
+std::string NC::MatCfg::get_rot() const { return CfgManip::get_rot( m_impl->readVar(Cfg::VarId::rot) ).to_string(); }
 std::string NC::MatCfg::get_absnfactory() const { return CfgManip::get_absnfactory( m_impl->readVar(Cfg::VarId::absnfactory) ).to_string(); }
 NC::LCAxis NC::MatCfg::get_lcaxis() const { return CfgManip::get_lcaxis( m_impl->readVar(Cfg::VarId::lcaxis) ); }
 
@@ -944,6 +945,7 @@ void NC::MatCfg::set_sans( bool v ) { m_impl.modify()->setVar( v, &CfgManip::set
 void NC::MatCfg::set_inelas( const std::string& v ) { m_impl.modify()->setVar( v, &CfgManip::set_inelas_stdstr ); }
 void NC::MatCfg::set_infofactory( const std::string& v ) { m_impl.modify()->setVar( v, &CfgManip::set_infofactory_stdstr ); }
 void NC::MatCfg::set_scatfactory( const std::string& v ) { m_impl.modify()->setVar( v, &CfgManip::set_scatfactory_stdstr ); }
+void NC::MatCfg::set_rot( const std::string& v ) { m_impl.modify()->setVar( v, &CfgManip::set_rot_stdstr ); }
 void NC::MatCfg::set_absnfactory( const std::string& v ) { m_impl.modify()->setVar( v, &CfgManip::set_absnfactory_stdstr ); }
 void NC::MatCfg::set_lcmode( std::int_least32_t v ) { m_impl.modify()->setVar( v, &CfgManip::set_lcmode ); }
 void NC::MatCfg::set_vdoslux( int v ) { m_impl.modify()->setVar( v, &CfgManip::set_vdoslux ); }

@@ -157,6 +157,8 @@ void test2()
                                                                            ODir{NC::CrystalAxis{1,-2,3},NC::LabAxis{2,5,-6}},
                                                                            ODir{NC::HKLPoint{0,1,2},NC::LabAxis{1,-1,0}},true);
 
+  testAccess<const std::string&,std::string,&NC::MatCfg::get_rot,&NC::MatCfg::set_rot>("rot","0,1,0:1deg","1,0,0:2deg","0,0,1:3",true);
+
   //Obsolete code which was needed before get_dir1/get_dir2 worked independently
   // //Test dir1 and dir2 via SCOrientation interface:
   // NC::SCOrientation sco1, sco2;

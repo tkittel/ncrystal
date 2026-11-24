@@ -1,4 +1,4 @@
-"vdoslux" -> 21 -> "vdoslux"
+"vdoslux" -> 22 -> "vdoslux"
 "absnfactory" -> 0 -> "absnfactory"
 "atomdb" -> 1 -> "atomdb"
 "coh_elas" -> 2 -> "coh_elas"
@@ -15,12 +15,13 @@
 "lcmode" -> 13 -> "lcmode"
 "mos" -> 14 -> "mos"
 "mosprec" -> 15 -> "mosprec"
-"sans" -> 16 -> "sans"
-"scatfactory" -> 17 -> "scatfactory"
-"sccutoff" -> 18 -> "sccutoff"
-"strain" -> 19 -> "strain"
-"temp" -> 20 -> "temp"
-"vdoslux" -> 21 -> "vdoslux"
+"rot" -> 16 -> "rot"
+"sans" -> 17 -> "sans"
+"scatfactory" -> 18 -> "scatfactory"
+"sccutoff" -> 19 -> "sccutoff"
+"strain" -> 20 -> "strain"
+"temp" -> 21 -> "temp"
+"vdoslux" -> 22 -> "vdoslux"
  setting "temp" to "120F" -> 322.039 -> "120F"
 bad  ->  NOTFOUND
 density  ->  NOTFOUND
@@ -29,7 +30,7 @@ atomdb  ->  1  ->  atomdb
 dcutoff  ->  3  ->  dcutoff
 dcutoffup  ->  4  ->  dcutoffup
 infofactory  ->  10  ->  infofactory
-temp  ->  20  ->  temp
+temp  ->  21  ->  temp
 absnfactory  ->  0  ->  absnfactory
 bkgd  ->  NOTFOUND
 bragg  ->  NOTFOUND
@@ -37,8 +38,8 @@ coh_elas  ->  2  ->  coh_elas
 elas  ->  NOTFOUND
 incoh_elas  ->  8  ->  incoh_elas
 inelas  ->  9  ->  inelas
-vdoslux  ->  21  ->  vdoslux
-scatfactory  ->  17  ->  scatfactory
+vdoslux  ->  22  ->  vdoslux
+scatfactory  ->  18  ->  scatfactory
 dir1  ->  5  ->  dir1
 dir2  ->  6  ->  dir2
 dirtol  ->  7  ->  dirtol
@@ -46,7 +47,8 @@ lcaxis  ->  12  ->  lcaxis
 lcmode  ->  13  ->  lcmode
 mos  ->  14  ->  mos
 mosprec  ->  15  ->  mosprec
-sccutoff  ->  18  ->  sccutoff
+rot  ->  16  ->  rot
+sccutoff  ->  19  ->  sccutoff
 
 ------> Parsing "vdoslux=34":
   => Got expected ERROR: NC::BadInput: vdoslux must be an integral value from 0 to 6
@@ -468,6 +470,109 @@ sccutoff  ->  18  ->  sccutoff
 
 ------> Parsing "dir1=@crys_uvw:1,2@lab:0,0,1":
   => Got expected ERROR: NC::BadInput: Syntax error - invalid value "@crys_uvw:1,2@lab:0,0,1" provided for parameter "dir1"
+
+------> Parsing "rot=0,1,0:30deg":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: rot=0,1,0:30deg
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: rot=0,1,0:30deg;temp=500
+  => .get_temp(): 500K
+
+------> Parsing " rot = 0 , 1.0 ,	0 : 30 deg ":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: rot=0,1,0:30deg
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: rot=0,1,0:30deg;temp=500
+  => .get_temp(): 500K
+
+------> Parsing "rot=0,0,2:1.5707963267948966":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: rot=0,0,2:1.5707963267948966
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: rot=0,0,2:1.5707963267948966;temp=500
+  => .get_temp(): 500K
+
+------> Parsing "rot=1,1,1:0.5rad":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: rot=1,1,1:0.5
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: rot=1,1,1:0.5;temp=500
+  => .get_temp(): 500K
+
+------> Parsing "rot=1,-1e-3,1:-1e-3 arcsec":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: rot=1,-0.001,1:-1e-3arcsec
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: rot=1,-0.001,1:-1e-3arcsec;temp=500
+  => .get_temp(): 500K
+
+------> Parsing "rot=0,1,0:720arcmin":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: rot=0,1,0:720arcmin
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: rot=0,1,0:720arcmin;temp=500
+  => .get_temp(): 500K
+
+------> Parsing "rot=0,1,0:123456789.123456789123deg":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: rot=0,1,0:2154727.454144645
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: rot=0,1,0:2154727.454144645;temp=500
+  => .get_temp(): 500K
+
+------> Parsing "rot=0,1,0:0":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: rot=0,1,0:0
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: rot=0,1,0:0;temp=500
+  => .get_temp(): 500K
+
+------> Parsing "rot=0,1,0":
+  => Got expected ERROR: NC::BadInput: Syntax error - invalid value "0,1,0" provided for parameter "rot"
+
+------> Parsing "rot=0,1:30deg":
+  => Got expected ERROR: NC::BadInput: Syntax error - invalid value "0,1:30deg" provided for parameter "rot"
+
+------> Parsing "rot=0,1,0,0:30deg":
+  => Got expected ERROR: NC::BadInput: Syntax error - invalid value "0,1,0,0:30deg" provided for parameter "rot"
+
+------> Parsing "rot=0,0,0:30deg":
+  => Got expected ERROR: NC::BadInput: Null vector provided as axis for parameter "rot"
+
+------> Parsing "rot=0,1,0:30degs":
+  => Got expected ERROR: NC::BadInput: Syntax error - invalid value "0,1,0:30degs" provided for parameter "rot"
+
+------> Parsing "rot=0,1,0:":
+  => Got expected ERROR: NC::BadInput: Syntax error - invalid value "0,1,0:" provided for parameter "rot"
+
+------> Parsing "rot=:1":
+  => Got expected ERROR: NC::BadInput: Syntax error - invalid value ":1" provided for parameter "rot"
+
+------> Parsing "rot=a,1,0:3":
+  => Got expected ERROR: NC::BadInput: Syntax error - invalid value "a,1,0:3" provided for parameter "rot"
+
+------> Parsing "rot=1,0,0:1:2":
+  => Got expected ERROR: NC::BadInput: Syntax error - invalid value "1,0,0:1:2" provided for parameter "rot"
+
+------> Parsing "rot=0,1,0:inf":
+  => Got expected ERROR: NC::BadInput: Infinities or too large values specified in rot parameter
+
+------> Parsing "rot=inf,1,0:1":
+  => Got expected ERROR: NC::BadInput: Infinities or too large values specified in rot parameter
+
+------> Parsing "rot=0,1,0:nan":
+  => Got expected ERROR: NC::BadInput: NAN (not-a-number) value provided for parameter "rot"
+
+------> Parsing "rot=@lab:0,1,0:30deg":
+  => Got expected ERROR: NC::BadInput: Syntax error - invalid value "@lab:0,1,0:30deg" provided for parameter "rot"
 Test C++ interface:
   => cfgstr: 
   => .get_infofactory(): 
@@ -495,7 +600,10 @@ Test C++ interface:
   => cfgstr: dir1=@crys_hkl:4,5,6@lab:1,2,3;infofactory=wuhu;lcaxis=1,1,1;mos=1arcmin
   => .applyStrCfg("dir1=@crys_uvw:4,5,6@lab:1,2,3") : 
   => cfgstr: dir1=@crys_uvw:4,5,6@lab:1,2,3;infofactory=wuhu;lcaxis=1,1,1;mos=1arcmin
-  => JSON: [["dir1",{"crystal_is_hkl":false,"crystal_is_uvw":true,"crystal":[4.0,5.0,6.0], "lab":[1.0,2.0,3.0]}],["infofactory","wuhu"],["lcaxis",[1.0,1.0,1.0]],["mos",0.00029088820866572158]]
+  => .applyStrCfg("rot= 0,0,2 : 0.25 deg") : 
+  => cfgstr: dir1=@crys_uvw:4,5,6@lab:1,2,3;infofactory=wuhu;lcaxis=1,1,1;mos=1arcmin;rot=0,0,2:0.25deg
+  => .get_rot() : 0,0,2:0.25deg
+  => JSON: [["dir1",{"crystal_is_hkl":false,"crystal_is_uvw":true,"crystal":[4.0,5.0,6.0], "lab":[1.0,2.0,3.0]}],["infofactory","wuhu"],["lcaxis",[1.0,1.0,1.0]],["mos",0.00029088820866572158],["rot",{"axis":[0.0,0.0,2.0],"angle":0.0043633231299858239}]]
 vdoslux=3: get_vdoslux()=3 cfgstr="vdoslux=3"
 vdoslux=2003: get_vdoslux()=3 cfgstr="vdoslux=3"
 vdoslux=2000: get_vdoslux()=0 cfgstr="vdoslux=0"
@@ -755,6 +863,18 @@ Advanced parameters related to scattering processes (single crystals):
     Description: Approximate relative numerical precision in implementation of
                  mosaic model in single crystals.
 
+  rot:
+    Type: rotation
+    No default value.
+    Description: Rotation of a single crystal, applied after it has been
+                 oriented with the dir1 and dir2 parameters. It is specified as
+                 an axis in the lab frame (a1,a2,a3) and an angle, using the
+                 format "a1,a2,a3:angle". The rotation is right-handed, and the
+                 angle is in radians unless followed by a unit (deg, arcmin, or
+                 arcsec). Thus, "rot=0,1,0:30deg" rotates the crystal 30 degrees
+                 around the y-axis. When this parameter is set, the parameters
+                 mos, dir1, and dir2 must also be provided.
+
   sccutoff:
     Type: floating point number
     Allowed input units: Aa [default], nm, mu, mm, cm, m
@@ -840,6 +960,7 @@ Advanced parameters related to scattering processes (single crystals):
   lcmode
   mos
   mosprec
+  rot
   sccutoff
 Parameters related to absorption processes:
   absnfactory
@@ -847,4 +968,4 @@ Special parameters:
   density
   phasechoice
 
-[{"group_description":"Base parameters","parameters":[{"name":"atomdb","type":"string","allowed_input_units":null,"default_value":"","default_value_str":"","description":"Modify atomic definitions if supported (in practice this is unlikely to be supported by anything except NCMAT data). The string must follow a syntax identical to that used in @ATOMDB sections of NCMAT file (cf. https://github.com/mctools/ncrystal/wiki/NCMAT-format), with a few exceptions explained here: First of all, colons (':') are interpreted as whitespace characters, which might occasionally be useful (e.g. on the command line). Next, '@' characters play the role of line separators. Finally, when used with an NCMAT file that already includes an internal @ATOMDB section, the effect will essentially be to combine the two sections by appending the atomdb lines from this cfg parameter to the lines already present in the input data. The exception is the case where the cfg parameter contains an initial line with the single word \"nodefaults\" the effect of which will always be the same as if it was placed on the very first line in the @ATOMDB section (i.e. NCrystal's internal database of elements and isotopes will be ignored)."},{"name":"dcutoff","type":"floating point number","allowed_input_units":"Aa [default], nm, mu, mm, cm, m","unit":"Aa","default_value":0.0,"default_value_str":"0","description":"Crystal planes with d-spacing below this value will be ignored. The special value of 0 implies an automatic selection of this threshold. Note that for backwards compatibility -1 is treated as 0 (for now)."},{"name":"dcutoffup","type":"floating point number","allowed_input_units":"Aa [default], nm, mu, mm, cm, m","unit":"Aa","default_value":1.0e99999,"default_value_str":"inf","description":"Crystal planes with d-spacing above this value will be ignored."},{"name":"infofactory","type":"string","allowed_input_units":null,"default_value":"","default_value_str":"","description":"This parameter can be used by experts to bypass the usual factory selection logic for material Info objects. A factory can be selected by providing its name, or excluded by prefixing the name with \"!\". Multiple entries must be separated by an \"@\" sign (obviously at most one non-excluded entry can appear)."},{"name":"strain","type":"floating point number","allowed_input_units":null,"default_value":0.0,"default_value_str":"0","description":"Isotropic strain for a uniform expansion or contraction of crystal lattice vectors. If nonzero, crystal unit cell dimensions will be scaled with a factor of (1+strain), while keeping angles and relative atomic positions fixed."},{"name":"temp","type":"floating point number","allowed_input_units":"K [default], C, F","unit":"K","default_value":-1.0,"default_value_str":"-1","description":"Temperature of material in Kelvin. The special value of -1.0 implies 293.15K unless input data is only valid at a specific temperature, in which case that temperature is used instead."}]},{"group_description":"Basic parameters related to scattering processes","parameters":[{"name":"coh_elas","type":"boolean","allowed_input_units":null,"default_value":true,"default_value_str":"1","description":"If enabled, coherent elastic components will be included for solid materials. In the case of crystalline materials this is essentially Bragg diffraction."},{"name":"incoh_elas","type":"boolean","allowed_input_units":null,"default_value":true,"default_value_str":"1","description":"If enabled, incoherent elastic scattering components will be included for solid materials."},{"name":"inelas","type":"string","allowed_input_units":null,"default_value":"auto","default_value_str":"auto","description":"Influence choice of inelastic scattering models. The default value of \"auto\" leaves the choice to the code, and values of \"none\", \"0\", \"false\", or \"sterile\", all disable inelastic scattering. The standard scatter plugin currently supports additional values: \"external\", \"dyninfo\", \"vdosdebye\", and \"freegas\", and internally the \"auto\" mode will simply select the first possible of those in the listed order (falling back to \"none\" when nothing is possible). Note that \"external\" is only currently supported by .nxs files. The \"dyninfo\" mode will simply base modelling on whatever dynamic information is available for each element in the input data. The \"vdosdebye\" and \"freegas\" modes overrides this, and force those models for all elements if possible (thus \"inelas=freegas;elas=0\" can be used to force a pure free-gas scattering model). The \"external\" mode implies usage of an externally provided cross-section curve with an isotropic-elastic scattering model."},{"name":"knllux","type":"integer","allowed_input_units":null,"default_value":3,"default_value_str":"3","description":"Setting affecting \"luxury\" level when integrating and sampling inelastic scattering kernels, with implications for the precision, the initialisation time and the memory usage. Allowed values are from 0 (Crude) to 6 (Overkill), with 3 (Good) being suitable for most purposes."},{"name":"sans","type":"boolean","allowed_input_units":null,"default_value":true,"default_value_str":"1","description":"Control presence of SANS models.  Note that this parameter is primarily added to support future developments."},{"name":"scatfactory","type":"string","allowed_input_units":null,"default_value":"","default_value_str":"","description":"This parameter can be used by experts to bypass the usual factory selection logic for Scatter objects. A factory can be selected by providing its name, or excluded by prefixing the name with \"!\". Multiple entries must be separated by an \"@\" sign (obviously at most one non-excluded entry can appear)."},{"name":"vdoslux","type":"integer","allowed_input_units":null,"default_value":3,"default_value_str":"3","description":"Setting affecting \"luxury\" level when expanding phonon spectrums (VDOS) into scattering kernels. This primarily impacts the granularity of the kernel, with implications for memory usage and initialisation time. Kernels cover neutron energies up to 5eV, beyond which they are extended with a short-collision-time model. Allowed values are (alpha x beta grid, kernel memory, and initialisation time, for Al at room temperature): 0 (Extremely crude, 60x130 grid, 0.06MB, 0.02s init), 1 (Crude, 110x240 grid, 0.2MB, 0.03s init), 2 (Decent, 170x400 grid, 0.5MB, 0.05s init), 3 (Good, 280x650 grid, 1.5MB, 0.09s init), 4 (Very good, 470x1080 grid, 4MB, 0.2s init), 5 (Excellent, 770x1770 grid, 11MB, 0.35s init), 6 (Overkill, 2000x4000 grid, 64MB, 2s init)."},{"name":"bkgd","type":"pseudo","description":"Obsolete parameter which can be used to disable all physics processes except bragg diffraction. It only accepts \"bkgd=0\" or \"bkgd=none\", and is equivalent to \"inelas=0;incoh_elas=0;sans=0\"."},{"name":"bragg","type":"pseudo","description":"This is simply an alias for the \"coh_elas\" parameter (although the name does not strictly make sense for non-crystalline solids)."},{"name":"comp","type":"pseudo","description":"Convenience parameter which can be used to disable everything except  the specified components. Note that this crucially does not re-enable the listed components if they have already been disabled. Components are listed as a comma separated list, and recognised component names are: \"elas\", \"incoh_elas\", \"coh_elas\", \"bragg\", \"inelas\", and \"sans\"."},{"name":"elas","type":"pseudo","description":"Convenience parameter which can be used to assign values to all of the  \"coh_elas\", \"incoh_elas\", and \"sans\" parameters at once. Thus, \"elas=0\" is a convenient way of disabling elastic scattering processes and is equivalent to \"coh_elas=0;incoh_elas=0;sans=0\"."}]},{"group_description":"Advanced parameters related to scattering processes (single crystals)","parameters":[{"name":"dir1","type":"crystal axis orientation","allowed_input_units":null,"default_value":null,"default_value_str":null,"description":"Primary orientation axis of a single crystal. This is specified by indicating the direction of given axis in both the crystal (c1,c2,c3) and lab frames (l1,l2,l3), using the format \"@crys:c1,c2,c3@lab:l1,l2,l3\". The crystal frame is here Cartesian, with x along the lattice vector a, z along c* (the normal of the plane of a and b), and y along c* cross a. The direction in the crystal can alternatively be provided as the normal of a given HKL plane, by using \"@crys_hkl:\" instead of \"@crys:\", or as the lattice direction c1*a+c2*b+c3*c, by using \"@crys_uvw:\". When this parameter is set, the parameters mos and dir2 must also be provided."},{"name":"dir2","type":"crystal axis orientation","allowed_input_units":null,"default_value":null,"default_value_str":null,"description":"Secondary orientation axis of a single crystal. This is specified using the same syntax as for the dir1 parameter. In general the opening angle between the dir1 and dir2 vectors must be nonzero and identical in the crystal and lab frames, but a discrepancy up to the value of the dirtol parameter is allowed. In any case, the components of the dir2 vectors parallel to the dir1 vectors are ignored. When this parameter is set, the parameters mos and dir1 must also be provided."},{"name":"dirtol","type":"floating point number","allowed_input_units":"rad [default], deg, arcmin, arcsec","unit":"rad","default_value":0.0001,"default_value_str":"0.0001","description":"Tolerance parameter for the secondary direction of the single crystal orientation (see the dir2 parameter description for more information). A value of 180deg can be used to easily set up a single crystal monochromator where one is only interested in the primary direction. When this parameter is set, the parameters mos, dir1, and dir2 must also be provided."},{"name":"lcaxis","type":"vector (3D)","allowed_input_units":null,"default_value":null,"default_value_str":null,"description":"Symmetry axis of anisotropic layered crystals with a layout similar to pyrolytic graphite (PG). The axis must be provided in direct lattice coordinates using a format like \"0,0,1\". Specifying this parameter along with an orientation (see dir1 and dir2 parameters) will result in the appropriate anisotropic single crystal scatter model being used for Bragg diffraction."},{"name":"lcmode","type":"integer","allowed_input_units":null,"default_value":0,"default_value_str":"0","description":"Choose which modelling is used for layered crystals like PG (ignored unless the lcaxis, dir1, and dir2 parameters are set). The default value 0 enables the recommended model, which is both fast and accurate. A positive value N triggers a very slow but simple reference model, in which N crystallite orientations are sampled internally (the model is accurate only when N is very high). A negative value -N triggers a different (and multi-thread unsafe!) model in which each crossSection call triggers a new selection of N randomly oriented crystallites."},{"name":"mos","type":"floating point number","allowed_input_units":"rad [default], deg, arcmin, arcsec","unit":"rad","default_value":null,"default_value_str":null,"description":"Mosaic FWHM spread in mosaic single crystals. When this parameter is set, the parameters dir1 and dir2 must also be provided."},{"name":"mosprec","type":"floating point number","allowed_input_units":null,"default_value":0.001,"default_value_str":"0.001","description":"Approximate relative numerical precision in implementation of mosaic model in single crystals."},{"name":"sccutoff","type":"floating point number","allowed_input_units":"Aa [default], nm, mu, mm, cm, m","unit":"Aa","default_value":0.4,"default_value_str":"0.4","description":"Single-crystal modelling cutoff. Crystal planes with d-spacing below this value will be approximated as having infinite mosaicity (as in a powder). A value of 0 naturally disables this approximation entirely."}]},{"group_description":"Parameters related to absorption processes","parameters":[{"name":"absnfactory","type":"string","allowed_input_units":null,"default_value":"","default_value_str":"","description":"This parameter can be used by experts to bypass the usual factory selection logic for Absorption objects. A factory can be selected by providing its name, or excluded by prefixing the name with \"!\". Multiple entries must be separated by an \"@\" sign (obviously at most one non-excluded entry can appear)."}]},{"group_description":"Special parameters","parameters":[{"name":"density","type":"special","allowed_input_units":"gcm3 kgm3 perAa3 x","description":"Modify the density state, which can be a scale factor (specified with the unit \"x\"), or an absolute value (using units \"gcm3\" for g/cm^3, \"kgm3\" for kg/m^3, or \"perAa3\" for atoms/angstrom^3). When an absolute value is specified, that value is simply used. However, when a scale factor is specified (e.g. density=1.2x), then the previous value is instead scaled by that value. Thus, appending \";density=1.2x\" to a cfg-string will always increase the resulting material density by 20%. If unspecified, the density state will be \"1x\" (i.e. material densities are left as they are). Note that since it could easily lead to undesired behaviour, scale factor density assignments are not allowed for usage when cfg strings are embedded in input data (but absolute density values are always allowed)."},{"name":"phasechoice","type":"special","description":"Specific material sub-phases can be selected by assigning an index value to this pseudo-parameter. More precisely, the parameter picks out child phases in LOADED materials, not at the configuration level. This is an important distinction since a single entry at the cfg-level might actually result in multiple phases being loaded. As an example, one would typically expect that loading a file called \"my_sans_sample.ncmat\" would result in a multiphase material with two phases. Specifying \"my_sans_sample.ncmat;phasechoice=0\" would then pick out one of these phases, and \"my_sans_sample.ncmat;phasechoice=1\" the other. When multi-phase materials are defined recursively with some child-phases themselves being multi-phased, the phasechoice parameter can be specified more than once to navigate deeper into the sub-phase tree."}]}]
+[{"group_description":"Base parameters","parameters":[{"name":"atomdb","type":"string","allowed_input_units":null,"default_value":"","default_value_str":"","description":"Modify atomic definitions if supported (in practice this is unlikely to be supported by anything except NCMAT data). The string must follow a syntax identical to that used in @ATOMDB sections of NCMAT file (cf. https://github.com/mctools/ncrystal/wiki/NCMAT-format), with a few exceptions explained here: First of all, colons (':') are interpreted as whitespace characters, which might occasionally be useful (e.g. on the command line). Next, '@' characters play the role of line separators. Finally, when used with an NCMAT file that already includes an internal @ATOMDB section, the effect will essentially be to combine the two sections by appending the atomdb lines from this cfg parameter to the lines already present in the input data. The exception is the case where the cfg parameter contains an initial line with the single word \"nodefaults\" the effect of which will always be the same as if it was placed on the very first line in the @ATOMDB section (i.e. NCrystal's internal database of elements and isotopes will be ignored)."},{"name":"dcutoff","type":"floating point number","allowed_input_units":"Aa [default], nm, mu, mm, cm, m","unit":"Aa","default_value":0.0,"default_value_str":"0","description":"Crystal planes with d-spacing below this value will be ignored. The special value of 0 implies an automatic selection of this threshold. Note that for backwards compatibility -1 is treated as 0 (for now)."},{"name":"dcutoffup","type":"floating point number","allowed_input_units":"Aa [default], nm, mu, mm, cm, m","unit":"Aa","default_value":1.0e99999,"default_value_str":"inf","description":"Crystal planes with d-spacing above this value will be ignored."},{"name":"infofactory","type":"string","allowed_input_units":null,"default_value":"","default_value_str":"","description":"This parameter can be used by experts to bypass the usual factory selection logic for material Info objects. A factory can be selected by providing its name, or excluded by prefixing the name with \"!\". Multiple entries must be separated by an \"@\" sign (obviously at most one non-excluded entry can appear)."},{"name":"strain","type":"floating point number","allowed_input_units":null,"default_value":0.0,"default_value_str":"0","description":"Isotropic strain for a uniform expansion or contraction of crystal lattice vectors. If nonzero, crystal unit cell dimensions will be scaled with a factor of (1+strain), while keeping angles and relative atomic positions fixed."},{"name":"temp","type":"floating point number","allowed_input_units":"K [default], C, F","unit":"K","default_value":-1.0,"default_value_str":"-1","description":"Temperature of material in Kelvin. The special value of -1.0 implies 293.15K unless input data is only valid at a specific temperature, in which case that temperature is used instead."}]},{"group_description":"Basic parameters related to scattering processes","parameters":[{"name":"coh_elas","type":"boolean","allowed_input_units":null,"default_value":true,"default_value_str":"1","description":"If enabled, coherent elastic components will be included for solid materials. In the case of crystalline materials this is essentially Bragg diffraction."},{"name":"incoh_elas","type":"boolean","allowed_input_units":null,"default_value":true,"default_value_str":"1","description":"If enabled, incoherent elastic scattering components will be included for solid materials."},{"name":"inelas","type":"string","allowed_input_units":null,"default_value":"auto","default_value_str":"auto","description":"Influence choice of inelastic scattering models. The default value of \"auto\" leaves the choice to the code, and values of \"none\", \"0\", \"false\", or \"sterile\", all disable inelastic scattering. The standard scatter plugin currently supports additional values: \"external\", \"dyninfo\", \"vdosdebye\", and \"freegas\", and internally the \"auto\" mode will simply select the first possible of those in the listed order (falling back to \"none\" when nothing is possible). Note that \"external\" is only currently supported by .nxs files. The \"dyninfo\" mode will simply base modelling on whatever dynamic information is available for each element in the input data. The \"vdosdebye\" and \"freegas\" modes overrides this, and force those models for all elements if possible (thus \"inelas=freegas;elas=0\" can be used to force a pure free-gas scattering model). The \"external\" mode implies usage of an externally provided cross-section curve with an isotropic-elastic scattering model."},{"name":"knllux","type":"integer","allowed_input_units":null,"default_value":3,"default_value_str":"3","description":"Setting affecting \"luxury\" level when integrating and sampling inelastic scattering kernels, with implications for the precision, the initialisation time and the memory usage. Allowed values are from 0 (Crude) to 6 (Overkill), with 3 (Good) being suitable for most purposes."},{"name":"sans","type":"boolean","allowed_input_units":null,"default_value":true,"default_value_str":"1","description":"Control presence of SANS models.  Note that this parameter is primarily added to support future developments."},{"name":"scatfactory","type":"string","allowed_input_units":null,"default_value":"","default_value_str":"","description":"This parameter can be used by experts to bypass the usual factory selection logic for Scatter objects. A factory can be selected by providing its name, or excluded by prefixing the name with \"!\". Multiple entries must be separated by an \"@\" sign (obviously at most one non-excluded entry can appear)."},{"name":"vdoslux","type":"integer","allowed_input_units":null,"default_value":3,"default_value_str":"3","description":"Setting affecting \"luxury\" level when expanding phonon spectrums (VDOS) into scattering kernels. This primarily impacts the granularity of the kernel, with implications for memory usage and initialisation time. Kernels cover neutron energies up to 5eV, beyond which they are extended with a short-collision-time model. Allowed values are (alpha x beta grid, kernel memory, and initialisation time, for Al at room temperature): 0 (Extremely crude, 60x130 grid, 0.06MB, 0.02s init), 1 (Crude, 110x240 grid, 0.2MB, 0.03s init), 2 (Decent, 170x400 grid, 0.5MB, 0.05s init), 3 (Good, 280x650 grid, 1.5MB, 0.09s init), 4 (Very good, 470x1080 grid, 4MB, 0.2s init), 5 (Excellent, 770x1770 grid, 11MB, 0.35s init), 6 (Overkill, 2000x4000 grid, 64MB, 2s init)."},{"name":"bkgd","type":"pseudo","description":"Obsolete parameter which can be used to disable all physics processes except bragg diffraction. It only accepts \"bkgd=0\" or \"bkgd=none\", and is equivalent to \"inelas=0;incoh_elas=0;sans=0\"."},{"name":"bragg","type":"pseudo","description":"This is simply an alias for the \"coh_elas\" parameter (although the name does not strictly make sense for non-crystalline solids)."},{"name":"comp","type":"pseudo","description":"Convenience parameter which can be used to disable everything except  the specified components. Note that this crucially does not re-enable the listed components if they have already been disabled. Components are listed as a comma separated list, and recognised component names are: \"elas\", \"incoh_elas\", \"coh_elas\", \"bragg\", \"inelas\", and \"sans\"."},{"name":"elas","type":"pseudo","description":"Convenience parameter which can be used to assign values to all of the  \"coh_elas\", \"incoh_elas\", and \"sans\" parameters at once. Thus, \"elas=0\" is a convenient way of disabling elastic scattering processes and is equivalent to \"coh_elas=0;incoh_elas=0;sans=0\"."}]},{"group_description":"Advanced parameters related to scattering processes (single crystals)","parameters":[{"name":"dir1","type":"crystal axis orientation","allowed_input_units":null,"default_value":null,"default_value_str":null,"description":"Primary orientation axis of a single crystal. This is specified by indicating the direction of given axis in both the crystal (c1,c2,c3) and lab frames (l1,l2,l3), using the format \"@crys:c1,c2,c3@lab:l1,l2,l3\". The crystal frame is here Cartesian, with x along the lattice vector a, z along c* (the normal of the plane of a and b), and y along c* cross a. The direction in the crystal can alternatively be provided as the normal of a given HKL plane, by using \"@crys_hkl:\" instead of \"@crys:\", or as the lattice direction c1*a+c2*b+c3*c, by using \"@crys_uvw:\". When this parameter is set, the parameters mos and dir2 must also be provided."},{"name":"dir2","type":"crystal axis orientation","allowed_input_units":null,"default_value":null,"default_value_str":null,"description":"Secondary orientation axis of a single crystal. This is specified using the same syntax as for the dir1 parameter. In general the opening angle between the dir1 and dir2 vectors must be nonzero and identical in the crystal and lab frames, but a discrepancy up to the value of the dirtol parameter is allowed. In any case, the components of the dir2 vectors parallel to the dir1 vectors are ignored. When this parameter is set, the parameters mos and dir1 must also be provided."},{"name":"dirtol","type":"floating point number","allowed_input_units":"rad [default], deg, arcmin, arcsec","unit":"rad","default_value":0.0001,"default_value_str":"0.0001","description":"Tolerance parameter for the secondary direction of the single crystal orientation (see the dir2 parameter description for more information). A value of 180deg can be used to easily set up a single crystal monochromator where one is only interested in the primary direction. When this parameter is set, the parameters mos, dir1, and dir2 must also be provided."},{"name":"lcaxis","type":"vector (3D)","allowed_input_units":null,"default_value":null,"default_value_str":null,"description":"Symmetry axis of anisotropic layered crystals with a layout similar to pyrolytic graphite (PG). The axis must be provided in direct lattice coordinates using a format like \"0,0,1\". Specifying this parameter along with an orientation (see dir1 and dir2 parameters) will result in the appropriate anisotropic single crystal scatter model being used for Bragg diffraction."},{"name":"lcmode","type":"integer","allowed_input_units":null,"default_value":0,"default_value_str":"0","description":"Choose which modelling is used for layered crystals like PG (ignored unless the lcaxis, dir1, and dir2 parameters are set). The default value 0 enables the recommended model, which is both fast and accurate. A positive value N triggers a very slow but simple reference model, in which N crystallite orientations are sampled internally (the model is accurate only when N is very high). A negative value -N triggers a different (and multi-thread unsafe!) model in which each crossSection call triggers a new selection of N randomly oriented crystallites."},{"name":"mos","type":"floating point number","allowed_input_units":"rad [default], deg, arcmin, arcsec","unit":"rad","default_value":null,"default_value_str":null,"description":"Mosaic FWHM spread in mosaic single crystals. When this parameter is set, the parameters dir1 and dir2 must also be provided."},{"name":"mosprec","type":"floating point number","allowed_input_units":null,"default_value":0.001,"default_value_str":"0.001","description":"Approximate relative numerical precision in implementation of mosaic model in single crystals."},{"name":"rot","type":"rotation","allowed_input_units":null,"default_value":null,"default_value_str":null,"description":"Rotation of a single crystal, applied after it has been oriented with the dir1 and dir2 parameters. It is specified as an axis in the lab frame (a1,a2,a3) and an angle, using the format \"a1,a2,a3:angle\". The rotation is right-handed, and the angle is in radians unless followed by a unit (deg, arcmin, or arcsec). Thus, \"rot=0,1,0:30deg\" rotates the crystal 30 degrees around the y-axis. When this parameter is set, the parameters mos, dir1, and dir2 must also be provided."},{"name":"sccutoff","type":"floating point number","allowed_input_units":"Aa [default], nm, mu, mm, cm, m","unit":"Aa","default_value":0.4,"default_value_str":"0.4","description":"Single-crystal modelling cutoff. Crystal planes with d-spacing below this value will be approximated as having infinite mosaicity (as in a powder). A value of 0 naturally disables this approximation entirely."}]},{"group_description":"Parameters related to absorption processes","parameters":[{"name":"absnfactory","type":"string","allowed_input_units":null,"default_value":"","default_value_str":"","description":"This parameter can be used by experts to bypass the usual factory selection logic for Absorption objects. A factory can be selected by providing its name, or excluded by prefixing the name with \"!\". Multiple entries must be separated by an \"@\" sign (obviously at most one non-excluded entry can appear)."}]},{"group_description":"Special parameters","parameters":[{"name":"density","type":"special","allowed_input_units":"gcm3 kgm3 perAa3 x","description":"Modify the density state, which can be a scale factor (specified with the unit \"x\"), or an absolute value (using units \"gcm3\" for g/cm^3, \"kgm3\" for kg/m^3, or \"perAa3\" for atoms/angstrom^3). When an absolute value is specified, that value is simply used. However, when a scale factor is specified (e.g. density=1.2x), then the previous value is instead scaled by that value. Thus, appending \";density=1.2x\" to a cfg-string will always increase the resulting material density by 20%. If unspecified, the density state will be \"1x\" (i.e. material densities are left as they are). Note that since it could easily lead to undesired behaviour, scale factor density assignments are not allowed for usage when cfg strings are embedded in input data (but absolute density values are always allowed)."},{"name":"phasechoice","type":"special","description":"Specific material sub-phases can be selected by assigning an index value to this pseudo-parameter. More precisely, the parameter picks out child phases in LOADED materials, not at the configuration level. This is an important distinction since a single entry at the cfg-level might actually result in multiple phases being loaded. As an example, one would typically expect that loading a file called \"my_sans_sample.ncmat\" would result in a multiphase material with two phases. Specifying \"my_sans_sample.ncmat;phasechoice=0\" would then pick out one of these phases, and \"my_sans_sample.ncmat;phasechoice=1\" the other. When multi-phase materials are defined recursively with some child-phases themselves being multi-phased, the phasechoice parameter can be specified more than once to navigate deeper into the sub-phase tree."}]}]

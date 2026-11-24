@@ -201,6 +201,82 @@ namespace NCRYSTAL_NAMESPACE {
       }
     };
 
+    struct vardef_rot final : public ValStr<vardef_rot> {
+      //Stored in a normalised string form, keeping the angle as given.
+      static constexpr auto name = "rot";
+      static constexpr auto group = VarGroupId::ScatterExtra;
+      static constexpr auto value_type_descr = "rotation";
+      static constexpr auto description =
+        "Rotation of a single crystal, applied after it has been oriented"
+        " with the dir1 and dir2 parameters. It is specified as an axis in"
+        " the lab frame (a1,a2,a3) and an angle, using the format"
+        " \"a1,a2,a3:angle\". The rotation is right-handed, and the"
+        " angle is in radians unless followed by a unit (deg, arcmin, or"
+        " arcsec). Thus, \"rot=0,1,0:30deg\" rotates the crystal 30"
+        " degrees around the y-axis."
+        " When this parameter is set, the parameters mos, dir1, and dir2 must also be provided."
+        ;
+      static constexpr NullOptType default_value() { return NullOpt; }//no default value!
+
+      struct Decoded {
+        Vector axis;//not normalised
+        double angle;//radians
+        ValDbl_ShortStrOrigRep anglestr;//as given (empty if too long)
+      };
+      static Optional<Decoded> decode( StrView sv )
+      {
+        //Decodes "a1,a2,a3:angle" (no value if syntax is wrong).
+        const auto i = sv.find(':');
+        if ( i == StrView::npos )
+          return NullOpt;
+        const auto p = sv.substr(0,i).splitTrimmed(',');
+        const auto angle = units_angle::parse( sv.substr(i+1) );
+        if ( p.size() != 3 || !angle.has_value() )
+          return NullOpt;
+        Decoded res{ Vector(no_init), angle.value().first,
+                     angle.value().second };
+        for ( auto j : ncrange(3) ) {
+          const auto v = p.at(j).toDbl();
+          if ( !v.has_value() )
+            return NullOpt;
+          res.axis[j] = v.value();
+        }
+        return res;
+      }
+
+      static Variant<StrView,std::string> str2val( StrView sv )
+      {
+        auto d = decode(sv);
+        if ( !d.has_value() )
+          return {};
+        auto& v = d.value().axis;
+        for ( auto& e : v )
+          e = sanitiseDblValue( e, name );
+        const double angle = sanitiseDblValue( d.value().angle, name );
+        const double m2 = v.mag2();
+        if ( !std::isfinite(m2) || !std::isfinite(angle) )
+          NCRYSTAL_THROW2(BadInput, "Infinities or too large values"
+                          " specified in "<<name<<" parameter");
+        if ( !(m2>0.0) )
+          NCRYSTAL_THROW2(BadInput,"Null vector provided as axis for"
+                          " parameter \""<<name<<"\"");
+        const auto anglestr = dbl2shortstr( angle );
+        const auto& orig = d.value().anglestr;
+        std::ostringstream ss;
+        ss << fmt(v[0]) << ',' << fmt(v[1]) << ',' << fmt(v[2]) << ':'
+           << ( ( orig.empty() || anglestr.size() <= orig.size() )
+                ? anglestr.to_view() : orig.to_view() );
+        return ss.str();
+      }
+
+      static void asJSONObject( std::ostream& os, const VarBuf& buf )
+      {
+        const auto d = decode( get_val(buf) ).value();
+        streamJSONDictEntry( os, "axis", d.axis, JSONDictPos::FIRST );
+        streamJSONDictEntry( os, "angle", d.angle, JSONDictPos::LAST );
+      }
+    };
+
     struct vardef_vdoslux final : public ValInt<vardef_vdoslux> {
 
       //NB: Keep this carefully synchronised with implementation in NCVDOSLux.cc
@@ -588,6 +664,7 @@ namespace NCRYSTAL_NAMESPACE {
       make_varinfo<vardef_lcmode>(),
       make_varinfo<vardef_mos>(),
       make_varinfo<vardef_mosprec>(),
+      make_varinfo<vardef_rot>(),
       make_varinfo<vardef_sans>(),
       make_varinfo<vardef_scatfactory>(),
       make_varinfo<vardef_sccutoff>(),
@@ -615,6 +692,7 @@ namespace NCRYSTAL_NAMESPACE {
       mos = constexpr_varName2Idx("mos"),
       dir1 = constexpr_varName2Idx("dir1"),
       dir2 = constexpr_varName2Idx("dir2"),
+      rot = constexpr_varName2Idx("rot"),
       strain = constexpr_varName2Idx("strain"),
       sans = constexpr_varName2Idx("sans"),
       incoh_elas = constexpr_varName2Idx("incoh_elas"),

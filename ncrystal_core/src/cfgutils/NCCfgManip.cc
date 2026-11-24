@@ -376,7 +376,7 @@ bool NC::Cfg::CfgManip::equal( const CfgData& a, const CfgData& b )
 bool NC::Cfg::CfgManip::isSingleCrystal(const CfgData& data)
 {
   for ( auto& e : data() ) {
-    if ( isOneOf(static_cast<VarId>(e.metaData()),VarId::mos,VarId::dir1,VarId::dir2,VarId::dirtol) )
+    if ( isOneOf(static_cast<VarId>(e.metaData()),VarId::mos,VarId::dir1,VarId::dir2,VarId::dirtol,VarId::rot) )
       return true;
   }
   return false;
@@ -507,6 +507,8 @@ void NC::Cfg::CfgManip::checkParamConsistency_ScatterExtra( const CfgData& data 
   if ( !nOrient ) {
     if ( buf_dirtol )
       NCRYSTAL_THROW(BadInput,"mos, dir1 and dir2 parameters must all be set when dirtol is set");
+    if ( searchBuf( data, VarId::rot ) )
+      NCRYSTAL_THROW(BadInput,"mos, dir1 and dir2 parameters must all be set when rot is set");
     return;
   }
 
@@ -515,6 +517,22 @@ void NC::Cfg::CfgManip::checkParamConsistency_ScatterExtra( const CfgData& data 
   auto parval_dirtol = getValueFromBufPtr<vardef_dirtol>(buf_dirtol);
 
   precheckLatticeOrientDef( parval_dir1, parval_dir2, parval_dirtol );
+}
+
+void NC::Cfg::CfgManip::applyRot( const CfgData& data,
+                                  OrientDir& dir1, OrientDir& dir2 )
+{
+  auto buf = searchBuf( data, VarId::rot );
+  if ( !buf )
+    return;
+  const auto rot = vardef_rot::decode( vardef_rot::get_val( *buf ) ).value();
+  double c, s;
+  sincos( rot.angle, c, s );
+  const PhiRot phirot( c, s );
+  const Vector axis = rot.axis.unit();
+  for ( auto dir : { &dir1, &dir2 } )
+    dir->lab = phirot.rotateVectorAroundAxis( dir->lab.as<Vector>(),
+                                              axis ).as<LabAxis>();
 }
 
 void NC::Cfg::CfgManip::checkParamConsistency_Absorption( const CfgData& )

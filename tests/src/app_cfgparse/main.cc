@@ -39,7 +39,7 @@ namespace {
     for (auto& p : { "bad","density","phasechoice","atomdb","dcutoff","dcutoffup","infofactory","temp",
                     "absnfactory", "bkgd", "bragg", "coh_elas", "elas", "incoh_elas", "inelas",
                     "vdoslux", "scatfactory", "dir1", "dir2", "dirtol",
-                    "lcaxis", "lcmode", "mos", "mosprec", "sccutoff"} ) {
+                    "lcaxis", "lcmode", "mos", "mosprec", "rot", "sccutoff"} ) {
       auto pstr = NC::StrView(p);
       auto vid = NC::Cfg::varIdFromName( pstr );
       auto str2 = vid.has_value() ? NC::Cfg::varName(vid.value()) : "invalid";
@@ -199,6 +199,28 @@ namespace {
     doTestBad("dir1=@crys_uvw:0,0,0@lab:0,0,1");
     doTestBad("dir1=@crys_uvw:1,2@lab:0,0,1");
 
+    doTest("rot=0,1,0:30deg");
+    doTest(" rot = 0 , 1.0 ,\t0 : 30 deg ");
+    doTest("rot=0,0,2:1.5707963267948966");
+    doTest("rot=1,1,1:0.5rad");
+    doTest("rot=1,-1e-3,1:-1e-3 arcsec");
+    doTest("rot=0,1,0:720arcmin");
+    doTest("rot=0,1,0:123456789.123456789123deg");
+    doTest("rot=0,1,0:0");
+    doTestBad("rot=0,1,0");
+    doTestBad("rot=0,1:30deg");
+    doTestBad("rot=0,1,0,0:30deg");
+    doTestBad("rot=0,0,0:30deg");
+    doTestBad("rot=0,1,0:30degs");
+    doTestBad("rot=0,1,0:");
+    doTestBad("rot=:1");
+    doTestBad("rot=a,1,0:3");
+    doTestBad("rot=1,0,0:1:2");
+    doTestBad("rot=0,1,0:inf");
+    doTestBad("rot=inf,1,0:1");
+    doTestBad("rot=0,1,0:nan");
+    doTestBad("rot=@lab:0,1,0:30deg");
+
     {
       NC::Cfg::CfgData cd{};
       std::cout<<"Test C++ interface:"<<std::endl;
@@ -235,6 +257,8 @@ namespace {
       applyAndPrint(" dir1 = @ crys_hkl : 4 , 5 , 6 @ lab : 1 , \t2 , 3\n ");
       applyAndPrint("dir1=@crys_hkl:4,5,6@lab:1,2,3");
       applyAndPrint("dir1=@crys_uvw:4,5,6@lab:1,2,3");
+      applyAndPrint("rot= 0,0,2 : 0.25 deg");
+      std::cout<<"  => .get_rot() : "<<CfgManip::get_rot(cd)<<std::endl;
       std::cout<<"  => JSON: ";
       CfgManip::streamJSON(cd,std::cout);
       std::cout<<"\n";

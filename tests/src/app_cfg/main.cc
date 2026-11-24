@@ -269,6 +269,43 @@ void test()
   REQUIRE( cfg.get_dir1().crystal.get<NC::HKLPoint>() == c1 );
   test_strrep_and_dump(cfg);
 
+  //A rotation is applied to the lab directions (right-handed):
+  cfg = NC::MatCfg( "Al_fake.ncmat;mos=1deg;dir1=@crys_hkl:0,0,1@lab:0,0,1"
+                    ";dir2=@crys_uvw:1,0,0@lab:1,0,0" );
+  REQUIRE( cfg.createSCOrientation().getData().dir1.lab
+           == ( NC::LabAxis{0,0,1} ) );
+  cfg.set_rot(" 0, 2 ,0 : 90 deg");
+  REQUIRE( cfg.get_rot() == "0,2,0:90deg" );
+  {
+    auto od = cfg.createSCOrientation().getData();
+    auto close = []( const NC::LabAxis& a, const NC::LabAxis& b )
+    {
+      return ( std::fabs(a[0]-b[0]) + std::fabs(a[1]-b[1])
+               + std::fabs(a[2]-b[2]) ) < 1e-14;
+    };
+    REQUIRE( close( od.dir1.lab, NC::LabAxis{1,0,0} ) );
+    REQUIRE( close( od.dir2.lab, NC::LabAxis{0,0,-1} ) );
+    REQUIRE( od.dir1.crystal == cfg.get_dir1().crystal );
+    REQUIRE( od.dir2.crystal == cfg.get_dir2().crystal );
+    REQUIRE( cfg.get_dir1().lab == ( NC::LabAxis{0,0,1} ) );
+  }
+  test_strrep_and_dump(cfg);
+  cfg.applyStrCfg("rot=1,1,1:-120deg");
+  {
+    //Cyclic permutation z->y->x->z:
+    auto od = cfg.createSCOrientation().getData();
+    REQUIREFLTEQ( od.dir1.lab[1], 1.0 );
+    REQUIREFLTEQ( od.dir2.lab[2], 1.0 );
+  }
+  {
+    //Not allowed without an orientation:
+    bool failed = false;
+    try {
+      NC::MatCfg( "Al_fake.ncmat;rot=0,1,0:1deg" ).checkConsistency();
+    } catch (NC::Error::BadInput&) { failed = true;  }
+    REQUIRE( failed );
+  }
+
   // std::cout<<"A:"<<NC::MatCfg( "Al_sg225.ncmat;atomdb= @ @ X :  :::: is Al  @  @@ @ Al is 0.99 Al 0.0100000000000000000000000000000000001  ::Cr"
   //                              "@Be10:0.1e-15u:1fm:1b:1e+5b").get_atomdb()<<std::endl;
   // std::cout<<"B:"<<"X:is:Al@Al:is:0.99:Al:0.0100000000000000000000000000000000001:Cr@Be10:0.1e-15u:1fm:1b:1e+5b"<<std::endl;

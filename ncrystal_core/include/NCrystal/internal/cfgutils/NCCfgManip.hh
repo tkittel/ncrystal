@@ -174,6 +174,10 @@ namespace NCRYSTAL_NAMESPACE {
       static OrientDir get_dir2(const CfgData& data) { return getValue<vardef_dir2>(data); }
       static void set_dir2( CfgData& data, const OrientDir& val ) { setValue<vardef_dir2>(data,val); }
 
+      static StrView get_rot(const CfgData& data) { return getValue<vardef_rot>(data); }
+      static void set_rot( CfgData& data, StrView val ) { setValue<vardef_rot>(data,val); }
+      static void set_rot_stdstr( CfgData& data, const std::string& val ) { setValue<vardef_rot,std::string>(data,val); }
+
       static double get_mosprec(const CfgData& data) { return getValue<vardef_mosprec>(data); }
       static void set_mosprec( CfgData& data, double val ) { setValue<vardef_mosprec>(data,val); }
 
@@ -255,6 +259,8 @@ namespace NCRYSTAL_NAMESPACE {
       [[nodiscard]] static TSCOrientation createSCOrientation(const CfgData&);
 
     private:
+      //Apply the rot parameter (if set) to the lab directions:
+      static void applyRot( const CfgData&, OrientDir& dir1, OrientDir& dir2 );
       template<class TBufCreateFct>
       static void detail_setVar( CfgData& data, VarId varid, TBufCreateFct& doCreate );
       static const VarBuf* searchBuf( const CfgData& data, VarId );
@@ -470,9 +476,12 @@ namespace NCRYSTAL_NAMESPACE {
       //mos already validated:
       nc_assert( vardef_mos::get_val( *bufptr_mos ) > 0.0 && vardef_mos::get_val( *bufptr_mos ) <= kPiHalf );
 
+      auto dir1 = vardef_dir1::get_val( *bufptr_dir1 );
+      auto dir2 = vardef_dir2::get_val( *bufptr_dir2 );
+      applyRot( data, dir1, dir2 );
       TSCOrientation orient;
-      orient.setPrimaryDirection( vardef_dir1::get_val( *bufptr_dir1 ) );
-      orient.setSecondaryDirection( vardef_dir2::get_val( *bufptr_dir2 ), get_dirtol(data) );
+      orient.setPrimaryDirection( dir1 );
+      orient.setSecondaryDirection( dir2, get_dirtol(data) );
       nc_assert_always(orient.isComplete());
       return orient;
     }
