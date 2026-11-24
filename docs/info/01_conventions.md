@@ -57,7 +57,9 @@ $W = \frac12 Q^2\langle u^2\rangle$ and $\langle u^2\rangle$ the
 one-dimensional isotropic mean-squared displacement ($U_{iso}$;
 $B_{iso} = 8\pi^2 U_{iso}$). Multiplicities count both $hkl$ and $-h-k-l$.
 Mosaicity `mos` is a FWHM; `dir1`/`dir2` map crystal to laboratory
-directions.
+directions. Cartesian vectors in the crystal frame (`@crys:`) have $x$ along
+$\vec a$, $z$ along $\vec c^*$ and $y$ along $\vec c^*\times\vec a$, so
+$\vec b$ is in the $xy$-plane.
 
 ## Dynamics
 

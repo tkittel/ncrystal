@@ -56,11 +56,17 @@ allows any contribution.
 
 ## Inputs and configuration
 
-- `lcaxis=c1,c2,c3` (direct-lattice coordinates, e.g. `0,0,1` for
-  graphite; the stdlib `C_sg194_pyrolytic_graphite.ncmat` embeds
-  `NCRYSTALMATCFG[lcaxis=0,0,1]` so that the axis is set whenever an
+- `lcaxis=c1,c2,c3` (a Cartesian vector in the crystal frame of chapter 01,
+  e.g. `0,0,1` for graphite; the stdlib `C_sg194_pyrolytic_graphite.ncmat`
+  embeds `NCRYSTALMATCFG[lcaxis=0,0,1]` so that the axis is set whenever an
   orientation is given), together with `dir1`, `dir2` and `mos` as in
-  chapter 21, and `mosprec`, `sccutoff`, `dirtol`.
+  chapter 21, and `mosprec`, `sccutoff`, `dirtol`, `rot`. The axis can also
+  be the normal of a plane (`lcaxis=@crys_hkl:h,k,l`), a lattice direction
+  (`@crys_uvw:u,v,w`), or an axis in the lab frame (`@lab:l1,l2,l3`, e.g.
+  for a single crystal on a spinning sample holder).
+- `dir2` can be left out when `lcaxis` is a direction in the crystal which
+  is parallel to that of `dir1`, since the rotation around `dir1` is then of
+  no importance.
 - `lcmode` (default 0): 0 selects `LCHelper`; a positive $N$ selects
   `LCBraggRef`, the average of $N$ evenly rotated single crystals
   (accurate only for very large $N$: $2\pi/N$ must be about 5% of the
@@ -106,8 +112,12 @@ slower than the single-crystal model (elastic paper section 7).
 
 ## New or changed in 5.0.0
 
-No physics changes; indirect changes through the hkl list and settings as
-for chapter 21.
+No physics changes, but as for chapter 21 the model is now set up in the
+crystal frame and shared between orientations. New forms of `lcaxis`
+(`@crys_hkl:`, `@crys_uvw:`, `@lab:`), and `dir2` is optional for an
+`lcaxis` along `dir1`. The description of the plain form of `lcaxis` was
+corrected (a Cartesian vector, not direct-lattice coordinates). Indirect
+changes through the hkl list and settings as for chapter 21.
 
 ## References
 

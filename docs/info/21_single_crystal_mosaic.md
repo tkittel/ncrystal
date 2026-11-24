@@ -88,11 +88,17 @@ lab frame).
 
 ## Inputs and configuration
 
-- `dir1=@crys:c1,c2,c3@lab:l1,l2,l3` and `dir2=...` (or `@crys_hkl:` for
-  a plane normal in reciprocal space), with `dirtol` (default 1e-4 rad)
-  bounding the allowed mismatch between the opening angles of the two
-  directions in the two frames; `dirtol=180deg` sets up a monochromator
-  where only the primary direction matters.
+- `dir1=@crys:c1,c2,c3@lab:l1,l2,l3` and `dir2=...`, with `dirtol`
+  (default 1e-4 rad) bounding the allowed mismatch between the opening
+  angles of the two directions in the two frames. The crystal direction is
+  a Cartesian vector in the crystal frame of chapter 01 (`@crys:`), the
+  normal of a plane (`@crys_hkl:h,k,l`), or a lattice direction
+  $u\vec a+v\vec b+w\vec c$ (`@crys_uvw:u,v,w`).
+- `dir2=arbitrary` when the rotation of the crystal around `dir1` is of no
+  importance (an unspecified but reproducible rotation is then used).
+- `rot=a1,a2,a3:angle`: a right-handed rotation of the crystal around an
+  axis in the lab frame, applied after `dir1` and `dir2` (e.g.
+  `rot=0,1,0:30deg`).
 - `mos` (FWHM, in (0, pi/2]), `mosprec` (default 1e-3, range [1e-7, 0.1]).
 - `sccutoff` (default 0.4 Aa; 0 disables): planes with $d$ below it are
   treated as having infinite mosaicity, i.e. as powder (chapter 20), with
@@ -102,8 +108,15 @@ lab frame).
 
 ## Implementation
 
+The model is set up in the frame of the crystal and shared between all
+materials which only differ in the orientation of the crystal (`dir1`,
+`dir2`, `rot`): each of these merely wraps it in a `RotatedScatter` process,
+which rotates neutron directions to and from the crystal frame. Many
+differently oriented crystals of the same material thus cost little memory
+and initialisation time.
+
 The planes of the material are grouped into families of equal $(d, |F|^2)$
-with their normals rotated into the laboratory frame, sorted by $d$, and
+with their normals, sorted by $d$, and
 processed only while $\lambda \le 2d$. For a given neutron state (cached
 per thread), all families are evaluated: a branch-free test on normal and
 anti-normal together decides whether the Bragg circle meets the truncated
@@ -131,8 +144,11 @@ spread parameter exists in the interfaces but is not implemented.
 - Repository tests: `tests/src/app_backscat` (back-scattering geometry),
   `tests/scripts/azimuth.py` (azimuthal distributions), `mmc_scge.py`
   (single-crystal Ge in MiniMC, chapter 61), the `nctool` cross-section
-  dumps of oriented materials, and the orientation parsing tests in
-  `app_cfg`/`app_cfgparse`.
+  dumps of oriented materials, the orientation parsing tests in
+  `app_cfg`/`app_cfgparse`, `tests/src/app_rotscat` and
+  `tests/scripts/scshare.py` (models in the crystal frame, shared between
+  orientations), `tests/src/app_orientutils` and `tests/scripts/scorient.py`
+  (equivalent ways of specifying an orientation).
 
 ## Approximations and limitations
 
@@ -147,9 +163,11 @@ spread parameter exists in the interfaces but is not implemented.
 
 ## New or changed in 5.0.0
 
-The model is unchanged and as published for 2.0.0-4.4.6. Indirect changes:
-the hkl input (chapter 12), orientation handling for non-default
-space-group settings (chapter 11), and `.lau` files with setting
+The model is unchanged and as published for 2.0.0-4.4.6, but is now set up
+in the crystal frame and shared between orientations (see above). New ways
+of specifying orientations: `@crys_uvw:`, `dir2=arbitrary` and `rot`.
+Indirect changes: the hkl input (chapter 12), orientation handling for
+non-default space-group settings (chapter 11), and `.lau` files with setting
 information (chapter 52).
 
 ## References

@@ -1,0 +1,58 @@
+Input for the CHANGELOG from the single crystal orientation work, in the
+same spirit as changes_for_changelog.txt (to be curated into the real
+CHANGELOG at release time, after which this file is dropped).
+
+### Single crystals
+
+     * Bragg diffraction models of single crystals (SCBragg, LCBragg) are
+       now set up in the frame of the crystal and shared between all
+       materials differing only in the orientation of the crystal. A new
+       RotatedScatter process, visible in process summaries, takes care
+       of rotating neutron directions to and from that frame. This
+       greatly reduces memory usage and initialisation time when many
+       differently oriented crystals of the same material are needed
+       (github issue #333).
+     * Crystal directions in the dir1 and dir2 parameters can now also be
+       given as lattice directions, i.e. along u*a+v*b+w*c, using the new
+       form "@crys_uvw:u,v,w" (C++: the new UVWDir type). The description
+       of the existing "@crys:" form now states which Cartesian frame it
+       refers to: x along a, z along c*, and y along c* cross a.
+     * OrientDir::CrysDir is now a small dedicated class rather than a
+       Variant. It keeps the has_value<T>() and get<T>() methods (the
+       latter now returning by value), and adds type() and vect(). The
+       JSON representation of dir1 and dir2 gained a "crystal_is_uvw"
+       entry.
+     * New cfg-string parameter "rot" for rotating a single crystal around
+       an axis in the lab frame, after it has been oriented with dir1 and
+       dir2: "rot=a1,a2,a3:angle". The rotation is right-handed, and the
+       angle accepts the usual units (rad, deg, arcmin, arcsec). As an
+       example, "rot=0,1,0:30deg" rotates the crystal 30 degrees around
+       the y-axis, which is convenient for e.g. goniometer scans (C++:
+       MatCfg::get_rot/set_rot).
+     * The dir2 parameter can be set to "arbitrary" for when the rotation
+       of a single crystal around dir1 is of no importance, in which case
+       an unspecified (but reproducible) rotation is used. This fixes
+       github issue #156. Since the choice might need the crystal
+       lattice, MatCfg::get_dir2() and MatCfg::createSCOrientation() can
+       throw MissingInfo exceptions for such a dir2 (the
+       createSCOrientation() method of ScatterRequest always works).
+     * The lcaxis parameter of layered crystals accepts more forms. In
+       addition to the existing "lcaxis=0,0,1" (which can now also be
+       written "@crys:0,0,1"), the axis can be given as the normal of an
+       HKL plane ("@crys_hkl:0,0,1"), as a lattice direction
+       ("@crys_uvw:0,0,1"), or in the lab frame ("@lab:0,1,0"). The latter
+       can for instance be used for a single crystal on a spinning sample
+       holder. The description of the plain form was corrected: it is
+       (and always was) a Cartesian vector in the crystal frame, rather
+       than being in direct lattice coordinates (for "0,0,1" in e.g.
+       hexagonal crystals there is no difference).
+     * The dir2 parameter can be left out when lcaxis is a direction in
+       the crystal which is parallel to that of dir1, since the rotation
+       around dir1 is then of no importance. Thus, with the pyrolytic
+       graphite file of the standard data library, it is now enough to
+       add "mos=1deg;dir1=@crys_hkl:0,0,1@lab:0,1,0".
+     * ScatterRequest::get_lcaxis() always provides lcaxis as a Cartesian
+       vector in the crystal frame, while MatCfg::get_lcaxis() throws a
+       MissingInfo exception for the forms which need the crystal lattice
+       for that. In JSON, such forms are dictionaries with "frame" and
+       "axis" entries.

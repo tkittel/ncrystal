@@ -37,6 +37,12 @@ chapters that carry the details. The curated changelog input is in
   space group.
 - Sites and the space-group setting on the `Info` object, with
   site/position utility queries.
+- Single crystals (chapters 21-22): models set up in the crystal frame and
+  shared between orientations, which makes many differently oriented
+  crystals of the same material cheap; orientations by lattice directions
+  (`@crys_uvw:`), with `dir2=arbitrary`, and with a subsequent rotation
+  (`rot`); more forms of `lcaxis`, including a lab axis for spinning
+  crystals, and no `dir2` needed for an `lcaxis` along `dir1`.
 
 ## Inelastic scattering (chapters 30-35)
 
