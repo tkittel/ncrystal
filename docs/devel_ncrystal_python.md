@@ -95,12 +95,12 @@ must contain only this file, with the message
 - `vdos.py` (1.1k): Debye VDOS/MSD helpers, `analyseVDOS`, `extractGn`,
   `extractKnl` (-> C `ncrystal_raw_vdos2kernel`), `PhononDOSAnalyser`.
 - `cifutils.py` (0.7k): public `CIFSource`, `CIFLoader` and validation plots
-  (gemmi, spglib, ase). Implemented in `_cifsrcimpl.py` (fetching from COD,
+  (spglib, ase). Implemented in `_cifsrcimpl.py` (fetching from COD,
   Materials Project via `MATERIALSPROJECT_USER_API_KEY`, local cache),
-  `_cifreadimpl.py` (reading with gemmi, CIF numbers with their rounding
-  errors), `_cifsymimpl.py` (which symmetry to use), `_cifsitesimpl.py`
-  (finding and grouping sites), `_cifloadimpl.py` (the loading steps) and
-  `_cifcomposerimpl.py` (creating the `NCMATComposer`).
+  `_cifreadimpl.py` (reading via the C++ `["cif","structure",...]` query,
+  which also chooses the space group setting and collects the atoms),
+  `_cifsitesimpl.py` (finding and grouping sites), `_cifloadimpl.py` (the
+  loading steps) and `_cifcomposerimpl.py` (creating the `NCMATComposer`).
 - `ncmat2endf.py` + `_ncmat2endf_impl.py` (1.6k): ENDF export via
   `endf_parserpy`.
 - `misc.py` + `_miscimpl.py`: type-erasure wrappers `MaterialSource`,
@@ -130,7 +130,7 @@ must contain only this file, with the message
   (`__main__.py`; `--unblock` runs as `cli.run`), and `NCrystal.cli.run()`.
 - `cli_entry_point`: from a shell, turns `NCException` into
   `"<Type> ERROR: msg"` `SystemExit`, other exceptions into `"ERROR: msg"`,
-  and shows `NCrystalUserWarning` as `WARNING:` lines. The hidden
+  prints notices unprefixed and warnings as `WARNING:` lines. The hidden
   `--show-exceptions` flag keeps the traceback. In `cli.run` mode, argparse
   errors raise instead of exiting, argparse output goes through NCrystal
   print, and `SystemExit` becomes a clean return or a `RuntimeError`.
@@ -160,10 +160,12 @@ must contain only this file, with the message
 
 - Python 3.9 syntax only; ruff runs via `ncdevtool check ruff` with a long
   ignore list (`devel/pypath/ncrystal_repo_tools/_check_ruff.py`).
-- Output through `_common.print` (redirectable with
-  `set_ncrystal_print_fct`, `modify_ncrystal_print_fct_ctxmgr`,
-  `capture_print_ctxmgr`) and `_common.warn`
-  (`NCrystalUserWarning`). `_cli_*` modules import both from `_cliimpl`.
+- Messages via `_common.infomsg`/`warn`/`print` (like `NCRYSTAL_MSG`/`WARN`/
+  `RAWOUT`, whose C++ messages arrive via `_msg._default_pymsghandler`):
+  prefixed `NCrystal: `/`NCrystal WARNING: ` through the print function, or
+  logged after `use_logging()`. `msg.MsgCtrl` sets prefixes/logger and can
+  spy/block/dedup the parts `'info'`, `'warning'` and `'raw'` (CLI tools: no
+  info prefix, `WARNING: `). `_cli_*` modules import them from `_cliimpl`.
 - Env vars: `ncgetenv[_bool|_int|_int_nonneg]('X')`/`ncsetenv` use
   `expand_envname('X')`; never pass the `NCRYSTAL_` prefix. Namespace
   protection (`NCRYSTAL_NAMESPACE`) only renames libs/symbols, so several
