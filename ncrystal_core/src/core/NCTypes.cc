@@ -61,16 +61,13 @@ NC::DataSourceName::DataSourceName()
 
 std::ostream& NC::operator<<( std::ostream& os, const OrientDir& od )
 {
-  if ( od.crystal.has_value<CrystalAxis>() ) {
-    auto& v = od.crystal.get<CrystalAxis>();
-    os << "@crys:" << fmt(v[0]) << ',' << fmt(v[1]) << ',' << fmt(v[2]);
-  } else if ( od.crystal.has_value<HKLPoint>() ) {
-    auto& v = od.crystal.get<HKLPoint>();
-    os << "@crys_hkl:" << fmt(v[0]) << ',' << fmt(v[1]) << ',' << fmt(v[2]);
-  } else {
-    os << "@crys:<MISSING>";
-  }
-  os << "@lab:" << fmt(od.lab[0])<< ',' << fmt(od.lab[1])<< ',' << fmt(od.lab[2]);
+  using Type = OrientDir::CrysDir::Type;
+  const auto t = od.crystal.type();
+  const auto& v = od.crystal.vect();
+  os << ( t == Type::Crys ? "@crys:"
+          : ( t == Type::HKL ? "@crys_hkl:" : "@crys_uvw:" ) )
+     << fmt(v[0]) << ',' << fmt(v[1]) << ',' << fmt(v[2])
+     << "@lab:" << fmt(od.lab[0])<< ',' << fmt(od.lab[1])<< ',' << fmt(od.lab[2]);
   return os;
 }
 

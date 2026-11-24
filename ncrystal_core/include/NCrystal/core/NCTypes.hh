@@ -432,11 +432,34 @@ namespace NCRYSTAL_NAMESPACE {
     using StronglyTypedFixedVector::StronglyTypedFixedVector;
   };
 
+  class NCRYSTAL_API UVWDir final : public StronglyTypedFixedVector<UVWDir,double,3> {
+    //Lattice direction [uvw], i.e. along u*a+v*b+w*c (floating point vector).
+  public:
+    using StronglyTypedFixedVector::StronglyTypedFixedVector;
+  };
+
   struct NCRYSTAL_API OrientDir {
-    //Orientation of crystal axis, combining a laboratory direction with either
-    //a direction in the unit cell coordinate system or a HKL point (indicating
-    //the plane-normal of that HKL plane).
-    using CrysDir = Variant<CrystalAxis,HKLPoint,VariantAllowEmpty::No>;
+    //Orientation of crystal axis, combining a laboratory direction with a
+    //direction in the crystal. The latter is either Cartesian (CrystalAxis,
+    //having x along a, z along c*, and y along c* cross a), the normal of an
+    //HKL plane (HKLPoint), or a lattice direction (UVWDir).
+    class NCRYSTAL_API CrysDir {
+    public:
+      enum class Type { Crys, HKL, UVW };
+      CrysDir( const CrystalAxis& v ) noexcept : m_v(v), m_type(Type::Crys) {}
+      CrysDir( const HKLPoint& v ) noexcept : m_v(v), m_type(Type::HKL) {}
+      CrysDir( const UVWDir& v ) noexcept : m_v(v), m_type(Type::UVW) {}
+      CrysDir( Type t, const ThreeVector& v ) noexcept : m_v(v), m_type(t) {}
+      Type type() const noexcept { return m_type; }
+      const ThreeVector& vect() const noexcept { return m_v; }
+      //Typed access:
+      template<class T> constexpr bool has_value() const noexcept;
+      template<class T> T get() const ncnoexceptndebug;
+      bool operator==( const CrysDir& o ) const noexcept { return m_type == o.m_type && m_v == o.m_v; }
+    private:
+      ThreeVector m_v;
+      Type m_type;
+    };
     using LabDir = LabAxis;
     CrysDir crystal;
     LabDir lab;
@@ -602,6 +625,24 @@ namespace NCRYSTAL_NAMESPACE {
 ////////////////////////////
 
 namespace NCRYSTAL_NAMESPACE {
+
+  template<class T>
+  inline constexpr bool OrientDir::CrysDir::has_value() const noexcept
+  {
+    static_assert( std::is_same<T,CrystalAxis>::value
+                   || std::is_same<T,HKLPoint>::value
+                   || std::is_same<T,UVWDir>::value, "" );
+    return m_type == ( std::is_same<T,CrystalAxis>::value ? Type::Crys
+                       : ( std::is_same<T,HKLPoint>::value
+                           ? Type::HKL : Type::UVW ) );
+  }
+
+  template<class T>
+  inline T OrientDir::CrysDir::get() const ncnoexceptndebug
+  {
+    nc_assert( has_value<T>() );
+    return T{ m_v[0], m_v[1], m_v[2] };
+  }
 
   inline std::ostream& operator<<(std::ostream& os, MaterialType mt)
   {

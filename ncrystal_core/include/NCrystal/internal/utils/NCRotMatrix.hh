@@ -38,7 +38,7 @@ namespace NCRYSTAL_NAMESPACE {
 
     RotMatrix( Span<const double> data ) : Matrix( 3, 3, data ) {}
 
-    //Construct rotation which transforms vectors v and u into v_trf and u_trf
+    //Construct rotation which transforms vectors v_trf and u_trf into v and u
     //respectively. As a sanity check, it is required (within the given
     //tolerance) that angle(v,u)==angle(v_trf,u_trf) and that v and u are not
     //parallel.

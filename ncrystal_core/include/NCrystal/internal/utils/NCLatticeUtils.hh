@@ -39,13 +39,18 @@ namespace NCRYSTAL_NAMESPACE {
                                const LabAxis& l2, const CrystalAxis& c2,
                                double dirtol );
 
-  //Same, but on OrientDir's which might include HKLPoint's, in which case the
-  //validation won't be complete (due to the absence of a lattice rotation
-  //matrix):
+  //Same, but on OrientDir's which might include HKLPoint's or UVWDir's, in
+  //which case the validation won't be complete (due to the absence of a
+  //lattice rotation matrix):
   void precheckLatticeOrientDef( const OrientDir& dir1, const OrientDir& dir2, double dirtol );
 
+  //Crystal direction as a Cartesian unit vector in the crystal frame. The
+  //reciprocal lattice rotation is not used for CrystalAxis directions.
+  Vector crysDirToCartesian( const OrientDir::CrysDir&,
+                             const RotMatrix& reci_lattice );
+
   //Fully validate orientation parameters and construct crystal rotation matrix
-  //(transforms lab frame -> crystal frame). Requires a reciprocal lattice
+  //(transforms crystal frame -> lab frame). Requires a reciprocal lattice
   //rotation matrix.
   RotMatrix verifyLatticeOrientDefAndConstructCrystalRotation( const OrientDir& dir1,
                                                                const OrientDir& dir2,

@@ -285,6 +285,7 @@ namespace NCRYSTAL_NAMESPACE {
   namespace  {
     constexpr const char * vectName( const CrystalAxis& ) { return "CrystalAxis"; }
     constexpr const char * vectName( const HKLPoint& ) { return "HKLPoint"; }
+    constexpr const char * vectName( const UVWDir& ) { return "UVWDir"; }
     constexpr const char * vectName( const LabAxis& ) { return "LabAxis"; }
     static constexpr double orient_paralleltol = 1e-6;
     template<class TVect>
@@ -302,10 +303,10 @@ namespace NCRYSTAL_NAMESPACE {
       const auto& cc = odir.crystal;
       if ( cc.has_value<HKLPoint>() )
         checkNotNull(cc.get<HKLPoint>(),designator);
-      else if ( cc.has_value<CrystalAxis>() )
-        checkNotNull(cc.get<CrystalAxis>(),designator);
+      else if ( cc.has_value<UVWDir>() )
+        checkNotNull(cc.get<UVWDir>(),designator);
       else
-        NCRYSTAL_THROW2(BadInput,"Invalid crystal direction object (empty crystal direction)");
+        checkNotNull(cc.get<CrystalAxis>(),designator);
     }
   }
 
@@ -368,6 +369,24 @@ void NC::precheckLatticeOrientDef( const OrientDir& dir1, const OrientDir& dir2,
     if ( dir1.crystal.get<HKLPoint>().as<Vector>().isParallel( dir2.crystal.get<HKLPoint>().as<Vector>(), orient_paralleltol ) )
       NCRYSTAL_THROW(BadInput, "Specified primary and secondary crystal directions (hkl points) are parallel");
   }
+  if ( dir1.crystal.has_value<UVWDir>() && dir2.crystal.has_value<UVWDir>() ) {
+    if ( dir1.crystal.get<UVWDir>().as<Vector>().isParallel
+         ( dir2.crystal.get<UVWDir>().as<Vector>(), orient_paralleltol ) )
+      NCRYSTAL_THROW(BadInput, "Specified primary and secondary crystal"
+                     " directions (lattice directions) are parallel");
+  }
+}
+
+NC::Vector NC::crysDirToCartesian( const OrientDir::CrysDir& dir,
+                                   const RotMatrix& reci_lattice )
+{
+  if ( dir.has_value<CrystalAxis>() )
+    return dir.get<CrystalAxis>().as<Vector>().unit();
+  if ( dir.has_value<HKLPoint>() )
+    return ( reci_lattice * dir.get<HKLPoint>().as<Vector>().unit() ).unit();
+  //Lattice vectors are (up to a factor) the rows of the inverse:
+  return ( RotMatrix( ~reci_lattice.getInv() )
+           * dir.get<UVWDir>().as<Vector>().unit() ).unit();
 }
 
 NC::RotMatrix NC::verifyLatticeOrientDefAndConstructCrystalRotation( const OrientDir& dir1,
@@ -376,15 +395,9 @@ NC::RotMatrix NC::verifyLatticeOrientDefAndConstructCrystalRotation( const Orien
                                                                      const RotMatrix& reci_lattice )
 {
   precheckLatticeOrientDef( dir1, dir2, dirtol );
-  nc_assert(!dir1.crystal.empty());
-  nc_assert(!dir2.crystal.empty());
 
-  Vector c1 = ( dir1.crystal.has_value<CrystalAxis>()
-                ? dir1.crystal.get<CrystalAxis>().as<Vector>()
-                : ( reci_lattice * dir1.crystal.get<HKLPoint>().as<Vector>().unit() ) ).unit();
-  Vector c2 = ( dir2.crystal.has_value<CrystalAxis>()
-                ? dir2.crystal.get<CrystalAxis>().as<Vector>()
-                : ( reci_lattice * dir2.crystal.get<HKLPoint>().as<Vector>().unit() ) ).unit();
+  Vector c1 = crysDirToCartesian( dir1.crystal, reci_lattice );
+  Vector c2 = crysDirToCartesian( dir2.crystal, reci_lattice );
   Vector l1 = dir1.lab.as<Vector>().unit();
   Vector l2 = dir2.lab.as<Vector>().unit();
 

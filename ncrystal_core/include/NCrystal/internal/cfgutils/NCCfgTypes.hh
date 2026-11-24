@@ -337,40 +337,37 @@ namespace NCRYSTAL_NAMESPACE {
     template <class Derived>
     class ValOrientDir : public ValBase<Derived,OrientDir> {
     public:
-      //Store OrientDir by converting to 2*3=6 doubles and a bool (1
-      //char). Presumably this will always be too large for the local buffer,
-      //but usage is rare.
+      //Store OrientDir by converting to 2*3=6 doubles and the type of crystal
+      //direction (1 char). Presumably this will always be too large for the
+      //local buffer, but usage is rare.
       static_assert(alignof(VarBuf)%alignof(OrientDir)==0,"");
       using Base = ValOrientDir;
       static constexpr auto value_type_descr = "crystal axis orientation";
 
-      struct DecodedBuffer{ std::array<double,6> vals; bool crystal_is_hkl; };
+      using CrysType = OrientDir::CrysDir::Type;
+      struct DecodedBuffer{ std::array<double,6> vals; CrysType crystype; };
       static DecodedBuffer detail_bufdecode( const VarBuf& buf )
       {
         const char* bufdata = buf.data();
         DecodedBuffer res;
         std::memcpy( res.vals.data(), bufdata, 6*sizeof(double) );
-        res.crystal_is_hkl = ( *std::next(bufdata,6*sizeof(double)) == 1 );
+        res.crystype = static_cast<CrysType>( *std::next(bufdata,6*sizeof(double)) );
         return res;
       }
 
       static OrientDir get_val( const VarBuf& buf )
       {
         auto db = detail_bufdecode(buf);
-        Vector vcrys( db.vals[0], db.vals[1], db.vals[2] );
-        LabAxis vlab( db.vals[3], db.vals[4], db.vals[5] );
-        if ( db.crystal_is_hkl )
-          return { vcrys.as<HKLPoint>(), vlab };
-        else
-          return { vcrys.as<CrystalAxis>(), vlab };
+        return { { db.crystype, { db.vals[0], db.vals[1], db.vals[2] } },
+                 LabAxis( db.vals[3], db.vals[4], db.vals[5] ) };
       }
 
       static int cmp( const VarBuf& a, const VarBuf& b )
       {
         auto db_A = detail_bufdecode(a);
         auto db_B = detail_bufdecode(b);
-        if ( db_A.crystal_is_hkl != db_B.crystal_is_hkl )
-          return db_A.crystal_is_hkl ? -1 : 1;
+        if ( db_A.crystype != db_B.crystype )
+          return db_A.crystype > db_B.crystype ? -1 : 1;
         for ( auto i : ncrange(6) ) {
           if ( db_A.vals[i] != db_B.vals[i] )
             return db_A.vals[i] < db_B.vals[i] ? -1 : 1;
@@ -379,19 +376,10 @@ namespace NCRYSTAL_NAMESPACE {
       }
 
       static VarBuf set_val( VarId varid, const OrientDir& value ) {
-        //nc_assert_always(!value.crystal.empty());//fails if moved-from
         alignas(double) char tmp[6*sizeof(double)+1];
-        Vector vcrys;
-        if ( value.crystal.has_value<HKLPoint>() ) {
-          tmp[6*sizeof(double)] = 1;
-          vcrys = value.crystal.get<HKLPoint>().as<Vector>();
-        } else if ( value.crystal.has_value<CrystalAxis>() ) {
-          tmp[6*sizeof(double)] = 0;
-          vcrys = value.crystal.get<CrystalAxis>().as<Vector>();
-        } else {
-          NCRYSTAL_THROW2(BadInput,"Moved-from crystal direction object"
-                          " provided for parameter \""<<Derived::name<<"\"");
-        }
+        tmp[6*sizeof(double)] = static_cast<char>( value.crystal.type() );
+        const auto& vc = value.crystal.vect();
+        const Vector vcrys( vc[0], vc[1], vc[2] );
         if ( std::min<double>( value.lab.as<Vector>().mag2(), vcrys.mag2() ) < 1e-100 )
           NCRYSTAL_THROW2(BadInput,"Null vector provided for parameter \""<<Derived::name<<"\"");
         double tmp_vals[6];
@@ -407,18 +395,16 @@ namespace NCRYSTAL_NAMESPACE {
 
       static void stream_val( std::ostream& os, const VarBuf& buf )
       {
-        auto db = detail_bufdecode(buf);
-        os << ( db.crystal_is_hkl?"@crys_hkl:":"@crys:")
-           << fmt(db.vals[0]) << "," << fmt(db.vals[1]) << ","
-           << fmt(db.vals[2]) << "@lab:" << fmt(db.vals[3]) << ","
-           << fmt(db.vals[4]) << "," << fmt(db.vals[5]);
+        os << get_val(buf);
       }
 
       static void asJSONObject( std::ostream& os, const VarBuf& buf )
       {
         auto db = detail_bufdecode(buf);
         os << "{\"crystal_is_hkl\":";
-        os << (db.crystal_is_hkl?"true":"false");
+        os << (db.crystype==CrysType::HKL?"true":"false");
+        os << ",\"crystal_is_uvw\":";
+        os << (db.crystype==CrysType::UVW?"true":"false");
         os<<",\"crystal\":[";
         streamJSON(os,db.vals[0]);
         os << ",";
@@ -436,8 +422,9 @@ namespace NCRYSTAL_NAMESPACE {
 
       static VarBuf from_str( VarId varid, StrView sv_in ) {
         standardInputStrSanityCheck(Derived::name,sv_in);
-        //"@crys:c1,c2,c3@lab:l1,l2,l3" or "@crys_hkl:c1,c2,c3@lab:l1,l2,l3",
-        //and spaces allowed around all delimeters or at string ends.
+        //"@crys:c1,c2,c3@lab:l1,l2,l3", with "@crys_hkl:" or "@crys_uvw:" as
+        //alternatives to "@crys:", and spaces allowed around all delimeters or
+        //at string ends.
 
         //Split into parts:
         const char delims[] = "@:,,@:,,";
@@ -464,14 +451,16 @@ namespace NCRYSTAL_NAMESPACE {
         if ( parts[5] != StrView::make("lab") )
           throw_error();
 
-        if ( ! ( parts[1]==StrView::make("crys")
-                 || parts[1] == StrView::make("crys_hkl")) )
+        CrysType crystype = CrysType::Crys;
+        if ( parts[1] == StrView::make("crys_hkl") )
+          crystype = CrysType::HKL;
+        else if ( parts[1] == StrView::make("crys_uvw") )
+          crystype = CrysType::UVW;
+        else if ( parts[1] != StrView::make("crys") )
           throw_error();
 
-        const bool is_crystal_hkl = (parts[1]==StrView::make("crys_hkl"));
-
         LabAxis lab{no_init};
-        Vector crystal{no_init};
+        ThreeVector crystal{no_init};
         auto trySetVal = [&throw_error](double& val, const StrView& sv_val) {
           auto opt_val = sv_val.toDbl();
           if ( !opt_val.has_value() )
@@ -484,10 +473,7 @@ namespace NCRYSTAL_NAMESPACE {
         trySetVal(lab[0],parts[6]);
         trySetVal(lab[1],parts[7]);
         trySetVal(lab[2],parts[8]);
-        if ( is_crystal_hkl )
-          return set_val( varid, OrientDir{ crystal.as<HKLPoint>(), lab } );
-        else
-          return set_val( varid, OrientDir{ crystal.as<CrystalAxis>(), lab } );
+        return set_val( varid, OrientDir{ { crystype, crystal }, lab } );
       }
     };
 

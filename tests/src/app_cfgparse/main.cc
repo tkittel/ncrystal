@@ -193,6 +193,12 @@ namespace {
     static_assert(NC::Cfg::VarBufVector::nsmall==7,"");
     doTest("temp=20;dcutoff=1;dcutoffup=2;sccutoff=0.5;sans=0;incoh_elas=0;inelas=freegas;absnfactory=stdabs;atomdb=H:is:H2;scatfactory=stdscat");
 
+    doTest("dir1=@crys_uvw:1,2,3@lab:0,0,1");
+    doTest(" dir1 = @ crys_uvw : 1 , 2e0 , 3 @ lab : 0 , \t0 , 1\n ");
+    doTestBad("dir1=@crys_xyz:1,2,3@lab:0,0,1");
+    doTestBad("dir1=@crys_uvw:0,0,0@lab:0,0,1");
+    doTestBad("dir1=@crys_uvw:1,2@lab:0,0,1");
+
     {
       NC::Cfg::CfgData cd{};
       std::cout<<"Test C++ interface:"<<std::endl;
@@ -228,7 +234,10 @@ namespace {
       applyAndPrint("dir1=@crys_hkl:4,5,6@lab:1,2,3");
       applyAndPrint(" dir1 = @ crys_hkl : 4 , 5 , 6 @ lab : 1 , \t2 , 3\n ");
       applyAndPrint("dir1=@crys_hkl:4,5,6@lab:1,2,3");
-
+      applyAndPrint("dir1=@crys_uvw:4,5,6@lab:1,2,3");
+      std::cout<<"  => JSON: ";
+      CfgManip::streamJSON(cd,std::cout);
+      std::cout<<"\n";
     }
   }
 

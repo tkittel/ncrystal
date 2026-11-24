@@ -145,9 +145,11 @@ namespace NCRYSTAL_NAMESPACE {
       static constexpr auto name = "dir1";
       static constexpr auto group = VarGroupId::ScatterExtra;
       static constexpr auto description =
-        "Primary orientation axis of a single crystal. This is specified by indicating the direction of given axis in both the crystal (c1,c2,c2) and lab frames (l1,l2,l3),"
-        " using the format \"@crys:c1,c2,c3@lab:l1,l2,l3\". The direction in the crystal frame can alternatively"
-        " be provided in HKL space (indicating the normal of a given HKL plane), by using \"@crys_hkl:\" instead of \"@crys:\": \"dir1=@crys_hkl:c1,c2,c3@lab:l1,l2,l3\"."
+        "Primary orientation axis of a single crystal. This is specified by indicating the direction of given axis in both the crystal (c1,c2,c3) and lab frames (l1,l2,l3),"
+        " using the format \"@crys:c1,c2,c3@lab:l1,l2,l3\". The crystal frame is here Cartesian, with x along"
+        " the lattice vector a, z along c* (the normal of the plane of a and b), and y along c* cross a."
+        " The direction in the crystal can alternatively be provided as the normal of a given HKL plane, by"
+        " using \"@crys_hkl:\" instead of \"@crys:\", or as the lattice direction c1*a+c2*b+c3*c, by using \"@crys_uvw:\"."
         " When this parameter is set, the parameters mos and dir2 must also be provided."
         ;
       static constexpr NullOptType default_value() { return NullOpt; }//no default value!

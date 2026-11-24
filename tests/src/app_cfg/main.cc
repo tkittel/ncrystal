@@ -261,6 +261,13 @@ void test()
   NC::LabAxis l2 = {0,1,1};
   cfg.set_dir2( c2, l2 );
   test_strrep_and_dump(cfg);
+  cfg.set_dir2( NC::OrientDir{ NC::UVWDir{ 0.5, -2, 3 }, l2 } );
+  REQUIRE( cfg.get_dir2().crystal.has_value<NC::UVWDir>() );
+  REQUIRE( cfg.get_dir2().crystal.get<NC::UVWDir>()
+           == ( NC::UVWDir{ 0.5, -2, 3 } ) );
+  REQUIRE( cfg.get_dir2().lab == l2 );
+  REQUIRE( cfg.get_dir1().crystal.get<NC::HKLPoint>() == c1 );
+  test_strrep_and_dump(cfg);
 
   // std::cout<<"A:"<<NC::MatCfg( "Al_sg225.ncmat;atomdb= @ @ X :  :::: is Al  @  @@ @ Al is 0.99 Al 0.0100000000000000000000000000000000001  ::Cr"
   //                              "@Be10:0.1e-15u:1fm:1b:1e+5b").get_atomdb()<<std::endl;
