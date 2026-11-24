@@ -28,7 +28,6 @@ CIF data in cifutils.py.
 
 __all__ = []
 
-from . import _common as _nc_common
 from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
 from ._cifreadimpl import CIFContent
@@ -99,16 +98,17 @@ def _resolve( settings, cell, what ):
                                f'"{fit[0]}", or --spacegroup={fit[0]} for'
                                ' ncrystal_cif2ncmat)' )
 
-def determine_setting( cif_content, *, permissive, override_spacegroup ):
+def determine_setting( cif_content, *, permissive, override_spacegroup,
+                       warnfct ):
     #Returns the space group setting (e.g. "227:2") of cif_content:
     #override_spacegroup (symbol or setting) if given, else from the listed
     #symmetry operations checked against the symbol, else from the symbol and
-    #the cell. Inconsistencies raise, or warn if permissive.
+    #the cell. Inconsistencies raise, or warn (to warnfct) if permissive.
     assert isinstance( cif_content, CIFContent )
     cell = cif_content.cell
     if override_spacegroup:
         o = str( override_spacegroup )
-        _nc_common.warn(f'Overriding spacegroup to "{o}" due to explicit request')
+        warnfct(f'Overriding spacegroup to "{o}" due to explicit request')
         s = _query( 'sgsym', 'fromhm', 'RAWDATA', o )
         if not s:
             r = _query( 'sgsym', 'setting', '0', 'RAWDATA', o )
@@ -141,14 +141,14 @@ def determine_setting( cif_content, *, permissive, override_spacegroup ):
                         f' {_number(symsettings[0])}' )
                 if not permissive:
                     raise _symop_error( why, cif_content.text, True )
-                _nc_common.warn( f'The symmetry operations listed in the CIF'
+                warnfct( f'The symmetry operations listed in the CIF'
                                  f' data {why}. The listed operations are used'
                                  ' (accepted due to permissive mode)' )
             return setting
         if not permissive:
             raise _symop_error( why, cif_content.text, bool( symsettings ) )
         setting = _resolve( symsettings, cell, symdescr )
-        _nc_common.warn( f'The symmetry operations listed in the CIF data {why}'
+        warnfct( f'The symmetry operations listed in the CIF data {why}'
                          f', so the {symdescr} is used (accepted due to'
                          ' permissive mode)' )
         return setting

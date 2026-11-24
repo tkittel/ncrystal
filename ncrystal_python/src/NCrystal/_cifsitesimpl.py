@@ -102,7 +102,7 @@ def _site_numbers( sites ):
     return dict( zip( strs, ( tuple( v ) if v else None for v in
                               _query( 'cif', 'numbers', *_rawlist( strs ) ) ) ) )
 
-def _element_markers( sites, formula ):
+def _element_markers( sites, formula, *, warnfct ):
     #Element (or isotope, e.g. "H2" for deuterium) of each CIF site (dicts,
     #cf. read_cif), from its type symbol, or else from its label checked
     #against the chemical formula, or without a formula only from labels like
@@ -131,12 +131,12 @@ def _element_markers( sites, formula ):
             elems[i] = e
             examples.setdefault( marker( e ), lbl )
         ex = [ f'{m} from {lbl}' for m, lbl in examples.items() ]
-        _nc_common.warn( 'Some CIF sites have no _atom_site_type_symbol and'
+        warnfct( 'Some CIF sites have no _atom_site_type_symbol and'
                          ' their element content was guessed from their label'
                          f' ({", ".join( ex[:4] )}{", ..." if len(ex) > 4 else ""})' )
     return [ marker( e ) for e in elems ]
 
-def _resolve_uiso_ueq( lbl, uiso, ueq, *, tols, permissive ):
+def _resolve_uiso_ueq( lbl, uiso, ueq, *, tols, permissive, warnfct ):
     #Uiso of a CIF site with a tensor, from its Uiso and the Ueq of its tensor
     #(both as (value, rounding error), uiso None if not given). Differences
     #explained by the rounding errors of the printed values plus tol_uij are
@@ -152,11 +152,11 @@ def _resolve_uiso_ueq( lbl, uiso, ueq, *, tols, permissive ):
         if not permissive:
             raise _nc_core.NCBadInput( msg + ' (try permissive mode'
                                        ' to use the Uiso value)' )
-        _nc_common.warn( msg + ' (using the Uiso value due to'
+        warnfct( msg + ' (using the Uiso value due to'
                          ' permissive mode)' )
     return uiso[0]
 
-def collect_atoms( cif_content, setting, cell, *, tols, permissive ):
+def collect_atoms( cif_content, setting, cell, *, tols, permissive, warnfct ):
     #Returns the sites with positive occupancy of cif_content, expanded in the
     #space group setting and cell (dict of printed values), as dicts with all
     #their 'positions' (the first the symmetrised site), the 'element_marker'
@@ -207,7 +207,7 @@ def collect_atoms( cif_content, setting, cell, *, tols, permissive ):
                           repr( min( occ[0], 1.0 ) ), uij ) )
     if not sites:
         raise _nc_core.NCBadInput('No atom sites found in CIF data.')
-    markers = _element_markers( sites, cif_content.formula )
+    markers = _element_markers( sites, cif_content.formula, warnfct = warnfct )
     res = []
     for s, en, u, marker, q in zip( sites, entries, uisos, markers,
                                     _expand( setting, cell, entries ) ):
@@ -215,7 +215,8 @@ def collect_atoms( cif_content, setting, cell, *, tols, permissive ):
         if q['uij']:
             ueq = tuple( q['ueq'] )
             uiso = _resolve_uiso_ueq( s['label'], u, ueq, tols = tols,
-                                      permissive = permissive )
+                                      permissive = permissive,
+                                      warnfct = warnfct )
             aniso = _nc_sgsymimpl._rescale_ustd( _uij_dict( q['uij'] ), ueq[0],
                                                 uiso )
             uijs = [ _nc_sgsymimpl._rescale_ustd( _uij_dict( v ), ueq[0], uiso )
@@ -305,9 +306,9 @@ def merge_atoms( collected_atoms, expected_tot_atom_in_orig_cell, setting,
                                       ' choice/setting improperly specified)?')
     return final_atoms
 
-def check_split_sites( atoms, *, permissive ):
+def check_split_sites( atoms, *, permissive, warnfct ):
     #Split sites (cf. the sgsym positions query) are an error, unless
-    #permissive (then a warning).
+    #permissive (then a warning to warnfct).
     for a in atoms:
         sp = a['split']
         if not sp:
@@ -322,10 +323,10 @@ def check_split_sites( atoms, *, permissive ):
         if not permissive:
             raise _nc_core.NCBadInput( msg + ' (try permissive mode to load'
                                        ' it anyway)' )
-        _nc_common.warn( msg + ' (accepted due to permissive mode)' )
+        warnfct( msg + ' (accepted due to permissive mode)' )
 
 def _impl_find_sites( cellsg, cif_atoms, setting, *, tols, refine, permissive,
-                      quiet ):
+                      quiet, warnfct ):
     #Returns (cellsg, sites, setting) for the cif_atoms (cf. merge_atoms) in
     #the cell cellsg and space group setting: one site per orbit (cf.
     #_mksite), after refining the structure with spglib if refine is True
@@ -349,7 +350,7 @@ def _impl_find_sites( cellsg, cif_atoms, setting, *, tols, refine, permissive,
                                          tag = i ) )
     r = sgs._refine_sites( cellsg, entries, tols )
     for w in r['warnings']:
-        _nc_common.warn(w)
+        warnfct(w)
     if not quiet:
         for m in r['msgs']:
             _nc_common.infomsg(m)
@@ -378,7 +379,7 @@ def _impl_find_sites( cellsg, cif_atoms, setting, *, tols, refine, permissive,
             if not permissive:
                 raise _nc_core.NCBadInput( msg + ' (try permissive mode to'
                                            ' discard them)' )
-            _nc_common.warn( msg + ' (discarded due to permissive mode)' )
+            warnfct( msg + ' (discarded due to permissive mode)' )
         #Sites from the query (without tensors), all CIF labels of each type:
         res = []
         for s in q['sites']:
@@ -408,7 +409,7 @@ def _impl_find_sites( cellsg, cif_atoms, setting, *, tols, refine, permissive,
         if not permissive:
             raise _nc_core.NCBadInput( msg + ' (try permissive mode to'
                                        ' discard them)' )
-        _nc_common.warn( msg + ' (discarded due to permissive mode)' )
+        warnfct( msg + ' (discarded due to permissive mode)' )
     return cellsg, res, setting
 
 def _impl_group_sites( sites, *, tols, merge_equiv ):

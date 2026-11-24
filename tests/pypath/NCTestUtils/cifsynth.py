@@ -34,7 +34,6 @@ import pathlib
 
 import NCrystalDev as NC
 import NCrystalDev.cifutils as nc_cifutils
-from NCrystalDev.msg import MsgCtrl
 
 from .dirs import get_named_test_data_dir
 
@@ -120,13 +119,39 @@ def _errmsg( e ):
     return msg
 
 def _load( f, permissive ):
-    with MsgCtrl( spy = ['warning'], block = ['warning'] ) as mc:
+    try:
+        lc = nc_cifutils.CIFLoader( f, quiet = True, permissive = permissive )
+    except NC.NCException as e:
+        return None, _errmsg( e ), []
+    return lc, None, [ msg for msg, _ in lc.warnings ]
+
+def _check_header_warnings( f, permissive ):
+    #The NCrystal warnings shown when converting (not quiet) must be exactly
+    #those in the NCMAT header, which must not depend on quiet:
+    from NCrystalDev._cifcomposerimpl import _fmt_warnings_for_comments
+    from NCrystalDev.msg import MsgCtrl
+    with MsgCtrl( spy = ['warning'], block = ['info','warning','raw'] ) as mc:
+        lc = nc_cifutils.CIFLoader( f, permissive = permissive )
         try:
-            lc = nc_cifutils.CIFLoader( f, quiet = True,
-                                        permissive = permissive )
-        except NC.NCException as e:
-            return None, _errmsg( e ), []
-    return lc, None, [ msg for msg, _ in mc.warnings ]
+            composer = lc.create_ncmat_composer( no_formula_check = True )
+        except NC.NCException:
+            return#(errors are reported elsewhere)
+    shown = [ e for e in mc.warnings if e[1] == 'NCrystalWarning' ]
+    with MsgCtrl( block = ['info','warning','raw'] ):
+        try:
+            txt = composer.create_ncmat()
+        except NC.NCException:
+            return#(errors are reported elsewhere)
+        lc_quiet = nc_cifutils.CIFLoader( f, permissive = permissive,
+                                          quiet = True )
+        txt_quiet = lc_quiet.create_ncmat_composer(
+            no_formula_check = True, quiet = True ).create_ncmat()
+    expected = '\n'.join( f'# {e}'.rstrip() for e in
+                          _fmt_warnings_for_comments(
+                              shown, 'when loading the CIF data', nwmax = 10 ) )
+    if expected not in txt or txt != txt_quiet:
+        raise SystemExit( f'NCMAT header warnings of {f.name} do not match'
+                          ' those shown, or depend on quiet' )
 
 def _summary( lc ):
     sg = lc.cellsg.get( 'spacegroup', {} )
@@ -200,6 +225,7 @@ def _check_file( f, with_material ):
             print( f'  {mode} error: {err}' )
             continue
         print( f'  {mode}: {_summary( lc )}' )
+        _check_header_warnings( f, permissive )
         break
     if lc is not None and with_material:
         print( f'  {_material( lc )}' )

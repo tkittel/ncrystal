@@ -34,7 +34,7 @@ from . import core as _nc_core
 from ._cifsrcimpl import _codid2url, _mpid2url, mp_origin_note
 
 
-def _extract_descr_from_cif( raw_cif_dict, cifsrc, ciftextdata ):
+def _extract_descr_from_cif( raw_cif_dict, cifsrc, ciftextdata, *, warnfct ):
 
     def normalise_result( _l ):
         #split any newlines and trim whitespace before returning:
@@ -45,7 +45,7 @@ def _extract_descr_from_cif( raw_cif_dict, cifsrc, ciftextdata ):
         return res
 
     if not raw_cif_dict:
-        _nc_common.warn('Could not properly decode CIF metadata due to inability to access raw CIF data as dictionary.')
+        warnfct('Could not properly decode CIF metadata due to inability to access raw CIF data as dictionary.')
         return [], None, None, None
 
     ll=[]
@@ -88,10 +88,10 @@ def _extract_descr_from_cif( raw_cif_dict, cifsrc, ciftextdata ):
                     extracted_mpid = int(_)
 
     if extracted_codid is not None and cifsrc.codid is not None and cifsrc.codid != extracted_codid:
-        _nc_common.warn(f'Embedded CODID {extracted_codid} is different than requested {cifsrc.codid}!')
+        warnfct(f'Embedded CODID {extracted_codid} is different than requested {cifsrc.codid}!')
 
     if extracted_mpid is not None and cifsrc.mpid is not None and cifsrc.mpid != extracted_mpid:
-        _nc_common.warn(f'Embedded MPID {extracted_mpid} is different than requested {cifsrc.mpid}!')
+        warnfct(f'Embedded MPID {extracted_mpid} is different than requested {cifsrc.mpid}!')
 
     _thecodid = cifsrc.codid or extracted_codid
     _thempid = cifsrc.mpid or extracted_mpid
@@ -213,8 +213,9 @@ class CIFContent:
         #_diffrn_ambient_temperature and _cell_measurement_temperature:
         self.temperatures = temperatures
 
-def read_cif( cifdata, *, quiet ):
-    #Returns the CIFContent of the CIF text cifdata.
+def read_cif( cifdata, *, quiet, warnfct ):
+    #Returns the CIFContent of the CIF text cifdata (warnings are passed to
+    #warnfct).
     gemmi, gemmi_cif = _import_gemmi()
     if not quiet:
         _nc_common.infomsg("Attempting to load CIF data with gemmi")
@@ -228,7 +229,7 @@ def read_cif( cifdata, *, quiet ):
         cif_raw = _decode_json( cif_doc.as_json(), gemmi.__version__ )
     except json.decoder.JSONDecodeError as e:
         cif_raw = None
-        _nc_common.warn(f'Could not decode raw CIF data to dictionary (Gemmi bug?): JSONDecodeError("{e}")')
+        warnfct(f'Could not decode raw CIF data to dictionary (Gemmi bug?): JSONDecodeError("{e}")')
     blk = _select_block( cif_doc )
 
     def val( raw ):

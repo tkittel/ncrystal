@@ -29,6 +29,7 @@
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
 from NCrystalDev._cifreadimpl import read_cif, _decode_json
+from NCrystalDev._common import warn
 
 def cif( *, hm = 'P 1 21/c 1', itno = '14', ops = None, extra = '',
          sites = None, aniso = None, cell = '5.1 6.3 7.2 90 105 90',
@@ -58,7 +59,7 @@ def cif( *, hm = 'P 1 21/c 1', itno = '14', ops = None, extra = '',
     return '\n'.join( lines ) + '\n' + extra
 
 def read( txt ):
-    return read_cif( txt, quiet = True )
+    return read_cif( txt, quiet = True, warnfct = warn )
 
 def show( descr, c ):
     print( f'{descr}:' )

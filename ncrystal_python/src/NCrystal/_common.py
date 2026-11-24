@@ -187,6 +187,17 @@ def _msgctrl_showwarning( message, category, *args, **kwargs ):
     if show and not any( 'warning' in c._block for c in ctrls ):
         return _orig_showwarning[0]( message, category, *args, **kwargs )
 
+def _recording_warnfct( quiet ):
+    #Warning function for NCMAT production: records all warnings as
+    #(msg,'NCrystalWarning') tuples (e.g. for NCMAT comments, independent of
+    #quiet and global state) and emits them unless quiet. Returns (list,fct).
+    lst = []
+    def warnfct( msg ):
+        lst.append( ( str(msg), 'NCrystalWarning' ) )
+        if not quiet:
+            warn( msg )
+    return lst, warnfct
+
 def warn_deprecated( msg, stacklevel = 3 ):
     #Emit an NCrystalFutureWarning about deprecated functionality via the
     #warnings module, attributed to the caller of the function calling this

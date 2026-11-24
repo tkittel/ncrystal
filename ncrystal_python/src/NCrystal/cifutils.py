@@ -311,17 +311,16 @@ class CIFLoader:
                                                   tol_symprec = tol_symprec,
                                                   tol_uij = tol_uij,
                                                   tol_occu = tol_occu )
-        from .msg import MsgCtrl
-        with MsgCtrl( spy = ['warning'],
-                      block = ['warning'] if quiet else None ) as mc:
-            if not isinstance( cifsrc, CIFSource ):
-                cifsrc = CIFSource( cifsrc )
-            cifdata = cifsrc.load_data( quiet = quiet, mp_apikey = mp_apikey )
-            load = load_cif_data( cifsrc, cifdata, quiet = quiet,
-                                  refine_with_spglib = refine_with_spglib,
-                                  merge_equiv = merge_equiv,
-                                  override_spacegroup = override_spacegroup,
-                                  tols = tols, permissive = permissive )
+        warnings, warnfct = _nc_common._recording_warnfct( quiet )
+        if not isinstance( cifsrc, CIFSource ):
+            cifsrc = CIFSource( cifsrc )
+        cifdata = cifsrc.load_data( quiet = quiet, mp_apikey = mp_apikey )
+        load = load_cif_data( cifsrc, cifdata, quiet = quiet,
+                              refine_with_spglib = refine_with_spglib,
+                              merge_equiv = merge_equiv,
+                              override_spacegroup = override_spacegroup,
+                              tols = tols, permissive = permissive,
+                              warnfct = warnfct )
         assert len(load)==13
         self.__cifsrc = load['cifsrc']
         self.__actual_codid = load['actual_codid']
@@ -337,7 +336,7 @@ class CIFLoader:
         self.__cifdescr = load['cifdescr']
         self._cif_temperatures = load['cif_temperatures']
         self._permissive = permissive
-        self.__warnlist = tuple( mc.warnings )
+        self.__warnlist = tuple( warnings )
 
     @property
     def cifsrc( self ):
