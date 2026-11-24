@@ -19,7 +19,13 @@
 ##                                                                            ##
 ################################################################################
 
-from ._cliimpl import cli_entry_point, create_ArgumentParser, infomsg, print
+from ._cliimpl import (
+    cli_entry_point,
+    create_ArgumentParser,
+    infomsg,
+    print,
+    quiet_ctx,
+)
 
 
 def climod_metadata():
@@ -362,12 +368,10 @@ def main( progname, arglist ):
     do_quiet = ( args.quiet or args.outputfile == 'stdout' )
     if args.doc:
         do_quiet = False
-    if do_quiet:
-        from .msg import MsgCtrl
-        with MsgCtrl( block = ['info','warning','raw'] ):
-            _main_impl(progname,args)
-    else:
-        _main_impl(progname,args)
+    with quiet_ctx( do_quiet ):
+        out = _main_impl( progname, args )
+    if out is not None:
+        print( out, end = '' )
 
 def print_tally_help():
     from . import minimc as ncmmc
@@ -388,6 +392,7 @@ def print_tally_help():
         print(f'  {e}')
 
 def _main_impl( progname, args ):
+    #Returns the data to print on stdout (or None):
     from . import minimc as ncmmc
     if args.tally == 'help':
         print_tally_help()
@@ -483,9 +488,7 @@ def _main_impl( progname, args ):
         assert res is not None
         data = res.to_json()
         if args.outputfile == 'stdout':
-            #Do not use print(..) which is affected by --quiet:
-            import sys
-            sys.stdout.write(data)
+            return data
         else:
             data = data.encode('utf8')
             if args.outputfile.name.endswith('.gz'):
