@@ -298,7 +298,7 @@ If you are instead hand-editing your instrument files, you can generate code
 which defines Union materials from an NCrystal cfg-string by invoking:
 
 ```
-$> python3 -mNCrystal.mcstasutils --union myAl 'Al_sg225.ncmat;temp=250K'
+$> ncrystal_mcstasunion myAl 'Al_sg225.ncmat;temp=250K'
 ```
 
 It should be noted that McStas 3.3 also provides a new SHELL syntax which can
