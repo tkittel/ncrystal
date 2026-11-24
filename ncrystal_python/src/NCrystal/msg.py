@@ -80,9 +80,9 @@ class MsgCtrl:
     include_raw are those of the innermost context setting them, while block,
     ignore_logging and dedup apply if any active context has them (so inner
     contexts can not undo them). Each context with spy collects its parts,
-    regardless of the settings of other contexts. While a context handles
-    warnings (in spy, block or dedup), the filters of the warnings module are
-    disabled, so all Python warnings are seen.
+    regardless of the settings of other contexts. Python warnings are seen
+    as the warnings module shows them (its filters and deduplication are not
+    affected).
 
     Example:
 
@@ -123,7 +123,7 @@ class MsgCtrl:
         self._dedup = parts( dedup, 'dedup' )
         self._seen = set()
         self._data = { 'info' : [], 'warning' : [], 'raw' : [] }
-        self._warnctx = None
+        self._prev_showwarning = None
 
     @property
     def info( self ):
@@ -157,13 +157,12 @@ class MsgCtrl:
     def __enter__( self ):
         from . import _common
         if 'warning' in ( self._spy | self._block | self._dedup ):
+            #Only redirect showwarning (leaving the filters alone):
             import warnings
-            self._warnctx = warnings.catch_warnings()
-            self._warnctx.__enter__()
             if warnings.showwarning is not _common._msgctrl_showwarning:
+                self._prev_showwarning = warnings.showwarning
                 _common._orig_showwarning[0] = warnings.showwarning
                 warnings.showwarning = _common._msgctrl_showwarning
-            warnings.simplefilter('always')
         _common._active_msgctrls.append( self )
         return self
 
@@ -171,7 +170,8 @@ class MsgCtrl:
         from . import _common
         assert _common._active_msgctrls and _common._active_msgctrls[-1] is self
         _common._active_msgctrls.pop()
-        if self._warnctx is not None:
-            self._warnctx.__exit__( *args, **kwargs )
-            self._warnctx = None
+        if self._prev_showwarning is not None:
+            import warnings
+            warnings.showwarning = self._prev_showwarning
+            self._prev_showwarning = None
         return False

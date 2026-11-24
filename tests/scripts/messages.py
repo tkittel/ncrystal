@@ -177,6 +177,29 @@ def test_spy_block_dedup():
         ncprint( 'x' )
     show( 'mc', mc )
 
+def pywarn( msg ):
+    warnings.warn( msg )#always from this same location
+
+def test_pywarn_filters():
+    print('==> Python warning filters and deduplication are respected:')
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        with MsgCtrl( spy = ['warning'] ) as mc:
+            pywarn( 'ignored by filter' )
+        show( 'ignore filter', mc )
+    with warnings.catch_warnings():
+        warnings.simplefilter('default')
+        filters_before = list( warnings.filters )
+        with MsgCtrl( spy = ['warning'], block = ['warning'] ) as mc:
+            pywarn( 'once per location' )
+            pywarn( 'once per location' )
+        show( 'default filter', mc )
+        #Not shown again after the context ended:
+        with MsgCtrl( spy = ['warning'], block = ['warning'] ) as mc:
+            pywarn( 'once per location' )
+        show( 'next context', mc )
+        print( '   filters unchanged:', warnings.filters == filters_before )
+
 def test_errors():
     print('==> Errors:')
     with ensure_error( NC.NCBadInput, "Invalid MsgCtrl spy part(s): ['bla']"
@@ -202,6 +225,7 @@ def main():
     test_logging()
     test_prefixes()
     test_spy_block_dedup()
+    test_pywarn_filters()
     test_errors()
     test_cli_msgstyle()
 

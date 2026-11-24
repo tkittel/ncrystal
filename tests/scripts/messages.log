@@ -84,6 +84,11 @@ CAUGHT ESCAPED WARNING (UserWarning): a python warning, shown
    context 1: info=[] warnings=[('same', 'NCrystalWarning')] raw=[]
 ==> Single string accepted as parts:
    mc: info=[] warnings=[] raw=['x\n']
+==> Python warning filters and deduplication are respected:
+   ignore filter: info=[] warnings=[] raw=[]
+   default filter: info=[] warnings=[('once per location', 'UserWarning')] raw=[]
+   next context: info=[] warnings=[] raw=[]
+   filters unchanged: True
 ==> Errors:
 Caught expected NCBadInput("Invalid MsgCtrl spy part(s): ['bla'] (must be among ['info', 'warning', 'raw'])")
 Caught expected NCBadInput('MsgCtrl logger must be None, False, True or a logging.Logger')
