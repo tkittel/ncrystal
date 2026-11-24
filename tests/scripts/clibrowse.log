@@ -19,6 +19,7 @@ other options:
   --cond-help          Show the properties usable in conditions and exit.
   -s, --search WORD    Only show data with WORD in names or comments.
   -x, --extract ENTRY  Print the full content of ENTRY.
+  --quiet, -q          Silence all output except the requested data.
 
 examples:
   ncrystal_browse Al_sg225                # data with "al_sg225" in the name
@@ -37,7 +38,7 @@ Use --cond-help for the list of properties, and --full-help for all options.
 
 ============= CLI >>browse --full-help<< =============
 usage: ncrystal_browse [-h] [--full-help] [--cond-help] [-s WORD] [-f SRC]
-                       [--json] [--color WHEN] [-x ENTRY]
+                       [--json] [--color WHEN] [-x ENTRY] [--quiet]
                        [PATTERN ...]
 
 Browse and search the data available to NCrystal from built-in sources or
@@ -86,6 +87,7 @@ output:
 
 other:
   -x, --extract ENTRY   Print the full content of ENTRY (e.g. a file name).
+  --quiet, -q           Silence all output except the requested data.
 
 examples:
   ncrystal_browse Al_sg225                # data with "al_sg225" in the name
@@ -104,7 +106,7 @@ Use --cond-help for the list of properties, and "-f help" for the data sources.
 
 ============= CLI >>browse --full<< =============
 usage: ncrystal_browse [-h] [--full-help] [--cond-help] [-s WORD] [-f SRC]
-                       [--json] [--color WHEN] [-x ENTRY]
+                       [--json] [--color WHEN] [-x ENTRY] [--quiet]
                        [PATTERN ...]
 
 Browse and search the data available to NCrystal from built-in sources or
@@ -153,6 +155,7 @@ output:
 
 other:
   -x, --extract ENTRY   Print the full content of ENTRY (e.g. a file name).
+  --quiet, -q           Silence all output except the requested data.
 
 examples:
   ncrystal_browse Al_sg225                # data with "al_sg225" in the name
@@ -225,6 +228,7 @@ other options:
   --cond-help          Show the properties usable in conditions and exit.
   -s, --search WORD    Only show data with WORD in names or comments.
   -x, --extract ENTRY  Print the full content of ENTRY.
+  --quiet, -q          Silence all output except the requested data.
 
 examples:
   ncrystal_browse Al_sg225                # data with "al_sg225" in the name
@@ -302,6 +306,9 @@ NCrystal: No matching data found.
 ============= CLI >>browse mytest othermat<< =============
 virtual::mytestmat.ncmat
 virtual::othermat.ncmat
+============= CLI >>browse -q -f virtual mycrystl<< =============
+============= CLI >>browse --quiet mytest<< =============
+virtual::mytestmat.ncmat
 ============= CLI >>browse formula=o -f virtual<< =============
 virtual::Al_sg225.ncmat
 virtual::othermat.ncmat

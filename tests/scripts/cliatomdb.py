@@ -53,6 +53,9 @@ def main():
     run('He','N15','--ncmat')
     run('D','T')#aliases of H2 and H3
     run('absxs > 1e9')
+    #--quiet: only the requested data
+    run('absxs > 1e9','-q')
+    run('He','--quiet')
     #All examples in the help must work:
     from NCrystalDev._cli_atomdb import _cond_examples, _examples
     for e,_ in _examples + _cond_examples:

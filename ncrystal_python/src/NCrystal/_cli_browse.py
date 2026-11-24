@@ -21,7 +21,13 @@
 
 """Command-line tool for browsing and searching the available data."""
 
-from ._cliimpl import cli_entry_point, create_ArgumentParser, infomsg, print
+from ._cliimpl import (
+    cli_entry_point,
+    create_ArgumentParser,
+    infomsg,
+    print,
+    quiet_ctx,
+)
 
 
 def climod_metadata():
@@ -143,6 +149,9 @@ def _create_parser( progname, full ):
                       help=h('Print the full content of ENTRY.',
                              'Print the full content of ENTRY (e.g. a'
                              ' file name).'))
+    goth.add_argument('--quiet','-q', action='store_true',
+                      help=h('Silence all output except the requested'
+                             ' data.'))
     return parser
 
 _helpw = 54#width of option help texts (in 80 columns)
@@ -260,13 +269,13 @@ def parseArgs( progname, arglist, return_parser = False ):
 class _Progress:
     #Progress indicator on stderr, only shown on a terminal and only if the
     #work takes more than a second.
-    def __init__( self, what ):
+    def __init__( self, what, enabled = True ):
         import sys
         import time
         self.__t0 = time.time()
         self.__what = what
         self.__shown = False
-        self.__enabled = ( hasattr(sys.stderr,'isatty')
+        self.__enabled = ( enabled and hasattr(sys.stderr,'isatty')
                            and sys.stderr.isatty() )
     def update( self, n, ntotal ):
         if not self.__enabled:
@@ -361,7 +370,7 @@ def create_argparser_for_sphinx( progname ):
 def _browser( args ):
     #Create DataBrowser with selection according to the arguments:
     from . import browse as nb
-    progress = _Progress( 'Loading materials' )
+    progress = _Progress( 'Loading materials', enabled = not args.quiet )
     b = nb.DataBrowser( factory = args.factory, _progress = progress.update )
     args.all_browser = b#for suggestions
     try:
@@ -434,18 +443,23 @@ def _listing( sel, words, hl ):
 @cli_entry_point
 def main( progname, arglist ):
     args = parseArgs( progname, arglist )
+    with quiet_ctx( args.quiet ):
+        out = _main_impl( args )
+    if out:
+        print( out, end = '' )
+
+def _main_impl( args ):
+    #Returns the requested output (or None):
     if args.extract:
         from .core import createTextData
-        print( createTextData( args.extract ).rawData, end='' )
-        return
+        return createTextData( args.extract ).rawData
     sel = _browser( args )
     if args.json:
-        print( sel.to_json(), end = '' )
-        return
+        return sel.to_json()
     if not sel:
         _print_no_matches( args )
-        return
+        return None
     hl = _Highlighter( args.search, _use_color( args.color ) )
-    print( _listing( sel, args.search, hl ), end = '' )
+    return _listing( sel, args.search, hl )
 
 #FIXME: Not happy with this, way too verbose in the default listing.
