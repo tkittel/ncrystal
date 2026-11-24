@@ -344,6 +344,16 @@ namespace NCRYSTAL_NAMESPACE {
       using Base = ValOrientDir;
       static constexpr auto value_type_descr = "crystal axis orientation";
 
+      //Derived classes can allow the keyword "arbitrary" as an alternative to
+      //an actual OrientDir (stored as a special crystal direction type):
+      static constexpr bool allow_arbitrary = false;
+      static constexpr auto arbitrary_str = "arbitrary";
+      static constexpr char arbitrary_type = 127;
+      static bool is_arbitrary( const VarBuf& buf )
+      {
+        return *std::next(buf.data(),6*sizeof(double)) == arbitrary_type;
+      }
+
       using CrysType = OrientDir::CrysDir::Type;
       struct DecodedBuffer{ std::array<double,6> vals; CrysType crystype; };
       static DecodedBuffer detail_bufdecode( const VarBuf& buf )
@@ -357,6 +367,9 @@ namespace NCRYSTAL_NAMESPACE {
 
       static OrientDir get_val( const VarBuf& buf )
       {
+        if ( is_arbitrary(buf) )
+          NCRYSTAL_THROW2(MissingInfo,"Parameter "<<Derived::name
+                          <<" has no value since it is "<<arbitrary_str);
         auto db = detail_bufdecode(buf);
         return { { db.crystype, { db.vals[0], db.vals[1], db.vals[2] } },
                  LabAxis( db.vals[3], db.vals[4], db.vals[5] ) };
@@ -395,11 +408,16 @@ namespace NCRYSTAL_NAMESPACE {
 
       static void stream_val( std::ostream& os, const VarBuf& buf )
       {
-        os << get_val(buf);
+        if ( is_arbitrary(buf) )
+          os << arbitrary_str;
+        else
+          os << get_val(buf);
       }
 
       static void asJSONObject( std::ostream& os, const VarBuf& buf )
       {
+        if ( is_arbitrary(buf) )
+          return streamJSON( os, arbitrary_str );
         auto db = detail_bufdecode(buf);
         os << "{\"crystal_is_hkl\":";
         os << (db.crystype==CrysType::HKL?"true":"false");
@@ -422,6 +440,11 @@ namespace NCRYSTAL_NAMESPACE {
 
       static VarBuf from_str( VarId varid, StrView sv_in ) {
         standardInputStrSanityCheck(Derived::name,sv_in);
+        if ( Derived::allow_arbitrary && sv_in.trimmed() == arbitrary_str ) {
+          alignas(double) char tmp[6*sizeof(double)+1] = {};
+          tmp[6*sizeof(double)] = arbitrary_type;
+          return VarBuf( &tmp[0], sizeof(tmp), varid );
+        }
         //"@crys:c1,c2,c3@lab:l1,l2,l3", with "@crys_hkl:" or "@crys_uvw:" as
         //alternatives to "@crys:", and spaces allowed around all delimeters or
         //at string ends.

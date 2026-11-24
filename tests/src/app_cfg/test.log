@@ -33,6 +33,10 @@ Dump: MatCfg("Al_fake.ncmat;dir1=@crys_hkl:5,1,1@lab:1,0,0;dir2=@crys_uvw:0.5,-2
 toStrCfg(false) : "dir1=@crys_hkl:5,1,1@lab:1,0,0;dir2=@crys_uvw:0.5,-2,3@lab:0,1,1;mos=0.001"
 Dump: MatCfg("Al_fake.ncmat;dir1=@crys_hkl:0,0,1@lab:0,0,1;dir2=@crys_uvw:1,0,0@lab:1,0,0;mos=1deg;rot=0,2,0:90deg")
 toStrCfg(false) : "dir1=@crys_hkl:0,0,1@lab:0,0,1;dir2=@crys_uvw:1,0,0@lab:1,0,0;mos=1deg;rot=0,2,0:90deg"
+Dump: MatCfg("Al_fake.ncmat;dir1=@crys:0,3,4@lab:0,0,1;dir2=arbitrary;mos=1deg;rot=1,0,0:90deg")
+toStrCfg(false) : "dir1=@crys:0,3,4@lab:0,0,1;dir2=arbitrary;mos=1deg;rot=1,0,0:90deg"
+NCrystal::MissingInfo: Parameter dir2 has no value since it is arbitrary
+NCrystal::MissingInfo: The crystal lattice is needed for an arbitrary dir2, unless dir1 is specified with @crys:
 ======= COW =====================================
 ===  1 new, 3 copies:
 ===  trigger cow:

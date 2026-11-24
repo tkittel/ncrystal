@@ -199,6 +199,12 @@ namespace {
     doTestBad("dir1=@crys_uvw:0,0,0@lab:0,0,1");
     doTestBad("dir1=@crys_uvw:1,2@lab:0,0,1");
 
+    doTest("dir2=arbitrary");
+    doTest(" dir2 = \tarbitrary ");
+    doTestBad("dir2=arbitrarily");
+    doTestBad("dir2=@crys:arbitrary@lab:0,0,1");
+    doTestBad("dir1=arbitrary");
+
     doTest("rot=0,1,0:30deg");
     doTest(" rot = 0 , 1.0 ,\t0 : 30 deg ");
     doTest("rot=0,0,2:1.5707963267948966");
@@ -258,6 +264,8 @@ namespace {
       applyAndPrint("dir1=@crys_hkl:4,5,6@lab:1,2,3");
       applyAndPrint("dir1=@crys_uvw:4,5,6@lab:1,2,3");
       applyAndPrint("rot= 0,0,2 : 0.25 deg");
+      applyAndPrint("dir2=@crys_hkl:4,5,6@lab:1,2,3");
+      applyAndPrint("dir2=arbitrary");
       std::cout<<"  => .get_rot() : "<<CfgManip::get_rot(cd)<<std::endl;
       std::cout<<"  => JSON: ";
       CfgManip::streamJSON(cd,std::cout);

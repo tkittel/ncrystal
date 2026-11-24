@@ -23,6 +23,7 @@
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/internal/cfgutils/NCCfgManip.hh"
 #include "NCrystal/interfaces/NCSCOrientation.hh"
+#include "NCrystal/internal/extd_utils/NCOrientUtils.hh"
 namespace NC = NCrystal;
 namespace NCF = NCrystal::FactImpl;
 
@@ -174,7 +175,11 @@ bool NCF::ScatterRequest::isLayeredCrystal() const
 
 NC::SCOrientation NCF::ScatterRequest::createSCOrientation() const
 {
-  return CfgManip::createSCOrientation<SCOrientation>(rawCfgData());
+  //The lattice might be needed (e.g. for an arbitrary dir2):
+  if ( !info().hasStructureInfo() )
+    return CfgManip::createSCOrientation<SCOrientation>(rawCfgData());
+  const auto reci = getReciprocalLatticeRot( info().getStructureInfo() );
+  return CfgManip::createSCOrientation<SCOrientation>(rawCfgData(),&reci);
 }
 
 std::string NCF::AbsorptionRequest::get_absnfactory() const

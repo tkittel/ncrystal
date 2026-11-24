@@ -162,9 +162,12 @@ namespace NCRYSTAL_NAMESPACE {
         "Secondary orientation axis of a single crystal. This is specified using the same syntax as for the dir1 parameter."
         " In general the opening angle between the dir1 and dir2 vectors must be nonzero and identical in the crystal and lab frames, but a discrepancy"
         " up to the value of the dirtol parameter is allowed. In any case, the components of the dir2 vectors parallel to the dir1 vectors are ignored."
+        " If the rotation of the crystal around dir1 is of no importance, the value \"arbitrary\" can be used instead,"
+        " leaving that rotation unspecified."
         " When this parameter is set, the parameters mos and dir1 must also be provided."
         ;
       static constexpr NullOptType default_value() { return NullOpt; }//no default value!
+      static constexpr bool allow_arbitrary = true;
     };
 
     struct vardef_dirtol final : public ValDbl<vardef_dirtol> {

@@ -146,6 +146,37 @@ namespace {
     }
   }
 
+  void testArbitrary()
+  {
+    const std::vector<Vector> dirs = {
+      {1.,0.,0.}, {0.,1.,0.}, {0.,0.,1.}, {0.,0.,-2.}, {1.,1.,0.},
+      {1.,1.,1.}, {-1.,1.,1.}, {0.3,-1.2,0.7}, {1e-3,2.,-1e-9},
+      {5e5,1.,2.}, {-1.,-1.,-1.000001}
+    };
+    for ( auto& c1 : dirs ) {
+      for ( auto& l1 : dirs ) {
+        const auto dir2 = NC::arbitrarySecondaryOrientDir( c1,
+                                                           l1.as<LabAxis>() );
+        const Vector c2 = dir2.crystal.get<CrystalAxis>().as<Vector>();
+        const Vector l2 = dir2.lab.as<Vector>();
+        REQUIRE( c2.isUnitVector() && l2.isUnitVector() );
+        REQUIRE( NC::ncabs( c2.dot( c1.unit() ) ) < 1e-14 );
+        REQUIRE( NC::ncabs( l2.dot( l1.unit() ) ) < 1e-14 );
+        //Deterministic, and independent of the length of the input:
+        const auto again = NC::arbitrarySecondaryOrientDir
+          ( c1 * 3.0, ( l1 * 0.5 ).as<LabAxis>() );
+        REQUIRE( close( c2, again.crystal.get<CrystalAxis>().as<Vector>() ) );
+        REQUIRE( close( l2, again.lab.as<Vector>() ) );
+        //Always usable for a rotation (any tolerance, no lattice needed):
+        const OrientDir dir1{ c1.as<CrystalAxis>(), l1.as<LabAxis>() };
+        const auto rot = NC::verifyLatticeOrientDefAndConstructCrystalRotation
+          ( dir1, dir2, 1e-10, NC::RotMatrix() );
+        REQUIRE( close( rot * c1.unit(), l1.unit() ) );
+        REQUIRE( close( rot * c2, l2 ) );
+      }
+    }
+  }
+
   void testBadInput()
   {
     const LabAxis l1{ 0., 0., 1. }, l2{ 0., 1., 0. };
@@ -193,6 +224,7 @@ int main()
   testCell( { 5.1, 5.1, 5.1, 57.3, 57.3, 57.3 } );//rhombohedral
   testCell( { 5.0, 6.0, 7.0, 90., 105., 90. } );//monoclinic
   testCell( { 4.1, 5.2, 6.3, 75., 82., 101. } );//triclinic
+  testArbitrary();
   testBadInput();
   return 0;
 }

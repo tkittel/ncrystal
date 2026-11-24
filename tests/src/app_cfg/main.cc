@@ -297,6 +297,39 @@ void test()
     REQUIREFLTEQ( od.dir1.lab[1], 1.0 );
     REQUIREFLTEQ( od.dir2.lab[2], 1.0 );
   }
+  //An arbitrary dir2 can only be resolved without a crystal lattice if dir1
+  //uses @crys:
+  cfg = NC::MatCfg( "Al_fake.ncmat;mos=1deg;dir1=@crys:0,3,4@lab:0,0,1"
+                    ";dir2=arbitrary;rot=1,0,0:90deg" );
+  cfg.checkConsistency();
+  test_strrep_and_dump(cfg);
+  {
+    auto od = cfg.createSCOrientation().getData();
+    REQUIRE( od.dir1.crystal == cfg.get_dir1().crystal );
+    auto v = od.dir2.crystal.get<NC::CrystalAxis>();
+    REQUIREFLTEQ( v[0]*v[0]+v[1]*v[1]+v[2]*v[2], 1.0 );
+    REQUIREFLTEQ( 1.0 + 3*v[1] + 4*v[2], 1.0 );
+    //dir1 lab direction was rotated from z to -y:
+    REQUIREFLTEQ( od.dir1.lab[1], -1.0 );
+    REQUIREFLTEQ( 1.0 + od.dir2.lab[1], 1.0 );
+  }
+  for ( auto get_dir2 : { true, false } ) {
+    bool failed = false;
+    try {
+      if ( get_dir2 ) {
+        cfg.get_dir2();
+      } else {
+        cfg.applyStrCfg("dir1=@crys_hkl:0,3,4@lab:0,0,1");
+        cfg.checkConsistency();
+        cfg.createSCOrientation();
+      }
+    } catch (NC::Error::MissingInfo&e) {
+      std::cout<<"NCrystal::"<<e.getTypeName()<< ": "<<e.what() << std::endl;
+      failed = true;
+    }
+    REQUIRE( failed );
+  }
+
   {
     //Not allowed without an orientation:
     bool failed = false;

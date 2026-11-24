@@ -430,8 +430,11 @@ Advanced parameters related to scattering processes (single crystals):
                  must be nonzero and identical in the crystal and lab frames,
                  but a discrepancy up to the value of the dirtol parameter is
                  allowed. In any case, the components of the dir2 vectors
-                 parallel to the dir1 vectors are ignored. When this parameter
-                 is set, the parameters mos and dir1 must also be provided.
+                 parallel to the dir1 vectors are ignored. If the rotation of
+                 the crystal around dir1 is of no importance, the value
+                 "arbitrary" can be used instead, leaving that rotation
+                 unspecified. When this parameter is set, the parameters mos and
+                 dir1 must also be provided.
 
   dirtol:
     Type: floating point number

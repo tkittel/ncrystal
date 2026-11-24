@@ -49,6 +49,7 @@ o2 = ( ';dir1=@crys_hkl:5,1,1@lab:1,0,0;dir2=@crys_hkl:0,-1,1@lab:0,0,1'
        ';dirtol=180deg' )
 o3 = ';dir1=@crys:1,0,0@lab:0,1,1;dir2=@crys:0,1,0@lab:1,0,0'
 o4 = o3 + ';rot=1,2,3:17deg'
+o5 = ';dir1=@crys_hkl:5,1,1@lab:0,0,1;dir2=arbitrary'
 
 def check_sharing( base, name, has_powder, variations ):
     keepalive = []
@@ -60,7 +61,7 @@ def check_sharing( base, name, has_powder, variations ):
     assert ( ref[1] is not None ) == has_powder
     #Same model no matter the orientation, or which other components are
     #present:
-    for o in ( o1, o2, o3, o4 ):
+    for o in ( o1, o2, o3, o4, o5 ):
         for extra in ( '', ';inelas=0', ';comp=bragg', ';vdoslux=1' ):
             assert load( base + o + extra ) == ref
     #But not if parameters affecting the model itself are changed:
