@@ -19,7 +19,14 @@
 ##                                                                            ##
 ################################################################################
 
-from ._cliimpl import cli_entry_point, create_ArgumentParser, infomsg, warn
+from ._cliimpl import (
+    cli_entry_point,
+    create_ArgumentParser,
+    infomsg,
+    print,
+    quiet_ctx,
+    warn,
+)
 
 
 def climod_metadata():
@@ -150,18 +157,13 @@ def main( progname, arglist ):
 
     args = parseArgs( progname, arglist )
     do_quiet = ( args.quiet or args.output == 'stdout' )
+    with quiet_ctx( do_quiet ):
+        out = _main_impl( args, override_prec )
+    if out is not None:
+        print( out, end = '' )
 
-    def invoke():
-        _main_impl(args,do_quiet,override_prec)
-
-    if do_quiet:
-        from .msg import MsgCtrl
-        with MsgCtrl( block = ['info','warning','raw'] ):
-            invoke()
-    else:
-        invoke()
-
-def _main_impl( args, do_quiet, override_prec ):
+def _main_impl( args, override_prec ):
+    #Returns the data to print on stdout (or None):
 
     from . import mcstasutils
     full_info = True
@@ -171,16 +173,10 @@ def _main_impl( args, do_quiet, override_prec ):
     if override_prec:
         kwargs['fp_format'] = f'%.{override_prec}g'
 
-    content_iter = mcstasutils.cfgstr_2_hkl( **kwargs )
-    #TODO: common helper function?
+    content = '\n'.join( mcstasutils.cfgstr_2_hkl( **kwargs ) ) + '\n'
     if args.output is None or args.output == 'stdout':
-        import sys
-        for line in content_iter:
-            sys.stdout.write(line + '\n')
-    else:
-        from ._common import write_text
-        write_text( args.output,
-                    ( '\n'.join( content_iter ) + '\n' ) )
-        if not do_quiet:
-            import pathlib
-            infomsg(f"Wrote {pathlib.Path(args.output).name}")
+        return content
+    from ._common import write_text
+    write_text( args.output, content )
+    import pathlib
+    infomsg(f"Wrote {pathlib.Path(args.output).name}")

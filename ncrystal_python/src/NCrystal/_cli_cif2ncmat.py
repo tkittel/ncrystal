@@ -19,7 +19,13 @@
 ##                                                                            ##
 ################################################################################
 
-from ._cliimpl import cli_entry_point, create_ArgumentParser, infomsg, print
+from ._cliimpl import (
+    cli_entry_point,
+    create_ArgumentParser,
+    infomsg,
+    print,
+    quiet_ctx,
+)
 
 
 def climod_metadata():
@@ -188,15 +194,13 @@ def create_argparser_for_sphinx( progname ):
 def main( progname, arglist ):
     args = parseArgs( progname, arglist )
     do_quiet = ( args.quiet or args.output == 'stdout' or args.showcif )
-
-    if do_quiet:
-        from .msg import MsgCtrl
-        with MsgCtrl( block = ['info','warning','raw'] ):
-            _main_impl(args,do_quiet)
-    else:
-        _main_impl(args,do_quiet)
+    with quiet_ctx( do_quiet ):
+        out = _main_impl( args, do_quiet )
+    if out is not None:
+        print( out, end = '' )
 
 def _main_impl( args, do_quiet ):
+    #Returns the data to print on stdout (or None):
 
     import pathlib
 
@@ -215,92 +219,84 @@ def _main_impl( args, do_quiet ):
     if args.via_ase:
         nc_ncmatimpl._import_ase( sysexit = True )
 
-    from .msg import MsgCtrl
-    with MsgCtrl( block = ['warning'] if do_quiet else None ):
-        if args.valplot:
-            _unit_test = nc_common.ncgetenv_bool('CIF2NCMAT_UNITTEST_NOPLOT')
-            pdf_target = None
-            if args.output and args.output.lower().endswith('pdf'):
-                if args.output.lower() in ('pdf','.pdf'):
-                    #auto-detect name:
-                    if len(args.valplot)==1:
-                        pdf_target = pathlib.Path(args.valplot[0]).name + '.pdf'
-                elif args.output.endswith('.pdf'):
-                    pdf_target = args.output
-                if not pdf_target:
-                    pdf_target = 'ncrystal_onlinedb_validate.pdf'
-                assert len(pdf_target)>4 and pdf_target.endswith('.pdf')
-            if _unit_test:
-                print( 'UNITTEST: Would invoke nc_cifutils.produce_validation_plots with pdf_target=',pdf_target )
-                return
-            nc_cifutils.produce_validation_plots( args.valplot,
-                                                  verbose_lbls = False,
-                                                  pdf_target = pdf_target )
+    if args.valplot:
+        _unit_test = nc_common.ncgetenv_bool('CIF2NCMAT_UNITTEST_NOPLOT')
+        pdf_target = None
+        if args.output and args.output.lower().endswith('pdf'):
+            if args.output.lower() in ('pdf','.pdf'):
+                #auto-detect name:
+                if len(args.valplot)==1:
+                    pdf_target = pathlib.Path(args.valplot[0]).name + '.pdf'
+            elif args.output.endswith('.pdf'):
+                pdf_target = args.output
+            if not pdf_target:
+                pdf_target = 'ncrystal_onlinedb_validate.pdf'
+            assert len(pdf_target)>4 and pdf_target.endswith('.pdf')
+        if _unit_test:
+            print( 'UNITTEST: Would invoke nc_cifutils.produce_validation_plots with pdf_target=',pdf_target )
             return
-        assert len(args.CIFFILE)==1
-        cifsrc = nc_cifutils.CIFSource( args.CIFFILE[0], allow_fail = True )
-        if args.via_ase:
-            if not cifsrc.filepath:
-                ase_input_data = cifsrc.load_data( quiet = do_quiet )
-            else:
-                ase_input_data = cifsrc.filepath
+        nc_cifutils.produce_validation_plots( args.valplot,
+                                              verbose_lbls = False,
+                                              pdf_target = pdf_target )
+        return
+    assert len(args.CIFFILE)==1
+    cifsrc = nc_cifutils.CIFSource( args.CIFFILE[0], allow_fail = True )
+    if args.via_ase:
+        if not cifsrc.filepath:
+            ase_input_data = cifsrc.load_data( quiet = do_quiet )
+        else:
+            ase_input_data = cifsrc.filepath
 
-            if cifsrc.is_remote:
-                #ase_input_data = cifsrc.load_data( quiet = do_quiet )
-                ase_format = 'cif'
-            else:
-                #ase_input_data = args.CIFFILE[0]
-                ase_format = None
-            ase_output_cifdata = nc_ncmatimpl._cifdata_via_ase( ase_input_data,
-                                                                ase_format = ase_format,
-                                                                quiet = do_quiet )
-            cifsrc = nc_cifutils.CIFSource( ase_output_cifdata )
-        if cifsrc.invalid:
-            raise SystemExit('Failed to load input')
+        if cifsrc.is_remote:
+            #ase_input_data = cifsrc.load_data( quiet = do_quiet )
+            ase_format = 'cif'
+        else:
+            #ase_input_data = args.CIFFILE[0]
+            ase_format = None
+        ase_output_cifdata = nc_ncmatimpl._cifdata_via_ase( ase_input_data,
+                                                            ase_format = ase_format,
+                                                            quiet = do_quiet )
+        cifsrc = nc_cifutils.CIFSource( ase_output_cifdata )
+    if cifsrc.invalid:
+        raise SystemExit('Failed to load input')
 
-        if args.showcif:
-            import sys
-            sys.stdout.write( cifsrc.load_data() )
-            return
+    if args.showcif:
+        return cifsrc.load_data()
 
-        lc = nc_cifutils.CIFLoader( cifsrc,
-                                    merge_equiv = not args.nomerge,
-                                    quiet = do_quiet,
-                                    override_spacegroup = args.spacegroup,
-                                    tol = args.tol,
-                                    tol_symprec = args.tol_symprec,
-                                    tol_uij = args.tol_uij,
-                                    tol_occu = args.tol_occu,
-                                    permissive = args.permissive )
-        composer = lc.create_ncmat_composer( top_comments=['<<disableautogennotice>>'],
-                                             uiso_temperature = args.uisotemp,
-                                             quiet = do_quiet,
-                                             remap = args.remap,
-                                             skip_dyninfo = bool(args.dynamics) )
+    lc = nc_cifutils.CIFLoader( cifsrc,
+                                merge_equiv = not args.nomerge,
+                                quiet = do_quiet,
+                                override_spacegroup = args.spacegroup,
+                                tol = args.tol,
+                                tol_symprec = args.tol_symprec,
+                                tol_uij = args.tol_uij,
+                                tol_occu = args.tol_occu,
+                                permissive = args.permissive )
+    composer = lc.create_ncmat_composer( top_comments=['<<disableautogennotice>>'],
+                                         uiso_temperature = args.uisotemp,
+                                         quiet = do_quiet,
+                                         remap = args.remap,
+                                         skip_dyninfo = bool(args.dynamics) )
 
-        if args.debyetemp and args.debyetemp > 0.0:
-            composer.allow_fallback_dyninfo( args.debyetemp )
-        if args.dynamics:
-            composer.transfer_dyninfo_objects( args.dynamics )
+    if args.debyetemp and args.debyetemp > 0.0:
+        composer.allow_fallback_dyninfo( args.debyetemp )
+    if args.dynamics:
+        composer.transfer_dyninfo_objects( args.dynamics )
 
-        for elem, data in args.atomdata:
-            composer.update_atomdb( elem, data )
+    for elem, data in args.atomdata:
+        composer.update_atomdb( elem, data )
 
-        out, metadata = composer.create_ncmat( meta_data = True)
-        autofn = _cifcomposerimpl._suggest_filename( metadata, lc )
+    out, metadata = composer.create_ncmat( meta_data = True)
+    autofn = _cifcomposerimpl._suggest_filename( metadata, lc )
 
     fn = args.output or autofn
 
     if not args.noval:
-        if not do_quiet:
-            infomsg("Verifying that resulting ncmat data can be loaded")
+        infomsg("Verifying that resulting ncmat data can be loaded")
         from .core import directMultiCreate
         directMultiCreate(out,'vdoslux=0;dcutoff=0.2')
 
     if fn=='stdout':
-        import sys
-        sys.stdout.write(out)
-    else:
-        if not do_quiet:
-            infomsg(f"Writing {fn}")
-        nc_common.write_text(fn,out)
+        return out
+    infomsg(f"Writing {fn}")
+    nc_common.write_text(fn,out)
