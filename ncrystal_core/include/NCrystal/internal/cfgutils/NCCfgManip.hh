@@ -196,8 +196,11 @@ namespace NCRYSTAL_NAMESPACE {
       static void set_lcmode( CfgData& data, std::int_least32_t val ) { setValue<vardef_lcmode>( data,static_cast<std::int_least32_t>(val) ); }
 
 
-      static LCAxis get_lcaxis(const CfgData& data) { return getValue<vardef_lcaxis>(data).as<LCAxis>(); }
-      static void set_lcaxis( CfgData& data, const LCAxis& val ) { setValue<vardef_lcaxis>(data, val.as<Vector>()); }
+      //The lcaxis as a Cartesian vector in the crystal frame. Unless specified
+      //like that, this needs the reciprocal lattice rotation (MissingInfo
+      //exception otherwise):
+      static LCAxis get_lcaxis( const CfgData&, const RotMatrix* reci_lattice = nullptr );
+      static void set_lcaxis( CfgData&, const LCAxis& );
 
       static double get_strain(const CfgData& data) { return getValue<vardef_strain>(data); }
       static void set_strain( CfgData& data, double val ) { setValue<vardef_strain>(data,val); }
@@ -256,9 +259,10 @@ namespace NCRYSTAL_NAMESPACE {
 
       //Validate orientation parameters (throws BadInput exception if not valid,
       //or if not oriented) and return the orientation: dir1 and dir2 (with any
-      //rot applied to their lab directions) and dirtol. If dir2 is arbitrary,
-      //one is chosen, which needs the reciprocal lattice rotation unless dir1
-      //is given by a CrystalAxis (MissingInfo exception otherwise).
+      //rot applied to their lab directions) and dirtol. If dir2 is arbitrary
+      //(or left out, for an lcaxis along dir1), one is chosen. This needs the
+      //reciprocal lattice rotation unless everything is specified by Cartesian
+      //vectors in the crystal frame (MissingInfo exception otherwise).
       struct Orientation { OrientDir dir1, dir2; double dirtol; };
       [[nodiscard]] static Orientation getOrientation( const CfgData&,
                                                        const RotMatrix* reci_lattice = nullptr );
@@ -270,6 +274,13 @@ namespace NCRYSTAL_NAMESPACE {
                                                                const RotMatrix* reci_lattice = nullptr );
 
     private:
+      //Check which of mos, dir1, dir2, dirtol and rot are set. Returns false
+      //if not oriented, and throws BadInput if inconsistent.
+      static bool checkOrientPars( const CfgData& );
+      //For when dir2 is left out. No value if it can not be determined
+      //without the reciprocal lattice rotation.
+      static Optional<bool> lcaxisAlongDir1( const CfgData&,
+                                             const RotMatrix* reci_lattice );
       template<class TBufCreateFct>
       static void detail_setVar( CfgData& data, VarId varid, TBufCreateFct& doCreate );
       static const VarBuf* searchBuf( const CfgData& data, VarId );

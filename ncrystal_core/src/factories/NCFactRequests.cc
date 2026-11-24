@@ -160,7 +160,6 @@ NC::OrientDir NCF::ScatterRequest::get_dir2() const { return CfgManip::get_dir2(
 double NCF::ScatterRequest::get_mosprec() const { return CfgManip::get_mosprec(rawCfgData()); }
 double NCF::ScatterRequest::get_sccutoff() const { return CfgManip::get_sccutoff(rawCfgData()); }
 double NCF::ScatterRequest::get_dirtol() const { return CfgManip::get_dirtol(rawCfgData()); }
-NC::LCAxis NCF::ScatterRequest::get_lcaxis() const { return CfgManip::get_lcaxis(rawCfgData()); }
 std::int_least32_t NCF::ScatterRequest::get_lcmode() const { return CfgManip::get_lcmode(rawCfgData()); }
 
 bool NCF::ScatterRequest::isSingleCrystal() const
@@ -173,13 +172,33 @@ bool NCF::ScatterRequest::isLayeredCrystal() const
   return CfgManip::isLayeredCrystal( rawCfgData() );
 }
 
+namespace NCRYSTAL_NAMESPACE {
+  namespace FactImpl {
+    namespace {
+      //The reciprocal lattice rotation might be needed for the orientation
+      //parameters (e.g. for an arbitrary dir2).
+      Optional<RotMatrix> reciLattice( const Info& info )
+      {
+        if ( !info.hasStructureInfo() )
+          return NullOpt;
+        return getReciprocalLatticeRot( info.getStructureInfo() );
+      }
+    }
+  }
+}
+
+NC::LCAxis NCF::ScatterRequest::get_lcaxis() const
+{
+  const auto reci = reciLattice( info() );
+  return CfgManip::get_lcaxis( rawCfgData(),
+                               reci.has_value() ? &reci.value() : nullptr );
+}
+
 NC::SCOrientation NCF::ScatterRequest::createSCOrientation() const
 {
-  //The lattice might be needed (e.g. for an arbitrary dir2):
-  if ( !info().hasStructureInfo() )
-    return CfgManip::createSCOrientation<SCOrientation>(rawCfgData());
-  const auto reci = getReciprocalLatticeRot( info().getStructureInfo() );
-  return CfgManip::createSCOrientation<SCOrientation>(rawCfgData(),&reci);
+  const auto reci = reciLattice( info() );
+  return CfgManip::createSCOrientation<SCOrientation>
+    ( rawCfgData(), reci.has_value() ? &reci.value() : nullptr );
 }
 
 std::string NCF::AbsorptionRequest::get_absnfactory() const

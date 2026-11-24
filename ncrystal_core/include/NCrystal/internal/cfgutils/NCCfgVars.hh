@@ -232,19 +232,12 @@ namespace NCRYSTAL_NAMESPACE {
         const auto i = sv.find(':');
         if ( i == StrView::npos )
           return NullOpt;
-        const auto p = sv.substr(0,i).splitTrimmed(',');
+        const auto axis = decodeVector( sv.substr(0,i) );
         const auto angle = units_angle::parse( sv.substr(i+1) );
-        if ( p.size() != 3 || !angle.has_value() )
+        if ( !axis.has_value() || !angle.has_value() )
           return NullOpt;
-        Decoded res{ Vector(no_init), angle.value().first,
-                     angle.value().second };
-        for ( auto j : ncrange(3) ) {
-          const auto v = p.at(j).toDbl();
-          if ( !v.has_value() )
-            return NullOpt;
-          res.axis[j] = v.value();
-        }
-        return res;
+        return Decoded{ axis.value(), angle.value().first,
+                        angle.value().second };
       }
 
       static Variant<StrView,std::string> str2val( StrView sv )
@@ -346,27 +339,103 @@ namespace NCRYSTAL_NAMESPACE {
       }
     };
 
-    struct vardef_lcaxis final : public ValVector<vardef_lcaxis> {
+    struct vardef_lcaxis final : public ValStr<vardef_lcaxis> {
+      //Stored in a normalised string form.
       static constexpr auto name = "lcaxis";
       static constexpr auto group = VarGroupId::ScatterExtra;
+      static constexpr auto value_type_descr = "axis";
       static constexpr auto description =
         "Symmetry axis of anisotropic layered"
-        " crystals with a layout similar to pyrolytic graphite (PG). The axis"
-        " must be provided in direct lattice coordinates using a format"
-        " like \"0,0,1\". Specifying"
+        " crystals with a layout similar to pyrolytic graphite (PG), i.e. the"
+        " axis around which the crystallites are randomly rotated. Given"
+        " like \"0,0,1\" (or \"@crys:0,0,1\"), it is a Cartesian vector in"
+        " the crystal frame (cf. the dir1 parameter). It can also be"
+        " the normal of an HKL plane (\"@crys_hkl:0,0,1\"), a lattice"
+        " direction (\"@crys_uvw:0,0,1\"), or a vector in the lab frame"
+        " (\"@lab:0,1,0\"). The latter can for instance describe a single"
+        " crystal on a spinning sample holder. Specifying"
         " this parameter along with an orientation (see dir1 and dir2"
         " parameters) will result in the appropriate anisotropic single"
-        " crystal scatter model being used for Bragg diffraction."
+        " crystal scatter model being used for Bragg diffraction. The dir2"
+        " parameter can be left out if the axis is a direction in the"
+        " crystal which is parallel to that of dir1."
         ;
       static constexpr NullOptType default_value() { return NullOpt; }//no default value!
-      static constexpr bool auto_normalise = false;
-      static void extraChecks( const Vector& v )
+
+      enum class Frame { Crys, HKL, UVW, Lab };
+      struct Decoded {
+        Frame frame;
+        Vector axis;//not normalised
+      };
+      static constexpr const char * frameName( Frame f )
       {
-        double m2 = v.mag2();
+        return ( f == Frame::Crys ? "crys"
+                 : ( f == Frame::HKL ? "crys_hkl"
+                     : ( f == Frame::UVW ? "crys_uvw" : "lab" ) ) );
+      }
+      static OrientDir::CrysDir crysDir( const Decoded& d )
+      {
+        //As crystal direction (only if not in the lab frame).
+        using Type = OrientDir::CrysDir::Type;
+        nc_assert( d.frame != Frame::Lab );
+        return { ( d.frame == Frame::Crys ? Type::Crys
+                   : ( d.frame == Frame::HKL ? Type::HKL : Type::UVW ) ),
+                 d.axis };
+      }
+      static Optional<Decoded> decode( StrView sv )
+      {
+        //Decodes "a1,a2,a3", possibly with a prefix (no value if syntax is
+        //wrong).
+        sv = sv.trimmed();
+        Frame frame = Frame::Crys;
+        if ( sv.startswith('@') ) {
+          const auto i = sv.find(':');
+          if ( i == StrView::npos )
+            return NullOpt;
+          Optional<Frame> f;
+          for ( auto e : { Frame::Crys, Frame::HKL, Frame::UVW, Frame::Lab } )
+            if ( sv.substr(1,i-1).trimmed() == frameName(e) )
+              f = e;
+          if ( !f.has_value() )
+            return NullOpt;
+          frame = f.value();
+          sv = sv.substr(i+1);
+        }
+        const auto axis = decodeVector( sv );
+        if ( !axis.has_value() )
+          return NullOpt;
+        return Decoded{ frame, axis.value() };
+      }
+
+      static Variant<StrView,std::string> str2val( StrView sv )
+      {
+        auto d = decode(sv);
+        if ( !d.has_value() )
+          return {};
+        auto& v = d.value().axis;
+        for ( auto& e : v )
+          e = sanitiseDblValue( e, name );
+        const double m2 = v.mag2();
         if ( !(m2>0.0) )
           NCRYSTAL_THROW2(BadInput,"Null vector provided for parameter \""<<name<<"\"");
         if ( std::isinf(m2) || std::isinf(v[0]) || std::isinf(v[1]) || std::isinf(v[2]) )
           NCRYSTAL_THROW2(BadInput, "Infinities or too large values specified in "<<name<<" vector");
+        std::ostringstream ss;
+        if ( d.value().frame != Frame::Crys )
+          ss << '@' << frameName( d.value().frame ) << ':';
+        ss << fmt(v[0]) << ',' << fmt(v[1]) << ',' << fmt(v[2]);
+        return ss.str();
+      }
+
+      static void asJSONObject( std::ostream& os, const VarBuf& buf )
+      {
+        //A plain vector if in the Cartesian crystal frame.
+        const auto d = decode( get_val(buf) ).value();
+        if ( d.frame == Frame::Crys )
+          return streamJSON( os, d.axis );
+        streamJSONDictEntry( os, "frame", frameName(d.frame),
+                             JSONDictPos::FIRST );
+        streamJSONDictEntry( os, "axis", d.axis, JSONDictPos::LAST );
       }
     };
 

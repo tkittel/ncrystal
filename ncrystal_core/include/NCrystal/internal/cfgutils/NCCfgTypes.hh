@@ -72,6 +72,9 @@ namespace NCRYSTAL_NAMESPACE {
 
     void standardInputStrSanityCheck( const char * parname, StrView strrep );
 
+    //Decode vector given as "v1,v2,v3" (no value if syntax is wrong):
+    Optional<Vector> decodeVector( StrView );
+
     template <class Derived, class TValueType>
     class ValBase {
     public:

@@ -202,6 +202,91 @@ def test_arbitrary():
         ';dirtol=180deg',
     )
 
+def test_lcaxis():
+    #In hexagonal crystals c is along c* and z, b is 120 degrees from a
+    #(which is along x), and b* is along y.
+    y120 = math.sqrt(0.75)
+    o = 'dir1=@crys_hkl:1,0,3@lab:0.1,0.2,1;dir2=@crys_uvw:1,0,0@lab:0,1,-0.2'
+    for mat in ( 'C_sg194_pyrolytic_graphite.ncmat', 'Be_sg194.ncmat' ):
+        base = mat + ';dcutoff=0.5;mos=2deg;comp=bragg;dirtol=180deg;' + o
+        xs = require_equivalent(
+            base,
+            'lcaxis=0,0,1',
+            'lcaxis=@crys:0,0,2',
+            'lcaxis=@crys_hkl:0,0,1',
+            'lcaxis=@crys_hkl:0,0,-7',
+            'lcaxis=@crys_uvw:0,0,0.5',
+        )
+        xs_b = require_equivalent(
+            base,
+            'lcaxis=@crys_uvw:0,1,0',
+            f'lcaxis=-0.5,{y120!r},0',
+            'lcaxis=@crys_uvw:1,2,0;lcaxis=@crys_uvw:0,-3,0',
+        )
+        xs_bstar = require_equivalent(
+            base,
+            'lcaxis=@crys_hkl:0,1,0',
+            'lcaxis=0,1,0',
+            'lcaxis=@crys_uvw:1,2,0',
+        )
+        assert not same_xs( xs, xs_b )
+        assert not same_xs( xs, xs_bstar )
+        assert not same_xs( xs_b, xs_bstar )
+    #An axis in the lab frame. Here the orientation takes the Cartesian
+    #crystal directions (x,y,z) to the lab directions (z,x,y):
+    o = 'dir1=@crys_hkl:0,0,1@lab:0,1,0;dir2=@crys_uvw:1,0,0@lab:0,0,1'
+    for mat in ( 'C_sg194_pyrolytic_graphite.ncmat', 'Ge_sg227.ncmat' ):
+        base = mat + ';dcutoff=0.5;mos=2deg;comp=bragg;'
+        xs = require_equivalent(
+            base + o,
+            'lcaxis=@lab:0.2,1,0.5',
+            'lcaxis=@crys:0.5,0.2,1',
+            'lcaxis=@lab:-0.4,-2,-1',
+        )
+        require_different( xs, base + o, 'lcaxis=@lab:0.5,0.2,1' )
+        #An axis in the lab frame is not affected by a rotation of the
+        #crystal:
+        axis, angle = ( 1.0, -2.0, 0.5 ), 0.7
+        lab1, lab2 = ( vstr( rotate( v, axis, angle ) )
+                       for v in ( (0,1,0), (0,0,1) ) )
+        o_rot = ( f'dir1=@crys_hkl:0,0,1@lab:{lab1}'
+                  f';dir2=@crys_uvw:1,0,0@lab:{lab2}' )
+        xs_rot = require_equivalent(
+            base + 'lcaxis=@lab:0.2,1,0.5',
+            o + f';rot={vstr(axis)}:{angle!r}',
+            o_rot,
+        )
+        assert not same_xs( xs, xs_rot )
+        #...unlike an axis in the crystal:
+        lc_rot = vstr( rotate( (0.2,1,0.5), axis, angle ) )
+        require_equivalent(
+            base,
+            'lcaxis=@crys:0.5,0.2,1;' + o_rot,
+            'lcaxis=@crys:0.5,0.2,1;' + o + f';rot={vstr(axis)}:{angle!r}',
+            f'lcaxis=@lab:{lc_rot};' + o_rot,
+        )
+    #dir2 can be left out when lcaxis is along dir1 (the PG file itself has
+    #lcaxis=0,0,1):
+    pg = 'C_sg194_pyrolytic_graphite.ncmat;dcutoff=0.5;mos=2deg;comp=bragg'
+    require_equivalent(
+        pg,
+        'dir1=@crys_hkl:0,0,1@lab:0.1,0.2,1',
+        'dir1=@crys_uvw:0,0,-3@lab:-0.1,-0.2,-1',
+        'dir1=@crys:0,0,1@lab:0.1,0.2,1',
+        'dir1=@crys_hkl:0,0,1@lab:0.1,0.2,1;lcaxis=@crys_hkl:0,0,2',
+        'dir1=@crys_hkl:0,0,1@lab:0.1,0.2,1;dir2=arbitrary',
+        'dir1=@crys_hkl:0,0,1@lab:0.1,0.2,1;dir2=@crys:1,2,3@lab:1,0,0'
+        ';dirtol=180deg',
+    )
+    require_equivalent(
+        'Be_sg194.ncmat;dcutoff=0.5;mos=2deg;comp=bragg',
+        'lcaxis=@crys_uvw:0,1,0;dir1=@crys_uvw:0,1,0@lab:0.1,0.2,1',
+        f'lcaxis=@crys_uvw:0,1,0;dir1=@crys:-0.5,{y120!r},0@lab:0.1,0.2,1',
+        f'lcaxis=-0.5,{y120!r},0;dir1=@crys_uvw:0,2,0@lab:0.1,0.2,1',
+        'lcaxis=@crys_uvw:0,1,0;dir1=@crys_uvw:0,1,0@lab:0.1,0.2,1'
+        ';dir2=@crys_hkl:1,0,3@lab:1,0,0;dirtol=180deg',
+    )
+
 def test_bad():
     from NCrystalDev.exceptions import NCBadInput
     ge = 'Ge_sg227.ncmat;dcutoff=0.5'
@@ -216,6 +301,20 @@ def test_bad():
                  ge + ';mos=2deg;dir2=arbitrary',
                  ge + ';dir1=@crys_hkl:0,0,1@lab:0,0,1;dir2=arbitrary',
                  ge + o.replace('dir2=','dir2=arbitrary;dir3='),
+                 #dir2 can not be left out:
+                 ge + ';mos=2deg;dir1=@crys_hkl:0,0,1@lab:0,0,1',
+                 ge + ';mos=2deg;dir1=@crys_hkl:0,0,1@lab:0,0,1'
+                 ';lcaxis=@lab:0,0,1',
+                 ge + ';mos=2deg;dir1=@crys_hkl:0,0,1@lab:0,0,1'
+                 ';lcaxis=@crys_hkl:0,1,1',
+                 ge + ';mos=2deg;dir1=@crys_hkl:0,0,1@lab:0,0,1'
+                 ';lcaxis=0,1e-2,1',
+                 ( 'Be_sg194.ncmat;mos=2deg;dir1=@crys_uvw:0,1,0@lab:0,0,1'
+                   ';lcaxis=@crys_hkl:0,1,0' ),
+                 #Bad syntax:
+                 ge + o + ';lcaxis=@crys_xyz:0,0,1',
+                 ge + o + ';lcaxis=@lab:0,0,0',
+                 ge + o + ';lcaxis=@lab:0,0',
                 ]:
         try:
             nccore.createScatter( bad )
@@ -227,6 +326,7 @@ def main():
     test_crysdirs()
     test_rot()
     test_arbitrary()
+    test_lcaxis()
     test_bad()
 
 if __name__ == '__main__':

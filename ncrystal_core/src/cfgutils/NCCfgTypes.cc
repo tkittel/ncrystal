@@ -174,6 +174,21 @@ NC::Cfg::units_angle::parse(StrView sv)
   return std::make_pair(p.value,p.origStrRep);
 }
 
+NC::Optional<NC::Vector> NC::Cfg::decodeVector( StrView sv )
+{
+  const auto p = sv.splitTrimmed(',');
+  if ( p.size() != 3 )
+    return NullOpt;
+  Vector res(no_init);
+  for ( auto i : ncrange(3) ) {
+    const auto v = p.at(i).toDbl();
+    if ( !v.has_value() )
+      return NullOpt;
+    res[i] = v.value();
+  }
+  return res;
+}
+
 void NC::Cfg::standardInputStrSanityCheck( const char * parname, StrView strrep )
 {
   if ( !strrep.has_value() )

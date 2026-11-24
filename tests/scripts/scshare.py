@@ -104,7 +104,13 @@ def main():
     check_sharing( ge + ';sccutoff=0', 'SCBragg', False, [] )
     pg = 'C_sg194_pyrolytic_graphite.ncmat;dcutoff=0.3;mos=2deg'
     check_sharing( pg, 'LCBragg', True,
-                   [ ';lcmode=3', ';lcaxis=0,1,1', ';mos=1deg' ] )
+                   [ ';lcmode=3', ';lcaxis=0,1,1', ';mos=1deg',
+                     ';lcaxis=@crys_uvw:1,0,2' ] )
+    #Also when leaving out dir2:
+    sc1 = nccore.createScatter( pg + ';dir1=@crys_hkl:0,0,1@lab:0,0,1' )
+    sc2 = nccore.createScatter( pg + ';dir1=@crys_hkl:0,0,1@lab:0,1,1' )
+    sc3 = nccore.createScatter( pg + o1 )
+    assert bragg_uids( sc1 ) == bragg_uids( sc2 ) == bragg_uids( sc3 )
     check_xs( ge + ';comp=bragg' )
     check_xs( pg + ';comp=bragg' )
 

@@ -448,14 +448,22 @@ Advanced parameters related to scattering processes (single crystals):
                  parameters mos, dir1, and dir2 must also be provided.
 
   lcaxis:
-    Type: vector (3D)
+    Type: axis
     No default value.
     Description: Symmetry axis of anisotropic layered crystals with a layout
-                 similar to pyrolytic graphite (PG). The axis must be provided
-                 in direct lattice coordinates using a format like "0,0,1".
-                 Specifying this parameter along with an orientation (see dir1
-                 and dir2 parameters) will result in the appropriate anisotropic
-                 single crystal scatter model being used for Bragg diffraction.
+                 similar to pyrolytic graphite (PG), i.e. the axis around which
+                 the crystallites are randomly rotated. Given like "0,0,1" (or
+                 "@crys:0,0,1"), it is a Cartesian vector in the crystal frame
+                 (cf. the dir1 parameter). It can also be the normal of an HKL
+                 plane ("@crys_hkl:0,0,1"), a lattice direction
+                 ("@crys_uvw:0,0,1"), or a vector in the lab frame
+                 ("@lab:0,1,0"). The latter can for instance describe a single
+                 crystal on a spinning sample holder. Specifying this parameter
+                 along with an orientation (see dir1 and dir2 parameters) will
+                 result in the appropriate anisotropic single crystal scatter
+                 model being used for Bragg diffraction. The dir2 parameter can
+                 be left out if the axis is a direction in the crystal which is
+                 parallel to that of dir1.
 
   lcmode:
     Type: integer

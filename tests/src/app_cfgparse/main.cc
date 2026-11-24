@@ -205,6 +205,21 @@ namespace {
     doTestBad("dir2=@crys:arbitrary@lab:0,0,1");
     doTestBad("dir1=arbitrary");
 
+    doTest("lcaxis=0,0,1");
+    doTest("lcaxis=@crys:0,0,1");
+    doTest(" lcaxis = @ crys_hkl : 0 , 0 ,\t2e0 ");
+    doTest("lcaxis=@crys_uvw:1,0,0.5");
+    doTest("lcaxis=@lab:0,-1,1e-3");
+    doTestBad("lcaxis=@crys_xyz:0,0,1");
+    doTestBad("lcaxis=@lab:0,0,0");
+    doTestBad("lcaxis=@lab:0,1");
+    doTestBad("lcaxis=@lab0,1,0");
+    doTestBad("lcaxis=lab:0,1,0");
+    doTestBad("lcaxis=@:0,1,0");
+    doTestBad("lcaxis=@crys_hkl:0,0,inf");
+    doTestBad("lcaxis=@crys_hkl:0,0,nan");
+    doTestBad("lcaxis=@crys_hkl:0,0,1@lab:0,1,0");
+
     doTest("rot=0,1,0:30deg");
     doTest(" rot = 0 , 1.0 ,\t0 : 30 deg ");
     doTest("rot=0,0,2:1.5707963267948966");
@@ -267,6 +282,10 @@ namespace {
       applyAndPrint("dir2=@crys_hkl:4,5,6@lab:1,2,3");
       applyAndPrint("dir2=arbitrary");
       std::cout<<"  => .get_rot() : "<<CfgManip::get_rot(cd)<<std::endl;
+      std::cout<<"  => JSON: ";
+      CfgManip::streamJSON(cd,std::cout);
+      std::cout<<"\n";
+      applyAndPrint("lcaxis=@crys_hkl:0,0,2");
       std::cout<<"  => JSON: ";
       CfgManip::streamJSON(cd,std::cout);
       std::cout<<"\n";

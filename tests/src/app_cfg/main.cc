@@ -330,6 +330,55 @@ void test()
     REQUIRE( failed );
   }
 
+  //Forms of lcaxis, and leaving out dir2 when lcaxis is along dir1:
+  cfg = NC::MatCfg( "Al_fake.ncmat;lcaxis=@crys:0,0,2" );
+  REQUIRE( cfg.get_lcaxis() == ( NC::LCAxis{0,0,2} ) );
+  test_strrep_and_dump(cfg);
+  cfg.applyStrCfg("mos=1deg;dir1=@crys:0,0,-1@lab:0,1,0");
+  cfg.checkConsistency();
+  REQUIRE( cfg.isSingleCrystal() && cfg.isLayeredCrystal() );
+  {
+    auto od = cfg.createSCOrientation().getData();
+    REQUIRE( od.dir1.lab == ( NC::LabAxis{0,1,0} ) );
+    REQUIREFLTEQ( 1.0 + od.dir2.crystal.get<NC::CrystalAxis>()[2], 1.0 );
+    REQUIREFLTEQ( 1.0 + od.dir2.lab[1], 1.0 );
+  }
+  cfg.applyStrCfg("lcaxis=@crys_hkl:0,0,2");
+  cfg.checkConsistency();//can not be checked without a lattice
+  test_strrep_and_dump(cfg);
+  for ( auto get_lcaxis : { true, false } ) {
+    bool failed = false;
+    try {
+      if ( get_lcaxis )
+        cfg.get_lcaxis();
+      else
+        cfg.createSCOrientation();
+    } catch (NC::Error::MissingInfo&e) {
+      std::cout<<"NCrystal::"<<e.getTypeName()<< ": "<<e.what() << std::endl;
+      failed = true;
+    }
+    REQUIRE( failed );
+  }
+  cfg.applyStrCfg("dir1=@crys_hkl:0,0,-5@lab:0,1,0");
+  cfg.checkConsistency();//same type, can be checked
+  for ( auto badcfg : { "lcaxis=@crys_hkl:0,1,2",
+                        "dir1=@crys_hkl:0,1e-2,-5@lab:0,1,0",
+                        "lcaxis=@lab:0,1,0" } ) {
+    bool failed = false;
+    try {
+      auto cfg2 = cfg;
+      cfg2.applyStrCfg(badcfg);
+      cfg2.checkConsistency();
+    } catch (NC::Error::BadInput&e) {
+      std::cout<<"NCrystal::"<<e.getTypeName()<< ": "<<e.what() << std::endl;
+      failed = true;
+    }
+    REQUIRE( failed );
+  }
+  cfg.applyStrCfg("lcaxis=@lab:0,1,0;dir2=@crys:1,0,0@lab:1,0,0");
+  cfg.checkConsistency();
+  test_strrep_and_dump(cfg);
+
   {
     //Not allowed without an orientation:
     bool failed = false;

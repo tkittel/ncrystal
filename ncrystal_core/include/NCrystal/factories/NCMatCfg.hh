@@ -232,7 +232,7 @@ namespace NCRYSTAL_NAMESPACE {
     void set_dir2( const CrystalAxis&, const LabAxis& );
     void set_dir1( const OrientDir& );
     void set_dir2( const OrientDir& );
-    void setOrientation( const SCOrientation& );//sets dir1+dir2+dirtol
+    void setOrientation( const SCOrientation& );//sets dir1+dir2+dirtol (not rot)
 
     ///////////////////////////////////////////////////////////////////////////////////
     //As explained above, MatCfg objects optionally retain a "density state",
@@ -288,9 +288,10 @@ namespace NCRYSTAL_NAMESPACE {
 
     // Check if single/layered-single crystal, or access dir1+dir2+dirtol (with
     // any rot applied) as SCOrientation (do not call any of these for
-    // multiphase cfgs). Note that get_dir2() and createSCOrientation() might
-    // throw MissingInfo exceptions if dir2 is "arbitrary", since resolving
-    // that can require a crystal lattice (cf. ScatterRequest):
+    // multiphase cfgs). Note that get_dir2(), get_lcaxis() and
+    // createSCOrientation() might throw MissingInfo exceptions if dir2 is
+    // "arbitrary" or left out, or if lcaxis is not given with "@crys:", since
+    // a crystal lattice can then be needed (cf. ScatterRequest):
     bool isSingleCrystal() const;//true if mos or orientation parameters are set
     bool isLayeredCrystal() const;//true if lcaxis parameter is set
     SCOrientation createSCOrientation() const;
