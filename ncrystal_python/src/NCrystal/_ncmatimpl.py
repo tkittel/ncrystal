@@ -747,6 +747,7 @@ class NCMATComposerImpl:
         #expanded with their tensors, equivalent sites found (with site data
         #in the symmetry detection), and one site per orbit is kept with its
         #tensor mapped to the refined cell.
+        warnfct = ( lambda msg : None ) if quiet else _nc_common.warn
         from .misc import evaluate_query
         cellsg, atompos = self.__params['cellsg'], self.__params['atompos']
         occumap = atompos.get('occumap',{})
@@ -764,8 +765,8 @@ class NCMATComposerImpl:
         if not quiet:
             for m in r['msgs']:
                 _nc_common.infomsg(m)
-            for w in r['warnings']:
-                _nc_common.warn(w)
+        for w in r['warnings']:
+            warnfct(w)
         newcell = r['cellsg']
         allpos = sorted( ( expanded[i].key, x[0], x[1], x[2] )
                          for i, x in r['allpos'] )
@@ -773,7 +774,7 @@ class NCMATComposerImpl:
                         'occumap': copy.deepcopy( occumap ) }
         res_sites, setting, bad = r['sites'], None, []
         if res_sites is None:
-            _nc_common.warn( 'Anisotropic displacements (uij) dropped since'
+            warnfct( 'Anisotropic displacements (uij) dropped since'
                              ' the basis change by spglib could not be'
                              ' tracked' )
         else:
@@ -782,7 +783,7 @@ class NCMATComposerImpl:
             bad = sorted( { expanded[e['index']].key for e in res_sites
                             if e['aniso_dropped'] } )
             if bad:
-                _nc_common.warn( 'Anisotropic displacements (uij) dropped for'
+                warnfct( 'Anisotropic displacements (uij) dropped for'
                                  f' {", ".join(bad)}, since tensors of'
                                  ' equivalent sites are not symmetry images'
                                  ' of each other' )
@@ -798,7 +799,7 @@ class NCMATComposerImpl:
             from collections import Counter
             if ( Counter( s['label'] for s in q['sites'] )
                  != Counter( expanded[e['index']].key for e in res_sites ) ):
-                _nc_common.warn( 'Anisotropic displacements (uij) dropped'
+                warnfct( 'Anisotropic displacements (uij) dropped'
                                  ' since the refined sites could not be'
                                  ' matched' )
                 res_sites = None
@@ -1535,6 +1536,8 @@ class NCMATComposerImpl:
             comments += [ ( f'WARNING: Fallback (dummy) Debye temperature {_}'
                             f' used for {_n} atom{"s" if _n>1 else ""}!' ), '' ]
 
+        if ( did_verify_xtal_struct or is_crystal ) and comments and comments[-1]:
+            comments.append('')
         if did_verify_xtal_struct:
             comments += ['NOTICE: crystal structure was verified to be self-consistent.']
         elif is_crystal:

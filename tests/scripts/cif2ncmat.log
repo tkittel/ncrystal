@@ -616,6 +616,7 @@ OUT>#   NCrystalWarning : The CIF data specifies no temperature, so its Uiso (ms
 OUT>#                     values are assumed to be associated with a fallback
 OUT>#                     temperature of 293K. Specify the temperature explicitly,
 OUT>#                     as this is likely wrong.
+OUT>#
 OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
@@ -802,6 +803,7 @@ OUT>#   NCrystalWarning : The CIF data specifies no temperature, so its Uiso (ms
 OUT>#                     values are assumed to be associated with a fallback
 OUT>#                     temperature of 293K. Specify the temperature explicitly,
 OUT>#                     as this is likely wrong.
+OUT>#
 OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
@@ -1109,6 +1111,7 @@ OUT>#
 OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
 OUT>#                     element content was guessed from their label (Ca from
 OUT>#                     CaM1, Si from Si1, O from OA1)
+OUT>#
 OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
@@ -1338,6 +1341,7 @@ OUT>#   NCrystalWarning : The CIF data specifies no temperature, so its Uiso (ms
 OUT>#                     values are assumed to be associated with a fallback
 OUT>#                     temperature of 293K. Specify the temperature explicitly,
 OUT>#                     as this is likely wrong.
+OUT>#
 OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
@@ -1393,6 +1397,7 @@ OUT>#   NCrystalWarning : The CIF data specifies no temperature, so its Uiso (ms
 OUT>#                     values are assumed to be associated with a fallback
 OUT>#                     temperature of 293K. Specify the temperature explicitly,
 OUT>#                     as this is likely wrong.
+OUT>#
 OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
@@ -1454,6 +1459,7 @@ OUT>#   NCrystalWarning : The CIF data specifies no temperature, so its Uiso (ms
 OUT>#                     values are assumed to be associated with a fallback
 OUT>#                     temperature of 293K. Specify the temperature explicitly,
 OUT>#                     as this is likely wrong.
+OUT>#
 OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL

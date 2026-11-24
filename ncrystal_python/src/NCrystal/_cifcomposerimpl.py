@@ -45,20 +45,19 @@ def _impl_create_ncmat_composer( cifloader, *,
                                  quiet,
                                  remap,
                                  no_formula_check ):
-    from .msg import MsgCtrl
-    with MsgCtrl( spy = ['warning'],
-                  block = ['warning'] if quiet else None ) as mc:
-        composer = _impl_create_ncmat_composer_internal( cifloader = cifloader,
-                                                         uiso_temperature = uiso_temperature,
-                                                         skip_dyninfo = skip_dyninfo,
-                                                         top_comments = top_comments,
-                                                         remap = remap,
-                                                         no_formula_check = no_formula_check )
-        if not skip_dyninfo and fallback_debye_temp and fallback_debye_temp > 0.0:
-            composer.allow_fallback_dyninfo( fallback_debye_temp )
+    warnings, warnfct = _nc_common._recording_warnfct( quiet )
+    composer = _impl_create_ncmat_composer_internal( cifloader = cifloader,
+                                                     uiso_temperature = uiso_temperature,
+                                                     skip_dyninfo = skip_dyninfo,
+                                                     top_comments = top_comments,
+                                                     remap = remap,
+                                                     no_formula_check = no_formula_check,
+                                                     warnfct = warnfct )
+    if not skip_dyninfo and fallback_debye_temp and fallback_debye_temp > 0.0:
+        composer.allow_fallback_dyninfo( fallback_debye_temp )
 
     composer.add_comments( _fmt_warnings_for_comments(
-        list(cifloader.warnings) + mc.warnings,
+        list(cifloader.warnings) + warnings,
         'when loading the CIF data', nwmax = 10 ),
                            add_empty_line_divider = True )
     return composer
@@ -140,7 +139,7 @@ def _apply_remap( src_atoms, remap ):
 _uiso_trange = ( 0.1, 3000.0 )
 _uiso_tfallback = 293.0
 
-def _uiso_temperature( cifloader, chosen ):
+def _uiso_temperature( cifloader, chosen, *, warnfct ):
     #The temperature (kelvin) associated with the Uiso values: the chosen one,
     #or from the CIF temperature fields, or else the fallback. Returns it with
     #the header comment (string) and whether this comment is a warning.
@@ -181,7 +180,7 @@ def _uiso_temperature( cifloader, chosen ):
                                        ' temperature. Specify the temperature of'
                                        ' the Uiso (msd) values explicitly, or try'
                                        ' permissive mode to ignore it.' )
-        _nc_common.warn( f'The {f} CIF field ("{v}") is not a valid temperature'
+        warnfct( f'The {f} CIF field ("{v}") is not a valid temperature'
                          ' and is ignored (accepted due to permissive mode).' )
         notes.append( f'The {f} CIF field ("{v}") was not a valid temperature'
                       ' and was ignored, which was only accepted because the'
@@ -189,7 +188,7 @@ def _uiso_temperature( cifloader, chosen ):
         is_warning = True
     if not valid:
         T = _uiso_tfallback
-        _nc_common.warn( f'The CIF data specifies no {"valid " if notes else ""}'
+        warnfct( f'The CIF data specifies no {"valid " if notes else ""}'
                          'temperature, so its Uiso (msd) values are assumed to be'
                          f' associated with a fallback temperature of {T:g}K.'
                          ' Specify the temperature explicitly, as this is'
@@ -214,7 +213,7 @@ def _uiso_temperature( cifloader, chosen ):
                                        ' the temperature explicitly, or try'
                                        f' permissive mode to use the {f0}'
                                        ' value.' )
-        _nc_common.warn( f'The {f0} ("{v0}") and {f} ("{v}") CIF fields are'
+        warnfct( f'The {f0} ("{v0}") and {f} ("{v}") CIF fields are'
                          ' inconsistent, so the Uiso (msd) values are assumed'
                          f' to be associated with a temperature of {T:g}K,'
                          ' based on the former (accepted due to permissive'
@@ -249,7 +248,7 @@ def _add_compositions_and_dyninfo( ncmat, src_atoms, *, skip_dyninfo,
                 assert uiso>0.0
                 ncmat.set_dyninfo_msd( lbl, msd=uiso, temperature=uiso_temperature )
 
-def _add_sites( ncmat, src, src_atoms ):
+def _add_sites( ncmat_impl, src, src_atoms, *, warnfct ):
     #The cell and the sites (uij must be given for all or none of the sites of
     #a label):
     site2atom = src._site2atom
@@ -266,16 +265,16 @@ def _add_sites( ncmat, src, src_atoms ):
         sites.append( e )
     for iatom, has in sorted( lbl_has_uij.items() ):
         if len( has ) > 1:
-            _nc_common.warn( 'Anisotropic displacements ignored for CIF sites'
+            warnfct( 'Anisotropic displacements ignored for CIF sites'
                              f' {", ".join( src_atoms[iatom]["cif_labels"] )},'
                              ' since they are not available for all sites'
                              ' with the same NCMAT label' )
 
     st = src.cellsg
-    ncmat.set_cellsg( a=st['a'], b=st['b'], c=st['c'],
-                      alpha=st['alpha'], beta=st['beta'], gamma=st['gamma'],
-                      spacegroup=src._sgsetting )
-    ncmat.set_atomsites( sites )
+    ncmat_impl.set_cellsg( a=st['a'], b=st['b'], c=st['c'],
+                           alpha=st['alpha'], beta=st['beta'],
+                           gamma=st['gamma'], spacegroup=src._sgsetting )
+    ncmat_impl.set_atomsites( sites )
 
 def _add_description_comments( ncmat, src, *, top_comments, remap_str ):
     #Comments describing the origin of the data, and a notice:
@@ -424,17 +423,21 @@ def _check_formula( src_atoms, expected_formula, remap ):
 
 def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature,
                                           skip_dyninfo, top_comments, remap,
-                                          no_formula_check ):
+                                          no_formula_check, warnfct ):
     src = cifloader
     src_atoms, remap, remap_str = _apply_remap( src.atoms, remap )
-    ncmat = _nc_ncmat.NCMATComposer()
+    #DYNINFO analysis can only be done now, where we know the skip_dyninfo and
+    #uiso_temperature values:
+    ncmat_impl = _nc_ncmatimpl.NCMATComposerImpl( data = None, fmt = None,
+                                                  quiet = False )
+    ncmat = _nc_ncmat.NCMATComposer( ncmat_impl )
     uiso_comment = None
     if not skip_dyninfo and any( a.get('uiso') is not None for a in src_atoms ):
         uiso_temperature, uiso_comment, is_warning = _uiso_temperature(
-            cifloader, uiso_temperature )
+            cifloader, uiso_temperature, warnfct = warnfct )
     _add_compositions_and_dyninfo( ncmat, src_atoms, skip_dyninfo = skip_dyninfo,
                                    uiso_temperature = uiso_temperature )
-    _add_sites( ncmat, src, src_atoms )
+    _add_sites( ncmat_impl, src, src_atoms, warnfct = warnfct )
     _add_description_comments( ncmat, src, top_comments = top_comments,
                                remap_str = remap_str )
     if uiso_comment:

@@ -34,6 +34,7 @@ import NCrystalDev as NC
 from NCrystalDev.cifutils import CIFLoader
 from NCrystalDev._sgsymimpl import _ueq_from_ustd, _relclose
 from NCrystalDev._cifreadimpl import read_cif
+from NCrystalDev._common import warn
 from NCrystalDev.misc import evaluate_query
 
 cell = { 'a': 5.1, 'b': 6.3, 'c': 7.2,
@@ -160,7 +161,8 @@ def scenario( cellname, descr, uiso, expect_ok, **kw ):
     if uiso is not None:
         #(the printed values with their rounding errors, cf. the cif numbers
         #and sgsym positions queries):
-        cif_content = read_cif( p1bar_cif( c, uiso ), quiet = True )
+        cif_content = read_cif( p1bar_cif( c, uiso ), quiet = True,
+                                warnfct = warn )
         s, = cif_content.sites
         ( ui, ui_err ), = evaluate_query( [ 'cif', 'numbers', 'RAWDATA',
                                             '@' + s['uiso'] ] )

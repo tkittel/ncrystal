@@ -28,7 +28,6 @@ in cifutils.py.
 
 __all__ = []
 
-from . import _common as _nc_common
 from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
 from ._cifreadimpl import _extract_descr_from_cif, read_cif
@@ -54,9 +53,10 @@ def _expected_atom_count( cif_content ):
     return sum( e[0] for e in n )
 
 def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
-                   merge_equiv, tols, permissive, override_spacegroup = None ):
+                   merge_equiv, tols, permissive, warnfct,
+                   override_spacegroup = None ):
     #Returns the CIFLoader fields (a dict) for the CIF text cifdata, from the
-    #CIFSource cifsrc.
+    #CIFSource cifsrc. Warnings are passed to warnfct.
     from types import MappingProxyType
 
     from .misc import evaluate_query
@@ -66,12 +66,13 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
     result['cifsrc'] = cifsrc
     result['cifdata'] = cifdata
 
-    cif_content = read_cif( cifdata, quiet = quiet )
+    cif_content = read_cif( cifdata, quiet = quiet, warnfct = warnfct )
     result['cif_raw'] = cif_content.cif_raw
     result['cif_temperatures'] = cif_content.temperatures
 
     setting = determine_setting( cif_content, permissive = permissive,
-                                 override_spacegroup = override_spacegroup )
+                                 override_spacegroup = override_spacegroup,
+                                 warnfct = warnfct )
     cell = cif_content.cell
     expect_sgno = None
     snapped = snapped_cell( setting, cell )
@@ -95,19 +96,22 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
                                       'hm': info['hm'] } )
 
     collected_atoms = collect_atoms( cif_content, setting, cell, tols = tols,
-                                     permissive = permissive )
+                                     permissive = permissive,
+                                     warnfct = warnfct )
     final_atoms = merge_atoms( collected_atoms, _expected_atom_count( cif_content ),
                                setting, cell )
-    check_split_sites( final_atoms, permissive = permissive )
+    check_split_sites( final_atoms, permissive = permissive,
+                       warnfct = warnfct )
 
     if not refine_with_spglib:
-        _nc_common.warn('Structure refinement and verification with spglib was disabled due to explicit request.')
+        warnfct('Structure refinement and verification with spglib was disabled due to explicit request.')
 
     cellsg, sites, setting = _impl_find_sites( cellsg, final_atoms, setting,
                                                tols = tols,
                                                refine = refine_with_spglib,
                                                permissive = permissive,
-                                               quiet = quiet )
+                                               quiet = quiet,
+                                               warnfct = warnfct )
     if expect_sgno is not None:
         sgno = int( cellsg['spacegroup']['number'] )
         if sgno != expect_sgno:
@@ -117,13 +121,13 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
                 f' structure gives space group {sgno}. If the declared'
                 ' symmetry is trusted, try again with a larger tolerance'
                 ' (tol).' )
-        _nc_common.warn( 'The unit cell parameters do not exactly fit the'
+        warnfct( 'The unit cell parameters do not exactly fit the'
                          f' space group of the CIF data ({expect_sgno}), so'
                          ' the structure was refined to exactly consistent'
                          ' cell parameters' )
 
     if int(cellsg['spacegroup']['number']) == 1:
-        _nc_common.warn( 'The structure has no symmetry beyond space group 1'
+        warnfct( 'The structure has no symmetry beyond space group 1'
                          ' (P1). This is rare for real crystals and might'
                          ' indicate a supercell or low-precision coordinates.'
                          ' Be wary!' if refine_with_spglib else
@@ -138,5 +142,5 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
     result['site2atom'] = tuple( site2atom )
     result['sgsetting'] = setting
 
-    result['cifdescr'], result['actual_codid'],result['actual_mpid'],result['cif_chemformula'] =_extract_descr_from_cif( result['cif_raw'], result['cifsrc'], result['cifdata'] )
+    result['cifdescr'], result['actual_codid'],result['actual_mpid'],result['cif_chemformula'] =_extract_descr_from_cif( result['cif_raw'], result['cifsrc'], result['cifdata'], warnfct = warnfct )
     return result
