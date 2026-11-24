@@ -107,6 +107,9 @@ namespace NCRYSTAL_NAMESPACE {
 
       bool isSingleCrystal() const;
       bool isLayeredCrystal() const;
+      //Orientation of single crystals. Always use this, since it (unlike
+      //get_dir1 and get_dir2) takes the rot parameter into account, and deals
+      //with a dir2 which is arbitrary or left out:
       SCOrientation createSCOrientation() const;
 
       //Info object:
