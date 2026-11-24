@@ -18,13 +18,13 @@
  'material_name': 'PbO-alpha',
  'ncmat_cfg': 'PbO-alpha_sg129_Litharge.ncmat'}
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
-Initialise nuclear data...
-Write ENDF file tsl_O_in_PbO-alpha.endf ...
-Write ENDF file tsl_Pb_in_PbO-alpha.endf ...
-Files created:
-  tsl_O_in_PbO-alpha.endf : O with fraction 1/2
-  tsl_Pb_in_PbO-alpha.endf : Pb with fraction 1/2
-Suggested material density: 9.435756616 g/cm^3
+NCrystal: Initialise nuclear data...
+NCrystal: Write ENDF file tsl_O_in_PbO-alpha.endf ...
+NCrystal: Write ENDF file tsl_Pb_in_PbO-alpha.endf ...
+NCrystal: Files created:
+NCrystal:   tsl_O_in_PbO-alpha.endf : O with fraction 1/2
+NCrystal:   tsl_Pb_in_PbO-alpha.endf : Pb with fraction 1/2
+NCrystal: Suggested material density: 9.435756616 g/cm^3
 ncmat2endf fct returned:
 {'density': 9.435756615988,
  'files': [{'component': 'O',

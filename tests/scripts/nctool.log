@@ -194,7 +194,7 @@ Dynamic info for H (100%):
                               \-- VDOSDebyeGroupScatter(n=1;nclusters=1;TDebye=300K;T=300K;M=1.00798u;sigma_free=20.4902barn)
 ===========================================
 ============= CLI >>--test<< ====================
-Tests completed succesfully
+NCrystal: Tests completed succesfully
 ===========================================
 ============= CLI >>--doc<< ====================
 Base parameters:
@@ -230,7 +230,7 @@ Parameters related to absorption processes:
 Special parameters:
   density
   phasechoice
-NOTE: Condensed output generated. Specify --doc twice for more details.
+NCrystal: NOTE: Condensed output generated. Specify --doc twice for more details.
 ===========================================
 ============= CLI >>--doc --doc<< ====================
 Base parameters:

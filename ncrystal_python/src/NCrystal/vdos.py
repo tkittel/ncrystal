@@ -1023,13 +1023,10 @@ def _do_regularise( egrid, density, n, quiet = False):
 
     emin,emax=egrid[0],egrid[-1]
     if quiet:
-        def nc_print( *a,**kw ):
+        def info( msg ):
             pass
     else:
-        from ._common import print as nc_print
-    nc_print('old range',emin,emax)
-    THZ = vdos_units_2_eV['THz']
-    nc_print('old range [THz]',emin/THZ,emax/THZ)
+        from ._common import infomsg as info
 
     for k in range(1,1000000000):
         #k is number of bins below emin, an integral number by definition in a regularised grid.
@@ -1046,14 +1043,12 @@ def _do_regularise( egrid, density, n, quiet = False):
         nbins -= 1
         n -= 1
         new_emax -= binwidth
-    nc_print(f" ==> Choosing regular grid with n={n} pts from emin={emin} to emax={new_emax} ({new_emax-emax} beyond old emax)")
+    info(f" ==> Choosing regular grid with n={n} pts from emin={emin} to emax={new_emax} ({new_emax-emax} beyond old emax)")
     def retry():
         from ._common import warn
         nnew = n+100
-        warn('Something went wrong in DOS regularisation with n={n}. Retrying with n={nnew}.')
+        warn(f'Something went wrong in DOS regularisation with n={n}. Retrying with n={nnew}.')
         return  _do_regularise(egrid,density,n = nnew, quiet = quiet )
-    if not ( new_emax >= emax-binwidth*1.001e-3 ):
-        return retry()
     if not ( new_emax >= emax-binwidth*1.001e-3 ):
         return retry()
     new_egrid = _np_linspace(emin,new_emax,n)
@@ -1061,7 +1056,10 @@ def _do_regularise( egrid, density, n, quiet = False):
     if not abs(round(test)-test)<1e-6:
         return retry()
     new_density = _np.interp(new_egrid,egrid,density, left=0.0, right=0.0)
-    nc_print('last density values in new grid:',new_density[-5:])
+    THZ = vdos_units_2_eV['THz']
+    info(f'Regularised VDOS grid from old range [{emin:g}, {emax:g}] eV'
+         f' ([{emin/THZ:g}, {emax/THZ:g}] THz). Last density values in'
+         f' new grid: {", ".join(f"{e:g}" for e in new_density[-5:])}')
     return new_egrid,new_density
 
 def _parsevdosunit( name ):

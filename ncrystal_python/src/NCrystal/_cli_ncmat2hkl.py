@@ -19,7 +19,7 @@
 ##                                                                            ##
 ################################################################################
 
-from ._cliimpl import cli_entry_point, create_ArgumentParser, print, warn
+from ._cliimpl import cli_entry_point, create_ArgumentParser, infomsg, warn
 
 
 def climod_metadata():
@@ -183,4 +183,4 @@ def _main_impl( args, do_quiet, override_prec ):
                     ( '\n'.join( content_iter ) + '\n' ) )
         if not do_quiet:
             import pathlib
-            print(f"Wrote {pathlib.Path(args.output).name}")
+            infomsg(f"Wrote {pathlib.Path(args.output).name}")

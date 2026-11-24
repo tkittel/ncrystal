@@ -19,7 +19,7 @@
 ##                                                                            ##
 ################################################################################
 
-from ._cliimpl import cli_entry_point, create_ArgumentParser, print
+from ._cliimpl import cli_entry_point, create_ArgumentParser, infomsg, print
 
 
 def climod_metadata():
@@ -148,4 +148,4 @@ def main( progname, arglist ):
         raise SystemExit('Error: output directory does not exist:'
                          f' { outfile.parent }')
     nc_write_text(outfile,ncmat)
-    print(f"Wrote: {outfile}")
+    infomsg(f"Wrote: {outfile}")

@@ -11,7 +11,7 @@ RNG STATES: 05 05
 RNG STATES: 05 05
   -> NCrystal consumed 6 rngs
 RNG STATES: 11 05
-Tests completed succesfully
+NCrystal: Tests completed succesfully
 RNG STATES: 11 05
   -> NCrystal consumed 1 rngs
 RNG STATES: 12 05

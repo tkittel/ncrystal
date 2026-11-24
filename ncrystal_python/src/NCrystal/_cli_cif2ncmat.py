@@ -19,7 +19,7 @@
 ##                                                                            ##
 ################################################################################
 
-from ._cliimpl import cli_entry_point, create_ArgumentParser, print
+from ._cliimpl import cli_entry_point, create_ArgumentParser, infomsg, print
 
 
 def climod_metadata():
@@ -293,7 +293,7 @@ def _main_impl( args, do_quiet ):
 
     if not args.noval:
         if not do_quiet:
-            print("Verifying that resulting ncmat data can be loaded")
+            infomsg("Verifying that resulting ncmat data can be loaded")
         from .core import directMultiCreate
         directMultiCreate(out,'vdoslux=0;dcutoff=0.2')
 
@@ -302,5 +302,5 @@ def _main_impl( args, do_quiet ):
         sys.stdout.write(out)
     else:
         if not do_quiet:
-            print(f"Writing {fn}")
+            infomsg(f"Writing {fn}")
         nc_common.write_text(fn,out)

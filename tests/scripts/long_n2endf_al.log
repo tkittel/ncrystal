@@ -9,10 +9,10 @@
  'othertemps': 350}
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 NCrystal WARNING: Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it.
-Initialise nuclear data...
-Write ENDF file tsl_Al_in_Al.endf ...
-Files created:
-  tsl_Al_in_Al.endf : Al with fraction 1
+NCrystal: Initialise nuclear data...
+NCrystal: Write ENDF file tsl_Al_in_Al.endf ...
+NCrystal: Files created:
+NCrystal:   tsl_Al_in_Al.endf : Al with fraction 1
 ncmat2endf fct returned:
 {'density': 2.698645564692,
  'files': [{'component': 'Al', 'file': 'tsl_Al_in_Al.endf', 'fraction': 1.0}],

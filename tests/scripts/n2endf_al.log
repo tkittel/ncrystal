@@ -9,8 +9,8 @@
  'othertemps': 350}
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 NCrystal WARNING: Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it.
-Initialise nuclear data...
-Write ENDF file tsl_Al_in_Al.endf ...
+NCrystal: Initialise nuclear data...
+NCrystal: Write ENDF file tsl_Al_in_Al.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -412,8 +412,8 @@ DUMPING endf dict begin
               'NBT' -> [2]
               'INT' -> [2]
 DUMPING endf dict end
-Files created:
-  tsl_Al_in_Al.endf : Al with fraction 1
+NCrystal: Files created:
+NCrystal:   tsl_Al_in_Al.endf : Al with fraction 1
 ncmat2endf fct returned:
 {'density': 2.698645564692,
  'files': [{'component': 'Al', 'file': 'tsl_Al_in_Al.endf', 'fraction': 1.0}],
@@ -430,8 +430,8 @@ Created (or not) file tsl_Al_in_Al.endf with fraction 1
  'othertemps': 350}
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 NCrystal WARNING: Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it.
-Initialise nuclear data...
-Write ENDF file tsl_Al_in_Al.endf ...
+NCrystal: Initialise nuclear data...
+NCrystal: Write ENDF file tsl_Al_in_Al.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -833,8 +833,8 @@ DUMPING endf dict begin
               'NBT' -> [2]
               'INT' -> [2]
 DUMPING endf dict end
-Files created:
-  tsl_Al_in_Al.endf : Al with fraction 1
+NCrystal: Files created:
+NCrystal:   tsl_Al_in_Al.endf : Al with fraction 1
 ncmat2endf fct returned:
 {'density': 2.698645564692,
  'files': [{'component': 'Al', 'file': 'tsl_Al_in_Al.endf', 'fraction': 1.0}],
@@ -852,21 +852,21 @@ Created (or not) file tsl_Al_in_Al.endf with fraction 1
  'verbosity': 3}
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 NCrystal WARNING: Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it.
-Initialise nuclear data...
-Designated incoherent: Al
->>> alpha points: 110, alpha range: (0, 824)
->>> beta points: 153, beta range: (0, 1.4e+02)
->>> alpha points: 110, alpha range: (0, 824)
->>> beta points: 144, beta range: (0, 1e+02)
->>> Interpolating T=293.15K for N
->>> Interpolating T=293.15K for Al
->>> Interpolating T=350K for N
->>> Interpolating T=350K for Al
->> Prepare elastic approximations
->> Scaled elastic mode for N in compound: incoherent
->> Scaled elastic mode for Al in compound: designated coherent atom, dividing by frac^2=0.25
-> Generate MF7
-Write ENDF file tsl_N_in_AlN.endf ...
+NCrystal: Initialise nuclear data...
+NCrystal: Designated incoherent: Al
+NCrystal: >>> alpha points: 110, alpha range: (0, 824)
+NCrystal: >>> beta points: 153, beta range: (0, 1.4e+02)
+NCrystal: >>> alpha points: 110, alpha range: (0, 824)
+NCrystal: >>> beta points: 144, beta range: (0, 1e+02)
+NCrystal: >>> Interpolating T=293.15K for N
+NCrystal: >>> Interpolating T=293.15K for Al
+NCrystal: >>> Interpolating T=350K for N
+NCrystal: >>> Interpolating T=350K for Al
+NCrystal: >> Prepare elastic approximations
+NCrystal: >> Scaled elastic mode for N in compound: incoherent
+NCrystal: >> Scaled elastic mode for Al in compound: designated coherent atom, dividing by frac^2=0.25
+NCrystal: > Generate MF7
+NCrystal: Write ENDF file tsl_N_in_AlN.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -1252,8 +1252,8 @@ DUMPING endf dict begin
               'NBT' -> [2]
               'INT' -> [2]
 DUMPING endf dict end
-> Generate MF7
-Write ENDF file tsl_Al_in_AlN.endf ...
+NCrystal: > Generate MF7
+NCrystal: Write ENDF file tsl_Al_in_AlN.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -1659,9 +1659,9 @@ DUMPING endf dict begin
               'NBT' -> [2]
               'INT' -> [2]
 DUMPING endf dict end
-Files created:
-  tsl_N_in_AlN.endf : N with fraction 1/2
-  tsl_Al_in_AlN.endf : Al with fraction 1/2
+NCrystal: Files created:
+NCrystal:   tsl_N_in_AlN.endf : N with fraction 1/2
+NCrystal:   tsl_Al_in_AlN.endf : Al with fraction 1/2
 ncmat2endf fct returned:
 {'density': 3.263309480914,
  'files': [{'component': 'N', 'file': 'tsl_N_in_AlN.endf', 'fraction': 0.5},
@@ -1679,18 +1679,18 @@ Created (or not) file tsl_Al_in_AlN.endf with fraction 0.5
  'ncmat_cfg': 'Al2O3_sg167_Corundum.ncmat;vdoslux=1',
  'verbosity': 3}
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
-Initialise nuclear data...
->>> alpha points: 110, alpha range: (0, 824)
->>> beta points: 150, beta range: (0, 1.3e+02)
->>> alpha points: 110, alpha range: (0, 824)
->>> beta points: 144, beta range: (0, 1e+02)
->>> Interpolating T=293.15K for O
->>> Interpolating T=293.15K for Al
->> Prepare elastic approximations
->> Mixed elastic mode for O
->> Mixed elastic mode for Al
-> Generate MF7
-Write ENDF file tsl_O_in_Al2O3.endf ...
+NCrystal: Initialise nuclear data...
+NCrystal: >>> alpha points: 110, alpha range: (0, 824)
+NCrystal: >>> beta points: 150, beta range: (0, 1.3e+02)
+NCrystal: >>> alpha points: 110, alpha range: (0, 824)
+NCrystal: >>> beta points: 144, beta range: (0, 1e+02)
+NCrystal: >>> Interpolating T=293.15K for O
+NCrystal: >>> Interpolating T=293.15K for Al
+NCrystal: >> Prepare elastic approximations
+NCrystal: >> Mixed elastic mode for O
+NCrystal: >> Mixed elastic mode for Al
+NCrystal: > Generate MF7
+NCrystal: Write ENDF file tsl_O_in_Al2O3.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -1949,8 +1949,8 @@ DUMPING endf dict begin
           'S' -> {}
           'teff0_table' -> {'Teff0': [437.8326983412], 'Tint': [293.15], 'NBT': [1], 'INT': [2]}
 DUMPING endf dict end
-> Generate MF7
-Write ENDF file tsl_Al_in_Al2O3.endf ...
+NCrystal: > Generate MF7
+NCrystal: Write ENDF file tsl_Al_in_Al2O3.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -2209,10 +2209,10 @@ DUMPING endf dict begin
           'S' -> {}
           'teff0_table' -> {'Teff0': [392.0751767317], 'Tint': [293.15], 'NBT': [1], 'INT': [2]}
 DUMPING endf dict end
-Files created:
-  tsl_O_in_Al2O3.endf : O with fraction 3/5
-  tsl_Al_in_Al2O3.endf : Al with fraction 2/5
-Suggested material density: 3.991215828 g/cm^3
+NCrystal: Files created:
+NCrystal:   tsl_O_in_Al2O3.endf : O with fraction 3/5
+NCrystal:   tsl_Al_in_Al2O3.endf : Al with fraction 2/5
+NCrystal: Suggested material density: 3.991215828 g/cm^3
 ncmat2endf fct returned:
 {'density': 3.991215827994,
  'files': [{'component': 'O', 'file': 'tsl_O_in_Al2O3.endf', 'fraction': 0.6},
@@ -2234,20 +2234,20 @@ Created (or not) file tsl_Al_in_Al2O3.endf with fraction 0.4
  'verbosity': 3}
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 NCrystal WARNING: Multiple temperatures requested. Although this is supported, it is not recommended because NCrystal generates a custom (alpha,beta) grid for each temperature. Thus the (alpha,beta) grid for the first temperature will be used, and S(alpha, beta) for other temperatures will be interpolated onto it.
-Initialise nuclear data...
->>> alpha points: 110, alpha range: (0, 823)
->>> beta points: 152, beta range: (0, 1.5e+02)
->>> alpha points: 110, alpha range: (0, 824)
->>> beta points: 136, beta range: (0, 98)
->>> Interpolating T=293.15K for C
->>> Interpolating T=293.15K for Al
->>> Interpolating T=350K for C
->>> Interpolating T=350K for Al
->> Prepare elastic approximations
->> Principal elastic mode for C: coherent
->> Principal elastic mode for Al: coherent
-> Generate MF7
-Write ENDF file tsl_C_in_Al4C3.endf ...
+NCrystal: Initialise nuclear data...
+NCrystal: >>> alpha points: 110, alpha range: (0, 823)
+NCrystal: >>> beta points: 152, beta range: (0, 1.5e+02)
+NCrystal: >>> alpha points: 110, alpha range: (0, 824)
+NCrystal: >>> beta points: 136, beta range: (0, 98)
+NCrystal: >>> Interpolating T=293.15K for C
+NCrystal: >>> Interpolating T=293.15K for Al
+NCrystal: >>> Interpolating T=350K for C
+NCrystal: >>> Interpolating T=350K for Al
+NCrystal: >> Prepare elastic approximations
+NCrystal: >> Principal elastic mode for C: coherent
+NCrystal: >> Principal elastic mode for Al: coherent
+NCrystal: > Generate MF7
+NCrystal: Write ENDF file tsl_C_in_Al4C3.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -2651,8 +2651,8 @@ DUMPING endf dict begin
               'NBT' -> [2]
               'INT' -> [2]
 DUMPING endf dict end
-> Generate MF7
-Write ENDF file tsl_Al_in_Al4C3.endf ...
+NCrystal: > Generate MF7
+NCrystal: Write ENDF file tsl_Al_in_Al4C3.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -3056,9 +3056,9 @@ DUMPING endf dict begin
               'NBT' -> [2]
               'INT' -> [2]
 DUMPING endf dict end
-Files created:
-  tsl_C_in_Al4C3.endf : C with fraction 3/7
-  tsl_Al_in_Al4C3.endf : Al with fraction 4/7
+NCrystal: Files created:
+NCrystal:   tsl_C_in_Al4C3.endf : C with fraction 3/7
+NCrystal:   tsl_Al_in_Al4C3.endf : Al with fraction 4/7
 ncmat2endf fct returned:
 {'density': 2.991295484619,
  'files': [{'component': 'C',
@@ -3078,8 +3078,8 @@ Created (or not) file tsl_Al_in_Al4C3.endf with fraction 0.571429
  'force': True,
  'material_name': 'Al',
  'ncmat_cfg': 'Al_sg225.ncmat;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;temp=300K;vdoslux=1'}
-Initialise nuclear data...
-Write ENDF file tsl_Al_in_Al.endf ...
+NCrystal: Initialise nuclear data...
+NCrystal: Write ENDF file tsl_Al_in_Al.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -3332,9 +3332,9 @@ DUMPING endf dict begin
           'S' -> {}
           'teff0_table' -> {'Teff0': [326.4857579195], 'Tint': [300.0], 'NBT': [1], 'INT': [2]}
 DUMPING endf dict end
-Files created:
-  tsl_Al_in_Al.endf : Al with fraction 1
-Suggested material density: 2.698645565 g/cm^3
+NCrystal: Files created:
+NCrystal:   tsl_Al_in_Al.endf : Al with fraction 1
+NCrystal: Suggested material density: 2.698645565 g/cm^3
 ncmat2endf fct returned:
 {'density': 2.698645564692,
  'files': [{'component': 'Al', 'file': 'tsl_Al_in_Al.endf', 'fraction': 1.0}],
@@ -3349,8 +3349,8 @@ Created (or not) file tsl_Al_in_Al.endf with fraction 1
  'material_name': 'Al',
  'ncmat_cfg': 'Al_with_a_Very_Very_Ver_Very_Very_Very_Very_Ver_Very_Very_Very_Very_Ver_Very_Very_Long_Name.ncmat;vdoslux=1'}
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
-Initialise nuclear data...
-Write ENDF file tsl_Al_in_Al.endf ...
+NCrystal: Initialise nuclear data...
+NCrystal: Write ENDF file tsl_Al_in_Al.endf ...
 DUMPING endf dict begin
   0 -> {0: {'MAT': 999, 'TAPEDESCR': 'Created with ncmat2endf'}}
   1 ->
@@ -3589,9 +3589,9 @@ DUMPING endf dict begin
           'S' -> {}
           'teff0_table' -> {'Teff0': [320.2258281689], 'Tint': [293.15], 'NBT': [1], 'INT': [2]}
 DUMPING endf dict end
-Files created:
-  tsl_Al_in_Al.endf : Al with fraction 1
-Suggested material density: 2.698645565 g/cm^3
+NCrystal: Files created:
+NCrystal:   tsl_Al_in_Al.endf : Al with fraction 1
+NCrystal: Suggested material density: 2.698645565 g/cm^3
 ncmat2endf fct returned:
 {'density': 2.698645564692,
  'files': [{'component': 'Al', 'file': 'tsl_Al_in_Al.endf', 'fraction': 1.0}],

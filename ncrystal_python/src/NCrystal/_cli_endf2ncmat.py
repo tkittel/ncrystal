@@ -24,7 +24,12 @@ import warnings
 
 from . import constants as nc_constants
 from . import core as nccore
-from ._cliimpl import cli_entry_point, create_ArgumentParser, print, warn
+from ._cliimpl import (
+    cli_entry_point,
+    create_ArgumentParser,
+    infomsg,
+    warn,
+)
 
 
 def climod_metadata():
@@ -76,8 +81,10 @@ def elementZToName(z):
 def guessElementFromMass(mass_amu):
     elem_data=[ (abs(d.averageMassAMU()-mass_amu),d) for d in [nccore.atomDB(z,throwOnErrors=False) for z in range(1,120)] if d ]
     elem_data.sort()
-    print (f'Guessing mass={mass_amu:.8}u is element {elem_data[0][1].elementName()}')
     return elem_data[0][1].elementName()
+
+def _infomsg_guessed_from_mass( mass_amu, elem ):
+    infomsg(f'Guessing mass={mass_amu:.8}u is element {elem}')
 
 def guessElementName(ZA,mass_amu):
     Z=ZA//1000
@@ -96,8 +103,11 @@ def guessElementName(ZA,mass_amu):
     if guess_by_z:
         if guess_by_z!=guess_by_mass:
             raise RuntimeError(f"Mass and Z guess gives different element name (Z={Z}=>'{guess_by_z}', mass={mass_amu}amu=>'{guess_by_mass}')")
+        infomsg(f'Element {guess_by_z} determined from Z={Z}'
+                f' (consistent with mass={mass_amu:.8}u)')
         return guess_by_z
     if Z==0:
+        _infomsg_guessed_from_mass( mass_amu, guess_by_mass )
         return guess_by_mass
     raise ValueError(f'Could not determine element name from ZA={ZA}, mass={mass_amu}amu')
 
@@ -167,7 +177,7 @@ def extract_and_format_endf_file_header(filename):
              'infosection': material_info[1][451] }
 
 def parse_endf_file(filename):
-    print(f"Attempting to load ENDF file {filename}...")
+    infomsg(f"Attempting to load ENDF file {filename}...")
     result={}
     warnings_=[]
     pyne = import_pyne()
@@ -175,7 +185,7 @@ def parse_endf_file(filename):
     data.read()
     result['input_file']=pathlib.Path(filename)
     result['pynedata']=data
-    print('Performing a few sanity checks...')
+    infomsg('Performing a few sanity checks...')
     if not hasattr(data,'thermal_inelastic') or 'B' not in data.thermal_inelastic or 'scattering_law' not in data.thermal_inelastic:
         raise RuntimeError('File does not appear to contain any inelastic neutron scattering kernel.')
 
@@ -216,11 +226,14 @@ def parse_endf_file(filename):
         if a1!=1.0:
             warnings_+=['WARNING: A non-free-gas model is proposed for the first non-principal atom']
             warnings_+=['         in the original file. This is currently not handled by NCrystal.']
-            print(warnings_[-2])
-            print(warnings_[-1])
+            warn('A non-free-gas model is proposed for the first non-principal'
+                 ' atom in the original file. This is currently not handled'
+                 ' by NCrystal.')
         effective_mass = B[offset+3]#mass in units of neutron mass
         count = B[offset+6]#count per molecule or unit cell
-        theElementName = guessElementFromMass(effective_mass*nc_constants.const_neutron_mass_amu)
+        _mass_amu = effective_mass*nc_constants.const_neutron_mass_amu
+        theElementName = guessElementFromMass(_mass_amu)
+        _infomsg_guessed_from_mass( _mass_amu, theElementName )
         non_principal_data+=[[theElementName,count,effective_mass]]
 
     count_total = count_principal + sum(count_ for elemname,count_,effmass in non_principal_data)
@@ -461,7 +474,7 @@ def main( progname, arglist ):
         for _ in temperatures_combined:
             if abs(t-_)<1e-6:
                 temperatures_combined.remove(_)
-                print (f"Ignoring T={_}K as requested")
+                infomsg(f"Ignoring T={_}K as requested")
                 removed=True
                 break
         if not removed:
@@ -476,7 +489,7 @@ def main( progname, arglist ):
     for t in temperatures_combined:
         fn=pathlib.Path(f'{args.outbn}_T{t}K.ncmat')
         with fn.open('wt') as fh:
-            print(f'   -> Writing {fn}')
+            infomsg(f'   -> Writing {fn}')
             fh.write('NCMAT v2\n')
             stdnotice = f'#\n# Notice: This NCMAT file is valid at T={t}K only.'
             if len(temperatures_combined)>1:
@@ -505,6 +518,6 @@ def main( progname, arglist ):
                                                                              args.fraction1 if p2 else None))
             if p2:
                 fh.write(format_endf_block_as_ncmatdyninfo_for_principal_element(p2,t,args.fraction2))
-        print('   -> Testing that NCrystal can load this file')
+        infomsg('   -> Testing that NCrystal can load this file')
         nccore.createScatter(f'{fn};dcutoff=0.8')
-    print("All done.")
+    infomsg("All done.")

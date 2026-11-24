@@ -737,7 +737,7 @@ Command to reproduce:
   ncrystal_minimc solid::GdO3/1gcm3 -g "sphere;r=0.0102578" -s "circular;n=1e6;z=-0.0102578;ekin=0.0252617;r=0.0102578" -e ""
 ===========================================
 ============= CLI >>solid::GdO3/1gcm3 -o bla.json.gz<< ====================
-Wrote: bla.json.gz
+NCrystal: Wrote: bla.json.gz
 ===========================================
 ============= CLI >>solid::GdO3/1gcm3 -i bla.json.gz --dump<< ====================
 Caught expected ArgumentError('Do not specify CFGSTR when using --input')
@@ -783,7 +783,7 @@ Command to reproduce:
   ncrystal_minimc solid::GdO3/1gcm3 -g "sphere;r=0.01024515" -s "circular;n=1e6;z=-0.01024515;ekin=0.0252617;r=0.01024515" -e ""
 ===========================================
 ============= CLI >>solid::GdO3/1gcm3 '1e3 times' -o bla_qemu.json.gz -e 'nthreads=1;tallybins=e:50:0:0.5,q:50:0:30' -t q,e,mu<< ====================
-Wrote: bla_qemu.json.gz
+NCrystal: Wrote: bla_qemu.json.gz
 ===========================================
 ============= CLI >>-i bla_qemu.json.gz --decode<< ====================
 Simulation setup:
@@ -948,7 +948,7 @@ NCrystal MiniMC results:
          overflow  : <HIDDEN> +- <HIDDEN>
 
 ============= CLI >>-i bla_qemu.json.gz -o bla_qemu_2.json.gz<< ====================
-Wrote: bla_qemu_2.json.gz
+NCrystal: Wrote: bla_qemu_2.json.gz
 ===========================================
 ============= CLI >>solid::GdO3/1gcm3 '1kT on 1mfp' --decode<< ====================
 Simulation setup:
@@ -1130,15 +1130,15 @@ Caught expected ArgumentError('Can not use --tally when the --enginecfg also con
 ============= CLI >>void.ncmat 2Aa -t q -e '   sdftally =   '<< ====================
 Caught expected NCBadInput('Invalid parameter for chosen engine: "sdftally"')
 ============= CLI >>void.ncmat 2Aa -o bla_hello.json<< ====================
-Wrote: bla_hello.json
+NCrystal: Wrote: bla_hello.json
 ===========================================
 ============= CLI >>void.ncmat 2Aa -o bla_hello.json<< ====================
 Caught expected ArgumentError('Output file aready exists: bla_hello.json')
 ============= CLI >>void.ncmat 2Aa -o bla_hello.json --force<< ====================
-Wrote: bla_hello.json
+NCrystal: Wrote: bla_hello.json
 ===========================================
 ============= CLI >>void.ncmat 2Aa<< ====================
-Plotting tally: theta
+NCrystal: Plotting tally: theta
 CALLING plt.subplots()
 CALLING plt.gca()
 CALLING ResultOf[plt.gca(..)].fill_between(['0.0', '1.0', '1.0', '...', '179.0', '179.0', '180.0'],['1e+06', '1e+06', '0.0', '...', '0.0', '0.0', '0.0'],['0.0', '0.0', '0.0', '...', '0.0', '0.0', '0.0'],edgecolor='none',facecolor='green',label='Transmitted (100%)')
@@ -1158,7 +1158,7 @@ CALLING plt.show()
 NCrystal WARNING: No tallies are available to plot.
 ===========================================
 ============= CLI >>void.ncmat 2Aa -e tallybreakdown=0 --plot<< ====================
-Plotting tally: theta
+NCrystal: Plotting tally: theta
 CALLING plt.subplots()
 CALLING plt.gca()
 CALLING ResultOf[plt.gca(..)].bar(align='edge',alpha=None,color=None,height=array([1000000.,       0.,       0.,       0.,       0.,       0.,
@@ -1203,10 +1203,10 @@ CALLING ResultOf[plt.gca(..)].semilogy()
 CALLING plt.show()
 ===========================================
 ============= CLI >>void.ncmat 2Aa -t q,mu,e -o bla17.json.gz<< ====================
-Wrote: bla17.json.gz
+NCrystal: Wrote: bla17.json.gz
 ===========================================
 ============= CLI >>-i bla17.json.gz --plot<< ====================
-Plotting tally: e
+NCrystal: Plotting tally: e
 CALLING plt.subplots()
 CALLING plt.gca()
 CALLING ResultOf[plt.gca(..)].fill_between(['0.0', '0.00207', '0.00207', '...', '0.412', '0.412', '0.415'],['0.0', '0.0', '0.0', '...', '0.0', '0.0', '0.0'],['0.0', '0.0', '0.0', '...', '0.0', '0.0', '0.0'],edgecolor='none',facecolor='green',label='Transmitted (100%)')
@@ -1218,7 +1218,7 @@ CALLING ResultOf[plt.gca(..)].set_title('$10^6$ 2Aa neutrons through sphere with
 CALLING ResultOf[plt.gca(..)].legend([FakeHandle],['Transmitted (100%)'])
 CALLING ResultOf[plt.gca(..)].semilogy()
 CALLING plt.show()
-Plotting tally: mu
+NCrystal: Plotting tally: mu
 CALLING plt.subplots()
 CALLING plt.gca()
 CALLING ResultOf[plt.gca(..)].fill_between(['-1.0', '-0.99', '-0.99', '...', '0.99', '0.99', '1.0'],['0.0', '0.0', '0.0', '...', '0.0', '1e+06', '1e+06'],['0.0', '0.0', '0.0', '...', '0.0', '0.0', '0.0'],edgecolor='none',facecolor='green',label='Transmitted (100%)')
@@ -1230,7 +1230,7 @@ CALLING ResultOf[plt.gca(..)].set_title('$10^6$ 2Aa neutrons through sphere with
 CALLING ResultOf[plt.gca(..)].legend([FakeHandle],['Transmitted (100%)'])
 CALLING ResultOf[plt.gca(..)].semilogy()
 CALLING plt.show()
-Plotting tally: q
+NCrystal: Plotting tally: q
 CALLING plt.subplots()
 CALLING plt.gca()
 CALLING ResultOf[plt.gca(..)].fill_between(['0.0', '0.14', '0.14', '...', '27.8', '27.8', '27.9'],['1e+06', '1e+06', '0.0', '...', '0.0', '0.0', '0.0'],['0.0', '0.0', '0.0', '...', '0.0', '0.0', '0.0'],edgecolor='none',facecolor='green',label='Transmitted (100%)')
@@ -1244,8 +1244,8 @@ CALLING ResultOf[plt.gca(..)].semilogy()
 CALLING plt.show()
 ===========================================
 ============= CLI >>-i bla17.json.gz -t mu,q --plot<< ====================
-Skipping tally: e
-Plotting tally: mu
+NCrystal: Skipping tally: e
+NCrystal: Plotting tally: mu
 CALLING plt.subplots()
 CALLING plt.gca()
 CALLING ResultOf[plt.gca(..)].fill_between(['-1.0', '-0.99', '-0.99', '...', '0.99', '0.99', '1.0'],['0.0', '0.0', '0.0', '...', '0.0', '1e+06', '1e+06'],['0.0', '0.0', '0.0', '...', '0.0', '0.0', '0.0'],edgecolor='none',facecolor='green',label='Transmitted (100%)')
@@ -1257,7 +1257,7 @@ CALLING ResultOf[plt.gca(..)].set_title('$10^6$ 2Aa neutrons through sphere with
 CALLING ResultOf[plt.gca(..)].legend([FakeHandle],['Transmitted (100%)'])
 CALLING ResultOf[plt.gca(..)].semilogy()
 CALLING plt.show()
-Plotting tally: q
+NCrystal: Plotting tally: q
 CALLING plt.subplots()
 CALLING plt.gca()
 CALLING ResultOf[plt.gca(..)].fill_between(['0.0', '0.14', '0.14', '...', '27.8', '27.8', '27.9'],['1e+06', '1e+06', '0.0', '...', '0.0', '0.0', '0.0'],['0.0', '0.0', '0.0', '...', '0.0', '0.0', '0.0'],edgecolor='none',facecolor='green',label='Transmitted (100%)')

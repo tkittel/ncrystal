@@ -352,7 +352,7 @@ def _impl_find_sites( cellsg, cif_atoms, setting, *, tols, refine, permissive,
         _nc_common.warn(w)
     if not quiet:
         for m in r['msgs']:
-            _nc_common.print(m)
+            _nc_common.infomsg(m)
     nc = r['cellsg']
     cellsg = { k: nc[k] for k in ('a','b','c','alpha','beta','gamma') }
     cellsg['spacegroup'] = { 'number': nc['spacegroup'], 'hm': r['sgsymb_hm'] }

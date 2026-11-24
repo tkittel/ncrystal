@@ -15,7 +15,7 @@ EndfMetaData({"ALAB": "MyLAB", "AUTH": "NCrystal", "LIBNAME": "MyLib", "NLIB": 0
  'force': True,
  'ncmat_cfg': 'Al_sg225.ncmat;vdoslux=1'}
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
-Initialise nuclear data...
+NCrystal: Initialise nuclear data...
 FAILED (as expected): Incorrect material number assignment
 
 
@@ -62,7 +62,7 @@ FAILED (as expected): Elastic mode 'something wrong' not in (('greater', 'scaled
 --------------------------------------------------------------------------------
 {'force': True, 'ncmat_cfg': 'MgD2_sg136_MagnesiumDeuteride.ncmat;vdoslux=1'}
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
-Initialise nuclear data...
+NCrystal: Initialise nuclear data...
 FAILED (as expected): Conversion to ENDF is currently supported only for natural elements
 
 
@@ -189,87 +189,87 @@ FAILED (as expected): Error: output file already exists (run with force=True or 
 FAILED (as expected): Error: output file already exists (run with force=True or --force to overwrite)
 ============= CLI >>Al_multirole.ncmat<< ====================
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
-Initialise nuclear data...
+NCrystal: Initialise nuclear data...
 FAILED (as expected): Conversion to ENDF is not currently supported for materials where the same element has multiple dynamic roles (problematic element: Al)
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
-Designated incoherent: Th
+NCrystal: Designated incoherent: Th
 NCrystal WARNING: The extracted kernel for "O" would normally cover energies up to Emax=5eV with the provided cfg-string but a value of Emax=1eV was enforced.
 NCrystal WARNING: The extracted kernel for "Th" would normally cover energies up to Emax=5eV with the provided cfg-string but a value of Emax=1eV was enforced.
->>> alpha points: 110, alpha range: (0, 189.2)
->>> beta points: 135, beta range: (0, 39.52)
->>> alpha points: 110, alpha range: (0, 179.2)
->>> beta points: 118, beta range: (0, 14.69)
->>> Interpolating T=293.15K for O
->>> Interpolating T=293.15K for Th
->> Prepare elastic approximations
+NCrystal: >>> alpha points: 110, alpha range: (0, 189.2)
+NCrystal: >>> beta points: 135, beta range: (0, 39.52)
+NCrystal: >>> alpha points: 110, alpha range: (0, 179.2)
+NCrystal: >>> beta points: 118, beta range: (0, 14.69)
+NCrystal: >>> Interpolating T=293.15K for O
+NCrystal: >>> Interpolating T=293.15K for Th
+NCrystal: >> Prepare elastic approximations
 NCrystal WARNING: Scaled elastic mode requested but all elements are coherent. "greater" option will be used instead.
->> Principal elastic mode for O: coherent
->> Principal elastic mode for Th: coherent
+NCrystal: >> Principal elastic mode for O: coherent
+NCrystal: >> Principal elastic mode for Th: coherent
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 NCrystal WARNING: ENDF output will not contain a Bragg diffraction component
 NCrystal WARNING: ENDF output will not contain any incoherent elastic component
-Designated incoherent: Si
+NCrystal: Designated incoherent: Si
 NCrystal WARNING: The extracted kernel for "O" would normally cover energies up to Emax=5eV with the provided cfg-string but a value of Emax=1eV was enforced.
 NCrystal WARNING: The extracted kernel for "Si" would normally cover energies up to Emax=5eV with the provided cfg-string but a value of Emax=1eV was enforced.
->>> alpha points: 280, alpha range: (0, 197.6)
->>> beta points: 357, beta range: (0, 39.74)
->>> alpha points: 280, alpha range: (0, 197.6)
->>> beta points: 365, beta range: (0, 39.59)
->>> Interpolating T=293.15K for O
->>> Interpolating T=293.15K for Si
->> Prepare elastic approximations
+NCrystal: >>> alpha points: 280, alpha range: (0, 197.6)
+NCrystal: >>> beta points: 357, beta range: (0, 39.74)
+NCrystal: >>> alpha points: 280, alpha range: (0, 197.6)
+NCrystal: >>> beta points: 365, beta range: (0, 39.59)
+NCrystal: >>> Interpolating T=293.15K for O
+NCrystal: >>> Interpolating T=293.15K for Si
+NCrystal: >> Prepare elastic approximations
 NCrystal WARNING: No coherent elastic data or incoherent elastic data found: only inelastic data will be written
 NCrystal WARNING: No coherent elastic data or incoherent elastic data found: only inelastic data will be written
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 NCrystal WARNING: ENDF output will not contain a Bragg diffraction component
 NCrystal WARNING: The extracted kernel for "Al" would normally cover energies up to Emax=5eV with the provided cfg-string but a value of Emax=1eV was enforced.
->>> alpha points: 280, alpha range: (0, 197.6)
->>> beta points: 349, beta range: (0, 34.81)
->>> Interpolating T=293.15K for Al
->> Prepare elastic approximations
+NCrystal: >>> alpha points: 280, alpha range: (0, 197.6)
+NCrystal: >>> beta points: 349, beta range: (0, 34.81)
+NCrystal: >>> Interpolating T=293.15K for Al
+NCrystal: >> Prepare elastic approximations
 NCrystal WARNING: Mixed elastic mode for Al but no Bragg edges found: incoherent approximation
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 NCrystal WARNING: ENDF output will not contain a Bragg diffraction component
 NCrystal WARNING: The extracted kernel for "Al" would normally cover energies up to Emax=5eV with the provided cfg-string but a value of Emax=1eV was enforced.
->>> alpha points: 280, alpha range: (0, 197.6)
->>> beta points: 349, beta range: (0, 34.81)
->>> Interpolating T=293.15K for Al
->> Prepare elastic approximations
->> Principal elastic mode for Al: incoherent
+NCrystal: >>> alpha points: 280, alpha range: (0, 197.6)
+NCrystal: >>> beta points: 349, beta range: (0, 34.81)
+NCrystal: >>> Interpolating T=293.15K for Al
+NCrystal: >> Prepare elastic approximations
+NCrystal: >> Principal elastic mode for Al: incoherent
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 NCrystal WARNING: ENDF output will not contain any incoherent elastic component
 NCrystal WARNING: The extracted kernel for "Al" would normally cover energies up to Emax=5eV with the provided cfg-string but a value of Emax=1eV was enforced.
->>> alpha points: 280, alpha range: (0, 197.6)
->>> beta points: 349, beta range: (0, 34.81)
->>> Interpolating T=293.15K for Al
+NCrystal: >>> alpha points: 280, alpha range: (0, 197.6)
+NCrystal: >>> beta points: 349, beta range: (0, 34.81)
+NCrystal: >>> Interpolating T=293.15K for Al
 NCrystal WARNING: The extracted kernel for "Al" would normally cover energies up to Emax=5eV with the provided cfg-string but a value of Emax=1eV was enforced.
->>> Interpolating T=300K for Al
->> Prepare elastic approximations
+NCrystal: >>> Interpolating T=300K for Al
+NCrystal: >> Prepare elastic approximations
 NCrystal WARNING: Mixed elastic mode for Al but no incoherent elastic data found: coherent approximation
 NCrystal WARNING: Combining (alpha, beta) grids from different temperatures. This usually results in a huge grid.
->>> alpha points: 545, alpha range: (0, 198.4)
->>> beta points: 614, beta range: (0, 34.81)
+NCrystal: >>> alpha points: 545, alpha range: (0, 198.4)
+NCrystal: >>> beta points: 614, beta range: (0, 34.81)
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 NCrystal WARNING: The extracted kernel for "V" would normally cover energies up to Emax=5eV with the provided cfg-string but a value of Emax=1eV was enforced.
->>> alpha points: 110, alpha range: (0, 188)
->>> beta points: 126, beta range: (0, 25.6)
->>> Interpolating T=293.15K for V
->> Prepare elastic approximations
->> Scaled elastic mode for single atom V: incoherent
+NCrystal: >>> alpha points: 110, alpha range: (0, 188)
+NCrystal: >>> beta points: 126, beta range: (0, 25.6)
+NCrystal: >>> Interpolating T=293.15K for V
+NCrystal: >> Prepare elastic approximations
+NCrystal: >> Scaled elastic mode for single atom V: incoherent
 NCrystal WARNING: Temperature not explicitly given in the cfg-string, using T=293.15K
 NCrystal WARNING: ENDF output will not contain a Bragg diffraction component
-Designated incoherent: Si
+NCrystal: Designated incoherent: Si
 NCrystal WARNING: The extracted kernel for "O" would normally cover energies up to Emax=5eV with the provided cfg-string but a value of Emax=1eV was enforced.
 NCrystal WARNING: The extracted kernel for "Si" would normally cover energies up to Emax=5eV with the provided cfg-string but a value of Emax=1eV was enforced.
->>> alpha points: 280, alpha range: (0, 197.6)
->>> beta points: 357, beta range: (0, 39.74)
->>> alpha points: 280, alpha range: (0, 197.6)
->>> beta points: 365, beta range: (0, 39.59)
->>> Interpolating T=293.15K for O
->>> Interpolating T=293.15K for Si
->> Prepare elastic approximations
->> Scaled elastic mode for O: incoherent approximation
->> Scaled elastic mode for Si: incoherent approximation
+NCrystal: >>> alpha points: 280, alpha range: (0, 197.6)
+NCrystal: >>> beta points: 357, beta range: (0, 39.74)
+NCrystal: >>> alpha points: 280, alpha range: (0, 197.6)
+NCrystal: >>> beta points: 365, beta range: (0, 39.59)
+NCrystal: >>> Interpolating T=293.15K for O
+NCrystal: >>> Interpolating T=293.15K for Si
+NCrystal: >> Prepare elastic approximations
+NCrystal: >> Scaled elastic mode for O: incoherent approximation
+NCrystal: >> Scaled elastic mode for Si: incoherent approximation
 
 
 

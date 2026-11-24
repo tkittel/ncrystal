@@ -291,14 +291,14 @@ virtual::mytestmat.ncmat
 virtual::mytestmat.ncmat
     | Some more comments mentioning Togo and VDOS.
 ============= CLI >>browse -s togo -s nonexistentword<< =============
-No matching data found.
+NCrystal: No matching data found.
 ============= CLI >>browse -s togo -f stdlib Al_sg225<< =============
 stdlib::Al_sg225.ncmat
     | A. Togo and I. Tanaka, Scripta Materialia 108 (2015) 1-5
 ============= CLI >>browse -s 'togo|nomatch' -f virtual<< =============
-No matching data found.
+NCrystal: No matching data found.
 ============= CLI >>browse 'my.*mat'<< =============
-No matching data found.
+NCrystal: No matching data found.
 ============= CLI >>browse mytest othermat<< =============
 virtual::mytestmat.ncmat
 virtual::othermat.ncmat
@@ -338,12 +338,12 @@ virtual::othermat.ncmat
 virtual::Al_sg225.ncmat
 virtual::mycrystal.ncmat
 ============= CLI >>browse -f virtual mycrystl<< =============
-No matching data found.
-Did you mean: mycrystal.ncmat?
+NCrystal: No matching data found.
+NCrystal: Did you mean: mycrystal.ncmat?
 ============= CLI >>browse -f virtual mycrystal 'absxs > 100'<< =============
-No matching data found.
+NCrystal: No matching data found.
 ============= CLI >>browse -f virtual qwertyzzz<< =============
-No matching data found.
+NCrystal: No matching data found.
 ============= CLI >>browse -f virtual mycrystal --json<< =============
 [{'name': 'mycrystal.ncmat',
   'fullkey': 'virtual::mycrystal.ncmat',
