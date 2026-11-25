@@ -1,0 +1,38 @@
+isotopes:
+   ('D1',) ((1.0, 'H2'),) occupancy 1.0 positions 1
+   ('T1',) ((1.0, 'H3'),) occupancy 1.0 positions 1
+   ('O1',) ((1.0, 'O'),) occupancy 1.0 positions 1
+tritium type symbol:
+   ('H1', 'H2') ((1.0, 'H3'),) occupancy 1.0 positions 2
+element from label:
+   ('CaM1',) ((1.0, 'Ca'),) occupancy 1.0 positions 1
+   ('OA1',) ((1.0, 'O'),) occupancy 1.0 positions 1
+atom count "?":
+   ('Cl1',) ((1.0, 'Cl'),) occupancy 1.0 positions 1
+   ('Na1',) ((1.0, 'Na'),) occupancy 1.0 positions 1
+wrong atom count: rejected: Expanded number of atoms per cell (2) is different from what is stated explicitly in the CIF data (3.0). Wrong spacegroup (or choice/setting improperly specified)?
+mixed site:
+   ('Al1', 'Cr1') ((0.25, 'Cr'), (0.75, 'Al')) occupancy 1.0 positions 1
+   ('O1',) ((1.0, 'O'),) occupancy 1.0 positions 1
+@CELL
+  cubic 4
+@SPACEGROUP
+  221
+@ATOMSITES
+  O 1/2 1/2 1/2
+  X1 0 0 0
+@ATOMDB
+  X1 is 0.75 Al 0.25 Fe
+@DYNINFO
+  # WARNING: Using fallback Debye temperature value!
+  element X1
+  fraction 1/2
+  type vdosdebye
+  debye_temp 300
+@DYNINFO
+  # WARNING: Using fallback Debye temperature value!
+  element O
+  fraction 1/2
+  type vdosdebye
+  debye_temp 300
+atoms per cell after remap: 2.0

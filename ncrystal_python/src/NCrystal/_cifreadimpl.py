@@ -249,8 +249,8 @@ def _load_with_gemmi( cifblock, allow_fixup = True ):
             _nc_common.warn(f'Had to interpret spacegroup "{sg_hm}" as "{sg.hm}" before Gemmi could recognise it.')
         elif len(possible) > 1:
             poshm = [ (sgnum,gemmi.find_spacegroup_by_number(sgnum).hm) for sgnum in possible ]
-            poshm = ', '.join( '"%s"(number %i)'  for sgnum,sgstr in poshm )
-            _nc_common.warn(f'Failed to interpret spacegroup interpret spacegroup "{sg_hm}". Could be any of: {poshm}.')
+            poshm = ', '.join( f'"{sgstr}"(number {sgnum})' for sgnum,sgstr in poshm )
+            _nc_common.warn(f'Failed to interpret spacegroup "{sg_hm}". Could be any of: {poshm}.')
     if not sg:
         #manual intervention did not help:
         return struct, None

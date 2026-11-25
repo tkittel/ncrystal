@@ -265,7 +265,7 @@ def decide_symmetry( content, *, permissive, tols, quiet, refine_with_spglib,
                                 ' overriding the space group explicitly when'
                                 ' loading this file.')
 
-    if not ( isinstance(sg.number,int) or sg.number.isdigit() ) or not ( 1<=int(sg.number)<=230 ):
+    if not ( 1 <= int(sg.number) <= 230 ):
         raise _nc_core.NCBadInput(f'Could not determine space group from CIF data (it loaded with invalid SG number: {sg.number}')
     if not struct.cell.is_crystal():
         raise _nc_core.NCBadInput('Loaded structure is non-crystalline (according to Gemmi).')

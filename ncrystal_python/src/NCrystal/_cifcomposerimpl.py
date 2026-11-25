@@ -119,9 +119,9 @@ def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature, skip_d
                 else:
                     for remap_fr, remap_elem in remap_compos:
                         newcompos.append( ( fr*remap_fr, remap_elem ) )
-                d = { k: v for k,v in atom.items() if k!='composition' }
-                d['composition'] = newcompos
-                new_src_atoms.append( d )
+            d = { k: v for k,v in atom.items() if k!='composition' }
+            d['composition'] = newcompos
+            new_src_atoms.append( d )
         src_atoms = tuple( new_src_atoms )
         #For the description:
         remap_strs = []
@@ -191,7 +191,7 @@ def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature, skip_d
         ncmat.add_comments([('Structure converted (with NCrystal'
                              '.cifutils module) from:'),''])
 
-        _thedescr = _extracted_description
+        _thedescr = list( _extracted_description )#(do not modify the loader)
         if remap_str:
             _codidurl = _codid2url(src.actual_codid) if src.actual_codid else None
             _mpidurl = _mpid2url(src.actual_mpid) if src.actual_mpid else None
