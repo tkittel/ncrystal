@@ -70,3 +70,6 @@ CHANGELOG at release time, after which this file is dropped).
        speedup is typically a factor of 2-3 (7 for crystals of low
        symmetry), and for 0.05 degrees a factor of 4-6 (17 for low
        symmetry).
+     * Fixed the JSON description of SCBragg processes, in which the
+       mosaicity was provided under the key "dmax" (hiding the actual
+       dmax value) rather than "mos".

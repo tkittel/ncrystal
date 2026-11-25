@@ -26,6 +26,7 @@
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev.core as nccore
 from NCrystalDev.constants import wl2ekin
+import math
 import random
 
 def bragg_uids( sc ):
@@ -96,7 +97,23 @@ def check_xs( base ):
             n += 1
     assert n > 100
 
+def check_scbragg_description():
+    #The model specific description of SCBragg.
+    sc = nccore.createScatter( 'Ge_sg227.ncmat;dcutoff=0.5;mos=2deg'
+                               ';sccutoff=0;comp=bragg' + o1 )
+    s = sc.getSummary(short=False)
+    assert s['name'] == 'RotatedScatter'
+    (_, model), = s['specific']['components']
+    assert model['name'] == 'SCBragg'
+    d = model['specific']
+    assert sorted( d.keys() ) == [ 'dmax', 'dmin', 'mos', 'nfamilies',
+                                   'summarystr' ]
+    assert abs( d['mos'] - math.radians(2.0) ) < 1e-14
+    assert 0.5 <= d['dmin'] < d['dmax'] < 4.0
+    assert d['nfamilies'] > 3
+
 def main():
+    check_scbragg_description()
     ge = 'Ge_sg227.ncmat;dcutoff=0.3;mos=2deg'
     check_sharing( ge, 'SCBragg', True,
                    [ ';mos=1deg', ';mosprec=1e-4', ';sccutoff=0.5',
