@@ -62,7 +62,7 @@ namespace NCRYSTAL_NAMESPACE {
         if ( !info.isSinglePhase() )
           NCRYSTAL_THROW(BadInput,"Single phase material required");
         res.cfgstr = matcfg.toStrCfg();
-        res.vdoslux = VDOSLux(matcfg.get_vdoslux());
+        res.vdoslux = VDOSLux(matcfg.get_vdoslux()).expansionLux();
         bool found = false;
         for ( auto& di : info.getDynamicInfoList() ) {
           const std::string& lbl = info.displayLabel(di->atom().index);
