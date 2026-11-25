@@ -734,20 +734,20 @@ void NC::LCHelper::genScatter( LCHelper::Cache& cache, RNG& rng, double wl, cons
 NC::LCStdFrame::LCStdFrame(MosaicityFWHM mosaicity, double prec, double ntrunc)
   : m_gm(mosaicity,prec,ntrunc)
 {
-  //Moments E[w^m] of the distribution of crystallite normals, where
-  //w=1-cos(beta) and beta is the angle to the nominal normal (Simpson's rule;
-  //w=2sin^2(beta/2) for precision at small angles):
+  //Moments E[w^m] of the mosaicity distribution, W(delta), where
+  //w=1-cos(delta) and delta is the angle to the nominal normal (Simpson's
+  //rule; w=2sin^2(delta/2) for precision at small angles):
   const auto& gos = m_gm.gos();
   const double ta = gos.getTruncangle();
   constexpr unsigned n = 2048;
   const double h = ta / n;
   StableSum sums[s_norder+1];
   for ( auto i : ncrange(n+1) ) {
-    const double beta = i * h;
-    const double sb = std::sin(0.5*beta);
-    const double w = 2.0*sb*sb;
+    const double delta = i * h;
+    const double sd = std::sin(0.5*delta);
+    const double w = 2.0*sd*sd;
     double f = ( ( i==0 || i==n ) ? 1.0 : ( i%2 ? 4.0 : 2.0 ) )
-      * gos.evalXExact(beta) * std::sin(beta);
+      * gos.evalXExact(delta) * std::sin(delta);
     for ( auto& sum : sums ) {
       sum.add(f);
       f *= w;
@@ -761,15 +761,17 @@ bool NC::LCStdFrame::calcXSIntegralApprox( const NeutronPars& neutron,
                                            const NormalPars& normal,
                                            double& result ) const
 {
-  //Integral over phi in [0,pi] of the cross section, Q*W(u), with
-  //u=cos(angle between neutron and normal)=A*cos(phi)+B. Substituting u for
-  //phi gives Q*integral(W(u)*g(u)du), with g(u)=1/sqrt(A^2-(u-B)^2). W is
-  //only non-zero in a narrow window, |u-c|<=h, around c=wl/2d, and if that is
-  //well inside [B-|A|,B+|A|], g is expanded to 6th order around c. This
-  //needs the moments M_n of W around c, which are exactly given by
-  //M_n=s*E[<(-c*w+s*sin(beta)*cos(psi))^n>], s=sqrt(1-c^2) (with <..> an
-  //average over psi in [0,2pi], and w and beta as for m_wmom). Returns false
-  //if the approximation is not precise enough.
+  //Integral over phi in [0,pi] of the cross section, q*g_SC(u) (Eq. 43 in
+  //the NCrystal elastic paper, CPC 267 (2021) 108082), with u=cos(gamma)=
+  //A*cos(phi)+B (Eq. 42). Substituting u for phi gives
+  //q*integral(g_SC(u)*G(u)du), with G(u)=1/sqrt(A^2-(u-B)^2). g_SC is only
+  //non-zero in a narrow window, |u-c|<=h, around c=cos(alpha)=wl/2d, and if
+  //that is well inside [B-|A|,B+|A|], G is expanded to 6th order around c.
+  //This needs the moments M_n of g_SC around c, which are exactly given by
+  //M_n=s*E[<(-c*w+s*sin(delta)*cos(psi))^n>], s=sin(alpha) (with <..> an
+  //average over psi in [0,2pi], and E an average over the mosaicity
+  //distribution, cf. m_wmom). Returns false if the approximation is not
+  //precise enough.
   const double c = neutron.wl * normal.planeset->inv_twodsp;
   const double cta = m_gm.mosaicityCosTruncationAngle();
   if ( !( c < cta ) )
@@ -810,10 +812,10 @@ bool NC::LCStdFrame::calcXSIntegralApprox( const NeutronPars& neutron,
     }
     M[n] = mn;
   }
-  //Taylor coefficients of g, from those of (d1-t)^(-1/2) and (d2+t)^(-1/2):
+  //Taylor coefficients of G, from those of (d1-t)^(-1/2) and (d2+t)^(-1/2):
   constexpr double ck[N+1] = { 1.0, 0.5, 0.375, 0.3125, 0.2734375, 0.24609375,
                                0.2255859375 };
-  const double g0 = 1.0 / std::sqrt( d1 * d2 );
+  const double G0 = 1.0 / std::sqrt( d1 * d2 );
   const double e1 = 1.0 / d1;
   const double e2 = -1.0 / d2;
   double pe1[N+1], pe2[N+1];
@@ -829,8 +831,8 @@ bool NC::LCStdFrame::calcXSIntegralApprox( const NeutronPars& neutron,
       an += ck[k] * ck[n-k] * pe1[k] * pe2[n-k];
     sum += an * M[n];
   }
-  sum *= g0;
-  //The coefficients of g are bounded by g0/D^n, and since W>=0, |M_n| is
+  sum *= G0;
+  //The coefficients of G are bounded by G0/D^n, and since g_SC>=0, |M_n| is
   //bounded by h^(n-N)*M_N for even N. Thus the remaining terms are bounded
   //by:
   static_assert( N%2 == 0, "" );
@@ -838,11 +840,11 @@ bool NC::LCStdFrame::calcXSIntegralApprox( const NeutronPars& neutron,
   double DN = 1.0;
   for ( unsigned k = 0; k < N; ++k )
     DN *= D;
-  const double bound = g0 * M[N] * x / ( DN * ( 1.0 - x ) );
+  const double bound = G0 * M[N] * x / ( DN * ( 1.0 - x ) );
   const double acc = ncclamp( m_gm.precision(), 1e-7, 1e-2 );
   if ( !( sum > 0.0 && bound <= 0.1 * acc * sum ) )
     return false;
-  //Multiply by Q*s (cf. GaussMos::InteractionPars):
+  //Multiply by q*s (cf. GaussMos::InteractionPars):
   const double wl = neutron.wl;
   result = sum * ( wl * wl * wl / c ) * ( 0.5 * normal.planeset->fsq );
   return true;

@@ -153,7 +153,7 @@ namespace NCRYSTAL_NAMESPACE {
   private:
     const GaussMos m_gm;
     static constexpr unsigned s_norder = 6;//order of series in calcXSIntegralApprox
-    double m_wmom[s_norder+1];//E[w^m], w=1-cos(angle to nominal normal)
+    double m_wmom[s_norder+1];//E[w^m], w=1-cos(delta), cf. calcXSIntegralApprox
     bool calcXSIntegralApprox( const NeutronPars&, const NormalPars&,
                                double& result ) const;
   };

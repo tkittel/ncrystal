@@ -88,10 +88,10 @@ intervals with non-zero cross section are located from the inequalities
 above (with the degenerate cases of neutron or normal on the axis), the
 single-crystal cross section is integrated over each interval. With
 $u = \cos\gamma = A\cos\phi + B$, the integral becomes
-$\int W(u)\,(A^2-(u-B)^2)^{-1/2}\,du$, where $W$ is only non-zero in a narrow
+$\int g(u)\,(A^2-(u-B)^2)^{-1/2}\,du$, where $g$ is only non-zero in a narrow
 window around $\lambda/2d$. When that window is well inside $[B-|A|, B+|A|]$
 (the usual case), the square-root factor is expanded to 6th order, which
-needs the moments of $W$. These are exact and simple functions of
+needs the moments of $g$. These are exact and simple functions of
 $\lambda/2d$ and six averages over the mosaicity distribution, computed once.
 The method is used only if a strict bound on the neglected terms is below
 `mosprec`/10. Otherwise the trapezoidal rule is used, starting with 17

@@ -46,13 +46,13 @@ namespace NCRYSTAL_NAMESPACE {
     //
     //Finally it is possible to integrate the density along a circle on the
     //sphere, and to sample a point on a circle according to the density. The
-    //circle integrals will be evaluated either via an efficient Romberg
-    //integration scheme, or - where appropriate - via an appropriate
-    //approximation formula. The latter once again employ splined lookup tables
-    //to avoid expensive calls (this time replacing exp+acos+sqrt+erf calls),
-    //and the former uses the CosSinGridGen to avoid expensive cosine
-    //calls. Sampling points on circles is implemented precisely as rejection
-    //sampling.
+    //circle integrals (the geometrical factor g of Eqs. 22-24 in the NCrystal
+    //elastic paper, CPC 267 (2021) 108082) will be evaluated - where
+    //appropriate - via an approximation formula (Eqs. 35-36 there), which
+    //employs splined lookup tables to avoid expensive calls (exp+acos+sqrt+erf
+    //calls), and otherwise numerically with Gauss-Legendre quadrature or a
+    //table of such results. Sampling points on circles is implemented
+    //precisely as rejection sampling.
     //
     //The precision parameter is used to control the rough precision of the
     //approximations used: When and how to carry out full numerical integration
@@ -142,14 +142,14 @@ namespace NCRYSTAL_NAMESPACE {
     double m_wtrunc;//1-cos(truncangle)
     unsigned m_numint_npts;//points per segment
     unsigned m_numint_nseg;//number of segments
-    unsigned m_numint_nseries;//terms in series for beta^2 (0: use asin)
-    double numIntBetaSq( double w ) const;
+    unsigned m_numint_nseries;//terms in series for delta^2 (0: use asin)
+    double numIntDeltaSq( double w ) const;
     double circleIntegralNumerical( double cg, double sg, double ca,
                                     double sa ) const;
-    //Table of circle integrals, used instead of numerical integration if
+    //Table of circle integrals, g, used instead of numerical integration if
     //available (see setupTable for details):
     struct Table {
-      std::vector<double> g;//log(W/(sqrt(1-z^2)*sqrt(sa/sg)))
+      std::vector<double> g;//log(g/(sqrt(1-z^2)*sqrt(sa/sg)))
       unsigned na = 0, nz = 0;
       double r0, dr, kappa, dz, sintrunc, cosamin;
     } m_table;

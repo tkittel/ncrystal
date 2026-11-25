@@ -188,9 +188,9 @@ namespace NCRYSTAL_NAMESPACE {
     { 3e-03, 3e-04, 2e-05, 2e-06, 7e-08, 8e-11, 3e-13 },
     { 3e-03, 7e-04, 1e-04, 1e-05, 7e-07, 3e-09, 3e-11 } };
 
-  //Coefficients of series for beta^2 in w=1-cos(beta), i.e.
+  //Coefficients of series for delta^2 in w=1-cos(delta), i.e.
   //2^(n+1)/(n^2*binom(2n,n)) for n=1..11:
-  constexpr double gos_betasq_c[11] = {
+  constexpr double gos_deltasq_c[11] = {
     2.0, 1.0/3.0, 4.0/45.0, 1.0/35.0, 16.0/1575.0, 8.0/2079.0, 32.0/21021.0,
     4.0/6435.0, 256.0/984555.0, 128.0/1154725.0, 512.0/10669659.0 };
 
@@ -404,11 +404,11 @@ void NC::GaussOnSphere::set(double sigma, double trunc_angle, double prec ) {
     while ( icol + 1 < 7 && gos_gl_errs[irow][icol] > 0.1*m_numint_accuracy )
       ++icol;
     m_numint_npts = gos_gl_npts[icol];
-    //Terms needed in series for beta^2 for relative precision 1e-17 (if
+    //Terms needed in series for delta^2 for relative precision 1e-17 (if
     //there are enough):
     m_numint_nseries = 0;
     for ( unsigned k = 1; k <= 10; ++k ) {
-      if ( gos_betasq_c[k] * std::pow( m_wtrunc, k ) < 2e-17 ) {
+      if ( gos_deltasq_c[k] * std::pow( m_wtrunc, k ) < 2e-17 ) {
         m_numint_nseries = k;
         break;
       }
@@ -472,7 +472,7 @@ void NC::GaussOnSphere::setupTable()
   //truncangle], with coordinates which need no transcendental functions and
   //resolve the important regions: z=sin(gamma-alpha)/sin(truncangle)
   //uniform in [-1,1], and r=q/(q+kappa), q=tan(alpha/2), uniform. Tabulated
-  //is log(W/(sqrt(1-z^2)*sqrt(sin(alpha)/sin(gamma)))), which is smooth. The
+  //is log(g/(sqrt(1-z^2)*sqrt(sin(alpha)/sin(gamma)))), which is smooth. The
   //table is validated at cell centres and refined until the maximum error is
   //10 times below the requested accuracy (or else not used), ignoring
   //negligible values.
@@ -605,28 +605,29 @@ double NC::GaussOnSphere::circleIntegralNumerical( double cg, double sg,
   const double cd = cacg+sasg;
   if ( cd <= m_cta || !( sasg > 0.0 ) )
     return 0.0;
-  //Use Gauss-Legendre quadrature over the angle t along the circle (in
-  //[0,tmax], doubled by symmetry), with the exact density. With beta the
-  //angle to the centre of the Gaussian, we have
-  //w=1-cos(beta)=w0+2*sasg*sin^2(t/2), where w0=1-cd is found via
-  //sin(gamma-alpha) to avoid cancellations for small angles.
+  //Use Gauss-Legendre quadrature of Eq. 24 in the NCrystal elastic paper
+  //(CPC 267 (2021) 108082) over the angle t along the circle (in [0,t'],
+  //doubled by symmetry), with the exact density. With delta the angle to the
+  //centre of the Gaussian, Eq. 23 gives w=1-cos(delta)=w0+2*sasg*sin^2(t/2),
+  //where w0=1-cd is found via sin(gamma-alpha) to avoid cancellations for
+  //small angles.
   const double sd = sg*ca - cg*sa;
   const double w0 = sd*sd/(1.0+cd);
-  const double y = ( m_wtrunc - w0 ) / ( 2.0*sasg );//sin^2(tmax/2)
+  const double y = ( m_wtrunc - w0 ) / ( 2.0*sasg );//sin^2(t'/2)
   if ( !( y > 0.0 ) )
     return 0.0;
-  const double tmax = ( y >= 1.0 ? kPi : 2.0*std::asin( std::sqrt( y ) ) );
-  if ( tmax<=1e-12 )
+  const double tp = ( y >= 1.0 ? kPi : 2.0*std::asin( std::sqrt( y ) ) );
+  if ( tp<=1e-12 )
     return 0.0;
   const auto gl = gosGaussLegendre( m_numint_npts );
-  const double halfdt = 0.5 * tmax / m_numint_nseg;
+  const double halfdt = 0.5 * tp / m_numint_nseg;
   const double twosasg = 2.0 * sasg;
   double sum = 0.0;
   for ( unsigned iseg = 0; iseg < m_numint_nseg; ++iseg ) {
     for ( unsigned i = 0; i < gl.n; ++i ) {
       const double sh = std::sin( halfdt * ( iseg + gl.x[i] ) );
       sum += gl.w[i] * std::exp( m_expfact
-                                 * numIntBetaSq( w0 + twosasg*sh*sh ) );
+                                 * numIntDeltaSq( w0 + twosasg*sh*sh ) );
     }
   }
 #ifndef NDEBUG
@@ -641,14 +642,14 @@ double NC::GaussOnSphere::circleIntegralNumerical( double cg, double sg,
   return 2.0 * sa * m_norm * ( 2.0 * halfdt ) * sum;
 }
 
-double NC::GaussOnSphere::numIntBetaSq( double w ) const
+double NC::GaussOnSphere::numIntDeltaSq( double w ) const
 {
-  //Squared angle, beta^2, from w=1-cos(beta).
+  //Squared angle, delta^2, from w=1-cos(delta).
   nc_assert( w >= 0.0 );
   if ( m_numint_nseries ) {
-    double r = gos_betasq_c[m_numint_nseries-1];
+    double r = gos_deltasq_c[m_numint_nseries-1];
     for ( unsigned k = m_numint_nseries-1; k > 0; --k )
-      r = r * w + gos_betasq_c[k-1];
+      r = r * w + gos_deltasq_c[k-1];
     return r * w;
   }
   const double b = 2.0 * std::asin( std::sqrt( 0.5 * w ) );
