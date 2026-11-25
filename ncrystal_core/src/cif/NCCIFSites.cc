@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/cif/NCCIFSites.hh"
+#include "NCrystal/internal/cif/NCCIFSetting.hh"
 #include "NCrystal/internal/cif/NCCIFUtils.hh"
 #include "NCrystal/internal/utils/NCAtomUtils.hh"
 #include "NCrystal/internal/utils/NCFMA.hh"
@@ -108,17 +109,18 @@ namespace NCRYSTAL_NAMESPACE {
       }
 
       //Several sites for messages, e.g. 'CIF sites "A" (line 7) and "B" (line
-      //9) in "x.cif" (data_a)':
-      std::string sitesRef( BlockView b, const std::vector<const Site*>& v )
+      //9) in "x.cif" (data_a)' (without the last part if !withLocation):
+      std::string sitesRef( BlockView b, const std::vector<const Site*>& v,
+                            bool withLocation = true )
       {
-        if ( v.size() == 1 )
+        if ( v.size() == 1 && withLocation )
           return siteRef( b, *v.front() );
-        std::string res = "CIF sites ";
+        std::string res = ( v.size() == 1 ? "CIF site " : "CIF sites " );
         for ( auto i : ncrange( v.size() ) )
           res += ( i == 0 ? "" : ( i + 1 == v.size() ? " and " : ", " ) )
             + ( "\"" + v[i]->label + "\" (line " + std::to_string( v[i]->line )
                 + ")" );
-        return res + " in " + describeLocation( b );
+        return withLocation ? res + " in " + describeLocation( b ) : res;
       }
 
       //Factor converting B to U (B = 8 pi^2 U):
@@ -419,19 +421,214 @@ namespace NCRYSTAL_NAMESPACE {
         }
         return res;
       }
+
+      //Setting with more operations (in the same coordinates) whose symmetry
+      //the cell and the atoms also have, within tolSymprec (Aa, applied
+      //conservatively as fractional deviation times the longest cell axis):
+      //the highest order, the default setting among equal orders, else the
+      //first in table order. NullOpt if none:
+      Optional<SpaceGroup> higherSymmetry( const Document& doc,
+                                           const StructureItems& s,
+                                           const SpaceGroup& sg,
+                                           const CellParameters& cell,
+                                           const std::vector<CIFAtom>& atoms,
+                                           double tolSymprec )
+      {
+        //Positions grouped by species (composition and occupancy):
+        std::vector<std::vector<Vector>> species;
+        std::vector<std::size_t> speciesOf;
+        for ( auto i : ncrange( atoms.size() ) ) {
+          std::size_t isp = 0;
+          while ( isp < i && !( atoms[isp].composition
+                                == atoms[i].composition
+                                && atoms[isp].occupancy
+                                == atoms[i].occupancy ) )
+            ++isp;
+          if ( isp == i ) {
+            speciesOf.push_back( species.size() );
+            species.emplace_back();
+          } else {
+            speciesOf.push_back( speciesOf[isp] );
+          }
+          auto& v = species[speciesOf.back()];
+          v.insert( v.end(), atoms[i].positions.begin(),
+                    atoms[i].positions.end() );
+        }
+        const double maxlen = ncmax( cell.a, ncmax( cell.b, cell.c ) );
+        Optional<SpaceGroup> best;
+        unsigned bestOrder = 0;
+        for ( auto& cand : settingsWithMoreOperations( sg ) ) {
+          const unsigned order = SGSymmetry::get( cand ).order();
+          const bool betterDefault = ( cand.isDefaultSetting()
+                                       && best.has_value()
+                                       && !best.value().isDefaultSetting() );
+          if ( order < bestOrder || ( order == bestOrder && !betterDefault ) )
+            continue;
+          if ( !snapCell( doc, s, cand ).cell.has_value() )
+            continue;
+          if ( !( checkStructureSymmetry( cand, species ).maxDeviation
+                  * maxlen <= tolSymprec ) )
+            continue;
+          best = cand;
+          bestOrder = order;
+        }
+        return best;
+      }
+
+      //The atoms regrouped into the orbits of the higher symmetry setting
+      //(with the sites of each in groups), or a description of the
+      //inconsistent displacement parameters (in which case the returned
+      //atoms are empty):
+      struct Regrouped {
+        std::vector<CIFAtom> atoms;
+        Groups groups;
+        std::string inconsistency;
+      };
+      Regrouped regroup( BlockView b, const std::vector<Site>& sites,
+                         const std::vector<CIFAtom>& atoms,
+                         const Groups& groups, const SGSymmetry& sym,
+                         const CellParameters& cell,
+                         const UijUtils::CellMetric& metric, double tolUij )
+      {
+        Regrouped res;
+        std::vector<bool> done( atoms.size(), false );
+        for ( auto i : ncrange( atoms.size() ) ) {
+          if ( done[i] )
+            continue;
+          //Positions of the atoms of the same species:
+          std::vector<std::pair<std::size_t,std::size_t>> refs;
+          std::vector<Vector> pos;
+          for ( auto j : ncrange( atoms.size() ) ) {
+            if ( done[j] || atoms[j].composition != atoms[i].composition
+                 || atoms[j].occupancy != atoms[i].occupancy )
+              continue;
+            done[j] = true;
+            for ( auto k : ncrange( atoms[j].positions.size() ) ) {
+              refs.emplace_back( j, k );
+              pos.push_back( atoms[j].positions[k] );
+            }
+          }
+          for ( auto& orbit : groupPositionsIntoOrbits(
+                  sym, cell, pos, atoms[i].occupancy,
+                  SGSiteTolerances::lenient() ) ) {
+            //The old atoms in the orbit (in order):
+            std::vector<std::size_t> olds;
+            for ( auto m : orbit )
+              if ( std::find( olds.begin(), olds.end(), refs[m].first )
+                   == olds.end() )
+                olds.push_back( refs[m].first );
+            std::sort( olds.begin(), olds.end() );
+            const auto& a0 = atoms[olds.front()];
+            CIFAtom a;
+            Groups::value_type g;
+            std::vector<const Site*> gsites;
+            for ( auto io : olds ) {
+              a.labels.insert( a.labels.end(), atoms[io].labels.begin(),
+                               atoms[io].labels.end() );
+              g.insert( g.end(), groups[io].begin(), groups[io].end() );
+            }
+            for ( auto j : g )
+              gsites.push_back( &sites[j] );
+            a.composition = a0.composition;
+            a.occupancy = a0.occupancy;
+            const Vector& rep = pos[orbit.front()];
+            const auto o = expandSiteToOrbit( sym, cell, rep, a.occupancy,
+                                              SGSiteTolerances::lenient() );
+            a.positions = o.positions;
+            a.splitPositions = ( o.nearCopies ? o.nearCopies + 1 : 0 );
+            a.splitDistance = o.nearestCopyDistance;
+            //Displacements, which must agree within tolUij:
+            const auto sref = sitesRef( b, gsites, false );
+            VectD uisos;
+            bool anyUiso = false, anyUij = false, allUij = true;
+            for ( auto io : olds ) {
+              anyUiso = anyUiso || atoms[io].uiso.has_value();
+              if ( atoms[io].uiso.has_value() )
+                uisos.push_back( atoms[io].uiso.value() );
+              anyUij = anyUij || atoms[io].uij.has_value();
+              allUij = allUij && atoms[io].uij.has_value();
+            }
+            if ( anyUiso && uisos.size() != olds.size() ) {
+              res.inconsistency = "only some of " + sref + " have Uiso values";
+              return res;
+            }
+            if ( anyUij && !allUij ) {
+              res.inconsistency = ( "only some of " + sref + " have"
+                                    " anisotropic displacements" );
+              return res;
+            }
+            if ( !uisos.empty() ) {
+              const auto mm = std::minmax_element( uisos.begin(),
+                                                   uisos.end() );
+              if ( *mm.second - *mm.first > tolUij * ncabs( *mm.second ) ) {
+                res.inconsistency = sref + " have different Uiso values";
+                return res;
+              }
+              StableSum sum;
+              for ( auto u : uisos )
+                sum.add( u );
+              a.uiso = ( *mm.first == *mm.second ? *mm.first
+                         : sum.sum() / static_cast<double>( uisos.size() ) );
+            }
+            if ( allUij && anyUij ) {
+              std::vector<Vector> opos;
+              std::vector<Uij> ou;
+              for ( auto m : orbit ) {
+                opos.push_back( pos[m] );
+                ou.push_back( vectAt( atoms[refs[m].first].uijs,
+                                      refs[m].second ) );
+              }
+              auto ur = UijUtils::tryUstdOfOrbit( sym, metric, opos, ou,
+                                                  sref, tolUij );
+              if ( !ur.uij.has_value() ) {
+                //(e.g. "the uij values of the site ... do not obey the site
+                //symmetry"):
+                res.inconsistency = ur.errorMsg.value();
+                auto& c = res.inconsistency.front();
+                if ( c >= 'A' && c <= 'Z' )
+                  c = static_cast<char>( c - 'A' + 'a' );
+                return res;
+              }
+              Uij u = ur.uij.value();
+              const double ueq = UijUtils::calcUeqFromUstar(
+                UijUtils::convertUstdToUstar( u, metric ), metric );
+              u = rescaled( u, ueq, a.uiso.value() );
+              a.uij = u;
+              for ( auto& p : a.positions )
+                a.uijs.push_back( UijUtils::mapUstdToPosition(
+                                    sym, metric, a.positions.front(), p, u ) );
+            }
+            res.atoms.push_back( std::move( a ) );
+            res.groups.push_back( std::move( g ) );
+          }
+        }
+        //(in the order of the first site of each):
+        std::vector<std::size_t> order( res.atoms.size() );
+        for ( auto i : ncrange( order.size() ) )
+          order[i] = i;
+        std::sort( order.begin(), order.end(),
+                   [&res]( std::size_t x, std::size_t y )
+                   { return res.groups[x].front() < res.groups[y].front(); } );
+        Regrouped sorted;
+        for ( auto i : order ) {
+          sorted.atoms.push_back( std::move( res.atoms[i] ) );
+          sorted.groups.push_back( std::move( res.groups[i] ) );
+        }
+        return sorted;
+      }
     }
   }
 }
 
-std::vector<NCC::CIFAtom> NCC::getAtoms( const Document& doc,
-                                         const StructureItems& s,
-                                         const SpaceGroup& sg,
-                                         CIFPermissive perm, double tolUij,
-                                         const CIFWarnFct& warnfct )
+NCC::CIFAtoms NCC::getAtoms( const Document& doc, const StructureItems& s,
+                             const SpaceGroup& sg, CIFPermissive perm,
+                             double tolUij, double tolSymprec,
+                             const CIFWarnFct& warnfct )
 {
 #ifndef NDEBUG
   nc_assert_always( bool(warnfct) );
   nc_assert_always( tolUij > 0.0 && std::isfinite( tolUij ) );
+  nc_assert_always( tolSymprec >= 0.0 && std::isfinite( tolSymprec ) );
 #endif
   const bool permissive = ( perm == CIFPermissive::YES );
   const auto b = s.block( doc );
@@ -592,6 +789,36 @@ std::vector<NCC::CIFAtom> NCC::getAtoms( const Document& doc,
   auto atoms = mergeSites( b, sites, expectedAtomCount( s ), sym, cell,
                            groups );
 
+  //A higher symmetry of the atoms in the same coordinates is adopted, unless
+  //their displacements contradict it:
+  SpaceGroup finalSG = sg;
+  const auto hs = ( tolSymprec > 0.0
+                    ? higherSymmetry( doc, s, sg, cell, atoms, tolSymprec )
+                    : NullOpt );
+  if ( hs.has_value() ) {
+    auto rg = regroup( b, sites, atoms, groups,
+                             SGSymmetry::get( hs.value() ), cell, metric,
+                             tolUij );
+    const std::string given = sg.toString();
+    std::string msg = ( "The atoms of the CIF data in " + describeLocation( b )
+                        + " have the higher symmetry of space group setting "
+                        + hs.value().toString() + " (in the same coordinates"
+                        " as the given setting " + given + ")" );
+    if ( !rg.inconsistency.empty() ) {
+      msg += ", but " + rg.inconsistency;
+      if ( !permissive )
+        NCRYSTAL_THROW2( BadInput, msg << " (try permissive mode to keep"
+                         " setting " << given << ")" );
+      warnfct( msg + " (setting " + given + " kept due to permissive"
+               " mode)" );
+    } else {
+      warnfct( msg + ", which is used" );
+      atoms = std::move( rg.atoms );
+      groups = std::move( rg.groups );
+      finalSG = hs.value();
+    }
+  }
+
   //Split sites:
   for ( auto ia : ncrange( atoms.size() ) ) {
     const auto& a = atoms[ia];
@@ -614,5 +841,5 @@ std::vector<NCC::CIFAtom> NCC::getAtoms( const Document& doc,
                        " it anyway)" );
     warnfct( msg.str() + " (accepted due to permissive mode)" );
   }
-  return atoms;
+  return { finalSG, std::move( atoms ) };
 }

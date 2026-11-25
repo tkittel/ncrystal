@@ -185,6 +185,22 @@ def main():
             print( f'sites {sites}: rejected: {e}' )
         else:
             print( f'sites {sites}: loaded {len(lc.sites)} site(s)' )
+    #Without spglib, a higher symmetry in the same coordinates is used (here
+    #Fm-3m for data in P1), and the NCMAT data passes the verification:
+    p1 = ( "data_p1\n_space_group_name_H-M_alt 'P 1'\n_cell_length_a 4.05\n"
+           "_cell_length_b 4.05\n_cell_length_c 4.05\nloop_\n"
+           "_atom_site_label\n_atom_site_type_symbol\n_atom_site_fract_x\n"
+           "_atom_site_fract_y\n_atom_site_fract_z\n"
+           "_atom_site_U_iso_or_equiv\nAl1 Al 0 0 0 0.01\n"
+           "Al2 Al 0 0.5 0.5 0.01\nAl3 Al 0.5 0 0.5 0.01\n"
+           "Al4 Al 0.5 0.5 0 0.01\n" )
+    lc = CIFLoader( p1, quiet = True, refine_with_spglib = False )
+    info = NC.directLoad( lc.create_ncmat( uiso_temperature = 300,
+                                           quiet = True ) ).info
+    print( 'P1 data with Fm-3m symmetry, without spglib: space group',
+           lc.cellsg['spacegroup']['number'], len( lc.sites ), 'site(s),',
+           info.structure_info['spacegroup'] )
+    assert lc.cellsg['spacegroup']['number'] == 225
     #The MP id of data from materialsproject.org, from the local data item
     #written when downloading it, or (in older cached files) from a note:
     mpnote = ( '# Note from NCrystal.cifutils: Data from'

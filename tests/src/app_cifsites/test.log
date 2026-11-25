@@ -64,8 +64,9 @@ total occupancy above 1: rejected: CIF sites "A" (line 17) and "B" (line 18) in 
 same site given twice (total occupancy 2): rejected: CIF sites "A" (line 17) and "B" (line 18) in "test.cif" (data_test) are at the same positions with a total occupancy above 1 (2), probably the same site listed twice (e.g. at symmetry-equivalent coordinates)
 different Uiso at the same positions: rejected: CIF sites "A" (line 17) and "B" (line 18) in "test.cif" (data_test) are at the same positions but have different displacement parameters (Uiso or tensors), which is not supported
 different tensors at the same positions: rejected: CIF sites "A" (line 17) and "B" (line 18) in "test.cif" (data_test) are at the same positions but have different displacement parameters (Uiso or tensors), which is not supported
-positions at the cell boundary (periodic):
-   A+B: 0.5 Al 0.5 Cr, occupancy 1, 2 positions (first 0.99999 0.2 0.3), uiso 0.01
+positions at the cell boundary (periodic): setting 10:a
+   A+B: 0.5 Al 0.5 Cr, occupancy 1, 2 positions (first 0 0.2 0.3), uiso 0.01
+   warning: The atoms of the CIF data in "test.cif" (data_test) have the higher symmetry of space group setting 10:a (in the same coordinates as the given setting 2), which is used
 atom count check, Na 2:
    Na1: 1 Na, occupancy 1, 2 positions (first 0.1 0.2 0.3), uiso 0.01
    Cl1: 1 Cl, occupancy 1, 2 positions (first 0.3 0.1 0.2), uiso 0.01
@@ -76,6 +77,39 @@ atom count check, Na 3: rejected: The unit cell has 4 atoms in space group setti
 atom count check, Na ?:
    Na1: 1 Na, occupancy 1, 2 positions (first 0.1 0.2 0.3), uiso 0.01
    Cl1: 1 Cl, occupancy 1, 2 positions (first 0.3 0.1 0.2), uiso 0.01
+==== Higher symmetry in the same coordinates ====
+P1 data with the symmetry of P-1: setting 2
+   Na1+Na2: 1 Na, occupancy 1, 2 positions (first 0.1 0.2 0.3), uiso 0.01
+   Cl1+Cl2: 1 Cl, occupancy 1, 2 positions (first 0.3 0.1 0.2), uiso 0.01
+   warning: The atoms of the CIF data in "test.cif" (data_test) have the higher symmetry of space group setting 2 (in the same coordinates as the given setting 1), which is used
+same, Uiso within tol_uij (mean used): setting 2
+   Na1+Na2: 1 Na, occupancy 1, 2 positions (first 0.1 0.2 0.3), uiso 0.0100025
+   Cl1+Cl2: 1 Cl, occupancy 1, 2 positions (first 0.3 0.1 0.2), uiso 0.01
+   warning: The atoms of the CIF data in "test.cif" (data_test) have the higher symmetry of space group setting 2 (in the same coordinates as the given setting 1), which is used
+same, different Uiso: rejected: The atoms of the CIF data in "test.cif" (data_test) have the higher symmetry of space group setting 2 (in the same coordinates as the given setting 1), but CIF sites "Na1" (line 17) and "Na2" (line 18) have different Uiso values (try permissive mode to keep setting 1)
+same, different Uiso, permissive:
+   Na1: 1 Na, occupancy 1, 1 positions (first 0.1 0.2 0.3), uiso 0.01
+   Na2: 1 Na, occupancy 1, 1 positions (first 0.9 0.8 0.7), uiso 0.02
+   Cl1: 1 Cl, occupancy 1, 1 positions (first 0.3 0.1 0.2), uiso 0.01
+   Cl2: 1 Cl, occupancy 1, 1 positions (first 0.7 0.9 0.8), uiso 0.01
+   warning: The atoms of the CIF data in "test.cif" (data_test) have the higher symmetry of space group setting 2 (in the same coordinates as the given setting 1), but CIF sites "Na1" (line 17) and "Na2" (line 18) have different Uiso values (setting 1 kept due to permissive mode)
+same, Uiso of only one site: rejected: The atoms of the CIF data in "test.cif" (data_test) have the higher symmetry of space group setting 2 (in the same coordinates as the given setting 1), but only some of CIF sites "Na1" (line 17) and "Na2" (line 18) have Uiso values (try permissive mode to keep setting 1)
+same, tensors which are symmetry images (inversion: equal): setting 2
+   Na1+Na2: 1 Na, occupancy 1, 2 positions (first 0.1 0.2 0.3), uiso 0.012, uij 0.01 0.012 0.014 0.001 0 0
+   Cl1+Cl2: 1 Cl, occupancy 1, 2 positions (first 0.3 0.1 0.2), uiso 0.01
+   warning: The atoms of the CIF data in "test.cif" (data_test) have the higher symmetry of space group setting 2 (in the same coordinates as the given setting 1), which is used
+same, tensors which are not symmetry images: rejected: The atoms of the CIF data in "test.cif" (data_test) have the higher symmetry of space group setting 2 (in the same coordinates as the given setting 1), but the uij values of the symmetry-equivalent positions of CIF sites "Na1" (line 17) and "Na2" (line 18) are not symmetry images of each other (try permissive mode to keep setting 1)
+inversion symmetry only within 0.04 Aa (beyond tol_symprec):
+   Na1: 1 Na, occupancy 1, 1 positions (first 0.1 0.2 0.3), uiso 0.01
+   Na2: 1 Na, occupancy 1, 1 positions (first 0.91 0.8 0.7), uiso 0.01
+same, with tol_symprec 0.1 Aa: setting 2
+   Na1+Na2: 1 Na, occupancy 1, 2 positions (first 0.1 0.2 0.3), uiso 0.01
+   warning: The atoms of the CIF data in "test.cif" (data_test) have the higher symmetry of space group setting 2 (in the same coordinates as the given setting 1), which is used
+P1 data with the symmetry of P-1, not looked for:
+   Na1: 1 Na, occupancy 1, 1 positions (first 0.1 0.2 0.3), uiso 0.01
+   Na2: 1 Na, occupancy 1, 1 positions (first 0.9 0.8 0.7), uiso 0.01
+   Cl1: 1 Cl, occupancy 1, 1 positions (first 0.3 0.1 0.2), uiso 0.01
+   Cl2: 1 Cl, occupancy 1, 1 positions (first 0.7 0.9 0.8), uiso 0.01
 ==== Split sites ====
 split site: rejected: CIF site "A" in "test.cif" (data_test, line 17) is a split site: 2 of its symmetry-equivalent positions are 0.054 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
 split site, permissive:

@@ -576,6 +576,19 @@ _atom_site_fract_z 0
     r2 = ncquery( [ 'cif', 'structure', 'permissive', 'allow_cell_misfit=1',
                     'RAWDATA', 'q.cif', 'RAWDATA', misfit ] )
     print( 'cell not fitting the setting, allowed:', r2['cell'] )
+    #Data in P1 with the symmetry of Fm-3m: that setting is used (unless an
+    #override is given, or with a too small tol_symprec):
+    p1 = ( "data_p1\n_space_group_name_H-M_alt 'P 1'\n_cell_length_a 4.05\n"
+           "_cell_length_b 4.05\n_cell_length_c 4.05\nloop_\n"
+           "_atom_site_label\n_atom_site_fract_x\n_atom_site_fract_y\n"
+           "_atom_site_fract_z\n_atom_site_U_iso_or_equiv\n"
+           "Al1 0 0 0 0.01\nAl2 0 0.5 0.5 0.01\nAl3 0.5 0 0.5 0.01\n"
+           "Al4 0.5 0.5 0.00001 0.01\n" )
+    for opts in ( [], [ 'tol_symprec=1e-9' ], [ 'override_spacegroup=P 1' ] ):
+        r2 = ncquery( [ 'cif', 'structure', 'permissive', *opts, 'RAWDATA',
+                        'q.cif', 'RAWDATA', p1 ] )
+        print( 'P1 data with Fm-3m symmetry', opts, '->',
+               r2['spacegroup_setting'], len( r2['atoms'] ), 'atoms' )
     #(the Uiso values fit within a larger tolerance, without warnings):
     r2 = ncquery( [ 'cif', 'structure', 'strict', 'tol_uij=0.1',
                     str( test_data_dir / 'cif_globalblock.cif' ) ] )
@@ -594,7 +607,8 @@ _atom_site_fract_z 0
                  [ 'strict', 'tol_uij=0', 'x.cif' ],
                  [ 'strict', 'tol_uij=x', 'x.cif' ],
                  [ 'strict', 'tol_uij=1', 'tol_uij=1', 'x.cif' ],
-                 [ 'strict', 'allow_cell_misfit=0', 'x.cif' ] ):
+                 [ 'strict', 'allow_cell_misfit=0', 'x.cif' ],
+                 [ 'strict', 'tol_symprec=-1', 'x.cif' ] ):
         with ensure_error( NCBadInput, 'Invalid cif query: '
                            + json.dumps( [ 'cif', 'structure' ] + bad,
                                          separators = ( ',', ':' ) )
@@ -602,8 +616,8 @@ _atom_site_fract_z 0
                            'OPTION...,NAME] or ["cif","structure",PERMISSIVE,'
                            'OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with'
                            ' PERMISSIVE "strict" or "permissive" and OPTIONs'
-                           ' override_spacegroup=SG, tol_uij=X or'
-                           ' allow_cell_misfit=1)' ):
+                           ' override_spacegroup=SG, tol_uij=X,'
+                           ' tol_symprec=X or allow_cell_misfit=1)' ):
             ncquery( [ 'cif', 'structure', *bad ] )
 
 def rnd( o ):
