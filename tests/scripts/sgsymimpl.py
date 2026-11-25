@@ -62,13 +62,16 @@ def test_anchor():
 
 def test_errors():
     for kw in ( { 'tol': 0 }, { 'tol': -1e-3 }, { 'tol': 1.0 },
+                { 'tol': 0.0501 }, { 'tol_uij': 0.06 }, { 'tol_symprec': 0.51 },
                 { 'tol': float('nan') }, { 'tol': 'abc' },
                 { 'tol_symprec': 0.0 }, { 'tol_symprec': float('inf') },
                 { 'tol_uij': 2.0 }, { 'tol_occu': -0.1 } ):
         with ensure_error( NCBadInput, None ):
             sgs._resolve_tolerances( **kw )
-    #symprec is absolute, so values above 1 are allowed:
-    show( tol_symprec = 1.5 )
+    #The largest values:
+    d = show( tol = 0.05 )
+    assert abs( d['symprec'] - 0.5 ) < 1e-12
+    show( tol = 1e-3, tol_symprec = 0.5, tol_uij = 0.05, tol_occu = 0.05 )
 
 def test_compare():
     rc = sgs._relclose
