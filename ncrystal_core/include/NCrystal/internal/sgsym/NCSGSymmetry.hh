@@ -184,6 +184,29 @@ namespace NCRYSTAL_NAMESPACE {
   //unique axis b versus c):
   bool haveSameRotationParts( const SGSymmetry&, const SGSymmetry& );
 
+  //FIXME: Put all of the sgsym component in a namespace (like SgFmt below),
+  //and revisit the structure of the related "sgsym" queries.
+  namespace SgFmt {
+
+    //Largest denominator of the fractions written for fractional coordinates
+    //(cf. fractionalCoordinate). All coordinates of special positions have
+    //smaller denominators (cf. the specialposdenom test), so they are always
+    //written as fractions:
+    constexpr unsigned maxFractionalCoordinateDenominator = 40;
+
+    //Text of a fractional coordinate x (0<=x<1) for data files, written with
+    //the absolute tolerance atol: within atol/2, and the same text for the
+    //value read back from it. A fraction p/q (q up to the above) is written
+    //where it gives the same text, and "0" where the text would be "1" (the
+    //same position in the cell):
+    std::string fractionalCoordinate( double x, double atol );
+  }
+
+  //The settings which have all the operations of the given setting and more,
+  //in the same coordinates (candidates for a higher symmetry of a structure
+  //given in that setting), in table order:
+  std::vector<SpaceGroup> settingsWithMoreOperations( const SpaceGroup& );
+
   //The settings of the space group number (default first) which are compatible
   //with the provided cell (which may have implied parameters left as 0):
   std::vector<SpaceGroup> settingsCompatibleWithCell( unsigned number,

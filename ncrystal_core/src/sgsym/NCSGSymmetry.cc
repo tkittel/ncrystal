@@ -24,6 +24,9 @@
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
 #include "NCSGExactOrbit.hh"
+#include "NCrystal/internal/utils/NCNumFmt.hh"
+#include "NCrystal/internal/utils/NCString.hh"
+#include <cstdio>
 #include <set>
 #include <mutex>
 
@@ -1066,6 +1069,99 @@ bool NC::haveSameRotationParts( const SGSymmetry& a, const SGSymmetry& b )
     return res;
   };
   return rotsModSign( a ) == rotsModSign( b );
+}
+
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    //x rounded to a multiple of 10^-n (n<=15), without trailing zeros and
+    //without the leading zero (e.g. ".25"). With value, also the value of the
+    //text (from strtod on the raw printf output, using the same locale):
+    std::string fmtCoordGrid( double x, unsigned n, double * value = nullptr )
+    {
+      char buf[64];
+      const int len = std::snprintf( buf, sizeof(buf), "%.*f",
+                                     static_cast<int>( n ), x );
+      nc_assert_always( len > 0 && len < static_cast<int>( sizeof(buf) ) );
+      if ( value )
+        *value = std::strtod( buf, nullptr );
+      //Any character other than digits and '-' is the decimal point of the
+      //current locale:
+      for ( char * c = buf; c != buf + len; ++c )
+        if ( !( ( *c >= '0' && *c <= '9' ) || *c == '-' ) )
+          *c = '.';
+      std::string s( buf, static_cast<std::size_t>( len ) );
+      if ( s.find( '.' ) != std::string::npos ) {
+        while ( s.back() == '0' )
+          s.pop_back();
+        if ( s.back() == '.' )
+          s.pop_back();
+      }
+      if ( s.compare( 0, 2, "0." ) == 0 )
+        s = s.substr( 1 );
+      return s.empty() || s == "-0" ? "0" : s;
+    }
+  }
+}
+
+std::string NC::SgFmt::fractionalCoordinate( double x, double atol )
+{
+  if ( !( x >= 0.0 && x < 1.0 ) || !( atol >= 0.0 ) )
+    NCRYSTAL_THROW2(BadInput,"Invalid fractional coordinate "<<fmt(x)
+                    <<" (must be in [0,1)) or tolerance "<<fmt(atol));
+  constexpr unsigned maxden = maxFractionalCoordinateDenominator;
+  //The smallest n with 10^-n <= atol, exact (shortest text reading back
+  //exactly) if more than 15:
+  static constexpr double units[16] = { 1.0, 0.1, 1e-2, 1e-3, 1e-4, 1e-5,
+                                        1e-6, 1e-7, 1e-8, 1e-9, 1e-10, 1e-11,
+                                        1e-12, 1e-13, 1e-14, 1e-15 };
+  unsigned n = 0;
+  while ( n < 16 && !( units[n] <= atol ) )
+    ++n;
+  std::string t;
+  if ( n >= 16 ) {
+    t = fmtSigDigits( x, 17, true, maxden );
+  } else {
+    //Fractions decided from the value xt of the text, so values with the
+    //same text get the same result. A candidate with the same text is within
+    //half a unit of the last digit, and so within units[n] of xt (a cheap
+    //check first):
+    double xt;
+    t = fmtCoordGrid( x, n, &xt );
+    for ( auto q : ncrange( 2u, maxden + 1 ) ) {
+      const double p = std::round( xt * q );
+      if ( p >= 1.0 && p < q && ncabs( p / q - xt ) <= units[n]
+           && fmtCoordGrid( p / q, n ) == t ) {
+        std::ostringstream ss;
+        ss << static_cast<unsigned>( p ) << '/' << q;
+        t = ss.str();
+        break;
+      }
+    }
+  }
+  return t == "1" ? "0" : t;
+}
+
+std::vector<NC::SpaceGroup>
+NC::settingsWithMoreOperations( const SpaceGroup& sg )
+{
+  auto sortedOps = []( const SpaceGroup& g )
+  {
+    const auto& ops = SGSymmetry::get( g ).operations();
+    std::vector<SymOp> v( ops.begin(), ops.end() );
+    std::sort( v.begin(), v.end() );
+    return v;
+  };
+  const auto mine = sortedOps( sg );
+  std::vector<SpaceGroup> res;
+  for ( std::uint16_t hn = 1; hn <= SpaceGroupSettingIdx::max_value; ++hn ) {
+    const SpaceGroup other{ SpaceGroupSettingIdx{ hn } };
+    if ( SGSymmetry::get( other ).operations().size() <= mine.size() )
+      continue;
+    const auto ops = sortedOps( other );
+    if ( std::includes( ops.begin(), ops.end(), mine.begin(), mine.end() ) )
+      res.push_back( other );
+  }
+  return res;
 }
 
 std::vector<NC::SpaceGroup>

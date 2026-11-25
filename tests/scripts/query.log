@@ -158,7 +158,8 @@ Caught expected NCBadInput('Invalid SAB JSON query: ["sab","surveyor","@1@2@x","
 227:2 site Si,0.125,0.125,0.125 -> 8 positions
 
 >>> Sending query: ['sgsym', 'sites', 'strict', '227:2', 'strict', '5.43,5.43,5.43,90,90,90', 'Si,0.125,0.125,0.125', 'Si,0.875,0.875,0.875', 'Si,0.875,0.375,0.375', 'Si,0.375,0.875,0.375', 'Si,0.375,0.375,0.875', 'Si,0.125,0.625,0.625', 'Si,0.625,0.125,0.625', 'Si,0.625,0.625,0.125']
-{'is_default_setting': False,
+{'higher_symmetry': [],
+ 'is_default_setting': False,
  'sites': [{'label': 'Si',
             'multiplicity': 8,
             'position': [0.125, 0.125, 0.125],
@@ -590,7 +591,8 @@ Caught expected NCBadInput('Invalid space group specification: "227" (space grou
  'fromhall',
  'fromhm',
  'fromnumber',
- 'cell']
+ 'cell',
+ 'fmtcoords']
 ===========================================
 ============= CLI >>sgsym fromops x,y,z @-x,-y,-z<< ====================
 ['2']
