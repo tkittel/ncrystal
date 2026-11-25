@@ -122,8 +122,8 @@ lab frame).
 
 The model is set up in the frame of the crystal and shared between all
 materials which only differ in the orientation of the crystal (`dir1`,
-`dir2`, `rot`): each of these merely wraps it in a `RotatedScatter` process,
-which rotates neutron directions to and from the crystal frame. Many
+`dir2`, `rot`): each `SCBragg` process holds the shared model and its own
+rotation of neutron directions to and from the crystal frame. Many
 differently oriented crystals of the same material thus cost little memory
 and initialisation time.
 

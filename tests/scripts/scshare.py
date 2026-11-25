@@ -29,19 +29,24 @@ from NCrystalDev.constants import wl2ekin
 import math
 import random
 
-def bragg_uids( sc ):
-    #Returns ( name and uid of the model wrapped in a RotatedScatter,
-    #          uid of any PowderBragg component )
+def crystal_component( sc ):
+    #The SCBragg or LCBragg component.
     s = sc.getSummary(short=False)
     comps = ( [ c for _, c in s['specific']['components'] ]
               if s['name'] == 'ProcComposition' else [ s ] )
-    rot = [ c for c in comps if c['name'] == 'RotatedScatter' ]
+    cryst = [ c for c in comps if c['name'] in ('SCBragg','LCBragg') ]
+    assert len(cryst) == 1
+    assert cryst[0]['isOriented']
+    return cryst[0], comps
+
+def bragg_uids( sc ):
+    #Returns ( name and model_uid of the SCBragg or LCBragg component,
+    #          uid of any PowderBragg component )
+    cryst, comps = crystal_component( sc )
     powder = [ c['uid'] for c in comps if c['name'] == 'PowderBragg' ]
-    assert len(rot) == 1 and len(powder) <= 1
-    assert rot[0]['isOriented']
-    (scale, model), = rot[0]['specific']['components']
-    assert scale == 1.0
-    return ( model['name'], model['uid'] ), ( powder[0] if powder else None )
+    assert len(powder) <= 1
+    return ( ( cryst['name'], cryst['specific']['model_uid'] ),
+             ( powder[0] if powder else None ) )
 
 #A lab vector (x,y,z) with orientation o1 corresponds to (z,x,y) with o2:
 o1 = ( ';dir1=@crys_hkl:5,1,1@lab:0,0,1;dir2=@crys_hkl:0,-1,1@lab:0,1,0'
@@ -97,23 +102,38 @@ def check_xs( base ):
             n += 1
     assert n > 100
 
-def check_scbragg_description():
-    #The model specific description of SCBragg.
+def check_descriptions():
+    #The model specific descriptions of SCBragg and LCBragg.
     sc = nccore.createScatter( 'Ge_sg227.ncmat;dcutoff=0.5;mos=2deg'
                                ';sccutoff=0;comp=bragg' + o1 )
     s = sc.getSummary(short=False)
-    assert s['name'] == 'RotatedScatter'
-    (_, model), = s['specific']['components']
-    assert model['name'] == 'SCBragg'
-    d = model['specific']
-    assert sorted( d.keys() ) == [ 'dmax', 'dmin', 'mos', 'nfamilies',
-                                   'summarystr' ]
+    assert s['name'] == 'SCBragg'
+    d = s['specific']
+    assert sorted( d.keys() ) == [ 'crystal2lab', 'dmax', 'dmin', 'model_uid',
+                                   'mos', 'nfamilies', 'summarystr' ]
     assert abs( d['mos'] - math.radians(2.0) ) < 1e-14
     assert 0.5 <= d['dmin'] < d['dmax'] < 4.0
     assert d['nfamilies'] > 3
+    assert d['summarystr'].startswith('nfamilies=')
+    pg = nccore.createScatter( 'C_sg194_pyrolytic_graphite.ncmat;dcutoff=0.5'
+                               ';mos=2deg;sccutoff=0;comp=bragg'
+                               ';dir1=@crys_hkl:0,0,1@lab:0,1,0' )
+    s = pg.getSummary(short=False)
+    assert s['name'] == 'LCBragg'
+    d = s['specific']
+    assert sorted( d.keys() ) == [ 'crystal2lab', 'dmax', 'dmin', 'lcaxis',
+                                   'lcmode', 'model_uid', 'mos',
+                                   'nplanesets', 'summarystr' ]
+    assert d['lcaxis'] == [ 0.0, 0.0, 1.0 ] and d['lcmode'] == 0
+    assert 0.5 <= d['dmin'] < d['dmax'] < 4.0 and d['nplanesets'] > 3
+    #The lab direction of the layer axis (crystal z) is y:
+    col_z = [ row[2] for row in d['crystal2lab'] ]
+    assert max( abs(a-b) for a,b in zip( col_z, [0.0,1.0,0.0] ) ) < 1e-12
+    assert 'lcaxis=(0,0,1)' in d['summarystr']
+    assert 'lcmode' not in d['summarystr']
 
 def main():
-    check_scbragg_description()
+    check_descriptions()
     ge = 'Ge_sg227.ncmat;dcutoff=0.3;mos=2deg'
     check_sharing( ge, 'SCBragg', True,
                    [ ';mos=1deg', ';mosprec=1e-4', ';sccutoff=0.5',

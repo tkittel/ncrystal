@@ -24,6 +24,18 @@
 #include "NCrystal/interfaces/NCProcImpl.hh"
 #include "NCrystal/interfaces/NCInfo.hh"
 #include "NCrystal/interfaces/NCSCOrientation.hh"
+#include "NCrystal/internal/utils/NCRotMatrix.hh"
+
+namespace NCRYSTAL_NAMESPACE {
+  //Rows of a rotation matrix (e.g. for JSON output):
+  inline std::vector<VectD> rotMatrixRows( const RotMatrix& m )
+  {
+    std::vector<VectD> res;
+    for ( unsigned i = 0; i < 3; ++i )
+      res.push_back( VectD{ m[i][0], m[i][1], m[i][2] } );
+    return res;
+  }
+}
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -51,6 +63,23 @@ namespace NCRYSTAL_NAMESPACE {
              PlaneProvider * plane_provider = nullptr,
              double prec = 1e-3, double ntrunc = 0.0 );
 
+    //The model itself is set up in the frame of the crystal, and can be
+    //shared between SCBragg instances for crystals differing only in
+    //orientation. Parameters are as for the constructor above:
+    class Model;
+    using ModelPtr = shared_obj<const Model>;
+    static ModelPtr createModel( const Info&,
+                                 MosaicityFWHM,
+                                 double delta_d = 0,
+                                 PlaneProvider * plane_provider = nullptr,
+                                 double prec = 1e-3, double ntrunc = 0.0 );
+
+    //Construct from a model and the rotation from the crystal to the lab frame
+    //(cf. getCrystal2LabRot):
+    SCBragg( ModelPtr, const RotMatrix& crystal2lab );
+    const ModelPtr& model() const { return m_model; }
+    const RotMatrix& crystal2lab() const { return m_rot; }
+
     const char * name() const noexcept override { return "SCBragg"; }
 
     virtual ~SCBragg();
@@ -69,8 +98,8 @@ namespace NCRYSTAL_NAMESPACE {
   protected:
     Optional<std::string> specificJSONDescription() const override;
   private:
-    struct pimpl;
-    std::unique_ptr<pimpl> m_pimpl;
+    ModelPtr m_model;
+    RotMatrix m_rot, m_invrot;//crystal to lab and vice versa
   };
 
 }

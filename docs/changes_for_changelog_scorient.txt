@@ -6,12 +6,14 @@ CHANGELOG at release time, after which this file is dropped).
 
      * Bragg diffraction models of single crystals (SCBragg, LCBragg) are
        now set up in the frame of the crystal and shared between all
-       materials differing only in the orientation of the crystal. A new
-       RotatedScatter process, visible in process summaries, takes care
-       of rotating neutron directions to and from that frame. This
-       greatly reduces memory usage and initialisation time when many
-       differently oriented crystals of the same material are needed
-       (github issue #333).
+       materials differing only in the orientation of the crystal, with
+       each SCBragg or LCBragg process rotating neutron directions to and
+       from that frame. This greatly reduces memory usage and
+       initialisation time when many differently oriented crystals of the
+       same material are needed (github issue #333). The JSON description
+       of these processes gained "model_uid" (identical for processes
+       sharing a model) and "crystal2lab" (the rotation matrix) entries,
+       and LCBragg processes now have a description and summary string.
      * Crystal directions in the dir1 and dir2 parameters can now also be
        given as lattice directions, i.e. along u*a+v*b+w*c, using the new
        form "@crys_uvw:u,v,w" (C++: the new UVWDir type). The description

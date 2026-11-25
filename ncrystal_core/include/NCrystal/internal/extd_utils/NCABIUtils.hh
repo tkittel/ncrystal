@@ -23,7 +23,6 @@
 
 #include "NCrystal/core/NCDefs.hh"
 #include "NCrystal/interfaces/NCProcImpl.hh"
-#include "NCrystal/internal/extd_utils/NCRotatedScatter.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -65,8 +64,6 @@ namespace NCRYSTAL_NAMESPACE {
               return false;
           }
           return true;
-        } else if ( auto rot = dynamic_cast<const RotatedScatter*>(&p) ) {
-          return isPureElasticScatter( rot->process() );
         } else {
           std::string name(p.name());
           return ( name == "PowderBragg"

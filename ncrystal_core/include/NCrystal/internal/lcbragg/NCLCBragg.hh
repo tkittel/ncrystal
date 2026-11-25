@@ -24,6 +24,7 @@
 #include "NCrystal/interfaces/NCProcImpl.hh"
 #include "NCrystal/interfaces/NCSCOrientation.hh"
 #include "NCrystal/internal/utils/NCVector.hh"
+#include "NCrystal/internal/utils/NCRotMatrix.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -54,6 +55,26 @@ namespace NCRYSTAL_NAMESPACE {
              double prec=1e-3,
              double ntrunc=0.0 );
 
+    //The model itself is set up in the frame of the crystal, and can be
+    //shared between LCBragg instances for crystals differing only in
+    //orientation. Parameters are as for the constructor above:
+    class Model;
+    using ModelPtr = shared_obj<const Model>;
+    static ModelPtr createModel( const Info&,
+                                 MosaicityFWHM,
+                                 const LCAxis& lcaxis,
+                                 int mode = 0,
+                                 double delta_d = 0,
+                                 PlaneProvider * plane_provider = 0,
+                                 double prec=1e-3,
+                                 double ntrunc=0.0 );
+
+    //Construct from a model and the rotation from the crystal to the lab frame
+    //(cf. getCrystal2LabRot):
+    LCBragg( ModelPtr, const RotMatrix& crystal2lab );
+    const ModelPtr& model() const { return m_model; }
+    const RotMatrix& crystal2lab() const { return m_rot; }
+
     const char * name() const noexcept override { return "LCBragg"; }
 
     virtual ~LCBragg();
@@ -69,9 +90,11 @@ namespace NCRYSTAL_NAMESPACE {
     bool isPureElasticScatter() const override { return true; }
 #endif
 
+  protected:
+    Optional<std::string> specificJSONDescription() const override;
   private:
-    struct pimpl;
-    std::unique_ptr<pimpl> m_pimpl;
+    ModelPtr m_model;
+    RotMatrix m_rot, m_invrot;//crystal to lab and vice versa
   };
 }
 

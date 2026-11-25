@@ -189,6 +189,7 @@ namespace NCRYSTAL_NAMESPACE {
     double crossSectionNoCache( double wavelength, const Vector& indir ) const;
 
     double braggThreshold() const;//max wavelength, beyond which all cross-sections will be 0.
+    const std::vector<LCPlaneSet>& planeSets() const { return m_planes; }
 
     const GaussMos& gaussMos() { return m_lcstdframe.gaussMos(); }
 

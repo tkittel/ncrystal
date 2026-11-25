@@ -36,7 +36,6 @@
 #include "NCrystal/internal/sablegacy/NCSABLegacyFactory.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/extd_utils/NCProcCompBldr.hh"
-#include "NCrystal/internal/extd_utils/NCRotatedScatter.hh"
 #include "NCrystal/internal/extd_utils/NCOrientUtils.hh"
 #include "NCrystal/internal/fact_utils/NCFactoryUtils.hh"
 
@@ -104,7 +103,9 @@ namespace NCRYSTAL_NAMESPACE {
     //orientations of a given crystal.
 
     struct SCModel {
-      ProcImpl::ProcPtr crystal;//SCBragg or LCBragg, in the crystal frame
+      //Either an SCBragg or an LCBragg model:
+      std::shared_ptr<const SCBragg::Model> sc;
+      std::shared_ptr<const LCBragg::Model> lc;
       ProcImpl::OptionalProcPtr powder;//planes below sccutoff (if any)
     };
 
@@ -176,32 +177,23 @@ namespace NCRYSTAL_NAMESPACE {
                      && (void*)sc_pp.get()==(void*)ppwcutoff );
         }
 
-        //Crystal and "lab" frames coincide:
-        SCOrientation sco;
-        sco.setPrimaryDirection( CrystalAxis{0.,0.,1.}, LabAxis{0.,0.,1.} );
-        sco.setSecondaryDirection( CrystalAxis{1.,0.,0.}, LabAxis{1.,0.,0.} );
-
-        auto mkCrystal = [&]() -> ProcImpl::ProcPtr
-        {
-          if ( lcaxis.isStrictNullVector() )
-            return makeSO<SCBragg>( info, sco, mos, 0.0, sc_pp.get(),
-                                    mosprec, 0.0 );
-          return makeSO<LCBragg>( info, sco, mos, lcaxis.as<LCAxis>(),
-                                  std::get<4>(k), 0.0, sc_pp.get(),
-                                  mosprec, 0.0 );
-        };
-        auto crystal = mkCrystal();
-        ProcImpl::OptionalProcPtr powder;
+        SCModel model;
+        if ( lcaxis.isStrictNullVector() )
+          model.sc = SCBragg::createModel( info, mos, 0.0, sc_pp.get(),
+                                           mosprec, 0.0 );
+        else
+          model.lc = LCBragg::createModel( info, mos, lcaxis.as<LCAxis>(),
+                                           std::get<4>(k), 0.0, sc_pp.get(),
+                                           mosprec, 0.0 );
         if ( ppwcutoff && ppwcutoff->hasPlanesWithheldInLastLoop() ) {
           nc_assert_always(info.hasStructureInfo());
           const double v0natoms
             = ( info.getStructureInfo().volume
                 * info.getStructureInfo().n_atoms_average );
-          powder = makeSO<PowderBragg>
+          model.powder = makeSO<PowderBragg>
             ( v0natoms, ppwcutoff->consumePlanesWithheldInLastLoop() );
         }
-        return std::make_shared<const SCModel>( SCModel{ std::move(crystal),
-                                                         std::move(powder) } );
+        return std::make_shared<const SCModel>( std::move(model) );
       }
     };
 
@@ -283,12 +275,18 @@ namespace NCRYSTAL_NAMESPACE {
             auto cry2lab = getCrystal2LabRot
               ( cfg.createSCOrientation(),
                 getReciprocalLatticeRot( info.getStructureInfo() ) );
-            //Pointer owning the entire cache entry, to keep that alive:
-            ProcImpl::ProcPtr crystal( std::shared_ptr<const ProcImpl::Process>
-                                       ( model, model->crystal.get() ) );
+            //Pointers owning the entire cache entry, to keep that alive:
             ProcImpl::ProcComposition::ComponentList cl;
-            cl.emplace_back( makeSO<RotatedScatter>( std::move(crystal),
-                                                     cry2lab ) );
+            if ( model->sc )
+              cl.emplace_back( makeSO<SCBragg>
+                               ( SCBragg::ModelPtr( std::shared_ptr<const SCBragg::Model>
+                                                    ( model, model->sc.get() ) ),
+                                 cry2lab ) );
+            else
+              cl.emplace_back( makeSO<LCBragg>
+                               ( LCBragg::ModelPtr( std::shared_ptr<const LCBragg::Model>
+                                                    ( model, model->lc.get() ) ),
+                                 cry2lab ) );
             if ( model->powder )
               cl.emplace_back( ProcImpl::ProcPtr{ model->powder } );
             return cl;

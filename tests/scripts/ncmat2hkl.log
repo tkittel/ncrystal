@@ -232,8 +232,7 @@ HKL planes (d_lower = 0.6 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=16;2dmax=4.67605Aa;max_contrib=1.67315barn)
 XS max-abs-diff converted laz vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=16;dmin=0.610497Aa;dmax=2.33803Aa;mos=0.174533radians)
+SCBragg(nfamilies=16;dmin=0.610497Aa;dmax=2.33803Aa;mos=0.174533radians)
 SC XS max-abs-diff converted laz vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -432,8 +431,7 @@ HKL planes (d_lower = 0.6 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=16;2dmax=4.67605Aa;max_contrib=1.67315barn)
 XS max-abs-diff converted lau vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=16;dmin=0.610497Aa;dmax=2.33803Aa;mos=0.174533radians)
+SCBragg(nfamilies=16;dmin=0.610497Aa;dmax=2.33803Aa;mos=0.174533radians)
 SC XS max-abs-diff converted lau vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -647,8 +645,7 @@ HKL planes (d_lower = 3.2 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=25;2dmax=15.3739Aa;max_contrib=1.23625barn)
 XS max-abs-diff converted laz vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=25;dmin=3.20573Aa;dmax=7.68695Aa;mos=0.174533radians)
+SCBragg(nfamilies=25;dmin=3.20573Aa;dmax=7.68695Aa;mos=0.174533radians)
 SC XS max-abs-diff converted laz vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -887,8 +884,7 @@ HKL planes (d_lower = 3.2 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=25;2dmax=15.3739Aa;max_contrib=1.23625barn)
 XS max-abs-diff converted lau vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=25;dmin=3.20573Aa;dmax=7.68695Aa;mos=0.174533radians)
+SCBragg(nfamilies=25;dmin=3.20573Aa;dmax=7.68695Aa;mos=0.174533radians)
 SC XS max-abs-diff converted lau vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -1132,8 +1128,7 @@ HKL planes (d_lower = 2 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=58;2dmax=12.3334Aa;max_contrib=3.14894barn)
 XS max-abs-diff converted laz vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=58;dmin=2.00538Aa;dmax=6.16672Aa;mos=0.174533radians)
+SCBragg(nfamilies=58;dmin=2.00538Aa;dmax=6.16672Aa;mos=0.174533radians)
 SC XS max-abs-diff converted laz vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -1341,8 +1336,7 @@ HKL planes (d_lower = 2 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=58;2dmax=12.3334Aa;max_contrib=3.14894barn)
 XS max-abs-diff converted lau vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=58;dmin=2.00538Aa;dmax=6.16672Aa;mos=0.174533radians)
+SCBragg(nfamilies=58;dmin=2.00538Aa;dmax=6.16672Aa;mos=0.174533radians)
 SC XS max-abs-diff converted lau vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -1549,8 +1543,7 @@ HKL planes (d_lower = 1.2 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=101;2dmax=10.2014Aa;max_contrib=3.30927barn)
 XS max-abs-diff converted laz vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=101;dmin=1.20577Aa;dmax=5.1007Aa;mos=0.174533radians)
+SCBragg(nfamilies=101;dmin=1.20577Aa;dmax=5.1007Aa;mos=0.174533radians)
 SC XS max-abs-diff converted laz vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -1757,8 +1750,7 @@ HKL planes (d_lower = 1.2 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=101;2dmax=10.2014Aa;max_contrib=3.30927barn)
 XS max-abs-diff converted lau vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=101;dmin=1.20577Aa;dmax=5.1007Aa;mos=0.174533radians)
+SCBragg(nfamilies=101;dmin=1.20577Aa;dmax=5.1007Aa;mos=0.174533radians)
 SC XS max-abs-diff converted lau vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -2014,8 +2006,7 @@ HKL planes (d_lower = 0.9 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=47;2dmax=10.02Aa;max_contrib=6.51579barn)
 XS max-abs-diff converted laz vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=47;dmin=0.908577Aa;dmax=5.01Aa;mos=0.174533radians)
+SCBragg(nfamilies=47;dmin=0.908577Aa;dmax=5.01Aa;mos=0.174533radians)
 SC XS max-abs-diff converted laz vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -2247,8 +2238,7 @@ HKL planes (d_lower = 0.9 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=47;2dmax=10.02Aa;max_contrib=6.51579barn)
 XS max-abs-diff converted lau vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=47;dmin=0.908577Aa;dmax=5.01Aa;mos=0.174533radians)
+SCBragg(nfamilies=47;dmin=0.908577Aa;dmax=5.01Aa;mos=0.174533radians)
 SC XS max-abs-diff converted lau vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -2479,8 +2469,7 @@ HKL planes (d_lower = 1 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=33;2dmax=7.07472Aa;max_contrib=4.07125barn)
 XS max-abs-diff converted laz vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=33;dmin=1.01396Aa;dmax=3.53736Aa;mos=0.174533radians)
+SCBragg(nfamilies=33;dmin=1.01396Aa;dmax=3.53736Aa;mos=0.174533radians)
 SC XS max-abs-diff converted laz vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -2703,8 +2692,7 @@ HKL planes (d_lower = 1 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=33;2dmax=7.07472Aa;max_contrib=4.07125barn)
 XS max-abs-diff converted lau vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=33;dmin=1.01396Aa;dmax=3.53736Aa;mos=0.174533radians)
+SCBragg(nfamilies=33;dmin=1.01396Aa;dmax=3.53736Aa;mos=0.174533radians)
 SC XS max-abs-diff converted lau vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -2883,8 +2871,7 @@ HKL planes (d_lower = 1.5 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=11;2dmax=6.95742Aa;max_contrib=2.61933barn)
 XS max-abs-diff converted laz vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=11;dmin=1.51041Aa;dmax=3.47871Aa;mos=0.174533radians)
+SCBragg(nfamilies=11;dmin=1.51041Aa;dmax=3.47871Aa;mos=0.174533radians)
 SC XS max-abs-diff converted laz vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -3080,8 +3067,7 @@ HKL planes (d_lower = 1.5 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=11;2dmax=6.95742Aa;max_contrib=2.61933barn)
 XS max-abs-diff converted lau vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=11;dmin=1.51041Aa;dmax=3.47871Aa;mos=0.174533radians)
+SCBragg(nfamilies=11;dmin=1.51041Aa;dmax=3.47871Aa;mos=0.174533radians)
 SC XS max-abs-diff converted lau vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -3284,8 +3270,7 @@ HKL planes (d_lower = 0.5 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=93;2dmax=5.63488Aa;max_contrib=4.2045barn)
 XS max-abs-diff converted laz vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=93;dmin=0.500129Aa;dmax=2.81744Aa;mos=0.174533radians)
+SCBragg(nfamilies=93;dmin=0.500129Aa;dmax=2.81744Aa;mos=0.174533radians)
 SC XS max-abs-diff converted laz vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -3488,8 +3473,7 @@ HKL planes (d_lower = 0.5 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=93;2dmax=5.63488Aa;max_contrib=4.2045barn)
 XS max-abs-diff converted lau vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=93;dmin=0.500129Aa;dmax=2.81744Aa;mos=0.174533radians)
+SCBragg(nfamilies=93;dmin=0.500129Aa;dmax=2.81744Aa;mos=0.174533radians)
 SC XS max-abs-diff converted lau vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -3692,8 +3676,7 @@ HKL planes (d_lower = 0.131143 Aa, d_upper = inf Aa):
 PowderBragg(nplanes=2061;2dmax=6.711Aa;max_contrib=7.41279barn)
 XS max-abs-diff converted laz vs. original < 1e-07?: yes
 ProcComposition(2 components, oriented)
-   |-- RotatedScatter
-      \-- LCBragg
+   |-- LCBragg(nplanesets=129;dmin=0.400386Aa;dmax=3.3555Aa;mos=0.174533radians;lcaxis=(0,0,1))
    \-- PowderBragg(nplanes=1932;2dmax=0.797782Aa;max_contrib=0.349301barn)
 SC XS max-abs-diff converted laz vs. original < 1e-07?: yes
 
@@ -3897,8 +3880,7 @@ HKL planes (d_lower = 0.131143 Aa, d_upper = inf Aa):
 PowderBragg(nplanes=2061;2dmax=6.711Aa;max_contrib=7.41279barn)
 XS max-abs-diff converted lau vs. original < 1e-07?: yes
 ProcComposition(2 components, oriented)
-   |-- RotatedScatter
-      \-- LCBragg
+   |-- LCBragg(nplanesets=129;dmin=0.400386Aa;dmax=3.3555Aa;mos=0.174533radians;lcaxis=(0,0,1))
    \-- PowderBragg(nplanes=1932;2dmax=0.797782Aa;max_contrib=0.349301barn)
 SC XS max-abs-diff converted lau vs. original < 1e-07?: yes
 ============= CLI >>--format laz stdlib::unknown_file.ncmat --override-prec=10<< ====================
@@ -4043,8 +4025,7 @@ HKL planes (d_lower = 0.8 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=9;2dmax=4.67605Aa;max_contrib=1.672barn)
 XS max-abs-diff converted laz vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=9;dmin=0.826617Aa;dmax=2.33803Aa;mos=0.174533radians)
+SCBragg(nfamilies=9;dmin=0.826617Aa;dmax=2.33803Aa;mos=0.174533radians)
 SC XS max-abs-diff converted laz vs. original < 1e-07?: yes
 
 ====================================================================================================
@@ -4234,8 +4215,7 @@ HKL planes (d_lower = 0.8 Aa, d_upper = inf Aa):
 
 PowderBragg(nplanes=9;2dmax=4.67605Aa;max_contrib=1.672barn)
 XS max-abs-diff converted lau vs. original < 1e-07?: yes
-RotatedScatter
-   \-- SCBragg(nfamilies=9;dmin=0.826617Aa;dmax=2.33803Aa;mos=0.174533radians)
+SCBragg(nfamilies=9;dmin=0.826617Aa;dmax=2.33803Aa;mos=0.174533radians)
 SC XS max-abs-diff converted lau vs. original < 1e-07?: yes
 ============= CLI >>--format laz 'virtual::Al_nosg.ncmat;dcutoff=0.8' --override-prec=10<< ====================
 Caught expected RuntimeError('this converter does not handle crystalline materials without spacegroup number')
