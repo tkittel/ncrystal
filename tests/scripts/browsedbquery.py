@@ -22,7 +22,7 @@
 
 # NEEDS: subprocess
 
-# Test the ["util","browsedb",...] and ["util","browsefactories"] JSON
+# Test the ["util","browsedb",...] and ["test","browsefactories"] JSON
 # queries.
 
 import NCTestUtils.enable_fpe # noqa F401
@@ -69,6 +69,9 @@ _broken = """NCMAT v7
 
 def q( *args ):
     return evaluate_query( ['util'] + list(args) )
+
+def qtest( *args ):
+    return evaluate_query( ['test'] + list(args) )
 
 def show( title, data ):
     import NCrystalDev._common as nc_common
@@ -130,12 +133,12 @@ def main():
     #Hides stdlib::Al_sg225.ncmat:
     NC.registerInMemoryFileData('Al_sg225.ncmat',_gas)
 
-    assert 'browsedb' in q('list') and 'browsefactories' in q('list')
+    assert 'browsedb' in q('list') and 'browsefactories' in qtest('list')
 
     #Overviews (contents otherwise depend on build and environment):
     counts = q('browsedb')
     assert counts['virtual'] == 5 and counts['stdlib'] > 100
-    facts = q('browsefactories')
+    facts = qtest('browsefactories')
     assert set(facts) == {'textdata','info','scatter','absorption'}
     assert 'virtual' in facts['textdata'] and 'stdlib' in facts['textdata']
     assert 'stdncmat' in facts['info']
@@ -214,9 +217,11 @@ def main():
         'browsedb','virtual','a','2')
     bad(('Invalid util query: ["util","atomdb","x"] (no arguments should'
          ' come after: ["util","atomdb"])'),'atomdb','x')
-    bad(('Invalid util query: ["util","browsefactories","virtual"] (no'
-         ' arguments should come after: ["util","browsefactories"])'),
-        'browsefactories','virtual')
+    with ensure_error(NC.NCBadInput,
+                      'Invalid test query: ["test","browsefactories","virtual"]'
+                      ' (no arguments should come after:'
+                      ' ["test","browsefactories"])'):
+        qtest('browsefactories','virtual')
 
 if __name__ == '__main__':
     main()

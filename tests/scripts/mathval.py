@@ -36,7 +36,7 @@ def mp_sample_xkpowx( k, R, mp ):
 
 def main():
     mp = get_mpmath_context(1000)#fixme: reduce??
-    d = ncquery(['util','mathval','kpowx'])
+    d = ncquery(['test','mathval','kpowx'])
     nc_kpowx_samples = d['sample_kpowx']
 
     cmps = []

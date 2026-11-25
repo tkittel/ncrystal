@@ -24,7 +24,7 @@
 
 # Validates NCKinUtils.hh's getAlphaMinus/getAlphaPlus/getBetaMinus/
 # getBetaPlus against an mpmath high-precision reference, via the
-# ["util","kinutils"] query, on a grid of ekin_div_kT values with offsets
+# ["test","kinutils"] query, on a grid of ekin_div_kT values with offsets
 # landing densely around the two singular points (beta=0 for alpha_minus,
 # alpha=4*ekin_div_kT for beta_minus) where naive formulas lose precision.
 
@@ -92,7 +92,7 @@ def check_grid( mp, evals_key, out_key, mp_minus, mp_plus, minus_key, plus_key )
 
 def main():
     mp = get_mpmath_context(50)
-    d = ncquery(['util', 'kinutils'])
+    d = ncquery(['test', 'kinutils'])
 
     ab, bb = d['alphabounds'], d['betabounds']
     print(f"alpha_minus/alpha_plus: {len(ab['e'])} grid points")

@@ -72,7 +72,7 @@ def ref_fastnotpretty( x ):
     return s
 
 def run_query( values ):
-    raw = evaluate_query( ['util','jsontest']
+    raw = evaluate_query( ['test','jsontest']
                           + [ str( bits(x) ) for x in values ], unpack = False )
     def tokens( key ):
         return raw.split( f'"{key}":[', 1 )[1].split( ']', 1 )[0].split( ',' )
@@ -122,7 +122,7 @@ def check_locales( values ):
     setlocale = ctypes.CDLL( None ).setlocale
     setlocale.restype = ctypes.c_char_p
     setlocale.argtypes = [ ctypes.c_int, ctypes.c_char_p ]
-    args = ['util','jsontest'] + [ str( bits(x) ) for x in values ]
+    args = ['test','jsontest'] + [ str( bits(x) ) for x in values ]
     ref = evaluate_query( args, unpack = False )
     for name in ( 'de_DE.UTF-8', 'de_DE.utf8', 'fr_FR.UTF-8', 'fr_FR.utf8',
                   'ps_AF.UTF-8', 'ps_AF.utf8', 'fa_IR.UTF-8', 'fa_IR.utf8' ):

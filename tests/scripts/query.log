@@ -26,11 +26,11 @@ Caught expected NCBadInput('Invalid MiniMC JSON query: ["mmc","bla-bla"]')
 >>> Sending query: ['foo', '117']
 Caught expected NCBadInput("Invalid query (not all entries are strings): ('foo', 117)")
 
->>> Sending query: ['util', 'wl2ekin', '#']
+>>> Sending query: ['test', 'wl2ekin', '#']
 Caught expected NCBadInput('Forbidden character "#" in query! Problem found in: "#"')
 
->>> Sending query: ['util', 'wl2ekin', 'RAWDATA', '#']
-Caught expected NCBadInput('Invalid util query: ["util","wl2ekin","RAWDATA","#"] (correct usage: ["util","wl2ekin",VALUE_ANGSTROM])')
+>>> Sending query: ['test', 'wl2ekin', 'RAWDATA', '#']
+Caught expected NCBadInput('Invalid test query: ["test","wl2ekin","RAWDATA","#"] (correct usage: ["test","wl2ekin",VALUE_ANGSTROM])')
 
 >>> Sending query: ['foo', 'bar\\x07']
 Caught expected NCBadInput('Can not use character 0x07 (ASCII BEL) in JSON query strings')
@@ -88,7 +88,7 @@ Caught expected RuntimeError('File already exists (use --force to overwrite): tm
 Wrote: tmp_test_file.json
 ===========================================
 Contents of tmp_test_file.json: ========================================
-["version", "util", "mmc", "sab", "vdos", "isomacroxstable", "matcfg", "sgsym", "cif"]
+["version", "util", "mmc", "sab", "vdos", "isomacroxstable", "matcfg", "sgsym", "cif", "test"]
 ============= CLI >>foo<< ====================
 Caught expected NCBadInput('Invalid JSON query key: "foo"')
 ============= CLI >>list<< ====================
@@ -100,25 +100,23 @@ Caught expected NCBadInput('Invalid JSON query key: "foo"')
  'isomacroxstable',
  'matcfg',
  'sgsym',
- 'cif']
+ 'cif',
+ 'test']
 ===========================================
 ============= CLI >>mmc list<< ====================
 ['run', 'scenario', 'inspectcfg', 'cfgdoc']
 ===========================================
 ============= CLI >>util list<< ====================
-['wl2ekin',
- 'ekin2wl',
- 'mathval',
- 'sincosdeg',
- 'fmadiagnose',
+['sincosdeg', 'fmadiagnose', 'browsedb', 'factorythreads', 'atomdb', 'numfmt']
+===========================================
+============= CLI >>test list<< ====================
+['mathval',
  'kinutils',
- 'browsedb',
  'browsefactories',
- 'factorythreads',
- 'atomdb',
  'eqrefl',
  'jsontest',
- 'numfmt']
+ 'wl2ekin',
+ 'ekin2wl']
 ===========================================
 ============= CLI >>sab list<< ====================
 ['analyse',
@@ -247,21 +245,21 @@ Caught expected NCBadInput('Invalid cif query: ["cif","elements"] (correct usage
 Caught expected NCBadInput('Invalid cif query: ["cif","elements","label"] (correct usage: ["cif","elements","typesymbol",STR,...] or ["cif","elements","label",FORMULA,STR,...])')
 Caught expected NCBadInput('Invalid cif query: ["cif","elements","bla","X"] (correct usage: ["cif","elements","typesymbol",STR,...] or ["cif","elements","label",FORMULA,STR,...])')
 Caught expected NCBadInput('Invalid cif query: ["cif","bla"] (unknown key)')
-============= CLI >>util wl2ekin 1.8<< ====================
+============= CLI >>test wl2ekin 1.8<< ====================
 0.025248213035
 ===========================================
-============= CLI >>util ekin2wl 0.025<< ====================
+============= CLI >>test ekin2wl 0.025<< ====================
 1.8089135992
 ===========================================
-============= CLI >>util eqrefl relaxed 149 1,2,3 1,1,0<< ====================
+============= CLI >>test eqrefl relaxed 149 1,2,3 1,1,0<< ====================
 [[[3, -1, -3], [3, -2, -3], [2, 1, 3], [2, -3, 3], [1, 2, 3], [1, -3, 3]],
  [[2, -1, 0], [1, 1, 0], [1, -2, 0]]]
 ===========================================
-============= CLI >>util eqrefl relaxed 150 1,2,3 1,1,0<< ====================
+============= CLI >>test eqrefl relaxed 150 1,2,3 1,1,0<< ====================
 [[[3, -1, -3], [3, -2, 3], [2, 1, -3], [2, -3, 3], [1, 2, 3], [1, -3, -3]],
  [[2, -1, 0], [1, 1, 0], [1, -2, 0]]]
 ===========================================
-============= CLI >>util eqrefl strict 166:r 1,2,3 1,1,0<< ====================
+============= CLI >>test eqrefl strict 166:r 1,2,3 1,1,0<< ====================
 [[[3, 2, 1], [3, 1, 2], [2, 3, 1], [2, 1, 3], [1, 3, 2], [1, 2, 3]],
  [[1, 1, 0], [1, 0, 1], [0, 1, 1]]]
 ===========================================

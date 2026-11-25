@@ -129,11 +129,11 @@ def main():
     with ensure_error(NCBadInput,
                       'Forbidden character "#" in query! Problem found in:'
                       ' "#"'):
-        test('util','wl2ekin','#')
-    with ensure_error(NCBadInput,'Invalid util query: ["util","wl2ekin",'
-                      '"RAWDATA","#"] (correct usage: ["util","wl2ekin",'
+        test('test','wl2ekin','#')
+    with ensure_error(NCBadInput,'Invalid test query: ["test","wl2ekin",'
+                      '"RAWDATA","#"] (correct usage: ["test","wl2ekin",'
                       'VALUE_ANGSTROM])'):
-        test('util','wl2ekin','RAWDATA','#')
+        test('test','wl2ekin','RAWDATA','#')
 
     for a in ('bar'+'\x07','\x07','\x07\x07','\x07'+'bar'):
         with ensure_error(NCBadInput,
@@ -166,6 +166,7 @@ def main():
     test_cli('list')
     test_cli('mmc','list')
     test_cli('util','list')
+    test_cli('test','list')
     test_cli('sab','list')
     test_cli('vdos','list')
     test_cli('matcfg','list')
@@ -183,11 +184,11 @@ def main():
         test('sab','surveyor','@1@2@x','@1@2')
     test_atomsites()
     test_cif()
-    test_cli('util','wl2ekin','1.8')
-    test_cli('util','ekin2wl','0.025')
-    test_cli('util','eqrefl','relaxed','149','1,2,3','1,1,0')
-    test_cli('util','eqrefl','relaxed','150','1,2,3','1,1,0')
-    test_cli('util','eqrefl','strict','166:r','1,2,3','1,1,0')
+    test_cli('test','wl2ekin','1.8')
+    test_cli('test','ekin2wl','0.025')
+    test_cli('test','eqrefl','relaxed','149','1,2,3','1,1,0')
+    test_cli('test','eqrefl','relaxed','150','1,2,3','1,1,0')
+    test_cli('test','eqrefl','strict','166:r','1,2,3','1,1,0')
     test_cli('sgsym','info','strict','166:r')
     test_cli('sgsym','info','strict','62:cab')
     test_cli('sgsym','info','relaxed','1')

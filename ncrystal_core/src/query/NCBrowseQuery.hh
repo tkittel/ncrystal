@@ -39,7 +39,7 @@ namespace NCRYSTAL_NAMESPACE {
     //  enabled), and physics properties (or a load error) are included.
     //  With "nthreads=N" (N can be "auto"), N threads are temporarily
     //  used for loading, unless the user configured factory threads.
-    //["util","browsefactories"]: names of all factories, by type.
+    //["test","browsefactories"]: names of all factories, by type.
     //["util","atomdb"]: list with a dict per entry in the database of
     //  isotopes and natural elements (with mass, scattering lengths and
     //  cross sections).
