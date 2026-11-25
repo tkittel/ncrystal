@@ -53,7 +53,8 @@ Code: `ncrystal_python/src/NCrystal/` (`ncmat.py`, `cifutils.py`,
 
 ## CIF import (`cif2ncmat`, `cifutils`)
 
-`CIFLoader` reads CIF text, files or online entries with gemmi, uses spglib
+`CIFLoader` reads CIF text, files or online entries with NCrystal's own C++
+CIF 1.1 parser (the `["cif","structure",...]` JSON query), uses spglib
 to standardise and verify the structure, merges symmetry-equivalent atoms,
 handles isotropic displacement parameters (`Uiso`, converted to the v8 `msd`
 keyword through `set_dyninfo_uiso` with `--uisotemp`), and hands the result
@@ -141,6 +142,6 @@ proper site occupancy support, and always emitting v8.
 - G. Romanelli et al., "Thermal neutron cross sections of amorphous
   hydrogenous materials from vibrational spectra of functional groups",
   J. Phys.: Condens. Matter 33 (2021) 285901, doi:10.1088/1361-648X/abfc13.
-- spglib (A. Togo et al.), gemmi (M. Wojdyr), ASE; the Crystallography
-  Open Database and the Materials Project; PyNE (ENDF reading).
+- spglib (A. Togo et al.), ASE; the Crystallography Open Database and the
+  Materials Project; PyNE (ENDF reading).
 - The ncrystal-notebooks repository (material creation tutorials).
