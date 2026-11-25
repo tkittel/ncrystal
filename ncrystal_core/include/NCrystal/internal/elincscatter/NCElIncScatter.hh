@@ -69,8 +69,8 @@ namespace NCRYSTAL_NAMESPACE {
     CrossSect crossSectionIsotropic(CachePtr&, NeutronEnergy ) const override;
     ScatterOutcomeIsotropic sampleScatterIsotropic(CachePtr&, RNG&, NeutronEnergy ) const override;
 
-    //The cross section is defined by the sum of the elements' tabulations
-    //(ElIncXS::tabulateMonoAtomic):
+    //The cross section is defined by the tabulation of the summed cross
+    //section (ElIncXS::tabulate), which is also used for sampling:
     Optional<IsoXSTable> createIsoXSTable() const override;
 
     //Simple additive merge:
@@ -79,8 +79,11 @@ namespace NCRYSTAL_NAMESPACE {
                                            double scale_other ) const override;
 
 
-    //Specialised constructor providing internal state directly:
+    //Specialised constructors providing internal state directly (the table,
+    //if given, must be a tabulation of the ElIncXS cross section with no q, r,
+    //tail[0] or tail[4] terms, e.g. a merge of ElIncXS::tabulate results):
     ElIncScatter( std::unique_ptr<ElIncXS> );
+    ElIncScatter( std::unique_ptr<ElIncXS>, IsoXSTable );
 
     //Helper function for determining if ElincScatter(info,...) can proceed
     //(i.e. if there is enough info to estimate Debye-Waller factors):
@@ -98,7 +101,9 @@ namespace NCRYSTAL_NAMESPACE {
   private:
     std::unique_ptr<ElIncXS> m_elincxs;
     IsoXSEvaluator m_xs;
-    std::vector<IsoXSEvaluator> m_elmxs;//per element, if more than one
+    VectD m_nodeexs;//e*xs at the table energies
+    LogGuideTable m_nodeguide;//for searches in m_nodeexs
+    VectD m_invguess;//per interval: initial guesses for inversions
     CosineScatAngle sampleMu( RNG&, NeutronEnergy ) const;
   };
 }
