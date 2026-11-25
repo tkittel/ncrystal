@@ -51,7 +51,7 @@ def _getMaterialsProjectAPIKEY():
     return apikey
 
 def _use_local_cif_cache( fn, text_data = None, quiet = False ):
-    #NB: This simple implementation use no locking to guard against race
+    #NB: This simple implementation uses no locking to guard against race
     #conditions!!! But we do perform write+move instead of simply write, which
     #is a bit more "atomic".
     if _nc_common.ncgetenv_bool('ONLINEDB_FORBID_NETWORK'):
@@ -180,7 +180,8 @@ def _mp_get_cifdata( mpid, quiet = False, apikey = None ):
             blockfct= ( lambda msg, cat : msg.lower()
                         .startswith('mpcontribs-client not installed') ) ), mp_api.client.MPRester(apikey) as mpr:
         s = mpr.get_structure_by_material_id( f'mp-{mpid}', conventional_unit_cell=True )
-        #If we do no use the symprec argument in the next line, we will get a an unrefined P1 structure:
+        #Without the symprec argument in the next line, we get an unrefined P1
+        #structure:
         result = s.to(fmt='cif',symprec=1e-4, significant_figures=15, angle_tolerance=5.0, refine_struct=True)
         #But we want to sanity check that this refinement gives the same spacegroup result as listed in the MP database:
         mp_expected_sg_number = s.get_space_group_info()[1]

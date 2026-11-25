@@ -51,7 +51,6 @@ def _extract_descr_from_cif( raw_cif_dict, cifsrc, ciftextdata ):
         _nc_common.warn('Could not properly decode CIF metadata due to inability to access raw CIF data as dictionary.')
         return [], None, None, None
 
-    #cif is cif section with publication info:
     ll=[]
     def extract(key,*altkeys,expectlist = False):
         if not any( key in s for _,s in sorted(raw_cif_dict.items())):

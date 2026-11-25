@@ -88,7 +88,7 @@ def _snap_lattice_params( params_dict, relative_tolerance = 1e-6 ):
     def is_super_near( x,y ):
         return rd(x,y) < super_tolerance
 
-    #"snap" b,c to a,b and angles to 60/90/120:
+    #"snap" b,c to a,b and angles to 45/60/90/120:
     for l1,l2 in (('a','b'),('a','c'),('b','c')):
         if is_near(p[l1],p[l2]):
             if not is_super_near(p[l1],p[l2]):
@@ -107,7 +107,8 @@ def _cellparams_to_spglib_lattice( cellsg ):
                                        cellsg['alpha'], cellsg['beta'], cellsg['gamma'] )
 
 def _reldiff_cellparams( c1, c2 ):
-    #compares a,b,c,alpha,beta,gamma in the two cellsg arrays.
+    #Returns the largest relative difference of a,b,c,alpha,beta,gamma in the
+    #cellsg dicts c1 and c2.
     def rd( x,y ):
         return abs(x-y)/(max(1e-300,abs(x)+abs(y)))
     def rdf( s ):
@@ -331,7 +332,7 @@ def _spglib_refine_cell( spglib_cell, symprec = 0.01 ):
 
     #remove all but the last of any kind of error message (otherwise we might
     #get many repetitions of 'snapping b=a' kind of messages, due to the
-    #recursion.
+    #recursion).
 
     warnrev = []
     for w in warnings[::-1]:
@@ -381,7 +382,7 @@ def _impl_spglib_refine_cell( spglib_cell, *, symprec, warnings, msgs,
 
     snaplog, p = _snap_lattice_params( p )
     if snaplog or nrepeat == 0:
-        #This is either the first try, of we snapped some parameter
+        #This is either the first try, or we snapped some parameter
         #(e.g. alpha=89.99999 -> alpha=90.0). After this a second refinement
         #might find a different (higher) symmetry:
         warnings += snaplog[:]
