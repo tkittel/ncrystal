@@ -37,27 +37,37 @@ namespace NCRYSTAL_NAMESPACE {
       //extend cross-sections and sampling capabilities of an S(alpha,beta)
       //table to large energies.
 
+      //Whether to support cross sections. With SupportXS::NO, the cross
+      //section table is not created (saving initialisation time when only
+      //samplings are needed), and the cross section methods must not be
+      //called:
+      enum class SupportXS { YES, NO };
+
       //Constructor initialises based on an extender and processor. IMPORTANT
       //NOTE: It is very important that the SABExtender was created with
       //SigmaBound=1 (fixme: redesign so this is always guaranteed?).
       SABExtended( shared_obj<const SABProcessor>,
-                   shared_obj<const SAB::SABExtender> );
+                   shared_obj<const SAB::SABExtender>,
+                   SupportXS = SupportXS::YES );
 
       //Convenience functions for initialising using a free-gas extension:
       static shared_obj<const SABExtended>
-      createWithFGExtender( shared_obj<const SABProcessor> );
+      createWithFGExtender( shared_obj<const SABProcessor>,
+                            SupportXS = SupportXS::YES );
 
       static shared_obj<const SABExtended>
       createWithFGExtender( const SABCfg::Cfg&,
                             shared_obj<const SABData>,
                             std::shared_ptr<const VectD>
-                            energyGrid = nullptr );
+                            energyGrid = nullptr,
+                            SupportXS = SupportXS::YES );
 
       //Same, for short-collision-time extension:
       static shared_obj<const SABExtended>
       createWithSCTExtender( shared_obj<const SABProcessor>,
                              Temperature teff,
-                             const SABCfg::Cfg& );
+                             const SABCfg::Cfg&,
+                             SupportXS = SupportXS::YES );
 
       //Standard entry point selecting the extender from
       //cfg.extender_model: SCT when an effective temperature is
@@ -67,16 +77,20 @@ namespace NCRYSTAL_NAMESPACE {
       create( const SABCfg::Cfg&,
               shared_obj<const SABData>,
               Optional<Temperature> teff,
-              std::shared_ptr<const VectD> energyGrid = nullptr );
+              std::shared_ptr<const VectD> energyGrid = nullptr,
+              SupportXS = SupportXS::YES );
 
-      //Access cross sections, always assuming SigmaBound=1barn.
+      bool supportsXS() const noexcept { return m_xs.has_value(); }
+
+      //Access cross sections, always assuming SigmaBound=1barn (requires
+      //supportsXS()).
       CrossSect crossSectionUnitSigmaBound( NeutronEnergy ekin ) const;
 
       //The evaluator of the table defining crossSectionUnitSigmaBound (see
       //NCIsoXSUtils.hh), and the kinks of that cross section (the ends of the
-      //processor's energy grid):
-      const IsoXSEvaluator& xsEvaluator() const noexcept { return m_xs; }
-      const VectD& xsBreakpoints() const noexcept { return m_xsBreakpoints; }
+      //processor's energy grid). Throws BadInput unless supportsXS():
+      const IsoXSEvaluator& xsEvaluator() const;
+      const VectD& xsBreakpoints() const;
 
       //Sample scatterings:
       ScatterOutcomeIsotropic sampleScatter( RNG&, NeutronEnergy ) const;
@@ -86,6 +100,7 @@ namespace NCRYSTAL_NAMESPACE {
       const SAB::SABExtender& extender() const noexcept { return m_e; }
 
     private:
+      void checkXSSupport() const;
       shared_obj<const SABProcessor> m_p;
       shared_obj<const SAB::SABExtender> m_e;
       NeutronEnergy m_emax;
@@ -93,7 +108,7 @@ namespace NCRYSTAL_NAMESPACE {
       double m_invkT;
       double m_extSAtEmax;
       double m_tableSAtEmax;
-      IsoXSEvaluator m_xs;
+      Optional<IsoXSEvaluator> m_xs;
       VectD m_xsBreakpoints;
       PairDD scatABHighE( RNG&, NeutronEnergy ) const;
     };
@@ -107,7 +122,8 @@ namespace NCRYSTAL_NAMESPACE {
 inline NCrystal::CrossSect NCrystal::SAB::
 SABExtended::crossSectionUnitSigmaBound( NeutronEnergy ekin ) const
 {
-  return CrossSect{ m_xs.eval( ekin.dbl() ) };
+  nc_assert( m_xs.has_value() );
+  return CrossSect{ m_xs.value().eval( ekin.dbl() ) };
 }
 
 inline NCrystal::PairDD NCrystal::SAB::

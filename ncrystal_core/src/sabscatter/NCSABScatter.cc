@@ -29,6 +29,9 @@ NC::SABScatter::SABScatter( shared_obj<const SABExtended> sh, double scale )
   : m_sh(std::move(sh)), m_scale(scale)
 {
   nc_assert( m_sh!=nullptr);
+  if ( !m_sh->supportsXS() )
+    NCRYSTAL_THROW(BadInput,"SABScatter: SABExtended created without cross"
+                   " section support (SupportXS::NO)");
   if ( !( m_scale > 0.0 && std::isfinite( m_scale ) ) )
     NCRYSTAL_THROW2(BadInput,"SABScatter: invalid scale (must be positive"
                     " and finite): "<<m_scale);

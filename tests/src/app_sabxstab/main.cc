@@ -21,6 +21,7 @@
 
 #include "NCrystal/internal/sabscatter/NCSABScatter.hh"
 #include "NCrystal/internal/sab/NCSABExtended.hh"
+#include "NCrystal/internal/sab/NCSABFactory.hh"
 #include "NCrystal/internal/dyninfoutils/NCDynInfoUtils.hh"
 #include "NCrystal/internal/utils/NCIsoXSUtils.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
@@ -122,6 +123,49 @@ namespace {
       testSAB( &s );
     }
   }
+
+  void testNoXSSupport()
+  {
+    //SupportXS::NO: same samplings as with cross section support, while the
+    //cross section table is unavailable:
+    auto info = NC::FactImpl::createInfo( NC::MatCfg( "Al_sg225.ncmat" ) );
+    auto di_knl = dynamic_cast<const NC::DI_ScatKnl*>
+      ( info->getDynamicInfoList().front().get() );
+    nc_assert_always( di_knl != nullptr );
+    auto sabdata = NC::DynInfoUtils::extractSABDataFromDynInfo( di_knl );
+    const auto teff = NC::DynInfoUtils::extractTeffFromDynInfo( di_knl );
+    using SupportXS = NCS::SABExtended::SupportXS;
+    auto mk = [&sabdata,&teff]( SupportXS sx )
+    {
+      return NCS::createSABExtendedWithCache( 3, sabdata, teff, nullptr, sx );
+    };
+    auto ext_yes = mk( SupportXS::YES );
+    auto ext_no = mk( SupportXS::NO );
+    nc_assert_always( ext_yes->supportsXS() && !ext_no->supportsXS() );
+    nc_assert_always( &*ext_no != &*ext_yes );//different cache entries
+    nc_assert_always( &*ext_no == &*mk( SupportXS::NO ) );//cache hit
+    auto expectBadInput = []( std::function<void()> f )
+    {
+      bool threw = false;
+      try { f(); } catch ( NC::Error::BadInput& ) { threw = true; }
+      nc_assert_always( threw );
+    };
+    expectBadInput( [&ext_no](){ ext_no->xsEvaluator(); } );
+    expectBadInput( [&ext_no](){ ext_no->xsBreakpoints(); } );
+    expectBadInput( [&ext_no](){ NC::SABScatter( ext_no, 1.0 ); } );
+    for ( double e : { 1e-4, 0.025, 0.5, 20.0 } ) {
+      auto rng1 = NC::createBuiltinRNG( 1234 );
+      auto rng2 = NC::createBuiltinRNG( 1234 );
+      for ( int i = 0; i < 1000; ++i ) {
+        auto o1 = ext_yes->sampleScatter( *rng1, NC::NeutronEnergy{ e } );
+        auto o2 = ext_no->sampleScatter( *rng2, NC::NeutronEnergy{ e } );
+        nc_assert_always( o1.ekin.dbl() == o2.ekin.dbl()
+                          && o1.mu.dbl() == o2.mu.dbl() );
+      }
+    }
+    std::cout << "SupportXS::NO: identical samplings, no cross sections"
+              << std::endl;
+  }
 }
 
 int main()
@@ -132,5 +176,6 @@ int main()
   testMaterial( "Al_sg225.ncmat;temp=3000K;knllux=3;comp=inelas" );
   testMaterial( "LiquidHeavyWaterD2O_T293.6K.ncmat;knllux=3;comp=inelas" );
   testFreeGasExtender( "Al_sg225.ncmat" );
+  testNoXSSupport();
   return 0;
 }
