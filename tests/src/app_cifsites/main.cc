@@ -176,8 +176,9 @@ int main()
         cifData( "Na1 Na 0 0 0 1 ?\n",
                  aniso( "Na1 0.0100 0.0200 0.0300 0.0010 0 0\n" ),
                  "P m -3 m" ) );
-  test( "tensors given as B (ignored)",
-        cifData( twosites, aniso( "Cl1 0.8 0.8 0.8 0 0 0\n", 'B' ) ) );
+  test( "tensors given as B (converted to U, B = 8 pi^2 U)",
+        cifData( twosites, aniso( "Na1 1.6 0.8 0.8 0 0 0.1\n"
+                                  "Cl1 0.8 0.8 0.8 0 0 0\n", 'B' ) ) );
   test( "rows matched by label in order (labels reused)",
         cifData( "O1 O 0.1 0.2 0.3 1 ?\nO1 O 0.4 0.2 0.3 1 ?\n"
                  "Si1 Si 0.6 0.2 0.3 1 ?\n",

@@ -67,7 +67,8 @@ namespace NCRYSTAL_NAMESPACE {
     //    if given.
     //  * Split sites (cf. expandSiteToOrbit) are BadInput unless permissive
     //    (with a warning).
-    //Anisotropic displacements given as B are ignored (with a warning):
+    //Isotropic and anisotropic displacements given as B are converted to U
+    //(B = 8 pi^2 U, also for the rounding errors):
     std::vector<CIFAtom> getAtoms( const Document&, const StructureItems&,
                                    const SpaceGroup&, CIFPermissive,
                                    double tolUij, const CIFWarnFct& );
