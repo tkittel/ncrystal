@@ -455,6 +455,16 @@ def _ueq_from_ustd( ustd, cellsg ):
     return math.fsum( u[i][j] * r[i] * r[j] * g[i][j]
                       for i in range(3) for j in range(3) ) / 3.0
 
+def _rescale_ustd( ustd, ueq, target ):
+    #Returns ustd, with Ueq=ueq, rescaled to Ueq=target (rounded once, cf.
+    #_stablemath.scale). Returned unchanged if ueq==target (or ueq is not
+    #positive, leaving the error for later).
+    if not ueq > 0.0 or ueq == target:
+        return ustd
+    keys = list( ustd )
+    return dict( zip( keys, _nc_stablemath.scale( [ ustd[k] for k in keys ],
+                                                  target, ueq ) ) )
+
 ################################################################################
 #Basis changes and displacement tensors. A transform is a pair (P,p) of numpy
 #arrays acting on fractional coordinates as x' = P.x + p (as from spglib). A
