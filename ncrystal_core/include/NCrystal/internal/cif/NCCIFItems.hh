@@ -92,8 +92,8 @@ namespace NCRYSTAL_NAMESPACE {
       //components are in the loop of the sites). All six components of the
       //form, and the label, are required (if missing: an error, unless in
       //permissive mode, where all anisotropic displacements are ignored with
-      //a warning), and each label must be one of a site. Rows with all
-      //components "?" or "." are an error, unless in permissive mode, where
+      //a warning). Rows with a label which is not one of a site, or with
+      //components "?" or ".", are an error, unless in permissive mode, where
       //they are ignored (with a warning) and listed in skippedRows.
       //Components given as beta, or as both U and B, are an error:
       enum class AnisoForm { U, B };
