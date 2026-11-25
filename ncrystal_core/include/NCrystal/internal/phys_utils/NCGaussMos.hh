@@ -24,6 +24,7 @@
 #include "NCrystal/core/NCTypes.hh"
 #include "NCrystal/internal/phys_utils/NCGaussOnSphere.hh"
 #include "NCrystal/internal/utils/NCVector.hh"
+#include "NCrystal/internal/utils/NCSpan.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -83,25 +84,28 @@ namespace NCRYSTAL_NAMESPACE {
     double calcRawCrossSectionValue( InteractionPars& ip,
                                      double cos_angle_indir_normal ) const;
 
-    //Cross-sections for a large number of demi-normals can be found in one go
-    //(if they otherwise share parameters like d-spacing & fsquared, which must
-    //have been first set with a call to setInteractionParameters). This method
-    //DOES implement the Gauss truncation internally (and exactly). Return value
-    //is the total cross-section for scattering on any of the passed
-    //demi-normals. Intermediate results for individual deminormals with
-    //non-zero contributions will be appended to the passed-in cache vector,
-    //while the commulative values of the corresponding individual
-    //cross-sections will be appended to the passed in xs_commul vector. This
-    //setup allows the caller to subsequently select a plane to scatter on with
-    //a binary search in the xs_commul vector, and subsequently use the
-    //ScatCache object at the same index in the cache vector, to generate
-    //scatterings:
+    //Cross-sections for a large number of demi-normals can be found in one go,
+    //by first collecting them in a PlaneList. This method DOES implement the
+    //Gauss truncation internally (and exactly), and ignores planes with
+    //neutron_wavelength>=2*dspacing. Intermediate results for individual
+    //deminormals with non-zero contributions will be appended to the passed-in
+    //cache vector, while the commulative values of the corresponding
+    //individual cross-sections will be appended to the passed in xs_commul
+    //vector. This setup allows the caller to subsequently select a plane to
+    //scatter on with a binary search in the xs_commul vector, and subsequently
+    //use the ScatCache object at the same index in the cache vector, to
+    //generate scatterings.
+    //
+    //The method is fast even for many planes, since exact calculations are
+    //only carried out for the few planes surviving a single-precision
+    //preselection (which is conservative, so results are unaffected by it).
     class ScatCache;
-    double calcCrossSections( InteractionPars& ip,
-                              const Vector& neutron_indir,
-                              const std::vector<Vector>& deminormals,
-                              std::vector<ScatCache>& cache,
-                              VectD& xs_commul ) const;
+    class PlaneList;
+    void calcCrossSections( const PlaneList&,
+                            double neutron_wavelength,
+                            const Vector& neutron_indir,
+                            std::vector<ScatCache>& cache,
+                            VectD& xs_commul ) const;
 
     //Scatterings can only be generated once appropriate info has been found via
     //previous calls to cross-section methods, and with relevant info embedded
@@ -136,8 +140,34 @@ namespace NCRYSTAL_NAMESPACE {
     MosaicitySigma m_mos_sigma = MosaicitySigma{-99};
     double m_prec;
     double m_delta_d = 0.0;
+    float m_presel_eps = 0.0f;//tolerance of PlaneList preselection
     void updateDerivedValues();
     double calcRawCrossSectionValueInit( InteractionPars&, double ) const;
+  };
+
+  class GaussMos::PlaneList final : private MoveOnly {
+  public:
+    //List of (demi) normals of crystal planes, grouped in families sharing
+    //d-spacing and xsfact (cf. InteractionPars). Families must be added in
+    //order of increasing inv2dsp=1/(2*dspacing).
+    void addFamily( double inv2dsp, double xsfact,
+                    Span<const Vector> deminormals );
+    std::size_t nFamilies() const { return m_families.size(); }
+    std::size_t nPlanes() const { return m_planes.size(); }
+    double minInv2dsp() const;//of first family (0 if empty)
+    double maxInv2dsp() const;//of last family (0 if empty)
+  private:
+    friend class GaussMos;
+    struct Family {
+      double inv2dsp, xsfact;
+      double inv2dsp_rounded;//as needed by InteractionPars::setRounded
+      std::size_t nbegin;//index of first normal
+    };
+    struct Plane { Vector normal; std::uint32_t ifam; };
+    std::vector<Family> m_families;
+    std::vector<Plane> m_planes;//of all families, one after the other
+    //Single-precision copies for preselection, padded to whole chunks:
+    std::vector<float> m_nx, m_ny, m_nz, m_inv2dsp;
   };
 
   class GaussMos::InteractionPars {
@@ -148,6 +178,10 @@ namespace NCRYSTAL_NAMESPACE {
     void set(double neutron_wavelength, double inv2dsp, double xsfact);
   private:
     friend class GaussMos;
+    //As set(), but with wavelength and inv2dsp already rounded as set() would,
+    //and without trying to reuse values from the previous call (same results,
+    //but faster when most calls are for different values):
+    void setRoundedNoReuse( double wavelength, double inv2dsp, double xsfact );
     //Frequently accessed members first:
     double m_Q = 0.0;//Once initialised, m_Q = m_Qprime * m_xsfact
     double m_sin_perfect_theta = 0.0;
@@ -188,9 +222,38 @@ namespace NCRYSTAL_NAMESPACE {
   {
   }
 
+  inline void GaussMos::InteractionPars::setRoundedNoReuse( double wl,
+                                                            double inv2dsp,
+                                                            double xsfact )
+  {
+    nc_assert(wl>0);
+    nc_assert(inv2dsp>0);
+    nc_assert(xsfact>0.);
+    m_xsfact = xsfact * 0.5;//absorb factor 1/2 here, to avoid a multiplication later
+    m_wl = wl;
+    m_wl3 = m_wl*m_wl*m_wl;
+    //New thetabragg and invalid Q/Qprime/alpha/cos_perfect_theta values:
+    m_inv2dsp = inv2dsp;
+    m_sin_perfect_theta = wl * inv2dsp;
+    nc_assert(valueInInterval(0.,1.,m_sin_perfect_theta));
+    m_cos_perfect_theta_sq = 1 - m_sin_perfect_theta*m_sin_perfect_theta;
+    m_Q = m_Qprime = m_cos_perfect_theta = -1;//invalidate
+    m_alpha = -99;//invalidate
+  }
+
   inline bool GaussMos::InteractionPars::isValid() const
   {
     return m_wl>0;
+  }
+
+  inline double GaussMos::PlaneList::minInv2dsp() const
+  {
+    return m_families.empty() ? 0.0 : m_families.front().inv2dsp;
+  }
+
+  inline double GaussMos::PlaneList::maxInv2dsp() const
+  {
+    return m_families.empty() ? 0.0 : m_families.back().inv2dsp;
   }
 
   inline GaussMos::ScatCache::ScatCache(): m_plane_inv2d(0) {}
@@ -211,6 +274,37 @@ namespace NCRYSTAL_NAMESPACE {
       return ip.m_Q * m_gos.circleIntegral( cos_angle_indir_normal, sin_angle_indir_normal, ip.m_sin_perfect_theta, ip.m_cos_perfect_theta );
     }
     return calcRawCrossSectionValueInit(ip,cos_angle_indir_normal);
+  }
+
+  inline double GaussMos::calcRawCrossSectionValueInit(InteractionPars& ip, double cos_angle_indir_normal ) const
+  {
+    nc_assert(ip.m_Q<=0.);
+    if ( ip.m_Qprime == -1 ) {
+      //First call after getting new wavelength or d-spacing.
+      ip.m_cos_perfect_theta = std::sqrt(ip.m_cos_perfect_theta_sq);// = sinalpha
+      double tmp2 = ip.m_cos_perfect_theta*ip.m_sin_perfect_theta;
+      if (tmp2>0) {
+        //usual case:
+        ip.m_Qprime = ip.m_wl3 / tmp2;
+      } else {
+        //Avoid a zero division when wavelength is 0 or 2*dspacing. The actual
+        //cross-section will be 0 or infinity at the two limits (special value -2.0
+        //designates infinity).
+        ip.m_Qprime = (ip.m_sin_perfect_theta>0.5&&ip.m_xsfact) ? -2.0/*wl~=2dsp*/ : 0.0/*wl~=0*/;
+      }
+    }
+    if (ip.m_Qprime>0.) {
+      ip.m_Q = ip.m_Qprime * ip.m_xsfact;
+      nc_assert(ip.m_Q>0.);
+      return calcRawCrossSectionValue(ip,cos_angle_indir_normal);
+    }
+
+    if (ip.m_Qprime) {
+      nc_assert(ip.m_Qprime==-2);
+      return kInfinity;//Q=inf, W factor irrelevant (assuming called within truncation radius)
+    } else {
+      return 0.0;//Q=0, W factor irrelevant
+    }
   }
 }
 

@@ -67,6 +67,9 @@ void NC::GaussMos::updateDerivedValues()
   if ( ! (truncangle < kPiHalf) )
     NCRYSTAL_THROW(BadInput,"Mosaicity too large, truncation angle (sigma*Ntrunc) must be less than pi/2");
   m_gos.set(m_mos_sigma.dbl(), truncangle, m_prec );
+  //Bound on ||n.k|-wl/2d| for contributing normals n, plus safety margin for
+  //single-precision evaluations:
+  m_presel_eps = static_cast<float>( 2.0*std::sin(0.5*truncangle) + 1e-5 );
 }
 
 void NC::GaussMos::setMosaicity( MosaicityFWHM mosaicity )
@@ -113,86 +116,183 @@ void NC::GaussMos::setDSpacingSpread(double dd)
   m_delta_d = dd;
 }
 
-double NC::GaussMos::calcRawCrossSectionValueInit(InteractionPars& ip, double cos_angle_indir_normal ) const
-{
-  nc_assert(ip.m_Q<=0.);
-  if ( ip.m_Qprime == -1 ) {
-    //First call after getting new wavelength or d-spacing.
-    ip.m_cos_perfect_theta = std::sqrt(ip.m_cos_perfect_theta_sq);// = sinalpha
-    double tmp2 = ip.m_cos_perfect_theta*ip.m_sin_perfect_theta;
-    if (tmp2>0) {
-      //usual case:
-      ip.m_Qprime = ip.m_wl3 / tmp2;
-    } else {
-      //Avoid a zero division when wavelength is 0 or 2*dspacing. The actual
-      //cross-section will be 0 or infinity at the two limits (special value -2.0
-      //designates infinity).
-      ip.m_Qprime = (ip.m_sin_perfect_theta>0.5&&ip.m_xsfact) ? -2.0/*wl~=2dsp*/ : 0.0/*wl~=0*/;
-    }
-  }
-  if (ip.m_Qprime>0.) {
-    ip.m_Q = ip.m_Qprime * ip.m_xsfact;
-    nc_assert(ip.m_Q>0.);
-    return calcRawCrossSectionValue(ip,cos_angle_indir_normal);
-  }
+namespace NCRYSTAL_NAMESPACE {
+  namespace {
+    //Planes are preselected in chunks of this size:
+    constexpr std::size_t gmpl_chunk = 64;
 
-  if (ip.m_Qprime) {
-    nc_assert(ip.m_Qprime==-2);
-    return kInfinity;//Q=inf, W factor irrelevant (assuming called within truncation radius)
-  } else {
-    return 0.0;//Q=0, W factor irrelevant
+    //Preselection of the planes in a chunk which might contribute. A plane
+    //with normal n and s=wl/(2*dspacing) only contributes to scattering of a
+    //neutron with direction k, if ||n.k|-s|<=2*sin(truncangle/2). The
+    //single-precision evaluation is safe when eps includes a safety
+    //margin. Indices (offset by idx0) of selected planes are written to
+    //idxout (must have room for a full chunk), and their number is returned.
+    //
+    //Performance depends crucially on the first loop being auto-vectorised,
+    //which is why it has a fixed length and no conditionals (needed for
+    //MSVC). Selected planes are those with a negative value, i.e. a sign bit.
+    inline unsigned gmpl_preselect( const float* nx, const float* ny,
+                                    const float* nz, const float* inv2dsp,
+                                    float kx, float ky, float kz,
+                                    float wl, float eps,
+                                    std::uint32_t idx0, std::uint32_t* idxout )
+    {
+      float q[gmpl_chunk];
+      for ( std::size_t j = 0; j < gmpl_chunk; ++j ) {
+        const float dot = nx[j]*kx + ny[j]*ky + nz[j]*kz;
+        q[j] = std::fabs( std::fabs(dot) - wl*inv2dsp[j] ) - eps;
+      }
+      //Check sign bits of 8 values at a time:
+      static_assert( gmpl_chunk == 64 && sizeof(float) == 4
+                     && std::numeric_limits<float>::is_iec559, "" );
+      std::uint64_t w[gmpl_chunk/2];
+      std::memcpy( w, q, sizeof(w) );
+      constexpr std::uint64_t signbits = 0x8000000080000000ull;
+      std::uint64_t grp[8];
+      std::uint64_t any = 0;
+      for ( std::size_t g = 0; g < 8; ++g ) {
+        grp[g] = ( w[4*g] | w[4*g+1] | w[4*g+2] | w[4*g+3] ) & signbits;
+        any |= grp[g];
+      }
+      if ( !any )
+        return 0;
+      unsigned n = 0;
+      for ( std::size_t g = 0; g < 8; ++g ) {
+        if ( !grp[g] )
+          continue;
+        for ( std::size_t j = 8*g; j < 8*g+8; ++j ) {
+          std::uint32_t b;
+          std::memcpy( &b, &q[j], sizeof(b) );
+          idxout[n] = idx0 + static_cast<std::uint32_t>(j);
+          n += ( b >> 31 );//branch-free
+        }
+      }
+      return n;
+    }
   }
 }
 
-double NC::GaussMos::calcCrossSections( InteractionPars& ip,
-                                        const NC::Vector& indir,
-                                        const std::vector<NC::Vector>& deminormals,
-                                        std::vector<NC::GaussMos::ScatCache>& cache,
-                                        VectD& xs_commul ) const
+void NC::GaussMos::PlaneList::addFamily( double inv2dsp, double xsfact,
+                                         Span<const Vector> deminormals )
 {
-  nc_assert(ip.isValid()&&ip.m_wl>0);
-  nc_assert(indir.isUnitVector());
-  std::vector<Vector>::const_iterator it(deminormals.begin()), itE(deminormals.end());
-  double xsoffset = xs_commul.empty() ? 0.0 : xs_commul.back();
-  double xssum(0.0);
-  const double cptsq = ip.m_cos_perfect_theta_sq;
-  const double cta = m_gos.getCosTruncangle();
-  for(;it!=itE;++it) {
-    const Vector& normal = *it;
-    const double dot = normal.dot(indir);
-    double sdotcptsq = (1.0 - dot * dot)*cptsq;
-    double ds = dot * ip.m_sin_perfect_theta;
-
-    //First a combined check, which usually allows us to skip both normal and
-    //anti-normal. NB: A normal contributes when sqrt(sdotcptsq) exceeds
-    //A=cta-/+ds, which is always the case for negative A. That includes
-    //sdotcptsq=0, i.e. a neutron exactly along a normal near back-scattering.
-    double A0 = cta - ncabs(ds);
-    if ( A0 >= 0.0 && sdotcptsq <= A0*A0 )
-      continue;
-
-    //At least one of the two normals should contribute, so deal with them:
-    double Am = cta - ds;
-    if ( Am < 0.0 || sdotcptsq > Am*Am ) {
-      //anti-normal is within truncated Gauss
-      double xs = calcRawCrossSectionValue(ip, dot );
-      if (xs) {
-        xs_commul.push_back(xsoffset + (xssum += xs));
-        cache.emplace_back(-normal, ip.m_inv2dsp);
-      }
-    }
-    double Ap = cta + ds;
-    if ( Ap < 0.0 || sdotcptsq > Ap*Ap ) {
-      //normal is within truncated Gauss
-      double xs = calcRawCrossSectionValue(ip, -dot );
-      if (xs) {
-        xs_commul.push_back(xsoffset + (xssum += xs));
-        cache.emplace_back(normal, ip.m_inv2dsp);
-      }
-    }
-
+  nc_assert_always( inv2dsp > 0.0 && inv2dsp < 1e30 && xsfact > 0.0 );
+  nc_assert_always( m_families.empty()
+                    || inv2dsp >= m_families.back().inv2dsp );
+  const std::size_t n0 = m_planes.size();
+  const std::size_t n1 = n0 + deminormals.size();
+  nc_assert_always( n1 < std::numeric_limits<std::uint32_t>::max()-gmpl_chunk );
+  const auto ifam = static_cast<std::uint32_t>( m_families.size() );
+  m_families.push_back( Family{ inv2dsp, xsfact,
+                                GaussMos_cacheRound(inv2dsp), n0 } );
+  //Remove padding, add planes, and pad again (with planes never selected):
+  for ( auto v : { &m_nx, &m_ny, &m_nz, &m_inv2dsp } )
+    v->resize( n0 );
+  for ( auto& n : deminormals ) {
+    nc_assert( n.isUnitVector() );
+    m_planes.push_back( Plane{ n, ifam } );
+    m_nx.push_back( static_cast<float>( n.x() ) );
+    m_ny.push_back( static_cast<float>( n.y() ) );
+    m_nz.push_back( static_cast<float>( n.z() ) );
+    m_inv2dsp.push_back( static_cast<float>( inv2dsp ) );
   }
-  return xssum;
+  const std::size_t npad = ( (n1+gmpl_chunk-1) / gmpl_chunk ) * gmpl_chunk;
+  for ( auto v : { &m_nx, &m_ny, &m_nz } )
+    v->resize( npad, 0.0f );
+  m_inv2dsp.resize( npad, 1e15f );
+}
+
+void NC::GaussMos::calcCrossSections( const PlaneList& pl,
+                                      double wl,
+                                      const NC::Vector& indir,
+                                      std::vector<ScatCache>& cache,
+                                      VectD& xs_commul ) const
+{
+  nc_assert(wl>0);
+  nc_assert(indir.isUnitVector());
+
+  //Only the first nplanes planes fulfill wl<2d:
+  const double inv2dcutoff = (1.0-2*std::numeric_limits<double>::epsilon())/wl;
+  const auto& fams = pl.m_families;
+  auto itfamE = std::lower_bound( fams.begin(), fams.end(), inv2dcutoff,
+                                  []( const PlaneList::Family& f, double v )
+                                  { return f.inv2dsp < v; } );
+  const std::size_t nplanes = ( itfamE == fams.end()
+                                ? pl.m_planes.size() : itfamE->nbegin );
+
+  const double cta = m_gos.getCosTruncangle();
+  const float fkx( static_cast<float>(indir.x()) );
+  const float fky( static_cast<float>(indir.y()) );
+  const float fkz( static_cast<float>(indir.z()) );
+  const float fwl( static_cast<float>(wl) );
+  const float feps( m_presel_eps );
+  const double wl_rounded = GaussMos_cacheRound(wl);
+  InteractionPars ip;
+  constexpr auto nofam = std::numeric_limits<std::uint32_t>::max();
+  std::uint32_t ifam = nofam;
+  //Cross sections are summed up separately in each family:
+  double xscommul = xs_commul.empty() ? 0.0 : xs_commul.back();
+  double xsoffset(0.0), xssum(0.0);
+  //Planes are preselected in batches, since it is faster to not interleave
+  //preselection and exact calculations too finely:
+  constexpr unsigned nbatch = 4*gmpl_chunk;
+  std::uint32_t idx[nbatch];
+  for ( std::size_t i0 = 0; i0 < nplanes; ) {
+    unsigned nsel = 0;
+    for ( ; i0 < nplanes && nsel <= nbatch - gmpl_chunk; i0 += gmpl_chunk )
+      nsel += gmpl_preselect( &pl.m_nx[i0], &pl.m_ny[i0],
+                              &pl.m_nz[i0], &pl.m_inv2dsp[i0],
+                              fkx, fky, fkz, fwl, feps,
+                              static_cast<std::uint32_t>(i0), idx + nsel );
+    for ( unsigned isel = 0; isel < nsel; ++isel ) {
+      const std::size_t i = idx[isel];
+      if ( i >= nplanes )
+        break;
+      const auto& plane = pl.m_planes[i];
+      const auto& fam = fams[plane.ifam];
+      //New family => new sum (selecting via arrays to avoid branches which
+      //can not be predicted):
+      const std::size_t newfam = ( plane.ifam != ifam ? 1 : 0 );
+      ifam = plane.ifam;
+      const double xsoffset_select[2] = { xsoffset, xscommul };
+      const double xssum_select[2] = { xssum, 0.0 };
+      xsoffset = xsoffset_select[newfam];
+      xssum = xssum_select[newfam];
+      ip.setRoundedNoReuse( wl_rounded, fam.inv2dsp_rounded, fam.xsfact );
+      const Vector& normal = plane.normal;
+      const double dot = normal.dot(indir);
+      const double sdotcptsq = (1.0 - dot * dot)*ip.m_cos_perfect_theta_sq;
+      const double ds = dot * ip.m_sin_perfect_theta;
+
+      //The normal (anti-normal) contributes when sqrt(sdotcptsq) exceeds
+      //cta+ds (cta-ds), i.e. when it is within the truncated Gauss. This is
+      //always the case for negative values, which includes sdotcptsq=0, i.e.
+      //a neutron exactly along a normal near back-scattering. First check
+      //the one of them most likely to contribute (the anti-normal if ds>0):
+      const double absds = ncabs(ds);
+      const double A0 = cta - absds;
+      if ( A0 >= 0.0 && sdotcptsq <= A0*A0 )
+        continue;//neither contributes
+      const double A1 = cta + absds;
+      if ( !( sdotcptsq > A1*A1 ) ) {
+        //Usual case, just one of them contributes.
+        const double xs = calcRawCrossSectionValue( ip, ncabs(dot) );
+        if (xs) {
+          xs_commul.push_back( xscommul = xsoffset + (xssum += xs) );
+          cache.emplace_back( normal * ( ds > 0.0 ? -1.0 : 1.0 ),
+                              ip.m_inv2dsp );
+        }
+      } else {
+        //Both contribute, first the anti-normal, then the normal:
+        for ( double sign : { -1.0, 1.0 } ) {
+          const double xs = calcRawCrossSectionValue( ip, -sign*dot );
+          if (xs) {
+            xs_commul.push_back( xscommul = xsoffset + (xssum += xs) );
+            cache.emplace_back( normal * sign, ip.m_inv2dsp );
+          }
+        }
+      }
+    }
+  }
 }
 
 void NC::GaussMos::genScat( RNG& rng, const ScatCache& cache, double wl_raw, const NC::Vector& indir, NC::Vector& outdir) const
@@ -255,28 +355,14 @@ void NC::GaussMos::InteractionPars::set(double wl_raw, double inv2dsp_raw, doubl
   nc_assert(wl_raw>0);
   nc_assert(inv2dsp_raw>0);
   nc_assert(xsfact>0.);
-  m_xsfact = xsfact * 0.5;//absorb factor 1/2 here, to avoid a multiplication later
   double wl = GaussMos_cacheRound(wl_raw);
   double inv2dsp = GaussMos_cacheRound(inv2dsp_raw);
-  nc_assert(wl>0);
-  nc_assert(inv2dsp>0);
-  if (wl==m_wl) {
-    if (inv2dsp==m_inv2dsp) {
-      //great, we don't have to invalidate the Qprime/alpha values, but m_Q might have changed:
-      m_Q = (m_Qprime > 0.0 ? m_Qprime * m_xsfact : -1/*will trigger recalc later*/);
-      return;
-    }
+  if ( wl==m_wl && inv2dsp==m_inv2dsp ) {
+    //great, we don't have to invalidate the Qprime/alpha values, but m_Q might have changed:
+    m_xsfact = xsfact * 0.5;//absorb factor 1/2 here, to avoid a multiplication later
+    m_Q = (m_Qprime > 0.0 ? m_Qprime * m_xsfact : -1/*will trigger recalc later*/);
   } else {
-    nc_assert(wl>0);
-    m_wl = wl;
-    m_wl3 = m_wl*m_wl*m_wl;
+    //wl or inv2dsp changed:
+    setRoundedNoReuse( wl, inv2dsp, xsfact );
   }
-  //wl or inv2dsp changed => new thetabragg and invalid Q/Qprime/alpha/cos_perfect_theta values:
-  nc_assert(inv2dsp>0.);
-  m_inv2dsp = inv2dsp;
-  m_sin_perfect_theta = wl * inv2dsp;
-  nc_assert(valueInInterval(0.,1.,m_sin_perfect_theta));
-  m_cos_perfect_theta_sq = 1 - m_sin_perfect_theta*m_sin_perfect_theta;
-  m_Q = m_Qprime = m_cos_perfect_theta = -1;//invalidate
-  m_alpha = -99;//invalidate
 }

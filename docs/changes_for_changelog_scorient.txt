@@ -62,3 +62,11 @@ CHANGELOG at release time, after which this file is dropped).
        2*dspacing. Cross sections were thus too low for e.g. a neutron
        exactly along the lab direction of a "dir1=@crys_hkl:..." plane
        normal, while fine for any slightly tilted neutron.
+     * Cross sections of single crystals (SCBragg) are now evaluated
+       faster, with unchanged results. The planes able to contribute for
+       a given neutron are preselected with a fast single-precision test
+       (written to be vectorised by compilers), and exact calculations
+       are only carried out for those. For a mosaicity of 0.5 degrees the
+       speedup is typically a factor of 2-3 (7 for crystals of low
+       symmetry), and for 0.05 degrees a factor of 4-6 (17 for low
+       symmetry).

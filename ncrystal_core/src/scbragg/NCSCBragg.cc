@@ -32,29 +32,6 @@ namespace NC=NCrystal;
 
 struct NC::SCBragg::pimpl {
 
-  class ReflectionFamily : private ::NC::MoveOnly {//"::NC::" is needed to avoid compilation error (SCBragg inherits from private MoveOnly)
-  public:
-    //A familiy is here taken to be all planes sharing d-spacing and fsquared.
-
-    std::vector<Vector> deminormals;
-    double xsfact;// = fsquared / (unit_cell_volume * unit_cell_natoms)
-    double inv2d;
-
-    ReflectionFamily(double xsfct, double dspacing) ncnoexceptndebug
-      : xsfact(xsfct), inv2d(0.5/dspacing) { nc_assert(xsfct>0&&dspacing>0); }
-
-    ReflectionFamily & operator= ( ReflectionFamily && ) = default;
-    ReflectionFamily( ReflectionFamily && ) = default;
-
-    constexpr bool operator<( const ReflectionFamily & o ) const ncnoexceptndebug
-    {
-      //sort by d-spacing (secondarily by xsfact for reproducibility):
-      if ( o.inv2d!=inv2d ) return o.inv2d > inv2d;
-      nc_assert(o.xsfact != xsfact);
-      return o.xsfact < xsfact;
-    }
-  };
-
   typedef std::map<std::pair<uint64_t,uint64_t>,std::vector<Vector>,
                    std::greater<std::pair<uint64_t,uint64_t> > > SCBraggSortMap;
 
@@ -73,6 +50,7 @@ struct NC::SCBragg::pimpl {
     //cache signature:
     double ekin = -1.0;//Start with invalid cache
     Vector dir;
+    Vector dir_raw;//before normalisation
     //cache contents:
     double wl;
     VectD xs_commul;
@@ -83,7 +61,7 @@ struct NC::SCBragg::pimpl {
   void updateCache( Cache&, NeutronEnergy, const Vector& ) const;
 
   double m_threshold_ekin;
-  std::vector<ReflectionFamily> m_reflfamilies;
+  GaussMos::PlaneList m_planes;//in families sharing d-spacing and fsquared.
   GaussMos m_gm;
 };
 
@@ -131,7 +109,7 @@ double NC::SCBragg::pimpl::setupFamilies( const NC::Info& cinfo,
   //expand crystal info
   nc_assert_always(cinfo.hasHKLInfo());
   nc_assert_always(cinfo.hasStructureInfo());
-  nc_assert(m_reflfamilies.empty());
+  nc_assert(m_planes.nFamilies()==0);
 
   //collect all planes, sorted by (dsp,fsq). To avoid issues connected to
   //floating point number keys, we store dspacing/fsquared as integers, keeping
@@ -195,27 +173,22 @@ double NC::SCBragg::pimpl::setupFamilies( const NC::Info& cinfo,
     }
   }
 
-  m_reflfamilies.reserve(planes.size());
-  SCBraggSortMap::const_iterator it = planes.begin();
-  for (;it!=planes.end();++it) {
-
-    std::map<uint64_t,double>::iterator itOrig = origvals_dsp.find(it->first.first);
+  //Transfer to m_planes (in the lab frame), in order of decreasing d-spacing:
+  std::vector<Vector> normals;
+  for ( auto& e : planes ) {
+    auto itOrig = origvals_dsp.find(e.first.first);
     nc_assert(itOrig!=origvals_dsp.end());
-    const double dsp = (itOrig->second > 0 ? itOrig->second : it->first.first / two30);
+    const double dsp = (itOrig->second > 0 ? itOrig->second : e.first.first / two30);
 
-    itOrig = origvals_fsq.find(it->first.second);
+    itOrig = origvals_fsq.find(e.first.second);
     nc_assert(itOrig!=origvals_fsq.end());
-    const double fsq = (itOrig->second > 0 ? itOrig->second : it->first.second / two30);
+    const double fsq = (itOrig->second > 0 ? itOrig->second : e.first.second / two30);
 
-    m_reflfamilies.emplace_back(fsq/V0numAtom,dsp);
-
-    //transfer it->second into final vector and put in the lab frame:
-    ReflectionFamily& fam = m_reflfamilies.back();
-    fam.deminormals.reserve(it->second.size());
-    std::vector<Vector>::const_iterator itDN(it->second.begin()), itDNE(it->second.end());
-    for (;itDN!=itDNE;++itDN)
-      fam.deminormals.push_back( cry2lab * (*itDN) );
-    nc_assert(m_reflfamilies.back().deminormals.size()==it->second.size());
+    normals.clear();
+    for ( auto& n : e.second )
+      normals.push_back( cry2lab * n );
+    nc_assert(fsq>0&&dsp>0);
+    m_planes.addFamily( 0.5/dsp, fsq/V0numAtom, normals );
   }
 
   return maxdspacing;
@@ -240,12 +213,21 @@ void NC::SCBragg::pimpl::updateCache( Cache& cache, NeutronEnergy ekin_raw, cons
   //actually numerically imprecise for small angles, leading to occurances of
   //cache validity where it should have been invalid.
   double ekin = SCBragg_cacheRound(ekin_raw.get());
-  if ( cache.ekin==ekin && dir.angle_highres(cache.dir)<1.0e-12 ) {
-    //cache already valid!
-    return;
+  if ( cache.ekin==ekin ) {
+    //Cache is valid if the angle between dir and cache.dir is less than
+    //1e-12. First try to decide without the slow angle_highres:
+    if ( dir == cache.dir_raw )
+      return;//valid, identical direction
+    const double dp = dir.dot(cache.dir);
+    const bool angle_above_1em10 = ( !( dp > 0.0 )
+                                     || dir.cross(cache.dir).mag2() > 1e-20*dp*dp );
+    if ( !angle_above_1em10 && dir.angle_highres(cache.dir)<1.0e-12 )
+      return;//valid
   }
 
   //Cache not valid!
+  cache.ekin = -1.0;//in case of exceptions below
+  cache.dir_raw = dir;
   cache.dir = dir;
   cache.dir.normalise();
 
@@ -259,18 +241,8 @@ void NC::SCBragg::pimpl::updateCache( Cache& cache, NeutronEnergy ekin_raw, cons
   if (cache.wl==0)
     return;//done, all cross-sections will be zero
 
-  std::vector<ReflectionFamily>::const_iterator it(m_reflfamilies.begin()), itE(m_reflfamilies.end());
-
-  double inv2dcutoff = (1.0-2*std::numeric_limits<double>::epsilon())/cache.wl;
-
-  GaussMos::InteractionPars interactionpars;
-  for( ; it!=itE; ++it) {
-    const ReflectionFamily& fam = *it;
-    if( fam.inv2d >= inv2dcutoff )
-      break;//stop here, no more families fulfill w<2d requirement.
-    interactionpars.set(cache.wl, fam.inv2d, fam.xsfact);
-    m_gm.calcCrossSections(interactionpars, cache.dir, fam.deminormals, cache.scatcache,cache.xs_commul);
-  }
+  m_gm.calcCrossSections( m_planes, cache.wl, cache.dir,
+                          cache.scatcache, cache.xs_commul );
 
   nc_assert(cache.xs_commul.empty()||cache.xs_commul.back()>0.0);
 }
@@ -325,13 +297,13 @@ NC::ScatterOutcome NC::SCBragg::sampleScatter( CachePtr& cp, RNG& rng, NeutronEn
 
 NC::Optional<std::string> NC::SCBragg::specificJSONDescription() const
 {
-  auto nfam = m_pimpl->m_reflfamilies.size();
+  auto nfam = m_pimpl->m_planes.nFamilies();
   auto mos = m_pimpl->m_gm.mosaicityFWHM();
 
   double dmin(-1),dmax(-1);
   if ( nfam ) {
-    dmin = 0.5/m_pimpl->m_reflfamilies.back().inv2d;
-    dmax = 0.5/m_pimpl->m_reflfamilies.front().inv2d;
+    dmin = 0.5/m_pimpl->m_planes.maxInv2dsp();
+    dmax = 0.5/m_pimpl->m_planes.minInv2dsp();
   }
 
   std::ostringstream ss;
