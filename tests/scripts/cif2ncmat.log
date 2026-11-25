@@ -174,7 +174,7 @@ OC3 0.27350 0.51260 0.09310
 ============= CLI >>codid::9005777 --nomerge<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 NCrystal: Parsing CIF data
-NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
+NCrystal WARNING: Some CIF sites in "codid::9005777" (data_9005777) have no _atom_site_type_symbol, so their elements were taken from their labels (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -202,9 +202,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
-OUT>#                     element content was guessed from their label (Ca from
-OUT>#                     CaM1, Si from Si1, O from OA1)
+OUT>#   NCrystalWarning : Some CIF sites in "codid::9005777" (data_9005777) have no
+OUT>#                     _atom_site_type_symbol, so their elements were taken from
+OUT>#                     their labels (Ca from CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 15 atoms!
 OUT>#
@@ -341,7 +341,7 @@ OUT>  debye_temp 300
 ============= CLI >>codid::9005777<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 NCrystal: Parsing CIF data
-NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
+NCrystal WARNING: Some CIF sites in "codid::9005777" (data_9005777) have no _atom_site_type_symbol, so their elements were taken from their labels (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -369,9 +369,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
-OUT>#                     element content was guessed from their label (Ca from
-OUT>#                     CaM1, Si from Si1, O from OA1)
+OUT>#   NCrystalWarning : Some CIF sites in "codid::9005777" (data_9005777) have no
+OUT>#                     _atom_site_type_symbol, so their elements were taken from
+OUT>#                     their labels (Ca from CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
@@ -420,7 +420,7 @@ OUT>  debye_temp 300
 ============= CLI >>codid::9005777 --uisotemp=50<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 NCrystal: Parsing CIF data
-NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
+NCrystal WARNING: Some CIF sites in "codid::9005777" (data_9005777) have no _atom_site_type_symbol, so their elements were taken from their labels (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -448,9 +448,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
-OUT>#                     element content was guessed from their label (Ca from
-OUT>#                     CaM1, Si from Si1, O from OA1)
+OUT>#   NCrystalWarning : Some CIF sites in "codid::9005777" (data_9005777) have no
+OUT>#                     _atom_site_type_symbol, so their elements were taken from
+OUT>#                     their labels (Ca from CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
@@ -499,7 +499,7 @@ OUT>  debye_temp 300
 ============= CLI >>codid::9005777 --debyetemp=50<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 NCrystal: Parsing CIF data
-NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
+NCrystal WARNING: Some CIF sites in "codid::9005777" (data_9005777) have no _atom_site_type_symbol, so their elements were taken from their labels (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -527,9 +527,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
-OUT>#                     element content was guessed from their label (Ca from
-OUT>#                     CaM1, Si from Si1, O from OA1)
+OUT>#   NCrystalWarning : Some CIF sites in "codid::9005777" (data_9005777) have no
+OUT>#                     _atom_site_type_symbol, so their elements were taken from
+OUT>#                     their labels (Ca from CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
@@ -1079,7 +1079,7 @@ OUT>     .0462663 .0247447 .0118274 .00659815 .00298692 0
 ============= CLI >>codid::9005777 --dynamics stdlib::CaSiO3_sg2_Wollastonite.ncmat<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 NCrystal: Parsing CIF data
-NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
+NCrystal WARNING: Some CIF sites in "codid::9005777" (data_9005777) have no _atom_site_type_symbol, so their elements were taken from their labels (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -1107,9 +1107,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
-OUT>#                     element content was guessed from their label (Ca from
-OUT>#                     CaM1, Si from Si1, O from OA1)
+OUT>#   NCrystalWarning : Some CIF sites in "codid::9005777" (data_9005777) have no
+OUT>#                     _atom_site_type_symbol, so their elements were taken from
+OUT>#                     their labels (Ca from CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
@@ -1592,7 +1592,7 @@ OUT>     .0462663 .0247447 .0118274 .00659815 .00298692 0
 ============= CLI >>codid::9005777 --atomdata 'Si 28.09u::4.1491fm 0.004b 0.171b'<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 NCrystal: Parsing CIF data
-NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
+NCrystal WARNING: Some CIF sites in "codid::9005777" (data_9005777) have no _atom_site_type_symbol, so their elements were taken from their labels (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -1620,9 +1620,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
-OUT>#                     element content was guessed from their label (Ca from
-OUT>#                     CaM1, Si from Si1, O from OA1)
+OUT>#   NCrystalWarning : Some CIF sites in "codid::9005777" (data_9005777) have no
+OUT>#                     _atom_site_type_symbol, so their elements were taken from
+OUT>#                     their labels (Ca from CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
@@ -1673,7 +1673,7 @@ OUT>  debye_temp 300
 ============= CLI >>codid::9005777 --atomdata 'Si 28.09u 0fm 0b 0b'<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 NCrystal: Parsing CIF data
-NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
+NCrystal WARNING: Some CIF sites in "codid::9005777" (data_9005777) have no _atom_site_type_symbol, so their elements were taken from their labels (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -1701,9 +1701,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
-OUT>#                     element content was guessed from their label (Ca from
-OUT>#                     CaM1, Si from Si1, O from OA1)
+OUT>#   NCrystalWarning : Some CIF sites in "codid::9005777" (data_9005777) have no
+OUT>#                     _atom_site_type_symbol, so their elements were taken from
+OUT>#                     their labels (Ca from CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
@@ -1756,7 +1756,7 @@ Caught expected ArgumentError('invalid --atomdata syntax in "Si 28.09 0fm 0b 0b"
 ============= CLI >>codid::9005777 --atomdata 'Si 28.09u 0fm 0b 0b' --atomdata 'Ca 128.09u 0fm 0b 0b'<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
 NCrystal: Parsing CIF data
-NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
+NCrystal WARNING: Some CIF sites in "codid::9005777" (data_9005777) have no _atom_site_type_symbol, so their elements were taken from their labels (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -1784,9 +1784,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
-OUT>#                     element content was guessed from their label (Ca from
-OUT>#                     CaM1, Si from Si1, O from OA1)
+OUT>#   NCrystalWarning : Some CIF sites in "codid::9005777" (data_9005777) have no
+OUT>#                     _atom_site_type_symbol, so their elements were taken from
+OUT>#                     their labels (Ca from CaM1, Si from Si1, O from OA1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
@@ -1855,7 +1855,7 @@ UNITTEST: Would invoke nc_cifutils.produce_validation_plots with pdf_target= bla
 ============================================================================================================
 ============= CLI >>Wyckoff1963_Sulphor_0011255.cif<< ====================
 NCrystal: Parsing CIF data
-NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1)
+NCrystal WARNING: Some CIF sites in "Wyckoff1963_Sulphor_0011255.cif" (data_global) have no _atom_site_type_symbol, so their elements were taken from their labels (S from S1)
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
 NCrystal: Writing autogen_S_sg70.ncmat
@@ -1878,8 +1878,9 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
-OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
-OUT>#                     element content was guessed from their label (S from S1)
+OUT>#   NCrystalWarning : Some CIF sites in "Wyckoff1963_Sulphor_0011255.cif"
+OUT>#                     (data_global) have no _atom_site_type_symbol, so their
+OUT>#                     elements were taken from their labels (S from S1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#
@@ -1905,7 +1906,7 @@ OUT>  debye_temp 300
 ============= CLI >>Wyckoff1963_Sulphor_0011255.cif --spacegroup 'F d d d:1'<< ====================
 NCrystal: Parsing CIF data
 NCrystal WARNING: Overriding spacegroup to "F d d d:1" due to explicit request
-NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1)
+NCrystal WARNING: Some CIF sites in "Wyckoff1963_Sulphor_0011255.cif" (data_global) have no _atom_site_type_symbol, so their elements were taken from their labels (S from S1)
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
 NCrystal: Writing autogen_S_sg70.ncmat
@@ -1930,8 +1931,9 @@ OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
 OUT>#   NCrystalWarning : Overriding spacegroup to "F d d d:1" due to explicit
 OUT>#                     request
-OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
-OUT>#                     element content was guessed from their label (S from S1)
+OUT>#   NCrystalWarning : Some CIF sites in "Wyckoff1963_Sulphor_0011255.cif"
+OUT>#                     (data_global) have no _atom_site_type_symbol, so their
+OUT>#                     elements were taken from their labels (S from S1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#
@@ -1957,7 +1959,7 @@ OUT>  debye_temp 300
 ============= CLI >>Wyckoff1963_Sulphor_0011255.cif --spacegroup 'F d d d:2'<< ====================
 NCrystal: Parsing CIF data
 NCrystal WARNING: Overriding spacegroup to "F d d d:2" due to explicit request
-NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1)
+NCrystal WARNING: Some CIF sites in "Wyckoff1963_Sulphor_0011255.cif" (data_global) have no _atom_site_type_symbol, so their elements were taken from their labels (S from S1)
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
 NCrystal: Writing autogen_S_sg70.ncmat
@@ -1982,8 +1984,9 @@ OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
 OUT>#   NCrystalWarning : Overriding spacegroup to "F d d d:2" due to explicit
 OUT>#                     request
-OUT>#   NCrystalWarning : Some CIF sites have no _atom_site_type_symbol and their
-OUT>#                     element content was guessed from their label (S from S1)
+OUT>#   NCrystalWarning : Some CIF sites in "Wyckoff1963_Sulphor_0011255.cif"
+OUT>#                     (data_global) have no _atom_site_type_symbol, so their
+OUT>#                     elements were taken from their labels (S from S1)
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#

@@ -482,13 +482,13 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
     const auto r = NCC::findUniqueStructProvItems( doc, perm, warnfct );
     const auto setting = NCC::chooseSetting( doc, r.structureItems, perm,
                                              overrideSG, warnfct );
-    const auto snapped = NCC::snapCell( r.structureItems, setting );
+    const auto snapped = NCC::snapCell( doc, r.structureItems, setting );
     if ( !snapped.cell.has_value() && !allowMisfit )
       NCRYSTAL_THROW2( BadInput, "Unit cell not compatible with the space"
                        " group of the CIF data: "
                        << snapped.errorMsg.value() );
     Optional<CellParameters> cell = snapped.cell;
-    const auto atoms = NCC::getAtoms( r.structureItems, setting, perm,
+    const auto atoms = NCC::getAtoms( doc, r.structureItems, setting, perm,
                                       tolUij.has_value() ? tolUij.value()
                                       : 1e-3, warnfct );
     const auto b = r.structureItems.block( doc );

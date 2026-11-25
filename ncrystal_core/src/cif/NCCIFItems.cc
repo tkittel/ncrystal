@@ -34,13 +34,7 @@ namespace NCRYSTAL_NAMESPACE {
       //(line 0 for none):
       std::string where( BlockView b, std::uint32_t line )
       {
-        std::ostringstream ss;
-        ss << "CIF data in \"" << b.document().dataSourceName()
-           << "\" (data_" << b.name();
-        if ( line )
-          ss << ", line " << line;
-        ss << ')';
-        return ss.str();
+        return "CIF data in " + describeLocation( b, line );
       }
 
       [[noreturn]] void throwItemError( BlockView b, std::uint32_t line,
@@ -579,4 +573,14 @@ NCC::findUniqueStructProvItems( const Document& doc, CIFPermissive permissive,
     ItemsFactory::fill( prov.value(), other.value() );
   }
   return StructProvItems{ std::move( found.value() ), std::move( prov ) };
+}
+
+std::string NCC::describeLocation( BlockView b, std::uint32_t line )
+{
+  std::ostringstream ss;
+  ss << '"' << b.document().dataSourceName() << "\" (data_" << b.name();
+  if ( line )
+    ss << ", line " << line;
+  ss << ')';
+  return ss.str();
 }

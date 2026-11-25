@@ -392,8 +392,9 @@ Caught expected NCBadInput('Invalid CIF data in "raw CIF data" (data_s, line 29)
                             'number': [{'tag': '_space_group_IT_number',
                                         'value': ['221', 5]}],
                             'operations': []}},
- 'warnings': ['Some CIF sites have no _atom_site_type_symbol and their element '
-              'content was guessed from their label (Fe from Fe1)']}
+ 'warnings': ['Some CIF sites in "query_test.cif" (data_x) have no '
+              '_atom_site_type_symbol, so their elements were taken from their '
+              'labels (Fe from Fe1)']}
 
 >>> Sending query: ['cif', 'structure', 'strict', 'override_spacegroup=225', 'query_test.cif']
 {'atoms': [{'composition': [[1.0, 'Fe']],
@@ -434,8 +435,9 @@ Caught expected NCBadInput('Invalid CIF data in "raw CIF data" (data_s, line 29)
                                         'value': ['221', 5]}],
                             'operations': []}},
  'warnings': ['Overriding spacegroup to "225" due to explicit request',
-              'Some CIF sites have no _atom_site_type_symbol and their element '
-              'content was guessed from their label (Fe from Fe1)']}
+              'Some CIF sites in "query_test.cif" (data_x) have no '
+              '_atom_site_type_symbol, so their elements were taken from their '
+              'labels (Fe from Fe1)']}
 Caught expected NCBadInput('Unit cell not compatible with the space group of the CIF data: Lattice parameters a and c must be equal for this space group (got a=4.05 and c=4.2)')
 cell not fitting the setting, allowed: None
 cif_globalblock.cif with tol_uij=0.1: warnings []

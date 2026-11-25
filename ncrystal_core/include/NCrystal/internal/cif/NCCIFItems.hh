@@ -41,6 +41,10 @@ namespace NCRYSTAL_NAMESPACE {
     //NCRYSTAL_WARN), so callers can record them (e.g. for NCMAT comments):
     using CIFWarnFct = std::function<void(const std::string&)>;
 
+    //Location in the data for messages, e.g. '"x.cif" (data_a, line 7)'
+    //(line 0 for none):
+    std::string describeLocation( BlockView, std::uint32_t line = 0 );
+
     //Whether getStructureItems accepts some flaws in the data (with
     //warnings), as described below. Errors which permissive mode would avoid
     //end with a hint to use it:

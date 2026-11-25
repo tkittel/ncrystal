@@ -1,15 +1,15 @@
 cs0006.cif:
-  default error: NCBadInput: CIF site "Na" has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Na from Na, La from La, Ce from Ce, Pr from Pr, ...)
-  permissive warning: CIF site "Na" has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "La" has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Ce" has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Pr" has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Nd" has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "K" has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Sr" has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "V" has Uiso=0.01344 which differs from the Ueq=0.0134767 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Mo" has Uiso=0.01344 which differs from the Ueq=0.0134767 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "Na" in "cs0006.cif" (data_cs0006, line 76) has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: Some CIF sites in "cs0006.cif" (data_cs0006) have no _atom_site_type_symbol, so their elements were taken from their labels (Na from Na, La from La, Ce from Ce, Pr from Pr, ...)
+  permissive warning: CIF site "Na" in "cs0006.cif" (data_cs0006, line 76) has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "La" in "cs0006.cif" (data_cs0006, line 77) has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Ce" in "cs0006.cif" (data_cs0006, line 78) has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Pr" in "cs0006.cif" (data_cs0006, line 79) has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Nd" in "cs0006.cif" (data_cs0006, line 80) has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "K" in "cs0006.cif" (data_cs0006, line 81) has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Sr" in "cs0006.cif" (data_cs0006, line 82) has Uiso=0.0217 which differs from the Ueq=0.0217367 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "V" in "cs0006.cif" (data_cs0006, line 83) has Uiso=0.01344 which differs from the Ueq=0.0134767 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Mo" in "cs0006.cif" (data_cs0006, line 84) has Uiso=0.01344 which differs from the Ueq=0.0134767 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive warning: Structure received minor corrections by spglib (at the 0.0283297% level)
   permissive warning: The unit cell parameters do not exactly fit the space group of the CIF data (140), so the structure was refined to exactly consistent cell parameters
   permissive: SG-140 (140), 4 sites, 4 atoms, 4 with uij
@@ -21,41 +21,41 @@ cs0008.cif:
   permissive: SG-229 (229), 1 sites, 1 atoms, 0 with uij
   material: 16 hkl families, dmax=1.9578
 cs0009.cif:
-  default error: NCBadInput: Expanded number of atoms per cell (444) is different from what is stated explicitly in the CIF data (424.0). Wrong spacegroup (or choice/setting improperly specified)?
-  permissive error: NCBadInput: Expanded number of atoms per cell (444) is different from what is stated explicitly in the CIF data (424.0). Wrong spacegroup (or choice/setting improperly specified)?
+  default error: NCBadInput: The unit cell has 444 atoms in space group setting 14:b1, but the CIF data in "cs0009.cif" (data_cs0009) states 424 (_atom_type_number_in_cell), so the space group or its setting is probably wrong
+  permissive error: NCBadInput: The unit cell has 444 atoms in space group setting 14:b1, but the CIF data in "cs0009.cif" (data_cs0009) states 424 (_atom_type_number_in_cell), so the space group or its setting is probably wrong
 cs0011.cif:
-  default error: NCBadInput: atoms labelled "C(1)" and "DUM0" have same cell positions but different uiso information. This is not supported.
-  permissive error: NCBadInput: atoms labelled "C(1)" and "DUM0" have same cell positions but different uiso information. This is not supported.
+  default error: NCBadInput: CIF sites "C(1)" (line 50) and "DUM0" (line 55) in "cs0011.cif" (data_cs0011) are at the same positions but have different displacement parameters (Uiso or tensors), which is not supported
+  permissive error: NCBadInput: CIF sites "C(1)" (line 50) and "DUM0" (line 55) in "cs0011.cif" (data_cs0011) are at the same positions but have different displacement parameters (Uiso or tensors), which is not supported
 cs0023.cif:
   default error: NCBadInput: Invalid CIF data in "cs0023.cif" (data_cs0023, line 17): tag _atom_site_label has a value "?" or "."
   permissive error: NCBadInput: Invalid CIF data in "cs0023.cif" (data_cs0023, line 17): tag _atom_site_label has a value "?" or "."
 cs0025.cif:
-  default error: NCBadInput: CIF site "D2_3" has an occupancy above 1 (1.09)
-  permissive error: NCBadInput: CIF site "D2_3" has an occupancy above 1 (1.09)
+  default error: NCBadInput: CIF site "D2_3" in "cs0025.cif" (data_cs0025, line 59) has an occupancy above 1 (1.09)
+  permissive error: NCBadInput: CIF site "D2_3" in "cs0025.cif" (data_cs0025, line 59) has an occupancy above 1 (1.09)
 cs0026.cif:
   default: SG-156 (156), 5 sites, 3 atoms, 0 with uij
 cs0032.cif:
-  default error: NCBadInput: Error: Too high total occupancy (2.0 which is >1) for atoms with CIF labels: "O", "F". A possible cause could be multiple entries in the CIF file using atomic positions that are actually symmetrically equivalent!
-  permissive error: NCBadInput: Error: Too high total occupancy (2.0 which is >1) for atoms with CIF labels: "O", "F". A possible cause could be multiple entries in the CIF file using atomic positions that are actually symmetrically equivalent!
+  default error: NCBadInput: CIF sites "O" (line 21) and "F" (line 22) in "cs0032.cif" (data_cs0032) are at the same positions with a total occupancy above 1 (2), probably the same site listed twice (e.g. at symmetry-equivalent coordinates)
+  permissive error: NCBadInput: CIF sites "O" (line 21) and "F" (line 22) in "cs0032.cif" (data_cs0032) are at the same positions with a total occupancy above 1 (2), probably the same site listed twice (e.g. at symmetry-equivalent coordinates)
 cs0033.cif:
   default warning: Structure received major corrections by spglib (possibly due to conversion from primitive cell)
   default: SG-139 (139), 3 sites, 3 atoms, 0 with uij
 cs0040.cif:
-  default warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Si from Si, F from F)
+  default warning: Some CIF sites in "cs0040.cif" (data_cs0040) have no _atom_site_type_symbol, so their elements were taken from their labels (Si from Si, F from F)
   default: SG-180 (180), 2 sites, 2 atoms, 2 with uij
   material: 266 hkl families, dmax=4.5318
 cs0043.cif:
-  default error: NCBadInput: CIF site "Si" has Uiso=0.00548 which differs from the Ueq=0.00551667 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Mg from Mg, Si from Si, Al from Al, F from F, ...)
-  permissive warning: CIF site "Si" has Uiso=0.00548 which differs from the Ueq=0.00551667 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Al" has Uiso=0.00537 which differs from the Ueq=0.00533333 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "F" has Uiso=0.01186 which differs from the Ueq=0.0118267 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Cl" has Uiso=0.02764 which differs from the Ueq=0.02759 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "Si" in "cs0043.cif" (data_cs0043, line 61) has Uiso=0.00548 which differs from the Ueq=0.00551667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: Some CIF sites in "cs0043.cif" (data_cs0043) have no _atom_site_type_symbol, so their elements were taken from their labels (Mg from Mg, Si from Si, Al from Al, F from F, ...)
+  permissive warning: CIF site "Si" in "cs0043.cif" (data_cs0043, line 61) has Uiso=0.00548 which differs from the Ueq=0.00551667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Al" in "cs0043.cif" (data_cs0043, line 62) has Uiso=0.00537 which differs from the Ueq=0.00533333 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "F" in "cs0043.cif" (data_cs0043, line 63) has Uiso=0.01186 which differs from the Ueq=0.0118267 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Cl" in "cs0043.cif" (data_cs0043, line 64) has Uiso=0.02764 which differs from the Ueq=0.02759 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-218 (218), 5 sites, 5 atoms, 5 with uij
 cs0044.cif:
   default error: NCBadInput: The symmetry operations listed in the CIF data are not those of a tabulated space group setting. Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
   permissive warning: The symmetry operations listed in the CIF data are not those of a tabulated space group setting, so the space group number 2 is used (accepted due to permissive mode)
-  permissive warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Mg from Mg, B from B, Al from Al1m, F from F(A1))
+  permissive warning: Some CIF sites in "cs0044.cif" (data_cs0044) have no _atom_site_type_symbol, so their elements were taken from their labels (Mg from Mg, B from B, Al from Al1m, F from F(A1))
   permissive: SG-2 (2), 12 sites, 12 atoms, 12 with uij
   material: 10714 hkl families, dmax=12.678
 cs0055.cif:
@@ -69,7 +69,7 @@ cs0060.cif:
   default: SG-40 (40:abc), 12 sites, 4 atoms, 0 with uij
   material: 3334 hkl families, dmax=7.007
 cs0067.cif:
-  default warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (V from V, Ni from Ni)
+  default warning: Some CIF sites in "cs0067.cif" (data_cs0067) have no _atom_site_type_symbol, so their elements were taken from their labels (V from V, Ni from Ni)
   default: SG-11 (11:b), 2 sites, 2 atoms, 0 with uij
 cs0068.cif:
   default: SG-198 (198), 5 sites, 5 atoms, 5 with uij
@@ -77,21 +77,21 @@ cs0068.cif:
 cs0069.cif:
   default: SG-5 (5:b1), 5 sites, 3 atoms, 0 with uij
 cs0070.cif:
-  default error: NCBadInput: Error: Too high total occupancy (1.0030000000000001 which is >1) for atoms with CIF labels: "AlX", "CoX", "NaX"
-  permissive error: NCBadInput: Error: Too high total occupancy (1.0030000000000001 which is >1) for atoms with CIF labels: "AlX", "CoX", "NaX"
+  default error: NCBadInput: CIF sites "AlX" (line 36), "CoX" (line 37) and "NaX" (line 38) in "cs0070.cif" (data_cs0070) are at the same positions with a total occupancy above 1 (1.003)
+  permissive error: NCBadInput: CIF sites "AlX" (line 36), "CoX" (line 37) and "NaX" (line 38) in "cs0070.cif" (data_cs0070) are at the same positions with a total occupancy above 1 (1.003)
 cs0078.cif:
-  default error: NCBadInput: CIF site "Be" has Uiso=0.01134 which differs from the Ueq=0.0113756 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Be from Be, F from F)
-  permissive warning: CIF site "Be" has Uiso=0.01134 which differs from the Ueq=0.0113756 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "Be" in "cs0078.cif" (data_cs0078, line 45) has Uiso=0.01134 which differs from the Ueq=0.0113756 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: Some CIF sites in "cs0078.cif" (data_cs0078) have no _atom_site_type_symbol, so their elements were taken from their labels (Be from Be, F from F)
+  permissive warning: CIF site "Be" in "cs0078.cif" (data_cs0078, line 45) has Uiso=0.01134 which differs from the Ueq=0.0113756 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-186 (186), 2 sites, 2 atoms, 2 with uij
 cs0079.cif:
-  default error: NCBadInput: Expanded number of atoms per cell (10) is different from what is stated explicitly in the CIF data (8.0). Wrong spacegroup (or choice/setting improperly specified)?
-  permissive error: NCBadInput: Expanded number of atoms per cell (10) is different from what is stated explicitly in the CIF data (8.0). Wrong spacegroup (or choice/setting improperly specified)?
+  default error: NCBadInput: The unit cell has 10 atoms in space group setting 182, but the CIF data in "cs0079.cif" (data_cs0079) states 8 (_atom_type_number_in_cell), so the space group or its setting is probably wrong
+  permissive error: NCBadInput: The unit cell has 10 atoms in space group setting 182, but the CIF data in "cs0079.cif" (data_cs0079) states 8 (_atom_type_number_in_cell), so the space group or its setting is probably wrong
 cs0091.cif:
-  default error: NCBadInput: CIF site "K" has Uiso=0.03005 which differs from the Ueq=0.0301667 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (K from K, Al from Al1, O from O1)
-  permissive warning: CIF site "K" has Uiso=0.03005 which differs from the Ueq=0.0301667 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Al2" has Uiso=0.01239 which differs from the Ueq=0.0124167 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "K" in "cs0091.cif" (data_cs0091, line 85) has Uiso=0.03005 which differs from the Ueq=0.0301667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: Some CIF sites in "cs0091.cif" (data_cs0091) have no _atom_site_type_symbol, so their elements were taken from their labels (K from K, Al from Al1, O from O1)
+  permissive warning: CIF site "K" in "cs0091.cif" (data_cs0091, line 85) has Uiso=0.03005 which differs from the Ueq=0.0301667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Al2" in "cs0091.cif" (data_cs0091, line 88) has Uiso=0.01239 which differs from the Ueq=0.0124167 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-220 (220), 7 sites, 7 atoms, 5 with uij
 cs0094.cif:
   default: SG-30 (30:abc), 12 sites, 4 atoms, 0 with uij
@@ -99,7 +99,7 @@ cs0100.cif:
   default: SG-213 (213), 9 sites, 4 atoms, 0 with uij
   material: 1529 hkl families, dmax=8.5843
 cs0105.cif:
-  default warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Sn from Sn1, S from S, F from F1)
+  default warning: Some CIF sites in "cs0105.cif" (data_cs0105) have no _atom_site_type_symbol, so their elements were taken from their labels (Sn from Sn1, S from S, F from F1)
   default: SG-37 (37:abc), 12 sites, 11 atoms, 3 with uij
 cs0108.cif:
   default: SG-15 (15:b1), 7 sites, 4 atoms, 0 with uij
@@ -108,12 +108,12 @@ cs0112.cif:
   default: SG-133 (133:1), 4 sites, 2 atoms, 0 with uij
   material: 962 hkl families, dmax=7.4014
 cs0113.cif:
-  default error: NCBadInput: Split site (CIF label "Cr3"): 4 symmetry-equivalent positions 0.25 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Cr from Cr1)
-  permissive warning: Split site (CIF label "Cr3"): 4 symmetry-equivalent positions 0.25 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "Cr3" in "cs0113.cif" (data_cs0113, line 49) is a split site: 4 of its symmetry-equivalent positions are 0.25 Aa apart (occupancy 0.25). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: Some CIF sites in "cs0113.cif" (data_cs0113) have no _atom_site_type_symbol, so their elements were taken from their labels (Cr from Cr1)
+  permissive warning: CIF site "Cr3" in "cs0113.cif" (data_cs0113, line 49) is a split site: 4 of its symmetry-equivalent positions are 0.25 Aa apart (occupancy 0.25). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-200 (200), 3 sites, 2 atoms, 0 with uij
 cs0116.cif:
-  default warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Si from Si1, Al from Al1, Li from Li1, F from F1)
+  default warning: Some CIF sites in "cs0116.cif" (data_cs0116) have no _atom_site_type_symbol, so their elements were taken from their labels (Si from Si1, Al from Al1, Li from Li1, F from F1)
   default: SG-181 (181), 11 sites, 11 atoms, 0 with uij
   material: 1668 hkl families, dmax=8.8534
 cs0125.cif:
@@ -123,14 +123,14 @@ cs0129.cif:
 cs0141.cif:
   default: SG-212 (212), 2 sites, 2 atoms, 0 with uij
 cs0147.cif:
-  default error: NCBadInput: Split site (CIF label "Th6"): 2 symmetry-equivalent positions 0.13 Aa apart (occupancy 0.06). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "Th6"): 2 symmetry-equivalent positions 0.13 Aa apart (occupancy 0.06). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "Th6" in "cs0147.cif" (data_cs0147, line 49) is a split site: 2 of its symmetry-equivalent positions are 0.13 Aa apart (occupancy 0.06). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "Th6" in "cs0147.cif" (data_cs0147, line 49) is a split site: 2 of its symmetry-equivalent positions are 0.13 Aa apart (occupancy 0.06). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-71 (71), 12 sites, 6 atoms, 0 with uij
 cs0150.cif:
   default: SG-159 (159), 5 sites, 3 atoms, 0 with uij
 cs0151.cif:
-  default error: NCBadInput: Split site (CIF label "Fe1"): 2 symmetry-equivalent positions 0.45 Aa apart (occupancy 0.294). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "Fe1"): 2 symmetry-equivalent positions 0.45 Aa apart (occupancy 0.294). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "Fe1" in "cs0151.cif" (data_cs0151, line 63) is a split site: 2 of its symmetry-equivalent positions are 0.45 Aa apart (occupancy 0.294). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "Fe1" in "cs0151.cif" (data_cs0151, line 63) is a split site: 2 of its symmetry-equivalent positions are 0.45 Aa apart (occupancy 0.294). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-141 (141:1), 4 sites, 4 atoms, 0 with uij
 cs0152.cif:
   default: SG-167 (167:h), 2 sites, 2 atoms, 0 with uij
@@ -140,7 +140,7 @@ cs0153.cif:
 cs0158.cif:
   default: SG-166 (166:h), 1 sites, 1 atoms, 0 with uij
 cs0161.cif:
-  default warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Pb from Pb, O from O(1))
+  default warning: Some CIF sites in "cs0161.cif" (data_cs0161) have no _atom_site_type_symbol, so their elements were taken from their labels (Pb from Pb, O from O(1))
   default: SG-197 (197), 5 sites, 2 atoms, 0 with uij
 cs0162.cif:
   default error: NCBadInput: The symmetry operations listed in the CIF data could not be parsed (Invalid symmetry operation "-y+z+1/2, x+1/2, z+1/2": Symmetry operations must have a rotation part belonging to point group m-3m with orthogonal-type axes (i.e. a signed permutation matrix) or point group 6/mmm with hexagonal axes). Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
@@ -150,10 +150,10 @@ cs0166.cif:
 cs0167.cif:
   default: SG-66 (66:abc), 12 sites, 12 atoms, 0 with uij
 cs0171.cif:
-  default error: NCBadInput: CIF site "Tl5" has Uiso=0.02962 which differs from the Ueq=0.0295767 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Tl from Tl1, Cl from Cl1, F from F1)
-  permissive warning: CIF site "Tl5" has Uiso=0.02962 which differs from the Ueq=0.0295767 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "F2" has Uiso=0.02962 which differs from the Ueq=0.02958 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "Tl5" in "cs0171.cif" (data_cs0171, line 52) has Uiso=0.02962 which differs from the Ueq=0.0295767 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: Some CIF sites in "cs0171.cif" (data_cs0171) have no _atom_site_type_symbol, so their elements were taken from their labels (Tl from Tl1, Cl from Cl1, F from F1)
+  permissive warning: CIF site "Tl5" in "cs0171.cif" (data_cs0171, line 52) has Uiso=0.02962 which differs from the Ueq=0.0295767 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "F2" in "cs0171.cif" (data_cs0171, line 56) has Uiso=0.02962 which differs from the Ueq=0.02958 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-57 (57:abc), 9 sites, 9 atoms, 9 with uij
 cs0179.cif:
   default error: NCBadInput: The anisotropic displacements of the symmetry equivalent CIF sites "F1", "F2", "F3", "F4", "Re1", "Re2", "Ti1", "Ti2" are not symmetry images of each other (try permissive mode to discard them)
@@ -165,18 +165,18 @@ cs0180.cif:
   permissive: SG-136 (136), 2 sites, 2 atoms, 0 with uij
   material: 145 hkl families, dmax=3.1049
 cs0188.cif:
-  default error: NCBadInput: CIF site "Na1" has Uiso=0.02549 which differs from the Ueq=0.02553 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: CIF site "Na1" has Uiso=0.02549 which differs from the Ueq=0.02553 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Na2" has Uiso=0.02864 which differs from the Ueq=0.0297122 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Na3" has Uiso=0.02592 which differs from the Ueq=0.0264878 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Fe1" has Uiso=0.00749 which differs from the Ueq=0.00777778 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Fe2" has Uiso=0.0076 which differs from the Ueq=0.00773333 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Fe3" has Uiso=0.00868 which differs from the Ueq=0.00904556 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "P1" has Uiso=0.00911 which differs from the Ueq=0.00931111 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "P2" has Uiso=0.0089 which differs from the Ueq=0.00883111 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "P3" has Uiso=0.00933 which differs from the Ueq=0.00936 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "F1" has Uiso=0.01258 which differs from the Ueq=0.0132244 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "F8" has Uiso=0.01735 which differs from the Ueq=0.01843 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "Na1" in "cs0188.cif" (data_cs0188, line 51) has Uiso=0.02549 which differs from the Ueq=0.02553 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: CIF site "Na1" in "cs0188.cif" (data_cs0188, line 51) has Uiso=0.02549 which differs from the Ueq=0.02553 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Na2" in "cs0188.cif" (data_cs0188, line 52) has Uiso=0.02864 which differs from the Ueq=0.0297122 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Na3" in "cs0188.cif" (data_cs0188, line 53) has Uiso=0.02592 which differs from the Ueq=0.0264878 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Fe1" in "cs0188.cif" (data_cs0188, line 54) has Uiso=0.00749 which differs from the Ueq=0.00777778 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Fe2" in "cs0188.cif" (data_cs0188, line 55) has Uiso=0.0076 which differs from the Ueq=0.00773333 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Fe3" in "cs0188.cif" (data_cs0188, line 56) has Uiso=0.00868 which differs from the Ueq=0.00904556 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "P1" in "cs0188.cif" (data_cs0188, line 57) has Uiso=0.00911 which differs from the Ueq=0.00931111 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "P2" in "cs0188.cif" (data_cs0188, line 58) has Uiso=0.0089 which differs from the Ueq=0.00883111 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "P3" in "cs0188.cif" (data_cs0188, line 59) has Uiso=0.00933 which differs from the Ueq=0.00936 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "F1" in "cs0188.cif" (data_cs0188, line 60) has Uiso=0.01258 which differs from the Ueq=0.0132244 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "F8" in "cs0188.cif" (data_cs0188, line 62) has Uiso=0.01735 which differs from the Ueq=0.01843 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-147 (147), 12 sites, 12 atoms, 12 with uij
   material: 11224 hkl families, dmax=13.928
 cs0195.cif:
@@ -191,70 +191,70 @@ cs0206.cif:
 cs0214.cif:
   default: SG-217 (217), 4 sites, 1 atoms, 0 with uij
 cs0217.cif:
-  default error: NCBadInput: CIF site "F1" has Uiso=0.00765 which differs from the Ueq=0.00762 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (K from K, Os from Os, F from F1)
-  permissive warning: CIF site "F1" has Uiso=0.00765 which differs from the Ueq=0.00762 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "F1" in "cs0217.cif" (data_cs0217, line 53) has Uiso=0.00765 which differs from the Ueq=0.00762 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: Some CIF sites in "cs0217.cif" (data_cs0217) have no _atom_site_type_symbol, so their elements were taken from their labels (K from K, Os from Os, F from F1)
+  permissive warning: CIF site "F1" in "cs0217.cif" (data_cs0217, line 53) has Uiso=0.00765 which differs from the Ueq=0.00762 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-63 (63:abc), 4 sites, 4 atoms, 4 with uij
 cs0219.cif:
   default: SG-20 (20:abc), 3 sites, 3 atoms, 0 with uij
 cs0223.cif:
-  default error: NCBadInput: Split site (CIF label "H2"): 2 symmetry-equivalent positions 0.24 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "H2"): 2 symmetry-equivalent positions 0.24 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "H2" in "cs0223.cif" (data_cs0223, line 36) is a split site: 2 of its symmetry-equivalent positions are 0.24 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "H2" in "cs0223.cif" (data_cs0223, line 36) is a split site: 2 of its symmetry-equivalent positions are 0.24 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-11 (11:b), 7 sites, 5 atoms, 0 with uij
 cs0230.cif:
   default: SG-4 (4:b), 12 sites, 4 atoms, 0 with uij
 cs0232.cif:
-  default error: NCBadInput: Split site (CIF label "H3A"): 2 symmetry-equivalent positions 0.47 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "H3A"): 2 symmetry-equivalent positions 0.47 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "H3A" in "cs0232.cif" (data_cs0232, line 55) is a split site: 2 of its symmetry-equivalent positions are 0.47 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "H3A" in "cs0232.cif" (data_cs0232, line 55) is a split site: 2 of its symmetry-equivalent positions are 0.47 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-64 (64:abc), 9 sites, 7 atoms, 5 with uij
 NCrystal WARNING: Split site "H" (0.018,0.0781,0.7802): 2 symmetry-equivalent positions 0.47 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
   material: 2414 hkl families, dmax=6.5335
 cs0234.cif:
   default: SG-74 (74:abc), 7 sites, 2 atoms, 0 with uij
 cs0235.cif:
-  default error: NCBadInput: CIF site "Cs1" has Uiso=0.01893 which differs from the Ueq=0.0190433 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: CIF site "Cs1" has Uiso=0.01893 which differs from the Ueq=0.0190433 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Th3" has Uiso=0.01158 which differs from the Ueq=0.0115233 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Th4" has Uiso=0.01242 which differs from the Ueq=0.0124533 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Mo1" has Uiso=0.01242 which differs from the Ueq=0.0123967 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Mo3" has Uiso=0.0104 which differs from the Ueq=0.0103667 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Mo4" has Uiso=0.01242 which differs from the Ueq=0.0123933 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "Cs1" in "cs0235.cif" (data_cs0235, line 49) has Uiso=0.01893 which differs from the Ueq=0.0190433 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: CIF site "Cs1" in "cs0235.cif" (data_cs0235, line 49) has Uiso=0.01893 which differs from the Ueq=0.0190433 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Th3" in "cs0235.cif" (data_cs0235, line 51) has Uiso=0.01158 which differs from the Ueq=0.0115233 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Th4" in "cs0235.cif" (data_cs0235, line 52) has Uiso=0.01242 which differs from the Ueq=0.0124533 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Mo1" in "cs0235.cif" (data_cs0235, line 53) has Uiso=0.01242 which differs from the Ueq=0.0123967 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Mo3" in "cs0235.cif" (data_cs0235, line 54) has Uiso=0.0104 which differs from the Ueq=0.0103667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Mo4" in "cs0235.cif" (data_cs0235, line 55) has Uiso=0.01242 which differs from the Ueq=0.0123933 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-57 (57:abc), 12 sites, 10 atoms, 7 with uij
 cs0236.cif:
-  default error: NCBadInput: CIF site "V" has Uiso=0.01241 which differs from the Ueq=0.0129567 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: CIF site "V" has Uiso=0.01241 which differs from the Ueq=0.0129567 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Mo" has Uiso=0.01241 which differs from the Ueq=0.0129567 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "O3" has Uiso=0.01654 which differs from the Ueq=0.0170933 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "V" in "cs0236.cif" (data_cs0236, line 54) has Uiso=0.01241 which differs from the Ueq=0.0129567 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: CIF site "V" in "cs0236.cif" (data_cs0236, line 54) has Uiso=0.01241 which differs from the Ueq=0.0129567 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Mo" in "cs0236.cif" (data_cs0236, line 55) has Uiso=0.01241 which differs from the Ueq=0.0129567 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "O3" in "cs0236.cif" (data_cs0236, line 60) has Uiso=0.01654 which differs from the Ueq=0.0170933 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-60 (60:abc), 7 sites, 7 atoms, 5 with uij
   material: 1557 hkl families, dmax=7.013
 cs0237.cif:
-  default error: NCBadInput: Split site (CIF label "Na1"): 2 symmetry-equivalent positions 0.069 Aa apart (occupancy 0.09). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "Na1"): 2 symmetry-equivalent positions 0.069 Aa apart (occupancy 0.09). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "Na1" in "cs0237.cif" (data_cs0237, line 35) is a split site: 2 of its symmetry-equivalent positions are 0.069 Aa apart (occupancy 0.09). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "Na1" in "cs0237.cif" (data_cs0237, line 35) is a split site: 2 of its symmetry-equivalent positions are 0.069 Aa apart (occupancy 0.09). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-12 (12:b1), 10 sites, 9 atoms, 0 with uij
 cs0242.cif:
-  default warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (U from U, Cl from Cl1, Mg from Mg1, F from F1, ...)
+  default warning: Some CIF sites in "cs0242.cif" (data_cs0242) have no _atom_site_type_symbol, so their elements were taken from their labels (U from U, Cl from Cl1, Mg from Mg1, F from F1, ...)
   default: SG-8 (8:b1), 12 sites, 5 atoms, 0 with uij
 cs0244.cif:
-  default error: NCBadInput: CIF site "Rb" has Uiso=0.04379 which differs from the Ueq=0.0439801 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: CIF site "Rb" has Uiso=0.04379 which differs from the Ueq=0.0439801 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "AlT1(0)" has Uiso=0.01839 which differs from the Ueq=0.0184802 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "SiT1(0)" has Uiso=0.01839 which differs from the Ueq=0.0184802 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "AlT1(z)" has Uiso=0.01927 which differs from the Ueq=0.0188532 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "AlT2(z)" has Uiso=0.01751 which differs from the Ueq=0.0175977 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "SiT2(z)" has Uiso=0.01751 which differs from the Ueq=0.0175977 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "OA(1)" has Uiso=0.0289 which differs from the Ueq=0.0293391 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "OA(2)" has Uiso=0.02977 which differs from the Ueq=0.0299562 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "OB(0)" has Uiso=0.03678 which differs from the Ueq=0.0362846 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "OB(z)" has Uiso=0.03853 which differs from the Ueq=0.0384395 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "OD(0)" has Uiso=0.04028 which differs from the Ueq=0.0398402 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "OD(z)" has Uiso=0.03503 which differs from the Ueq=0.0354919 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "Rb" in "cs0244.cif" (data_cs0244, line 54) has Uiso=0.04379 which differs from the Ueq=0.0439801 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: CIF site "Rb" in "cs0244.cif" (data_cs0244, line 54) has Uiso=0.04379 which differs from the Ueq=0.0439801 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "AlT1(0)" in "cs0244.cif" (data_cs0244, line 55) has Uiso=0.01839 which differs from the Ueq=0.0184802 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "SiT1(0)" in "cs0244.cif" (data_cs0244, line 56) has Uiso=0.01839 which differs from the Ueq=0.0184802 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "AlT1(z)" in "cs0244.cif" (data_cs0244, line 57) has Uiso=0.01927 which differs from the Ueq=0.0188532 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "AlT2(z)" in "cs0244.cif" (data_cs0244, line 58) has Uiso=0.01751 which differs from the Ueq=0.0175977 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "SiT2(z)" in "cs0244.cif" (data_cs0244, line 59) has Uiso=0.01751 which differs from the Ueq=0.0175977 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "OA(1)" in "cs0244.cif" (data_cs0244, line 60) has Uiso=0.0289 which differs from the Ueq=0.0293391 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "OA(2)" in "cs0244.cif" (data_cs0244, line 61) has Uiso=0.02977 which differs from the Ueq=0.0299562 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "OB(0)" in "cs0244.cif" (data_cs0244, line 62) has Uiso=0.03678 which differs from the Ueq=0.0362846 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "OB(z)" in "cs0244.cif" (data_cs0244, line 63) has Uiso=0.03853 which differs from the Ueq=0.0384395 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "OD(0)" in "cs0244.cif" (data_cs0244, line 64) has Uiso=0.04028 which differs from the Ueq=0.0398402 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "OD(z)" in "cs0244.cif" (data_cs0244, line 65) has Uiso=0.03503 which differs from the Ueq=0.0354919 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-15 (15:b1), 10 sites, 10 atoms, 10 with uij
   material: 6824 hkl families, dmax=9.6023
 cs0249.cif:
   default: SG-226 (226), 3 sites, 3 atoms, 0 with uij
 cs0251.cif:
-  default error: NCBadInput: CIF site "F1" has Uiso=0.058 which differs from the Ueq=0.0566667 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: CIF site "F1" has Uiso=0.058 which differs from the Ueq=0.0566667 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "F1" in "cs0251.cif" (data_cs0251, line 51) has Uiso=0.058 which differs from the Ueq=0.0566667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: CIF site "F1" in "cs0251.cif" (data_cs0251, line 51) has Uiso=0.058 which differs from the Ueq=0.0566667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-42 (42:abc), 12 sites, 11 atoms, 4 with uij
 cs0252.cif:
   default: SG-64 (64:abc), 4 sites, 3 atoms, 0 with uij
@@ -263,7 +263,7 @@ cs0260.cif:
   default: SG-53 (53:abc), 12 sites, 11 atoms, 6 with uij
   material: 7517 hkl families, dmax=10.341
 cs0261.cif:
-  default warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ba from Ba, Br from Br3, Zn from Zn, S from S1, ...)
+  default warning: Some CIF sites in "cs0261.cif" (data_cs0261) have no _atom_site_type_symbol, so their elements were taken from their labels (Ba from Ba, Br from Br3, Zn from Zn, S from S1, ...)
   default: SG-23 (23), 12 sites, 11 atoms, 10 with uij
 cs0262.cif:
   default: SG-44 (44:abc), 12 sites, 11 atoms, 4 with uij
@@ -276,22 +276,22 @@ cs0272.cif:
   default: SG-207 (207), 12 sites, 12 atoms, 11 with uij
   material: 15002 hkl families, dmax=26.899
 cs0274.cif:
-  default warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (As from As)
+  default warning: Some CIF sites in "cs0274.cif" (data_cs0274) have no _atom_site_type_symbol, so their elements were taken from their labels (As from As)
   default: SG-227 (227:1), 1 sites, 1 atoms, 0 with uij
 cs0284.cif:
   default: SG-18 (18:abc), 12 sites, 12 atoms, 8 with uij
   material: 14522 hkl families, dmax=13.263
 cs0285.cif:
-  default error: NCBadInput: CIF site "C1" has Uiso=0.0099 which differs from the Ueq=0.00933333 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: CIF site "C1" has Uiso=0.0099 which differs from the Ueq=0.00933333 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "C1" in "cs0285.cif" (data_cs0285, line 59) has Uiso=0.0099 which differs from the Ueq=0.00933333 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: CIF site "C1" in "cs0285.cif" (data_cs0285, line 59) has Uiso=0.0099 which differs from the Ueq=0.00933333 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-74 (74:abc), 12 sites, 12 atoms, 12 with uij
 cs0286.cif:
   default: SG-125 (125:1), 7 sites, 7 atoms, 0 with uij
 cs0291.cif:
-  default error: NCBadInput: Error: Too high total occupancy (38.0 which is >1) for atoms with CIF labels: "H(1)", "H(2)", "H(3)", "H(4)", "H(5)", "H(6)", "H(7)", "H(8)", "H(9)", "H(10)", "H(11)", "H(12)", "H(13)", "H(14)", "H(15)", "H(16)", "H(17)", "H(18)", "H(19)", "H(20)", "H(21)", "H(22)", "H(23)", "H(24)", "H(25)", "H(26)", "H(27)", "H(28)", "H(29)", "H(30)", "H(31)", "H(32)", "H(33)", "H(34)", "H(35)", "H(36)", "H(37)", "H(38)". A possible cause could be multiple entries in the CIF file using atomic positions that are actually symmetrically equivalent!
-  permissive error: NCBadInput: Error: Too high total occupancy (38.0 which is >1) for atoms with CIF labels: "H(1)", "H(2)", "H(3)", "H(4)", "H(5)", "H(6)", "H(7)", "H(8)", "H(9)", "H(10)", "H(11)", "H(12)", "H(13)", "H(14)", "H(15)", "H(16)", "H(17)", "H(18)", "H(19)", "H(20)", "H(21)", "H(22)", "H(23)", "H(24)", "H(25)", "H(26)", "H(27)", "H(28)", "H(29)", "H(30)", "H(31)", "H(32)", "H(33)", "H(34)", "H(35)", "H(36)", "H(37)", "H(38)". A possible cause could be multiple entries in the CIF file using atomic positions that are actually symmetrically equivalent!
+  default error: NCBadInput: CIF sites "H(1)" (line 101), "H(2)" (line 102), "H(3)" (line 103), "H(4)" (line 104), "H(5)" (line 105), "H(6)" (line 106), "H(7)" (line 107), "H(8)" (line 108), "H(9)" (line 109), "H(10)" (line 110), "H(11)" (line 111), "H(12)" (line 112), "H(13)" (line 113), "H(14)" (line 114), "H(15)" (line 115), "H(16)" (line 116), "H(17)" (line 117), "H(18)" (line 118), "H(19)" (line 119), "H(20)" (line 120), "H(21)" (line 121), "H(22)" (line 122), "H(23)" (line 123), "H(24)" (line 124), "H(25)" (line 125), "H(26)" (line 126), "H(27)" (line 127), "H(28)" (line 128), "H(29)" (line 129), "H(30)" (line 130), "H(31)" (line 131), "H(32)" (line 132), "H(33)" (line 133), "H(34)" (line 134), "H(35)" (line 135), "H(36)" (line 136), "H(37)" (line 137) and "H(38)" (line 138) in "cs0291.cif" (data_cs0291) are at the same positions with a total occupancy above 1 (38), probably the same site listed twice (e.g. at symmetry-equivalent coordinates)
+  permissive error: NCBadInput: CIF sites "H(1)" (line 101), "H(2)" (line 102), "H(3)" (line 103), "H(4)" (line 104), "H(5)" (line 105), "H(6)" (line 106), "H(7)" (line 107), "H(8)" (line 108), "H(9)" (line 109), "H(10)" (line 110), "H(11)" (line 111), "H(12)" (line 112), "H(13)" (line 113), "H(14)" (line 114), "H(15)" (line 115), "H(16)" (line 116), "H(17)" (line 117), "H(18)" (line 118), "H(19)" (line 119), "H(20)" (line 120), "H(21)" (line 121), "H(22)" (line 122), "H(23)" (line 123), "H(24)" (line 124), "H(25)" (line 125), "H(26)" (line 126), "H(27)" (line 127), "H(28)" (line 128), "H(29)" (line 129), "H(30)" (line 130), "H(31)" (line 131), "H(32)" (line 132), "H(33)" (line 133), "H(34)" (line 134), "H(35)" (line 135), "H(36)" (line 136), "H(37)" (line 137) and "H(38)" (line 138) in "cs0291.cif" (data_cs0291) are at the same positions with a total occupancy above 1 (38), probably the same site listed twice (e.g. at symmetry-equivalent coordinates)
 cs0294.cif:
-  default warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (K from K, V from V, Al from Al, F from F1)
+  default warning: Some CIF sites in "cs0294.cif" (data_cs0294) have no _atom_site_type_symbol, so their elements were taken from their labels (K from K, V from V, Al from Al, F from F1)
   default: SG-15 (15:b1), 6 sites, 4 atoms, 0 with uij
 cs0297.cif:
   default: SG-86 (86:1), 12 sites, 12 atoms, 9 with uij
@@ -308,34 +308,34 @@ cs0315.cif:
 cs0317.cif:
   default: SG-103 (103), 12 sites, 10 atoms, 6 with uij
 cs0322.cif:
-  default error: NCBadInput: Split site (CIF label "C5"): 2 symmetry-equivalent positions 0.071 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "C5"): 2 symmetry-equivalent positions 0.071 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "C5" in "cs0322.cif" (data_cs0322, line 59) is a split site: 2 of its symmetry-equivalent positions are 0.071 Aa apart (occupancy 0.25). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "C5" in "cs0322.cif" (data_cs0322, line 59) is a split site: 2 of its symmetry-equivalent positions are 0.071 Aa apart (occupancy 0.25). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-97 (97), 11 sites, 11 atoms, 9 with uij
 cs0325.cif:
   default: SG-56 (56:abc), 12 sites, 10 atoms, 7 with uij
 cs0326.cif:
   default: SG-229 (229), 1 sites, 1 atoms, 0 with uij
 cs0327.cif:
-  default error: NCBadInput: CIF site "O5" has Uiso=0.049 which differs from the Ueq=0.0503333 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: CIF site "O5" has Uiso=0.049 which differs from the Ueq=0.0503333 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "O5" in "cs0327.cif" (data_cs0327, line 55) has Uiso=0.049 which differs from the Ueq=0.0503333 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: CIF site "O5" in "cs0327.cif" (data_cs0327, line 55) has Uiso=0.049 which differs from the Ueq=0.0503333 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-22 (22), 12 sites, 11 atoms, 8 with uij
 cs0330.cif:
   default: SG-29 (29:abc), 12 sites, 12 atoms, 7 with uij
 cs0351.cif:
-  default error: NCBadInput: Split site (CIF label "F2"): 2 symmetry-equivalent positions 0.44 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Re from Re1, F from F1, Rb from Rb1)
-  permissive warning: Split site (CIF label "F2"): 2 symmetry-equivalent positions 0.44 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "F2" in "cs0351.cif" (data_cs0351, line 49) is a split site: 2 of its symmetry-equivalent positions are 0.44 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: Some CIF sites in "cs0351.cif" (data_cs0351) have no _atom_site_type_symbol, so their elements were taken from their labels (Re from Re1, F from F1, Rb from Rb1)
+  permissive warning: CIF site "F2" in "cs0351.cif" (data_cs0351, line 49) is a split site: 2 of its symmetry-equivalent positions are 0.44 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-193 (193), 4 sites, 4 atoms, 0 with uij
 cs0354.cif:
-  default error: NCBadInput: Split site (CIF label "Hg1", "Pb1"): 4 symmetry-equivalent positions 0.35 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "Hg1", "Pb1"): 4 symmetry-equivalent positions 0.35 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF sites "Hg1" (line 46) and "Pb1" (line 47) in "cs0354.cif" (data_cs0354) are a split site: 4 of their symmetry-equivalent positions are 0.35 Aa apart (occupancy 0.25). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF sites "Hg1" (line 46) and "Pb1" (line 47) in "cs0354.cif" (data_cs0354) are a split site: 4 of their symmetry-equivalent positions are 0.35 Aa apart (occupancy 0.25). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-123 (123), 10 sites, 6 atoms, 0 with uij
 cs0362.cif:
   default: SG-200 (200), 4 sites, 4 atoms, 0 with uij
 cs0363.cif:
   default error: NCBadInput: The symmetry operations listed in the CIF data are not those of a tabulated space group setting. Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
   permissive warning: The symmetry operations listed in the CIF data are not those of a tabulated space group setting, so the space group symbol "P 31 2 1" is used (accepted due to permissive mode)
-  permissive warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Si from Si, O from O)
+  permissive warning: Some CIF sites in "cs0363.cif" (data_cs0363) have no _atom_site_type_symbol, so their elements were taken from their labels (Si from Si, O from O)
   permissive: SG-152 (152), 2 sites, 2 atoms, 2 with uij
 cs0366.cif:
   default error: NCBadInput: The symmetry operations listed in the CIF data are not those of a tabulated space group setting. Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
@@ -347,27 +347,27 @@ cs0372.cif:
 cs0377.cif:
   default: SG-182 (182), 4 sites, 4 atoms, 0 with uij
 cs0380.cif:
-  default error: NCBadInput: CIF site "Ni(1)" has Uiso=0.00912 which differs from the Ueq=0.00908 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Pb from Pb, I from I, Ni from Ni(1), F from F-H(1))
-  permissive warning: CIF site "Ni(1)" has Uiso=0.00912 which differs from the Ueq=0.00908 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Ni(3)" has Uiso=0.0099 which differs from the Ueq=0.00993667 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "Ni(1)" in "cs0380.cif" (data_cs0380, line 54) has Uiso=0.00912 which differs from the Ueq=0.00908 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: Some CIF sites in "cs0380.cif" (data_cs0380) have no _atom_site_type_symbol, so their elements were taken from their labels (Pb from Pb, I from I, Ni from Ni(1), F from F-H(1))
+  permissive warning: CIF site "Ni(1)" in "cs0380.cif" (data_cs0380, line 54) has Uiso=0.00912 which differs from the Ueq=0.00908 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Ni(3)" in "cs0380.cif" (data_cs0380, line 56) has Uiso=0.0099 which differs from the Ueq=0.00993667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-43 (43:abc), 9 sites, 8 atoms, 5 with uij
   material: 1290 hkl families, dmax=5.7477
 cs0390.cif:
-  default error: NCBadInput: CIF site "Mg" has Uiso=0.02665 which differs from the Ueq=0.02568 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: CIF site "Mg" has Uiso=0.02665 which differs from the Ueq=0.02568 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Sr" has Uiso=0.016 which differs from the Ueq=0.01569 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Cs" has Uiso=0.016 which differs from the Ueq=0.01569 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "K" has Uiso=0.016 which differs from the Ueq=0.01569 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "P" has Uiso=0.01493 which differs from the Ueq=0.01521 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "Ow3" has Uiso=0.02772 which differs from the Ueq=0.0271067 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "Mg" in "cs0390.cif" (data_cs0390, line 53) has Uiso=0.02665 which differs from the Ueq=0.02568 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: CIF site "Mg" in "cs0390.cif" (data_cs0390, line 53) has Uiso=0.02665 which differs from the Ueq=0.02568 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Sr" in "cs0390.cif" (data_cs0390, line 54) has Uiso=0.016 which differs from the Ueq=0.01569 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Cs" in "cs0390.cif" (data_cs0390, line 55) has Uiso=0.016 which differs from the Ueq=0.01569 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "K" in "cs0390.cif" (data_cs0390, line 56) has Uiso=0.016 which differs from the Ueq=0.01569 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "P" in "cs0390.cif" (data_cs0390, line 57) has Uiso=0.01493 which differs from the Ueq=0.01521 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "Ow3" in "cs0390.cif" (data_cs0390, line 61) has Uiso=0.02772 which differs from the Ueq=0.0271067 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-198 (198), 10 sites, 8 atoms, 4 with uij
 cs0393.cif:
-  default error: NCBadInput: CIF site "B" has Uiso=0.00615 which differs from the Ueq=0.00611 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Mg from MgX, Al from AlY, Mn from MnY, Si from SiT, ...)
-  permissive warning: CIF site "B" has Uiso=0.00615 which differs from the Ueq=0.00611 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "O2" has Uiso=0.01079 which differs from the Ueq=0.0108233 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "O7" has Uiso=0.00694 which differs from the Ueq=0.00698 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "B" in "cs0393.cif" (data_cs0393, line 69) has Uiso=0.00615 which differs from the Ueq=0.00611 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: Some CIF sites in "cs0393.cif" (data_cs0393) have no _atom_site_type_symbol, so their elements were taken from their labels (Mg from MgX, Al from AlY, Mn from MnY, Si from SiT, ...)
+  permissive warning: CIF site "B" in "cs0393.cif" (data_cs0393, line 69) has Uiso=0.00615 which differs from the Ueq=0.00611 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "O2" in "cs0393.cif" (data_cs0393, line 72) has Uiso=0.01079 which differs from the Ueq=0.0108233 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "O7" in "cs0393.cif" (data_cs0393, line 73) has Uiso=0.00694 which differs from the Ueq=0.00698 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-160 (160:h), 12 sites, 12 atoms, 11 with uij
 cs0395.cif:
   default error: NCBadInput: The symmetry operations listed in the CIF data could not be parsed (Invalid symmetry operation "-y+z+1/2, x+1/2, z+1/2": Symmetry operations must have a rotation part belonging to point group m-3m with orthogonal-type axes (i.e. a signed permutation matrix) or point group 6/mmm with hexagonal axes). Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
@@ -385,20 +385,20 @@ cs0420.cif:
   default: SG-123 (123), 2 sites, 2 atoms, 0 with uij
   material: 152 hkl families, dmax=4.2
 cs0424.cif:
-  default warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (P from P1, C from C1, Pd from Pd, O from O11, ...)
+  default warning: Some CIF sites in "cs0424.cif" (data_cs0424) have no _atom_site_type_symbol, so their elements were taken from their labels (P from P1, C from C1, Pd from Pd, O from O11, ...)
   default: SG-14 (14:b1), 12 sites, 11 atoms, 0 with uij
   material: 18201 hkl families, dmax=18.687
 cs0428.cif:
-  default error: NCBadInput: CIF site "Ni1" has Uiso=0.0319 which differs from the Ueq=0.0321667 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ni from Ni1, C from C1, N from N1, Cl from Cl1, ...)
-  permissive warning: CIF site "Ni1" has Uiso=0.0319 which differs from the Ueq=0.0321667 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "Ni1" in "cs0428.cif" (data_cs0428, line 56) has Uiso=0.0319 which differs from the Ueq=0.0321667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: Some CIF sites in "cs0428.cif" (data_cs0428) have no _atom_site_type_symbol, so their elements were taken from their labels (Ni from Ni1, C from C1, N from N1, Cl from Cl1, ...)
+  permissive warning: CIF site "Ni1" in "cs0428.cif" (data_cs0428, line 56) has Uiso=0.0319 which differs from the Ueq=0.0321667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-85 (85:1), 12 sites, 11 atoms, 10 with uij
   material: 14439 hkl families, dmax=12.065
 cs0430.cif:
   default: SG-176 (176), 2 sites, 2 atoms, 0 with uij
 cs0432.cif:
-  default error: NCBadInput: Split site (CIF label "F"): 2 symmetry-equivalent positions 0.054 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "F"): 2 symmetry-equivalent positions 0.054 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "F" in "cs0432.cif" (data_cs0432, line 65) is a split site: 2 of its symmetry-equivalent positions are 0.054 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "F" in "cs0432.cif" (data_cs0432, line 65) is a split site: 2 of its symmetry-equivalent positions are 0.054 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-139 (139), 4 sites, 4 atoms, 3 with uij
 NCrystal WARNING: Split site "F" (0,0,0.0015): 2 symmetry-equivalent positions 0.054 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
   material: 630 hkl families, dmax=8.9665
@@ -407,85 +407,85 @@ cs0433.cif:
 cs0434.cif:
   default: SG-98 (98), 12 sites, 10 atoms, 0 with uij
 cs0451.cif:
-  default error: NCBadInput: CIF site "B1" has Uiso=0.00882 which differs from the Ueq=0.00879794 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: CIF site "B1" has Uiso=0.00882 which differs from the Ueq=0.00879794 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "B3" has Uiso=0.01544 which differs from the Ueq=0.0154055 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "B10" has Uiso=0.01722 which differs from the Ueq=0.0172539 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "F21" has Uiso=0.01425 which differs from the Ueq=0.0142893 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "B1" in "cs0451.cif" (data_cs0451, line 51) has Uiso=0.00882 which differs from the Ueq=0.00879794 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: CIF site "B1" in "cs0451.cif" (data_cs0451, line 51) has Uiso=0.00882 which differs from the Ueq=0.00879794 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "B3" in "cs0451.cif" (data_cs0451, line 52) has Uiso=0.01544 which differs from the Ueq=0.0154055 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "B10" in "cs0451.cif" (data_cs0451, line 53) has Uiso=0.01722 which differs from the Ueq=0.0172539 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "F21" in "cs0451.cif" (data_cs0451, line 59) has Uiso=0.01425 which differs from the Ueq=0.0142893 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-4 (4:b), 11 sites, 11 atoms, 10 with uij
 cs0452.cif:
-  default error: NCBadInput: CIF site "N8" has Uiso=0.0179 which differs from the Ueq=0.0241667 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: CIF site "N8" has Uiso=0.0179 which differs from the Ueq=0.0241667 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "N8" in "cs0452.cif" (data_cs0452, line 45) has Uiso=0.0179 which differs from the Ueq=0.0241667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: CIF site "N8" in "cs0452.cif" (data_cs0452, line 45) has Uiso=0.0179 which differs from the Ueq=0.0241667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-19 (19), 12 sites, 12 atoms, 6 with uij
   material: 6241 hkl families, dmax=11.148
 cs0455.cif:
   default: SG-202 (202), 10 sites, 10 atoms, 9 with uij
 cs0458.cif:
-  default error: NCBadInput: CIF site "S" has Uiso=0.2667 which differs from the Ueq=0.0656667 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: CIF site "S" has Uiso=0.2667 which differs from the Ueq=0.0656667 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "C1" has Uiso=0.2363 which differs from the Ueq=0.0513333 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "C41" has Uiso=0.3114 which differs from the Ueq=0.09 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "C54" has Uiso=0.2919 which differs from the Ueq=0.079 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "C55" has Uiso=0.3207 which differs from the Ueq=0.0953333 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "C32" has Uiso=0.2571 which differs from the Ueq=0.0653333 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "S" in "cs0458.cif" (data_cs0458, line 23) has Uiso=0.2667 which differs from the Ueq=0.0656667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: CIF site "S" in "cs0458.cif" (data_cs0458, line 23) has Uiso=0.2667 which differs from the Ueq=0.0656667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "C1" in "cs0458.cif" (data_cs0458, line 24) has Uiso=0.2363 which differs from the Ueq=0.0513333 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "C41" in "cs0458.cif" (data_cs0458, line 25) has Uiso=0.3114 which differs from the Ueq=0.09 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "C54" in "cs0458.cif" (data_cs0458, line 26) has Uiso=0.2919 which differs from the Ueq=0.079 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "C55" in "cs0458.cif" (data_cs0458, line 27) has Uiso=0.3207 which differs from the Ueq=0.0953333 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "C32" in "cs0458.cif" (data_cs0458, line 28) has Uiso=0.2571 which differs from the Ueq=0.0653333 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-61 (61:abc), 12 sites, 7 atoms, 6 with uij
 cs0461.cif:
-  default error: NCBadInput: Split site (CIF label "O1"): 3 symmetry-equivalent positions 0.4 Aa apart (occupancy 0.167). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "O1"): 3 symmetry-equivalent positions 0.4 Aa apart (occupancy 0.167). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "O1" in "cs0461.cif" (data_cs0461, line 220) is a split site: 3 of its symmetry-equivalent positions are 0.4 Aa apart (occupancy 0.167). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "O1" in "cs0461.cif" (data_cs0461, line 220) is a split site: 3 of its symmetry-equivalent positions are 0.4 Aa apart (occupancy 0.167). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-225 (225), 4 sites, 3 atoms, 0 with uij
 cs0474.cif:
-  default error: NCBadInput: Split site (CIF label "N2"): 2 symmetry-equivalent positions 0.034 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "N2"): 2 symmetry-equivalent positions 0.034 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
-  permissive warning: Split site (CIF label "H2C"): 2 symmetry-equivalent positions 0.038 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "N2" in "cs0474.cif" (data_cs0474, line 86) is a split site: 2 of its symmetry-equivalent positions are 0.034 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "N2" in "cs0474.cif" (data_cs0474, line 86) is a split site: 2 of its symmetry-equivalent positions are 0.034 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  permissive warning: CIF site "H2C" in "cs0474.cif" (data_cs0474, line 88) is a split site: 2 of its symmetry-equivalent positions are 0.038 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-217 (217), 12 sites, 9 atoms, 6 with uij
 cs0483.cif:
-  default error: NCBadInput: Split site (CIF label "P3A"): 2 symmetry-equivalent positions 0.17 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "P3A"): 2 symmetry-equivalent positions 0.17 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "P3A" in "cs0483.cif" (data_cs0483, line 51) is a split site: 2 of its symmetry-equivalent positions are 0.17 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "P3A" in "cs0483.cif" (data_cs0483, line 51) is a split site: 2 of its symmetry-equivalent positions are 0.17 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-84 (84), 12 sites, 12 atoms, 7 with uij
 cs0486.cif:
-  default error: NCBadInput: Split site (CIF label "N9"): 2 symmetry-equivalent positions 0.086 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "N9"): 2 symmetry-equivalent positions 0.086 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "N9" in "cs0486.cif" (data_cs0486, line 90) is a split site: 2 of its symmetry-equivalent positions are 0.086 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "N9" in "cs0486.cif" (data_cs0486, line 90) is a split site: 2 of its symmetry-equivalent positions are 0.086 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-223 (223), 12 sites, 12 atoms, 10 with uij
 cs0488.cif:
-  default error: NCBadInput: Split site (CIF label "O1S"): 3 symmetry-equivalent positions 0.01 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "O1S"): 3 symmetry-equivalent positions 0.01 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "O1S" in "cs0488.cif" (data_cs0488, line 59) is a split site: 3 of its symmetry-equivalent positions are 0.01 Aa apart (occupancy 0.25). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "O1S" in "cs0488.cif" (data_cs0488, line 59) is a split site: 3 of its symmetry-equivalent positions are 0.01 Aa apart (occupancy 0.25). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-173 (173), 12 sites, 12 atoms, 5 with uij
 NCrystal WARNING: Split site "O" (0.0001,0.0007,0.7701): 3 symmetry-equivalent positions 0.01 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
   material: 3624 hkl families, dmax=9.339
 cs0489.cif:
   default: SG-132 (132), 20 sites, 20 atoms, 14 with uij
 cs0495.cif:
-  default error: NCBadInput: CIF site "N10" has Uiso=0.0244 which differs from the Ueq=0.0240598 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: CIF site "N10" has Uiso=0.0244 which differs from the Ueq=0.0240598 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "N19" has Uiso=0.0313 which differs from the Ueq=0.0307753 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "N29" has Uiso=0.0279 which differs from the Ueq=0.027548 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "N58A" has Uiso=0.053 which differs from the Ueq=0.0620284 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "F60A" has Uiso=0.0391 which differs from the Ueq=0.0436593 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "F60B" has Uiso=0.054 which differs from the Ueq=0.0483123 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "N10" in "cs0495.cif" (data_cs0495, line 47) has Uiso=0.0244 which differs from the Ueq=0.0240598 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: CIF site "N10" in "cs0495.cif" (data_cs0495, line 47) has Uiso=0.0244 which differs from the Ueq=0.0240598 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "N19" in "cs0495.cif" (data_cs0495, line 60) has Uiso=0.0313 which differs from the Ueq=0.0307753 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "N29" in "cs0495.cif" (data_cs0495, line 72) has Uiso=0.0279 which differs from the Ueq=0.027548 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "N58A" in "cs0495.cif" (data_cs0495, line 117) has Uiso=0.053 which differs from the Ueq=0.0620284 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "F60A" in "cs0495.cif" (data_cs0495, line 119) has Uiso=0.0391 which differs from the Ueq=0.0436593 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "F60B" in "cs0495.cif" (data_cs0495, line 162) has Uiso=0.054 which differs from the Ueq=0.0483123 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-2 (2), 131 sites, 108 atoms, 87 with uij
 cs0496.cif:
-  default error: NCBadInput: Split site (CIF label "Ca1"): 2 symmetry-equivalent positions 0.29 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "Ca1"): 2 symmetry-equivalent positions 0.29 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "Ca1" in "cs0496.cif" (data_cs0496, line 117) is a split site: 2 of its symmetry-equivalent positions are 0.29 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "Ca1" in "cs0496.cif" (data_cs0496, line 117) is a split site: 2 of its symmetry-equivalent positions are 0.29 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-83 (83), 101 sites, 86 atoms, 16 with uij
 NCrystal WARNING: Split site "Ca" (0,0.5,0.493): 2 symmetry-equivalent positions 0.29 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
   material: 46606 hkl families, dmax=22.946
 cs0497.cif:
-  default error: NCBadInput: Split site (CIF label "N2_1"): 2 symmetry-equivalent positions 0.27 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "N2_1"): 2 symmetry-equivalent positions 0.27 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
-  permissive warning: Split site (CIF label "H13_1"): 2 symmetry-equivalent positions 0.083 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "N2_1" in "cs0497.cif" (data_cs0497, line 138) is a split site: 2 of its symmetry-equivalent positions are 0.27 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "N2_1" in "cs0497.cif" (data_cs0497, line 138) is a split site: 2 of its symmetry-equivalent positions are 0.27 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  permissive warning: CIF site "H13_1" in "cs0497.cif" (data_cs0497, line 143) is a split site: 2 of its symmetry-equivalent positions are 0.083 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-229 (229), 24 sites, 24 atoms, 7 with uij
 cs0502.cif:
-  default error: NCBadInput: Split site (CIF label "H2A"): 2 symmetry-equivalent positions 0.28 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "H2A"): 2 symmetry-equivalent positions 0.28 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
-  permissive warning: Split site (CIF label "N5"): 2 symmetry-equivalent positions 0.49 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "H2A" in "cs0502.cif" (data_cs0502, line 42) is a split site: 2 of its symmetry-equivalent positions are 0.28 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "H2A" in "cs0502.cif" (data_cs0502, line 42) is a split site: 2 of its symmetry-equivalent positions are 0.28 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  permissive warning: CIF site "N5" in "cs0502.cif" (data_cs0502, line 43) is a split site: 2 of its symmetry-equivalent positions are 0.49 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-26 (26:abc), 12 sites, 9 atoms, 5 with uij
 cs0505.cif:
-  default error: NCBadInput: CIF site "F1" has Uiso=0.011 which differs from the Ueq=0.0120678 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: CIF site "F1" has Uiso=0.011 which differs from the Ueq=0.0120678 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "C1" has Uiso=0.006 which differs from the Ueq=0.00544667 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "H3" has Uiso=0.02437 which differs from the Ueq=0.0252889 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "H13" has Uiso=0.03159 which differs from the Ueq=0.0313889 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: CIF site "H2N" has Uiso=0.02344 which differs from the Ueq=0.0238889 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
+  default error: NCBadInput: CIF site "F1" in "cs0505.cif" (data_cs0505, line 38) has Uiso=0.011 which differs from the Ueq=0.0120678 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: CIF site "F1" in "cs0505.cif" (data_cs0505, line 38) has Uiso=0.011 which differs from the Ueq=0.0120678 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "C1" in "cs0505.cif" (data_cs0505, line 40) has Uiso=0.006 which differs from the Ueq=0.00544667 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "H3" in "cs0505.cif" (data_cs0505, line 45) has Uiso=0.02437 which differs from the Ueq=0.0252889 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "H13" in "cs0505.cif" (data_cs0505, line 47) has Uiso=0.03159 which differs from the Ueq=0.0313889 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "H2N" in "cs0505.cif" (data_cs0505, line 48) has Uiso=0.02344 which differs from the Ueq=0.0238889 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
   permissive: SG-144 (144), 12 sites, 9 atoms, 11 with uij
 cs0506.cif:
   default: SG-22 (22), 12 sites, 11 atoms, 9 with uij
@@ -493,28 +493,28 @@ cs0508.cif:
   default error: NCBadInput: The uij values of the site "Ir1" (0.185, 0.1853, 0.25194) do not form a positive definite matrix
   permissive error: NCBadInput: The uij values of the site "Ir1" (0.185, 0.1853, 0.25194) do not form a positive definite matrix
 cs0509.cif:
-  default error: NCBadInput: Split site (CIF label "N5"): 2 symmetry-equivalent positions 0.29 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "N5"): 2 symmetry-equivalent positions 0.29 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
-  permissive warning: Split site (CIF label "N6"): 2 symmetry-equivalent positions 0.28 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "N5" in "cs0509.cif" (data_cs0509, line 44) is a split site: 2 of its symmetry-equivalent positions are 0.29 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "N5" in "cs0509.cif" (data_cs0509, line 44) is a split site: 2 of its symmetry-equivalent positions are 0.29 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  permissive warning: CIF site "N6" in "cs0509.cif" (data_cs0509, line 46) is a split site: 2 of its symmetry-equivalent positions are 0.28 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-10 (10:b), 12 sites, 11 atoms, 8 with uij
 cs0513.cif:
-  default error: NCBadInput: Split site (CIF label "C2"): 2 symmetry-equivalent positions 0.16 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "C2"): 2 symmetry-equivalent positions 0.16 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
-  permissive warning: Split site (CIF label "H3A"): 2 symmetry-equivalent positions 0.4 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
-  permissive warning: Split site (CIF label "H5A"): 2 symmetry-equivalent positions 0.11 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "C2" in "cs0513.cif" (data_cs0513, line 63) is a split site: 2 of its symmetry-equivalent positions are 0.16 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "C2" in "cs0513.cif" (data_cs0513, line 63) is a split site: 2 of its symmetry-equivalent positions are 0.16 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  permissive warning: CIF site "H3A" in "cs0513.cif" (data_cs0513, line 65) is a split site: 2 of its symmetry-equivalent positions are 0.4 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  permissive warning: CIF site "H5A" in "cs0513.cif" (data_cs0513, line 67) is a split site: 2 of its symmetry-equivalent positions are 0.11 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-215 (215), 12 sites, 12 atoms, 4 with uij
 cs0516.cif:
-  default error: NCBadInput: CIF site "C6" has Uiso=0.127 which differs from the Ueq=0.124 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-  permissive warning: CIF site "C6" has Uiso=0.127 which differs from the Ueq=0.124 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
-  permissive warning: Split site (CIF label "H51"): 2 symmetry-equivalent positions 0.22 Aa apart (occupancy 0.125). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
-  permissive warning: Split site (CIF label "H54"): 2 symmetry-equivalent positions 0.082 Aa apart (occupancy 0.125). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "C6" in "cs0516.cif" (data_cs0516, line 62) has Uiso=0.127 which differs from the Ueq=0.124 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (try permissive mode to use the Uiso value, or a larger tol_uij)
+  permissive warning: CIF site "C6" in "cs0516.cif" (data_cs0516, line 62) has Uiso=0.127 which differs from the Ueq=0.124 of its anisotropic displacements by more than the rounding errors of the printed values and tol_uij allow (using the Uiso value due to permissive mode)
+  permissive warning: CIF site "H51" in "cs0516.cif" (data_cs0516, line 66) is a split site: 2 of its symmetry-equivalent positions are 0.22 Aa apart (occupancy 0.125). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  permissive warning: CIF site "H54" in "cs0516.cif" (data_cs0516, line 67) is a split site: 2 of its symmetry-equivalent positions are 0.082 Aa apart (occupancy 0.125). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-200 (200), 12 sites, 11 atoms, 5 with uij
 NCrystal WARNING: Split site "H" (0.0339,0.4963,0.4175): 2 symmetry-equivalent positions 0.22 Aa apart (occupancy 0.125). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
 NCrystal WARNING: Split site "H" (0.0867,0.4986,0.3394): 2 symmetry-equivalent positions 0.082 Aa apart (occupancy 0.125). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
   material: 36132 hkl families, dmax=29.264
 cs0518.cif:
-  default error: NCBadInput: Split site (CIF label "F2W"): 2 symmetry-equivalent positions 0.43 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
-  permissive warning: Split site (CIF label "F2W"): 2 symmetry-equivalent positions 0.43 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
+  default error: NCBadInput: CIF site "F2W" in "cs0518.cif" (data_cs0518, line 49) is a split site: 2 of its symmetry-equivalent positions are 0.43 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
+  permissive warning: CIF site "F2W" in "cs0518.cif" (data_cs0518, line 49) is a split site: 2 of its symmetry-equivalent positions are 0.43 Aa apart (occupancy 0.5). NCrystal treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-96 (96), 12 sites, 11 atoms, 8 with uij
 cs0519.cif:
   default error: NCBadInput: Invalid CIF data in "cs0519.cif" (line 3): duplicate tag _chemical_formula_sum in block (first in line 2)
