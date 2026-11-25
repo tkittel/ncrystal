@@ -987,76 +987,106 @@ class NCMATComposerImpl:
     def __lines_atompos(self, lbl_map, atompos, sites = None, uij = None ):
         if not atompos:
             return ''
-        ll=[]
-        fmt = _nc_fmt.prettyFmtValue
-        #NB: We sort on the val->string->val values, not the original
-        #values. Because otherwise we get irreproducibilities when in
-        #principle two x values are almost identical and their order might
-        #vary slightly.
-        def extractval(s):
-            if '/' not in s:
-                return float(s)
-            p=s.split('/')
-            assert len(p)==2
-            return float(p[0]) / float(p[1])
+        srtol = self.get_number_format()[0]
         entries = ( [ ( lbl, p[0], p[1], p[2] ) for lbl, p, mult in sites ]
                     if sites is not None else atompos['pos'] )
         uijs = ( uij or [ None ] * len(entries) )
+        #Positions with scalar_rtol as an absolute tolerance (their rounding
+        #noise is absolute), as exact fractions where they are such fractions
+        #within it, which includes all special positions:
+        fpos = _nc_sgsymimpl._fmt_fractional_coordinates(
+            [ v for e in entries for v in e[1:] ], srtol )
+        fuij = _nc_fmt.fmt_vector_rtol( [ u for u in uijs if u is not None ],
+                                        srtol, strip_leading_zero = False )
+        ll=[]
+        ipos, iuij = 0, 0
         for (lbl,x,y,z),u in zip(entries,uijs):
-            fx,fy,fz = fmt(x), fmt(y), fmt(z)
-            fu = ( ' uij ' + ' '.join( f'{v:.14g}' for v in u )
-                   if u is not None else '' )
+            fx,fy,fz = fpos[ipos:ipos+3]
+            ipos += 3
+            fu = ''
+            if u is not None:
+                fu = ' uij ' + ' '.join( fuij[iuij:iuij+6] )
+                iuij += 6
+            #(sorted on the values of the texts, which are reproducible):
             ll.append( ( lbl_map.get(lbl,lbl),
-                         extractval(fx), extractval(fy), extractval(fz),
-                         fx, fy, fz, fu ) )
+                         _nc_fmt._parse_text(fx), _nc_fmt._parse_text(fy),
+                         _nc_fmt._parse_text(fz), fx, fy, fz, fu ) )
         ll.sort()
         out = "@ATOMSITES\n" if sites is not None else "@ATOMPOSITIONS\n"
         for lbl,_,_,_,fx,fy,fz,fu in ll:
             out += f'{lbl} {fx} {fy} {fz}{fu}\n'
         return out
 
+    def __verify_structure( self, cellsg, atompos ):
+        #Verifies (with the symmetry code of NCrystal, without spglib) that the
+        #cell and the positions have the symmetry of the space group, and no
+        #higher symmetry in the same coordinates:
+        #
+        #TODO: A higher symmetry which needs another cell (e.g. a primitive
+        #cell of a centred lattice given in P1, or a supercell) is not detected
+        #(refine_crystal_structure uses spglib, which finds those).
+        if not cellsg.get('spacegroup'):
+            raise _nc_core.NCBadInput('Must provide a space group number (or'
+                                      ' invoke .refine_crystal_structure())'
+                                      ' before it is possible to verify a'
+                                      ' crystal structure')
+        from .misc import evaluate_query
+        q = _sites_of_positions( cellsg, atompos )
+        setting = q['spacegroup_setting']
+        keys = ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' )
+        given = [ float( cellsg[k] ) for k in keys ]
+        snapped = evaluate_query( [ 'sgsym', 'cell', 'strict', '1', setting ]
+                                  + [ repr( v ) for v in given ] )['cell']
+        if any( snapped[k] != v for k, v in zip( keys, given ) ):
+            exp = ', '.join( f'{k}={snapped[k]:g}' for k in keys )
+            raise _nc_core.NCBadInput( 'The cell parameters are not consistent'
+                                       ' with space group setting'
+                                       f' {setting} (expected {exp})' )
+        if q['higher_symmetry']:
+            def order( sg ):
+                return evaluate_query( [ 'sgsym', 'info', 'strict',
+                                         sg ] )['order']
+            best = max( q['higher_symmetry'], key = order )
+            raise _nc_core.NCBadInput( 'The crystal structure has the higher'
+                                       ' symmetry of space group setting'
+                                       f' {best} (in the same coordinates) than'
+                                       f' the given {setting}. Use'
+                                       ' refine_crystal_structure() to change'
+                                       ' to it, or'
+                                       ' verify_crystal_structure=False to'
+                                       ' keep the given one.' )
+
     def __atomsites( self, cellsg, atompos ):
         #Returns the crystallographic sites (and the space group setting) of
         #the atom positions atompos in the cell cellsg, from the sgsym sites
         #query, or None if there is no space group. The positions must have
         #the symmetry of the space group setting. Sites given via set_atomsites
-        #are used as given.
+        #are used as given (but snapped to their site symmetry).
         if not ( cellsg and cellsg.get('spacegroup') and atompos ):
             return None
         from .misc import evaluate_query
         if atompos.get('sites') is not None:
             sgspec = _sgspec_for_sites( cellsg )
             setting = evaluate_query([ 'sgsym', 'info', 'strict',sgspec])
-            sites = []
-            for lbl,x,y,z in atompos['sites']:
+            #The sites as snapped to their site symmetry (positions and uij),
+            #i.e. as they will be used when the NCMAT data is loaded:
+            uijs = atompos.get('uij') or [ None ] * len( atompos['sites'] )
+            query = [ 'sgsym', 'positions', 'strict', sgspec, 'strict',
+                      _nc_sgsymimpl._cellarg( cellsg ) ]
+            for (lbl,x,y,z),u in zip( atompos['sites'], uijs ):
                 occu = float( atompos.get('occumap',{}).get( lbl, 1.0 ) )
-                site, = evaluate_query( [ 'sgsym', 'positions',
-                                          'strict', sgspec, 'strict',
-                                          _nc_sgsymimpl._cellarg( cellsg ),
-                                          f'{lbl},{x!r},{y!r},{z!r},{occu!r}' ] )['sites']
-                mult = site['multiplicity']
-                sites.append( ( lbl, ( x, y, z ), mult ) )
+                e = f'{lbl},{x!r},{y!r},{z!r},{occu!r}'
+                if u is not None:
+                    e += ''.join( f',{float(v)!r}' for v in u )
+                query.append( e )
+            q = evaluate_query( query )['sites']
+            sites = [ ( s['label'], tuple( s['positions'][0] ),
+                        s['multiplicity'] ) for s in q ]
             return { 'spacegroup_setting': setting['spacegroup'],
                      'sites': sites,
-                     'uij': atompos.get('uij') }
-        sg = cellsg['spacegroup']
-        sgsetting = cellsg.get('spacegroup_setting')
-        if sgsetting:
-            #(strict: the positions must have the symmetry of the given
-            #setting)
-            mode, sgspec = 'strict', sgsetting
-        else:
-            #(relaxed: the setting is deduced among those of the number)
-            mode = 'relaxed'
-            sgspec = ( f'{sg}:r' if _nc_sgsymimpl._uses_rhombohedral_axes( sg, cellsg['alpha'] )
-                       else str(sg) )
-        occumap = atompos.get('occumap',{})
-        query = [ 'sgsym', 'sites', mode, sgspec, 'strict',
-                  _nc_sgsymimpl._cellarg( cellsg ) ]
-        query += [ f'{lbl},{x!r},{y!r},{z!r},'
-                   f'{float( occumap.get( lbl, 1.0 ) )!r}'
-                   for lbl,x,y,z in atompos['pos'] ]
-        q = evaluate_query( query )
+                     'uij': ( [ s['uij'] for s in q ]
+                              if atompos.get('uij') else None ) }
+        q = _sites_of_positions( cellsg, atompos )
         #(as tuples (label,position,multiplicity), as for sites given above):
         return { 'spacegroup_setting': q['spacegroup_setting'],
                  'is_default_setting': q['is_default_setting'],
@@ -1083,7 +1113,10 @@ class NCMATComposerImpl:
             if not isinstance(fracinfo,float) and len(fracinfo)==3:
                 _fracval_flt,frac_prettyprint,_ = fracinfo
             else:
-                _fracval_flt,frac_prettyprint = fracinfo, _nc_fmt.prettyFmtValue( fracinfo )
+                _fracval_flt = fracinfo
+                frac_prettyprint = _nc_fmt.fmt_value_rtol(
+                    fracinfo, self.get_number_format()[0],
+                    strip_leading_zero = True, max_denominator = 40 )
             lines += '@DYNINFO\n'
             dyninfo = dyninfos.get(lbl,None)
 
@@ -1330,13 +1363,8 @@ class NCMATComposerImpl:
         is_crystal = bool(cellsg or atompos)
         did_verify_xtal_struct = False
         if verify_crystal_structure and cellsg and atompos:
-            self.verify_crystal_structure( quiet = False )
+            self.__verify_structure( cellsg, atompos )
             did_verify_xtal_struct = True
-
-        if verify_crystal_structure and cellsg and cellsg.get('spacegroup',None):
-            _nc_sgsymimpl._check_cell_sg_consistency( cellsg['spacegroup'],
-                                        cellsg['a'], cellsg['b'], cellsg['c'],
-                                        cellsg['alpha'], cellsg['beta'], cellsg['gamma'] )
 
         dyninfos = self.__params.get('dyninfos',None)
 
@@ -1506,7 +1534,7 @@ class NCMATComposerImpl:
                             f' used for {_n} atom{"s" if _n>1 else ""}!' ), '' ]
 
         if did_verify_xtal_struct:
-            comments += ['NOTICE: crystal structure was verified with spglib to be self-consistent.']
+            comments += ['NOTICE: crystal structure was verified to be self-consistent.']
         elif is_crystal:
             comments += ['WARNING: crystal structure was not verified automatically with spglib.']
 
@@ -1820,6 +1848,29 @@ def _parse_sgsetting( spacegroup ):
     canonical = evaluate_query([ 'sgsym', 'info', 'strict',s])['spacegroup']
     return int(canonical.split(':')[0]), canonical
 
+def _sites_of_positions( cellsg, atompos ):
+    #Returns the sgsym sites query for all positions of atompos in the cell
+    #cellsg, with its space group setting if given, otherwise deduced among
+    #those of its number (the positions must have its symmetry).
+    from .misc import evaluate_query
+    sg = cellsg['spacegroup']
+    sgsetting = cellsg.get('spacegroup_setting')
+    if sgsetting:
+        mode, sgspec = 'strict', sgsetting
+    else:
+        mode = 'relaxed'
+        sgspec = ( f'{sg}:r'
+                   if _nc_sgsymimpl._uses_rhombohedral_axes( sg,
+                                                             cellsg['alpha'] )
+                   else str(sg) )
+    occumap = atompos.get('occumap',{})
+    query = [ 'sgsym', 'sites', mode, sgspec, 'strict',
+              _nc_sgsymimpl._cellarg( cellsg ) ]
+    query += [ f'{lbl},{x!r},{y!r},{z!r},'
+               f'{float( occumap.get( lbl, 1.0 ) )!r}'
+               for lbl,x,y,z in atompos['pos'] ]
+    return evaluate_query( query )
+
 def _sgspec_for_sites( cellsg ):
     #Returns the space group setting of cellsg used to expand sites into
     #positions (a plain number only works for numbers with a single setting).
@@ -2012,6 +2063,11 @@ def determine_labels_and_atomdb( _self_params, *, fractions ):
                    for lbl in sorted(lbls_with_nonunit_occu) ]
     return lblmap,atomdb_lines,occu_lines
 
+#Default relative tolerances (scalar_rtol, vector_rtol) of the number format
+#(cf. NCMATComposer.set_number_format). The scalar one gives 14 significant
+#digits, so rounding noise from calculations does not reach the data:
+_default_number_format = ( 1e-13, 1e-6 )
+
 def _occupancy_texts( occumap, rtol ):
     #Texts of the site occupancies in @ATOMOCCUPANCIES (exact fractions with
     #denominators up to 40 where they are such fractions within the precision):
@@ -2148,11 +2204,6 @@ def _cifdata_via_ase( data_or_file, ase_format = None, quiet = False ):
     with io.BytesIO() as s:
         ase_io.write(s, ase_obj, format='cif')
         return s.getvalue().decode()
-
-#Default relative tolerances (scalar_rtol, vector_rtol) of the number format
-#(cf. NCMATComposer.set_number_format). The scalar one gives 14 significant
-#digits, so rounding noise from calculations does not reach the data:
-_default_number_format = ( 1e-13, 1e-6 )
 
 def formatVectorForNCMAT( name, values, indent = '  ', *,
                           scalar_rtol = _default_number_format[0],

@@ -20,7 +20,7 @@
 ##                                                                            ##
 ################################################################################
 
-# NEEDS: numpy spglib
+# NEEDS: numpy
 
 import NCTestUtils.enable_fpe # noqa F401
 

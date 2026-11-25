@@ -30,25 +30,25 @@ def require(b):
     if not b:
         raise RuntimeError('check failed')
 
+#Number formatting with a relative tolerance and fractions (as used for
+#positions in NCMAT data), cf. fmt_value_rtol:
 for v in [(0.25,'1/4'),
           (0.13137,'.13137'),
           (0.75,'3/4'),
           (-0.0,'0'),
           (0.9999999999999,'.9999999999999'),
-          (0.999999999999999889,'.999999999999999889'),
-          (0.9999999999999999999889,'1'),
+          (0.999999999999999889,'1'),
+          (0.25+1e-12,'.250000000001'),
+          (0.25+1e-16,'1/4'),
           (0.00,'0')]:
-    vfmt = nc_fmt.prettyFmtValue(v[0])
-    print( f'nc_fmt.prettyFmtValue({v[0]}):',repr(vfmt))
+    vfmt = nc_fmt.fmt_value_rtol( v[0], 1e-14, strip_leading_zero = True,
+                                  max_denominator = 40 )
+    print( f'nc_fmt.fmt_value_rtol({v[0]}):',repr(vfmt))
     require( vfmt == v[1] )
-    if '/' in vfmt:
-        _ = vfmt.split('/')
-        fmtval = int(_[0]) / int(_[1])
-    else:
-        fmtval = float(vfmt)
-    require( abs(fmtval-v[0]) < 1e-6 )
-    require( (fmtval==1.0) == (v[0]==1.0) )
-    require( (fmtval==0.0) == (v[0]==0.0) )
+    fmtval = nc_fmt._parse_text( vfmt )
+    require( abs(fmtval-v[0]) <= 1e-14 * abs(v[0]) )
+    require( nc_fmt.fmt_value_rtol( fmtval, 1e-14, strip_leading_zero = True,
+                                    max_denominator = 40 ) == vfmt )
 
 def testcf( c ):
     print(f'format_chemform({c}):', repr(nc_fmt.format_chemform(c)) )

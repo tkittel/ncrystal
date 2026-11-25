@@ -207,7 +207,7 @@ OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and 
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 15 atoms!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 7.0653 7.3202 7.9258
@@ -372,7 +372,7 @@ OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and 
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 7.0653 7.3202 7.9258
@@ -449,7 +449,7 @@ OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and 
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 7.0653 7.3202 7.9258
@@ -526,7 +526,7 @@ OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and 
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 7.0653 7.3202 7.9258
@@ -605,7 +605,7 @@ OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
 OUT>#   NCrystalUserWarning : The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#5]
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 7.2338 10.305 7.4529
@@ -694,7 +694,7 @@ OUT>#
 OUT># NOTICE: When converting CIF to NCMAT, the Uiso (msd) values in the CIF data
 OUT>#         were explicitly chosen to be associated with a temperature of 50K.
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 7.2338 10.305 7.4529
@@ -788,7 +788,7 @@ OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
 OUT>#   NCrystalUserWarning : The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#6]
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 7.2338 10.305 7.4529
@@ -877,7 +877,7 @@ OUT>#
 OUT># NOTICE: When converting CIF to NCMAT, the Uiso (msd) values in the CIF data
 OUT>#         were explicitly chosen to be associated with a temperature of 50K.
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 7.2338 10.305 7.4529
@@ -959,7 +959,7 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 4.0583788219706 !! 3.32151997921
@@ -999,7 +999,7 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 4.0583788219706 !! 3.32151997921
@@ -1038,7 +1038,7 @@ OUT>#                   post-editing. Before distributing this file to other peo
 OUT>#                   please review this, amend the comments here to document,
 OUT>#                   anything done, and remove this notice.
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 4.0583788219706 !! 3.32151997921
@@ -1093,7 +1093,7 @@ OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
 OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1) [warn#7]
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 7.0653 7.3202 7.9258
@@ -1231,7 +1231,7 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  cubic 4.036354272
@@ -1273,7 +1273,7 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  cubic 4.036354272
@@ -1319,7 +1319,7 @@ OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
 OUT>#   NCrystalUserWarning : The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#8]
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  cubic 4
@@ -1371,7 +1371,7 @@ OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
 OUT>#   NCrystalUserWarning : The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#9]
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  cubic 4
@@ -1429,7 +1429,7 @@ OUT>#
 OUT># Notice: The following WARNINGS were emitted when loading the CIF data:
 OUT>#
 OUT>#   NCrystalUserWarning : The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong. [warn#10]
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  cubic 4
@@ -1471,7 +1471,7 @@ NCMAT v8
 #
 # WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 #
-# NOTICE: crystal structure was verified with spglib to be self-consistent.
+# NOTICE: crystal structure was verified to be self-consistent.
 #
 @CELL
   lengths 7.0653 7.3202 7.9258
@@ -1536,7 +1536,7 @@ OUT>#                   post-editing. Before distributing this file to other peo
 OUT>#                   please review this, amend the comments here to document,
 OUT>#                   anything done, and remove this notice.
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 4.0583788219706 !! 3.32151997921
@@ -1594,7 +1594,7 @@ OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and 
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 7.0653 7.3202 7.9258
@@ -1673,7 +1673,7 @@ OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and 
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 7.0653 7.3202 7.9258
@@ -1754,7 +1754,7 @@ OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and 
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature values were used for 3 atoms!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 7.0653 7.3202 7.9258
@@ -1846,7 +1846,7 @@ OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and 
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 10.467 12.87 24.493
@@ -1896,7 +1896,7 @@ OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and 
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 10.467 12.87 24.493
@@ -1946,7 +1946,7 @@ OUT>#   NCrystalUserWarning : Some CIF sites have no _atom_site_type_symbol and 
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 10.467 12.87 24.493
@@ -1988,7 +1988,7 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 4.05837882 !! 3.32151998
@@ -2028,7 +2028,7 @@ OUT>#                   anything done, and remove this notice.
 OUT>#
 OUT># WARNING: Fallback (dummy) Debye temperature value was used for 1 atom!
 OUT>#
-OUT># NOTICE: crystal structure was verified with spglib to be self-consistent.
+OUT># NOTICE: crystal structure was verified to be self-consistent.
 OUT>#
 OUT>@CELL
 OUT>  lengths 4.0583788225477 !! 3.3215199810531

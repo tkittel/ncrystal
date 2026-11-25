@@ -20,7 +20,7 @@
 ##                                                                            ##
 ################################################################################
 
-# NEEDS: numpy spglib
+# NEEDS: numpy
 
 def main():
     import NCrystalDev as NC

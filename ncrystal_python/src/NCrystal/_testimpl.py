@@ -76,9 +76,12 @@ def _actualtest( verbose ):
         return True
     require(hasFactory('stdncmat'))
     from . import _fmt as nc_fmt
-    require( nc_fmt.prettyFmtValue(0.25) == '1/4' )
-    require( nc_fmt.prettyFmtValue(0.25 + 1e-12) != '1/4' )
-    require( nc_fmt.prettyFmtValue(0.25 + 1e-15) == '1/4' )
+    def fmtpos( x ):
+        return nc_fmt.fmt_value_rtol( x, 1e-14, strip_leading_zero = True,
+                                      max_denominator = 40 )
+    require( fmtpos(0.25) == '1/4' )
+    require( fmtpos(0.25 + 1e-12) != '1/4' )
+    require( fmtpos(0.25 + 1e-16) == '1/4' )
 
     _cfgstr='stdlib::Al_sg225.ncmat;dcutoff=1.4'
     prfct(f'Trying to createInfo("{_cfgstr}")')
