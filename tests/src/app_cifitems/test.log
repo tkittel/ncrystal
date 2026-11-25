@@ -114,7 +114,7 @@ U:
   temperatures: - -
  provenance: none
 B in the loop of the sites:
-WARNING-CALLBACK: Ignoring anisotropic displacements of "O1" in CIF data in "test.cif" (data_b, line 20), which are all "?" or "."
+WARNING-CALLBACK: Ignoring anisotropic displacements of "O1" in CIF data in "test.cif" (data_b, line 20), which have components "?" or "."
   (block data_b)
   cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
   sites: label [Al1]@19 [O1]@20
@@ -141,9 +141,9 @@ WARNING-CALLBACK: Ignoring anisotropic displacements of "O1" in CIF data in "tes
   atom type numbers: -
   temperatures: - -
  provenance: none
-all unknown (strict): Caught expected BadInput(Invalid CIF data in "test.cif" (data_n, line 24): anisotropic displacements of "O1" are all "?" or ".". Use permissive mode to ignore such entries.)
+all unknown (strict): Caught expected BadInput(Invalid CIF data in "test.cif" (data_n, line 24): anisotropic displacements of "O1" have components "?" or ".". Use permissive mode to ignore such entries.)
 all unknown (permissive):
-WARNING-CALLBACK: Ignoring anisotropic displacements of "O1" in CIF data in "test.cif" (data_n, line 24), which are all "?" or "."
+WARNING-CALLBACK: Ignoring anisotropic displacements of "O1" in CIF data in "test.cif" (data_n, line 24), which have components "?" or "."
   (block data_n)
   cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
   sites: label [Al1]@13 [O1]@14
@@ -170,7 +170,35 @@ WARNING-CALLBACK: Ignoring anisotropic displacements of "O1" in CIF data in "tes
   atom type numbers: -
   temperatures: - -
  provenance: none
-unknown label: Caught expected BadInput(Invalid CIF data in "test.cif" (data_x, line 23): the label "Al2" of anisotropic displacements is not the label of a site)
+unknown label (strict): Caught expected BadInput(Invalid CIF data in "test.cif" (data_x, line 23): the label "Al2" of anisotropic displacements is not the label of a site. Use permissive mode to ignore such entries.)
+unknown label (permissive):
+WARNING-CALLBACK: Ignoring anisotropic displacements of "Al2" in CIF data in "test.cif" (data_x, line 23), which is not the label of a site
+  (block data_x)
+  cell: [5.43(1)]@2 [5.43]@3 [6]@4 [90]@5 [90.0]@6 [120]@7
+  sites: label [Al1]@13 [O1]@14
+    x [0]@13 [0.25]@14
+    y [0]@13 [0.25]@14
+    z [0]@13 [0.25]@14
+    type -
+    uiso -
+    biso -
+    occ -
+  aniso (U): label [Al2]@23 [Al1]@24
+    [1]@23 [1]@24
+    [2]@23 [2]@24
+    [3]@23 [3]@24
+    [4]@23 [4]@24
+    [5]@23 [5]@24
+    [6]@23 [6]@24
+    skipped rows: 0
+  operations: -
+  hm: -
+  hall: -
+  number: -
+  formula: -
+  atom type numbers: -
+  temperatures: - -
+ provenance: none
 missing component (strict): Caught expected BadInput(Invalid CIF data in "test.cif" (data_x): anisotropic displacements lack the tag _atom_site_aniso_U_11. Use permissive mode to ignore the anisotropic displacements.)
 missing component (permissive):
 WARNING-CALLBACK: Ignoring the anisotropic displacements in CIF data in "test.cif" (data_x), which lack the tag _atom_site_aniso_U_11

@@ -552,8 +552,8 @@ _cod_database_code 1234567
     for name, shown in ( ( 'q.cif', 'q.cif' ), ( '', 'raw CIF data' ) ):
         with ensure_error( NCBadInput, f'Invalid CIF data in "{shown}"'
                            ' (data_s, line 29): anisotropic displacements of'
-                           ' "Al1" are all "?" or ".". Use permissive mode to'
-                           ' ignore such entries.' ):
+                           ' "Al1" have components "?" or ".". Use permissive'
+                           ' mode to ignore such entries.' ):
             ncquery( [ 'cif', 'uniquestructprov', 'strict', 'RAWDATA', name,
                        'RAWDATA', cif ] )
     import NCrystalDev as NC

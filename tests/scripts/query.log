@@ -294,9 +294,9 @@ Caught expected NCBadInput('Invalid cif query: ["cif","bla"] (unknown key)')
                                         'value': ['225', 10]}],
                             'operations': []}},
  'warnings': ['Ignoring anisotropic displacements of "Al1" in CIF data in '
-              '"q.cif" (data_s, line 29), which are all "?" or "."']}
-Caught expected NCBadInput('Invalid CIF data in "q.cif" (data_s, line 29): anisotropic displacements of "Al1" are all "?" or ".". Use permissive mode to ignore such entries.')
-Caught expected NCBadInput('Invalid CIF data in "raw CIF data" (data_s, line 29): anisotropic displacements of "Al1" are all "?" or ".". Use permissive mode to ignore such entries.')
+              '"q.cif" (data_s, line 29), which have components "?" or "."']}
+Caught expected NCBadInput('Invalid CIF data in "q.cif" (data_s, line 29): anisotropic displacements of "Al1" have components "?" or ".". Use permissive mode to ignore such entries.')
+Caught expected NCBadInput('Invalid CIF data in "raw CIF data" (data_s, line 29): anisotropic displacements of "Al1" have components "?" or ".". Use permissive mode to ignore such entries.')
 
 >>> Sending query: ['cif', 'uniquestructprov', 'strict', 'query_test.cif']
 {'block': 'x',

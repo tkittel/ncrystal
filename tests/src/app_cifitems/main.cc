@@ -256,8 +256,10 @@ namespace {
       + "Al1 1 2 3 4 5 6\nO1 ? . ? ? ? ?\n";
     ensureItemsError( "all unknown (strict)", allnull );
     show( "all unknown (permissive)", allnull, Permissive::YES );
-    ensureItemsError( "unknown label", "data_x\n" + cell + site + u
-                      + "Al2 1 2 3 4 5 6\n", Permissive::YES );
+    const std::string unknown = "data_x\n" + cell + site + u
+      + "Al2 1 2 3 4 5 6\nAl1 1 2 3 4 5 6\n";
+    ensureItemsError( "unknown label (strict)", unknown );
+    show( "unknown label (permissive)", unknown, Permissive::YES );
     const std::string partial = "data_x\n" + cell + site
       + "loop_\n_atom_site_aniso_label\n_atom_site_aniso_U_33\nAl1 1\n";
     ensureItemsError( "missing component (strict)", partial );

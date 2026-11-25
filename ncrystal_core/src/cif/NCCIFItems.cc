@@ -155,6 +155,10 @@ namespace NCRYSTAL_NAMESPACE {
         StrView::make("_atom_site_aniso_B_23")
       };
 
+      //Anisotropic displacements of block b (U or B form, not both; beta is
+      //an error), checked against the site labels. NullOpt if absent, or if
+      //permissive and tags are missing. Rows with an unknown label or "?" or
+      //"." components are errors, or skipped (with a warning) if permissive:
       Optional<StructureItems::Aniso> getAniso( BlockView b,
                                                 const ValueColumn& siteLabels,
                                                 CIFPermissive permissive,
@@ -230,23 +234,31 @@ namespace NCRYSTAL_NAMESPACE {
         std::sort( known.begin(), known.end() );
         for ( auto r : ncrange( res.label.size() ) ) {
           const auto& lbl = res.label[r];
-          if ( !std::binary_search( known.begin(), known.end(), lbl.text ) )
-            throwItemError( b, lbl.line, "the label \"" + lbl.text.to_string()
-                            + "\" of anisotropic displacements is not the"
-                            " label of a site" );
-          bool allNull = true;
+          if ( !std::binary_search( known.begin(), known.end(), lbl.text ) ) {
+            if ( permissive == CIFPermissive::NO )
+              throwItemError( b, lbl.line, "the label \""
+                              + lbl.text.to_string() + "\" of anisotropic"
+                              " displacements is not the label of a site. Use"
+                              " permissive mode to ignore such entries." );
+            warnfct( "Ignoring anisotropic displacements of \""
+                     + lbl.text.to_string() + "\" in " + where( b, lbl.line )
+                     + ", which is not the label of a site" );
+            res.skippedRows.push_back( static_cast<std::uint32_t>( r ) );
+            continue;
+          }
+          bool anyNull = false;
           for ( auto& c : res.components )
-            allNull = allNull && isNull( c[r] );
-          if ( !allNull )
+            anyNull = anyNull || isNull( c[r] );
+          if ( !anyNull )
             continue;
           if ( permissive == CIFPermissive::NO )
             throwItemError( b, lbl.line, "anisotropic displacements of \""
-                            + lbl.text.to_string() + "\" are all \"?\" or"
-                            " \".\". Use permissive mode to ignore such"
-                            " entries." );
+                            + lbl.text.to_string() + "\" have components"
+                            " \"?\" or \".\". Use permissive mode to ignore"
+                            " such entries." );
           warnfct( "Ignoring anisotropic displacements of \""
                    + lbl.text.to_string() + "\" in " + where( b, lbl.line )
-                   + ", which are all \"?\" or \".\"" );
+                   + ", which have components \"?\" or \".\"" );
           res.skippedRows.push_back( static_cast<std::uint32_t>( r ) );
         }
         return res;
