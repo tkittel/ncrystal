@@ -256,7 +256,9 @@ def test_symmetry():
         assert not res.startswith('ERROR'), (hall,res)
         assert set( res.split(';') ) == gemmi_ops( g.operations() ), hall
         nextra += 1
-    print(f'Hall symbols of {nextra} additional (non-ITVB) gemmi settings'
+    #(not printing nextra, since gemmi's table grows with its version)
+    assert nextra >= 28
+    print('Hall symbols of additional (non-ITVB) gemmi settings'
           ' consistent with gemmi')
 
 # Verifies the expansion of sites into orbits against a straightforward

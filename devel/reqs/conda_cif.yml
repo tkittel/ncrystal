@@ -10,5 +10,5 @@ dependencies:
   - pip
   - python
   - ase >=3.25.0
-  - gemmi >=0.6.6
+  - gemmi >=0.6.4
   - spglib >=2.1.0
