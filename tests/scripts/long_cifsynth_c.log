@@ -27,8 +27,8 @@ cs0011.cif:
   default error: NCBadInput: atoms labelled "C(1)" and "DUM0" have same cell positions but different uiso information. This is not supported.
   permissive error: NCBadInput: atoms labelled "C(1)" and "DUM0" have same cell positions but different uiso information. This is not supported.
 cs0023.cif:
-  default error: NCBadInput: CIF site "None" has missing or invalid fractional coordinates
-  permissive error: NCBadInput: CIF site "None" has missing or invalid fractional coordinates
+  default error: NCBadInput: Invalid CIF data in "cs0023.cif" (data_cs0023, line 17): tag _atom_site_label has a value "?" or "."
+  permissive error: NCBadInput: Invalid CIF data in "cs0023.cif" (data_cs0023, line 17): tag _atom_site_label has a value "?" or "."
 cs0025.cif:
   default error: NCBadInput: CIF site "D2_3" has an occupancy above 1 (1.09)
   permissive error: NCBadInput: CIF site "D2_3" has an occupancy above 1 (1.09)
@@ -61,7 +61,9 @@ cs0044.cif:
 cs0055.cif:
   default: SG-65 (65:abc), 1 sites, 1 atoms, 0 with uij
 cs0056.cif:
-  default: SG-44 (44:abc), 6 sites, 3 atoms, 0 with uij
+  default error: NCBadInput: Invalid CIF data in "cs0056.cif" (data_cs0056): anisotropic displacements lack the tag _atom_site_aniso_label. Use permissive mode to ignore the anisotropic displacements.
+  permissive warning: Ignoring the anisotropic displacements in CIF data in "cs0056.cif" (data_cs0056), which lack the tag _atom_site_aniso_label
+  permissive: SG-44 (44:abc), 6 sites, 3 atoms, 0 with uij
   material: 837 hkl families, dmax=5.944
 cs0060.cif:
   default: SG-40 (40:abc), 12 sites, 4 atoms, 0 with uij
@@ -301,8 +303,8 @@ cs0314.cif:
   default error: NCBadInput: The symmetry operations listed in the CIF data could not be parsed (Invalid symmetry operation "y, z, -x-y-z": Symmetry operations must have a rotation part belonging to point group m-3m with orthogonal-type axes (i.e. a signed permutation matrix) or point group 6/mmm with hexagonal axes). Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
   permissive error: NCBadInput: The unit cell parameters are not compatible with the space group of the CIF data (216), and refining the structure gives space group 160. If the declared symmetry is trusted, try again with a larger tolerance (tol).
 cs0315.cif:
-  default error: NCBadInput: CIF site "None" has missing or invalid fractional coordinates
-  permissive error: NCBadInput: CIF site "None" has missing or invalid fractional coordinates
+  default error: NCBadInput: Invalid CIF data in "cs0315.cif" (data_cs0315, line 17): tag _atom_site_label has a value "?" or "."
+  permissive error: NCBadInput: Invalid CIF data in "cs0315.cif" (data_cs0315, line 17): tag _atom_site_label has a value "?" or "."
 cs0317.cif:
   default: SG-103 (103), 12 sites, 10 atoms, 6 with uij
 cs0322.cif:
@@ -515,11 +517,11 @@ cs0518.cif:
   permissive warning: Split site (CIF label "F2W"): 2 symmetry-equivalent positions 0.43 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (accepted due to permissive mode)
   permissive: SG-96 (96), 12 sites, 11 atoms, 8 with uij
 cs0519.cif:
-  default error: NCBadInput: CIF parsing error (from Gemmi)
-  permissive error: NCBadInput: CIF parsing error (from Gemmi)
+  default error: NCBadInput: Invalid CIF data in "cs0519.cif" (line 3): duplicate tag _chemical_formula_sum in block (first in line 2)
+  permissive error: NCBadInput: Invalid CIF data in "cs0519.cif" (line 3): duplicate tag _chemical_formula_sum in block (first in line 2)
 cs0520.cif:
-  default error: NCBadInput: CIF parsing error (from Gemmi)
-  permissive error: NCBadInput: CIF parsing error (from Gemmi)
+  default error: NCBadInput: Invalid CIF data in "cs0520.cif" (line 2): unterminated single-quoted value
+  permissive error: NCBadInput: Invalid CIF data in "cs0520.cif" (line 2): unterminated single-quoted value
 cs0521.cif:
   default warning: Structure received major corrections by spglib (possibly due to conversion from primitive cell)
   default: SG-8 (8:b3), 2 sites, 2 atoms, 0 with uij

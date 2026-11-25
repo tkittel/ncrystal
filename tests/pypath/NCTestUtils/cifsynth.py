@@ -109,11 +109,9 @@ def all_files():
 
 def _errmsg( e ):
     msg = f'{e.__class__.__name__}: {e}'
-    #Messages printed without details which depend on versions. Remove the
-    #first when requiring gemmi>=0.6.6 (changed format of parse errors), the
-    #second when requiring spglib>=2.7 (older versions give no reason):
-    for p in ( 'CIF parsing error (from Gemmi)',
-               'spglib could not analyse the crystal structure' ):
+    #Messages printed without details which depend on versions. Remove this
+    #when requiring spglib>=2.7 (older versions give no reason):
+    for p in ( 'spglib could not analyse the crystal structure', ):
         if p in msg:
             msg = msg[:msg.index(p)+len(p)]
     return msg

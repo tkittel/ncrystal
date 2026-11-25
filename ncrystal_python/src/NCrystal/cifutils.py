@@ -222,8 +222,8 @@ class CIFLoader:
     the intention of producing NCMAT data and new materials for usage with
     NCrystal.
 
-    Behind the scenes the class uses third-party projects gemmi and spglib to
-    parse the CIF data and process the symmetries within.
+    Behind the scenes the class uses the third-party project spglib to
+    process the symmetries within the CIF data.
 
     The perhaps biggest issue to understand when basing NCrystal materials on
     CIF data, is that usually CIF data does not contain any or only incomplete
@@ -321,13 +321,12 @@ class CIFLoader:
                               override_spacegroup = override_spacegroup,
                               tols = tols, permissive = permissive,
                               warnfct = warnfct )
-        assert len(load)==13
+        assert len(load)==12
         self.__cifsrc = load['cifsrc']
         self.__actual_codid = load['actual_codid']
         self.__actual_mpid = load['actual_mpid']
         self.__cif_chemformula = load['cif_chemformula']
         self.__cifdata = load['cifdata']
-        self.__cif_raw = load['cif_raw']
         self.__cellsg = load['cellsg']
         self.__atoms = load['atoms']
         self.__sites = load['sites']
@@ -368,11 +367,6 @@ class CIFLoader:
         """The chemical formula encoded in the CIF data (usually in the
         _chemical_formula_sum field) as a string."""
         return self.__cif_chemformula
-
-    @property
-    def raw_cif_dict( self ):
-        """The CIF data parsed into a dictionary."""
-        return self.__cif_raw
 
     @property
     def atoms( self ):

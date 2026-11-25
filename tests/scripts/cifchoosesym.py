@@ -43,7 +43,7 @@ def ops_of( setting ):
 
 def content( cell, ops = None, hall = None, hm = None, itnumber = None,
              text = '' ):
-    return CIFContent( text = text, cif_raw = None, cell = cell,
+    return CIFContent( text = text, provenance = None, cell = cell,
                        listed_ops = ops, hall = hall, hm = hm,
                        itnumber = itnumber, formula = None, sites = [],
                        atom_type_number_in_cell = [], temperatures = {} )

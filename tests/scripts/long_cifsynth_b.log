@@ -15,6 +15,7 @@ cs0016.cif:
 cs0017.cif:
   default: SG-108 (108), 5 sites, 5 atoms, 5 with uij
 cs0018.cif:
+  default warning: Ignoring the anisotropic displacements, which are given as B (_atom_site_aniso_B_ij), which is not supported yet
   default: SG-8 (8:b1), 4 sites, 4 atoms, 0 with uij
 cs0021.cif:
   default error: NCBadInput: CIF site "Si" has Uiso=0.00481 which differs from the Ueq=0.00470667 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
@@ -28,8 +29,8 @@ cs0021.cif:
   permissive warning: CIF site "O5" has Uiso=0.00615 which differs from the Ueq=0.00608333 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
   permissive: SG-41 (41:abc), 11 sites, 11 atoms, 8 with uij
 cs0022.cif:
-  default error: NCBadInput: CIF site "None" has missing or invalid fractional coordinates
-  permissive error: NCBadInput: CIF site "None" has missing or invalid fractional coordinates
+  default error: NCBadInput: Invalid CIF data in "cs0022.cif" (data_cs0022, line 17): tag _atom_site_label has a value "?" or "."
+  permissive error: NCBadInput: Invalid CIF data in "cs0022.cif" (data_cs0022, line 17): tag _atom_site_label has a value "?" or "."
 cs0027.cif:
   default: SG-105 (105), 5 sites, 3 atoms, 0 with uij
 cs0028.cif:
@@ -267,8 +268,8 @@ cs0312.cif:
   default: SG-31 (31:abc), 6 sites, 3 atoms, 0 with uij
   material: 1364 hkl families, dmax=6.42
 cs0316.cif:
-  default error: NCBadInput: CIF site "None" has missing or invalid fractional coordinates
-  permissive error: NCBadInput: CIF site "None" has missing or invalid fractional coordinates
+  default error: NCBadInput: Invalid CIF data in "cs0316.cif" (data_cs0316, line 16): tag _atom_site_label has a value "?" or "."
+  permissive error: NCBadInput: Invalid CIF data in "cs0316.cif" (data_cs0316, line 16): tag _atom_site_label has a value "?" or "."
 cs0319.cif:
   default: SG-142 (142:1), 4 sites, 3 atoms, 0 with uij
 cs0320.cif:
@@ -307,7 +308,7 @@ cs0344.cif:
   permissive: SG-21 (21:abc), 9 sites, 9 atoms, 9 with uij
   material: 2026 hkl families, dmax=9.022
 cs0357.cif:
-  default error: NCBadInput: The symmetry operations listed in the CIF data are not those of a tabulated space group setting. Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol.
+  default error: NCBadInput: Invalid CIF data in "cs0357.cif" (data_cs0357, line 40): anisotropic displacements of "H~11~" have components "?" or ".". Use permissive mode to ignore such entries.
   permissive error: NCBadInput: Could not determine space group from CIF data (space group symbol "F 1 d 1" not recognised)
 cs0359.cif:
   default error: NCBadInput: CIF site "Cr1" has Uiso=0.01041 which differs from the Ueq=0.0104656 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)

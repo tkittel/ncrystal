@@ -6,10 +6,9 @@ Script which can be used to generate NCMAT files from crystal structures in loca
 or remote CIF files. The script can optionally also compare existing NCMAT files
 with online structures indicated in their comments.  It is essentially a command-
 line front-end for the functionality provided by the NCrystal.cifutils Python
-module. Behind the scenes, CIF data is loaded and processed with the gemmi and
-spglib modules, which must be available on the system. They can be either
-installed via PyPi ("python3 -mpip install gemmi spglib") or conda ("conda install
--c conda-forge gemmi spglib").
+module. Behind the scenes, CIF data is processed with the spglib module, which
+must be available on the system. It can be either installed via PyPi ("python3
+-mpip install spglib") or conda ("conda install -c conda-forge spglib").
 
 IMPORTANT NOTE: It is important to realise that while most CIF files contain
 crystal structure information, most of them lack appropriate information about
@@ -174,7 +173,7 @@ OC3 0.27350 0.51260 0.09310
 ===================================================================
 ============= CLI >>codid::9005777 --nomerge<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
@@ -341,7 +340,7 @@ OUT>  debye_temp 300
 ===================================================================
 ============= CLI >>codid::9005777<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
@@ -420,7 +419,7 @@ OUT>  debye_temp 300
 =========================================================
 ============= CLI >>codid::9005777 --uisotemp=50<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
@@ -499,7 +498,7 @@ OUT>  debye_temp 300
 =======================================================================
 ============= CLI >>codid::9005777 --debyetemp=50<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
@@ -578,7 +577,7 @@ OUT>  debye_temp 50
 ========================================================================
 ============= CLI >>codid::1000257<< ====================
 NCrystal: Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -676,7 +675,7 @@ OUT>  msd 0.0072 at_temperature 293
 =========================================================
 ============= CLI >>codid::1000257 --uisotemp=50<< ====================
 NCrystal: Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
 NCrystal: Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
@@ -765,7 +764,7 @@ OUT>  msd 0.0072 at_temperature 50
 =======================================================================
 ============= CLI >>codid::1000257 --debyetemp=150<< ====================
 NCrystal: Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -863,7 +862,7 @@ OUT>  msd 0.0072 at_temperature 293
 =========================================================================
 ============= CLI >>codid::1000257 --debyetemp=150 --uisotemp=50<< ====================
 NCrystal: Getting cod_1000257.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
 NCrystal: Writing autogen_F7FeNa2Ni_sg74_cod1000257.ncmat
@@ -952,7 +951,7 @@ OUT>  msd 0.0072 at_temperature 50
 =======================================================================================
 ============= CLI >>mpid::55<< ====================
 NCrystal: Getting mp_55.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
 NCrystal: Writing autogen_Sn_sg139_mp55.ncmat
@@ -993,7 +992,7 @@ OUT>  debye_temp 300
 ===================================================
 ============= CLI >>mpid::55 --noval<< ====================
 NCrystal: Getting mp_55.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Writing autogen_Sn_sg139_mp55.ncmat
 OUT>NCMAT v8
@@ -1033,7 +1032,7 @@ OUT>  debye_temp 300
 ===========================================================
 ============= CLI >>mpid::55 --dynamics stdlib::Sn_sg141.ncmat<< ====================
 NCrystal: Getting mp_55.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
 NCrystal: Writing autogen_Sn_sg139_mp55.ncmat
@@ -1079,7 +1078,7 @@ OUT>     .0462663 .0247447 .0118274 .00659815 .00298692 0
 =====================================================================================
 ============= CLI >>codid::9005777 --dynamics stdlib::CaSiO3_sg2_Wollastonite.ncmat<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
@@ -1227,7 +1226,7 @@ OC3 0.27350 0.51260 0.09310
 ===================================================================
 ============= CLI >>QE_pw_Al.out --via-ase<< ====================
 NCrystal: Attempting to load data via ASE
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -1267,7 +1266,7 @@ OUT>  debye_temp 300
 =================================================================
 ============= CLI >>QE_pw_Al.out --via-ase --remap 'Al is 0.99 Al 0.01 Cr'<< ====================
 NCrystal: Attempting to load data via ASE
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -1310,7 +1309,7 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 =================================================================================================
 ============= CLI >>dummy_D.cif<< ====================
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -1364,7 +1363,7 @@ OUT>  type vdosdebye
 OUT>  msd 0.019 at_temperature 293
 ======================================================
 ============= CLI >>dummy_D.cif --remap 'D is H'<< ====================
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -1426,7 +1425,7 @@ Caught expected ArgumentError('Conflicting options')
 ============= CLI >>--valplot stdlib::Al_sg225.ncmat --via-ase<< ====================
 Caught expected ArgumentError('Conflicting options')
 ============= CLI >>dummy_D.cif --remap 'D is 0.6 H 0.4 D'<< ====================
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal WARNING: The CIF data specifies no temperature, so its Uiso (msd) values are assumed to be associated with a fallback temperature of 293K. Specify the temperature explicitly, as this is likely wrong.
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -1546,7 +1545,7 @@ NCMAT v8
 ============================================================================
 ============= CLI >>mpid::55 --dynamics stdlib::Sn_sg141.ncmat -obla.ncmat<< ====================
 NCrystal: Getting mp_55.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
 NCrystal: Writing bla.ncmat
@@ -1592,7 +1591,7 @@ OUT>     .0462663 .0247447 .0118274 .00659815 .00298692 0
 =================================================================================================
 ============= CLI >>codid::9005777 --atomdata 'Si 28.09u::4.1491fm 0.004b 0.171b'<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
@@ -1673,7 +1672,7 @@ OUT>  debye_temp 300
 ========================================================================================================
 ============= CLI >>codid::9005777 --atomdata 'Si 28.09u 0fm 0b 0b'<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
@@ -1756,7 +1755,7 @@ OUT>  debye_temp 300
 Caught expected ArgumentError('invalid --atomdata syntax in "Si 28.09 0fm 0b 0b"')
 ============= CLI >>codid::9005777 --atomdata 'Si 28.09u 0fm 0b 0b' --atomdata 'Ca 128.09u 0fm 0b 0b'<< ====================
 NCrystal: Getting cod_9005777.cif from local file cache in $NCRYSTAL_ONLINEDB_CACHEDIR
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1, Si from Si1, O from OA1)
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
@@ -1855,7 +1854,7 @@ UNITTEST: Would invoke nc_cifutils.produce_validation_plots with pdf_target= ncr
 UNITTEST: Would invoke nc_cifutils.produce_validation_plots with pdf_target= bla.pdf
 ============================================================================================================
 ============= CLI >>Wyckoff1963_Sulphor_0011255.cif<< ====================
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1)
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
@@ -1904,7 +1903,7 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 ==========================================================================
 ============= CLI >>Wyckoff1963_Sulphor_0011255.cif --spacegroup 'F d d d:1'<< ====================
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal WARNING: Overriding spacegroup to "F d d d:1" due to explicit request
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1)
 NCrystal: Self-consistency of structure was verified by spglib
@@ -1956,7 +1955,7 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 ===================================================================================================
 ============= CLI >>Wyckoff1963_Sulphor_0011255.cif --spacegroup 'F d d d:2'<< ====================
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal WARNING: Overriding spacegroup to "F d d d:2" due to explicit request
 NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (S from S1)
 NCrystal: Self-consistency of structure was verified by spglib
@@ -2008,7 +2007,7 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 ===================================================================================================
 ============= CLI >>mp_55_unrefined_conventional.cif<< ====================
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded
 NCrystal: Writing autogen_Sn_sg139.ncmat
@@ -2047,7 +2046,7 @@ OUT>  type vdosdebye
 OUT>  debye_temp 300
 ===========================================================================
 ============= CLI >>mp_55_unrefined_primitive.cif<< ====================
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal: Unit cell was transformed to the standard setting by spglib
 NCrystal: Self-consistency of structure was verified by spglib
 NCrystal: Verifying that resulting ncmat data can be loaded

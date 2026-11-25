@@ -20,7 +20,7 @@
 ##                                                                            ##
 ################################################################################
 
-# NEEDS: gemmi spglib ase
+# NEEDS: spglib ase
 
 import contextlib
 import pathlib

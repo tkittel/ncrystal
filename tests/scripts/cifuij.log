@@ -1,6 +1,6 @@
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 Rejected: CIF site "Si1" has Uiso=0.00858 which differs from the Ueq=0.00715012 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
-NCrystal: Attempting to load CIF data with gemmi
+NCrystal: Parsing CIF data
 NCrystal WARNING: CIF site "Si1" has Uiso=0.00858 which differs from the Ueq=0.00715012 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
 NCrystal: Self-consistency of structure was verified by spglib
 @ATOMSITES

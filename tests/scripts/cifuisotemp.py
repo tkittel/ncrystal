@@ -20,7 +20,7 @@
 ##                                                                            ##
 ################################################################################
 
-# NEEDS: numpy spglib gemmi
+# NEEDS: numpy spglib
 
 # Tests the temperature associated with Uiso values when converting CIF data to
 # NCMAT: explicitly chosen, from the CIF temperature fields, or the fallback,

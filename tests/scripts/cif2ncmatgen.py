@@ -20,7 +20,7 @@
 ##                                                                            ##
 ################################################################################
 
-# NEEDS: numpy spglib gemmi
+# NEEDS: numpy spglib
 
 # Tests cif2ncmat with synthetic CIF data (valid CIF data in various styles must
 # reproduce the original crystal, invalid CIF data must be rejected). A more

@@ -30,7 +30,7 @@ __all__ = []
 
 from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
-from ._cifreadimpl import _extract_descr_from_cif, read_cif
+from ._cifreadimpl import _extract_descr, read_cif
 from ._cifsitesimpl import (
     _impl_find_sites,
     _impl_group_sites,
@@ -66,8 +66,9 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
     result['cifsrc'] = cifsrc
     result['cifdata'] = cifdata
 
-    cif_content = read_cif( cifdata, quiet = quiet, warnfct = warnfct )
-    result['cif_raw'] = cif_content.cif_raw
+    cif_content = read_cif( cifdata, name = cifsrc.name,
+                            permissive = permissive, quiet = quiet,
+                            warnfct = warnfct )
     result['cif_temperatures'] = cif_content.temperatures
 
     setting = determine_setting( cif_content, permissive = permissive,
@@ -142,5 +143,8 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
     result['site2atom'] = tuple( site2atom )
     result['sgsetting'] = setting
 
-    result['cifdescr'], result['actual_codid'],result['actual_mpid'],result['cif_chemformula'] =_extract_descr_from_cif( result['cif_raw'], result['cifsrc'], result['cifdata'], warnfct = warnfct )
+    ( result['cifdescr'], result['actual_codid'], result['actual_mpid'],
+      result['cif_chemformula'] ) = _extract_descr( cif_content.provenance,
+                                                  cif_content.formula, cifsrc,
+                                                  warnfct = warnfct )
     return result

@@ -20,7 +20,7 @@
 ##                                                                            ##
 ################################################################################
 
-# NEEDS: numpy spglib gemmi
+# NEEDS: numpy spglib
 
 # Comprehensive version of cif2ncmatgen.py, part 2 of 4 (space groups 137-206;
 # the parts have similar run times): random structures in all 230 space groups

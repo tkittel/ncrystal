@@ -21,7 +21,7 @@
 ################################################################################
 
 
-# NEEDS: gemmi spglib
+# NEEDS: spglib
 
 # Tests of the atoms of loaded CIF data: isotopes (D, T), elements deduced from
 # labels, mixed sites and their remapping, and the stated atom counts.

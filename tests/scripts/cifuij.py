@@ -21,7 +21,7 @@
 ################################################################################
 
 
-# NEEDS: gemmi spglib
+# NEEDS: spglib
 
 # Anisotropic displacements from CIF data (cifutils): the CIF sites and their
 # uij values are kept. Uiso versus Ueq is resolved when the data is read: a
@@ -161,7 +161,8 @@ def scenario( cellname, descr, uiso, expect_ok, **kw ):
     if uiso is not None:
         #(the printed values with their rounding errors, cf. the cif numbers
         #and sgsym positions queries):
-        cif_content = read_cif( p1bar_cif( c, uiso ), quiet = True,
+        cif_content = read_cif( p1bar_cif( c, uiso ), name = 'p1bar.cif',
+                                permissive = False, quiet = True,
                                 warnfct = warn )
         s, = cif_content.sites
         ( ui, ui_err ), = evaluate_query( [ 'cif', 'numbers', 'RAWDATA',
