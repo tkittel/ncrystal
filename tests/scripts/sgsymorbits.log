@@ -1,0 +1,13 @@
+rutile                                         sg=136 Ti[0, 1]  O[2, 3, 4, 5]
+rutile, unrotated tensor copies                sg=136 Ti[0, 1] BAD-ANISO  O[2, 3, 4, 5] BAD-ANISO
+rutile, positions only                         sg=136 Ti[0, 1]  O[2, 3, 4, 5]
+rutile, 5e-4 tensor noise, tol=1e-3            sg=136 Ti[0, 1]  O[2, 3, 4, 5]
+rutile, 5e-4 tensor noise, tol=1e-4            sg=38  Ti[0]  Ti[1]  O[2]  O[3]  O[4, 5]
+rutile, Ti occupancies 0.46/0.54               sg=65  Ti[0]  Ti[1]  O[2, 3]  O[4, 5]
+rutile, Ti occu 0.5/0.5003, tol=1e-3           sg=136 Ti[0, 1]  O[2, 3, 4, 5]
+rutile, Ti occu 0.5/0.5003, tol=1e-4           sg=65  Ti[0]  Ti[1]  O[2, 3]  O[4, 5]
+rutile, one Ti uiso differs 1.9%               sg=65  Ti[0]  Ti[1]  O[2, 3]  O[4, 5]
+rutile, one Ti uiso differs 1.9%, tol_uij=0.05 sg=136 Ti[0, 1]  O[2, 3, 4, 5]
+rutile, O eigenvalues differ                   sg=65  Ti[0]  Ti[1]  O[2, 3]  O[4, 5]
+C2/c                                           sg=15  Si[0, 1, 2, 3, 4, 5, 6, 7]  O[8, 9, 10, 11]
+C2/c, two tensors swapped                      sg=15  Si[0, 1, 2, 3, 4, 5, 6, 7] BAD-ANISO  O[8, 9, 10, 11]
