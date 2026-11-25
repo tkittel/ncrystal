@@ -22,6 +22,7 @@
 #include "NCQueryImpl.hh"
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCrystal/internal/sgsym/NCSGIdentify.hh"
+#include "NCrystal/internal/cif/NCCIFUtils.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 
@@ -59,6 +60,7 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
   constexpr auto sv_fromops = StrView::make("fromops");
   constexpr auto sv_fromhall = StrView::make("fromhall");
   constexpr auto sv_fromhm = StrView::make("fromhm");
+  constexpr auto sv_cell = StrView::make("cell");
   //Settings as a JSON list like ["14:b1","14:b2"]:
   auto streamSettings = [&os]( const std::vector<SpaceGroup>& v ) {
     os << '[';
@@ -75,7 +77,7 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     if ( nargs != 0 )
       invalid("no arguments should come after: [\"sgsym\",\"list\"]");
     os<<"[\"info\", \"sites\", \"positions\", \"fromops\","
-      " \"fromhall\", \"fromhm\"]";
+      " \"fromhall\", \"fromhm\", \"cell\"]";
   } else if ( key == sv_fromops ) {
     //["sgsym","fromops",OP,...]: the settings with exactly these symmetry
     //operations (like "x,-y,z+1/2", cf. SymOp, with a "@" prefix if starting
@@ -85,6 +87,54 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     for ( auto i : ncrange( nargs ) )
       ops.emplace_back( argNoAt(i) );
     streamSettings( settingsFromOperations( ops ) );
+  } else if ( key == sv_cell ) {
+    //["sgsym","cell",TOL,DOTHROW,SG,a,b,c,alpha,beta,gamma]: the cell
+    //parameters snapped to the constraints of the setting SG (parsed in strict
+    //mode) with TOL "strict" or "lenient" (cf. SGCellConstraints::snap), as
+    //{"cell":{"a":..,...,"gamma":..},"error_msg":null}. If they do not fit, a
+    //BadInput is thrown if DOTHROW is 1, and if it is 0 the result is
+    //{"cell":null,"error_msg":".."}. The values may be printed CIF numbers
+    //(e.g. "4.123(2)"), whose rounding errors are then used with lenient
+    //tolerances:
+    const auto usage = "correct usage: [\"sgsym\",\"cell\","
+      "\"strict|lenient\",0|1,SG,a,b,c,alpha,beta,gamma]";
+    if ( nargs != 9 || ( arg(0) != "strict" && arg(0) != "lenient" )
+         || ( arg(1) != "0" && arg(1) != "1" ) )
+      invalid( usage );
+    const bool lenient = ( arg(0) == "lenient" );
+    const bool dothrow = ( arg(1) == "1" );
+    double v[6], e[6];
+    for ( auto i : ncrange( 6 ) ) {
+      auto x = parseCIFNumber( arg( 3 + i ) );
+      if ( !x.has_value() )
+        invalid( usage );
+      v[i] = x.value().value;
+      e[i] = lenient ? x.value().roundingError : 0.0;
+    }
+    using Tol = SGCellConstraints::Tolerances;
+    const auto rr = SGSymmetry::get( SpaceGroup( arg(2),
+                                                 SpaceGroupParseMode::Strict ) )
+      .cellConstraints()
+      .trySnap( { v[0], v[1], v[2], v[3], v[4], v[5] },
+                lenient ? Tol::lenient() : Tol::strict(),
+                { e[0], e[1], e[2], e[3], e[4], e[5] } );
+    if ( !rr.cell.has_value() ) {
+      if ( dothrow )
+        NCRYSTAL_THROW(BadInput,rr.errorMsg.value());
+      os << "{\"cell\":null";
+      streamJSONDictEntry( os, "error_msg", rr.errorMsg.value(),
+                           JSONDictPos::LAST );
+      return;
+    }
+    const auto& r = rr.cell.value();
+    os << "{\"cell\":";
+    streamJSONDictEntry( os, "a", r.a, JSONDictPos::FIRST );
+    streamJSONDictEntry( os, "b", r.b );
+    streamJSONDictEntry( os, "c", r.c );
+    streamJSONDictEntry( os, "alpha", r.alpha );
+    streamJSONDictEntry( os, "beta", r.beta );
+    streamJSONDictEntry( os, "gamma", r.gamma, JSONDictPos::LAST );
+    os << ",\"error_msg\":null}";
   } else if ( key == sv_fromhall || key == sv_fromhm ) {
     //["sgsym","fromhall",SYMBOL] and ["sgsym","fromhm",SYMBOL]: the settings
     //matching a Hall or Hermann-Mauguin symbol (cf. NCSGIdentify.hh, with a

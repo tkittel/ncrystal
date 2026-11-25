@@ -31,6 +31,10 @@ import shlex
 import pathlib
 from NCrystalDev.misc import evaluate_query as ncquery
 
+def raw( *items ):
+    #Items passed verbatim as one argument (cf. the sgsym and cif queries):
+    return [ 'RAWDATA', '@' + '@'.join( items ) ]
+
 def safefmt(s):
     return str(s).encode('unicode_escape').decode('utf-8')
 
@@ -202,6 +206,22 @@ def main():
     test_cli('sgsym','fromhm','R -3 m')
     test_cli('sgsym','fromhm','C m c e')
     test_cli('sgsym','fromhm','C -1')#(no tabulated setting)
+    #Cell parameters snapped to the constraints of a setting (printed values
+    #with rounding errors with lenient tolerances):
+    test_cli('sgsym','cell','lenient','0','225',*raw('4.123(2)','4.124','4.1234','90','90.0','90'))
+    test_cli('sgsym','cell','strict','1','194','3','3','5','90','90','120')
+    test_cli('sgsym','cell','strict','0','225','4.123','4.124','4.123','90','90','90')
+    with ensure_error(NCBadInput,'Lattice parameters a and b must be equal for'
+                      ' this space group (got a=4.123 and b=4.124)'):
+        test_cli('sgsym','cell','strict','1','225','4.123','4.124','4.123','90','90','90')
+    with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","cell","lenient",'
+                      '"0","225","4.1","4.1","4.1","90","90","x"] (correct usage:'
+                      ' ["sgsym","cell","strict|lenient",0|1,SG,a,b,c,alpha,beta,gamma])'):
+        test_cli('sgsym','cell','lenient','0','225','4.1','4.1','4.1','90','90','x')
+    with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","cell","lenient",'
+                      '"2","225","4.1","4.1","4.1","90","90","90"] (correct usage:'
+                      ' ["sgsym","cell","strict|lenient",0|1,SG,a,b,c,alpha,beta,gamma])'):
+        test_cli('sgsym','cell','lenient','2','225','4.1','4.1','4.1','90','90','90')
     with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","fromhm"]'
                       ' (correct usage: ["sgsym","fromhm",SYMBOL])'):
         test_cli('sgsym','fromhm')

@@ -449,52 +449,76 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-void NC::SGCellConstraints::check( const CellParameters& cp ) const
+NC::Optional<std::string>
+NC::SGCellConstraints::checkError( const CellParameters& cp ) const
 {
+  std::ostringstream ss;
   using LC = LengthConstraint;
   using AC = AngleConstraint;
   const double lengths[3] = { cp.a, cp.b, cp.c };
   const LC lc[3] = { LC::Free, b, c };
   const char * lnames[3] = { "a", "b", "c" };
   for ( unsigned i = 0; i < 3; ++i ) {
-    if ( lengths[i] == 0.0 )
-      NCRYSTAL_THROW2(BadInput,"Lattice parameter "<<lnames[i]<<" is 0 ("
-                      <<( lc[i] == LC::Free
-                          ? "it must be specified"
-                          : "implied values must be filled in first" )<<")");
-    if ( !( lengths[i] > 0.0 ) || !std::isfinite( lengths[i] ) )
-      NCRYSTAL_THROW2(BadInput,"Lattice parameter "<<lnames[i]
-                      <<" must be a positive number (got "<<lengths[i]<<")");
-    if ( lc[i] == LC::EqualToA && lengths[i] != cp.a )
-      NCRYSTAL_THROW2(BadInput,"Lattice parameters a and "<<lnames[i]
-                      <<" must be equal for this space group (got a="<<cp.a
-                      <<" and "<<lnames[i]<<"="<<lengths[i]<<")");
+    if ( lengths[i] == 0.0 ) {
+      ss << "Lattice parameter "<<lnames[i]<<" is 0 ("
+         <<( lc[i] == LC::Free
+             ? "it must be specified"
+             : "implied values must be filled in first" )<<")";
+      return ss.str();
+    }
+    if ( !( lengths[i] > 0.0 ) || !std::isfinite( lengths[i] ) ) {
+      ss << "Lattice parameter "<<lnames[i]
+         <<" must be a positive number (got "<<fmt(lengths[i])<<")";
+      return ss.str();
+    }
+    if ( lc[i] == LC::EqualToA && lengths[i] != cp.a ) {
+      ss << "Lattice parameters a and "<<lnames[i]
+         <<" must be equal for this space group (got a="<<fmt(cp.a)
+         <<" and "<<lnames[i]<<"="<<fmt(lengths[i])<<")";
+      return ss.str();
+    }
   }
   const double angles[3] = { cp.alpha, cp.beta, cp.gamma };
   const AC ac[3] = { alpha, beta, gamma };
   for ( unsigned i = 0; i < 3; ++i ) {
-    if ( angles[i] == 0.0 )
-      NCRYSTAL_THROW2(BadInput,"Lattice angle "<<angleName(i)<<" is 0 ("
-                      <<( ac[i] == AC::Free
-                          ? "it must be specified"
-                          : "implied values must be filled in first" )<<")");
-    if ( !( angles[i] > 0.0 && angles[i] < 180.0 ) )
-      NCRYSTAL_THROW2(BadInput,"Lattice angle "<<angleName(i)<<" must be in"
-                      " the range (0,180) degrees (got "<<angles[i]<<")");
+    if ( angles[i] == 0.0 ) {
+      ss << "Lattice angle "<<angleName(i)<<" is 0 ("
+         <<( ac[i] == AC::Free
+             ? "it must be specified"
+             : "implied values must be filled in first" )<<")";
+      return ss.str();
+    }
+    if ( !( angles[i] > 0.0 && angles[i] < 180.0 ) ) {
+      ss << "Lattice angle "<<angleName(i)<<" must be in"
+            " the range (0,180) degrees (got "<<fmt(angles[i])<<")";
+      return ss.str();
+    }
     const double expected = ( ac[i] == AC::Is90 ? 90.0
                               : ac[i] == AC::Is120 ? 120.0
                               : ac[i] == AC::EqualToAlpha ? cp.alpha
                               : angles[i] );
-    if ( angles[i] != expected )
-      NCRYSTAL_THROW2(BadInput,"Lattice angle "<<angleName(i)<<" must be "
-                      <<( ac[i] == AC::EqualToAlpha ? "equal to alpha"
-                          : ac[i] == AC::Is90 ? "90 degrees" : "120 degrees" )
-                      <<" for this space group (got "<<angles[i]<<")");
+    if ( angles[i] != expected ) {
+      ss << "Lattice angle "<<angleName(i)<<" must be "
+         <<( ac[i] == AC::EqualToAlpha ? "equal to alpha"
+             : ac[i] == AC::Is90 ? "90 degrees" : "120 degrees" )
+         <<" for this space group (got "<<fmt(angles[i])<<")";
+      return ss.str();
+    }
   }
   if ( beta == AC::EqualToAlpha && gamma == AC::EqualToAlpha
-       && !( cp.alpha < 120.0 ) )
-    NCRYSTAL_THROW2(BadInput,"Lattice angles alpha=beta=gamma must be less"
-                    " than 120 degrees (got "<<cp.alpha<<")");
+       && !( cp.alpha < 120.0 ) ) {
+    ss << "Lattice angles alpha=beta=gamma must be less"
+          " than 120 degrees (got "<<fmt(cp.alpha)<<")";
+    return ss.str();
+  }
+  return NullOpt;
+}
+
+void NC::SGCellConstraints::check( const CellParameters& cp ) const
+{
+  auto e = checkError( cp );
+  if ( e.has_value() )
+    NCRYSTAL_THROW(BadInput,e.value());
 }
 
 void NC::SGCellConstraints::complete( CellParameters& cp ) const
@@ -517,7 +541,62 @@ void NC::SGCellConstraints::complete( CellParameters& cp ) const
     else if ( ac[i] == AC::EqualToAlpha )
       *angles[i] = cp.alpha;//(alpha is never EqualToAlpha itself)
   }
-  check( cp );
+  cp = snap( cp, Tolerances::strict() );
+}
+
+NC::CellParameters
+NC::SGCellConstraints::snap( const CellParameters& cp, const Tolerances& tol,
+                             const CellParameters& err ) const
+{
+  auto r = trySnap( cp, tol, err );
+  if ( !r.cell.has_value() )
+    NCRYSTAL_THROW(BadInput,r.errorMsg.value());
+  return r.cell.value();
+}
+
+NC::SGCellConstraints::SnapResult
+NC::SGCellConstraints::trySnap( const CellParameters& cp,
+                                const Tolerances& tol,
+                                const CellParameters& err ) const
+{
+  using LC = LengthConstraint;
+  using AC = AngleConstraint;
+  CellParameters res = cp;
+  //Set *value to target if within the tolerance (from the value and the
+  //rounding errors of both, e2 being 0 for the fixed angles), otherwise
+  //return false:
+  auto snapOne = [&tol]( double* value, double target, double e1, double e2 )
+  {
+    const double dev = ncabs( *value - target );
+    if ( !( dev <= tol.relTol * ncabs( *value ) + e1 + e2 ) )//(rejects NaN)
+      return false;
+    *value = target;
+    return true;
+  };
+  bool ok = true;
+  if ( b == LC::EqualToA )
+    ok = ok && snapOne( &res.b, cp.a, err.b, err.a );
+  if ( c == LC::EqualToA )
+    ok = ok && snapOne( &res.c, cp.a, err.c, err.a );
+  double* angles[3] = { &res.alpha, &res.beta, &res.gamma };
+  const double angle_errs[3] = { err.alpha, err.beta, err.gamma };
+  const AC ac[3] = { alpha, beta, gamma };
+  for ( unsigned i = 0; i < 3; ++i ) {
+    if ( ac[i] == AC::Is90 )
+      ok = ok && snapOne( angles[i], 90.0, angle_errs[i], 0.0 );
+    else if ( ac[i] == AC::Is120 )
+      ok = ok && snapOne( angles[i], 120.0, angle_errs[i], 0.0 );
+    else if ( ac[i] == AC::EqualToAlpha )
+      ok = ok && snapOne( angles[i], cp.alpha, angle_errs[i], err.alpha );
+  }
+  //If not ok, res still has the deviating value, so checkError(..) reports
+  //it:
+  SnapResult result;
+  result.errorMsg = checkError( res );
+  nc_assert_always( ok || result.errorMsg.has_value() );
+  if ( !result.errorMsg.has_value() )
+    result.cell = res;
+  return result;
 }
 
 std::ostream& NC::operator<<( std::ostream& os, const SGCellConstraints& cc )

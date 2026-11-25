@@ -45,10 +45,36 @@ namespace NCRYSTAL_NAMESPACE {
     //(including for parameters which are 0, cf. complete(..) below):
     void check( const CellParameters& ) const;
 
+    //The parameters with each constrained one set exactly to its required
+    //value (b and c to a, beta and gamma to alpha, or 90 or 120 degrees), if
+    //its deviation is at most relTol times its value plus the rounding errors
+    //of the parameters involved (e.g. of the data printed in a file, all zero
+    //by default), and then check(..)'ed. Throws BadInput as check(..)
+    //otherwise:
+    struct Tolerances {
+      double relTol;
+      static constexpr Tolerances strict() noexcept { return { 1e-12 }; }
+      static constexpr Tolerances lenient() noexcept { return { 1e-6 }; }
+    };
+    CellParameters snap( const CellParameters&, const Tolerances&,
+                         const CellParameters& roundingErrors
+                         = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } ) const;
+    //As snap(..), but returns the message of the BadInput instead of throwing
+    //it (the cell is then NullOpt):
+    struct SnapResult {
+      Optional<CellParameters> cell;
+      Optional<std::string> errorMsg;
+    };
+    SnapResult trySnap( const CellParameters&, const Tolerances&,
+                        const CellParameters& roundingErrors
+                        = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } ) const;
     //Fill in any parameters given as 0 whose values are implied by the
     //constraints (e.g. b and c for cubic space groups, or gamma=120 for
-    //hexagonal axes), and then check(..) the result:
+    //hexagonal axes), and then snap(..) the result with strict tolerances:
     void complete( CellParameters& ) const;
+  private:
+    //The message check(..) would throw, if any:
+    Optional<std::string> checkError( const CellParameters& ) const;
   };
 
   //Output like "a, b=a, c, alpha=90, beta, gamma=90":

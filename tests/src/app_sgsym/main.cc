@@ -776,6 +776,51 @@ void run()
   NC::SGSymmetry::get( NC::SpaceGroup( "166:r", NC::SpaceGroupParseMode::Strict ) ).cellConstraints()
     .complete( cp );
   REQUIRE( cp.b == 4.0 && cp.c == 4.0 && cp.beta == 70.0 && cp.gamma == 70.0 );
+
+  //Snapping with tolerances (constrained values set exactly, else the error
+  //of check):
+  std::cout << "Snapping:" << std::endl;
+  using Tol = NC::SGCellConstraints::Tolerances;
+  auto snap = []( const char * sgstr, const NC::CellParameters& cell,
+                  const Tol& tol, const NC::CellParameters& err,
+                  const char * descr )
+  {
+    const auto& cc = NC::SGSymmetry::get( NC::SpaceGroup( sgstr, NC::SpaceGroupParseMode::Strict ) )
+      .cellConstraints();
+    std::cout << "  " << sgstr << " " << descr << ": ";
+    try {
+      const auto r = cc.snap( cell, tol, err );
+      cc.check( r );
+      std::cout << NC::fmt(r.a) << " " << NC::fmt(r.b) << " " << NC::fmt(r.c) << " "
+                << NC::fmt(r.alpha) << " " << NC::fmt(r.beta) << " "
+                << NC::fmt(r.gamma) << std::endl;
+      REQUIRE( r.a == cell.a && r.alpha == cell.alpha );//(free ones unchanged)
+    } catch ( NC::Error::BadInput& e ) {
+      std::cout << e.what() << std::endl;
+    }
+  };
+  const NC::CellParameters noerr{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+  const double ulp4 = std::nextafter( 4.0, 5.0 );
+  snap( "225", { 4.0, ulp4, 4.0, 90.0, 90.0, std::nextafter( 90.0, 0.0 ) },
+        Tol::strict(), noerr, "strict, 1 ulp" );
+  snap( "225", { 4.0, 4.0 * ( 1.0 + 1e-10 ), 4.0, 90.0, 90.0, 90.0 },
+        Tol::strict(), noerr, "strict, 1e-10" );
+  snap( "225", { 4.0, 4.0 * ( 1.0 + 1e-7 ), 4.0, 90.0, 90.0, 90.0 },
+        Tol::lenient(), noerr, "lenient, 1e-7" );
+  snap( "225", { 4.0, 4.0 * ( 1.0 + 1e-5 ), 4.0, 90.0, 90.0, 90.0 },
+        Tol::lenient(), noerr, "lenient, 1e-5" );
+  snap( "225", { 4.123, 4.124, 4.123, 90.0, 90.0, 90.0 }, Tol::lenient(),
+        { 5e-4, 5e-4, 5e-4, 0.0, 0.0, 0.0 }, "lenient, a=4.123 b=4.124 printed" );
+  snap( "225", { 4.123, 4.125, 4.123, 90.0, 90.0, 90.0 }, Tol::lenient(),
+        { 5e-4, 5e-4, 5e-4, 0.0, 0.0, 0.0 }, "lenient, a=4.123 b=4.125 printed" );
+  snap( "194", { 3.0, 3.0, 5.0, 90.0, 90.02, 119.98 }, Tol::lenient(),
+        { 0.0, 0.0, 0.0, 0.05, 0.05, 0.05 }, "lenient, angles printed as 90.02 and 119.98 with rounding 0.05" );
+  snap( "194", { 3.0, 3.0, 5.0, 90.0, 90.0, 119.9 }, Tol::lenient(),
+        { 0.0, 0.0, 0.0, 0.05, 0.05, 0.05 }, "lenient, gamma 119.9 with rounding 0.05" );
+  snap( "166:r", { 4.0, 4.0, 4.0001, 70.0, 70.001, 69.999 }, Tol::lenient(),
+        { 5e-4, 5e-4, 5e-4, 5e-3, 5e-3, 5e-3 }, "lenient, rhombohedral" );
+  snap( "225", { 4.0, std::numeric_limits<double>::quiet_NaN(), 4.0, 90.0, 90.0, 90.0 },
+        Tol::lenient(), { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 }, "lenient, b=NaN" );
   std::cout << "All OK" << std::endl;
 }
 
