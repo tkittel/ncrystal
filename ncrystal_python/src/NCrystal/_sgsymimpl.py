@@ -53,9 +53,9 @@ def _lattice_params_to_vectors( a, b, c, alpha, beta, gamma ):
     vect_b = tuple( b*e for e in ( cg, sg, 0.0 ) )
     ux = cb
     assert sg > 0.0
-    assert sg**2 > 0.0
+    assert sg*sg > 0.0
     uy = (ca-cb*cg)/sg
-    uzsq = sb**2 - uy**2
+    uzsq = sb*sb - uy*uy#(x*x, not x**2 which uses libm pow)
     if uzsq < -1e-99:
         raise _nc_core.NCBadInput('Inconsistent cell parameters detected')
     vect_c = tuple( c*e for e in ( ux, uy, math.sqrt(max(0.0,uzsq)) ) )#sign of third component positive since we want the three vectors to form a right handed basis.
@@ -63,7 +63,7 @@ def _lattice_params_to_vectors( a, b, c, alpha, beta, gamma ):
 
 def _lattice_vectors_to_params( vect_a, vect_b, vect_c, as_dict = True ):
     def mag( v ):
-        return math.sqrt( math.fsum(e**2 for e in v) )
+        return math.sqrt( math.fsum(e*e for e in v) )
     def dot( v1,v2 ):
         return math.fsum(e1*e2 for e1,e2 in zip(v1,v2))
     def ang( v1,v2 ):
@@ -427,7 +427,7 @@ def _unit_cell_point_distsq( p1, p2 ):
     def remap( x ):
         return x-math.floor(x)
     d = [ abs(remap(e1)-remap(e2)) for e1,e2 in zip(p1,p2)]
-    return math.fsum(  min(e,1.0-e)**2 for e in d )
+    return math.fsum( min(e,1.0-e)*min(e,1.0-e) for e in d )
 
 def _cell_metric( cellsg ):
     #Returns (g,recilen) for the cell cellsg: the metric tensor g as 3x3 nested
