@@ -56,3 +56,9 @@ CHANGELOG at release time, after which this file is dropped).
        MissingInfo exception for the forms which need the crystal lattice
        for that. In JSON, such forms are dictionaries with "frame" and
        "axis" entries.
+     * Fixed a bug in the Gaussian mosaicity model of single crystals
+       (SCBragg): planes with a normal exactly along the neutron direction
+       were ignored near back-scattering, i.e. at wavelengths just below
+       2*dspacing. Cross sections were thus too low for e.g. a neutron
+       exactly along the lab direction of a "dir1=@crys_hkl:..." plane
+       normal, while fine for any slightly tilted neutron.

@@ -166,6 +166,8 @@ spread parameter exists in the interfaces but is not implemented.
 The model is unchanged and as published for 2.0.0-4.4.6, but is now set up
 in the crystal frame and shared between orientations (see above). New ways
 of specifying orientations: `@crys_uvw:`, `dir2=arbitrary` and `rot`.
+Bug fix: planes with a normal exactly along the neutron were ignored near
+back-scattering (`GaussMos::calcCrossSections`).
 Indirect changes: the hkl input (chapter 12), orientation handling for
 non-default space-group settings (chapter 11), and `.lau` files with setting
 information (chapter 52).
