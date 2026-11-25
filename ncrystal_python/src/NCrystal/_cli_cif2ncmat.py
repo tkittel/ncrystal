@@ -150,7 +150,7 @@ present script.  """,descrw)+f"""\n\nExample invocations:
                                   '-osomename.pdf, where the former will autogenerate a suitable name for the output PDF file'))
 
     parser.add_argument("--spacegroup",default=None,type=str,
-                        help=wrap('Override the space group, disregarding the spacegroup embedded in the file. '))
+                        help=wrap('Override the space group (H-M symbol like "F d d d:1", or setting like "70:1"), disregarding the symmetry information in the file.'))
     parser.add_argument('--via-ase',default=False,action='store_true',
                         help=wrap('Load input file via ASE (this can be useful to support non-CIF input files).'))
 

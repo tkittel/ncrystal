@@ -20,105 +20,105 @@
 ##                                                                            ##
 ################################################################################
 
-
-# NEEDS: gemmi
-
-# Tests of _cifsymimpl.choose_symmetry: which symmetry to use for CIF data,
-# from the listed symmetry operations and the space group symbol, in default
-# and permissive mode.
+# Tests of _cifsymimpl.determine_setting: the space group setting of CIF data,
+# from the listed symmetry operations (cross-checked against the symbol), or
+# else from the symbol (several candidates resolved by the cell), or from an
+# explicit override, in default and permissive mode.
 
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
-from NCrystalDev._cifsymimpl import choose_symmetry
-import gemmi
-import re
+from NCrystalDev._cifreadimpl import CIFContent
+from NCrystalDev._cifsymimpl import determine_setting
+from NCrystalDev.misc import evaluate_query
+from NCrystalDev._common import WarningSpy
 
-def no_gemmi_details( msg ):
-    #(without details from gemmi, which might change between versions):
-    return re.sub( r'could not be parsed \([^)]*\)',
-                   'could not be parsed (...)', msg )
+cubic = { 'a': '5.43', 'b': '5.43', 'c': '5.43',
+          'alpha': '90', 'beta': '90', 'gamma': '90' }
+hexagonal = { 'a': '3.0', 'b': '3.0', 'c': '10.0',
+              'alpha': '90', 'beta': '90', 'gamma': '120' }
+rhombohedral = { 'a': '4.0', 'b': '4.0', 'c': '4.0',
+                 'alpha': '70', 'beta': '70', 'gamma': '70' }
 
-ops_p21c = [ 'x,y,z', '-x,y+1/2,-z+1/2', '-x,-y,-z', 'x,-y+1/2,z+1/2' ]
-ops_p1bar = [ 'x,y,z', '-x,-y,-z' ]
-#P-1 with the inversion centre at (1/4,1/4,1/4), not a tabulated setting:
-ops_p1bar_shifted = [ 'x,y,z', '-x+1/2,-y+1/2,-z+1/2' ]
-sg_p21c = gemmi.find_spacegroup_by_name( 'P 1 21/c 1' )
-sg_p1bar = gemmi.find_spacegroup_by_name( 'P -1' )
-sg_p1 = gemmi.find_spacegroup_by_number( 1 )
+def ops_of( setting ):
+    return evaluate_query( [ 'sgsym', 'info', 'strict', setting ] )['ops']
 
-def run( descr, listed, symsg, *, load_sg = None, has_mult = True,
-         permissive = False, cifdata = 'data_x', expect = None ):
-    warnings = []
-    try:
-        c = choose_symmetry( gemmi, listed, symsg, load_sg, has_mult = has_mult,
-                             permissive = permissive, cifdata = cifdata,
-                             warn = warnings.append )
-    except NC.NCBadInput as e:
-        print( f'{descr}: rejected: {no_gemmi_details( str( e ) )}' )
-        for w in warnings:
-            print( '     (warning before rejection:', no_gemmi_details( w ), ')' )
-        assert expect == 'error', descr
-        return None
-    sg = c['sg']
-    print( f'{descr}: space group {sg.xhm() if sg else None},'
-           f' expand with {len(c["expand_ops"]) if c["expand_ops"] else 0}'
-           f' listed operations, require_mult={c["require_mult"]}' )
-    for w in warnings:
-        print( '     warning:', no_gemmi_details( w ) )
-    assert expect != 'error', descr
-    if expect is not None:
-        assert ( sg.number if sg else None, c['expand_ops'] is not None,
-                 c['require_mult'], len( warnings ) ) == expect, ( descr, expect )
-    return c
+def content( cell, ops = None, hall = None, hm = None, itnumber = None,
+             text = '' ):
+    return CIFContent( text = text, cif_raw = None, cell = cell,
+                       listed_ops = ops, hall = hall, hm = hm,
+                       itnumber = itnumber, formula = None, sites = [],
+                       atom_type_number_in_cell = [] )
+
+def test( descr, c, permissive = False, override = None ):
+    with WarningSpy( block = True ) as warnings:
+        try:
+            s = determine_setting( c, permissive = permissive,
+                                   override_spacegroup = override )
+        except NC.NCBadInput as e:
+            print( f'{descr}: rejected: {e}' )
+            s = None
+        else:
+            print( f'{descr}: {s}' )
+    for w, _ in warnings:
+        print( f'   warning: {w}' )
+    return s
 
 def main():
-    #(expect: space group number, expanded, require_mult, number of warnings)
-    run( 'no listed operations', None, None, load_sg = sg_p21c,
-         expect = ( 14, False, False, 0 ) )
-    run( 'listed = symbol', ops_p21c, sg_p21c, expect = ( 14, False, False, 0 ) )
-    run( 'listed twice (pymatgen duplicates)', ops_p21c * 2, sg_p21c,
-         expect = ( 14, False, False, 0 ) )
-    run( 'listed, no symbol', ops_p21c, None, expect = ( 14, False, False, 0 ) )
-    #Tabulated, but another space group than the symbol:
-    run( 'listed P-1, symbol P21/c', ops_p1bar, sg_p21c, expect = 'error' )
-    run( 'listed P-1, symbol P21/c, permissive', ops_p1bar, sg_p21c,
-         permissive = True, expect = ( 2, False, True, 1 ) )
-    run( 'listed P-1, symbol P21/c, permissive, no multiplicities', ops_p1bar,
-         sg_p21c, permissive = True, has_mult = False, expect = 'error' )
-    #Not tabulated, same number of rotations as the symbol: expanded.
-    run( 'shifted P-1, symbol P-1', ops_p1bar_shifted, sg_p1bar,
-         expect = ( 1, True, False, 0 ) )
-    #Not tabulated, other number of rotations:
-    run( 'shifted P-1, symbol P21/c', ops_p1bar_shifted, sg_p21c,
-         expect = 'error' )
-    run( 'shifted P-1, symbol P21/c, permissive', ops_p1bar_shifted, sg_p21c,
-         permissive = True, expect = ( 1, True, True, 1 ) )
-    run( 'shifted P-1, symbol P21/c, permissive, no multiplicities',
-         ops_p1bar_shifted, sg_p21c, permissive = True, has_mult = False,
-         expect = 'error' )
-    run( 'shifted P-1, no symbol', ops_p1bar_shifted, None, expect = 'error' )
-    run( 'shifted P-1, no symbol, permissive', ops_p1bar_shifted, None,
-         permissive = True, expect = ( 1, True, True, 1 ) )
-    #Unparsable:
-    bad = [ 'x,y,z', 'x+500/999+q,y,z' ]
-    run( 'unparsable', bad, sg_p21c, expect = 'error' )
-    run( 'unparsable, permissive', bad, sg_p21c, permissive = True,
-         expect = ( 14, False, False, 1 ) )
-    run( 'unparsable, no symbol, permissive', bad, None, permissive = True,
-         expect = 'error' )
-    #Incomplete (three of the four operations of P21/c):
-    inc = ops_p21c[:3]
-    run( 'incomplete', inc, sg_p21c, expect = 'error' )
-    run( 'incomplete, permissive', inc, sg_p21c, permissive = True,
-         expect = ( 14, False, False, 1 ) )
-    run( 'incomplete, permissive, not in the symbol group', inc, sg_p1bar,
-         permissive = True, expect = 'error' )
-    run( 'incomplete, permissive, no symbol', inc, None, permissive = True,
-         expect = 'error' )
-    #Hint for files written by pymatgen:
-    run( 'pymatgen file, other rotations', ops_p1bar_shifted, sg_p21c,
-         cifdata = '# generated using pymatgen\ndata_x', expect = 'error' )
-    assert sg_p1.number == 1
+    ops227 = ops_of( '227:2' )
+    #A: listed operations (any order, with duplicates), cross-checked against
+    #the symbol:
+    assert test( 'listed operations', content( cubic, ops227 ) ) == '227:2'
+    test( 'listed operations, reversed with duplicates',
+          content( cubic, ops227[::-1] + ops227[:3] ) )
+    test( 'listed operations and matching symbol',
+          content( cubic, ops227, hm = 'F d -3 m' ) )
+    test( 'listed operations and unrecognised symbol (ignored)',
+          content( cubic, ops227, hm = 'F d -3 m (bla)' ) )
+    test( 'shared operations of number 68',
+          content( { 'a': '5', 'b': '6', 'c': '7', 'alpha': '90',
+                     'beta': '90', 'gamma': '90' }, ops_of( '68:1' ) ) )
+    #A.2: unusable operations are an error, in permissive mode the symbol is
+    #used:
+    for descr, ops in ( ( 'missing operation', ops227[:-1] ),
+                        ( 'unparsable operation', ops227[:-1] + [ 'x+y+z' ] ),
+                        ( 'origin shift', [ 'x,y,z', '-x+1/2,-y+1/2,-z+1/2' ] ) ):
+        for permissive in ( False, True ):
+            test( f'{descr}, permissive={permissive}',
+                  content( cubic, ops, hm = 'F d -3 m:2' ),
+                  permissive = permissive )
+    test( 'missing operation, without symbol, permissive',
+          content( cubic, ops227[:-1] ), permissive = True )
+    test( 'missing operation, pymatgen file',
+          content( cubic, ops227[:-1], text = '# generated using pymatgen' ) )
+    #A.3: operations and symbol of different space groups:
+    for permissive in ( False, True ):
+        test( f'symbol mismatch, permissive={permissive}',
+              content( cubic, ops227, hm = 'F m -3 m' ),
+              permissive = permissive )
+    test( 'Hall symbol mismatch', content( cubic, ops227, hall = '-F 4 2 3',
+                                           hm = 'F d -3 m' ) )
+    #B: no listed operations, the symbol (Hall, H-M or number):
+    test( 'Hall symbol', content( cubic, hall = '-F 4vw 2vw 3' ) )
+    test( 'H-M symbol with origin choice', content( cubic, hm = 'F d -3 m:1' ) )
+    test( 'H-M symbol, one setting', content( cubic, hm = 'Fm-3m' ) )
+    test( 'unrecognised Hall symbol, H-M used',
+          content( cubic, hall = 'bla', hm = 'Fm-3m' ) )
+    test( 'IT number, one setting', content( cubic, itnumber = '225' ) )
+    test( 'R -3 m, hexagonal axes', content( hexagonal, hm = 'R -3 m' ) )
+    test( 'R -3 m, rhombohedral axes', content( rhombohedral, hm = 'R -3 m' ) )
+    test( 'R -3 m, unfitting cell', content( cubic | { 'gamma': '100' },
+                                             hm = 'R -3 m' ) )
+    test( 'ambiguous origin choice', content( cubic, hm = 'F d -3 m' ) )
+    test( 'ambiguous IT number', content( cubic, itnumber = '227' ) )
+    test( 'no symmetry information', content( cubic ) )
+    test( 'unrecognised symbol', content( cubic, hm = 'bla' ) )
+    #C: explicit override (ignoring the symmetry information of the data):
+    test( 'override, H-M symbol',
+          content( cubic, ops227, hm = 'F d -3 m' ), override = 'F d -3 m:1' )
+    test( 'override, setting', content( cubic, hm = 'F d -3 m' ),
+          override = '227:1' )
+    test( 'override, ambiguous', content( cubic ), override = 'F d -3 m' )
+    test( 'override, unknown', content( cubic ), override = 'bla' )
 
 if __name__ == '__main__':
     main()

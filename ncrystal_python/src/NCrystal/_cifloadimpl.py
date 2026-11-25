@@ -29,64 +29,80 @@ in cifutils.py.
 __all__ = []
 
 from . import _common as _nc_common
+from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
-from ._cifreadimpl import _extract_descr_from_cif, parse_cif_number, read_cif
+from ._cifreadimpl import _extract_descr_from_cif, read_cif
 from ._cifsitesimpl import (
     _impl_find_sites,
     _impl_group_sites,
+    check_split_sites,
     collect_atoms,
     merge_atoms,
 )
-from ._cifsymimpl import decide_symmetry
+from ._cifsymimpl import determine_setting, snapped_cell
 
 
-def _expected_atom_count( content ):
+def _expected_atom_count( cif_content ):
     #Total number of atoms in the cell, if stated in the CIF data:
-    v = [ ( parse_cif_number( e ) if e is not None else None )
-          for e in content['atom_type_number_in_cell'] ]
-    if v and not any( e is None for e in v ):
-        return sum( e[0] for e in v )
-    return None#(absent, or with values which are not numbers like "?")
+    from .misc import evaluate_query
+    v = cif_content.atom_type_number_in_cell
+    if not v or any( e is None for e in v ):
+        return None
+    n = evaluate_query( [ 'cif', 'numbers', *_nc_sgsymimpl._rawargs( v ) ] )
+    if any( e is None for e in n ):
+        return None#(values which are not numbers)
+    return sum( e[0] for e in n )
 
 def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
                    merge_equiv, tols, permissive, override_spacegroup = None ):
-    #Load CIF data (text, from the CIFSource cifsrc): read it (gemmi),
-    #decide which symmetry to use, collect and merge the atoms of the sites,
-    #and find the final sites (spglib). Returns the results for CIFLoader (a
-    #dict), and the gemmi module and structure.
+    #Returns the CIFLoader fields (a dict) for the CIF text cifdata, from the
+    #CIFSource cifsrc.
     from types import MappingProxyType
+
+    from .misc import evaluate_query
     dict_ro, list_ro = MappingProxyType, tuple
 
     result = {}
     result['cifsrc'] = cifsrc
     result['cifdata'] = cifdata
 
-    content = read_cif( cifdata, quiet = quiet,
-                        override_spacegroup = override_spacegroup )
-    result['cif_raw'] = content['cif_raw']
+    cif_content = read_cif( cifdata, quiet = quiet )
+    result['cif_raw'] = cif_content.cif_raw
 
-    choice = decide_symmetry( content, permissive = permissive, tols = tols,
-                              quiet = quiet,
-                              refine_with_spglib = refine_with_spglib,
-                              override_spacegroup = override_spacegroup,
-                              cifdata = cifdata )
-    expected_tot_atom_in_orig_cell = _expected_atom_count( content )
-    expect_sgno = choice['expect_sgno']
+    setting = determine_setting( cif_content, permissive = permissive,
+                                 override_spacegroup = override_spacegroup )
+    cell = cif_content.cell
+    expect_sgno = None
+    snapped = snapped_cell( setting, cell )
+    if snapped['cell'] is not None:
+        cellsg = dict( snapped['cell'] )
+    else:
+        #The cell does not quite have the symmetry of the space group. This is
+        #only accepted if refining the structure finds the same space group:
+        if not refine_with_spglib:
+            raise _nc_core.NCBadInput( 'Unit cell not compatible with the'
+                                       ' space group of the CIF data:'
+                                       f' {snapped["error_msg"]}' )
+        expect_sgno = int( setting.split(':')[0] )
+        keys = ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' )
+        vals = evaluate_query( [ 'cif', 'numbers',
+                                 *_nc_sgsymimpl._rawargs( cell[k]
+                                                          for k in keys ) ] )
+        cellsg = { k: v[0] for k, v in zip( keys, vals ) }
+    info = evaluate_query( [ 'sgsym', 'info', 'strict', setting ] )
+    cellsg['spacegroup'] = dict_ro( { 'number': int( setting.split(':')[0] ),
+                                      'hm': info['hm'] } )
 
-    cellsg = dict( content['cell'] )
-    #Although the sg object also provides sg.ccp4 and sg.hall, we record here
-    #just sgnumber and xhm, since that is what spglib refinement also provides:
-    cellsg['spacegroup'] = dict_ro( { 'number': choice['sgnumber'],
-                                      'hm': choice['hm'] } )
-
-    collected_atoms = collect_atoms( content, choice, tols = tols,
+    collected_atoms = collect_atoms( cif_content, setting, cell, tols = tols,
                                      permissive = permissive )
-    final_atoms = merge_atoms( collected_atoms, expected_tot_atom_in_orig_cell )
+    final_atoms = merge_atoms( collected_atoms, _expected_atom_count( cif_content ),
+                               setting, cell )
+    check_split_sites( final_atoms, permissive = permissive )
 
     if not refine_with_spglib:
         _nc_common.warn('Structure refinement and verification with spglib was disabled due to explicit request.')
 
-    cellsg, sites, setting = _impl_find_sites( cellsg, final_atoms,
+    cellsg, sites, setting = _impl_find_sites( cellsg, final_atoms, setting,
                                                tols = tols,
                                                refine = refine_with_spglib,
                                                permissive = permissive,
@@ -120,4 +136,4 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
     result['sgsetting'] = setting
 
     result['cifdescr'], result['actual_codid'],result['actual_mpid'],result['cif_chemformula'] =_extract_descr_from_cif( result['cif_raw'], result['cifsrc'], result['cifdata'] )
-    return result, content['_gemmi'], content['_struct']
+    return result

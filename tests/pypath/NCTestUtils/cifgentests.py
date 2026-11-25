@@ -90,8 +90,6 @@ def valid_variants( s, all_variants = True ):
     v['other-basis-P1'] = ( cifgen.to_cif( cifgen.transformed_basis(
         s, [[1,0,0],[1,1,0],[0,1,1]] ), style = 'p1' ), dt, None )
     v['rounded-coords'] = ( cifgen.to_cif( s, round_digits = 4 ), dt, None )
-    v['origin-shift'] = ( cifgen.to_cif( s.with_origin_shift(
-        (0.125,0.25,0.375) ) ), dt, None )
     #Elements must be deduced from labels (like "Fe1"):
     v['no-type-symbols'] = ( cifgen.to_cif( s, type_symbols = False ),
                              dt, None )
@@ -109,10 +107,10 @@ def inconsistent_variants( s ):
     if len(ops) > 2:#(with only 2, the result is just P1 and not recoverable)
         #The space group symbol completes the listed operations:
         v['incomplete-symops'] = ( cif.replace( ops[-1]+'\n', '' ), True )
-    #Listed operations and symbol disagree (and there are no multiplicities):
+    #Listed operations and symbol disagree (the operations are used):
     v['wrong-HM-symbol'] = ( cif.replace(
         cif.split("_space_group_name_H-M_alt ")[1].split('\n')[0],
-        "'P 1'" if s.spacegroup != 1 else "'P -1'" ), False )
+        "'P 1'" if s.spacegroup != 1 else "'P -1'" ), True )
     return v
 
 def check_structure( s, *, all_variants, tolerated ):

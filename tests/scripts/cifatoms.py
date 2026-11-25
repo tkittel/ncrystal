@@ -61,12 +61,35 @@ def main():
                                                  quiet = True,
                                                  refine_with_spglib = False ) )
     assert [ a['composition'] for a in lc.atoms ] == [ ( ( 1.0, 'H3' ), ) ]
-    #Element deduced from the label when the type symbol is missing:
-    lc = show( 'element from label', CIFLoader( cif( [ 'CaM1 . 0 0 0 1',
-                                                       'OA1 . 0.5 0.5 0.5 1' ] ),
-                                                quiet = True,
-                                                refine_with_spglib = False ) )
-    assert sorted( a['composition'][0][1] for a in lc.atoms ) == [ 'Ca', 'O' ]
+    #Element deduced from the label when the type symbol is missing, checked
+    #against the formula (one warning per file):
+    sites = [ 'CaM1 . 0 0 0 1', 'OA1 . 0.5 0.5 0.5 1', 'Cl(1) . 0.5 0 0 1' ]
+    lc = show( 'element from label', CIFLoader(
+        cif( sites, "_chemical_formula_sum 'C Ca Cl O'\n" ),
+        quiet = True, refine_with_spglib = False ) )
+    assert sorted( a['composition'][0][1] for a in lc.atoms ) == [ 'Ca', 'Cl', 'O' ]
+    for w, _ in lc.warnings:
+        if '_atom_site_type_symbol' in w:
+            print( 'warning:', w )
+    #(Cs1 is C if the formula has no Cs):
+    lc = show( 'element from label (Cs1 with C)', CIFLoader(
+        cif( [ 'Cs1 . 0 0 0 1' ], "_chemical_formula_sum 'C'\n" ),
+        quiet = True, refine_with_spglib = False ) )
+    #Without a formula, only labels which are an element name followed by
+    #digits or parentheses:
+    lc = show( 'element from label (no formula)', CIFLoader(
+        cif( [ 'Al . 0 0 0 1', 'O(1) . 0.5 0.5 0.5 1' ] ),
+        quiet = True, refine_with_spglib = False ) )
+    assert sorted( a['composition'][0][1] for a in lc.atoms ) == [ 'Al', 'O' ]
+    for extra, why in ( ( '', 'no formula' ),
+                        ( "_chemical_formula_sum 'Ca O'\n", 'not in formula' ) ):
+        try:
+            CIFLoader( cif( sites, extra ), quiet = True,
+                       refine_with_spglib = False )
+        except NC.NCBadInput as e:
+            print( f'element from label ({why}): rejected:', e )
+        else:
+            raise SystemExit( f'element from label ({why}): not rejected' )
     #A stated atom count which is not a number is not used:
     extra = 'loop_\n_atom_type_symbol\n_atom_type_number_in_cell\nNa ?\nCl 1\n'
     lc = show( 'atom count "?"', CIFLoader( cif( [ 'Na1 Na 0 0 0 1',

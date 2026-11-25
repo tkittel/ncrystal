@@ -34,7 +34,8 @@ import NCTestUtils.reprint_escaped_warnings # noqa F401
 import NCrystalDev as NC
 from NCrystalDev.cifutils import CIFLoader
 from NCrystalDev._sgsymimpl import _ueq_from_ustd, _relclose
-from NCrystalDev._cifreadimpl import uiso_from_cif, ueq_from_cif
+from NCrystalDev._cifreadimpl import read_cif
+from NCrystalDev.misc import evaluate_query
 
 cell = { 'a': 5.1, 'b': 6.3, 'c': 7.2,
          'alpha': 90.0, 'beta': 105.0, 'gamma': 90.0 }
@@ -158,10 +159,18 @@ _atom_site_aniso_U_23
 def scenario( cellname, descr, uiso, expect_ok, **kw ):
     c = cells[cellname]
     if uiso is not None:
-        import gemmi
-        blk = gemmi.cif.read_string( p1bar_cif( c, uiso ) ).sole_block()
-        ( ui, ui_err ), = uiso_from_cif( gemmi, blk ).values()
-        ( ue, ue_err ), = ueq_from_cif( gemmi, blk ).values()
+        #(the printed values with their rounding errors, cf. the cif numbers
+        #and sgsym positions queries):
+        cif_content = read_cif( p1bar_cif( c, uiso ), quiet = True )
+        s, = cif_content.sites
+        ( ui, ui_err ), = evaluate_query( [ 'cif', 'numbers', s['uiso'] ] )
+        q, = evaluate_query( [ 'sgsym', 'positions', 'strict', '2', 'lenient',
+                               ','.join( cif_content.cell[k] for k in
+                                         ( 'a', 'b', 'c', 'alpha', 'beta',
+                                           'gamma' ) ),
+                               ','.join( [ 'X', s['x'], s['y'], s['z'] ]
+                                         + s['uij'] ) ] )['sites']
+        ue, ue_err = q['ueq']
         print( f'  {descr}: printed Uiso {ui:.6g} (rounding error {ui_err:.3g}),'
                f' Ueq {ue:.6g} (rounding error {ue_err:.3g})' )
     try:
@@ -178,8 +187,8 @@ def scenario( cellname, descr, uiso, expect_ok, **kw ):
     assert _relclose( _ueq_from_ustd( u, lc.cellsg ), s['uiso'], 1e-9 )
     if uiso is not None:
         assert s['uiso'] == uiso
-    print( f'  {descr}: uiso={s["uiso"]!r} uij:',
-           ' '.join( repr( u[k] ) for k in ukeys ) )
+    print( f'  {descr}: uiso={s["uiso"]:.10g} uij:',
+           ' '.join( f'{u[k]:.10g}' for k in ukeys ) )
 
 def test_uiso_vs_ueq():
     for cellname, c in cells.items():
