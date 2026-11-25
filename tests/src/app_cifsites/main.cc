@@ -71,8 +71,8 @@ namespace {
       auto items = NCC::findUniqueStructProvItems( doc, perm, warnfct );
       const auto sg = NCC::chooseSetting( doc, items.structureItems, perm,
                                           NC::StrView(), warnfct );
-      const auto atoms = NCC::getAtoms( items.structureItems, sg, perm, 1e-3,
-                                        warnfct );
+      const auto atoms = NCC::getAtoms( doc, items.structureItems, sg, perm,
+                                        1e-3, warnfct );
       std::cout << '\n';
       for ( auto& a : atoms ) {
         std::cout << "   ";

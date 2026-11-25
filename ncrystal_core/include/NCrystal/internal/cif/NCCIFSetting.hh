@@ -47,7 +47,8 @@ namespace NCRYSTAL_NAMESPACE {
     //setting (lenient tolerances, with the rounding errors of the printed
     //values, cf. SGCellConstraints::trySnap), or why it does not fit. Throws
     //BadInput if a cell value is not a number:
-    SGCellConstraints::SnapResult snapCell( const StructureItems&,
+    SGCellConstraints::SnapResult snapCell( const Document&,
+                                            const StructureItems&,
                                             const SpaceGroup& );
   }
 }

@@ -47,15 +47,17 @@ namespace NCRYSTAL_NAMESPACE {
         return res;
       }
 
-      bool cellFits( const SpaceGroup& sg, const StructureItems& s )
+      bool cellFits( const SpaceGroup& sg, const Document& doc,
+                     const StructureItems& s )
       {
-        return snapCell( s, sg ).cell.has_value();
+        return snapCell( doc, s, sg ).cell.has_value();
       }
 
       //The one of the candidate settings which the cell fits (what describes
       //their source, empty if none):
       SpaceGroup resolve( const std::vector<SpaceGroup>& settings,
-                          const StructureItems& s, const std::string& what )
+                          const Document& doc, const StructureItems& s,
+                          const std::string& what )
       {
         if ( settings.empty() )
           NCRYSTAL_THROW2( BadInput, "Could not determine space group from CIF"
@@ -65,7 +67,7 @@ namespace NCRYSTAL_NAMESPACE {
           return settings.front();
         std::vector<SpaceGroup> fit;
         for ( auto& e : settings )
-          if ( cellFits( e, s ) )
+          if ( cellFits( e, doc, s ) )
             fit.push_back( e );
         if ( fit.size() == 1 )
           return fit.front();
@@ -183,7 +185,7 @@ NC::SpaceGroup NCC::chooseSetting( const Document& doc,
       }
       settings.push_back( p.setting.value() );
     }
-    return resolve( settings, s, "space group \"" + o + "\"" );
+    return resolve( settings, doc, s, "space group \"" + o + "\"" );
   }
 
   //The listed operations (the first tag with values):
@@ -197,7 +199,7 @@ NC::SpaceGroup NCC::chooseSetting( const Document& doc,
   }
   const auto sym = symbolSettings( s );
   if ( ops.empty() )
-    return resolve( sym.settings, s, sym.descr );
+    return resolve( sym.settings, doc, s, sym.descr );
 
   std::vector<SpaceGroup> fromOps;
   std::string why;
@@ -240,21 +242,23 @@ NC::SpaceGroup NCC::chooseSetting( const Document& doc,
   }
   if ( !isPermissive )
     throwSymopError( why, doc, !sym.settings.empty() );
-  auto setting = resolve( sym.settings, s, sym.descr );
+  auto setting = resolve( sym.settings, doc, s, sym.descr );
   warnfct( "The symmetry operations listed in the CIF data " + why + ", so the "
            + sym.descr + " is used (accepted due to permissive mode)" );
   return setting;
 }
 
 NC::SGCellConstraints::SnapResult
-NCC::snapCell( const StructureItems& s, const SpaceGroup& sg )
+NCC::snapCell( const Document& doc, const StructureItems& s,
+               const SpaceGroup& sg )
 {
   double v[6], e[6];
   for ( auto i : ncrange( 6 ) ) {
     const auto x = parseCIFNumber( s.cell[i].text );
     if ( !x.has_value() )
-      NCRYSTAL_THROW2( BadInput, "Invalid cell parameter in CIF data: \""
-                       << s.cell[i].text << "\"" );
+      NCRYSTAL_THROW2( BadInput, "Invalid cell parameter in CIF data in "
+                       << describeLocation( s.block( doc ), s.cell[i].line )
+                       << ": \"" << s.cell[i].text << "\"" );
     v[i] = x.value().value;
     e[i] = x.value().roundingError;
   }

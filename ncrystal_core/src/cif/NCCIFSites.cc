@@ -22,7 +22,6 @@
 #include "NCrystal/internal/cif/NCCIFUtils.hh"
 #include "NCrystal/internal/utils/NCAtomUtils.hh"
 #include "NCrystal/internal/utils/NCFMA.hh"
-#include <sstream>
 #include <unordered_map>
 
 namespace NC = NCrystal;
@@ -33,6 +32,7 @@ namespace NCRYSTAL_NAMESPACE {
     namespace {
 
       using Uij = UijUtils::Uij;
+      using Groups = std::vector<std::vector<std::size_t>>;//(site indices)
 
       //Value i of an optional column, or a StrView without value if the
       //column is absent or the value is "?" or ".":
@@ -46,22 +46,6 @@ namespace NCRYSTAL_NAMESPACE {
       Optional<CIFNumber> number( StrView s )
       {
         return s.has_value() ? parseCIFNumber( s ) : NullOpt;
-      }
-
-      //Shortest text which reads back as x, like Python's repr (e.g. "2.0"):
-      std::string reprStr( double x )
-      {
-        std::string s = dbl2shortstr( x ).to_string();
-        if ( s.find_first_of( ".eEn" ) == std::string::npos )
-          s += ".0";
-        return s;
-      }
-
-      std::string fmtg( double x )
-      {
-        std::ostringstream ss;
-        ss << fmt( x, "%g" );
-        return ss.str();
       }
 
       //v*num/den, deterministic on all platforms and correctly rounded except
@@ -104,6 +88,7 @@ namespace NCRYSTAL_NAMESPACE {
       //A site with positive occupancy, expanded:
       struct Site {
         std::string label, qlabel;//(qlabel: unique, for messages)
+        std::uint32_t line;//(of the site row)
         std::string marker;
         Vector pos;//as given (wrapped)
         double occupancy;//(at most 1)
@@ -114,6 +99,27 @@ namespace NCRYSTAL_NAMESPACE {
         Optional<Uij> finalUij;
         std::vector<Uij> finalUijs;
       };
+
+      //A site for messages, e.g. 'CIF site "Al1" in "x.cif" (data_a, line 7)':
+      std::string siteRef( BlockView b, const Site& s )
+      {
+        return "CIF site \"" + s.label + "\" in "
+          + describeLocation( b, s.line );
+      }
+
+      //Several sites for messages, e.g. 'CIF sites "A" (line 7) and "B" (line
+      //9) in "x.cif" (data_a)':
+      std::string sitesRef( BlockView b, const std::vector<const Site*>& v )
+      {
+        if ( v.size() == 1 )
+          return siteRef( b, *v.front() );
+        std::string res = "CIF sites ";
+        for ( auto i : ncrange( v.size() ) )
+          res += ( i == 0 ? "" : ( i + 1 == v.size() ? " and " : ", " ) )
+            + ( "\"" + v[i]->label + "\" (line " + std::to_string( v[i]->line )
+                + ")" );
+        return res + " in " + describeLocation( b );
+      }
 
       //The six U texts of the anisotropic displacements of each site (rows
       //matched to sites by label, in order, as some files reuse labels). B
@@ -152,7 +158,7 @@ namespace NCRYSTAL_NAMESPACE {
 
       //Element marker of each site (e.g. "Al" or "H2"), from its type symbol,
       //or else from its label checked against the formula (with a warning):
-      void setMarkers( std::vector<Site>& sites,
+      void setMarkers( BlockView b, std::vector<Site>& sites,
                        const std::vector<StrView>& typeSymbols,
                        StrView formula, const CIFWarnFct& warnfct )
       {
@@ -174,12 +180,12 @@ namespace NCRYSTAL_NAMESPACE {
                                    : StrView::make("") );
           if ( !e.has_value() ) {
             if ( formula.has_value() )
-              NCRYSTAL_THROW2( BadInput, "CIF site \"" << lbl << "\" has no"
+              NCRYSTAL_THROW2( BadInput, siteRef( b, sites[i] ) << " has no"
                                " usable _atom_site_type_symbol, and its label"
                                " does not unambiguously start with an element"
                                " of the chemical formula (\"" << formula
                                << "\")" );
-            NCRYSTAL_THROW2( BadInput, "CIF site \"" << lbl << "\" has no"
+            NCRYSTAL_THROW2( BadInput, siteRef( b, sites[i] ) << " has no"
                              " usable _atom_site_type_symbol, and without a"
                              " _chemical_formula_sum its label must be an"
                              " element name followed by nothing but digits"
@@ -202,15 +208,15 @@ namespace NCRYSTAL_NAMESPACE {
             + examples[i].second;
         if ( examples.size() > 4 )
           ex += ", ...";
-        warnfct( "Some CIF sites have no _atom_site_type_symbol and their"
-                 " element content was guessed from their label (" + ex
-                 + ")" );
+        warnfct( "Some CIF sites in " + describeLocation( b ) + " have no"
+                 " _atom_site_type_symbol, so their elements were taken from"
+                 " their labels (" + ex + ")" );
       }
 
       //Uiso of a site with a tensor, from its Uiso (if given) and the Ueq of
       //its tensor (both with rounding errors). Differences explained by the
       //rounding errors plus tolUij are accepted:
-      double resolveUisoUeq( const std::string& lbl,
+      double resolveUisoUeq( const std::string& site,
                              const Optional<PairDD>& uiso, const PairDD& ueq,
                              double tolUij, bool permissive,
                              const CIFWarnFct& warnfct )
@@ -221,15 +227,16 @@ namespace NCRYSTAL_NAMESPACE {
         const double allow = u.second + ueq.second
           + tolUij * ncmax( ueq.first, u.first );
         if ( ncabs( ueq.first - u.first ) > allow ) {
-          const std::string msg = ( "CIF site \"" + lbl + "\" has Uiso="
-                                    + fmtg( u.first ) + " which differs from"
-                                    " the Ueq=" + fmtg( ueq.first )
-                                    + " of its anisotropic displacements by"
-                                    " more than the rounding errors of the"
-                                    " printed values explain" );
+          //%g, since the values can be computed (Ueq, or Uiso from Biso):
+          const std::string msg
+            = ( site + " has Uiso=" + dbl2shortstr( u.first, "%g" ).to_string()
+                + " which differs from the Ueq="
+                + dbl2shortstr( ueq.first, "%g" ).to_string()
+                + " of its anisotropic displacements by more than the"
+                " rounding errors of the printed values and tol_uij allow" );
           if ( !permissive )
             NCRYSTAL_THROW2( BadInput, msg << " (try permissive mode to use"
-                             " the Uiso value)" );
+                             " the Uiso value, or a larger tol_uij)" );
           warnfct( msg + " (using the Uiso value due to permissive mode)" );
         }
         return u.first;
@@ -297,11 +304,13 @@ namespace NCRYSTAL_NAMESPACE {
 
       //Sites at the same positions merged into atoms, with the composition
       //and total occupancy, checked against the expected number of positions
-      //(if not 0):
-      std::vector<CIFAtom> mergeSites( const std::vector<Site>& sites,
+      //(if not 0). The sites of each atom are added to groups:
+      std::vector<CIFAtom> mergeSites( BlockView b,
+                                       const std::vector<Site>& sites,
                                        double expectedCount,
                                        const SGSymmetry& sym,
-                                       const CellParameters& cell )
+                                       const CellParameters& cell,
+                                       Groups& groups )
       {
         //(positions within this distance are the same, cf. NCInfoBuilder):
         constexpr double posTolerance = 0.0001;
@@ -339,12 +348,15 @@ namespace NCRYSTAL_NAMESPACE {
           for ( auto j : group ) {
             const auto& s2 = sites[j];
             if ( s1.finalUiso != s2.finalUiso || s1.finalUij != s2.finalUij )
-              NCRYSTAL_THROW2( BadInput, "atoms labelled \"" << s1.label
-                               << "\" and \"" << s2.label << "\" have same"
-                               " cell positions but different uiso"
-                               " information. This is not supported." );
+              NCRYSTAL_THROW2( BadInput, sitesRef( b, { &s1, &s2 } ) << " are"
+                               " at the same positions but have different"
+                               " displacement parameters (Uiso or tensors),"
+                               " which is not supported" );
             done[j] = true;
           }
+          std::vector<const Site*> gsites;
+          for ( auto j : group )
+            gsites.push_back( &sites[j] );
           CIFAtom a;
           StableSum occsum;
           for ( auto j : group ) {
@@ -360,16 +372,13 @@ namespace NCRYSTAL_NAMESPACE {
             for ( auto& c : a.composition )
               c.first /= occupancy;
             if ( occupancy > 1.0 + 1e-6 ) {
-              std::string lbls;
-              for ( auto& l : a.labels )
-                lbls += ( lbls.empty() ? "\"" : ", \"" ) + l + "\"";
-              std::string m = ( "Error: Too high total occupancy ("
-                                + reprStr( occupancy ) + " which is >1) for"
-                                " atoms with CIF labels: " + lbls );
+              std::string m = ( sitesRef( b, gsites ) + " are at the same"
+                                " positions with a total occupancy above 1 ("
+                                + dbl2shortstr( occupancy, "%g" ).to_string()
+                                + ")" );
               if ( ncabs( std::floor( occupancy + 0.5 ) - occupancy ) < 1e-10 )
-                m += ( ". A possible cause could be multiple entries in the"
-                       " CIF file using atomic positions that are actually"
-                       " symmetrically equivalent!" );
+                m += ( ", probably the same site listed twice (e.g. at"
+                       " symmetry-equivalent coordinates)" );
               NCRYSTAL_THROW( BadInput, m );
             }
             occupancy = ncmin( 1.0, occupancy );
@@ -386,6 +395,7 @@ namespace NCRYSTAL_NAMESPACE {
           if ( group.size() > 1 )
             reexpand.emplace_back( res.size(), i );
           res.push_back( std::move( a ) );
+          groups.push_back( std::move( group ) );
         }
         //Atoms of several sites are expanded again with the total occupancy
         //(cf. the split site rule of expandSiteToOrbit):
@@ -404,12 +414,13 @@ namespace NCRYSTAL_NAMESPACE {
           const double nd = static_cast<double>( n );
           if ( ncabs( nd - expectedCount )
                / ncmax( 1e-300, ncabs( nd ) + ncabs( expectedCount ) ) > 0.01 )
-            NCRYSTAL_THROW2( BadInput, "Expanded number of atoms per cell ("
-                             << n << ") is different from what is stated"
-                             " explicitly in the CIF data ("
-                             << reprStr( expectedCount ) << "). Wrong"
-                             " spacegroup (or choice/setting improperly"
-                             " specified)?" );
+            NCRYSTAL_THROW2( BadInput, "The unit cell has " << n << " atoms in"
+                             " space group setting "
+                             << sym.spaceGroup().toString() << ", but the"
+                             " CIF data in " << describeLocation( b )
+                             << " states " << fmtg( expectedCount )
+                             << " (_atom_type_number_in_cell), so the space"
+                             " group or its setting is probably wrong" );
         }
         return res;
       }
@@ -417,7 +428,8 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-std::vector<NCC::CIFAtom> NCC::getAtoms( const StructureItems& s,
+std::vector<NCC::CIFAtom> NCC::getAtoms( const Document& doc,
+                                         const StructureItems& s,
                                          const SpaceGroup& sg,
                                          CIFPermissive perm, double tolUij,
                                          const CIFWarnFct& warnfct )
@@ -427,6 +439,7 @@ std::vector<NCC::CIFAtom> NCC::getAtoms( const StructureItems& s,
   nc_assert_always( tolUij > 0.0 && std::isfinite( tolUij ) );
 #endif
   const bool permissive = ( perm == CIFPermissive::YES );
+  const auto b = s.block( doc );
   const auto& cols = s.sites;
   const auto aniso = anisoTexts( s, warnfct );
 
@@ -436,20 +449,20 @@ std::vector<NCC::CIFAtom> NCC::getAtoms( const StructureItems& s,
   for ( auto i : ncrange( cols.label.size() ) ) {
     Site site;
     site.label = cols.label[i].text.to_string();
-    const auto& lbl = site.label;
+    site.line = cols.label[i].line;
     const auto occtext = colValue( cols.occupancy, i );
     PairDD occ{ 1.0, 0.0 };
     if ( occtext.has_value() ) {
       const auto x = parseCIFNumber( occtext );
       if ( !x.has_value() )
-        NCRYSTAL_THROW2( BadInput, "CIF site \"" << lbl << "\" has an invalid"
+        NCRYSTAL_THROW2( BadInput, siteRef( b, site ) << " has an invalid"
                          " occupancy (\"" << occtext << "\")" );
       occ = { x.value().value, x.value().roundingError };
     }
     if ( !( occ.first > 0.0 ) )
       continue;
     if ( occ.first > 1.0 + 1e-6 )
-      NCRYSTAL_THROW2( BadInput, "CIF site \"" << lbl << "\" has an occupancy"
+      NCRYSTAL_THROW2( BadInput, siteRef( b, site ) << " has an occupancy"
                        " above 1 (" << fmt( occ.first ) << ")" );
     double xyz[3];
     const ValueColumn* xyzcols[3] = { &cols.fractX, &cols.fractY,
@@ -457,7 +470,7 @@ std::vector<NCC::CIFAtom> NCC::getAtoms( const StructureItems& s,
     for ( auto j : ncrange( 3 ) ) {
       const auto x = number( colValue( *xyzcols[j], i ) );
       if ( !x.has_value() || !std::isfinite( x.value().value ) )
-        NCRYSTAL_THROW2( BadInput, "CIF site \"" << lbl << "\" has missing or"
+        NCRYSTAL_THROW2( BadInput, siteRef( b, site ) << " has missing or"
                          " invalid fractional coordinates" );
       const double r = x.value().value - std::floor( x.value().value );
       xyz[j] = ( r >= 1.0 || r == 0.0 ) ? 0.0 : r;
@@ -469,7 +482,7 @@ std::vector<NCC::CIFAtom> NCC::getAtoms( const StructureItems& s,
       for ( auto j : ncrange( 6 ) ) {
         const auto x = parseCIFNumber( vectAt( aniso, i )[j] );
         if ( !x.has_value() )
-          NCRYSTAL_THROW2( BadInput, "CIF site \"" << lbl << "\" has invalid"
+          NCRYSTAL_THROW2( BadInput, siteRef( b, site ) << " has invalid"
                            " anisotropic displacement values" );
         u[j] = x.value().value;
         e[j] = x.value().roundingError;
@@ -484,16 +497,16 @@ std::vector<NCC::CIFAtom> NCC::getAtoms( const StructureItems& s,
     if ( u.has_value() && u.value().value > 0.0 ) {
       site.uiso = PairDD{ u.value().value, u.value().roundingError };
     } else {
-      const auto b = number( colValue( cols.bIsoOrEquiv, i ) );
-      if ( b.has_value() && b.value().value > 0.0 ) {
+      const auto bi = number( colValue( cols.bIsoOrEquiv, i ) );
+      if ( bi.has_value() && bi.value().value > 0.0 ) {
         const double f = 1.0 / ( 8.0 * kPi * kPi );
-        site.uiso = PairDD{ b.value().value * f,
-                            b.value().roundingError * f };
+        site.uiso = PairDD{ bi.value().value * f,
+                            bi.value().roundingError * f };
       }
     }
     site.occupancy = ncmin( occ.first, 1.0 );
     //(unique labels without commas, for messages):
-    std::string q = lbl.empty() ? std::string("?") : lbl;
+    std::string q = site.label.empty() ? std::string("?") : site.label;
     std::replace( q.begin(), q.end(), ',', ';' );
     for ( bool clash = true; clash; ) {
       clash = false;
@@ -507,8 +520,9 @@ std::vector<NCC::CIFAtom> NCC::getAtoms( const StructureItems& s,
     sites.push_back( std::move( site ) );
   }
   if ( sites.empty() )
-    NCRYSTAL_THROW( BadInput, "No atom sites found in CIF data." );
-  setMarkers( sites, typeSymbols,
+    NCRYSTAL_THROW2( BadInput, "The CIF data in " << describeLocation( b )
+                     << " has no atom sites with positive occupancy" );
+  setMarkers( b, sites, typeSymbols,
               s.formulaSum.has_value() && !isNull( s.formulaSum.value() )
               ? s.formulaSum.value().text : StrView(), warnfct );
 
@@ -518,7 +532,8 @@ std::vector<NCC::CIFAtom> NCC::getAtoms( const StructureItems& s,
   for ( auto j : ncrange( 6 ) ) {
     const auto x = parseCIFNumber( s.cell[j].text );
     if ( !x.has_value() || !( x.value().value > 0.0 ) )
-      NCRYSTAL_THROW2( BadInput, "Invalid cell parameter in CIF data: \""
+      NCRYSTAL_THROW2( BadInput, "Invalid cell parameter in CIF data in "
+                       << describeLocation( b, s.cell[j].line ) << ": \""
                        << s.cell[j].text << "\"" );
     cv[j] = x.value().value;
     const bool exact = ( j >= 3 && ( cv[j] == 90.0 || cv[j] == 120.0 )
@@ -563,8 +578,8 @@ std::vector<NCC::CIFAtom> NCC::getAtoms( const StructureItems& s,
     if ( !snapped[i].has_value() )
       continue;
     const auto& ueq = ueqs[i];
-    const double uiso = resolveUisoUeq( site.label, site.uiso, ueq, tolUij,
-                                        permissive, warnfct );
+    const double uiso = resolveUisoUeq( siteRef( b, site ), site.uiso, ueq,
+                                        tolUij, permissive, warnfct );
     site.finalUiso = uiso;
     site.finalUij = rescaled( snapped[i].value(), ueq.first, uiso );
     for ( auto& p : site.orbit.positions )
@@ -575,21 +590,27 @@ std::vector<NCC::CIFAtom> NCC::getAtoms( const StructureItems& s,
                   ueq.first, uiso ) );
   }
 
-  auto atoms = mergeSites( sites, expectedAtomCount( s ), sym, cell );
+  Groups groups;
+  auto atoms = mergeSites( b, sites, expectedAtomCount( s ), sym, cell,
+                           groups );
 
   //Split sites:
-  for ( auto& a : atoms ) {
+  for ( auto ia : ncrange( atoms.size() ) ) {
+    const auto& a = atoms[ia];
     if ( !a.splitPositions )
       continue;
-    std::string lbls;
-    for ( auto& l : a.labels )
-      lbls += ( lbls.empty() ? "" : "\", \"" ) + l;
+    std::vector<const Site*> gsites;
+    for ( auto j : groups[ia] )
+      gsites.push_back( &sites[j] );
+    const bool several = ( gsites.size() > 1 );
     std::ostringstream msg;
-    msg << "Split site (CIF label \"" << lbls << "\"): " << a.splitPositions
-        << " symmetry-equivalent positions " << fmt( a.splitDistance, "%.2g" )
-        << " Aa apart (occupancy " << fmt( a.occupancy, "%g" ) << ")."
-        " NCrystal currently treats all vacancies as uncorrelated, so"
-        " incoherent elastic scattering is overestimated for this material";
+    msg << sitesRef( b, gsites ) << ( several ? " are" : " is" ) << " a split"
+        " site: " << a.splitPositions << " of " << ( several ? "their" : "its" )
+        << " symmetry-equivalent positions are "
+        << fmt( a.splitDistance, "%.2g" ) << " Aa apart (occupancy "
+        << fmt( a.occupancy, "%g" ) << "). NCrystal treats all vacancies as"
+        " uncorrelated, so incoherent elastic scattering is overestimated for"
+        " this material";
     if ( !permissive )
       NCRYSTAL_THROW2( BadInput, msg.str() << " (try permissive mode to load"
                        " it anyway)" );

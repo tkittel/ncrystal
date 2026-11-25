@@ -47,7 +47,9 @@ namespace NCRYSTAL_NAMESPACE {
       double splitDistance = 0.0;
     };
 
-    //The atoms of the structure items, in the given space group setting:
+    //The atoms of the structure items (extracted from the Document), in the
+    //given space group setting. Messages name the data and the line of the
+    //site concerned:
     //  * Sites with occupancy 0 (or below) are skipped, and the element of a
     //    site is taken from its type symbol, or else from its label checked
     //    against the chemical formula (cf. elementFromCIFTypeSymbol and
@@ -66,9 +68,9 @@ namespace NCRYSTAL_NAMESPACE {
     //  * Split sites (cf. expandSiteToOrbit) are BadInput unless permissive
     //    (with a warning).
     //Anisotropic displacements given as B are ignored (with a warning):
-    std::vector<CIFAtom> getAtoms( const StructureItems&, const SpaceGroup&,
-                                   CIFPermissive, double tolUij,
-                                   const CIFWarnFct& );
+    std::vector<CIFAtom> getAtoms( const Document&, const StructureItems&,
+                                   const SpaceGroup&, CIFPermissive,
+                                   double tolUij, const CIFWarnFct& );
   }
 }
 
