@@ -214,7 +214,8 @@ def read_cif( cifdata, *, quiet ):
         _nc_common.print("Attempting to load CIF data with gemmi")
     try:
         cif_doc = gemmi_cif.read_string( cifdata )
-    except ValueError as e:
+    except ( ValueError, RuntimeError ) as e:
+        #(gemmi raises RuntimeError for e.g. duplicate tags)
         raise _nc_core.NCBadInput(f'CIF parsing error (from Gemmi): "{e}"')
     import json
     try:

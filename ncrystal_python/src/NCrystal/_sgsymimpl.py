@@ -175,7 +175,7 @@ def _spglib_std_transform( spglib_cell, symprec ):
 
     from ._numpy import _ensure_numpy
     np = _ensure_numpy()
-    ds = _import_spglib().get_symmetry_dataset( spglib_cell, symprec = symprec )
+    ds = _spglib_call( 'get_symmetry_dataset', spglib_cell, symprec = symprec )
     if not ds:
         return None
     def get( k ):
@@ -229,6 +229,19 @@ def _import_spglib( *, sysexit = False ):
         except (ImportError,AttributeError):
             pass
     return spglib
+
+def _spglib_call( fctname, *args, **kwargs ):
+    #Call an spglib function. Versions >= 2.7 raise their own exceptions for
+    #unusable structures (e.g. "too close distance between atoms"), older
+    #versions return None (handled by the callers):
+    try:
+        return getattr( _import_spglib(), fctname )( *args, **kwargs )
+    except Exception as e:
+        if type( e ).__module__.split( '.' )[0] != 'spglib':
+            raise
+        reason = str( e ).strip().rstrip( ':' ) or type( e ).__name__
+        raise _nc_core.NCBadInput( 'spglib could not analyse the crystal'
+                                   f' structure ({reason})' ) from e
 
 def _spglib_extractsg( spglib_symdata ):
     sd = spglib_symdata
@@ -379,8 +392,6 @@ def _impl_spglib_refine_cell( spglib_cell, *, symprec, warnings, msgs,
     #trackinfo['cell'] is the original cell, which is transformed along with
     #spglib_cell (so it can be compared with the final cell in the same basis),
     #and trackinfo['transform'] the total (P,p) applied to it so far.
-    spglib = _import_spglib()
-
     orig_cell = spglib_cell
     if trackinfo['cell'] is not None:
         tr = _spglib_std_transform( orig_cell, symprec )
@@ -396,11 +407,13 @@ def _impl_spglib_refine_cell( spglib_cell, *, symprec, warnings, msgs,
                                         and _np_is_identity( tr[0] ) )
 
     orig_cell_copy = copy.deepcopy( orig_cell )#copy is just a safeguard
-    refined_cell = spglib.standardize_cell( orig_cell_copy, symprec = symprec )
-    symdata = spglib.get_symmetry_dataset( orig_cell_copy )
+    refined_cell = _spglib_call( 'standardize_cell', orig_cell_copy,
+                                 symprec = symprec )
+    symdata = _spglib_call( 'get_symmetry_dataset', orig_cell_copy )
     if not refined_cell or not symdata or refined_cell[0] is None:
-        raise _nc_core.NCBadInput('Could not standardize provided'
-                                  ' crystal structure with spglib')
+        #(spglib<2.7 returns None instead of raising)
+        raise _nc_core.NCBadInput( 'spglib could not analyse the crystal'
+                                   ' structure' )
 
     p = _lattice_vectors_to_params( *refined_cell[0], as_dict = True )
 
@@ -673,7 +686,6 @@ def _find_site_orbits( cellsg, sites, tols ):
     #has no tensors).
     from ._numpy import _ensure_numpy
     np = _ensure_numpy()
-    spglib = _import_spglib()
     lattice = np.asarray( _cellparams_to_spglib_lattice( cellsg ),
                           dtype = float )
     assert all( isinstance( s, SymSite ) for s in sites )
@@ -695,11 +707,12 @@ def _find_site_orbits( cellsg, sites, tols ):
                                lambda a, b : _eigclose( a, b, tu ) ) )
     types = _group_indices( list( range( len( sites ) ) ), same )
     positions = [ tuple( float( x ) for x in s.pos ) for s in sites ]
-    ds = spglib.get_symmetry_dataset( ( lattice, positions, types ),
-                                      symprec = tols['symprec'] )
+    ds = _spglib_call( 'get_symmetry_dataset', ( lattice, positions, types ),
+                       symprec = tols['symprec'] )
     if not ds:
-        raise _nc_core.NCBadInput( 'Could not determine symmetry of'
-                                   ' structure with spglib' )
+        #(spglib<2.7 returns None instead of raising)
+        raise _nc_core.NCBadInput( 'spglib could not analyse the crystal'
+                                   ' structure' )
     def get( k ):
         return getattr( ds, k ) if hasattr( ds, k ) else ds[k]
     rots = np.asarray( get('rotations'), dtype = float )
