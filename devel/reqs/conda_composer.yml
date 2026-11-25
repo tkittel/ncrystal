@@ -9,4 +9,4 @@ dependencies:
   - make
   - pip
   - python
-  - spglib >=2.1.0
+  - spglib >=2.3.1

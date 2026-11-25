@@ -33,5 +33,5 @@ deps = {
     'matplotlib': ( '3.6.0', 'matplotlib.pyplot', 'matplotlib' ),
     'mpmath': ( '1.3.0', 'mpmath', 'mpmath' ),
     'numpy': ( '1.22', 'numpy', 'numpy' ),
-    'spglib': ( '2.1.0', 'spglib', 'spglib' ),
+    'spglib': ( '2.3.1', 'spglib', 'spglib' ),
 }

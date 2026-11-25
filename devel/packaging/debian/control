@@ -51,7 +51,7 @@ Depends: libncrystal@SOMAJOR@ (>= ${source:Version}),
          ${python3:Depends},
          ${misc:Depends}
 Suggests: python3-matplotlib (>= 3.6.0),
-          python3-spglib (>= 2.1.0),
+          python3-spglib (>= 2.3.1),
           python3-gemmi (>= 0.6.4),
           python3-ase (>= 3.25.0)
 Description: thermal neutron transport in crystals and other materials (Python)
@@ -80,7 +80,7 @@ Depends: python3-ncrystal (= ${source:Version}),
          ${python3:Depends},
          ${misc:Depends}
 Recommends: python3-matplotlib (>= 3.6.0),
-            python3-spglib (>= 2.1.0),
+            python3-spglib (>= 2.3.1),
             python3-gemmi (>= 0.6.4),
             python3-ncrystal-verify
 Suggests: python3-ase (>= 3.25.0)

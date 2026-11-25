@@ -32,5 +32,5 @@ deps = {
     'gemmi': ( '0.6.4', 'gemmi', 'gemmi', 'gemmi' ),
     'matplotlib': ( '3.6.0', 'matplotlib.pyplot', 'matplotlib', 'matplotlib' ),
     'numpy': ( '1.22', 'numpy', 'numpy', 'numpy' ),
-    'spglib': ( '2.1.0', 'spglib', 'spglib', 'spglib' ),
+    'spglib': ( '2.3.1', 'spglib', 'spglib', 'spglib' ),
 }
