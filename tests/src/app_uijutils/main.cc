@@ -93,6 +93,33 @@ namespace {
     REQUIRE( ev[0] <= ev[1] && ev[1] <= ev[2] && ev[0] > 0.0 );
     REQUIRE( NC::floateq( ( ev[0] + ev[1] + ev[2] ) / 3.0,
                           U::calcUeqFromUstar( ust, mt ), 1e-12, 0.0 ) );
+    //Ueq with rounding errors: none without errors; in an orthogonal cell
+    //only the diagonal component errors contribute, each with weight 1/3:
+    const NC::CellParameters cc{ 4.0, 4.0, 4.0, 90.0, 90.0, 90.0 };
+    const NC::CellParameters noerr{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+    const U::Uij uerr{ 3e-4, 3e-4, 6e-4, 1e-4, 1e-4, 1e-4 };
+    auto r0 = U::calcUeqWithRoundingError( u, cc, U::Uij{}, noerr );
+    REQUIRE( r0.first == U::calcUeqFromUstar( us, mc ) && r0.second == 0.0 );
+    auto r1 = U::calcUeqWithRoundingError( u, cc, uerr, noerr );
+    REQUIRE( r1.first == r0.first );
+    REQUIRE( NC::floateq( r1.second, 4e-4, 1e-12, 0.0 ) );
+    //(lengths do not matter for Ueq of Ustd, angles do):
+    auto r2 = U::calcUeqWithRoundingError( u, cc, U::Uij{},
+                                           { 0.1, 0.1, 0.1, 0.0, 0.0, 0.0 } );
+    REQUIRE( r2.second < 1e-15 );
+    const NC::CellParameters ct{ 5.0, 6.0, 7.0, 80.0, 95.0, 100.0 };
+    auto r3 = U::calcUeqWithRoundingError( u, ct, uerr,
+                                           { 0.0, 0.0, 0.0, 0.1, 0.1, 0.1 } );
+    REQUIRE( r3.first == U::calcUeqFromUstar( ust, mt ) );
+    std::cout << "  Ueq with rounding error (triclinic): "
+              << NC::fmt( r3.first, "%.10g" ) << " +- "
+              << NC::fmt( r3.second, "%.6g" ) << std::endl;
+    REQUIRE( r3.second > U::calcUeqWithRoundingError( u, ct, uerr,
+                                                      noerr ).second );
+    //Impossible cells:
+    expectBadInput( [](){ U::cellMetric( 4.0, 4.0, 4.0, 150.0, 150.0, 150.0 ); } );
+    expectBadInput( [](){ U::cellMetric( 4.0, -4.0, 4.0, 90.0, 90.0, 90.0 ); } );
+    expectBadInput( [](){ U::cellMetric( 4.0, 4.0, 4.0, 90.0, 180.0, 90.0 ); } );
     //Known eigenvalues in a cubic cell (where Ucart=Ustd):
     const auto ev2 = U::calcUcartEigenvalues(
       U::convertUstdToUstar( { 1.0, 1.0, 1.0, 0.5, 0.0, 0.0 }, mc ), mc );
