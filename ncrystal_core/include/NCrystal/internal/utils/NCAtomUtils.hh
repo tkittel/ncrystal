@@ -22,6 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/core/NCSmallVector.hh"
+#include "NCrystal/internal/utils/NCStrView.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -96,6 +97,15 @@ namespace NCRYSTAL_NAMESPACE {
   DecodedChemForm decodeSimpleChemicalFormula( std::string );
   Optional<DecodedChemForm> tryDecodeSimpleChemicalFormula( std::string );
   void streamSimpleChemicalFormula( std::ostream&, const DecodedChemForm& );
+
+  //General chemical formulas, like "Al2O3", "C60.5 H57 Cl", "Cu0.92 Zn0.08" or
+  //"D2O": terms of an element (or isotope alias D or T) and an optional count
+  //(default 1, positive, with digits and at most one decimal point),
+  //optionally separated by whitespace. Returns the (count,symbol) terms in the
+  //given order, or NullOpt if the string is not such a formula. The simple
+  //functions above use this, but also require elements and integral counts:
+  using ChemFormTerms = std::vector<std::pair<double,AtomSymbol>>;
+  Optional<ChemFormTerms> tryDecodeChemicalFormula( StrView );
 
   //Order entries in standard form (merge duplicates and sort by the Hill System):
   DecodedChemForm normaliseSimpleChemicalFormula(const DecodedChemForm&);
