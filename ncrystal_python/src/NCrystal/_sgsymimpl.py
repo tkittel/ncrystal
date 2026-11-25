@@ -446,3 +446,63 @@ def _ueq_from_ustd( ustd, cellsg ):
           [ ustd['u13'], ustd['u23'], ustd['u33'] ] ]
     return math.fsum( u[i][j] * r[i] * r[j] * g[i][j]
                       for i in range(3) for j in range(3) ) / 3.0
+
+################################################################################
+#Tolerances for symmetry detection and for merging site data (positions,
+#displacements and occupancies). One relative tolerance, tol, applies to the
+#site data and sets the position tolerance (spglib symprec) proportionally:
+
+_TOL_DEFAULT = 1e-3
+_TOL_SYMPREC_AT_DEFAULT = 0.01 #Aa (symprec for tol=_TOL_DEFAULT)
+
+def _resolve_tolerances( tol = None, *, tol_symprec = None, tol_uij = None,
+                         tol_occu = None ):
+    #Returns the tolerances as dict with keys symprec (positions, in Aa), uij
+    #(displacements, uiso values included) and occu (occupancies). The latter
+    #two are relative. Values not given follow from tol (default _TOL_DEFAULT):
+    #uij=occu=tol, and symprec=0.01Aa*tol/_TOL_DEFAULT.
+    def check( name, v, relative ):
+        try:
+            v = float( v )
+        except (TypeError, ValueError):
+            pass
+        if not ( isinstance( v, float ) and math.isfinite( v ) and v > 0.0 ):
+            raise _nc_core.NCBadInput( f'Invalid {name} value: {v!r} (must be'
+                                       ' a positive number)' )
+        if relative and not v < 1.0:
+            raise _nc_core.NCBadInput( f'Invalid {name} value: {v!r} (a'
+                                       ' relative tolerance must be less'
+                                       ' than 1)' )
+        return v
+    tol = _TOL_DEFAULT if tol is None else check( 'tol', tol, True )
+    def get( name, v, relative, default ):
+        return default if v is None else check( name, v, relative )
+    return { 'symprec': get( 'tol_symprec', tol_symprec, False,
+                             _TOL_SYMPREC_AT_DEFAULT * ( tol / _TOL_DEFAULT ) ),
+             'uij': get( 'tol_uij', tol_uij, True, tol ),
+             'occu': get( 'tol_occu', tol_occu, True, tol ) }
+
+def _relclose( a, b, tol ):
+    return abs( a - b ) <= tol * max( abs( a ), abs( b ) )
+
+def _eigclose( e1, e2, tol ):
+    #Whether the sorted tensor eigenvalues e1 and e2 agree within the tolerance
+    #tol, relative to the largest of them.
+    scale = max( max( abs( x ) for x in e1 ), max( abs( x ) for x in e2 ) )
+    return all( abs( x1 - x2 ) <= tol * scale for x1, x2 in zip( e1, e2 ) )
+
+def _group_indices( items, same ):
+    #Partitions items into groups whose items are the same according to
+    #same(a,b), and returns the group index (0,1,2,... by first appearance) of
+    #each item. An item joins the first group whose first item is the same as
+    #it, so groups do not drift through chains of near-equal items.
+    reps, res = [], []
+    for it in items:
+        for i, r in enumerate( reps ):
+            if same( r, it ):
+                res.append( i )
+                break
+        else:
+            res.append( len( reps ) )
+            reps.append( it )
+    return res
