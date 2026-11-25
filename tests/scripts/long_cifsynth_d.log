@@ -16,7 +16,7 @@ cs0030.cif:
   default: SG-106 (106), 9 sites, 4 atoms, 0 with uij
 cs0036.cif:
   default: SG-149 (149), 5 sites, 5 atoms, 5 with uij
-  material: 940 hkl families, dmax=7.8616
+  material: 938 hkl families, dmax=7.8616
 cs0047.cif:
   default: SG-46 (46:abc), 6 sites, 6 atoms, 0 with uij
 cs0048.cif:
@@ -124,7 +124,7 @@ cs0199.cif:
   default: SG-40 (40:abc), 10 sites, 10 atoms, 0 with uij
 cs0200.cif:
   default: SG-19 (19), 12 sites, 12 atoms, 4 with uij
-  material: 5491 hkl families, dmax=8.4576
+  material: 5490 hkl families, dmax=8.4576
 cs0204.cif:
   default error: NCBadInput: CIF site "Ni" has Uiso=0.01252 which differs from the Ueq=0.0124589 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
   permissive: SG-146 (146:h), 9 sites, 9 atoms, 9 with uij
@@ -134,14 +134,14 @@ cs0211.cif:
   permissive: SG-161 (161:h), 10 sites, 9 atoms, 10 with uij
 cs0212.cif:
   default: SG-94 (94), 12 sites, 7 atoms, 6 with uij
-  material: 3453 hkl families, dmax=8.1122
+  material: 3455 hkl families, dmax=8.1122
 cs0220.cif:
   default: SG-223 (223), 2 sites, 2 atoms, 0 with uij
   material: 134 hkl families, dmax=4.0637
 cs0224.cif:
   default error: NCBadInput: CIF site "B" has Uiso=0.01281 which differs from the Ueq=0.0127233 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
   permissive: SG-62 (62:abc), 8 sites, 8 atoms, 8 with uij
-  material: 2766 hkl families, dmax=6.2248
+  material: 2767 hkl families, dmax=6.2248
 cs0229.cif:
   default: SG-88 (88:1), 3 sites, 3 atoms, 0 with uij
 cs0239.cif:
@@ -200,7 +200,7 @@ cs0323.cif:
   default: SG-5 (5:b1), 4 sites, 3 atoms, 0 with uij
 cs0332.cif:
   default: SG-134 (134:1), 6 sites, 6 atoms, 6 with uij
-  material: 918 hkl families, dmax=6.3632
+  material: 921 hkl families, dmax=6.3632
 cs0333.cif:
   default: SG-57 (57:abc), 12 sites, 12 atoms, 7 with uij
 cs0340.cif:
@@ -223,7 +223,7 @@ cs0349.cif:
   default: SG-203 (203:1), 11 sites, 8 atoms, 0 with uij
 cs0364.cif:
   default: SG-210 (210), 11 sites, 10 atoms, 5 with uij
-  material: 3313 hkl families, dmax=14.614
+  material: 3236 hkl families, dmax=14.614
 cs0367.cif:
   default error: NCBadInput: CIF site "Si" has Uiso=0.00102 which differs from the Ueq=0.00111222 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
   permissive: SG-173 (173), 12 sites, 12 atoms, 11 with uij
@@ -250,13 +250,13 @@ cs0392.cif:
   default error: NCBadInput: Split site (CIF label "O"): 2 symmetry-equivalent positions 0.42 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
   permissive: SG-176 (176), 7 sites, 5 atoms, 0 with uij
 NCrystal WARNING: Split site "O" (0,0,0.221): 2 symmetry-equivalent positions 0.42 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
-  material: 1778 hkl families, dmax=8.4746
+  material: 1777 hkl families, dmax=8.4746
 cs0398.cif:
   default error: NCBadInput: CIF site "Sr1" has Uiso=0.06129 which differs from the Ueq=0.0609567 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
   permissive: SG-87 (87), 5 sites, 5 atoms, 5 with uij
 cs0404.cif:
   default: SG-29 (29:abc), 12 sites, 11 atoms, 7 with uij
-  material: 11342 hkl families, dmax=16.3
+  material: 11338 hkl families, dmax=16.3
 cs0405.cif:
   default error: NCBadInput: CIF site "Pd1b" has Uiso=0.08429 which differs from the Ueq=0.0840111 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
   permissive: SG-164 (164), 12 sites, 12 atoms, 12 with uij
@@ -297,7 +297,7 @@ cs0447.cif:
   permissive: SG-51 (51:abc), 12 sites, 12 atoms, 8 with uij
 cs0448.cif:
   default: SG-196 (196), 10 sites, 9 atoms, 9 with uij
-  material: 2755 hkl families, dmax=11.243
+  material: 2756 hkl families, dmax=11.243
 cs0450.cif:
   default error: NCBadInput: The symmetry operations listed in the CIF data are not those of a tabulated space group setting. Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
   permissive error: NCBadInput: The space group number 14 has several settings fitting the unit cell (14:c1, 14:c2, 14:c3). Please specify which one to use (e.g. override_spacegroup="14:c1", or --spacegroup=14:c1 for ncrystal_cif2ncmat)
@@ -314,11 +314,11 @@ cs0464.cif:
   permissive: SG-58 (58:abc), 24 sites, 18 atoms, 11 with uij
 NCrystal WARNING: Split site "H" (0.1364,0.9128,0.491): 2 symmetry-equivalent positions 0.27 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
 NCrystal WARNING: Split site "H" (0.0777,0.6188,0.0046): 2 symmetry-equivalent positions 0.14 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
-  material: 9118 hkl families, dmax=11.394
+  material: 9099 hkl families, dmax=11.394
 cs0468.cif:
   default error: NCBadInput: CIF site "N7" has Uiso=0.1 which differs from the Ueq=0.0926667 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
   permissive: SG-141 (141:1), 12 sites, 11 atoms, 6 with uij
-  material: 7039 hkl families, dmax=13.098
+  material: 7032 hkl families, dmax=13.098
 cs0475.cif:
   default error: NCBadInput: CIF site "Cu" has Uiso=0.01156 which differs from the Ueq=0.0115067 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
   permissive: SG-88 (88:1), 12 sites, 10 atoms, 7 with uij
@@ -340,7 +340,7 @@ cs0492.cif:
 NCrystal WARNING: Split site "H" (0.0453,0.0071,0.6193): 2 symmetry-equivalent positions 0.34 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
 NCrystal WARNING: Split site "H" (0.0049,0.0487,0.6193): 2 symmetry-equivalent positions 0.22 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
 NCrystal WARNING: Split site "H" (0.0021,0.1095,0.366): 2 symmetry-equivalent positions 0.093 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material. This might become an error in future NCrystal versions.
-  material: 28792 hkl families, dmax=16.237
+  material: 28374 hkl families, dmax=16.237
 cs0499.cif:
   default error: NCBadInput: Split site (CIF label "N5"): 2 symmetry-equivalent positions 0.059 Aa apart (occupancy 0.25). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
   permissive: SG-216 (216), 12 sites, 10 atoms, 9 with uij
@@ -356,7 +356,7 @@ cs0511.cif:
 cs0512.cif:
   default error: NCBadInput: CIF site "Cl00" has Uiso=0.043 which differs from the Ueq=0.0426 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
   permissive: SG-223 (223), 12 sites, 12 atoms, 9 with uij
-  material: 15043 hkl families, dmax=19.406
+  material: 15034 hkl families, dmax=19.406
 cs0515.cif:
   default error: NCBadInput: Split site (CIF label "H52A"): 2 symmetry-equivalent positions 0.48 Aa apart (occupancy 0.093). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
   permissive: SG-48 (48:1), 24 sites, 24 atoms, 15 with uij

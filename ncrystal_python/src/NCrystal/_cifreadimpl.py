@@ -186,14 +186,19 @@ def _select_block( cif_doc ):
 
 _uij_tags = ( 'U_11', 'U_22', 'U_33', 'U_12', 'U_13', 'U_23' )
 
+#Temperature fields (in order of preference):
+cif_temperature_fields = ( '_diffrn_ambient_temperature',
+                           '_cell_measurement_temperature' )
+
 class CIFContent:
     #Plain content of CIF data. Values are the printed strings (without
     #quotes), None if absent or null ("?" or ".").
     __slots__ = ( 'atom_type_number_in_cell', 'cell', 'cif_raw', 'formula',
                   'hall', 'hm', 'itnumber', 'listed_ops', 'sites',
-                  'text' )
+                  'temperatures', 'text' )
     def __init__( self, *, text, cif_raw, cell, listed_ops, hall, hm,
-                  itnumber, formula, sites, atom_type_number_in_cell ):
+                  itnumber, formula, sites, atom_type_number_in_cell,
+                  temperatures ):
         self.text = text#the CIF text
         self.cif_raw = cif_raw#the document as a dict (None if not decodable)
         self.cell = cell#a,b,c,alpha,beta,gamma (missing angles are "90")
@@ -206,6 +211,8 @@ class CIFContent:
         #(the six aniso values, None if not all given):
         self.sites = sites
         self.atom_type_number_in_cell = atom_type_number_in_cell
+        #_diffrn_ambient_temperature and _cell_measurement_temperature:
+        self.temperatures = temperatures
 
 def read_cif( cifdata, *, quiet ):
     #Returns the CIFContent of the CIF text cifdata.
@@ -285,4 +292,5 @@ def read_cif( cifdata, *, quiet ):
                           '_symmetry_Int_Tables_number' ),
         formula = first( '_chemical_formula_sum' ),
         sites = sites,
-        atom_type_number_in_cell = list( column( '_atom_type_number_in_cell' ) ) )
+        atom_type_number_in_cell = list( column( '_atom_type_number_in_cell' ) ),
+        temperatures = { t: first( t ) for t in cif_temperature_fields } )

@@ -47,7 +47,7 @@ def content( cell, ops = None, hall = None, hm = None, itnumber = None,
     return CIFContent( text = text, cif_raw = None, cell = cell,
                        listed_ops = ops, hall = hall, hm = hm,
                        itnumber = itnumber, formula = None, sites = [],
-                       atom_type_number_in_cell = [] )
+                       atom_type_number_in_cell = [], temperatures = {} )
 
 def test( descr, c, permissive = False, override = None ):
     with WarningSpy( block = True ) as warnings:

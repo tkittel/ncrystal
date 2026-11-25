@@ -64,7 +64,7 @@ cs0066.cif:
   default: SG-7 (7:b1), 8 sites, 4 atoms, 0 with uij
 cs0068.cif:
   default: SG-198 (198), 5 sites, 5 atoms, 5 with uij
-  material: 670 hkl families, dmax=5.2714
+  material: 669 hkl families, dmax=5.2714
 cs0069.cif:
   default: SG-5 (5:b1), 5 sites, 3 atoms, 0 with uij
 cs0070.cif:
@@ -113,7 +113,7 @@ cs0246.cif:
   default: SG-163 (163), 9 sites, 9 atoms, 9 with uij
 cs0248.cif:
   default: SG-2 (2), 11 sites, 11 atoms, 11 with uij
-  material: 4774 hkl families, dmax=7.1099
+  material: 4771 hkl families, dmax=7.1099
 cs0253.cif:
   default error: NCBadInput: Could not determine space group from CIF data (space group symbol "A -1" not recognised)
   permissive error: NCBadInput: Could not determine space group from CIF data (space group symbol "A -1" not recognised)
@@ -149,7 +149,7 @@ cs0302.cif:
   default: SG-169 (169), 12 sites, 9 atoms, 5 with uij
 cs0304.cif:
   default: SG-1 (1), 12 sites, 4 atoms, 0 with uij
-  material: 6798 hkl families, dmax=7.421
+  material: 6790 hkl families, dmax=7.421
 cs0314.cif:
   default error: NCBadInput: The symmetry operations listed in the CIF data could not be parsed (Invalid symmetry operation "y, z, -x-y-z": Symmetry operations must have a rotation part belonging to point group m-3m with orthogonal-type axes (i.e. a signed permutation matrix) or point group 6/mmm with hexagonal axes). Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
   permissive error: NCBadInput: The unit cell parameters are not compatible with the space group of the CIF data (216), and refining the structure gives space group 160. If the declared symmetry is trusted, try again with a larger tolerance (tol).
@@ -182,7 +182,7 @@ cs0416.cif:
   permissive error: NCBadInput: CIF site "None" has missing or invalid fractional coordinates
 cs0424.cif:
   default: SG-14 (14:b1), 12 sites, 11 atoms, 0 with uij
-  material: 18238 hkl families, dmax=18.687
+  material: 18201 hkl families, dmax=18.687
 cs0442.cif:
   default: SG-141 (141:1), 12 sites, 8 atoms, 0 with uij
 cs0450.cif:
@@ -196,7 +196,7 @@ cs0495.cif:
   permissive: SG-2 (2), 131 sites, 108 atoms, 87 with uij
 cs0500.cif:
   default: SG-7 (7:b1), 12 sites, 4 atoms, 0 with uij
-  material: 13471 hkl families, dmax=12.15
+  material: 13467 hkl families, dmax=12.15
 cs0509.cif:
   default error: NCBadInput: Split site (CIF label "N5"): 2 symmetry-equivalent positions 0.29 Aa apart (occupancy 0.5). NCrystal currently treats all vacancies as uncorrelated, so incoherent elastic scattering is overestimated for this material (try permissive mode to load it anyway)
   permissive: SG-10 (10:b), 12 sites, 11 atoms, 8 with uij

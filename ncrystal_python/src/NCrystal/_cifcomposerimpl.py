@@ -123,26 +123,119 @@ def _apply_remap( src_atoms, remap ):
         remap_strs.append(f'{elemiso} -> {compos_str}')
     return tuple( new_src_atoms ), remap, ', '.join(remap_strs)
 
+#Allowed temperatures of Uiso values (kelvin), and the fallback when the CIF
+#data specifies none:
+_uiso_trange = ( 0.1, 3000.0 )
+_uiso_tfallback = 293.0
+
+def _uiso_temperature( cifloader, chosen ):
+    #The temperature (kelvin) associated with the Uiso values: the chosen one,
+    #or from the CIF temperature fields, or else the fallback. Returns it with
+    #the header comment (string) and whether this comment is a warning.
+    #Inconsistent or invalid fields are errors, unless in permissive mode.
+    from ._cifreadimpl import cif_temperature_fields as fields
+    lo, hi = _uiso_trange
+    raw = cifloader._cif_temperatures
+    permissive = cifloader._permissive
+    present = [ ( f, raw[f] ) for f in fields if raw.get( f ) is not None ]
+    head = ( 'When converting CIF to NCMAT, the Uiso (msd) values in the CIF'
+             ' data were' )
+    if chosen is not None:
+        T = float( chosen )
+        if not ( lo <= T <= hi ):
+            raise _nc_core.NCBadInput( 'Invalid temperature chosen for the Uiso'
+                                       f' (msd) values: {T:g}K (must be at'
+                                       f' least {lo:g}K and at most {hi:g}K).' )
+        s = ( f'{head} explicitly chosen to be associated with a temperature'
+              f' of {T:g}K' )
+        if len( present ) == 1:
+            s += f', overriding the {present[0][0]} CIF field ("{present[0][1]}")'
+        elif present:
+            vals = [ _cif_temperature( v ) for _, v in present ]
+            consistent = ( None not in vals
+                           and _consistent_temperatures( *vals ) )
+            s += ( ', overriding the ' + ( '' if consistent else 'inconsistent ' )
+                   + ' and '.join( f'{f} ("{v}")' for f, v in present )
+                   + ' CIF fields' )
+        return T, s + '.', False
+    notes, is_warning, valid = [], False, []
+    for f, v in present:
+        x = _cif_temperature( v )
+        if x is not None and lo <= x <= hi:
+            valid.append( ( f, v, x ) )
+            continue
+        if not permissive:
+            raise _nc_core.NCBadInput( f'The {f} CIF field ("{v}") is not a valid'
+                                       ' temperature. Specify the temperature of'
+                                       ' the Uiso (msd) values explicitly, or try'
+                                       ' permissive mode to ignore it.' )
+        _nc_common.warn( f'The {f} CIF field ("{v}") is not a valid temperature'
+                         ' and is ignored (accepted due to permissive mode).' )
+        notes.append( f'The {f} CIF field ("{v}") was not a valid temperature'
+                      ' and was ignored, which was only accepted because the'
+                      ' conversion was done in permissive mode.' )
+        is_warning = True
+    if not valid:
+        T = _uiso_tfallback
+        _nc_common.warn( f'The CIF data specifies no {"valid " if notes else ""}'
+                         'temperature, so its Uiso (msd) values are assumed to be'
+                         f' associated with a fallback temperature of {T:g}K.'
+                         ' Specify the temperature explicitly, as this is'
+                         ' likely wrong.' )
+        s = ( f'{head} assumed to be associated with a fallback temperature of'
+              f' {T:g}K, since the CIF data specified no'
+              f' {"valid " if notes else ""}temperature. This is likely wrong.' )
+        return T, ' '.join( [ s ] + notes ), True
+    f0, v0, T = valid[0]
+    s = ( f'{head} assumed to be associated with a temperature of {T:g}K,'
+          f' based on the {f0} CIF field ("{v0}").' )
+    for f, v, x in valid[1:]:
+        if _consistent_temperatures( T, x ):
+            notes.insert( 0, f'The {f} CIF field ("{v}") was consistent with'
+                          ' this (less than 5% different).' )
+            continue
+        if not permissive:
+            raise _nc_core.NCBadInput( f'The {f0} ("{v0}") and {f} ("{v}") CIF'
+                                       ' fields are inconsistent, so it is'
+                                       ' unclear with which temperature the Uiso'
+                                       ' (msd) values are associated. Specify'
+                                       ' the temperature explicitly, or try'
+                                       f' permissive mode to use the {f0}'
+                                       ' value.' )
+        _nc_common.warn( f'The {f0} ("{v0}") and {f} ("{v}") CIF fields are'
+                         ' inconsistent, so the Uiso (msd) values are assumed'
+                         f' to be associated with a temperature of {T:g}K,'
+                         ' based on the former (accepted due to permissive'
+                         ' mode).' )
+        notes.insert( 0, f'The {f} CIF field differed ("{v}"), an'
+                      ' inconsistency which was only accepted because the'
+                      ' conversion was done in permissive mode.' )
+        is_warning = True
+    return T, ' '.join( [ s ] + notes ), is_warning
+
+def _cif_temperature( value ):
+    #Printed CIF number (e.g. "100(2)") as float, or None if not a number:
+    from ._sgsymimpl import _rawargs
+    from .misc import evaluate_query
+    r = evaluate_query( [ 'cif', 'numbers', *_rawargs( [ value ] ) ] )[0]
+    return float( r[0] ) if r else None
+
+def _consistent_temperatures( a, b ):
+    return abs( a - b ) < 0.05 * max( a, b )
+
 def _add_compositions_and_dyninfo( ncmat, src_atoms, *, skip_dyninfo,
                                    uiso_temperature ):
     #Labels cif_species_<index> with the compositions of the atoms, and their
-    #msd values from Uiso (if uiso_temperature is given):
+    #msd values from Uiso (at uiso_temperature):
     for idx, a in enumerate( src_atoms ):
         lbl = f'cif_species_{idx}'
         compos = [ (fr,e) for fr,e in a['composition'] ]
-        if len(compos)==1 and compos[0][0]==1.0:
-            composstr = compos[0][1]
-        else:
-            composstr = ' '.join(f'{f:g} {n}' for f,n in compos)
         ncmat.set_composition( lbl, compos )
         if not skip_dyninfo:
             uiso = a.get('uiso',None)
             if uiso is not None:
                 assert uiso>0.0
-                if uiso_temperature is None:
-                    _nc_common.warn(f'ignoring uiso info present in CIF input for "{composstr}" since uiso_temperature parameter value is not provided')
-                else:
-                    ncmat.set_dyninfo_msd( lbl, msd=uiso, temperature=uiso_temperature )
+                ncmat.set_dyninfo_msd( lbl, msd=uiso, temperature=uiso_temperature )
 
 def _add_sites( ncmat, src, src_atoms ):
     #The cell and the sites (uij must be given for all or none of the sites of
@@ -323,11 +416,22 @@ def _impl_create_ncmat_composer_internal( cifloader, *, uiso_temperature,
     src = cifloader
     src_atoms, remap, remap_str = _apply_remap( src.atoms, remap )
     ncmat = _nc_ncmat.NCMATComposer()
+    uiso_comment = None
+    if not skip_dyninfo and any( a.get('uiso') is not None for a in src_atoms ):
+        uiso_temperature, uiso_comment, is_warning = _uiso_temperature(
+            cifloader, uiso_temperature )
     _add_compositions_and_dyninfo( ncmat, src_atoms, skip_dyninfo = skip_dyninfo,
                                    uiso_temperature = uiso_temperature )
     _add_sites( ncmat, src, src_atoms )
     _add_description_comments( ncmat, src, top_comments = top_comments,
                                remap_str = remap_str )
+    if uiso_comment:
+        import textwrap
+        pref = 'WARNING: ' if is_warning else 'NOTICE: '
+        ncmat.add_comments( textwrap.wrap( uiso_comment, width = 78,
+                                           initial_indent = pref,
+                                           subsequent_indent = ' '*len(pref) ),
+                            add_empty_line_divider = True )
     expected_formula = cifloader.raw_cif_chemformula
     if expected_formula and not no_formula_check:
         _check_formula( src_atoms, expected_formula, remap )
