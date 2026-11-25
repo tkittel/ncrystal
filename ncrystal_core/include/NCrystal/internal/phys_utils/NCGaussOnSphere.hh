@@ -138,6 +138,12 @@ namespace NCRYSTAL_NAMESPACE {
     double m_truncangle;
     double m_sigma;
     double m_numint_accuracy;
+    //Numerical integration of circles (Gauss-Legendre):
+    double m_wtrunc;//1-cos(truncangle)
+    unsigned m_numint_npts;//points per segment
+    unsigned m_numint_nseg;//number of segments
+    unsigned m_numint_nseries;//terms in series for beta^2 (0: use asin)
+    double numIntBetaSq( double w ) const;
     SplinedLookupTable m_lt_sofcosd;
     SplinedLookupTable m_lt_evalcosx;
     double m_prec;//for reference

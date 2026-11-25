@@ -8,7 +8,7 @@ follow a truncated, properly normalised two-dimensional Gaussian on the unit
 sphere around the nominal normal. The cross section of each reflection is
 the integral of that density along the "Bragg circle" of normals satisfying
 the Bragg condition for the incoming direction, evaluated per plane by
-Romberg integration or, where accurate, by a closed-form approximation
+Gauss-Legendre quadrature or, where accurate, by a closed-form approximation
 derived for NCrystal; scattering picks a plane and then an actual crystallite
 normal on the circle by rejection, and reflects the neutron specularly. The
 model is exact for its assumptions (no interpolation grids in energy or
@@ -73,8 +73,11 @@ curves asymmetric (to lowest order the $1 - \eta\cot\alpha/2$ of Wuttke).
 It is implemented as $g = S(\cos(\alpha-\gamma))\sqrt{\sin\alpha/\sin\gamma}$
 with a spline $S$ (eq. 36), used when $\tau < \psi$ and
 $\cos\psi\sin\gamma\sin\alpha + \cos\alpha\cos\gamma < \cos\tau$ (with
-$\psi \approx 22.6$ degrees at $\epsilon = 10^{-3}$), and Romberg
-integration otherwise.
+$\psi \approx 22.6$ degrees at $\epsilon = 10^{-3}$), and numerical
+integration otherwise. The latter uses Gauss-Legendre quadrature of the exact
+density along the circle, with the number of points (8-24, on segments of
+at most $10\sigma$) chosen from a table of measured maximum errors, so that
+these are at least 10 times below the requested accuracy.
 
 ### Scattering
 
@@ -123,9 +126,10 @@ normal $\hat n$ only contributes if $||\hat n\cdot\hat k_i|-\lambda/2d|$
 is at most $2\sin(\theta_t/2)$, with $\theta_t$ the truncation angle,
 which is tested in single precision (with a safety margin) for up to 64
 planes at a time, in a loop written to be vectorised by compilers. For the
-surviving planes, an exact test on normal and anti-normal together decides whether the Bragg circle meets the truncated
-Gaussian at all, the geometric factor is then obtained from the closed-form
-approximation where it is accurate and from Romberg integration otherwise,
+surviving planes, an exact test on normal and anti-normal together decides
+whether the Bragg circle meets the truncated Gaussian at all, the geometric
+factor is then obtained from the closed-form approximation where it is
+accurate and from numerical integration otherwise,
 and the per-plane cross sections are accumulated for later plane
 selection. The Gaussian density, its circle integrals and the closed form
 are served from splined lookup tables sized by `mosprec`, so that no
@@ -172,8 +176,10 @@ in the crystal frame and shared between orientations (see above). New ways
 of specifying orientations: `@crys_uvw:`, `dir2=arbitrary` and `rot`.
 Bug fix: planes with a normal exactly along the neutron were ignored near
 back-scattering (`GaussMos::calcCrossSections`).
-Cross sections are evaluated faster due to the preselection of planes
-(results are unchanged): typically 2-3 times for a mosaicity of 0.5 degrees
+Numerical integrations of circles use Gauss-Legendre quadrature of the exact
+density rather than Romberg integration of a splined one: about 2 times
+faster, and more precise. Cross sections are evaluated faster due to the
+preselection of planes (results are unchanged): typically 2-3 times for a mosaicity of 0.5 degrees
 (7 times for crystals of low symmetry), and more for smaller mosaicities.
 Indirect changes: the hkl input (chapter 12), orientation handling for
 non-default space-group settings (chapter 11), and `.lau` files with setting

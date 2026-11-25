@@ -82,3 +82,9 @@ CHANGELOG at release time, after which this file is dropped).
        with integrands evaluated in batches. Results change slightly, well
        within the precision requested via mosprec (typically in the 5th
        significant digit).
+     * Where the Gaussian mosaicity model can not use its closed-form
+       approximation (large mosaicities, or small mosprec values), the
+       integrals along circles now use Gauss-Legendre quadrature of the
+       exact density rather than Romberg integration of a splined one.
+       This is around 2 times faster for single crystals in such cases,
+       and more precise. Results change slightly (within mosprec).

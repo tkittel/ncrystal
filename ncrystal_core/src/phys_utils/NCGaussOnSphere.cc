@@ -61,90 +61,138 @@ namespace NCRYSTAL_NAMESPACE {
     const double m_c;
   };
 
-  class GOSCircleInt : public Romberg {
-  public:
-    GOSCircleInt(const GaussOnSphere*gos, double sinalpha_times_singamma, double cosalpha_times_cosgamma, double acc, bool statcollect)
-      : Romberg(),
-        m_gos(gos),
-        m_sasg(sinalpha_times_singamma),
-        m_cacg(cosalpha_times_cosgamma),
-        m_acc(acc),
-        m_nevals(statcollect?1:0)
-    {}
-    virtual ~GOSCircleInt(){}
+  //Gauss-Legendre nodes and weights on [0,1], for the numbers of points in
+  //gos_gl_npts (from numpy.polynomial.legendre.leggauss):
+  constexpr unsigned gos_gl_npts[7] = { 8, 10, 12, 14, 16, 20, 24 };
+  constexpr double gos_gl8x[8] = {
+    0.019855071751231912, 0.10166676129318664, 0.2372337950418355,
+    0.4082826787521751, 0.5917173212478248, 0.7627662049581645,
+    0.8983332387068134, 0.9801449282487681 };
+  constexpr double gos_gl8w[8] = {
+    0.05061426814518853, 0.11119051722668721, 0.15685332293894344,
+    0.18134189168918083, 0.18134189168918083, 0.15685332293894344,
+    0.11119051722668721, 0.05061426814518853 };
+  constexpr double gos_gl10x[10] = {
+    0.013046735741414128, 0.06746831665550773, 0.16029521585048778,
+    0.2833023029353764, 0.4255628305091844, 0.5744371694908156,
+    0.7166976970646236, 0.8397047841495122, 0.9325316833444923,
+    0.9869532642585859 };
+  constexpr double gos_gl10w[10] = {
+    0.03333567215434407, 0.0747256745752902, 0.109543181257991,
+    0.13463335965499826, 0.1477621123573764, 0.1477621123573764,
+    0.13463335965499826, 0.109543181257991, 0.0747256745752902,
+    0.03333567215434407 };
+  constexpr double gos_gl12x[12] = {
+    0.009219682876640378, 0.0479413718147626, 0.11504866290284765,
+    0.20634102285669126, 0.31608425050090994, 0.43738329574426554,
+    0.5626167042557344, 0.6839157494990901, 0.7936589771433087,
+    0.8849513370971523, 0.9520586281852375, 0.9907803171233596 };
+  constexpr double gos_gl12w[12] = {
+    0.023587668193255706, 0.05346966299765953, 0.08003916427167321,
+    0.10158371336153287, 0.1167462682691773, 0.12457352290670134,
+    0.12457352290670134, 0.1167462682691773, 0.10158371336153287,
+    0.08003916427167321, 0.05346966299765953, 0.023587668193255706 };
+  constexpr double gos_gl14x[14] = {
+    0.006858095651593787, 0.03578255816821324, 0.08639934246511749,
+    0.15635354759415726, 0.24237568182092295, 0.3404438155360551,
+    0.44597252564632817, 0.5540274743536718, 0.6595561844639448,
+    0.757624318179077, 0.8436464524058427, 0.9136006575348825,
+    0.9642174418317868, 0.9931419043484062 };
+  constexpr double gos_gl14w[14] = {
+    0.017559730165875875, 0.04007904357987999, 0.060759285343951655,
+    0.07860158357909681, 0.09276919873896894, 0.10259923186064786,
+    0.10763192673157897, 0.10763192673157897, 0.10259923186064786,
+    0.09276919873896894, 0.07860158357909681, 0.060759285343951655,
+    0.04007904357987999, 0.017559730165875875 };
+  constexpr double gos_gl16x[16] = {
+    0.005299532504175031, 0.0277124884633837, 0.06718439880608412,
+    0.1222977958224985, 0.19106187779867811, 0.2709916111713863,
+    0.35919822461037054, 0.4524937450811813, 0.5475062549188188,
+    0.6408017753896295, 0.7290083888286136, 0.8089381222013219,
+    0.8777022041775016, 0.9328156011939159, 0.9722875115366163,
+    0.994700467495825 };
+  constexpr double gos_gl16w[16] = {
+    0.013576229705877088, 0.031126761969323728, 0.0475792558412463,
+    0.062314485627767036, 0.07479799440828835, 0.08457825969750132,
+    0.09130170752246182, 0.09472530522753432, 0.09472530522753432,
+    0.09130170752246182, 0.08457825969750132, 0.07479799440828835,
+    0.062314485627767036, 0.0475792558412463, 0.031126761969323728,
+    0.013576229705877088 };
+  constexpr double gos_gl20x[20] = {
+    0.003435700407452502, 0.018014036361043095, 0.04388278587433703,
+    0.08044151408889061, 0.1268340467699246, 0.1819731596367425,
+    0.24456649902458644, 0.3131469556422902, 0.38610707442917747,
+    0.46173673943325133, 0.5382632605667487, 0.6138929255708225,
+    0.6868530443577098, 0.7554335009754136, 0.8180268403632576,
+    0.8731659532300754, 0.9195584859111094, 0.956117214125663,
+    0.981985963638957, 0.9965642995925474 };
+  constexpr double gos_gl20w[20] = {
+    0.008807003569575447, 0.020300714900193223, 0.031336024167054395,
+    0.04163837078835236, 0.05096505990862035, 0.0590972659807593,
+    0.06584431922458844, 0.0710480546591912, 0.07458649323630212,
+    0.07637669356536314, 0.07637669356536314, 0.07458649323630212,
+    0.0710480546591912, 0.06584431922458844, 0.0590972659807593,
+    0.05096505990862035, 0.04163837078835236, 0.031336024167054395,
+    0.020300714900193223, 0.008807003569575447 };
+  constexpr double gos_gl24x[24] = {
+    0.0024063900014893447, 0.012635722014345263, 0.0308627239986336,
+    0.056792236497799464, 0.08999900701304853, 0.12993790421072282,
+    0.17595317403151223, 0.22728926430558022, 0.28310324618697746,
+    0.3424786601519183, 0.40444056626319186, 0.4679715535686972,
+    0.5320284464313028, 0.5955594337368082, 0.6575213398480817,
+    0.7168967538130225, 0.7727107356944198, 0.8240468259684878,
+    0.8700620957892772, 0.9100009929869515, 0.9432077635022005,
+    0.9691372760013663, 0.9873642779856547, 0.9975936099985107 };
+  constexpr double gos_gl24w[24] = {
+    0.006170614899994345, 0.01426569431446678, 0.022138719408709706,
+    0.02964929245771818, 0.03667324070554008, 0.0430950807659766,
+    0.04880932605205696, 0.05372213505798278, 0.05775283402686276,
+    0.06083523646390165, 0.06291872817341412, 0.06396909767337601,
+    0.06396909767337601, 0.06291872817341412, 0.06083523646390165,
+    0.05775283402686276, 0.05372213505798278, 0.04880932605205696,
+    0.0430950807659766, 0.03667324070554008, 0.02964929245771818,
+    0.022138719408709706, 0.01426569431446678, 0.006170614899994345 };
+  struct GOSGaussLegendre { const double * x; const double * w; unsigned n; };
+  inline GOSGaussLegendre gosGaussLegendre( unsigned n )
+  {
+    switch ( n ) {
+    case 8: return { gos_gl8x, gos_gl8w, 8 };
+    case 10: return { gos_gl10x, gos_gl10w, 10 };
+    case 12: return { gos_gl12x, gos_gl12w, 12 };
+    case 14: return { gos_gl14x, gos_gl14w, 14 };
+    case 16: return { gos_gl16x, gos_gl16w, 16 };
+    case 20: return { gos_gl20x, gos_gl20w, 20 };
+    case 24: return { gos_gl24x, gos_gl24w, 24 };
+    default: break;
+    };
+    nc_assert_always(false);
+    return { nullptr, nullptr, 0 };
+  }
 
-    virtual double evalFunc(double) const {
-      //Must be implemented, but should never be called since we provide
-      //evalFuncMany+evalFuncManySum.
-      nc_assert_always(false);
-    }
+  //Maximum relative errors observed in the integration of circles, for
+  //truncation angles of N sigma (rows: N<=3,3.5,..,7,8,10) and the numbers of
+  //points in gos_gl_npts (columns). Found by comparison with 400 points, for
+  //many circles and mosaicities of 0.1-20 degrees:
+  constexpr double gos_gl_maxN[11] = { 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5,
+                                       7.0, 8.0, 10.0 };
+  constexpr double gos_gl_errs[11][7] = {
+    { 7e-07, 8e-09, 3e-11, 5e-13, 3e-15, 3e-15, 3e-15 },
+    { 1e-06, 7e-08, 9e-10, 5e-12, 1e-13, 3e-15, 3e-15 },
+    { 1e-05, 1e-07, 6e-09, 5e-11, 5e-13, 3e-15, 3e-15 },
+    { 5e-05, 7e-07, 1e-08, 4e-10, 3e-12, 4e-15, 4e-15 },
+    { 1e-04, 4e-06, 3e-08, 1e-09, 3e-11, 9e-15, 4e-15 },
+    { 1e-04, 9e-06, 3e-07, 3e-09, 1e-10, 3e-14, 4e-15 },
+    { 1e-04, 1e-05, 9e-07, 3e-08, 5e-10, 6e-13, 5e-15 },
+    { 6e-04, 2e-05, 1e-06, 8e-08, 4e-09, 1e-12, 5e-15 },
+    { 1e-03, 9e-05, 3e-06, 1e-07, 9e-09, 1e-11, 5e-15 },
+    { 3e-03, 3e-04, 2e-05, 2e-06, 7e-08, 8e-11, 3e-13 },
+    { 3e-03, 7e-04, 1e-04, 1e-05, 7e-07, 3e-09, 3e-11 } };
 
-    virtual void evalFuncMany(double* fvals, unsigned n, double offset, double delta) const
-    {
-      if (m_nevals)
-        m_nevals += n;
-      nc_assert(offset>=0&&offset<kPi*1.00001);
-      nc_assert(delta>0&&delta*(n-1)<=kPi*1.00001);
-      CosSinGridGen grid(n,offset,delta);
-      unsigned i=0;
-      do {
-        double cb = m_sasg * grid.current_cosval() + m_cacg;
-        nc_assert(NC::ncabs(cb)<1.000000001);
-        fvals[i++] = m_gos->evalCosXInRange(cb);
-      } while (grid.step());
-    }
-
-    virtual double evalFuncManySum(unsigned n, double offset, double delta) const
-    {
-      if (m_nevals)
-        m_nevals += n;
-      nc_assert(offset>=0&&offset<kPi*1.00001);
-      nc_assert(delta>0&&delta*n<=kPi*1.00001);
-      CosSinGridGen grid(n,offset,delta);
-      double sum(0.);
-      do {
-        double cb = m_sasg * grid.current_cosval() + m_cacg;
-        nc_assert(NC::ncabs(cb)<1.000000001);
-        sum += m_gos->evalCosXInRange(cb);
-      } while (grid.step());
-      return sum;
-    }
-
-    virtual bool accept(unsigned level, double prev_estimate, double estimate, double a, double b) const
-    {
-      if (ncabs(prev_estimate-estimate)<=m_acc*ncabs(estimate))
-        return true;
-      if (level<11)
-        return false;
-
-      //Damn. Almost time to emit warning, but if the result is almost at our
-      //level, we just accept it quietly if it is still very precise.
-      if (m_acc<5e-4&&ncabs(prev_estimate-estimate)<=10.0*m_acc*ncabs(estimate))
-        return true;
-
-      static std::atomic<bool> first(true);
-      if ( first.exchange(false) ) {
-        unsigned twotolevelm1 = 1<<(level-1);//2^(level-1)
-        NCRYSTAL_WARN("Problems during numerical integration of Gaussian density on sphere. Romberg integration"
-                      " did not converge after "<<2*twotolevelm1+1<<" function evaluations (requested acc="<<m_acc<<", got acc="<<
-                      ncabs(prev_estimate-estimate)/(ncmax(1e-300,ncabs(estimate)))<<"). Dumping integrand to"
-                      " ncrystal_goscircleintegral_fct.txt for debugging. Further warnings"
-                      " of this type will not be emitted.");
-        writeFctToFile("ncrystal_goscircleintegral_fct.txt", a, b,twotolevelm1);
-      }
-      return true;
-    }
-
-    unsigned nEvals() const { nc_assert(m_nevals>0); return m_nevals-1; }
-
-  private:
-    const GaussOnSphere* m_gos;
-    const double m_sasg;
-    const double m_cacg;
-    const double m_acc;
-    mutable unsigned m_nevals;//mutable here is MT-safe, since we are only using
-                              //local GOSCircleInt instances.
-  };
+  //Coefficients of series for beta^2 in w=1-cos(beta), i.e.
+  //2^(n+1)/(n^2*binom(2n,n)) for n=1..11:
+  constexpr double gos_betasq_c[11] = {
+    2.0, 1.0/3.0, 4.0/45.0, 1.0/35.0, 16.0/1575.0, 8.0/2079.0, 32.0/21021.0,
+    4.0/6435.0, 256.0/984555.0, 128.0/1154725.0, 512.0/10669659.0 };
 
   class SLTFct_EvalCosX : public Fct1D {
     double m_norm, m_expval;
@@ -199,6 +247,10 @@ NC::GaussOnSphere::GaussOnSphere()
     m_truncangle(-1.0),
     m_sigma(-1.0),
     m_numint_accuracy(-1.0),
+    m_wtrunc(-1.0),
+    m_numint_npts(0),
+    m_numint_nseg(0),
+    m_numint_nseries(0),
     m_prec(-1),
     m_sta(-1.0)
 {
@@ -214,6 +266,10 @@ NC::GaussOnSphere::GaussOnSphere( double sigma, double trunc_angle, double prec 
     m_truncangle(-1.0),
     m_sigma(-1.0),
     m_numint_accuracy(-1.0),
+    m_wtrunc(-1.0),
+    m_numint_npts(0),
+    m_numint_nseg(0),
+    m_numint_nseries(0),
     m_prec(-1),
     m_sta(-1.0)
 {
@@ -283,6 +339,10 @@ void NC::GaussOnSphere::set(double sigma, double trunc_angle, double prec ) {
   m_sigma=sigma;
   m_prec=prec;
   sincos(trunc_angle,m_cta,m_sta);
+  {
+    const double st2 = std::sin(0.5*trunc_angle);
+    m_wtrunc = 2.0*st2*st2;
+  }
   m_expfact = -0.5/(sigma*sigma);
   m_norm = calcNormFactor(sigma,trunc_angle);
 
@@ -326,6 +386,31 @@ void NC::GaussOnSphere::set(double sigma, double trunc_angle, double prec ) {
       if ( m_sigma< 0.1*kArcSec ) {
         nlt = ncmin(nlt,200);
         m_numint_accuracy = ncmax(m_numint_accuracy,1e-4);
+      }
+    }
+  }
+
+  //Settings for Gauss-Legendre integration of circles. Use segments of at
+  //most 10 sigma, and points per segment giving a maximum error at least 10
+  //times below the requested accuracy (or else the most points available):
+  {
+    const double ntrunc = trunc_angle / sigma;
+    m_numint_nseg = static_cast<unsigned>( ncmax( 1.0, std::ceil( ntrunc / 10.0 ) ) );
+    const double neff = ntrunc / m_numint_nseg;
+    unsigned irow = 0;
+    while ( irow + 1 < 11 && neff > gos_gl_maxN[irow] )
+      ++irow;
+    unsigned icol = 0;
+    while ( icol + 1 < 7 && gos_gl_errs[irow][icol] > 0.1*m_numint_accuracy )
+      ++icol;
+    m_numint_npts = gos_gl_npts[icol];
+    //Terms needed in series for beta^2 for relative precision 1e-17 (if
+    //there are enough):
+    m_numint_nseries = 0;
+    for ( unsigned k = 1; k <= 10; ++k ) {
+      if ( gos_betasq_c[k] * std::pow( m_wtrunc, k ) < 2e-17 ) {
+        m_numint_nseries = k;
+        break;
       }
     }
   }
@@ -395,41 +480,55 @@ double NC::GaussOnSphere::circleIntegralSlow( double cg, double sg, double ca, d
     return k2Pi*sa*evalCosX(ca);
   }
 
-  //full numerical integration required:
+  //Full numerical integration required. Use Gauss-Legendre quadrature over
+  //the angle t along the circle (in [0,tmax], doubled by symmetry), with the
+  //exact density. With beta the angle to the centre of the Gaussian, we have
+  //w=1-cos(beta)=w0+2*sasg*sin^2(t/2), where w0=1-cd is found via
+  //sin(gamma-alpha) to avoid cancellations for small angles.
   nc_assert(sasg>0);
-  double cos_tmax =  (m_cta-cacg)/sasg;
-  double tmax = ( cos_tmax<=-1.0 ? kPi : std::acos(NC::ncmin(1.0,cos_tmax)) );
+  const double sd = sg*ca - cg*sa;
+  const double w0 = sd*sd/(1.0+cd);
+  const double y = ( m_wtrunc - w0 ) / ( 2.0*sasg );//sin^2(tmax/2)
+  if ( !( y > 0.0 ) )
+    return 0.0;
+  const double tmax = ( y >= 1.0 ? kPi : 2.0*std::asin( std::sqrt( y ) ) );
   if ( tmax<=1e-12 )
     return 0.0;
-
-  //Increase target accuracy for edge cases (similar to what was done based on
-  //m_sigma in ::set(..)):
-  double intacc = m_numint_accuracy;
-  if ( tmax< 10*kArcSec) {
-    intacc = ncmax(intacc,1e-6);
-    if ( tmax< kArcSec ) {
-      intacc = ncmax(intacc,1e-5);
-    if ( tmax< 0.1*kArcSec )
-      intacc = ncmax(intacc,1e-4);
+  const auto gl = gosGaussLegendre( m_numint_npts );
+  const double halfdt = 0.5 * tmax / m_numint_nseg;
+  const double twosasg = 2.0 * sasg;
+  double sum = 0.0;
+  for ( unsigned iseg = 0; iseg < m_numint_nseg; ++iseg ) {
+    for ( unsigned i = 0; i < gl.n; ++i ) {
+      const double sh = std::sin( halfdt * ( iseg + gl.x[i] ) );
+      sum += gl.w[i] * std::exp( m_expfact
+                                 * numIntBetaSq( w0 + twosasg*sh*sh ) );
     }
   }
-
 #ifndef NDEBUG
-  const bool statcollect = (m_stats.genpointworst>0);
-#else
-  const bool statcollect = false;
+  if ( m_stats.genpointworst>0 ) {
+    const uint64_t nevals = gl.n * m_numint_nseg;
+    m_stats.circleintworst = std::max<uint64_t>(m_stats.circleintworst,nevals);
+    ++m_stats.circleintnumber;
+    m_stats.circleintevals += nevals;
+  }
 #endif
-  GOSCircleInt gosci(this,sasg,cacg,intacc,statcollect);
-  const double res = 2.0*sa*gosci.integrate(0,tmax);//sa is radius of curve, so comes from Jacobian.
-  if (!statcollect)
-    return res;
-#ifndef NDEBUG
-  m_stats.circleintworst = std::max<uint64_t>(m_stats.circleintworst,gosci.nEvals());
-  ++m_stats.circleintnumber;
-  m_stats.circleintevals += gosci.nEvals();
-#endif
-  return res;
+  //sa is the radius of circle (Jacobian):
+  return 2.0 * sa * m_norm * ( 2.0 * halfdt ) * sum;
+}
 
+double NC::GaussOnSphere::numIntBetaSq( double w ) const
+{
+  //Squared angle, beta^2, from w=1-cos(beta).
+  nc_assert( w >= 0.0 );
+  if ( m_numint_nseries ) {
+    double r = gos_betasq_c[m_numint_nseries-1];
+    for ( unsigned k = m_numint_nseries-1; k > 0; --k )
+      r = r * w + gos_betasq_c[k-1];
+    return r * w;
+  }
+  const double b = 2.0 * std::asin( std::sqrt( 0.5 * w ) );
+  return b * b;
 }
 
 void NC::GaussOnSphere::circleIntegrals( std::size_t n, const double* cg,
