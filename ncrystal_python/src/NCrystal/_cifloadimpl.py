@@ -123,10 +123,12 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
                          ' cell parameters' )
 
     if int(cellsg['spacegroup']['number']) == 1:
-        #The following warning might be a bit obsolete now that we usually
-        #refine cells, but we keep it here for now as an extra safeguard:
-        _nc_common.warn('Space-group number 1 ("P1") detected in CIF input. A lot (but not all) of CIF data'
-                       ' with this space group listed is in a non-conventional format not suitable for NCrystal. Be wary!')
+        _nc_common.warn( 'The structure has no symmetry beyond space group 1'
+                         ' (P1). This is rare for real crystals and might'
+                         ' indicate a supercell or low-precision coordinates.'
+                         ' Be wary!' if refine_with_spglib else
+                         'The structure has space group 1 (P1), and was not'
+                         ' checked for further symmetry. Be wary!' )
 
     atoms, site2atom = _impl_group_sites( sites, tols = tols,
                                           merge_equiv = merge_equiv )

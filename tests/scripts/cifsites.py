@@ -287,6 +287,21 @@ def test_primitive():
                   txt.replace( f"'{ops[2]}'\n", '' ).replace(
                       f"'{ops[3]}'\n", '' ) )
 
+def test_p1():
+    #A structure without symmetry beyond P1 (warned about), refined or not:
+    cell = { 'a': 5.1, 'b': 5.6, 'c': 6.3,
+             'alpha': 81.0, 'beta': 97.0, 'gamma': 104.0 }
+    sites = [ ( 'Si1', 'Si', ( 0.11, 0.23, 0.37 ), 1.0, 0.01, None ),
+              ( 'O1', 'O', ( 0.52, 0.71, 0.86 ), 1.0, 0.015, None ) ]
+    for refine in ( True, False ):
+        lc = load( cif_text( cell, 'P 1', sites ),
+                   refine_with_spglib = refine )
+        show( f'triclinic, P1, refine_with_spglib={refine}', lc )
+        for w, _ in lc.warnings:
+            print( '   warning:', w )
+        assert lc.cellsg['spacegroup']['number'] == 1
+
 test_rutile()
 test_symmetry_information()
 test_primitive()
+test_p1()

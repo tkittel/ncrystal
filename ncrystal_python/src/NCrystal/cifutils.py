@@ -75,7 +75,7 @@ class CIFSource:
             if ( not allow_fail ) and self.invalid:
                 raise _nc_core.NCBadInput('Could not detect CIF source type')
 
-        #Check if data is CIFSource object or has one as a .cifsrc property (e.g. LoadedCIF, CIFAnalyser)
+        #Check if data is CIFSource object or has one as a .cifsrc property (e.g. CIFLoader)
         o = getattr( data, 'cifsrc', None ) or data
         if isinstance(o,CIFSource):
             self.__codid = o.__codid
