@@ -92,6 +92,15 @@ namespace NCRYSTAL_NAMESPACE {
   //Explicit copy:
   IsoXSTable cloneIsoXSTable( const IsoXSTable& );
 
+  //Thinned table with a subset of the nodes of the input (always including
+  //the first and last), greedily dropping nodes while the cross section stays
+  //within reltol (relative) of the input's. Intervals which are not merged
+  //keep their coefficients, merged intervals become cubic Hermite pieces of
+  //sqrt(e)*xs from the input's values and one-sided slopes at their ends. The
+  //deviations are checked at the dropped nodes (both sides, so kinks and jumps
+  //are kept) and at the midpoints of the input intervals. Tails are kept:
+  IsoXSTable thinIsoXSTable( const IsoXSTable&, double reltol );
+
   //Sort energies of kinks and discontinuities, removing duplicates:
   void sortBreakpoints( VectD& );
 
