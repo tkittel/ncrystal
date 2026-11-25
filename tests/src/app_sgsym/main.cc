@@ -53,18 +53,14 @@ namespace {
   void expectBad( const char * s, NC::SpaceGroupParseMode mode
                   = NC::SpaceGroupParseMode::Relaxed )
   {
-    //SpaceGroup::tryParse gives the same message, and the status:
+    //(SpaceGroup::tryParse gives the same message):
     const auto r = NC::SpaceGroup::tryParse( s, mode );
     nc_assert_always( !r.setting.has_value() );
-    using St = NC::SpaceGroupParseResult::Status;
-    nc_assert_always( r.status != St::OK );
     try {
       NC::SpaceGroup sg( s, mode );
     } catch ( NC::Error::BadInput& e ) {
       nc_assert_always( r.errorMsg == e.what() );
-      std::cout << "  \"" << s << "\" -> BadInput ["
-                << ( r.status == St::Syntax ? "syntax" : "nosetting" )
-                << "]: " << e.what() << std::endl;
+      std::cout << "  \"" << s << "\" -> BadInput: " << e.what() << std::endl;
       return;
     }
     nc_assert_always( false );
@@ -127,7 +123,6 @@ void run()
     REQUIRE( NC::SpaceGroup( str.c_str(), relaxed ) == sg );
     {
       const auto r = NC::SpaceGroup::tryParse( str, strict );
-      REQUIRE( r.status == NC::SpaceGroupParseResult::Status::OK );
       REQUIRE( r.setting.has_value() && r.setting.value() == sg );
       REQUIRE( r.errorMsg.empty() );
     }

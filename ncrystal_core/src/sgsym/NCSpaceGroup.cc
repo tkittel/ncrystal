@@ -48,12 +48,11 @@ namespace NCRYSTAL_NAMESPACE {
       return lo;
     }
 
-    SpaceGroupParseResult parseFailure( SpaceGroupParseResult::Status st,
-                                        StrView s, const std::string& extra )
+    SpaceGroupParseResult parseFailure( StrView s, const std::string& extra )
     {
       std::ostringstream ss;
       ss << "Invalid space group specification: \""<<s<<"\" ("<<extra<<")";
-      return { st, NullOpt, ss.str() };
+      return { NullOpt, ss.str() };
     }
   }
 }
@@ -90,11 +89,9 @@ NC::SpaceGroup::SpaceGroup( SpaceGroupSettingIdx hn )
 NC::SpaceGroupParseResult
 NC::SpaceGroup::tryParse( StrView s, SpaceGroupParseMode mode )
 {
-  using St = SpaceGroupParseResult::Status;
   auto ok = []( std::uint16_t hn )
   {
-    return SpaceGroupParseResult{ St::OK,
-                                  SpaceGroup( SpaceGroupSettingIdx{ hn } ),
+    return SpaceGroupParseResult{ SpaceGroup( SpaceGroupSettingIdx{ hn } ),
                                   std::string() };
   };
   //Parse "<number>" or "<number>:<choice>":
@@ -103,15 +100,15 @@ NC::SpaceGroup::tryParse( StrView s, SpaceGroupParseMode mode )
                             " with a number in 1..230" );
   if ( parts.size() > 2 || parts.front().empty()
        || parts.front().size() > 3 )
-    return parseFailure( St::Syntax, s, expected );
+    return parseFailure( s, expected );
   unsigned number = 0;
   for ( char c : parts.front() ) {
     if ( !( c >= '0' && c <= '9' ) )
-      return parseFailure( St::Syntax, s, expected );
+      return parseFailure( s, expected );
     number = 10 * number + static_cast<unsigned>( c - '0' );
   }
   if ( !( number >= 1 && number <= 230 ) )
-    return parseFailure( St::Syntax, s, expected );
+    return parseFailure( s, expected );
   const std::uint16_t hn0 = firstSettingIdx( number );
   const bool multi
     = SpaceGroup( SpaceGroupSettingIdx{ hn0 } ).hasMultipleSettings();
@@ -119,7 +116,7 @@ NC::SpaceGroup::tryParse( StrView s, SpaceGroupParseMode mode )
     //Bare number: the default setting, which for numbers with several
     //settings is only allowed in relaxed mode:
     if ( multi && mode == SpaceGroupParseMode::Strict )
-      return parseFailure( St::NoSetting, s,
+      return parseFailure( s,
                            "space group " + std::to_string( number )
                            + " has several settings, so one of them must"
                            " be specified: "
@@ -128,7 +125,7 @@ NC::SpaceGroup::tryParse( StrView s, SpaceGroupParseMode mode )
   }
   const StrView choice = parts.back();
   if ( !multi )
-    return parseFailure( St::NoSetting, s,
+    return parseFailure( s,
                          "space group " + std::to_string( number )
                          + " has only one setting, which is written as just"
                          " \"" + std::to_string( number ) + "\"" );
@@ -155,13 +152,13 @@ NC::SpaceGroup::tryParse( StrView s, SpaceGroupParseMode mode )
   for ( auto h = hn0; h <= SpaceGroupSettingIdx::max_value
           && entry( h ).number == number; ++h ) {
     if ( matches( h, true ) )
-      return parseFailure( St::NoSetting, s,
+      return parseFailure( s,
                            "setting choice codes are case-sensitive and"
                            " lower case, change it to \""
                            + SpaceGroup( SpaceGroupSettingIdx{ h } ).toString()
                            + "\" if that is the intention" );
   }
-  return parseFailure( St::NoSetting, s,
+  return parseFailure( s,
                        "not a setting of space group "
                        + std::to_string( number ) + ", the settings are: "
                        + SpaceGroup::listSettings( number ) );

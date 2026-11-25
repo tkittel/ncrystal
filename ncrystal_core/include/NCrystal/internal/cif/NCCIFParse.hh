@@ -169,6 +169,7 @@ namespace NCRYSTAL_NAMESPACE {
       BlockView block( std::size_t i ) const;
       Optional<BlockView> findBlock( StrView name ) const;//case-insensitive
       const DataSourceName& dataSourceName() const;
+      const TextData& textData() const { return *m_data; }
       //Unique per parsed document (kept when moved):
       UniqueIDValue getUniqueID() const noexcept;
       Document( Document&& ) = default;

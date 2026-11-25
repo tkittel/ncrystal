@@ -55,17 +55,17 @@ def cif( *, hm = 'P 1 21/c 1', itno = '14', ops = None, extra = '',
         lines += aniso
     return '\n'.join( lines ) + '\n' + extra
 
-def read( txt, permissive = False ):
+def read( txt, permissive = False, override_spacegroup = None ):
     return read_cif( txt, name = "test.cif", permissive = permissive,
-                     quiet = True, warnfct = warn )
+                     quiet = True, warnfct = warn,
+                     override_spacegroup = override_spacegroup )
 
 def show( descr, c ):
     print( f'{descr}:' )
     print( '   cell:', c.cell )
     for s in c.sites:
         print( '   site:', s )
-    for k in ( 'listed_ops', 'hall', 'hm', 'itnumber', 'formula',
-               'atom_type_number_in_cell' ):
+    for k in ( 'setting', 'formula', 'atom_type_number_in_cell' ):
         print( f'   {k}:', getattr( c, k ) )
 
 def expect_error( descr, txt ):
@@ -91,7 +91,7 @@ def main():
     assert o1['uiso'] == '0.0123(4)' and si1['occ'] == '0.5'
     #(null values are None):
     assert si1['uij'] is None and fe1['uij'] is None and fe1['uiso'] is None
-    assert c.listed_ops == ops14 and c.formula == 'Fe O Si'
+    assert c.setting == '14:b1' and c.formula == 'Fe O Si'
     assert c.cell == { 'a': '5.1', 'b': '6.3', 'c': '7.2', 'alpha': '90',
                           'beta': '105', 'gamma': '90' }
     #Deprecated _symmetry_* tags, no H-M symbol, only the IT number:
@@ -100,16 +100,16 @@ def main():
                    extra = "_symmetry_Int_Tables_number 14\n"
                    "_symmetry_space_group_name_Hall '-P 2ybc'\n" ) )
     show( 'old tags, no H-M symbol', c )
-    assert c.listed_ops == ops14 and c.itnumber == '14'
-    assert c.hall == '-P 2ybc' and c.hm is None
+    assert c.setting == '14:b1'
     #Symbols "?" or "." are skipped (the current tag is tried first):
-    c = read( cif( ops = ops14, hm = None, itno = None,
+    c = read( cif( hm = None, itno = None,
                    extra = "_space_group_name_H-M_alt ?\n"
                    "_symmetry_space_group_name_H-M 'P 1 21/c 1'\n"
                    "_space_group_IT_number .\n_symmetry_Int_Tables_number 14\n" ) )
-    assert c.hm == 'P 1 21/c 1' and c.itnumber == '14'
-    #No listed operations:
-    assert read( cif() ).listed_ops is None
+    assert c.setting == '14:b1'
+    #Explicit override of the setting (with a warning):
+    c = read( cif( ops = ops14 ), override_spacegroup = 'P 1 21/n 1' )
+    assert c.setting == '14:b2'
     #Tensors given as B are not used yet (with a warning):
     warnings = []
     c = read_cif( cif( extra = 'loop_\n_atom_site_aniso_label\n' + ''.join(

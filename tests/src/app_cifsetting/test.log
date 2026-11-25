@@ -3,19 +3,19 @@ listed operations, reversed with duplicates: 227:2
 listed operations and matching symbol: 227:2
 listed operations and unrecognised symbol (ignored): 227:2
 shared operations of number 68: 68:1
-missing operation, permissive=False: rejected: The symmetry operations listed in the CIF data are not those of a tabulated space group setting. Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
-missing operation, permissive=True: 227:2
+missing operation, permissive=no: rejected: The symmetry operations listed in the CIF data are not those of a tabulated space group setting. Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
+missing operation, permissive=yes: 227:2
    warning: The symmetry operations listed in the CIF data are not those of a tabulated space group setting, so the space group symbol "F d -3 m:2" is used (accepted due to permissive mode)
-unparsable operation, permissive=False: rejected: The symmetry operations listed in the CIF data could not be parsed (Invalid symmetry operation "x+y+z": expected three comma-separated components). Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
-unparsable operation, permissive=True: 227:2
+unparsable operation, permissive=no: rejected: The symmetry operations listed in the CIF data could not be parsed (Invalid symmetry operation "x+y+z": expected three comma-separated components). Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
+unparsable operation, permissive=yes: 227:2
    warning: The symmetry operations listed in the CIF data could not be parsed (Invalid symmetry operation "x+y+z": expected three comma-separated components), so the space group symbol "F d -3 m:2" is used (accepted due to permissive mode)
-origin shift, permissive=False: rejected: The symmetry operations listed in the CIF data are not those of a tabulated space group setting. Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
-origin shift, permissive=True: 227:2
+origin shift, permissive=no: rejected: The symmetry operations listed in the CIF data are not those of a tabulated space group setting. Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
+origin shift, permissive=yes: 227:2
    warning: The symmetry operations listed in the CIF data are not those of a tabulated space group setting, so the space group symbol "F d -3 m:2" is used (accepted due to permissive mode)
 missing operation, without symbol, permissive: rejected: Could not determine space group from CIF data
 missing operation, pymatgen file: rejected: The symmetry operations listed in the CIF data are not those of a tabulated space group setting. Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. This file was written by pymatgen, as are Materials Project downloads. For Materials Project entries, the "Conventional Standard" CIF download from the website works, or pass the ID as "mpid::<number>" instead of a file name to have NCrystal download that itself.
-symbol mismatch, permissive=False: rejected: The symmetry operations listed in the CIF data are those of space group 227, but the space group symbol "F m -3 m" is that of space group 225. Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
-symbol mismatch, permissive=True: 227:2
+symbol mismatch, permissive=no: rejected: The symmetry operations listed in the CIF data are those of space group 227, but the space group symbol "F m -3 m" is that of space group 225. Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
+symbol mismatch, permissive=yes: 227:2
    warning: The symmetry operations listed in the CIF data are those of space group 227, but the space group symbol "F m -3 m" is that of space group 225. The listed operations are used (accepted due to permissive mode)
 Hall symbol mismatch: rejected: The symmetry operations listed in the CIF data are those of space group 227, but the Hall symbol "-F 4 2 3" is that of space group 225. Please use a CIF file that either lists all atoms of the unit cell with space group P 1, or lists the symmetry operations of a standard space group setting consistent with its space group symbol. Alternatively, try permissive mode (at your own risk).
 Hall symbol: 227:2
@@ -23,6 +23,8 @@ H-M symbol with origin choice: 227:1
 H-M symbol, one setting: 225
 unrecognised Hall symbol, H-M used: 225
 IT number, one setting: 225
+IT number, not a number: rejected: Could not determine space group from CIF data (space group number "22x" not recognised)
+IT number, out of range: rejected: Could not determine space group from CIF data (space group number "231" not recognised)
 R -3 m, hexagonal axes: 166:h
 R -3 m, rhombohedral axes: 166:r
 R -3 m, unfitting cell: rejected: The unit cell does not fit any of the settings of the space group symbol "R -3 m" (166:h, 166:r)
@@ -30,13 +32,14 @@ ambiguous origin choice: rejected: The space group symbol "F d -3 m" has several
 ambiguous IT number: rejected: The space group number 227 has several settings fitting the unit cell (227:1, 227:2). Please specify which one to use (e.g. override_spacegroup="227:1", or --spacegroup=227:1 for ncrystal_cif2ncmat)
 no symmetry information: rejected: Could not determine space group from CIF data
 unrecognised symbol: rejected: Could not determine space group from CIF data (space group symbol "bla" not recognised)
+null symbols skipped: 225
 override, H-M symbol: 227:1
    warning: Overriding spacegroup to "F d -3 m:1" due to explicit request
 override, setting: 227:1
    warning: Overriding spacegroup to "227:1" due to explicit request
 override, ambiguous: rejected: The space group "F d -3 m" has several settings fitting the unit cell (227:1, 227:2). Please specify which one to use (e.g. override_spacegroup="227:1", or --spacegroup=227:1 for ncrystal_cif2ncmat)
    warning: Overriding spacegroup to "F d -3 m" due to explicit request
-override, unknown: rejected: Invalid override_spacegroup "bla": neither the H-M symbol of a tabulated setting nor a setting (Invalid space group specification: "bla" (expected "<number>" or "<number>:<choice>" with a number in 1..230))
+override, unknown: rejected: Unknown spacegroup "bla": not a known Hermann-Mauguin symbol, and invalid space group specification: "bla" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
    warning: Overriding spacegroup to "bla" due to explicit request
-override, no such setting: rejected: Invalid override_spacegroup "227:3": Invalid space group specification: "227:3" (not a setting of space group 227, the settings are: 227:1 (default), 227:2)
+override, no such setting: rejected: Unknown spacegroup "227:3": not a known Hermann-Mauguin symbol, and invalid space group specification: "227:3" (not a setting of space group 227, the settings are: 227:1 (default), 227:2)
    warning: Overriding spacegroup to "227:3" due to explicit request
