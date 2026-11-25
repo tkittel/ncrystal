@@ -63,9 +63,9 @@ def main( parser ):
 
     parser.add_argument(
         '-s','--strict', type = str,
-        choices = ('NOTOUCH','OFF','ON','11','14','17','20','23'),
-        default = '11',
-        help="""BUILD_STRICT mode (default: '11')."""
+        choices = ('NOTOUCH','OFF','ON','17','20','23','26'),
+        default = '17',
+        help="""BUILD_STRICT mode (default: '17')."""
     )
     parser.add_argument(
         '-j',type=int,default=0,
