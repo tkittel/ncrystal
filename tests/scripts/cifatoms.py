@@ -97,6 +97,15 @@ def main():
     info = NC.directLoad( txt ).info
     assert abs( sum( ai.averageNumberOfAtoms for ai in info.atominfos ) - 2.0 ) < 1e-12
     print( 'atoms per cell after remap:', sum( ai.averageNumberOfAtoms for ai in info.atominfos ) )
+    #Remap with a stated formula which can not be decoded (not checked):
+    lc = CIFLoader( cif( [ 'Al1 Al 0 0 0 0.75', 'Cr1 Cr 0 0 0 0.25' ],
+                         "_chemical_formula_sum 'Xq7 Zz'\n" ), quiet = True )
+    c = lc.create_ncmat_composer( quiet = True, remap = [ ( 'Cr', 'Fe' ) ] )
+    txt = c.create_ncmat()
+    NC.directLoad( txt )
+    print( 'undecodable formula with remap:',
+           [ ln.strip() for ln in txt.splitlines()
+             if ' is ' in ln and not ln.startswith( '#' ) ] )
 
 if __name__ == '__main__':
     main()
