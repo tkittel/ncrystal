@@ -16,7 +16,7 @@ old tags, no H-M symbol:
    setting: 14:b1
    formula: None
 NCrystal WARNING: Overriding spacegroup to "P 1 21/n 1" due to explicit request
-tensors as B: [None, None, None] ['Ignoring the anisotropic displacements, which are given as B (_atom_site_aniso_B_ij), which is not supported yet']
+tensors as B: [{'u11': 0.011738158746333325, 'u22': 0.011738158746333325, 'u33': 0.011738158746333325, 'u12': 0.0, 'u13': 0.0, 'u23': 0.0}, None, None] []
 NCrystal WARNING: Some CIF sites in "test.cif" (data_test) have no _atom_site_type_symbol, so their elements were taken from their labels (Ca from CaM1)
 atom counts, missing type symbol, Biso:
    cell: {'a': '5.1', 'b': '6.3', 'c': '7.2', 'alpha': '90', 'beta': '105', 'gamma': '90'}

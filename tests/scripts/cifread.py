@@ -114,7 +114,7 @@ def main():
     #Explicit override of the setting (with a warning):
     c = read( cif( ops = ops14 ), override_spacegroup = 'P 1 21/n 1' )
     assert c.setting == '14:b2'
-    #Tensors given as B are not used yet (with a warning):
+    #Tensors given as B are converted to U (B = 8 pi^2 U):
     warnings = []
     c = read_cif( cif( extra = 'loop_\n_atom_site_aniso_label\n' + ''.join(
         f'_atom_site_aniso_B_{k}\n' for k in ( '11','22','33','12','13','23' ) )

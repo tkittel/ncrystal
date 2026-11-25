@@ -36,8 +36,7 @@ cs0016.cif:
 cs0017.cif:
   default: SG-108 (108), 5 sites, 5 atoms, 5 with uij
 cs0018.cif:
-  default warning: Ignoring the anisotropic displacements, which are given as B (_atom_site_aniso_B_ij), which is not supported yet
-  default: SG-8 (8:b1), 4 sites, 4 atoms, 0 with uij
+  default: SG-8 (8:b1), 4 sites, 4 atoms, 1 with uij
 cs0019.cif:
   default: SG-137 (137:1), 9 sites, 9 atoms, 9 with uij
 cs0022.cif:

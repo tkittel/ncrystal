@@ -121,22 +121,17 @@ namespace NCRYSTAL_NAMESPACE {
         return res + " in " + describeLocation( b );
       }
 
-      //The six U texts of the anisotropic displacements of each site (rows
-      //matched to sites by label, in order, as some files reuse labels). B
-      //is ignored with a warning:
-      std::vector<std::array<StrView,6>>
-      anisoTexts( const StructureItems& s, const CIFWarnFct& warnfct )
+      //Factor converting B to U (B = 8 pi^2 U):
+      constexpr double bToU = 1.0 / ( 8.0 * kPi * kPi );
+
+      //The six texts of the anisotropic displacements of each site (rows
+      //matched to sites by label, in order, as some files reuse labels):
+      std::vector<std::array<StrView,6>> anisoTexts( const StructureItems& s )
       {
         std::vector<std::array<StrView,6>> res( s.sites.label.size() );
         if ( !s.aniso.has_value() )
           return res;
         const auto& a = s.aniso.value();
-        if ( a.form == StructureItems::AnisoForm::B ) {
-          //FIXME: Convert to U (with the rounding errors).
-          warnfct( "Ignoring the anisotropic displacements, which are given as"
-                   " B (_atom_site_aniso_B_ij), which is not supported yet" );
-          return res;
-        }
         std::vector<bool> taken( res.size(), false );
         auto itSkip = a.skippedRows.begin();
         for ( auto r : ncrange( a.label.size() ) ) {
@@ -441,7 +436,11 @@ std::vector<NCC::CIFAtom> NCC::getAtoms( const Document& doc,
   const bool permissive = ( perm == CIFPermissive::YES );
   const auto b = s.block( doc );
   const auto& cols = s.sites;
-  const auto aniso = anisoTexts( s, warnfct );
+  const auto aniso = anisoTexts( s );
+  //(tensors given as B are converted to U, with their rounding errors):
+  const double anisoFactor = ( s.aniso.has_value()
+                               && s.aniso.value().form
+                               == StructureItems::AnisoForm::B ? bToU : 1.0 );
 
   //The sites with positive occupancy:
   std::vector<Site> sites;
@@ -484,8 +483,8 @@ std::vector<NCC::CIFAtom> NCC::getAtoms( const Document& doc,
         if ( !x.has_value() )
           NCRYSTAL_THROW2( BadInput, siteRef( b, site ) << " has invalid"
                            " anisotropic displacement values" );
-        u[j] = x.value().value;
-        e[j] = x.value().roundingError;
+        u[j] = x.value().value * anisoFactor;
+        e[j] = x.value().roundingError * anisoFactor;
         allzero = allzero && ( u[j] == 0.0 );
       }
       if ( !allzero ) {//(all zero: a placeholder for no tensor)
@@ -499,9 +498,8 @@ std::vector<NCC::CIFAtom> NCC::getAtoms( const Document& doc,
     } else {
       const auto bi = number( colValue( cols.bIsoOrEquiv, i ) );
       if ( bi.has_value() && bi.value().value > 0.0 ) {
-        const double f = 1.0 / ( 8.0 * kPi * kPi );
-        site.uiso = PairDD{ bi.value().value * f,
-                            bi.value().roundingError * f };
+        site.uiso = PairDD{ bi.value().value * bToU,
+                            bi.value().roundingError * bToU };
       }
     }
     site.occupancy = ncmin( occ.first, 1.0 );
