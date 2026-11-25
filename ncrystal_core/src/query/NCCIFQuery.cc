@@ -21,6 +21,7 @@
 #include "NCCIFQuery.hh"
 #include "NCrystal/internal/cif/NCCIFUtils.hh"
 #include "NCrystal/internal/cif/NCCIFItems.hh"
+#include "NCrystal/internal/cif/NCCIFSetting.hh"
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 
@@ -266,11 +267,11 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
   constexpr auto sv_list = StrView::make("list");
   constexpr auto sv_numbers = StrView::make("numbers");
   constexpr auto sv_elements = StrView::make("elements");
-  constexpr auto sv_uniquestructprov = StrView::make("uniquestructprov");
+  constexpr auto sv_structure = StrView::make("structure");
   if ( key == sv_list ) {
     if ( nargs != 0 )
       invalid("no arguments should come after: [\"cif\",\"list\"]");
-    os << "[\"numbers\", \"elements\", \"uniquestructprov\"]";
+    os << "[\"numbers\", \"elements\", \"structure\"]";
   } else if ( key == sv_numbers ) {
     //["cif","numbers","RAWDATA",LIST]: printed CIF numbers (e.g.
     //"0.0283(4)") as [[value,rounding error],...], with null for strings
@@ -319,48 +320,68 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
         os << "null";
     }
     os << ']';
-  } else if ( key == sv_uniquestructprov ) {
-    //["cif","uniquestructprov",PERMISSIVE,SRC]: the items of the only block
-    //with a crystal structure (cf. findUniqueStructProvItems), parsed in
-    //lenient mode (cf. CIFParseLenient), with PERMISSIVE "strict" or
-    //"permissive" (cf. CIFPermissive), and SRC either the name of a TextData
-    //or "RAWDATA",NAME,"RAWDATA",TEXT (the CIF data and its name, which can
-    //be empty). Result: {"block":name,"block_line":n,"structure":{...},
-    //"provenance":{...}|null,"provenance_block":name|null,"warnings":[..]},
-    //with values as
-    //[text,line] (line 0 for an absent cell angle) or null for "?" and ".",
-    //and items under their CIF tags: the cell and other single items
-    //"_tag":value, the site and aniso columns "_tag":[values] in "atom_site"
-    //and "atom_site_aniso" (with "form" "U" or "B", without rows ignored in
-    //permissive mode), and "symmetry":{"operations":[{"tag":..,"values":
-    //[..]}],"hm":[{"tag":..,"value":..}],"hall":[..],"number":[..]} (current
-    //tag first). "provenance_block" is the other block from which absent
-    //provenance items were taken, if any, and "warnings" the list of warnings
+  } else if ( key == sv_structure ) {
+    //["cif","structure",PERMISSIVE,OPTION...,SRC]: the items of the only
+    //block with a crystal structure (cf. findUniqueStructProvItems) and its
+    //space group setting (cf. chooseSetting), parsed in lenient mode (cf.
+    //CIFParseLenient), with PERMISSIVE "strict" or "permissive" (cf.
+    //CIFPermissive), OPTIONs KEY=VALUE (only override_spacegroup=SG), and SRC
+    //either the name of a TextData or "RAWDATA",NAME,"RAWDATA",TEXT (the CIF
+    //data and its name, which can be empty). Result: {"block":name,
+    //"block_line":n,"structure":{...},"provenance":{...}|null,
+    //"provenance_block":name|null,"spacegroup_setting":setting,
+    //"warnings":[..]}, with values as [text,line] (line 0 for an absent cell
+    //angle) or null for "?" and ".", and items under their CIF tags: the cell
+    //and other single items "_tag":value, the site and aniso columns
+    //"_tag":[values] in "atom_site" and "atom_site_aniso" (with "form" "U"
+    //or "B", without rows ignored in permissive mode), and "symmetry":
+    //{"operations":[{"tag":..,"values":[..]}],"hm":[{"tag":..,"value":..}],
+    //"hall":[..],"number":[..]} (current tag first). "provenance_block" is
+    //the other block from which absent provenance items were taken, if any,
+    //"spacegroup_setting" e.g. "227:2", and "warnings" the list of warnings
     //(which are not emitted). Absent optional items are omitted:
-    const auto usage = "correct usage: [\"cif\",\"uniquestructprov\","
-      "PERMISSIVE,NAME] or [\"cif\",\"uniquestructprov\",PERMISSIVE,"
+    const auto usage = "correct usage: [\"cif\",\"structure\",PERMISSIVE,"
+      "OPTION...,NAME] or [\"cif\",\"structure\",PERMISSIVE,OPTION...,"
       "\"RAWDATA\",NAME,\"RAWDATA\",TEXT], with PERMISSIVE \"strict\" or"
-      " \"permissive\"";
-    const bool raw = ( nargs == 5 && arg(1) == sv_rawdata
-                       && arg(3) == sv_rawdata );
-    if ( !( raw || ( nargs == 2 && arg(1) != sv_rawdata ) )
-         || ( arg(0) != "strict" && arg(0) != "permissive" ) )
+      " \"permissive\" and OPTIONs override_spacegroup=SG";
+    if ( nargs < 2 || ( arg(0) != "strict" && arg(0) != "permissive" ) )
       invalid( usage );
+    const bool raw = ( nargs >= 5 && arg(nargs-4) == sv_rawdata
+                       && arg(nargs-2) == sv_rawdata );
+    const std::size_t nopts = nargs - ( raw ? 5 : 2 );
+    if ( !raw && arg(nargs-1) == sv_rawdata )
+      invalid( usage );
+    constexpr auto sv_override = StrView::make("override_spacegroup=");
+    StrView overrideSG;
+    for ( auto i : ncrange( nopts ) ) {
+      const auto o = arg( 1 + i );
+      if ( !o.startswith( sv_override ) || overrideSG.has_value()
+           || o.size() == sv_override.size() )
+        invalid( usage );
+      overrideSG = o.substr( sv_override.size() );
+    }
+    const auto src = [&arg,nopts]( std::size_t i ) { return arg(1+nopts+i); };
     const bool permissive = ( arg(0) == "permissive" );
-    const std::string rawname = ( raw && !arg(2).empty() ? arg(2).to_string()
+    const auto perm = ( permissive ? NCC::CIFPermissive::YES
+                        : NCC::CIFPermissive::NO );
+    const std::string rawname = ( raw && !src(1).empty() ? src(1).to_string()
                                   : std::string( "raw CIF data" ) );
     auto td = ( raw
-                ? makeSO<const TextData>( RawStrData( arg(4).to_string() ),
+                ? makeSO<const TextData>( RawStrData( src(3).to_string() ),
                                           TextData::DataType{ "cif" },
                                           DataSourceName( rawname ) )
                 : FactImpl::createTextData(
-                  TextDataPath( arg(1).to_string() ) ) );
+                  TextDataPath( src(0).to_string() ) ) );
     const auto doc = NCC::Document::parse( std::move( td ),
                                            NCC::CIFParseLenient::YES );
     std::vector<std::string> warnings;
-    const auto r = NCC::findUniqueStructProvItems(
-      doc, ( permissive ? NCC::CIFPermissive::YES : NCC::CIFPermissive::NO ),
-      [&warnings]( const std::string& w ) { warnings.push_back( w ); } );
+    const NCC::CIFWarnFct warnfct = [&warnings]( const std::string& w )
+    {
+      warnings.push_back( w );
+    };
+    const auto r = NCC::findUniqueStructProvItems( doc, perm, warnfct );
+    const auto setting = NCC::chooseSetting( doc, r.structureItems, perm,
+                                             overrideSG, warnfct );
     const auto b = r.structureItems.block( doc );
     os << "{\"block\":";
     streamJSON( os, b.name() );
@@ -379,6 +400,8 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
       streamJSON( os, other.value().name() );
     else
       os << "null";
+    os << ",\"spacegroup_setting\":";
+    streamJSON( os, setting.toString() );
     os << ",\"warnings\":";
     streamJSON( os, warnings );
     os << '}';

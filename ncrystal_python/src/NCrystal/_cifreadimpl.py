@@ -22,7 +22,7 @@
 """
 
 Internal implementation of reading CIF data for the cifutils module, via the
-["cif","uniquestructprov",...] query: the values needed are taken from its
+["cif","structure",...] query: the values needed are taken from its
 data items as the printed strings (so their rounding errors are available).
 
 """
@@ -129,20 +129,14 @@ cif_temperature_fields = ( '_diffrn_ambient_temperature',
 class CIFContent:
     #Plain content of CIF data. Values are the printed strings (without
     #quotes), None if absent or null ("?" or ".").
-    __slots__ = ( 'atom_type_number_in_cell', 'cell', 'formula', 'hall', 'hm',
-                  'itnumber', 'listed_ops', 'provenance', 'sites',
-                  'temperatures', 'text' )
-    def __init__( self, *, text, provenance, cell, listed_ops, hall, hm,
-                  itnumber, formula, sites, atom_type_number_in_cell,
-                  temperatures ):
-        self.text = text#the CIF text
-        #the provenance items of the uniquestructprov query (or None):
+    __slots__ = ( 'atom_type_number_in_cell', 'cell', 'formula', 'provenance',
+                  'setting', 'sites', 'temperatures' )
+    def __init__( self, *, provenance, cell, setting, formula, sites,
+                  atom_type_number_in_cell, temperatures ):
+        #the provenance items of the structure query (or None):
         self.provenance = provenance
         self.cell = cell#a,b,c,alpha,beta,gamma (missing angles are "90")
-        self.listed_ops = listed_ops#listed symmetry operations (or None)
-        self.hall = hall#space group symbols and IT number
-        self.hm = hm
-        self.itnumber = itnumber
+        self.setting = setting#the space group setting (e.g. "227:2")
         self.formula = formula#_chemical_formula_sum
         #dicts with keys label, type_symbol, x, y, z, uiso, biso, occ and uij
         #(the six aniso U values, None if absent):
@@ -151,25 +145,25 @@ class CIFContent:
         #_diffrn_ambient_temperature and _cell_measurement_temperature:
         self.temperatures = temperatures
 
-def read_cif( cifdata, *, name, permissive, quiet, warnfct ):
+def read_cif( cifdata, *, name, permissive, quiet, warnfct,
+              override_spacegroup = None ):
     #Returns the CIFContent of the CIF text cifdata (with the name for
-    #messages), read via the ["cif","uniquestructprov",...] query in permissive
-    #mode or not. Warnings are passed to warnfct.
+    #messages), read via the ["cif","structure",...] query in permissive mode
+    #or not, with the space group setting overridden if requested. Warnings
+    #are passed to warnfct.
     if not quiet:
         _nc_common.infomsg("Parsing CIF data")
     from .misc import evaluate_query
-    q = evaluate_query( [ 'cif', 'uniquestructprov',
-                          'permissive' if permissive else 'strict',
+    opts = ( [ f'override_spacegroup={override_spacegroup}' ]
+             if override_spacegroup else [] )
+    q = evaluate_query( [ 'cif', 'structure',
+                          'permissive' if permissive else 'strict', *opts,
                           'RAWDATA', name or '', 'RAWDATA', cifdata ] )
     for w in q['warnings']:
         warnfct( w )
     st = q['structure']
     def val( v ):
         return None if v is None else v[0]
-    def first( alternatives ):
-        #(the first value which is not "?" or ".", current tags first):
-        return next( ( val( a['value'] ) for a in alternatives
-                       if a['value'] is not None ), None )
 
     cell = {}
     for k in ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' ):
@@ -178,13 +172,6 @@ def read_cif( cifdata, *, name, permissive, quiet, warnfct ):
         if v is None:
             raise _nc_core.NCBadInput(f'CIF data lacks the cell parameter {k}')
         cell[k] = v
-
-    sym = st['symmetry']
-    listed = None
-    for o in sym['operations']:
-        listed = [ v[0] for v in o['values'] if v is not None ]
-        if listed:
-            break
 
     cols = st['atom_site']
     keys = { 'label': '_atom_site_label',
@@ -218,13 +205,9 @@ def read_cif( cifdata, *, name, permissive, quiet, warnfct ):
                 sites[i]['uij'] = [ val( c[r] ) for c in comps ]
 
     return CIFContent(
-        text = cifdata,
         provenance = q['provenance'],
         cell = cell,
-        listed_ops = listed or None,
-        hall = first( sym['hall'] ),
-        hm = first( sym['hm'] ),
-        itnumber = first( sym['number'] ),
+        setting = q['spacegroup_setting'],
         formula = val( st.get( '_chemical_formula_sum' ) ),
         sites = sites,
         atom_type_number_in_cell = [ val( v ) for v in

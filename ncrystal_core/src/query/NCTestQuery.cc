@@ -24,6 +24,7 @@
 #include "NCrystal/internal/phys_utils/NCKinUtils.hh"
 #include "NCrystal/internal/phys_utils/NCEqRefl.hh"
 #include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
+#include "NCrystal/internal/sgsym/NCSymOp.hh"
 #include "NCBrowseQuery.hh"
 
 namespace NC = NCrystal;
@@ -115,11 +116,48 @@ void NC::TestQuery::JSONQuery( std::ostream& os, const Query& query )
   constexpr auto sv_jsontest = StrView::make("jsontest");
   constexpr auto sv_wl2ekin = StrView::make("wl2ekin");
   constexpr auto sv_ekin2wl = StrView::make("ekin2wl");
+  constexpr auto sv_tryparse = StrView::make("tryparse");
   if ( key == sv_list ) {
     if ( nargs != 0 )
       invalid("no arguments should come after: [\"test\",\"list\"]");
     os<<"[\"mathval\", \"kinutils\", \"browsefactories\", \"eqrefl\","
-      " \"jsontest\", \"wl2ekin\", \"ekin2wl\"]";
+      " \"jsontest\", \"wl2ekin\", \"ekin2wl\", \"tryparse\"]";
+  } else if ( key == sv_tryparse ) {
+    //["test","tryparse","setting"|"symop","RAWDATA",STR]: the outcome of
+    //SpaceGroup::tryParse (in strict mode) or SymOp::tryParse for STR, as
+    //{"result":"70:1","error_msg":null} or {"result":null,"error_msg":".."}:
+    if ( nargs != 3 || ( arg(0) != "setting" && arg(0) != "symop" )
+         || arg(1) != "RAWDATA" )
+      invalid( "correct usage: [\"test\",\"tryparse\",\"setting|symop\","
+               "\"RAWDATA\",STR]" );
+    Optional<std::string> result;
+    std::string msg;
+    if ( arg(0) == "setting" ) {
+      const auto r = SpaceGroup::tryParse( arg(2),
+                                           SpaceGroupParseMode::Strict );
+      if ( r.setting.has_value() )
+        result = r.setting.value().toString();
+      msg = r.errorMsg;
+    } else {
+      const auto r = SymOp::tryParse( arg(2) );
+      if ( r.op.has_value() ) {
+        std::ostringstream ss;
+        ss << r.op.value();
+        result = ss.str();
+      }
+      msg = r.errorMsg;
+    }
+    os << "{\"result\":";
+    if ( result.has_value() )
+      streamJSON( os, result.value() );
+    else
+      os << "null";
+    os << ",\"error_msg\":";
+    if ( msg.empty() )
+      os << "null";
+    else
+      streamJSON( os, msg );
+    os << '}';
   } else if ( key == sv_eqrefl ) {
     //["test","eqrefl",MODE,SG,"h1,k1,l1","h2,k2,l2",...]: For each
     //requested hkl, return the list of reflections considered

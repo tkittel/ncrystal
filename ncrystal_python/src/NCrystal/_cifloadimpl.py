@@ -38,8 +38,16 @@ from ._cifsitesimpl import (
     collect_atoms,
     merge_atoms,
 )
-from ._cifsymimpl import determine_setting, snapped_cell
 
+
+def _snapped_cell( setting, cell ):
+    #Returns the sgsym cell query result ({'cell':..,'error_msg':..}) for the
+    #cell (dict of printed values) in the setting, with lenient tolerances.
+    from .misc import evaluate_query
+    return evaluate_query( [ 'sgsym', 'cell', 'lenient', '0', setting,
+                             *( e for k in ( 'a', 'b', 'c', 'alpha', 'beta',
+                                             'gamma' )
+                                for e in ( 'RAWDATA', cell[k] ) ) ] )
 
 def _expected_atom_count( cif_content ):
     #Total number of atoms in the cell, if stated in the CIF data:
@@ -68,15 +76,14 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
 
     cif_content = read_cif( cifdata, name = cifsrc.name,
                             permissive = permissive, quiet = quiet,
-                            warnfct = warnfct )
+                            warnfct = warnfct,
+                            override_spacegroup = override_spacegroup )
     result['cif_temperatures'] = cif_content.temperatures
 
-    setting = determine_setting( cif_content, permissive = permissive,
-                                 override_spacegroup = override_spacegroup,
-                                 warnfct = warnfct )
+    setting = cif_content.setting
     cell = cif_content.cell
     expect_sgno = None
-    snapped = snapped_cell( setting, cell )
+    snapped = _snapped_cell( setting, cell )
     if snapped['cell'] is not None:
         cellsg = dict( snapped['cell'] )
     else:

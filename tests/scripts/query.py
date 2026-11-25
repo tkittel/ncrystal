@@ -184,7 +184,7 @@ def main():
         test('sab','surveyor','@1@2@x','@1@2')
     test_atomsites()
     test_cif()
-    test_uniquestructprov()
+    test_structure()
     test_cli('test','wl2ekin','1.8')
     test_cli('test','ekin2wl','0.025')
     test_cli('test','eqrefl','relaxed','149','1,2,3','1,1,0')
@@ -203,15 +203,11 @@ def main():
         test_cli('sgsym','info','strict','227')
     test_cli('sgsym','list')
     #Settings from operations and symbols:
-    test_cli('sgsym','fromops','1',*rawlist('x,y,z','-x,-y,-z'))
-    test_cli('sgsym','fromops','1',*rawlist('x,y,z','-x+1/2,-y+1/2,-z+1/2'))#(origin shift)
-    test_cli('sgsym','fromops','0',*rawlist('x,y,z','x+1/5,y,z'))#(not a multiple of 1/24)
-    #An operation which can not be parsed, with DOTHROW=0 and 1:
-    test_cli('sgsym','fromops','0',*rawlist('x,y,z','x,y,q'))
-    test_cli('sgsym','fromops','0',*rawlist('x,y,z','x+y,y,z'))
+    test_cli('sgsym','fromops',*rawlist('x,y,z','-x,-y,-z'))
+    test_cli('sgsym','fromops',*rawlist('x,y,z','-x+1/2,-y+1/2,-z+1/2'))#(origin shift)
     with ensure_error(NCBadInput,'Invalid symmetry operation "x,y,q":'
                       ' unexpected character'):
-        test_cli('sgsym','fromops','1',*rawlist('x,y,z','x,y,q'))
+        test_cli('sgsym','fromops',*rawlist('x,y,z','x,y,q'))
     test_cli('sgsym','fromhall','RAWDATA','-P 2ybc')
     test_cli('sgsym','fromhm','RAWDATA','P 21/c')
     test_cli('sgsym','fromhm','RAWDATA','R -3 m')
@@ -219,33 +215,30 @@ def main():
     test_cli('sgsym','fromhm','RAWDATA','C -1')#(no tabulated setting)
     test_cli('sgsym','fromnumber','227')
     test_cli('sgsym','fromnumber','14')
-    #A setting, or with DOTHROW=0 the reason it is none:
-    test_cli('sgsym','setting','0','RAWDATA','70:1')
-    test_cli('sgsym','setting','1','RAWDATA','225')
-    test_cli('sgsym','setting','0','RAWDATA','70:9')
-    test_cli('sgsym','setting','0','RAWDATA','70')
-    test_cli('sgsym','setting','0','RAWDATA','F d d d')
-    with ensure_error(NCBadInput,'Invalid space group specification: "70:9"'
-                      ' (not a setting of space group 70, the settings are:'
-                      ' 70:1 (default), 70:2)'):
-        test_cli('sgsym','setting','1','RAWDATA','70:9')
-    with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","setting","2",'
-                      '"RAWDATA","70:1"] (correct usage: ["sgsym","setting",'
-                      '0|1,"RAWDATA",SG])'):
-        test_cli('sgsym','setting','2','RAWDATA','70:1')
+    #Space group settings and symmetry operations parsed without exceptions
+    #(test-only query):
+    for kind, strs in ( ( 'setting', ( '70:1', '225', '70:9', '70', 'F d d d' ) ),
+                        ( 'symop', ( 'y,-x,z+1/2', 'x+1/5,y,z', 'x,y,q',
+                                     'x+y,y,z' ) ) ):
+        for e in strs:
+            test_cli('test','tryparse',kind,'RAWDATA',e)
+    with ensure_error(NCBadInput,'Invalid test query: ["test","tryparse",'
+                      '"bla","RAWDATA","70:1"] (correct usage: ["test",'
+                      '"tryparse","setting|symop","RAWDATA",STR])'):
+        test_cli('test','tryparse','bla','RAWDATA','70:1')
     test_cli('sgsym','fromnumber','225')
     for bad in ( '0', '231', 'x', '1.0' ):
         with ensure_error( NCBadInput, 'Invalid sgsym query: ["sgsym",'
                            f'"fromnumber","{bad}"] (correct usage: ["sgsym",'
                            '"fromnumber",N], with N in 1..230)' ):
             ncquery( [ 'sgsym', 'fromnumber', bad ] )
-    test( 'sgsym','fromops','1','RAWDATA','|x,y,z|-x,-y,-z|x+1/2,y,z' )
-    for bad in ( [ 'x,y,z' ], [ '1', 'x,y,z' ], [ '1', 'RAWDATA' ],
-                 [ '1', 'RAWDATA', '' ], [ '1', 'RAWDATA', '@x,y,z', '@-x,-y,-z' ] ):
+    test( 'sgsym','fromops','RAWDATA','|x,y,z|-x,-y,-z|x+1/2,y,z' )
+    for bad in ( [ 'x,y,z' ], [ 'RAWDATA' ], [ 'RAWDATA', '' ],
+                 [ 'RAWDATA', '@x,y,z', '@-x,-y,-z' ] ):
         with ensure_error(NCBadInput,'Invalid sgsym query: '
                           + json.dumps( [ 'sgsym', 'fromops' ] + bad,
                                         separators = ( ',', ':' ) )
-                          + ' (correct usage: ["sgsym","fromops",0|1,"RAWDATA",'
+                          + ' (correct usage: ["sgsym","fromops","RAWDATA",'
                           'OPLIST])'):
             ncquery( [ 'sgsym', 'fromops', *bad ] )
     #Cell parameters snapped to the constraints of a setting (printed values
@@ -510,9 +503,9 @@ def test_cif():
                        'Invalid cif query: ["cif","bla"] (unknown key)' ):
         ncquery( [ 'cif', 'bla' ] )
 
-def test_uniquestructprov():
-    #Items of the CIF block with a crystal structure, as [text,line] (cf. the
-    #unit test app_cifitems):
+def test_structure():
+    #Items of the CIF block with a crystal structure, as [text,line], and its
+    #space group setting (cf. the unit tests app_cifitems and app_cifsetting):
     cif = """data_info
 _journal_name_full 'From data_info'
 data_s
@@ -547,29 +540,36 @@ _publ_section_title 'A title'
 loop_ _publ_author_name 'Doe, J.' 'Roe, R.'
 _cod_database_code 1234567
 """
-    test( 'cif', 'uniquestructprov', 'permissive', 'RAWDATA', 'q.cif',
+    test( 'cif', 'structure', 'permissive', 'RAWDATA', 'q.cif',
           'RAWDATA', cif )
+    r = ncquery( [ 'cif', 'structure', 'permissive',
+                   'override_spacegroup=F m -3 m', 'RAWDATA', 'q.cif',
+                   'RAWDATA', cif ] )
+    print( 'with override:', r['spacegroup_setting'], r['warnings'] )
     for name, shown in ( ( 'q.cif', 'q.cif' ), ( '', 'raw CIF data' ) ):
         with ensure_error( NCBadInput, f'Invalid CIF data in "{shown}"'
                            ' (data_s, line 29): anisotropic displacements of'
                            ' "Al1" have components "?" or ".". Use permissive'
                            ' mode to ignore such entries.' ):
-            ncquery( [ 'cif', 'uniquestructprov', 'strict', 'RAWDATA', name,
+            ncquery( [ 'cif', 'structure', 'strict', 'RAWDATA', name,
                        'RAWDATA', cif ] )
     import NCrystalDev as NC
     NC.registerInMemoryFileData( 'query_test.cif', """data_x
 _cell_length_a 3
 _cell_length_b 3
 _cell_length_c 3
+_space_group_IT_number 221
 _atom_site_label Fe1
 _atom_site_fract_x 0
 _atom_site_fract_y 0
 _atom_site_fract_z 0
 """ )
-    test( 'cif', 'uniquestructprov', 'strict', 'query_test.cif' )
+    test( 'cif', 'structure', 'strict', 'query_test.cif' )
+    test( 'cif', 'structure', 'strict', 'override_spacegroup=225',
+          'query_test.cif' )
     #Synthetic file with the publication only in a data_global block:
     from NCTestUtils.dirs import test_data_dir
-    r = ncquery( [ 'cif', 'uniquestructprov', 'strict',
+    r = ncquery( [ 'cif', 'structure', 'strict',
                    str( test_data_dir / 'cif_globalblock.cif' ) ] )
     print( 'cif_globalblock.cif: block', r['block'], 'provenance_block',
            r['provenance_block'] )
@@ -578,15 +578,19 @@ _atom_site_fract_z 0
     for bad in ( [], [ 'strict' ], [ '1', 'x.cif' ],
                  [ 'strict', 'RAWDATA' ], [ 'strict', 'RAWDATA', 'x' ],
                  [ 'strict', 'RAWDATA', 'n', 'x', 'y' ],
-                 [ 'strict', 'x', 'y' ] ):
+                 [ 'strict', 'x', 'y' ], [ 'strict', 'override_spacegroup=',
+                                           'x.cif' ],
+                 [ 'strict', 'override_spacegroup=1',
+                   'override_spacegroup=2', 'x.cif' ] ):
         with ensure_error( NCBadInput, 'Invalid cif query: '
-                           + json.dumps( [ 'cif', 'uniquestructprov' ] + bad,
+                           + json.dumps( [ 'cif', 'structure' ] + bad,
                                          separators = ( ',', ':' ) )
-                           + ' (correct usage: ["cif","uniquestructprov",'
-                           'PERMISSIVE,NAME] or ["cif","uniquestructprov",'
-                           'PERMISSIVE,"RAWDATA",NAME,"RAWDATA",TEXT], with'
-                           ' PERMISSIVE "strict" or "permissive")' ):
-            ncquery( [ 'cif', 'uniquestructprov', *bad ] )
+                           + ' (correct usage: ["cif","structure",PERMISSIVE,'
+                           'OPTION...,NAME] or ["cif","structure",PERMISSIVE,'
+                           'OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with'
+                           ' PERMISSIVE "strict" or "permissive" and OPTIONs'
+                           ' override_spacegroup=SG)' ):
+            ncquery( [ 'cif', 'structure', *bad ] )
 
 def rnd( o ):
     #Round floats (also nested) to 10 digits, for platform-stable printouts:

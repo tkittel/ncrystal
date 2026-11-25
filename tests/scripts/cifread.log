@@ -5,10 +5,7 @@ monoclinic, listed operations, tensors:
    site: {'label': 'O1', 'type_symbol': 'O', 'x': '0.79', 'y': '0.87', 'z': '0.63', 'uiso': '0.0123(4)', 'biso': None, 'occ': '1', 'uij': ['0.012(2)', '0.009', '0.015', '0.002', '-0.003', '0.001']}
    site: {'label': 'Si1', 'type_symbol': 'Si', 'x': '0.11', 'y': '0.22', 'z': '0.33', 'uiso': '0.0071', 'biso': None, 'occ': '0.5', 'uij': None}
    site: {'label': 'Fe1', 'type_symbol': 'Fe', 'x': '0', 'y': '0', 'z': '0', 'uiso': None, 'biso': None, 'occ': '1', 'uij': None}
-   listed_ops: ['x, y, z', '-x, y+1/2, -z+1/2', '-x, -y, -z', 'x, -y+1/2, z+1/2']
-   hall: None
-   hm: P 1 21/c 1
-   itnumber: 14
+   setting: 14:b1
    formula: Fe O Si
    atom_type_number_in_cell: []
 old tags, no H-M symbol:
@@ -16,21 +13,16 @@ old tags, no H-M symbol:
    site: {'label': 'O1', 'type_symbol': 'O', 'x': '0.79', 'y': '0.87', 'z': '0.63', 'uiso': '0.0123(4)', 'biso': None, 'occ': '1', 'uij': None}
    site: {'label': 'Si1', 'type_symbol': 'Si', 'x': '0.11', 'y': '0.22', 'z': '0.33', 'uiso': '0.0071', 'biso': None, 'occ': '0.5', 'uij': None}
    site: {'label': 'Fe1', 'type_symbol': 'Fe', 'x': '0', 'y': '0', 'z': '0', 'uiso': None, 'biso': None, 'occ': '1', 'uij': None}
-   listed_ops: ['x, y, z', '-x, y+1/2, -z+1/2', '-x, -y, -z', 'x, -y+1/2, z+1/2']
-   hall: -P 2ybc
-   hm: None
-   itnumber: 14
+   setting: 14:b1
    formula: None
    atom_type_number_in_cell: []
+NCrystal WARNING: Overriding spacegroup to "P 1 21/n 1" due to explicit request
 tensors as B: [None, None, None] ['Ignoring the anisotropic displacements, which are given as B (_atom_site_aniso_B_ij), which is not supported yet']
 atom counts, missing type symbol, Biso:
    cell: {'a': '5.1', 'b': '6.3', 'c': '7.2', 'alpha': '90', 'beta': '105', 'gamma': '90'}
    site: {'label': 'O1', 'type_symbol': 'O', 'x': '0.79', 'y': '0.87', 'z': '0.63', 'uiso': None, 'biso': '0.0123', 'occ': '1', 'uij': None}
    site: {'label': 'CaM1', 'type_symbol': None, 'x': '0.11', 'y': '0.22', 'z': '0.33', 'uiso': None, 'biso': '0.0071', 'occ': '1', 'uij': None}
-   listed_ops: None
-   hall: None
-   hm: P 1 21/c 1
-   itnumber: 14
+   setting: 14:b1
    formula: None
    atom_type_number_in_cell: ['4', '2', None]
 block with the sites selected among two
