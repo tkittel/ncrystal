@@ -20,7 +20,7 @@
 ##                                                                            ##
 ################################################################################
 
-# NEEDS: numpy spglib gemmi
+# NEEDS: numpy spglib
 
 # CIFLoader with symmetry equivalent sites given separately (P1, also in a
 # primitive cell): symmetry detection with site data, .sites with anisotropic

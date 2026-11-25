@@ -25,7 +25,6 @@ packages:
         - spglib
       cif:
         - ADD composer
-        - gemmi
         - ase
       endf:
         - endf-parserpy

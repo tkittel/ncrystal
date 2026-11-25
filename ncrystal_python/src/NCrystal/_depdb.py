@@ -29,7 +29,6 @@
 deps = {
     'ase': ( '3.25.0', 'ase.io', 'ase', 'ase' ),
     'endf-parserpy': ( '0.19.0', 'endf_parserpy', 'endf-parserpy', 'endf-parserpy' ),
-    'gemmi': ( '0.6.4', 'gemmi', 'gemmi', 'gemmi' ),
     'matplotlib': ( '3.6.0', 'matplotlib.pyplot', 'matplotlib', 'matplotlib' ),
     'numpy': ( '1.22', 'numpy', 'numpy', 'numpy' ),
     'spglib': ( '2.3.1', 'spglib', 'spglib', 'spglib' ),

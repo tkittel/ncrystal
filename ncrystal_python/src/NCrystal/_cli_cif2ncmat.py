@@ -45,10 +45,10 @@ structures in local or remote CIF files. The script can optionally also compare
 existing NCMAT files with online structures indicated in their comments.
 
 It is essentially a command-line front-end for the functionality provided by the
-NCrystal.cifutils Python module. Behind the scenes, CIF data is loaded and
-processed with the gemmi and spglib modules, which must be available on the
-system. They can be either installed via PyPi ("python3 -mpip install gemmi
-spglib") or conda ("conda install -c conda-forge gemmi spglib").""",descrw)+'\n\n'
+NCrystal.cifutils Python module. Behind the scenes, CIF data is processed with
+the spglib module, which must be available on the system. It can be either
+installed via PyPi ("python3 -mpip install spglib") or conda ("conda install
+-c conda-forge spglib").""",descrw)+'\n\n'
             + textwrap.fill(
                 """IMPORTANT NOTE: It is important to realise that while most
 CIF files contain crystal structure information, most of them lack appropriate
@@ -204,16 +204,15 @@ def _main_impl( args, do_quiet ):
 
     import pathlib
 
-    from . import _cifcomposerimpl, _cifreadimpl
+    from . import _cifcomposerimpl
     from . import _common as nc_common
     from . import _ncmatimpl as nc_ncmatimpl
     from . import _sgsymimpl as nc_sgsymimpl
     from . import cifutils as nc_cifutils
 
 
-    #Trigger gemmi/spglib import error already here (and with nicer SystemExit):
+    #Trigger spglib import error already here (and with nicer SystemExit):
     if not args.showcif:
-        _cifreadimpl._import_gemmi( sysexit = True )
         nc_sgsymimpl._import_spglib( sysexit = True )
 
     if args.via_ase:

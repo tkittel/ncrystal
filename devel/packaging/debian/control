@@ -52,7 +52,6 @@ Depends: libncrystal@SOMAJOR@ (>= ${source:Version}),
          ${misc:Depends}
 Suggests: python3-matplotlib (>= 3.6.0),
           python3-spglib (>= 2.3.1),
-          python3-gemmi (>= 0.6.4),
           python3-ase (>= 3.25.0)
 Description: thermal neutron transport in crystals and other materials (Python)
  NCrystal is a library for thermal neutron transport in crystals and other
@@ -81,7 +80,6 @@ Depends: python3-ncrystal (= ${source:Version}),
          ${misc:Depends}
 Recommends: python3-matplotlib (>= 3.6.0),
             python3-spglib (>= 2.3.1),
-            python3-gemmi (>= 0.6.4),
             python3-ncrystal-verify
 Suggests: python3-ase (>= 3.25.0)
 Description: thermal neutron transport in crystals and other materials

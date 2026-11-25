@@ -13,8 +13,8 @@ cs0014.cif:
 cs0019.cif:
   default: SG-137 (137:1), 9 sites, 9 atoms, 9 with uij
 cs0020.cif:
-  default error: NCBadInput: Could not determine space group from CIF data (space group symbol "F" not recognised)
-  permissive error: NCBadInput: Could not determine space group from CIF data (space group symbol "F" not recognised)
+  default error: NCBadInput: Invalid CIF data in "cs0020.cif" (data_cs0020, line 18): tag _atom_site_label has a value "?" or "."
+  permissive error: NCBadInput: Invalid CIF data in "cs0020.cif" (data_cs0020, line 18): tag _atom_site_label has a value "?" or "."
 cs0029.cif:
   default error: NCBadInput: CIF site "F1" has Uiso=0.04455 which differs from the Ueq=0.0444178 of its anisotropic displacements by more than the rounding errors of the printed values explain (try permissive mode to use the Uiso value)
   permissive warning: CIF site "F1" has Uiso=0.04455 which differs from the Ueq=0.0444178 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
@@ -49,8 +49,8 @@ cs0051.cif:
 cs0053.cif:
   default: SG-193 (193), 4 sites, 3 atoms, 0 with uij
 cs0057.cif:
-  default error: NCBadInput: Could not determine space group from CIF data
-  permissive error: NCBadInput: Could not determine space group from CIF data
+  default error: NCBadInput: Invalid CIF data in "cs0057.cif" (data_cs0057, line 16): tag _atom_site_label has a value "?" or "."
+  permissive error: NCBadInput: Invalid CIF data in "cs0057.cif" (data_cs0057, line 16): tag _atom_site_label has a value "?" or "."
 cs0063.cif:
   default: SG-57 (57:abc), 10 sites, 4 atoms, 0 with uij
 cs0066.cif:
@@ -111,7 +111,9 @@ cs0132.cif:
   default error: NCBadInput: CIF site "AlT" has no usable _atom_site_type_symbol, and its label does not unambiguously start with an element of the chemical formula ("Si1.896 Mn2 Co0.167 Na0.927 Cr0.005 Ni2 F4 Ga0.003")
   permissive error: NCBadInput: CIF site "AlT" has no usable _atom_site_type_symbol, and its label does not unambiguously start with an element of the chemical formula ("Si1.896 Mn2 Co0.167 Na0.927 Cr0.005 Ni2 F4 Ga0.003")
 cs0133.cif:
-  default: SG-148 (148:h), 6 sites, 6 atoms, 0 with uij
+  default error: NCBadInput: Invalid CIF data in "cs0133.cif" (data_cs0133, line 66): the label "?" of anisotropic displacements is not the label of a site. Use permissive mode to ignore such entries.
+  permissive warning: Ignoring anisotropic displacements of "?" in CIF data in "cs0133.cif" (data_cs0133, line 66), which is not the label of a site
+  permissive: SG-148 (148:h), 6 sites, 6 atoms, 0 with uij
 cs0135.cif:
   default: SG-95 (95), 8 sites, 5 atoms, 0 with uij
 cs0143.cif:

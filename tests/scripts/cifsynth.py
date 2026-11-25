@@ -20,7 +20,7 @@
 ##                                                                            ##
 ################################################################################
 
-# NEEDS: numpy spglib gemmi
+# NEEDS: numpy spglib
 
 # Loads a selection of the synthetic CIF files in tests/data/cifsynth (cf.
 # NCTestUtils/cifsynth.py). All files are loaded in long_cifsynth_*.py.

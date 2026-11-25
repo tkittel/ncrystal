@@ -20,15 +20,12 @@
 ##                                                                            ##
 ################################################################################
 
-
-# NEEDS: gemmi
-
-# Tests of _cifreadimpl.read_cif: CIF text read with gemmi into a CIFContent
-# (printed strings) used by the rest of the CIF loading.
+# Tests of _cifreadimpl.read_cif: CIF text read (via the C++ CIF parser) into
+# a CIFContent (printed strings) used by the rest of the CIF loading.
 
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
-from NCrystalDev._cifreadimpl import read_cif, _decode_json
+from NCrystalDev._cifreadimpl import read_cif
 from NCrystalDev._common import warn
 
 def cif( *, hm = 'P 1 21/c 1', itno = '14', ops = None, extra = '',
@@ -58,8 +55,9 @@ def cif( *, hm = 'P 1 21/c 1', itno = '14', ops = None, extra = '',
         lines += aniso
     return '\n'.join( lines ) + '\n' + extra
 
-def read( txt ):
-    return read_cif( txt, quiet = True, warnfct = warn )
+def read( txt, permissive = False ):
+    return read_cif( txt, name = "test.cif", permissive = permissive,
+                     quiet = True, warnfct = warn )
 
 def show( descr, c ):
     print( f'{descr}:' )
@@ -70,26 +68,28 @@ def show( descr, c ):
                'atom_type_number_in_cell' ):
         print( f'   {k}:', getattr( c, k ) )
 
-def expect_error( descr, txt, detail = True ):
+def expect_error( descr, txt ):
     try:
         read( txt )
     except NC.NCBadInput as e:
-        #(without the details from gemmi, which might change between versions):
-        print( f'{descr}: rejected: {e if detail else str(e).split("(")[0].rstrip()}' )
+        print( f'{descr}: rejected: {e}' )
     else:
         raise SystemExit( f'{descr}: not rejected' )
 
 def main():
     ops14 = [ 'x, y, z', '-x, y+1/2, -z+1/2', '-x, -y, -z', 'x, -y+1/2, z+1/2' ]
-    c = read( cif( ops = ops14, extra = "_chemical_formula_sum 'Fe O Si'\n",
-                   aniso = [ 'O1 0.012(2) 0.009 0.015 0.002 -0.003 0.001',
-                             'Si1 0.01 ? 0.01 0 0 0' ] ) )
+    txt = cif( ops = ops14, extra = "_chemical_formula_sum 'Fe O Si'\n",
+               aniso = [ 'O1 0.012(2) 0.009 0.015 0.002 -0.003 0.001',
+                         'Si1 0.01 ? 0.01 0 0 0' ] )
+    #(tensors with missing values are an error, or ignored if permissive):
+    expect_error( 'tensor with missing values', txt )
+    c = read( txt, permissive = True )
     show( 'monoclinic, listed operations, tensors', c )
     o1, si1, fe1 = c.sites
     #(printed strings, with uncertainties):
     assert o1['uij'] == [ '0.012(2)', '0.009', '0.015', '0.002', '-0.003', '0.001' ]
     assert o1['uiso'] == '0.0123(4)' and si1['occ'] == '0.5'
-    #(tensors with missing values are ignored; null values are None):
+    #(null values are None):
     assert si1['uij'] is None and fe1['uij'] is None and fe1['uiso'] is None
     assert c.listed_ops == ops14 and c.formula == 'Fe O Si'
     assert c.cell == { 'a': '5.1', 'b': '6.3', 'c': '7.2', 'alpha': '90',
@@ -102,8 +102,22 @@ def main():
     show( 'old tags, no H-M symbol', c )
     assert c.listed_ops == ops14 and c.itnumber == '14'
     assert c.hall == '-P 2ybc' and c.hm is None
+    #Symbols "?" or "." are skipped (the current tag is tried first):
+    c = read( cif( ops = ops14, hm = None, itno = None,
+                   extra = "_space_group_name_H-M_alt ?\n"
+                   "_symmetry_space_group_name_H-M 'P 1 21/c 1'\n"
+                   "_space_group_IT_number .\n_symmetry_Int_Tables_number 14\n" ) )
+    assert c.hm == 'P 1 21/c 1' and c.itnumber == '14'
     #No listed operations:
     assert read( cif() ).listed_ops is None
+    #Tensors given as B are not used yet (with a warning):
+    warnings = []
+    c = read_cif( cif( extra = 'loop_\n_atom_site_aniso_label\n' + ''.join(
+        f'_atom_site_aniso_B_{k}\n' for k in ( '11','22','33','12','13','23' ) )
+                       + 'O1 1 1 1 0 0 0\n' ), name = 'test.cif',
+                  permissive = False, quiet = True,
+                  warnfct = warnings.append )
+    print( 'tensors as B:', [ s['uij'] for s in c.sites ], warnings )
     #Atom counts, a missing type symbol, B instead of U:
     c = read( cif( extra = 'loop_\n_atom_type_symbol\n_atom_type_number_in_cell\n'
                    'O 4\nSi 2\nFe ?\n',
@@ -128,7 +142,7 @@ def main():
                   '\n'.join( ln for ln in cif().splitlines()
                              if not ln.startswith( '_cell_length_b' ) ) )
     expect_error( 'two blocks with sites', cif() + cif().replace( 'data_test', 'data_b' ) )
-    expect_error( 'syntax error', 'data_x\n_a 1 2\n', detail = False )
+    expect_error( 'syntax error', 'data_x\n_a 1 2\n' )
     expect_error( 'no blocks', '# nothing\n' )
     #Aniso rows go to the sites with their label in order (labels reused):
     c = read( cif( sites = [ 'O1 O 0.1 0.2 0.3 1 ? 4', 'O1 O 0.4 0.2 0.3 1 ? 4',
@@ -154,8 +168,7 @@ def main():
         else:
             s, = lc.sites
             print( f'{descr}: uiso {s["uiso"]}, tensor {s["aniso"]}' )
-    #Missing coordinates are rejected when loading (but unoccupied sites are
-    #ignored):
+    #Missing coordinates are rejected when loading, also of unoccupied sites:
     from NCrystalDev.cifutils import CIFLoader
     for sites in ( [ 'O1 O ? ? ? 1 ? 4' ],
                    [ 'O1 O 0.1 0.2 0.3 1 ? 4', 'O2 O ? ? ? 0 ? 4' ] ):
@@ -166,13 +179,16 @@ def main():
             print( f'sites {sites}: rejected: {e}' )
         else:
             print( f'sites {sites}: loaded {len(lc.sites)} site(s)' )
-
-    #JSON from gemmi < 0.7.5 has numbers like -.065, which are repaired
-    #(outside JSON strings) only for those versions:
-    print( 'json, old gemmi:', _decode_json( '{"a": [-.065, ".5", .25]}',
-                                             '0.6.5' ) )
-    print( 'json, new gemmi:', _decode_json( '{"a": [-0.065, ".5"]}',
-                                             '0.7.5' ) )
+    #The MP id of data from materialsproject.org, from the local data item
+    #written when downloading it, or (in older cached files) from a note:
+    mpnote = ( '# Note from NCrystal.cifutils: Data from'
+               ' materialsproject.org / mp-1234\n' )
+    for descr, extra in ( ( 'MP data item',
+                            '_[local]_ncrystal_mp_database_code mp-1234\n' ),
+                          ( 'MP note', mpnote ) ):
+        lc = CIFLoader( cif( ops = ops14, extra = extra ), quiet = True,
+                        refine_with_spglib = False )
+        print( f'{descr}: {lc.extracted_description}' )
 
 if __name__ == '__main__':
     main()
