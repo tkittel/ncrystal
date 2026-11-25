@@ -460,6 +460,117 @@ void NC::GaussOnSphere::set(double sigma, double trunc_angle, double prec ) {
 
   m_lt_sofcosd.swap(lt_sofcosd);
   m_lt_evalcosx.swap(lt_evalcosx);
+  setupTable();
+}
+
+void NC::GaussOnSphere::setupTable()
+{
+  //Where the closed-form approximation is never valid, every circle integral
+  //would need numerical integration. Instead, a table is set up from such
+  //integrals, and used with 4x4-point Lagrange interpolation. It covers
+  //alpha in [1.2*truncangle,pi/2] and gamma-alpha in [-truncangle,
+  //truncangle], with coordinates which need no transcendental functions and
+  //resolve the important regions: z=sin(gamma-alpha)/sin(truncangle)
+  //uniform in [-1,1], and r=q/(q+kappa), q=tan(alpha/2), uniform. Tabulated
+  //is log(W/(sqrt(1-z^2)*sqrt(sin(alpha)/sin(gamma)))), which is smooth. The
+  //table is validated at cell centres and refined until the maximum error is
+  //10 times below the requested accuracy (or else not used), ignoring
+  //negligible values.
+  m_table = Table();
+  if ( m_circleint_k1 != kInfinity )
+    return;//closed form valid in places
+  const double amin = 1.2 * m_truncangle;
+  if ( !( amin < kPiHalf - 0.05 ) )
+    return;
+  const double qmin = std::tan( 0.5 * amin );
+  const double target = 0.1 * m_numint_accuracy;
+  for ( unsigned na = 64, nz = 256; na <= 256; na *= 2, nz *= 2 ) {
+    Table t;
+    t.na = na;
+    t.nz = nz;
+    t.kappa = qmin;
+    t.r0 = 0.5;//qmin/(qmin+kappa)
+    t.dr = ( 1.0 / ( 1.0 + t.kappa ) - t.r0 ) / ( na - 1 );
+    t.dz = 2.0 / ( nz - 1 );
+    t.sintrunc = m_sta;
+    t.cosamin = std::cos( amin );
+    //angles from coordinates:
+    auto angles = [&t]( double r, double z, double& cg, double& sg,
+                        double& ca, double& sa )
+    {
+      const double q = t.kappa * r / ( 1.0 - r );
+      const double q2 = q * q;
+      sa = 2.0 * q / ( 1.0 + q2 );
+      ca = ( 1.0 - q2 ) / ( 1.0 + q2 );
+      const double sd = z * t.sintrunc;
+      const double cd = std::sqrt( 1.0 - sd * sd );
+      sg = sa * cd + ca * sd;
+      cg = ca * cd - sa * sd;
+    };
+    t.g.resize( std::size_t(na) * nz );
+    for ( unsigned ia = 0; ia < na; ++ia ) {
+      for ( unsigned iz = 0; iz < nz; ++iz ) {
+        const double z = ncclamp( -1.0 + iz * t.dz, -1.0 + 1e-12, 1.0 - 1e-12 );
+        double cg, sg, ca, sa;
+        angles( t.r0 + ia * t.dr, z, cg, sg, ca, sa );
+        const double w = circleIntegralNumerical( cg, sg, ca, sa );
+        if ( !( w > 0.0 ) )
+          return;//should not happen
+        t.g[ia*nz+iz] = std::log( w / ( std::sqrt( 1.0 - z*z )
+                                        * std::sqrt( sa / sg ) ) );
+      }
+    }
+    m_table = std::move( t );
+    //Validate at the centres of cells of every second row (relative to
+    //values which are not negligible, i.e. a bit below the typical peak
+    //values of norm*sqrt(2pi)*sigma):
+    const double wfloor = 1e-3 * m_norm * m_sigma;
+    double maxerr = 0.0;
+    for ( unsigned ia = 0; ia + 1 < na; ia += 2 ) {
+      for ( unsigned iz = 0; iz + 1 < nz; ++iz ) {
+        double cg, sg, ca, sa;
+        angles( m_table.r0 + ( ia + 0.5 ) * m_table.dr,
+                -1.0 + ( iz + 0.5 ) * m_table.dz, cg, sg, ca, sa );
+        const double ref = circleIntegralNumerical( cg, sg, ca, sa );
+        const double val = tableValue( cg, sg, ca, sa );
+        maxerr = ncmax( maxerr, ncabs( val - ref ) / ncmax( ref, wfloor ) );
+      }
+    }
+    if ( maxerr <= target )
+      return;//ok
+    m_table = Table();
+  }
+}
+
+double NC::GaussOnSphere::tableValue( double cg, double sg, double ca,
+                                      double sa ) const
+{
+  const Table& t = m_table;
+  nc_assert( !t.g.empty() );
+  const double z = ncclamp( ( sg * ca - cg * sa ) / t.sintrunc, -1.0, 1.0 );
+  const double q = sa / ( 1.0 + ca );
+  const double fr = ( q / ( q + t.kappa ) - t.r0 ) / t.dr;
+  const double fz = ( z + 1.0 ) / t.dz;
+  const int ia = ncclamp( static_cast<int>( fr ), 1, int(t.na) - 3 );
+  const int iz = ncclamp( static_cast<int>( fz ), 1, int(t.nz) - 3 );
+  //Lagrange weights for nodes at -1,0,1,2 relative to ia (iz):
+  auto weights = []( double u, double* w )
+  {
+    const double um1(u-1.0), um2(u-2.0), up1(u+1.0);
+    w[0] = -u * um1 * um2 * ( 1.0 / 6.0 );
+    w[1] = up1 * um1 * um2 * 0.5;
+    w[2] = -up1 * u * um2 * 0.5;
+    w[3] = up1 * u * um1 * ( 1.0 / 6.0 );
+  };
+  double wa[4], wz[4];
+  weights( fr - ia, wa );
+  weights( fz - iz, wz );
+  const double * g = &t.g[ std::size_t(ia-1) * t.nz + (iz-1) ];
+  double sum = 0.0;
+  for ( unsigned i = 0; i < 4; ++i, g += t.nz )
+    sum += wa[i] * ( wz[0]*g[0] + wz[1]*g[1] + wz[2]*g[2] + wz[3]*g[3] );
+  return std::sqrt( ncmax( 0.0, 1.0 - z * z ) ) * std::sqrt( sa / sg )
+    * std::exp( sum );
 }
 
 double NC::GaussOnSphere::circleIntegralSlow( double cg, double sg, double ca, double sa ) const
@@ -480,12 +591,25 @@ double NC::GaussOnSphere::circleIntegralSlow( double cg, double sg, double ca, d
     return k2Pi*sa*evalCosX(ca);
   }
 
-  //Full numerical integration required. Use Gauss-Legendre quadrature over
-  //the angle t along the circle (in [0,tmax], doubled by symmetry), with the
-  //exact density. With beta the angle to the centre of the Gaussian, we have
+  //Use table if available and applicable, otherwise numerical integration:
+  if ( !m_table.g.empty() && ca >= 0.0 && ca <= m_table.cosamin )
+    return tableValue( cg, sg, ca, sa );
+  return circleIntegralNumerical( cg, sg, ca, sa );
+}
+
+double NC::GaussOnSphere::circleIntegralNumerical( double cg, double sg,
+                                                   double ca, double sa ) const
+{
+  const double sasg = sa*sg;
+  const double cacg = ca*cg;
+  const double cd = cacg+sasg;
+  if ( cd <= m_cta || !( sasg > 0.0 ) )
+    return 0.0;
+  //Use Gauss-Legendre quadrature over the angle t along the circle (in
+  //[0,tmax], doubled by symmetry), with the exact density. With beta the
+  //angle to the centre of the Gaussian, we have
   //w=1-cos(beta)=w0+2*sasg*sin^2(t/2), where w0=1-cd is found via
   //sin(gamma-alpha) to avoid cancellations for small angles.
-  nc_assert(sasg>0);
   const double sd = sg*ca - cg*sa;
   const double w0 = sd*sd/(1.0+cd);
   const double y = ( m_wtrunc - w0 ) / ( 2.0*sasg );//sin^2(tmax/2)

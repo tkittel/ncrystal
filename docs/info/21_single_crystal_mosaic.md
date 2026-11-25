@@ -77,7 +77,16 @@ $\psi \approx 22.6$ degrees at $\epsilon = 10^{-3}$), and numerical
 integration otherwise. The latter uses Gauss-Legendre quadrature of the exact
 density along the circle, with the number of points (8-24, on segments of
 at most $10\sigma$) chosen from a table of measured maximum errors, so that
-these are at least 10 times below the requested accuracy.
+these are at least 10 times below the requested accuracy. When the closed
+form is never valid (large mosaicities or small `mosprec`), a 2D table of
+such integrals is set up instead, covering $\alpha$ from 1.2 times the
+truncation angle to $\pi/2$. It is indexed by $\sin(\gamma-\alpha)$ and
+$\tan(\alpha/2)$ (no transcendental functions needed), and holds
+$\ln(g/(\sqrt{1-z^2}\sqrt{\sin\alpha/\sin\gamma}))$ with
+$z=\sin(\gamma-\alpha)/\sin\tau$, which is smooth. It is interpolated with
+4x4-point Lagrange polynomials, and is validated and refined at setup until
+its maximum error is 10 times below the requested accuracy (for values not
+negligible), or else not used.
 
 ### Scattering
 
@@ -177,8 +186,9 @@ of specifying orientations: `@crys_uvw:`, `dir2=arbitrary` and `rot`.
 Bug fix: planes with a normal exactly along the neutron were ignored near
 back-scattering (`GaussMos::calcCrossSections`).
 Numerical integrations of circles use Gauss-Legendre quadrature of the exact
-density rather than Romberg integration of a splined one: about 2 times
-faster, and more precise. Cross sections are evaluated faster due to the
+density rather than Romberg integration of a splined one, and are mostly
+replaced by a table when the closed form is never valid: 5-9 times faster
+in such cases, and more precise. Cross sections are evaluated faster due to the
 preselection of planes (results are unchanged): typically 2-3 times for a mosaicity of 0.5 degrees
 (7 times for crystals of low symmetry), and more for smaller mosaicities.
 Indirect changes: the hkl input (chapter 12), orientation handling for

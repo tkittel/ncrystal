@@ -144,6 +144,17 @@ namespace NCRYSTAL_NAMESPACE {
     unsigned m_numint_nseg;//number of segments
     unsigned m_numint_nseries;//terms in series for beta^2 (0: use asin)
     double numIntBetaSq( double w ) const;
+    double circleIntegralNumerical( double cg, double sg, double ca,
+                                    double sa ) const;
+    //Table of circle integrals, used instead of numerical integration if
+    //available (see setupTable for details):
+    struct Table {
+      std::vector<double> g;//log(W/(sqrt(1-z^2)*sqrt(sa/sg)))
+      unsigned na = 0, nz = 0;
+      double r0, dr, kappa, dz, sintrunc, cosamin;
+    } m_table;
+    void setupTable();
+    double tableValue( double cg, double sg, double ca, double sa ) const;
     SplinedLookupTable m_lt_sofcosd;
     SplinedLookupTable m_lt_evalcosx;
     double m_prec;//for reference

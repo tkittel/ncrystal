@@ -86,5 +86,8 @@ CHANGELOG at release time, after which this file is dropped).
        approximation (large mosaicities, or small mosprec values), the
        integrals along circles now use Gauss-Legendre quadrature of the
        exact density rather than Romberg integration of a splined one.
-       This is around 2 times faster for single crystals in such cases,
-       and more precise. Results change slightly (within mosprec).
+       Where the closed form is never valid, a validated 2D table of such
+       integrals (0.5-2 MB, set up in around 0.1-0.3 seconds) is used for
+       most of them. In such cases cross sections of single and layered
+       crystals are now evaluated 5-9 times faster, and more precisely.
+       Results change slightly (within mosprec).
