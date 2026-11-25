@@ -74,10 +74,11 @@ CHANGELOG at release time, after which this file is dropped).
        mosaicity was provided under the key "dmax" (hiding the actual
        dmax value) rather than "mos".
      * Cross sections of layered crystals (LCBragg) are now evaluated
-       around 3 times faster (6 times with mosprec=1e-5). Firstly, the
-       integration over crystallite rotations now uses the trapezoidal
-       rule with successive halving of the step, rather than Romberg
-       integration, and secondly the integrands are evaluated in batches.
-       Results change slightly due to the former, well within the
-       precision requested via mosprec (typically in the 5th significant
-       digit).
+       3-15 times faster, mostly via a new series expansion of the
+       integral over crystallite rotations, which uses exact moments of
+       the mosaicity distribution. Where the expansion is not precise
+       enough, the integration now uses the trapezoidal rule with
+       successive halving of the step (rather than Romberg integration),
+       with integrands evaluated in batches. Results change slightly, well
+       within the precision requested via mosprec (typically in the 5th
+       significant digit).

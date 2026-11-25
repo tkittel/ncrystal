@@ -20,7 +20,10 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // Checks the precision of LCStdFrame::calcXSIntegral, by comparing with a
-// brute-force integration of LCStdFrame::calcXS.
+// brute-force integration of LCStdFrame::calcXS. NB: calcXSIntegral mostly
+// uses exact moments of the mosaicity distribution, while calcXS relies on
+// approximations which on their own can be off by up to ~5e-5 (relative),
+// hence a corresponding tolerance.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/extd_utils/NCLCUtils.hh"
@@ -91,10 +94,11 @@ namespace {
       //Check the sum, i.e. the cross section. For the individual integrals,
       //the brute-force reference is not precise enough for the negligible
       //ones (those are dominated by the non-smooth truncation edges).
-      REQUIRE( NC::ncabs( sum - sum_ref ) <= prec*sum_ref );
+      constexpr double tol_calcxs = 1e-4;
+      REQUIRE( NC::ncabs( sum - sum_ref ) <= ( prec + tol_calcxs )*sum_ref );
       for ( auto& e : vals )
         REQUIRE( NC::ncabs( e.first - e.second )
-                 <= 2.0*prec*e.second + 1e-3*prec*sum_ref );
+                 <= ( 2.0*prec + tol_calcxs )*e.second + 1e-3*prec*sum_ref );
     }
     REQUIRE( nroi > 200 );
   }

@@ -734,6 +734,97 @@ void NC::LCHelper::genScatter( LCHelper::Cache& cache, RNG& rng, double wl, cons
 NC::LCStdFrame::LCStdFrame(MosaicityFWHM mosaicity, double prec, double ntrunc)
   : m_gm(mosaicity,prec,ntrunc)
 {
+  //Moments E[w^m] of the distribution of crystallite normals, where
+  //w=1-cos(beta) and beta is the angle to the nominal normal (Simpson's rule;
+  //w=2sin^2(beta/2) for precision at small angles):
+  const auto& gos = m_gm.gos();
+  const double ta = gos.getTruncangle();
+  constexpr unsigned n = 2048;
+  const double h = ta / n;
+  StableSum sums[5];
+  for ( auto i : ncrange(n+1) ) {
+    const double beta = i * h;
+    const double sb = std::sin(0.5*beta);
+    const double w = 2.0*sb*sb;
+    double f = ( ( i==0 || i==n ) ? 1.0 : ( i%2 ? 4.0 : 2.0 ) )
+      * gos.evalXExact(beta) * std::sin(beta);
+    for ( auto& sum : sums ) {
+      sum.add(f);
+      f *= w;
+    }
+  }
+  for ( auto m : ncrange(5) )
+    m_wmom[m] = sums[m].sum() * ( k2Pi * h / 3.0 );
+}
+
+bool NC::LCStdFrame::calcXSIntegralApprox( const NeutronPars& neutron,
+                                           const NormalPars& normal,
+                                           double& result ) const
+{
+  //Integral over phi in [0,pi] of the cross section, Q*W(u), with
+  //u=cos(angle between neutron and normal)=A*cos(phi)+B. Substituting u for
+  //phi gives Q*integral(W(u)*g(u)du), with g(u)=1/sqrt(A^2-(u-B)^2). W is
+  //only non-zero in a narrow window, |u-c|<=h, around c=wl/2d, and if that is
+  //well inside [B-|A|,B+|A|], g is expanded to 4th order around c. This
+  //needs the moments M_n of W around c, which are exactly given by
+  //M_n=s*E[<(-c*w+s*sin(beta)*cos(psi))^n>], s=sqrt(1-c^2) (with <..> an
+  //average over psi in [0,2pi], and w and beta as for m_wmom). Returns false
+  //if the approximation is not precise enough.
+  const double c = neutron.wl * normal.planeset->inv_twodsp;
+  const double cta = m_gm.mosaicityCosTruncationAngle();
+  if ( !( c < cta ) )
+    return false;//window reaches u=1 (back-scattering), or wl>=2d
+  const double s = std::sqrt( 1.0 - c*c );
+  const double A = ncabs( normal.planeset->sinalpha * neutron.s3 );
+  const double B = normal.planeset->cosalpha * neutron.c3 * normal.sign;
+  const double d1 = ( B + A ) - c;
+  const double d2 = c - ( B - A );
+  const double D = ncmin( d1, d2 );
+  const double h = s*m_gm.mosaicitySinTruncationAngle() + c*(1.0-cta);
+  if ( !( h < D ) )
+    return false;//window not inside [B-|A|,B+|A|]
+  //Moments divided by s:
+  const double* mu = m_wmom;
+  const double cc(c*c), ss(s*s);
+  const double M[5] = {
+    mu[0],
+    -c * mu[1],
+    cc * mu[2] + ss * ( mu[1] - 0.5 * mu[2] ),
+    -c * ( cc * mu[3] + 1.5 * ss * ( 2.0 * mu[2] - mu[3] ) ),
+    cc * cc * mu[4] + 3.0 * cc * ss * ( 2.0 * mu[3] - mu[4] )
+    + 0.375 * ss * ss * ( 4.0 * ( mu[2] - mu[3] ) + mu[4] )
+  };
+  //Taylor coefficients of g, from those of (d1-t)^(-1/2) and (d2+t)^(-1/2):
+  constexpr double ck[5] = { 1.0, 0.5, 0.375, 0.3125, 0.2734375 };
+  const double g0 = 1.0 / std::sqrt( d1 * d2 );
+  const double e1 = 1.0 / d1;
+  const double e2 = -1.0 / d2;
+  double pe1[5], pe2[5];
+  pe1[0] = pe2[0] = 1.0;
+  for ( unsigned k = 1; k < 5; ++k ) {
+    pe1[k] = pe1[k-1] * e1;
+    pe2[k] = pe2[k-1] * e2;
+  }
+  double sum = 0.0;
+  for ( unsigned n = 0; n < 5; ++n ) {
+    double an = 0.0;
+    for ( unsigned k = 0; k <= n; ++k )
+      an += ck[k] * ck[n-k] * pe1[k] * pe2[n-k];
+    sum += an * M[n];
+  }
+  sum *= g0;
+  //The coefficients of g are bounded by g0/D^n, and since W>=0, |M_n| is
+  //bounded by h^(n-4)*M_4. Thus the remaining terms are bounded by:
+  const double x = h / D;
+  const double D2 = D * D;
+  const double bound = g0 * M[4] * x / ( D2 * D2 * ( 1.0 - x ) );
+  const double acc = ncclamp( m_gm.precision(), 1e-7, 1e-2 );
+  if ( !( sum > 0.0 && bound <= 0.1 * acc * sum ) )
+    return false;
+  //Multiply by Q*s (cf. GaussMos::InteractionPars):
+  const double wl = neutron.wl;
+  result = sum * ( wl * wl * wl / c ) * ( 0.5 * normal.planeset->fsq );
+  return true;
 }
 
 double NC::LCStdFrame::calcXS_OnAxis( const NC::LCStdFrame::NeutronPars& neutron,
@@ -791,6 +882,9 @@ double NC::LCStdFrame::calcXSIntegral( const NC::LCStdFrame::NeutronPars& neutro
   nc_assert(phimin>=0.0&&phimin<kPi);
   nc_assert(phimax>0.0&&phimax<=kPi);
   nc_assert(phimax>phimin);
+  double result;
+  if ( calcXSIntegralApprox( neutron, normal, result ) )
+    return result;
   LCStdFrameIntegrator integrator(&m_gm, normal,neutron);
   return integrator.integrate(phimin,phimax);
 }

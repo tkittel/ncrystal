@@ -9,8 +9,8 @@ of chapter 21 and averages it analytically over the rotation angle $\phi$
 about the layer axis (`lcaxis`): plane families are grouped by $(d, \theta_n)$
 with $\theta_n$ the angle between the normal and the axis, the $\phi$
 intervals where a family can reflect are located geometrically, and the
-cross section is integrated over them with the trapezoidal rule (halving
-the step until converged) using the single-crystal closed form inside; sampling draws $\phi$ from a
+cross section is integrated over them, mostly via a series expansion with
+exact moments of the mosaicity distribution, otherwise numerically; sampling draws $\phi$ from a
 piecewise-constant overlay and then proceeds as in a single crystal. Two
 slow reference models (averages over explicit rotations) are available
 through `lcmode` for validation. Documented in the 2021 elastic paper,
@@ -86,12 +86,18 @@ frame with the layer axis along $z$, where a crystallite rotation is a
 rotation of the normal about $z$ by $\phi$; for each plane set the $\phi$
 intervals with non-zero cross section are located from the inequalities
 above (with the degenerate cases of neutron or normal on the axis), the
-single-crystal cross section is integrated over each interval with the
-trapezoidal rule, starting with 17 points and halving the step until two
-estimates agree to within `mosprec` (it converges fast, since the integrand
-is smooth and either vanishes or is symmetric at the end points), using the
-closed form of chapter 21 inside, and
-cumulative cross sections and per-interval overlays are kept for sampling.
+single-crystal cross section is integrated over each interval. With
+$u = \cos\gamma = A\cos\phi + B$, the integral becomes
+$\int W(u)\,(A^2-(u-B)^2)^{-1/2}\,du$, where $W$ is only non-zero in a narrow
+window around $\lambda/2d$. When that window is well inside $[B-|A|, B+|A|]$
+(the usual case), the square-root factor is expanded to 4th order, which
+needs the moments of $W$. These are exact and simple functions of
+$\lambda/2d$ and four averages over the mosaicity distribution, computed once.
+The method is used only if a strict bound on the neglected terms is below
+`mosprec`/10. Otherwise the trapezoidal rule is used, starting with 17
+points and halving the step until two estimates agree to within `mosprec`,
+with the closed form of chapter 21 inside. Cumulative
+cross sections and per-interval overlays are kept for sampling.
 Sampling picks an interval by cross section, draws $\phi$ by rejection
 from a piecewise-constant overlay (acceptance 30-40%), and then samples the
 single-crystal outcome at that rotation. The model is about ten times
@@ -121,11 +127,11 @@ crystal frame and shared between orientations. New forms of `lcaxis`
 `lcaxis` along `dir1`. The description of the plain form of `lcaxis` was
 corrected (a Cartesian vector, not direct-lattice coordinates). Indirect
 changes through the hkl list and settings as for chapter 21. The
-integration over $\phi$ now uses the trapezoidal rule rather than Romberg
-integration, which needs half as many evaluations (or less), and these are
-carried out in batches: cross sections are evaluated about 3 times faster,
-and change slightly (well within `mosprec`, typically in the 5th
-significant digit).
+integration over $\phi$ now mostly uses the expansion described above, and
+otherwise the trapezoidal rule (rather than Romberg integration) with
+batched evaluations. Cross sections are evaluated 3-15 times faster, and
+change slightly (well within `mosprec`, typically in the 5th significant
+digit).
 
 ## References
 
