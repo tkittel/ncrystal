@@ -68,9 +68,10 @@ def expand( setting, cell, asym ):
     ops = evaluate_query( [ 'sgsym', 'info', 'strict', setting ] )['ops']
     res = []
     for lbl, el, p, occ, uiso, u in asym:
-        e = sgs._expand_sites( ops, cell, [ { 'pos': p, 'aniso': u } ] )
+        e = sgs._expand_sites( ops, cell, [ sgs.SymSite( key = lbl, pos = p,
+                                                         ustd = u ) ] )
         for i, x in enumerate( e ):
-            res.append( ( f'{lbl}_{i}', el, x['pos'], occ, uiso, x['aniso'] ) )
+            res.append( ( f'{lbl}_{i}', el, x.pos, occ, uiso, x.ustd ) )
     return res
 
 def load( txt, **kw ):

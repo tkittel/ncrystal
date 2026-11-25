@@ -378,8 +378,8 @@ def test_refine_uij():
     #All positions in the conventional cell:
     ops = evaluate_query( [ 'sgsym', 'info', 'strict', '15:b1' ] )['ops']
     allc = sgs._expand_sites( ops, conv,
-                              [ { 'key': lbl, 'pos': p,
-                                  'aniso': dict( zip( keys, u ) ) }
+                              [ sgs.SymSite( key = lbl, pos = p,
+                                             ustd = dict( zip( keys, u ) ) )
                                 for lbl, p, u in asym ] )
     #Primitive cell (a-b)/2, (a+b)/2, c:
     def latt( c ):
@@ -395,11 +395,11 @@ def test_refine_uij():
              'beta': ang(0,2), 'gamma': ang(0,1) }
     Minv = np.linalg.inv( M )
     def to_prim( e, unrotated = None ):
-        x = tuple( float( q ) % 1.0 for q in Minv @ np.array( e['pos'] ) )
-        a = unrotated or e['aniso']
+        x = tuple( float( q ) % 1.0 for q in Minv @ np.array( e.pos ) )
+        a = unrotated or e.ustd
         uf = Minv @ sgs._ustd_to_ustar( a, conv ) @ Minv.T
         u = sgs._ustar_to_ustd( uf, prim )
-        return ( e['key'], *x, tuple( u[k] for k in keys ) )
+        return ( e.key, *x, tuple( u[k] for k in keys ) )
     def same( s, q ):
         return s[0] == q[0] and max( min( abs( a - b ), 1 - abs( a - b ) )
                                      for a, b in zip( s[1:4], q[1:4] ) ) < 1e-9
@@ -407,7 +407,7 @@ def test_refine_uij():
         res = []
         for e in allc:
             s = to_prim( e, dict( zip( keys, u_si ) ) if ( unrotated and
-                                                          e['key'] == 'Si' )
+                                                          e.key == 'Si' )
                          else None )
             if not any( same( s, q ) for q in res ):
                 res.append( s )

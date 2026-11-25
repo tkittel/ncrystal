@@ -60,7 +60,9 @@ def expand( sgno, cellsg, asym ):
     return res
 
 def show( name, cellsg, sites, **tolkw ):
-    r = sgs._find_site_orbits( cellsg, sites,
+    symsites = [ sgs.SymSite( **{ ( 'ustd' if k == 'aniso' else k ): v
+                                  for k, v in s.items() } ) for s in sites ]
+    r = sgs._find_site_orbits( cellsg, symsites,
                                sgs._resolve_tolerances( **tolkw ) )
     def fmt( e ):
         bad = ' BAD-ANISO' if e['aniso_ok'] is False else ''

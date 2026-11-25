@@ -751,9 +751,10 @@ class NCMATComposerImpl:
         cellsg, atompos = self.__params['cellsg'], self.__params['atompos']
         occumap = atompos.get('occumap',{})
         keys = _nc_sgsymimpl._uij_keys
-        sites = [ { 'key': lbl, 'pos': ( x, y, z ),
-                    'occu': occumap.get( lbl, 1.0 ),
-                    'aniso': dict( zip( keys, u ) ) if u else None }
+        sites = [ _nc_sgsymimpl.SymSite( key = lbl, pos = ( x, y, z ),
+                                         occu = occumap.get( lbl, 1.0 ),
+                                         ustd = ( dict( zip( keys, u ) )
+                                                  if u else None ) )
                   for ( lbl, x, y, z ), u in zip( atompos['sites'],
                                                   atompos['uij'] ) ]
         ops = evaluate_query( [ 'sgsym', 'info', 'strict',
@@ -766,7 +767,7 @@ class NCMATComposerImpl:
             for w in r['warnings']:
                 _nc_common.warn(w)
         newcell = r['cellsg']
-        allpos = sorted( ( expanded[i]['key'], x[0], x[1], x[2] )
+        allpos = sorted( ( expanded[i].key, x[0], x[1], x[2] )
                          for i, x in r['allpos'] )
         new_atompos = { 'pos': None, 'sites': None,
                         'occumap': copy.deepcopy( occumap ) }
@@ -778,7 +779,7 @@ class NCMATComposerImpl:
         else:
             #Tensors are dropped for all sites of labels with a failed
             #orientation check (uij must be given for all or none):
-            bad = sorted( { expanded[e['index']]['key'] for e in res_sites
+            bad = sorted( { expanded[e['index']].key for e in res_sites
                             if e['aniso_dropped'] } )
             if bad:
                 _nc_common.warn( 'Anisotropic displacements (uij) dropped for'
@@ -794,7 +795,7 @@ class NCMATComposerImpl:
                                     for lbl, x, y, z in allpos ] )
             from collections import Counter
             if ( Counter( s['label'] for s in q['sites'] )
-                 != Counter( expanded[e['index']]['key'] for e in res_sites ) ):
+                 != Counter( expanded[e['index']].key for e in res_sites ) ):
                 _nc_common.warn( 'Anisotropic displacements (uij) dropped'
                                  ' since the refined sites could not be'
                                  ' matched' )
@@ -807,7 +808,7 @@ class NCMATComposerImpl:
         else:
             ll = []
             for e in res_sites:
-                lbl = expanded[e['index']]['key']
+                lbl = expanded[e['index']].key
                 u = ( tuple( e['aniso'][k] for k in keys )
                       if e['aniso'] and lbl not in bad else None )
                 ll.append( ( ( lbl, ) + tuple( e['pos'] ), u ) )

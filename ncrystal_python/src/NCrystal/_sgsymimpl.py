@@ -645,15 +645,29 @@ def _periodic_distsq_fn( lattice ):
         return float( np.dot( d, d ) )
     return distsq
 
+class SymSite:
+    #A site for the symmetry detection. Only sites with equal keys (hashable,
+    #e.g. the composition) can be equivalent. pos are fractional coordinates,
+    #occu, uiso and ustd are optional (None), and tag is anything the caller
+    #needs back (e.g. a source index), copied as is.
+    __slots__ = ( 'key', 'occu', 'pos', 'tag', 'uiso', 'ustd' )
+    def __init__( self, *, key, pos, occu = None, uiso = None, ustd = None,
+                  tag = None ):
+        self.key, self.pos, self.occu = key, pos, occu
+        self.uiso, self.ustd, self.tag = uiso, ustd, tag
+    def copy( self, **changes ):
+        d = { k: getattr( self, k ) for k in self.__slots__ }
+        d.update( changes )
+        return SymSite( **d )
+
 def _find_site_orbits( cellsg, sites, tols ):
-    #Orbits of sites under the symmetry found by spglib (in the basis of the
-    #input cell, given as dict with keys a,b,c,alpha,beta,gamma). Each site is a
-    #dict with keys 'key' (exact, hashable, e.g. the element), 'pos'
-    #(fractional), and the optional 'occu', 'uiso' and 'aniso' (CIF uij dict).
-    #Sites are only equivalent if their keys are equal and their occupancies,
-    #uiso values and tensor eigenvalues agree within the tolerances (dict from
-    #_resolve_tolerances). Returns dict with the space group number, and the
-    #orbits as list of dicts with 'members' (site indices, the first being the
+    #Orbits of the sites (SymSite objects, one per position) under the symmetry
+    #found by spglib, in the basis of the cell cellsg. Sites are only
+    #equivalent if their keys are equal and their occupancies, uiso values and
+    #tensor eigenvalues agree within tols (dict from _resolve_tolerances).
+    #Returns dict with the space group number 'sgno', the 'types' (type index
+    #of each site, equal for sites considered equivalent), and the 'orbits' as
+    #list of dicts with 'members' (site indices, the first being the
     #representative) and 'aniso_ok' (False if a tensor is not the symmetry
     #image of the representative tensor within tols['uij'], None if the orbit
     #has no tensors).
@@ -662,7 +676,8 @@ def _find_site_orbits( cellsg, sites, tols ):
     spglib = _import_spglib()
     lattice = np.asarray( _cellparams_to_spglib_lattice( cellsg ),
                           dtype = float )
-    ufrac = [ ( _ustd_to_ustar( s['aniso'], cellsg ) if s.get('aniso') else None )
+    assert all( isinstance( s, SymSite ) for s in sites )
+    ufrac = [ ( _ustd_to_ustar( s.ustd, cellsg ) if s.ustd else None )
               for s in sites ]
     eigs = [ ( _ucart_eigenvalues( u, cellsg ) if u is not None else None )
              for u in ufrac ]
@@ -671,15 +686,15 @@ def _find_site_orbits( cellsg, sites, tols ):
         return ( a is None ) == ( b is None ) and ( a is None or cmp( a, b ) )
     def same( i, j ):
         si, sj = sites[i], sites[j]
-        return ( si['key'] == sj['key']
-                 and opt_same( si.get('occu'), sj.get('occu'),
+        return ( si.key == sj.key
+                 and opt_same( si.occu, sj.occu,
                                lambda a, b : _relclose( a, b, to ) )
-                 and opt_same( si.get('uiso'), sj.get('uiso'),
+                 and opt_same( si.uiso, sj.uiso,
                                lambda a, b : _relclose( a, b, tu ) )
                  and opt_same( eigs[i], eigs[j],
                                lambda a, b : _eigclose( a, b, tu ) ) )
     types = _group_indices( list( range( len( sites ) ) ), same )
-    positions = [ tuple( float( x ) for x in s['pos'] ) for s in sites ]
+    positions = [ tuple( float( x ) for x in s.pos ) for s in sites ]
     ds = spglib.get_symmetry_dataset( ( lattice, positions, types ),
                                       symprec = tols['symprec'] )
     if not ds:
@@ -748,49 +763,47 @@ def _parse_xyz_op( op ):
                 t[i] += sign * float( Fraction( term ) )
     return R, t
 
-def _expand_sites( ops, cellsg, sites ):
-    #All positions of sites, with their tensors rotated accordingly. The ops
-    #are strings as from _parse_xyz_op, and each site a dict with 'pos' and
-    #optionally 'aniso' (CIF uij dict). Returns list of dicts like the sites
-    #(other keys copied), one per position.
+def _expand_sites( str_ops_list, cellsg, sites ):
+    #Returns sites expanded to all distinct positions under the symmetry
+    #operations str_ops_list (strings like "-y+1/2,x-y,z+1/3"), pos and ustd
+    #transformed.
     from ._numpy import _ensure_numpy
     np = _ensure_numpy()
-    ops = [ _parse_xyz_op( o ) for o in ops ]
+    ops = [ _parse_xyz_op( o ) for o in str_ops_list ]
     res = []
     for s in sites:
-        x0 = np.asarray( s['pos'], dtype = float )
-        ustar = _ustd_to_ustar( s['aniso'], cellsg ) if s.get('aniso') else None
+        assert isinstance( s, SymSite )
+        x0 = np.asarray( s.pos, dtype = float )
+        ustar = _ustd_to_ustar( s.ustd, cellsg ) if s.ustd else None
         found = []
         for R, t in ops:
             x = ( np.dot( R, x0 ) + t ) % 1.0
             if any( _unit_cell_point_distsq( x, f ) < 1e-12 for f in found ):
                 continue
             found.append( x )
-            e = dict( s )
-            e['pos'] = tuple( _remap_fract_pos( v ) for v in x )
-            if ustar is not None:
-                e['aniso'] = _transformed_ustd( R, s['aniso'], ustar, cellsg )
-            res.append( e )
+            res.append( s.copy(
+                pos = tuple( _remap_fract_pos( v ) for v in x ),
+                ustd = _transformed_ustd( R, s.ustd, ustar, cellsg ) ) )
     return res
 
 def _refine_sites( cellsg, sites, tols ):
-    #Refine a structure with site data (sites as for _find_site_orbits, one
-    #per position) with spglib. Returns dict with the refined cell parameters
+    #Refine a structure with site data (sites as SymSite objects, one per
+    #position) with spglib. Returns dict with the refined cell parameters
     #('cellsg', with 'spacegroup' number), spglib messages ('warnings',
     #'msgs'), the space group symbol ('sgsymb_hm'), all refined positions
-    #('allpos' as (site index of type representative, pos)), the site 'types',
-    #and one entry per
-    #orbit in 'sites': dicts with the representative 'index', the 'members'
-    #(site indices), its refined 'pos', and the 'aniso' tensor
-    #mapped to the refined cell (None if the orbit has no tensors, or if
-    #they failed the orientation check, as indicated by 'aniso_dropped').
-    #The 'sites' are None if spglib's basis change could not be tracked.
+    #('allpos' as (site index of type representative, pos)), the site 'types'
+    #(cf. _find_site_orbits), and one entry per orbit in 'sites': dicts with
+    #the representative 'index', the 'members' (site indices), its refined
+    #'pos', and the 'aniso' tensor mapped to the refined cell (None if the
+    #orbit has no tensors, or if they failed the orientation check, as
+    #indicated by 'aniso_dropped'). The 'sites' are None if spglib's basis
+    #change could not be tracked.
     from ._numpy import _ensure_numpy
     np = _ensure_numpy()
     orb = _find_site_orbits( cellsg, sites, tols )
     types = orb['types']
     lattice = _cellparams_to_spglib_lattice( cellsg )
-    cell = ( lattice, [ tuple( float( v ) for v in s['pos'] ) for s in sites ],
+    cell = ( lattice, [ tuple( float( v ) for v in s.pos ) for s in sites ],
              types )
     d = _spglib_refine_cell( cell, symprec = tols['symprec'] )
     newcell = dict( d['cellparams_snapped'] )
@@ -816,18 +829,18 @@ def _refine_sites( cellsg, sites, tols ):
         r = o['members'][0]
         #The refined position of the representative is the one of its type
         #nearest to its transformed input position:
-        xr = _transform_position( tr, sites[r]['pos'] )
+        xr = _transform_position( tr, sites[r].pos )
         cands = [ x for x, typ in refpos if typ == types[r] ]
         pos = min( cands, key = lambda x : distsq( x, xr ) )
         e = { 'index': r, 'members': o['members'],
               'pos': tuple( _remap_fract_pos( v ) for v in pos ),
               'aniso': None, 'aniso_dropped': o['aniso_ok'] is False }
         if o['aniso_ok'] and _np_is_identity( tr[0] ):
-            e['aniso'] = dict( sites[r]['aniso'] )
+            e['aniso'] = dict( sites[r].ustd )
         elif o['aniso_ok']:
-            uf = _transform_ustar( tr[0], _ustd_to_ustar(
-                sites[r]['aniso'], cellsg ) )
-            u = _ustar_to_ustd( uf, newcell )
+            ustar = _transform_ustar( tr[0], _ustd_to_ustar( sites[r].ustd,
+                                                            cellsg ) )
+            u = _ustar_to_ustd( ustar, newcell )
             #Remove numerical noise (from components which should be zero):
             umax = max( abs( v ) for v in u.values() )
             e['aniso'] = { k: ( 0.0 if abs( v ) < 1e-12 * umax else v )

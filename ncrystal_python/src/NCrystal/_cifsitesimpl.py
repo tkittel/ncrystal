@@ -342,10 +342,12 @@ def _impl_find_sites( cellsg, cif_atoms, setting, *, tols, refine, permissive,
     entries = []
     for i, a in enumerate( cif_atoms ):
         for j, x in enumerate( a['positions'] ):
-            entries.append( { 'key': tuple( a['composition'] ), 'pos': x,
-                              'occu': a['occupancy'], 'uiso': a['uiso'],
-                              'aniso': a['uijs'][j] if a['uijs'] else None,
-                              'src': i } )
+            entries.append( sgs.SymSite( key = tuple( a['composition'] ),
+                                         pos = x, occu = a['occupancy'],
+                                         uiso = a['uiso'],
+                                         ustd = ( a['uijs'][j] if a['uijs']
+                                                  else None ),
+                                         tag = i ) )
     r = sgs._refine_sites( cellsg, entries, tols )
     for w in r['warnings']:
         _nc_common.warn(w)
@@ -355,12 +357,12 @@ def _impl_find_sites( cellsg, cif_atoms, setting, *, tols, refine, permissive,
     nc = r['cellsg']
     cellsg = { k: nc[k] for k in ('a','b','c','alpha','beta','gamma') }
     cellsg['spacegroup'] = { 'number': nc['spacegroup'], 'hm': r['sgsymb_hm'] }
-    q = _query_sites( cellsg, [ ( f't{i}', p, entries[i]['occu'] )
+    q = _query_sites( cellsg, [ ( f't{i}', p, entries[i].occu )
                                 for i, p in r['allpos'] ] )
     setting = q['spacegroup_setting']
     def labels_of( indices ):
         return [ lbl for i in indices
-                 for lbl in cif_atoms[ entries[i]['src'] ]['cif_labels'] ]
+                 for lbl in cif_atoms[ entries[i].tag ]['cif_labels'] ]
     types = r['types']
     rsites = r['sites']
     if rsites is not None:
@@ -370,7 +372,7 @@ def _impl_find_sites( cellsg, cif_atoms, setting, *, tols, refine, permissive,
              != Counter( f't{type2rep[ types[e["index"]] ]}' for e in rsites ) ):
             rsites = None
     if rsites is None:
-        if any( e['aniso'] for e in entries ):
+        if any( e.ustd for e in entries ):
             msg = ( 'The CIF sites could not be followed through the'
                     ' refinement of the structure by spglib, so their'
                     ' anisotropic displacements can not be used' )
@@ -385,15 +387,15 @@ def _impl_find_sites( cellsg, cif_atoms, setting, *, tols, refine, permissive,
             irep = int( s['label'][1:] )
             members = [ i for i in range( len( entries ) )
                         if types[i] == types[irep] ]
-            res.append( _mksite( cif_atoms[ entries[irep]['src'] ],
+            res.append( _mksite( cif_atoms[ entries[irep].tag ],
                                  labels_of( members ), pos,
                                  _orbit_positions( cellsg, setting, pos,
-                                                   cif_atoms[ entries[irep]['src'] ]['occupancy'] ),
+                                                   cif_atoms[ entries[irep].tag ]['occupancy'] ),
                                  None ) )
         return cellsg, res, setting
     res, dropped = [], []
     for e in rsites:
-        a = cif_atoms[ entries[ e['index'] ]['src'] ]
+        a = cif_atoms[ entries[ e['index'] ].tag ]
         if e['aniso_dropped']:
             dropped += labels_of( e['members'] )
         res.append( _mksite( a, labels_of( e['members'] ), e['pos'],
