@@ -38,6 +38,7 @@ __all__ = [
 from . import _common as _nc_common
 from . import _fmt as _nc_fmt
 from . import _ncmatimpl as _nc_ncmatimpl
+from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
 from . import ncmat as _nc_ncmat
 
@@ -865,36 +866,13 @@ def _impl_create_ncmat_composer( cifloader, *,
                                add_empty_line_divider = True )
         return composer
 
-def _ueq_from_ustd( ustd, cellsg ):
-    #Returns Ueq = trace(Ucart)/3 of the tensor ustd in the cell cellsg.
-    import math
-    a, b, c = ( cellsg[k] for k in 'abc' )
-    ca, cb, cg = ( 0.0 if cellsg[k] == 90 else math.cos(math.radians(cellsg[k]))
-                   for k in ('alpha','beta','gamma') )
-    g = [ [ a*a, a*b*cg, a*c*cb ],
-          [ a*b*cg, b*b, b*c*ca ],
-          [ a*c*cb, b*c*ca, c*c ] ]
-    #Reciprocal axis lengths from the diagonal of the inverse metric:
-    #(x*x, not x**2 which uses libm pow, for cross-platform reproducibility):
-    cof = [ g[1][1]*g[2][2] - g[1][2]*g[1][2],
-            g[0][0]*g[2][2] - g[0][2]*g[0][2],
-            g[0][0]*g[1][1] - g[0][1]*g[0][1] ]
-    det = ( g[0][0]*cof[0] - g[0][1]*( g[0][1]*g[2][2] - g[1][2]*g[0][2] )
-            + g[0][2]*( g[0][1]*g[1][2] - g[1][1]*g[0][2] ) )
-    r = [ math.sqrt( x / det ) for x in cof ]
-    u = [ [ ustd['u11'], ustd['u12'], ustd['u13'] ],
-          [ ustd['u12'], ustd['u22'], ustd['u23'] ],
-          [ ustd['u13'], ustd['u23'], ustd['u33'] ] ]
-    return math.fsum( u[i][j] * r[i] * r[j] * g[i][j]
-                      for i in range(3) for j in range(3) ) / 3.0
-
 def _find_site_positions( atom ):
     #The positions among the equivalent_positions of the atom which are the
     #CIF site_positions (or None if they are not all found).
     res = []
     for sp in atom.get('site_positions') or []:
         found = [ p for p in atom['equivalent_positions']
-                  if _nc_ncmatimpl._unit_cell_point_dist( p, sp ) < 1e-6 ]
+                  if _nc_sgsymimpl._unit_cell_point_dist( p, sp ) < 1e-6 ]
         if not found:
             return None
         res.append( found[0] )
@@ -907,7 +885,7 @@ def _cif_setting_and_sites( cellsg, all_atompos, cif_sites ):
     #otherwise the sites chosen by NCrystal (without uij values).
     from .misc import evaluate_query
     sg = cellsg['spacegroup']['number']
-    sgspec = ( f'{sg}:r' if _nc_ncmatimpl._uses_rhombohedral_axes( sg, cellsg['alpha'] )
+    sgspec = ( f'{sg}:r' if _nc_sgsymimpl._uses_rhombohedral_axes( sg, cellsg['alpha'] )
                else str(sg) )
     query = [ 'util', 'atomsites', 'relaxed', sgspec ]
     query += [ f'{lbl},{float(x)!r},{float(y)!r},{float(z)!r}'
@@ -1206,7 +1184,7 @@ def _suggest_filename( ncmat_metadata, cifloader ):
     return '_'.join(ll) + '.ncmat'
 
 def _format_spglib_cell( cellsg, atoms ):
-    lattice = _nc_ncmatimpl._cellparams_to_spglib_lattice(cellsg)
+    lattice = _nc_sgsymimpl._cellparams_to_spglib_lattice(cellsg)
     atomic_points = []
     atomic_types = []
     for i,a in enumerate(atoms):
@@ -1218,7 +1196,7 @@ def _format_spglib_cell( cellsg, atoms ):
 def _impl_refine_cell( cellsg, atoms ):
     orig_cell = _format_spglib_cell( cellsg, atoms )
 
-    d = _nc_ncmatimpl._spglib_refine_cell( orig_cell )#, symprec = 0.01, allow_axis_swap = True )
+    d = _nc_sgsymimpl._spglib_refine_cell( orig_cell )#, symprec = 0.01, allow_axis_swap = True )
     assert len(d)==8
 
     refined_cell = d['refined_cell']
@@ -1695,7 +1673,7 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib, merg
         for candidate in ( _gemmi_wrap_to_unit(img.apply( pos0 )) for img in struct.cell.images):
             use = True
             for c in ll:
-                if _nc_ncmatimpl._unit_cell_point_dist(candidate,c) < 1e-10:
+                if _nc_sgsymimpl._unit_cell_point_dist(candidate,c) < 1e-10:
                     use = False
                     break
             if use:
@@ -1703,8 +1681,8 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib, merg
         if not allow_finetune:
             return ll
         #Now, check how many of these are very close to the initial point:
-        _ucpdist = _nc_ncmatimpl._unit_cell_point_dist
-        lclose = [ _nc_ncmatimpl._remap_fract_pos_pt(e) for e in ll
+        _ucpdist = _nc_sgsymimpl._unit_cell_point_dist
+        lclose = [ _nc_sgsymimpl._remap_fract_pos_pt(e) for e in ll
                    if _ucpdist(pos0,e) < 0.01*fractcoord_approx_1angstrom ]
         assert len(lclose) > 0
         if len(lclose) == 1:
@@ -1750,7 +1728,7 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib, merg
             u_iso = None
 
         if aniso:
-            ueq = _ueq_from_ustd( aniso, cellsg )
+            ueq = _nc_sgsymimpl._ueq_from_ustd( aniso, cellsg )
             if not u_iso:
                 u_iso = ueq
             elif abs( ueq - u_iso ) > 0.05 * u_iso:
@@ -1831,7 +1809,7 @@ def _actual_init_gemmicif( cifsrc, *, quiet, mp_apikey, refine_with_spglib, merg
     def has_same_sites( atom1, atom2 ):
         l1,l2 = atom1['expanded_coords'],atom2['expanded_coords']
         assert len(l1)>0 and len(l2)>0
-        return len(l1) == len(l2) and any( ( _nc_ncmatimpl._unit_cell_point_dist(c2,l1[0])<pos_tolerance) for c2 in l2 )
+        return len(l1) == len(l2) and any( ( _nc_sgsymimpl._unit_cell_point_dist(c2,l1[0])<pos_tolerance) for c2 in l2 )
 
     atoms_to_process, final_atoms = collected_atoms, []
     while atoms_to_process:

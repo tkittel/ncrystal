@@ -180,13 +180,14 @@ def _main_impl( args, do_quiet ):
 
     from . import _common as nc_common
     from . import _ncmatimpl as nc_ncmatimpl
+    from . import _sgsymimpl as nc_sgsymimpl
     from . import cifutils as nc_cifutils
 
 
     #Trigger gemmi/spglib import error already here (and with nicer SystemExit):
     if not args.showcif:
         nc_cifutils._import_gemmi( sysexit = True )
-        nc_ncmatimpl._import_spglib( sysexit = True )
+        nc_sgsymimpl._import_spglib( sysexit = True )
 
     if args.via_ase:
         nc_ncmatimpl._import_ase( sysexit = True )
