@@ -1,0 +1,8 @@
+Attempting to load CIF data with gemmi
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): CIF site "Si1" has Uiso=0.00858 which differs by more than 5% from the Ueq=0.00715012 of its anisotropic displacements [warn#1]
+Self-consistency of structure was verified by spglib
+@ATOMSITES
+  O .79 .87 .63 uij 0.012 0.009 0.015 0.002 -0.003 0.001
+  Si .11 .22 .33 uij 0.006 0.007 0.008 0 0.001 0
+O loaded at (0.21, 0.13, 0.37), uij: 0.012, 0.009, 0.015, 0.002, -0.003, 0.001
+Si loaded at (0.11, 0.22, 0.33), uij: 0.0071999, 0.0083999, 0.0095998, 0, 0.0012, 0
