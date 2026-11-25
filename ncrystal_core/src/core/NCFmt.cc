@@ -26,6 +26,9 @@ namespace NC = NCrystal;
 #include <locale>
 #include <cerrno>
 #include <cstdlib>
+#include <clocale>
+#include <cfenv>
+#include <cstdio>
 
 namespace NCRYSTAL_NAMESPACE {
   namespace detail {
@@ -51,70 +54,97 @@ namespace NCRYSTAL_NAMESPACE {
     namespace {
       static constexpr std::size_t denorm_str_maxsize = 64;
 
-      Optional<double> raw_str2dbl_impl( const char * s_data,
-                                         std::size_t s_size,
-                                         bool allow_denorm_check = true );
-
-      Optional<double> raw_str2dbl_trydenorm( const char * s_data,
+      Optional<double> raw_str2dbl_subnormal( const char * s_data,
                                               std::size_t s_size )
       {
-        //NB: If std conversion fails and contains "e-3" it might be a denormal
-        //    number (issue seen on some mac/clang CI failure). So we could
-        //    replace the 3 with a 2, convert, and then multiply with 1e-100.
-        //    This might not catch ALL denormal values
-        //    (e.g. 0.000000000000001e-299), but it should hopefully catch those
-        //    we ourselves have produced by our fmt() function, ensuring a
-        //    conversion round-trip.
-        nc_assert( s_size <= denorm_str_maxsize );
-        const char * it = s_data;
-        const char * itE = it + s_size;
-        Optional<double> res;
-        for ( ;it!=itE;++it ) {
-          if ( *it != 'e' )
-            continue;
-          ++it;
-          if ( it == itE || *it!='-'
-               || std::next(it)==itE || *std::next(it)!='3' )
-            return res;
-          char tmpbuf[denorm_str_maxsize];
-          std::memcpy(tmpbuf,s_data,s_size);
-          auto idx = std::distance(s_data,it);
-          nc_assert( tmpbuf[ idx ] == '-' );
-          nc_assert( tmpbuf[ idx+1 ] == '3' );
-          if ( s_size != static_cast<std::size_t>(idx+4) )
-            return res;//has to be exactly two digits after the '3'
-          tmpbuf[ std::distance(s_data,it)+1 ] = '2';
-          std::string foo(tmpbuf,s_size);
-          auto val100 = raw_str2dbl_impl( tmpbuf, s_size, false );
-          if ( val100.has_value() && std::fabs( val100.value() ) < 1e-200 )
-            res = val100.value() * 1e-100;
-          break;
+        //Fallback for subnormal values, which some stream implementations
+        //(e.g. libc++) fail to read: std::strtod, which rounds them correctly,
+        //with '.' replaced by the decimal point of the C locale (as in
+        //dbl2shortstr). Only accepted if all is consumed and the result is
+        //nonzero and subnormal (true underflow and other failures stay
+        //failures):
+        if ( s_size > denorm_str_maxsize )
+          return NullOpt;
+        //Only plain decimal numbers (strtod also accepts e.g. "nan", "inf" and
+        //hexadecimal numbers, which str2dbl rejects):
+        for ( auto i : ncrange( s_size ) ) {
+          const char c = s_data[i];
+          if ( !( ( c >= '0' && c <= '9' ) || c == '.' || c == 'e'
+                  || c == 'E' || c == '+' || c == '-' ) )
+            return NullOpt;
         }
-        return res;
+        const char * dp = std::localeconv()->decimal_point;
+        const std::size_t ndp = std::strlen( dp );
+        if ( !ndp || ndp > 8 )
+          return NullOpt;
+        char buf[denorm_str_maxsize * 8 + 1];
+        std::size_t n = 0;
+        for ( auto i : ncrange( s_size ) ) {
+          if ( s_data[i] == '.' ) {
+            std::memcpy( buf + n, dp, ndp );
+            n += ndp;
+          } else {
+            buf[n++] = s_data[i];
+          }
+        }
+        buf[n] = '\0';
+        //strtod sets ERANGE and floating point exception flags (underflow,
+        //overflow, e.g. for "1e400"), which must neither leak nor trap
+        //(e.g. on i386 with traps enabled):
+        const int saved_errno = errno;
+        std::fenv_t fenv;
+        const bool held = ( std::feholdexcept( &fenv ) == 0 );
+        char * end = nullptr;
+        const double v = std::strtod( buf, &end );
+        if ( held )
+          std::fesetenv( &fenv );
+        errno = saved_errno;
+        if ( end != buf + n || !std::isfinite( v ) || v == 0.0
+             || !( std::fabs( v ) < std::numeric_limits<double>::min() ) )
+          return NullOpt;
+        return v;
       }
 
 #ifndef NDEBUG
       static int dummy = []()
       {
+        //Subnormals read back exactly (also on platforms where streams fail
+        //for them, where raw_str2dbl relies on this):
         auto test = []( std::string s, double vref )
         {
-          auto v = raw_str2dbl_trydenorm( s.data(), s.size() );
+          auto v = raw_str2dbl_subnormal( s.data(), s.size() );
           nc_assert_always( v.has_value() );
           nc_assert_always( v.value() == vref );
         };
         test("4.94066e-324",4.94066e-324);
         test("5e-320",5e-320);
-        test("1e-308",1e-308);
         test("5e-324",5e-324);
         test("1.123456789123456789e-315",1.123456789123456789e-315);
-        test("1e-301",1e-301);
+        test("2.2250738585072009e-308",2.2250738585072009e-308);
+        for ( std::uint64_t m : { std::uint64_t(1), std::uint64_t(3),
+                                  std::uint64_t(123456789),
+                                  ( std::uint64_t(1) << 52 ) - 1,
+                                  ( std::uint64_t(1) << 51 ) + 12345 } ) {
+          const double v = std::ldexp( static_cast<double>( m ), -1074 );
+          char b[64];
+          const int nb = std::snprintf( b, sizeof(b), "%.17g", v );
+          nc_assert_always( nb > 0 && nb < 64 );
+          for ( char * c = b; *c; ++c )
+            if ( !( ( *c >= '0' && *c <= '9' ) || *c == '-' || *c == 'e' ) )
+              *c = '.';//(locale independent)
+          test( std::string( b ), v );
+          test( std::string( "-" ) + b, -v );
+        }
+        //Not subnormal, or no value, is not accepted:
+        for ( const char * bad : { "1e-400", "1e-300", "1.5", "abc", "1e-310x",
+                                   "nan", "inf", "1e400", "0x1p-1070" } )
+          nc_assert_always( !raw_str2dbl_subnormal( bad, std::strlen(bad) ).has_value() );
         return 1;
       }();
 #endif
 
       Optional<double> raw_str2dbl_impl( const char * s_data,
-                                         std::size_t s_size,
-                                         bool allow_denorm_check ) {
+                                         std::size_t s_size ) {
         //Using streams so we can specify the locale (TODO in c++17 we can
         //possibly use std::from_chars instead!). Using custom stream buffers to
         //reduce need for allocations:
@@ -124,8 +154,7 @@ namespace NCRYSTAL_NAMESPACE {
         double val;
         ss >> val;
         if ( ss.fail() ) {
-          if ( allow_denorm_check && s_size <= denorm_str_maxsize )
-            result = raw_str2dbl_trydenorm( s_data, s_size );
+          result = raw_str2dbl_subnormal( s_data, s_size );
         } else if ( ss.eof() ) {
           result = val;
         }
