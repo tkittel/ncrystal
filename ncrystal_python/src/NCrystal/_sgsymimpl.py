@@ -35,6 +35,9 @@ import math
 from . import _common as _nc_common
 from . import core as _nc_core
 
+#Recurring arguments: cellsg is a dict with (at least) the cell parameters
+#a,b,c,alpha,beta,gamma (Aa and degrees), and ustd a displacement tensor Ustd
+#(cf. NCUijUtils.hh) as a dict with keys u11,u22,u33,u12,u13,u23.
 
 def _lattice_params_to_vectors( a, b, c, alpha, beta, gamma ):
     if max(max(alpha,beta),gamma)<=math.pi:
@@ -294,7 +297,8 @@ def _spglib_refine_cell( spglib_cell, symprec = 0.01 ):
     p_orig = _lattice_vectors_to_params( *spglib_cell[0], as_dict = True )
 
     warnings, msgs = [], []
-    trackinfo = { 'cell' : spglib_cell, 'same_basis' : True }
+    trackinfo = { 'cell' : spglib_cell, 'same_basis' : True,
+                  'transform' : None }
     refined_cell, symdata = _impl_spglib_refine_cell( spglib_cell,
                                                       symprec=symprec,
                                                       warnings=warnings,
@@ -347,12 +351,14 @@ def _spglib_refine_cell( spglib_cell, symprec = 0.01 ):
              'warnings': warnings,
              'msgs': msgs,
              'can_keep_anisotropic_properties': not discard_aniso,
-             'reldiff' : rd }
+             'reldiff' : rd,
+             'transform' : trackinfo['transform'] }
 
 def _impl_spglib_refine_cell( spglib_cell, *, symprec, warnings, msgs,
                               trackinfo, nrepeat = 0 ):
     #trackinfo['cell'] is the original cell, which is transformed along with
-    #spglib_cell (so it can be compared with the final cell in the same basis).
+    #spglib_cell (so it can be compared with the final cell in the same basis),
+    #and trackinfo['transform'] the total (P,p) applied to it so far.
     spglib = _import_spglib()
 
     orig_cell = spglib_cell
@@ -360,9 +366,12 @@ def _impl_spglib_refine_cell( spglib_cell, *, symprec, warnings, msgs,
         tr = _spglib_std_transform( orig_cell, symprec )
         if tr is None:
             trackinfo['cell'] = None
+            trackinfo['transform'] = None
         else:
             trackinfo['cell'] = _spglib_apply_std_transform( trackinfo['cell'],
                                                              tr )
+            t0 = trackinfo['transform'] or _identity_transform()
+            trackinfo['transform'] = _compose_transforms( t0, tr[:2] )
             trackinfo['same_basis'] = ( trackinfo['same_basis']
                                         and _np_is_identity( tr[0] ) )
 
@@ -424,9 +433,9 @@ def _unit_cell_point_distsq( p1, p2 ):
     d = [ abs(remap(e1)-remap(e2)) for e1,e2 in zip(p1,p2)]
     return math.fsum(  min(e,1.0-e)**2 for e in d )
 
-def _ueq_from_ustd( ustd, cellsg ):
-    #Returns Ueq = trace(Ucart)/3 of the tensor ustd in the cell cellsg.
-    import math
+def _cell_metric( cellsg ):
+    #Returns (g,recilen) for the cell cellsg: the metric tensor g as 3x3 nested
+    #lists, and the reciprocal axis lengths.
     a, b, c = ( cellsg[k] for k in 'abc' )
     ca, cb, cg = ( 0.0 if cellsg[k] == 90 else math.cos(math.radians(cellsg[k]))
                    for k in ('alpha','beta','gamma') )
@@ -440,12 +449,79 @@ def _ueq_from_ustd( ustd, cellsg ):
             g[0][0]*g[1][1] - g[0][1]*g[0][1] ]
     det = ( g[0][0]*cof[0] - g[0][1]*( g[0][1]*g[2][2] - g[1][2]*g[0][2] )
             + g[0][2]*( g[0][1]*g[1][2] - g[1][1]*g[0][2] ) )
-    r = [ math.sqrt( x / det ) for x in cof ]
+    return g, [ math.sqrt( x / det ) for x in cof ]
+
+def _ueq_from_ustd( ustd, cellsg ):
+    #Returns Ueq = trace(Ucart)/3 of the tensor ustd in the cell cellsg.
+    g, r = _cell_metric( cellsg )
     u = [ [ ustd['u11'], ustd['u12'], ustd['u13'] ],
           [ ustd['u12'], ustd['u22'], ustd['u23'] ],
           [ ustd['u13'], ustd['u23'], ustd['u33'] ] ]
     return math.fsum( u[i][j] * r[i] * r[j] * g[i][j]
                       for i in range(3) for j in range(3) ) / 3.0
+
+################################################################################
+#Basis changes and displacement tensors. A transform is a pair (P,p) of numpy
+#arrays acting on fractional coordinates as x' = P.x + p (as from spglib). A
+#displacement tensor in fractional form, Ustar = N.Ustd.N with
+#N=diag(a*,b*,c*), transforms as Ustar' = M.Ustar.M^T for both basis changes
+#(M=P) and symmetry operations (M=R).
+
+def _identity_transform():
+    from ._numpy import _ensure_numpy
+    np = _ensure_numpy()
+    return np.identity( 3 ), np.zeros( 3 )
+
+def _compose_transforms( t1, t2 ):
+    #Returns the transform applying t1 and then t2.
+    from ._numpy import _ensure_numpy
+    np = _ensure_numpy()
+    P1, p1 = ( np.asarray( e, dtype = float ) for e in t1 )
+    P2, p2 = ( np.asarray( e, dtype = float ) for e in t2 )
+    return np.dot( P2, P1 ), np.dot( P2, p1 ) + p2
+
+def _transform_position( t, x ):
+    #Returns the fractional position x mapped with the transform t (not
+    #wrapped).
+    from ._numpy import _ensure_numpy
+    np = _ensure_numpy()
+    return np.dot( t[0], np.asarray( x, dtype = float ) ) + t[1]
+
+def _ustd_to_ustar( ustd, cellsg ):
+    #Returns Ustar (3x3 numpy array) of the tensor ustd in the cell cellsg.
+    from ._numpy import _ensure_numpy
+    np = _ensure_numpy()
+    _, r = _cell_metric( cellsg )
+    u = np.array( [ [ ustd['u11'], ustd['u12'], ustd['u13'] ],
+                    [ ustd['u12'], ustd['u22'], ustd['u23'] ],
+                    [ ustd['u13'], ustd['u23'], ustd['u33'] ] ],
+                  dtype = float )
+    return np.outer( r, r ) * u
+
+def _ustar_to_ustd( ustar, cellsg ):
+    #Returns Ustd (as dict) of the tensor ustar in the cell cellsg.
+    _, r = _cell_metric( cellsg )
+    def f( i, j ):
+        return float( ustar[i][j] ) / ( r[i] * r[j] )
+    return { 'u11': f(0,0), 'u22': f(1,1), 'u33': f(2,2),
+             'u12': f(0,1), 'u13': f(0,2), 'u23': f(1,2) }
+
+def _transform_ustar( m, ustar ):
+    #M.U_frac.M^T, for a basis change (M=P) or a symmetry operation (M=R).
+    from ._numpy import _ensure_numpy
+    np = _ensure_numpy()
+    m = np.asarray( m, dtype = float )
+    return np.dot( np.dot( m, np.asarray( ustar, dtype = float ) ), m.T )
+
+def _ucart_eigenvalues( ustar, cellsg ):
+    #Returns the sorted eigenvalues of Ucart of the tensor ustar, i.e. of
+    #ustar.G (G being the metric of cellsg). These do not depend on the basis.
+    from ._numpy import _ensure_numpy
+    np = _ensure_numpy()
+    g, _ = _cell_metric( cellsg )
+    ev = np.linalg.eigvals( np.dot( np.asarray( ustar, dtype = float ),
+                                    np.asarray( g, dtype = float ) ) )
+    return tuple( sorted( float( e.real ) for e in ev ) )
 
 ################################################################################
 #Tolerances for symmetry detection and for merging site data (positions,
