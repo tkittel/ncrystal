@@ -737,9 +737,11 @@ def _refine_sites( cellsg, sites, tols ):
     #Refine a structure with site data (sites as for _find_site_orbits, one
     #per position) with spglib. Returns dict with the refined cell parameters
     #('cellsg', with 'spacegroup' number), spglib messages ('warnings',
-    #'msgs'), all refined positions ('allpos' as (site index of
-    #representative, pos)), and one entry per orbit in 'sites': dicts with
-    #the representative 'index', its refined 'pos', and the 'aniso' tensor
+    #'msgs'), the space group symbol ('sgsymb_hm'), all refined positions
+    #('allpos' as (site index of type representative, pos)), the site 'types',
+    #and one entry per
+    #orbit in 'sites': dicts with the representative 'index', the 'members'
+    #(site indices), its refined 'pos', and the 'aniso' tensor
     #mapped to the refined cell (None if the orbit has no tensors, or if
     #they failed the orientation check, as indicated by 'aniso_dropped').
     #The 'sites' are None if spglib's basis change could not be tracked.
@@ -766,8 +768,9 @@ def _refine_sites( cellsg, sites, tols ):
     allpos = [ ( type2rep[ typ ], tuple( _remap_fract_pos( v ) for v in x ) )
                for x, typ in refpos ]
     if tr is None:
-        return { 'cellsg': newcell, 'warnings': d['warnings'],
-                 'msgs': d['msgs'], 'allpos': allpos, 'sites': None }
+        return { 'cellsg': newcell, 'sgsymb_hm': d['sgsymb_hm'],
+                 'warnings': d['warnings'], 'msgs': d['msgs'],
+                 'allpos': allpos, 'types': types, 'sites': None }
     res = []
     for o in orb['orbits']:
         r = o['members'][0]
@@ -776,9 +779,12 @@ def _refine_sites( cellsg, sites, tols ):
         xr = _transform_position( tr, sites[r]['pos'] )
         cands = [ x for x, typ in refpos if typ == types[r] ]
         pos = min( cands, key = lambda x : distsq( x, xr ) )
-        e = { 'index': r, 'pos': tuple( _remap_fract_pos( v ) for v in pos ),
+        e = { 'index': r, 'members': o['members'],
+              'pos': tuple( _remap_fract_pos( v ) for v in pos ),
               'aniso': None, 'aniso_dropped': o['aniso_ok'] is False }
-        if o['aniso_ok']:
+        if o['aniso_ok'] and _np_is_identity( tr[0] ):
+            e['aniso'] = dict( sites[r]['aniso'] )
+        elif o['aniso_ok']:
             uf = _transform_ustar( tr[0], _ustd_to_ustar(
                 sites[r]['aniso'], cellsg ) )
             u = _ustar_to_ustd( uf, newcell )
@@ -787,5 +793,6 @@ def _refine_sites( cellsg, sites, tols ):
             e['aniso'] = { k: ( 0.0 if abs( v ) < 1e-12 * umax else v )
                            for k, v in u.items() }
         res.append( e )
-    return { 'cellsg': newcell, 'warnings': d['warnings'], 'msgs': d['msgs'],
-             'allpos': allpos, 'sites': res }
+    return { 'cellsg': newcell, 'sgsymb_hm': d['sgsymb_hm'],
+             'warnings': d['warnings'], 'msgs': d['msgs'],
+             'allpos': allpos, 'types': types, 'sites': res }

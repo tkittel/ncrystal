@@ -79,6 +79,7 @@ present script.  """,descrw)+f"""\n\nExample invocations:
                                     formatter_class=RawTextHelpFormatter )
     def wrap(t):
         return textwrap.fill(t,width=helpw)
+    from ._sgsymimpl import _TOL_DEFAULT, _TOL_SYMPREC_AT_DEFAULT
 
     #CIFFILE arg use nargs='?' if --valplots detected, to avoid spurious error:
     parser.add_argument('CIFFILE', type=str,nargs=('?' if any( a.startswith('--val') for a in arglist ) else 1 ),
@@ -118,6 +119,21 @@ present script.  """,descrw)+f"""\n\nExample invocations:
 
     parser.add_argument('--nomerge',default=False,action='store_true',
                         help=wrap('Do not use same label for different non-equivalent positions of the same atom species.'))
+    parser.add_argument("--tol",default=None,type=float,metavar='VALUE',
+                        help=wrap('Relative tolerance (default'
+                                  f' {_TOL_DEFAULT:g}) for treating site data'
+                                  ' as equal when detecting symmetries and'
+                                  ' merging sites. Sets the defaults of'
+                                  ' --tol-uij and --tol-occu (VALUE) and'
+                                  f' --tol-symprec ({_TOL_SYMPREC_AT_DEFAULT/_TOL_DEFAULT:g}'
+                                  '*VALUE Aa).'))
+    parser.add_argument("--tol-symprec",default=None,type=float,metavar='VALUE',
+                        help=wrap('Tolerance for positions (in Aa).'))
+    parser.add_argument("--tol-uij",default=None,type=float,metavar='VALUE',
+                        help=wrap('Relative tolerance for Uiso values and'
+                                  ' eigenvalues of anisotropic displacements.'))
+    parser.add_argument("--tol-occu",default=None,type=float,metavar='VALUE',
+                        help=wrap('Relative tolerance for site occupancies.'))
     parser.add_argument('--showcif',default=False,action='store_true',
                         help=wrap('Simply show the input CIF data (mostly useful with mpid:: or codid:: sources).'))
     parser.add_argument("--valplot",nargs='*',metavar="FILE",
@@ -242,7 +258,11 @@ def _main_impl( args, do_quiet ):
         lc = nc_cifutils.CIFLoader( cifsrc,
                                     merge_equiv = not args.nomerge,
                                     quiet = do_quiet,
-                                    override_spacegroup = args.spacegroup )
+                                    override_spacegroup = args.spacegroup,
+                                    tol = args.tol,
+                                    tol_symprec = args.tol_symprec,
+                                    tol_uij = args.tol_uij,
+                                    tol_occu = args.tol_occu )
         composer = lc.create_ncmat_composer( top_comments=['<<disableautogennotice>>'],
                                              uiso_temperature = args.uisotemp,
                                              quiet = do_quiet,
