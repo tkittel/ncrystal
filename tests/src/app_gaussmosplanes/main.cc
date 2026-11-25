@@ -21,7 +21,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Checks that GaussMos::calcCrossSections with a PlaneList (which preselects
 // planes in single precision) gives exactly the same as a straightforward
-// loop over all families and normals.
+// loop over all families and normals. Also checks that the functions
+// evaluating many values in one go give exactly the same as their
+// single-value counterparts.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/phys_utils/NCGaussMos.hh"
@@ -176,11 +178,65 @@ namespace {
     //Normally, the test should be non-trivial:
     REQUIRE( ncontrib > 0 || nplanes_target < 100 || mos.dbl() < 0.01*NC::kDeg );
   }
+
+  void testBatchEval( NC::RNG& rng, NC::MosaicityFWHM mos )
+  {
+    NC::GaussMos gm( mos );
+    const double ta = gm.mosaicityTruncationAngle();
+    NC::VectD cosvals, ca, sa, res;
+    for ( auto irep : NC::ncrange(300) ) {
+      //Wavelength and plane, incl. the special case wl=2d:
+      const bool wl_is_2d = ( irep%20==0 );
+      REQUIRE( roundVal(1.0) == 1.0 );
+      const double wl = ( wl_is_2d ? 1.0 : 0.1 + 5.0*rng.generate() );
+      const double sinth = ( wl_is_2d ? 1.0 : 0.02 + 0.97*rng.generate() );
+      const double inv2dsp = sinth / wl;
+      const double xsfact = 0.1 + rng.generate();
+      //Angles between neutron and normal near the Bragg condition, or
+      //anywhere (incl. exactly parallel):
+      const double gamma0 = NC::kPiHalf - std::asin( NC::ncmin(1.0,sinth) );
+      const std::size_t n = 1 + std::size_t( rng.generate()*80.0 );
+      cosvals.clear();
+      for ( auto i : NC::ncrange(n) ) {
+        const double r = rng.generate();
+        double c = std::cos( gamma0 + (2.0*rng.generate()-1.0)*1.3*ta );
+        if ( r < 0.05 )
+          c = ( i%2 ? 1.0 : -1.0 );
+        else if ( r < 0.1 )
+          c = 2.0*rng.generate()-1.0;
+        cosvals.push_back( NC::ncclamp( c, -1.0, 1.0 ) );
+      }
+      res.assign( n, -1.0 );
+      NC::GaussMos::InteractionPars ip1( wl, inv2dsp, xsfact );
+      NC::GaussMos::InteractionPars ip2( wl, inv2dsp, xsfact );
+      gm.calcRawCrossSectionValues( ip1, n, cosvals.data(), res.data() );
+      for ( auto i : NC::ncrange(n) )
+        REQUIRE( res.at(i) == gm.calcRawCrossSectionValue(ip2,cosvals.at(i)) );
+      //Same for the circle integrals (with different cones for each):
+      ca.clear();
+      sa.clear();
+      for ( auto i : NC::ncrange(n) ) {
+        const double th = ( i%9==0 ? 0.0 : NC::kPiHalf*rng.generate() );
+        ca.push_back( std::sin(th) );
+        sa.push_back( std::cos(th) );
+      }
+      res.assign( n, -1.0 );
+      auto& gos = gm.gos();
+      gos.circleIntegrals( n, cosvals.data(), ca.data(), sa.data(), res.data() );
+      for ( auto i : NC::ncrange(n) ) {
+        const double cg = cosvals.at(i);
+        REQUIRE( res.at(i) == gos.circleIntegral( cg, std::sqrt(1.0-cg*cg),
+                                                  ca.at(i), sa.at(i) ) );
+      }
+    }
+  }
 }
 
 int main()
 {
   auto rng = NC::createBuiltinRNG( 12345 );
+  for ( double mosdeg : { 0.0003, 0.5, 30.0 } )
+    testBatchEval( rng, NC::MosaicityFWHM{ mosdeg * NC::kDeg } );
   //Number of planes below, at, and above multiples of the preselection chunk
   //sizes (16 and 64), and a wide range of mosaicities (incl. extreme values):
   for ( std::size_t nplanes : { 0, 1, 2, 15, 16, 17, 31, 32, 33, 47, 48, 49,

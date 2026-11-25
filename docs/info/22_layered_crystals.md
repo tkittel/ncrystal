@@ -122,9 +122,10 @@ crystal frame and shared between orientations. New forms of `lcaxis`
 corrected (a Cartesian vector, not direct-lattice coordinates). Indirect
 changes through the hkl list and settings as for chapter 21. The
 integration over $\phi$ now uses the trapezoidal rule rather than Romberg
-integration, which needs half as many evaluations (or less): cross sections
-are evaluated about 2 times faster, and change slightly (well within
-`mosprec`, typically in the 5th significant digit).
+integration, which needs half as many evaluations (or less), and these are
+carried out in batches: cross sections are evaluated about 3 times faster,
+and change slightly (well within `mosprec`, typically in the 5th
+significant digit).
 
 ## References
 

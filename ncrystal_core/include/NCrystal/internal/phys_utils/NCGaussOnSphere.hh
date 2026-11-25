@@ -102,6 +102,12 @@ namespace NCRYSTAL_NAMESPACE {
     //and with an opening angle of alpha.
     double circleIntegral( double cosgamma, double singamma, double cosalpha, double sinalpha ) const;
 
+    //Same for n circles in one go, which is faster than separate calls
+    //(same results). Here singamma is calculated as sqrt(1-cosgamma^2):
+    void circleIntegrals( std::size_t n, const double* cosgamma,
+                          const double* cosalpha, const double* sinalpha,
+                          double* results ) const;
+
     //Generate random point on circle, according to the density there. Returns
     //false in case of vanishing density everywhere on circle. The ct=cos(t) and
     //st=sin(t) values can be used to construct the coordinate of the chosen

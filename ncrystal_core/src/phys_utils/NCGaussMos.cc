@@ -312,6 +312,40 @@ void NC::GaussMos::calcCrossSections( const PlaneList& pl,
   }
 }
 
+void NC::GaussMos::calcRawCrossSectionValues( InteractionPars& ip,
+                                              std::size_t n,
+                                              const double* cosvals,
+                                              double* results ) const
+{
+  if ( !n )
+    return;
+  //The first value separately, which also initialises ip.m_Q if needed:
+  results[0] = calcRawCrossSectionValue( ip, cosvals[0] );
+  if ( !( ip.m_Q > 0.0 ) ) {
+    //Special case (vanishing or infinite cross sections).
+    for ( std::size_t i = 1; i < n; ++i )
+      results[i] = calcRawCrossSectionValue( ip, cosvals[i] );
+    return;
+  }
+  constexpr std::size_t nchunk = 32;
+  double cg[nchunk], ca[nchunk], sa[nchunk];
+  for ( auto& e : ca )
+    e = ip.m_sin_perfect_theta;
+  for ( auto& e : sa )
+    e = ip.m_cos_perfect_theta;
+  const double Q = ip.m_Q;
+  for ( std::size_t i0 = 1; i0 < n; i0 += nchunk ) {
+    const std::size_t m = ncmin( n - i0, nchunk );
+    for ( std::size_t i = 0; i < m; ++i ) {
+      nc_assert(ncabs(cosvals[i0+i])<=1.+1e-10);
+      cg[i] = ncclamp( cosvals[i0+i], -1.0, 1.0 );
+    }
+    m_gos.circleIntegrals( m, cg, ca, sa, results + i0 );
+    for ( std::size_t i = 0; i < m; ++i )
+      results[i0+i] *= Q;
+  }
+}
+
 void NC::GaussMos::genScat( RNG& rng, const ScatCache& cache, double wl_raw, const NC::Vector& indir, NC::Vector& outdir) const
 {
   nc_assert(wl_raw>0.);

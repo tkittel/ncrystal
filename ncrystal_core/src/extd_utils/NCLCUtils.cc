@@ -473,29 +473,22 @@ namespace NCRYSTAL_NAMESPACE {
     //Values at the n points phi=offset+i*delta, i=0..n-1:
     void evalFuncMany(double* fvals, unsigned n, double offset, double delta) const
     {
-      nc_assert(offset>=0&&offset<kPi*1.00001);
-      nc_assert(delta>0&&delta*(n-1)<=kPi*1.00001);
-      CosSinGridGen grid(n,offset,delta);
-      unsigned i = 0;
-      do {
-        double cosgamma = m_sinnormalmults3 * grid.current_cosval() + m_cosnormalmultc3;
-        nc_assert(NC::ncabs(cosgamma)<1.000000001);
-        fvals[i++] = m_gm->calcRawCrossSectionValue(m_ip,cosgamma);
-      } while (grid.step());
+      evalInBatches( n, offset, delta, [&fvals]( const double* v, unsigned m )
+      {
+        std::copy( v, v+m, fvals );
+        fvals += m;
+      });
     }
 
     //Same, but returning the sum of the values:
     double evalFuncManySum(unsigned n, double offset, double delta) const
     {
-      nc_assert(offset>=0&&offset<kPi*1.00001);
-      nc_assert(delta>0&&delta*n<=kPi*1.00001);
-      CosSinGridGen grid(n,offset,delta);
       double sum(0.);
-      do {
-        double cosgamma = m_sinnormalmults3 * grid.current_cosval() + m_cosnormalmultc3;
-        nc_assert(NC::ncabs(cosgamma)<1.000000001);
-        sum += m_gm->calcRawCrossSectionValue(m_ip,cosgamma);
-      } while (grid.step());
+      evalInBatches( n, offset, delta, [&sum]( const double* v, unsigned m )
+      {
+        for ( unsigned i = 0; i < m; ++i )
+          sum += v[i];
+      });
       return sum;
     }
 
@@ -533,6 +526,31 @@ namespace NCRYSTAL_NAMESPACE {
     }
 
   private:
+    //Evaluates the n values in batches (which is faster), passing the values
+    //and size of each batch to the provided function.
+    template<class TFunc>
+    void evalInBatches( unsigned n, double offset, double delta,
+                        TFunc&& func ) const
+    {
+      nc_assert(offset>=0&&offset<kPi*1.00001);
+      nc_assert(delta>0&&delta*(n-1)<=kPi*1.00001);
+      constexpr unsigned nbatch = 64;
+      double cosgamma[nbatch], vals[nbatch];
+      CosSinGridGen grid(n,offset,delta);
+      bool more = true;
+      while ( more ) {
+        unsigned m = 0;
+        do {
+          //gamma is the angle between neutron and normal:
+          cosgamma[m] = m_sinnormalmults3 * grid.current_cosval() + m_cosnormalmultc3;
+          nc_assert(NC::ncabs(cosgamma[m])<1.000000001);
+          more = grid.step();
+        } while ( ++m < nbatch && more );
+        m_gm->calcRawCrossSectionValues( m_ip, m, cosgamma, vals );
+        func( vals, m );
+      }
+    }
+
     mutable GaussMos::InteractionPars m_ip;//NB: Mutable here is OK, since we use local per-thread LCStdFrameIntegrator objects.
     const GaussMos * m_gm;
     const double m_sinnormalmults3;
