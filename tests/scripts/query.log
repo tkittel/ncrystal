@@ -257,8 +257,64 @@ Caught expected NCBadInput('Invalid cif query: ["cif","numbers","RAWDATA",""] (c
 Caught expected NCBadInput('Invalid cif query: ["cif","bla"] (unknown key)')
 
 >>> Sending query: ['cif', 'structure', 'permissive', 'RAWDATA', 'q.cif', 'RAWDATA', "data_info\\n_journal_name_full 'From data_info'\\ndata_s\\n_cell_length_a 4.05(1)\\n_cell_length_b 4.05(1)\\n_cell_length_c 4.05(1)\\n_cell_angle_beta 90.0\\n_space_group_name_H-M_alt 'F m -3 m'\\n_symmetry_space_group_name_H-M 'F m 3 m'\\n_space_group_IT_number 225\\n_chemical_formula_sum 'Al'\\nloop_\\n_atom_site_label\\n_atom_site_type_symbol\\n_atom_site_fract_x\\n_atom_site_fract_y\\n_atom_site_fract_z\\n_atom_site_U_iso_or_equiv\\nAl1 Al 0 0 0 ?\\nAl2 Al 0.5 0.5 0.5 0.01\\nloop_\\n_atom_site_aniso_label\\n_atom_site_aniso_U_11\\n_atom_site_aniso_U_22\\n_atom_site_aniso_U_33\\n_atom_site_aniso_U_12\\n_atom_site_aniso_U_13\\n_atom_site_aniso_U_23\\nAl1 ? ? ? ? ? ?\\nAl2 0.01 0.01 0.01 0 0 0\\n_publ_section_title 'A title'\\nloop_ _publ_author_name 'Doe, J.' 'Roe, R.'\\n_cod_database_code 1234567\\n"]
-{'block': 's',
+{'atoms': [{'composition': [[1.0, 'Al']],
+            'labels': ['Al1'],
+            'occupancy': 1.0,
+            'positions': [[0.0, 0.0, 0.0],
+                          [0.0, 0.5, 0.5],
+                          [0.5, 0.0, 0.5],
+                          [0.5, 0.5, 0.0]],
+            'split': None,
+            'uij': None,
+            'uijs': None,
+            'uiso': None},
+           {'composition': [[1.0, 'Al']],
+            'labels': ['Al2'],
+            'occupancy': 1.0,
+            'positions': [[0.5, 0.5, 0.5],
+                          [0.5, 0.0, 0.0],
+                          [0.0, 0.5, 0.0],
+                          [0.0, 0.0, 0.5]],
+            'split': None,
+            'uij': [0.009999999999999998,
+                    0.009999999999999998,
+                    0.009999999999999998,
+                    0.0,
+                    0.0,
+                    0.0],
+            'uijs': [[0.009999999999999998,
+                      0.009999999999999998,
+                      0.009999999999999998,
+                      0.0,
+                      0.0,
+                      0.0],
+                     [0.009999999999999998,
+                      0.009999999999999998,
+                      0.009999999999999998,
+                      0.0,
+                      0.0,
+                      0.0],
+                     [0.009999999999999998,
+                      0.009999999999999998,
+                      0.009999999999999998,
+                      0.0,
+                      0.0,
+                      0.0],
+                     [0.009999999999999998,
+                      0.009999999999999998,
+                      0.009999999999999998,
+                      0.0,
+                      0.0,
+                      0.0]],
+            'uiso': 0.01}],
+ 'block': 's',
  'block_line': 3,
+ 'cell': {'a': 4.05,
+          'alpha': 90.0,
+          'b': 4.05,
+          'beta': 90.0,
+          'c': 4.05,
+          'gamma': 90.0},
  'provenance': {'_cod_database_code': ['1234567', 33],
                 '_journal_name_full': ['From data_info', 2],
                 '_publ_author_name': [['Doe, J.', 32], ['Roe, R.', 32]],
@@ -302,8 +358,22 @@ Caught expected NCBadInput('Invalid CIF data in "q.cif" (data_s, line 29): aniso
 Caught expected NCBadInput('Invalid CIF data in "raw CIF data" (data_s, line 29): anisotropic displacements of "Al1" have components "?" or ".". Use permissive mode to ignore such entries.')
 
 >>> Sending query: ['cif', 'structure', 'strict', 'query_test.cif']
-{'block': 'x',
+{'atoms': [{'composition': [[1.0, 'Fe']],
+            'labels': ['Fe1'],
+            'occupancy': 1.0,
+            'positions': [[0.0, 0.0, 0.0]],
+            'split': None,
+            'uij': None,
+            'uijs': None,
+            'uiso': None}],
+ 'block': 'x',
  'block_line': 1,
+ 'cell': {'a': 3.0,
+          'alpha': 90.0,
+          'b': 3.0,
+          'beta': 90.0,
+          'c': 3.0,
+          'gamma': 90.0},
  'provenance': None,
  'provenance_block': None,
  'spacegroup_setting': '221',
@@ -322,11 +392,29 @@ Caught expected NCBadInput('Invalid CIF data in "raw CIF data" (data_s, line 29)
                             'number': [{'tag': '_space_group_IT_number',
                                         'value': ['221', 5]}],
                             'operations': []}},
- 'warnings': []}
+ 'warnings': ['Some CIF sites have no _atom_site_type_symbol and their element '
+              'content was guessed from their label (Fe from Fe1)']}
 
 >>> Sending query: ['cif', 'structure', 'strict', 'override_spacegroup=225', 'query_test.cif']
-{'block': 'x',
+{'atoms': [{'composition': [[1.0, 'Fe']],
+            'labels': ['Fe1'],
+            'occupancy': 1.0,
+            'positions': [[0.0, 0.0, 0.0],
+                          [0.0, 0.5, 0.5],
+                          [0.5, 0.0, 0.5],
+                          [0.5, 0.5, 0.0]],
+            'split': None,
+            'uij': None,
+            'uijs': None,
+            'uiso': None}],
+ 'block': 'x',
  'block_line': 1,
+ 'cell': {'a': 3.0,
+          'alpha': 90.0,
+          'b': 3.0,
+          'beta': 90.0,
+          'c': 3.0,
+          'gamma': 90.0},
  'provenance': None,
  'provenance_block': None,
  'spacegroup_setting': '225',
@@ -345,7 +433,12 @@ Caught expected NCBadInput('Invalid CIF data in "raw CIF data" (data_s, line 29)
                             'number': [{'tag': '_space_group_IT_number',
                                         'value': ['221', 5]}],
                             'operations': []}},
- 'warnings': ['Overriding spacegroup to "225" due to explicit request']}
+ 'warnings': ['Overriding spacegroup to "225" due to explicit request',
+              'Some CIF sites have no _atom_site_type_symbol and their element '
+              'content was guessed from their label (Fe from Fe1)']}
+Caught expected NCBadInput('Unit cell not compatible with the space group of the CIF data: Lattice parameters a and c must be equal for this space group (got a=4.05 and c=4.2)')
+cell not fitting the setting, allowed: None
+cif_globalblock.cif with tol_uij=0.1: warnings []
 cif_globalblock.cif: block I provenance_block global
 {'_audit_creation_method': ['TESTXL-1 CIF writer, edited test template', 15],
  '_journal_name_full': ['Journal of Synthetic Test Data, Section T', 234],
@@ -355,15 +448,19 @@ cif_globalblock.cif: block I provenance_block global
                          'K~2~[HPO~4~]\\\\cdotH~2~O with the publication\n'
                          'data in a separate block',
                          255]}
-Caught expected NCBadInput('Invalid cif query: ["cif","structure"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","1","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","RAWDATA"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","RAWDATA","x"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","RAWDATA","n","x","y"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","x","y"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","override_spacegroup=","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","override_spacegroup=1","override_spacegroup=2","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","1","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","RAWDATA"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","RAWDATA","x"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","RAWDATA","n","x","y"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","x","y"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","override_spacegroup=","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","override_spacegroup=1","override_spacegroup=2","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_uij=0","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_uij=x","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_uij=1","tol_uij=1","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","allow_cell_misfit=0","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X or allow_cell_misfit=1)')
 ============= CLI >>test wl2ekin 1.8<< ====================
 0.025248213035
 ===========================================
@@ -805,37 +902,18 @@ Caught expected NCBadInput('Invalid sgsym query: ["sgsym","fromops","x,y,z"] (co
 Caught expected NCBadInput('Invalid sgsym query: ["sgsym","fromops","RAWDATA"] (correct usage: ["sgsym","fromops","RAWDATA",OPLIST])')
 Caught expected NCBadInput('Invalid sgsym query: ["sgsym","fromops","RAWDATA",""] (correct usage: ["sgsym","fromops","RAWDATA",OPLIST])')
 Caught expected NCBadInput('Invalid sgsym query: ["sgsym","fromops","RAWDATA","@x,y,z","@-x,-y,-z"] (correct usage: ["sgsym","fromops","RAWDATA",OPLIST])')
-============= CLI >>sgsym cell lenient 0 225 RAWDATA '4.123(2)' RAWDATA 4.124 RAWDATA 4.1234 RAWDATA 90 RAWDATA 90.0 RAWDATA 90<< ====================
-{'cell': {'a': 4.123,
-          'b': 4.123,
-          'c': 4.123,
-          'alpha': 90.0,
-          'beta': 90.0,
-          'gamma': 90.0},
- 'error_msg': None}
+============= CLI >>sgsym cell lenient 225 RAWDATA '4.123(2)' RAWDATA 4.124 RAWDATA 4.1234 RAWDATA 90 RAWDATA 90.0 RAWDATA 90<< ====================
+{'a': 4.123, 'b': 4.123, 'c': 4.123, 'alpha': 90.0, 'beta': 90.0, 'gamma': 90.0}
 ===========================================
-============= CLI >>sgsym cell strict 1 194 RAWDATA 3 RAWDATA 3 RAWDATA 5 RAWDATA 90 RAWDATA 90 RAWDATA 120<< ====================
-{'cell': {'a': 3.0,
-          'b': 3.0,
-          'c': 5.0,
-          'alpha': 90.0,
-          'beta': 90.0,
-          'gamma': 120.0},
- 'error_msg': None}
+============= CLI >>sgsym cell strict 194 RAWDATA 3 RAWDATA 3 RAWDATA 5 RAWDATA 90 RAWDATA 90 RAWDATA 120<< ====================
+{'a': 3.0, 'b': 3.0, 'c': 5.0, 'alpha': 90.0, 'beta': 90.0, 'gamma': 120.0}
 ===========================================
-============= CLI >>sgsym cell strict 0 225 RAWDATA 4.123 RAWDATA 4.124 RAWDATA 4.123 RAWDATA 90 RAWDATA 90 RAWDATA 90<< ====================
-{'cell': None,
- 'error_msg': 'Lattice parameters a and b must be equal for this space group '
-              '(got a=4.123 and b=4.124)'}
-===========================================
-============= CLI >>sgsym cell strict 1 225 RAWDATA 4.123 RAWDATA 4.124 RAWDATA 4.123 RAWDATA 90 RAWDATA 90 RAWDATA 90<< ====================
+============= CLI >>sgsym cell strict 225 RAWDATA 4.123 RAWDATA 4.124 RAWDATA 4.123 RAWDATA 90 RAWDATA 90 RAWDATA 90<< ====================
 Caught expected NCBadInput('Lattice parameters a and b must be equal for this space group (got a=4.123 and b=4.124)')
-============= CLI >>sgsym cell lenient 0 225 4.1 4.1 4.1 90 90 90<< ====================
-Caught expected NCBadInput('Invalid sgsym query: ["sgsym","cell","lenient","0","225","4.1","4.1","4.1","90","90","90"] (correct usage: ["sgsym","cell","strict|lenient",0|1,SG,"RAWDATA",a,"RAWDATA",b,"RAWDATA",c,"RAWDATA",alpha,"RAWDATA",beta,"RAWDATA",gamma])')
-============= CLI >>sgsym cell lenient 0 225 RAWDATA 4.1 RAWDATA 4.1 RAWDATA 4.1 RAWDATA 90 RAWDATA 90 RAWDATA x<< ====================
-Caught expected NCBadInput('Invalid sgsym query: ["sgsym","cell","lenient","0","225","RAWDATA","4.1","RAWDATA","4.1","RAWDATA","4.1","RAWDATA","90","RAWDATA","90","RAWDATA","x"] (correct usage: ["sgsym","cell","strict|lenient",0|1,SG,"RAWDATA",a,"RAWDATA",b,"RAWDATA",c,"RAWDATA",alpha,"RAWDATA",beta,"RAWDATA",gamma])')
-============= CLI >>sgsym cell lenient 2 225 RAWDATA 4.1 RAWDATA 4.1 RAWDATA 4.1 RAWDATA 90 RAWDATA 90 RAWDATA 90<< ====================
-Caught expected NCBadInput('Invalid sgsym query: ["sgsym","cell","lenient","2","225","RAWDATA","4.1","RAWDATA","4.1","RAWDATA","4.1","RAWDATA","90","RAWDATA","90","RAWDATA","90"] (correct usage: ["sgsym","cell","strict|lenient",0|1,SG,"RAWDATA",a,"RAWDATA",b,"RAWDATA",c,"RAWDATA",alpha,"RAWDATA",beta,"RAWDATA",gamma])')
+============= CLI >>sgsym cell lenient 225 4.1 4.1 4.1 90 90 90<< ====================
+Caught expected NCBadInput('Invalid sgsym query: ["sgsym","cell","lenient","225","4.1","4.1","4.1","90","90","90"] (correct usage: ["sgsym","cell","strict|lenient",SG,"RAWDATA",a,"RAWDATA",b,"RAWDATA",c,"RAWDATA",alpha,"RAWDATA",beta,"RAWDATA",gamma])')
+============= CLI >>sgsym cell lenient 225 RAWDATA 4.1 RAWDATA 4.1 RAWDATA 4.1 RAWDATA 90 RAWDATA 90 RAWDATA x<< ====================
+Caught expected NCBadInput('Invalid sgsym query: ["sgsym","cell","lenient","225","RAWDATA","4.1","RAWDATA","4.1","RAWDATA","4.1","RAWDATA","90","RAWDATA","90","RAWDATA","x"] (correct usage: ["sgsym","cell","strict|lenient",SG,"RAWDATA",a,"RAWDATA",b,"RAWDATA",c,"RAWDATA",alpha,"RAWDATA",beta,"RAWDATA",gamma])')
 Caught expected NCBadInput('Invalid sgsym query: ["sgsym","fromhm"] (correct usage: ["sgsym","fromhm","RAWDATA",SYMBOL])')
 Caught expected NCBadInput('Invalid sgsym query: ["sgsym","fromhm","P 21/c"] (correct usage: ["sgsym","fromhm","RAWDATA",SYMBOL])')
 ============= CLI >>sgsym foo<< ====================

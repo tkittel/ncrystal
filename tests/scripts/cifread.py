@@ -24,6 +24,7 @@
 # a CIFContent (printed strings) used by the rest of the CIF loading.
 
 import NCTestUtils.enable_fpe # noqa F401
+import math
 import NCrystalDev as NC
 from NCrystalDev._cifreadimpl import read_cif
 from NCrystalDev._common import warn
@@ -63,9 +64,13 @@ def read( txt, permissive = False, override_spacegroup = None ):
 def show( descr, c ):
     print( f'{descr}:' )
     print( '   cell:', c.cell )
-    for s in c.sites:
-        print( '   site:', s )
-    for k in ( 'setting', 'formula', 'atom_type_number_in_cell' ):
+    for a in c.atoms:
+        u = a['aniso']
+        print( '   atom:', a['cif_labels'], a['composition'], 'occupancy',
+               a['occupancy'], 'multiplicity', len( a['positions'] ),
+               'uiso', a['uiso'] and f'{a["uiso"]:.6g}', 'uij',
+               u and ' '.join( f'{v:.6g}' for v in u.values() ) )
+    for k in ( 'setting', 'formula' ):
         print( f'   {k}:', getattr( c, k ) )
 
 def expect_error( descr, txt ):
@@ -85,12 +90,11 @@ def main():
     expect_error( 'tensor with missing values', txt )
     c = read( txt, permissive = True )
     show( 'monoclinic, listed operations, tensors', c )
-    o1, si1, fe1 = c.sites
-    #(printed strings, with uncertainties):
-    assert o1['uij'] == [ '0.012(2)', '0.009', '0.015', '0.002', '-0.003', '0.001' ]
-    assert o1['uiso'] == '0.0123(4)' and si1['occ'] == '0.5'
-    #(null values are None):
-    assert si1['uij'] is None and fe1['uij'] is None and fe1['uiso'] is None
+    o1, si1, fe1 = c.atoms
+    #(the tensor rescaled to the Uiso, the Si1 tensor ignored, Fe1 without
+    #Uiso):
+    assert o1['aniso'] and o1['uiso'] == 0.0123 and si1['occupancy'] == 0.5
+    assert si1['aniso'] is None and fe1['aniso'] is None and fe1['uiso'] is None
     assert c.setting == '14:b1' and c.formula == 'Fe O Si'
     assert c.cell == { 'a': '5.1', 'b': '6.3', 'c': '7.2', 'alpha': '90',
                           'beta': '105', 'gamma': '90' }
@@ -117,21 +121,23 @@ def main():
                        + 'O1 1 1 1 0 0 0\n' ), name = 'test.cif',
                   permissive = False, quiet = True,
                   warnfct = warnings.append )
-    print( 'tensors as B:', [ s['uij'] for s in c.sites ], warnings )
-    #Atom counts, a missing type symbol, B instead of U:
-    c = read( cif( extra = 'loop_\n_atom_type_symbol\n_atom_type_number_in_cell\n'
-                   'O 4\nSi 2\nFe ?\n',
-                   sites = [ 'O1 O 0.79 0.87 0.63 1 0.0123 4',
-                             'CaM1 . 0.11 0.22 0.33 1 0.0071 4' ] ).replace(
-                                 '_atom_site_U_iso_or_equiv',
-                                 '_atom_site_B_iso_or_equiv' ) )
+    print( 'tensors as B:', [ a['aniso'] for a in c.atoms ], warnings )
+    #Atom counts, a missing type symbol (element from the label and the
+    #formula, with a warning), B instead of U:
+    txt = cif( extra = "_chemical_formula_sum 'Ca O'\nloop_\n_atom_type_symbol\n"
+               '_atom_type_number_in_cell\nO 4\nCa {}\n',
+               sites = [ 'O1 O 0.79 0.87 0.63 1 0.0123 4',
+                         'CaM1 . 0.11 0.22 0.33 1 0.0071 4' ] ).replace(
+                             '_atom_site_U_iso_or_equiv',
+                             '_atom_site_B_iso_or_equiv' )
+    c = read( txt.format( 4 ) )
     show( 'atom counts, missing type symbol, Biso', c )
-    assert c.atom_type_number_in_cell == [ '4', '2', None ]
-    assert c.sites[1]['type_symbol'] is None
-    assert c.sites[0]['biso'] == '0.0123' and c.sites[0]['uiso'] is None
+    assert c.atoms[1]['composition'] == ( ( 1.0, 'Ca' ), )
+    assert abs( c.atoms[0]['uiso'] * 8 * math.pi**2 / 0.0123 - 1 ) < 1e-12
+    expect_error( 'wrong atom count', txt.format( 6 ) )
     #Several blocks: the one with sites is used:
     c = read( 'data_first\n_cell_length_a 1\n' + cif() )
-    assert len( c.sites ) == 3
+    assert len( c.atoms ) == 3
     print( 'block with the sites selected among two' )
     #Missing cell angles are 90 degrees, but missing lengths are an error:
     c = read( '\n'.join( ln for ln in cif().splitlines()
@@ -150,9 +156,9 @@ def main():
                    aniso = [ 'O1 0.011 0.012 0.013 0 0 0',
                              'Si1 0.021 0.022 0.023 0 0 0',
                              'O1 0.031 0.032 0.033 0 0 0' ] ) )
-    print( 'reused labels, tensors:', [ s['uij'] and s['uij'][0]
-                                        for s in c.sites ] )
-    assert [ s['uij'][0] for s in c.sites ] == [ '0.011', '0.031', '0.021' ]
+    u11 = [ a['aniso']['u11'] for a in c.atoms ]
+    print( 'reused labels, tensors:', u11 )
+    assert u11 == [ 0.011, 0.031, 0.021 ]
     from NCrystalDev.cifutils import CIFLoader
     #All-zero tensors are placeholders for no tensor (the Uiso is used), and
     #errors about tensors name the CIF site:

@@ -1,37 +1,37 @@
 tensor with missing values: rejected: Invalid CIF data in "test.cif" (data_test, line 37): anisotropic displacements of "Si1" have components "?" or ".". Use permissive mode to ignore such entries.
 NCrystal WARNING: Ignoring anisotropic displacements of "Si1" in CIF data in "test.cif" (data_test, line 37), which have components "?" or "."
+NCrystal WARNING: CIF site "O1" has Uiso=0.0123 which differs from the Ueq=0.013201 of its anisotropic displacements by more than the rounding errors of the printed values explain (using the Uiso value due to permissive mode)
 monoclinic, listed operations, tensors:
    cell: {'a': '5.1', 'b': '6.3', 'c': '7.2', 'alpha': '90', 'beta': '105', 'gamma': '90'}
-   site: {'label': 'O1', 'type_symbol': 'O', 'x': '0.79', 'y': '0.87', 'z': '0.63', 'uiso': '0.0123(4)', 'biso': None, 'occ': '1', 'uij': ['0.012(2)', '0.009', '0.015', '0.002', '-0.003', '0.001']}
-   site: {'label': 'Si1', 'type_symbol': 'Si', 'x': '0.11', 'y': '0.22', 'z': '0.33', 'uiso': '0.0071', 'biso': None, 'occ': '0.5', 'uij': None}
-   site: {'label': 'Fe1', 'type_symbol': 'Fe', 'x': '0', 'y': '0', 'z': '0', 'uiso': None, 'biso': None, 'occ': '1', 'uij': None}
+   atom: ('O1',) ((1.0, 'O'),) occupancy 1.0 multiplicity 4 uiso 0.0123 uij 0.011181 0.00838575 0.0139762 0.0018635 -0.00279525 0.000931749
+   atom: ('Si1',) ((1.0, 'Si'),) occupancy 0.5 multiplicity 4 uiso 0.0071 uij None
+   atom: ('Fe1',) ((1.0, 'Fe'),) occupancy 1.0 multiplicity 2 uiso None uij None
    setting: 14:b1
    formula: Fe O Si
-   atom_type_number_in_cell: []
 old tags, no H-M symbol:
    cell: {'a': '5.1', 'b': '6.3', 'c': '7.2', 'alpha': '90', 'beta': '105', 'gamma': '90'}
-   site: {'label': 'O1', 'type_symbol': 'O', 'x': '0.79', 'y': '0.87', 'z': '0.63', 'uiso': '0.0123(4)', 'biso': None, 'occ': '1', 'uij': None}
-   site: {'label': 'Si1', 'type_symbol': 'Si', 'x': '0.11', 'y': '0.22', 'z': '0.33', 'uiso': '0.0071', 'biso': None, 'occ': '0.5', 'uij': None}
-   site: {'label': 'Fe1', 'type_symbol': 'Fe', 'x': '0', 'y': '0', 'z': '0', 'uiso': None, 'biso': None, 'occ': '1', 'uij': None}
+   atom: ('O1',) ((1.0, 'O'),) occupancy 1.0 multiplicity 4 uiso 0.0123 uij None
+   atom: ('Si1',) ((1.0, 'Si'),) occupancy 0.5 multiplicity 4 uiso 0.0071 uij None
+   atom: ('Fe1',) ((1.0, 'Fe'),) occupancy 1.0 multiplicity 2 uiso None uij None
    setting: 14:b1
    formula: None
-   atom_type_number_in_cell: []
 NCrystal WARNING: Overriding spacegroup to "P 1 21/n 1" due to explicit request
 tensors as B: [None, None, None] ['Ignoring the anisotropic displacements, which are given as B (_atom_site_aniso_B_ij), which is not supported yet']
+NCrystal WARNING: Some CIF sites have no _atom_site_type_symbol and their element content was guessed from their label (Ca from CaM1)
 atom counts, missing type symbol, Biso:
    cell: {'a': '5.1', 'b': '6.3', 'c': '7.2', 'alpha': '90', 'beta': '105', 'gamma': '90'}
-   site: {'label': 'O1', 'type_symbol': 'O', 'x': '0.79', 'y': '0.87', 'z': '0.63', 'uiso': None, 'biso': '0.0123', 'occ': '1', 'uij': None}
-   site: {'label': 'CaM1', 'type_symbol': None, 'x': '0.11', 'y': '0.22', 'z': '0.33', 'uiso': None, 'biso': '0.0071', 'occ': '1', 'uij': None}
+   atom: ('O1',) ((1.0, 'O'),) occupancy 1.0 multiplicity 4 uiso 0.000155781 uij None
+   atom: ('CaM1',) ((1.0, 'Ca'),) occupancy 1.0 multiplicity 4 uiso 8.99226e-05 uij None
    setting: 14:b1
-   formula: None
-   atom_type_number_in_cell: ['4', '2', None]
+   formula: Ca O
+wrong atom count: rejected: Expanded number of atoms per cell (8) is different from what is stated explicitly in the CIF data (10.0). Wrong spacegroup (or choice/setting improperly specified)?
 block with the sites selected among two
 missing cell angles: 90 degrees
 missing cell length: rejected: Invalid CIF data in "test.cif" (data_test): missing tag _cell_length_b
 two blocks with sites: rejected: Invalid CIF data in "test.cif": several data blocks have a crystal structure (data_test, data_b)
 syntax error: rejected: Invalid CIF data in "test.cif" (line 2): value "2" where a tag is expected
 no blocks: rejected: Invalid CIF data in "test.cif" (line 2): no data block found
-reused labels, tensors: ['0.011', '0.031', '0.021']
+reused labels, tensors: [0.011, 0.031, 0.021]
 all-zero tensor: uiso 0.012, tensor None
 tensor not positive definite: rejected: The uij values of the site "Fe1" (0, 0, 0) do not form a positive definite matrix
 sites ['O1 O ? ? ? 1 ? 4']: rejected: Invalid CIF data in "raw CIF data" (data_test, line 25): tag _atom_site_fract_x has a value "?" or "."

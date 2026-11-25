@@ -122,56 +122,42 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& query )
     //is slow for long strings):
     os << '"' << res << '"';
   } else if ( key == sv_cell ) {
-    //["sgsym","cell",TOL,DOTHROW,SG,"RAWDATA",a,"RAWDATA",b,...,"RAWDATA",
-    //gamma]: the cell parameters snapped to the constraints of the setting SG
-    //(parsed in strict mode) with TOL "strict" or "lenient" (cf.
-    //SGCellConstraints::snap), as {"cell":{"a":..,...,"gamma":..},
-    //"error_msg":null}. If they do not fit, a BadInput is thrown if DOTHROW
-    //is 1, and if it is 0 the result is {"cell":null,"error_msg":".."}. The
-    //values may be printed CIF numbers (e.g. "4.123(2)"), whose rounding
-    //errors are then used with lenient tolerances:
+    //["sgsym","cell",TOL,SG,"RAWDATA",a,"RAWDATA",b,...,"RAWDATA",gamma]:
+    //the cell parameters snapped to the constraints of the setting SG (parsed
+    //in strict mode) with TOL "strict" or "lenient" (cf.
+    //SGCellConstraints::snap, BadInput if they do not fit), as
+    //{"a":..,...,"gamma":..}. The values may be printed CIF numbers (e.g.
+    //"4.123(2)"), whose rounding errors are then used with lenient
+    //tolerances:
     const auto usage = "correct usage: [\"sgsym\",\"cell\","
-      "\"strict|lenient\",0|1,SG,\"RAWDATA\",a,\"RAWDATA\",b,\"RAWDATA\",c,"
+      "\"strict|lenient\",SG,\"RAWDATA\",a,\"RAWDATA\",b,\"RAWDATA\",c,"
       "\"RAWDATA\",alpha,\"RAWDATA\",beta,\"RAWDATA\",gamma]";
-    if ( nargs != 15 || ( arg(0) != "strict" && arg(0) != "lenient" )
-         || ( arg(1) != "0" && arg(1) != "1" ) )
+    if ( nargs != 14 || ( arg(0) != "strict" && arg(0) != "lenient" ) )
       invalid( usage );
     const bool lenient = ( arg(0) == "lenient" );
-    const bool dothrow = ( arg(1) == "1" );
     double v[6], e[6];
     for ( auto i : ncrange( 6 ) ) {
-      if ( !isRaw( 3 + 2 * i ) )
+      if ( !isRaw( 2 + 2 * i ) )
         invalid( usage );
-      auto x = parseCIFNumber( arg( 4 + 2 * i ) );
+      auto x = parseCIFNumber( arg( 3 + 2 * i ) );
       if ( !x.has_value() )
         invalid( usage );
       v[i] = x.value().value;
       e[i] = lenient ? x.value().roundingError : 0.0;
     }
     using Tol = SGCellConstraints::Tolerances;
-    const auto rr = SGSymmetry::get( SpaceGroup( arg(2),
-                                                 SpaceGroupParseMode::Strict ) )
+    const auto r = SGSymmetry::get( SpaceGroup( arg(1),
+                                                SpaceGroupParseMode::Strict ) )
       .cellConstraints()
-      .trySnap( { v[0], v[1], v[2], v[3], v[4], v[5] },
-                lenient ? Tol::lenient() : Tol::strict(),
-                { e[0], e[1], e[2], e[3], e[4], e[5] } );
-    if ( !rr.cell.has_value() ) {
-      if ( dothrow )
-        NCRYSTAL_THROW(BadInput,rr.errorMsg.value());
-      os << "{\"cell\":null";
-      streamJSONDictEntry( os, "error_msg", rr.errorMsg.value(),
-                           JSONDictPos::LAST );
-      return;
-    }
-    const auto& r = rr.cell.value();
-    os << "{\"cell\":";
+      .snap( { v[0], v[1], v[2], v[3], v[4], v[5] },
+             lenient ? Tol::lenient() : Tol::strict(),
+             { e[0], e[1], e[2], e[3], e[4], e[5] } );
     streamJSONDictEntry( os, "a", r.a, JSONDictPos::FIRST );
     streamJSONDictEntry( os, "b", r.b );
     streamJSONDictEntry( os, "c", r.c );
     streamJSONDictEntry( os, "alpha", r.alpha );
     streamJSONDictEntry( os, "beta", r.beta );
     streamJSONDictEntry( os, "gamma", r.gamma, JSONDictPos::LAST );
-    os << ",\"error_msg\":null}";
   } else if ( key == sv_fromhall || key == sv_fromhm ) {
     //["sgsym","fromhall","RAWDATA",SYMBOL] and ["sgsym","fromhm","RAWDATA",
     //SYMBOL]: the settings matching a Hall or Hermann-Mauguin symbol (cf.

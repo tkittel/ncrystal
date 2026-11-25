@@ -30,7 +30,7 @@ data items as the printed strings (so their rounding errors are available).
 __all__ = []
 
 from . import _common as _nc_common
-from . import core as _nc_core
+from . import _sgsymimpl as _nc_sgsymimpl
 from ._cifsrcimpl import _codid2url, _mpid2url
 
 
@@ -120,42 +120,61 @@ def _extract_descr( prov, formula, cifsrc, *, warnfct ):
 
     return normalise_result( ll ), _thecodid, _thempid, chemformsum
 
-_uij_tags = ( 'U_11', 'U_22', 'U_33', 'U_12', 'U_13', 'U_23' )
 
 #Temperature fields (in order of preference):
 cif_temperature_fields = ( '_diffrn_ambient_temperature',
                            '_cell_measurement_temperature' )
 
+def _atom( a ):
+    #Atom of the query (cf. getAtoms in NCCIFSites.hh) as dict, with the
+    #tensors as dicts (keys u11,...,u23):
+    uk = _nc_sgsymimpl._uij_keys
+    return { 'cif_labels': tuple( a['labels'] ),
+             'composition': tuple( tuple( c ) for c in a['composition'] ),
+             'occupancy': a['occupancy'],
+             'uiso': a['uiso'],
+             'aniso': dict( zip( uk, a['uij'] ) ) if a['uij'] else None,
+             'positions': [ tuple( p ) for p in a['positions'] ],
+             'uijs': ( [ dict( zip( uk, u ) ) for u in a['uijs'] ]
+                       if a['uijs'] else None ),
+             'split': a['split'] }
+
 class CIFContent:
-    #Plain content of CIF data. Values are the printed strings (without
-    #quotes), None if absent or null ("?" or ".").
-    __slots__ = ( 'atom_type_number_in_cell', 'cell', 'formula', 'provenance',
-                  'setting', 'sites', 'temperatures' )
-    def __init__( self, *, provenance, cell, setting, formula, sites,
-                  atom_type_number_in_cell, temperatures ):
+    #Content of CIF data, with printed strings (without quotes) for the cell,
+    #formula and temperatures (None if absent or null, "?" or ".").
+    __slots__ = ( 'atoms', 'cell', 'formula', 'provenance', 'setting',
+                  'snapped_cell', 'temperatures' )
+    def __init__( self, *, provenance, cell, snapped_cell, setting, atoms,
+                  formula, temperatures ):
         #the provenance items of the structure query (or None):
         self.provenance = provenance
         self.cell = cell#a,b,c,alpha,beta,gamma (missing angles are "90")
+        #the cell snapped to the setting (numbers), None if it does not fit
+        #(and that is allowed):
+        self.snapped_cell = snapped_cell
         self.setting = setting#the space group setting (e.g. "227:2")
+        self.atoms = atoms#the atoms (cf. _atom)
         self.formula = formula#_chemical_formula_sum
-        #dicts with keys label, type_symbol, x, y, z, uiso, biso, occ and uij
-        #(the six aniso U values, None if absent):
-        self.sites = sites
-        self.atom_type_number_in_cell = atom_type_number_in_cell
         #_diffrn_ambient_temperature and _cell_measurement_temperature:
         self.temperatures = temperatures
 
 def read_cif( cifdata, *, name, permissive, quiet, warnfct,
-              override_spacegroup = None ):
+              override_spacegroup = None, tol_uij = None,
+              allow_cell_misfit = False ):
     #Returns the CIFContent of the CIF text cifdata (with the name for
     #messages), read via the ["cif","structure",...] query in permissive mode
-    #or not, with the space group setting overridden if requested. Warnings
-    #are passed to warnfct.
+    #or not, with the space group setting overridden if requested, the
+    #tolerance tol_uij (None for the default), and accepting a cell which does
+    #not fit the setting if allow_cell_misfit. Warnings are passed to warnfct.
     if not quiet:
         _nc_common.infomsg("Parsing CIF data")
     from .misc import evaluate_query
     opts = ( [ f'override_spacegroup={override_spacegroup}' ]
              if override_spacegroup else [] )
+    if tol_uij is not None:
+        opts.append( f'tol_uij={float(tol_uij)!r}' )
+    if allow_cell_misfit:
+        opts.append( 'allow_cell_misfit=1' )
     q = evaluate_query( [ 'cif', 'structure',
                           'permissive' if permissive else 'strict', *opts,
                           'RAWDATA', name or '', 'RAWDATA', cifdata ] )
@@ -164,53 +183,17 @@ def read_cif( cifdata, *, name, permissive, quiet, warnfct,
     st = q['structure']
     def val( v ):
         return None if v is None else v[0]
-
     cell = {}
     for k in ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' ):
         isangle = k in ( 'alpha', 'beta', 'gamma' )
-        v = val( st[ ( '_cell_angle_' if isangle else '_cell_length_' ) + k ] )
-        if v is None:
-            raise _nc_core.NCBadInput(f'CIF data lacks the cell parameter {k}')
-        cell[k] = v
-
-    cols = st['atom_site']
-    keys = { 'label': '_atom_site_label',
-             'type_symbol': '_atom_site_type_symbol',
-             'x': '_atom_site_fract_x', 'y': '_atom_site_fract_y',
-             'z': '_atom_site_fract_z',
-             'uiso': '_atom_site_U_iso_or_equiv',
-             'biso': '_atom_site_B_iso_or_equiv',
-             'occ': '_atom_site_occupancy' }
-    nsites = len( cols.get( '_atom_site_label', [] ) )
-    sites = [ { k: ( val( cols[tag][i] ) if tag in cols else None )
-                for k, tag in keys.items() } for i in range( nsites ) ]
-    #Aniso rows (rows with "?" components are dropped by the query) go to the
-    #sites with their label, in order (some files reuse labels):
-    for s in sites:
-        s['uij'] = None
-    aniso = st.get( 'atom_site_aniso' )
-    if aniso and aniso['form'] == 'B':
-        #FIXME: Convert to U (with the rounding errors), preferably in C++:
-        warnfct( 'Ignoring the anisotropic displacements, which are given as'
-                 ' B (_atom_site_aniso_B_ij), which is not supported yet' )
-    elif aniso:
-        taken = set()
-        comps = [ aniso[ '_atom_site_aniso_' + t ] for t in _uij_tags ]
-        for r, lbl in enumerate( aniso['_atom_site_aniso_label'] ):
-            i = next( ( i for i, s in enumerate( sites )
-                        if s['label'] == val( lbl ) and i not in taken ),
-                      None )
-            if i is not None:
-                taken.add( i )
-                sites[i]['uij'] = [ val( c[r] ) for c in comps ]
-
+        cell[k] = val( st[ ( '_cell_angle_' if isangle else '_cell_length_' )
+                           + k ] )
     return CIFContent(
         provenance = q['provenance'],
         cell = cell,
+        snapped_cell = q['cell'],
         setting = q['spacegroup_setting'],
+        atoms = [ _atom( a ) for a in q['atoms'] ],
         formula = val( st.get( '_chemical_formula_sum' ) ),
-        sites = sites,
-        atom_type_number_in_cell = [ val( v ) for v in
-                                     st.get( '_atom_type_number_in_cell', [] ) ],
         temperatures = { t: val( st.get( t ) )
                          for t in cif_temperature_fields } )
