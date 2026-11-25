@@ -1,0 +1,40 @@
+data_cs0106
+_chemical_formula_sum 'Cs0.1 Pb2 F9 Sr0.9 Ta2'
+_space_group_IT_number 36
+_symmetry_space_group_name_Hall 'A -2 2a'
+_symmetry_space_group_name_H-M 'A 21 a m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 5.658
+_cell_length_b 5.642
+_cell_length_c 25.76
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+x+1/2,-y,-z
+x,y,-z
+x+1/2,-y,z
+x,y+1/2,z+1/2
+x+1/2,-y+1/2,-z+1/2
+x,y+1/2,-z+1/2
+x+1/2,-y+1/2,z+1/2
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+F1 F-2 0.584 0.303 0 1 0.0
+Cs1 Cs+2 0 0.247 0 0.1 0.0
+Ta1 Ta+5 0.508 0.752 0.4182 1 0.0
+F5 F-2 0.793 0.979 0.5824 1 0.0
+F4 F-2 0.752 0.999 0.0829 1 0.0
+Pb1 Pb+3 0.48 0.774 0.211 1 0.0
+Sr1 Sr+2 0 0.247 0 0.9 0.0
+F3 F-2 0.747 0.011 0.249 1 0.0
+F2 F-2 0.436 0.665 0.3320 1 0.0

@@ -1,0 +1,88 @@
+data_cs0370
+_chemical_formula_sum 'C24 H52 Cu4 Te4 N4'
+_space_group_IT_number 121
+_symmetry_cell_setting tetragonal
+_symmetry_space_group_name_Hall 'I -4 2'
+_symmetry_space_group_name_H-M 'I -4 2 m'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 9.7125(7)
+_cell_length_b 9.7125(7)
+_cell_length_c 17.600(2)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'x, -y, -z'
+'-x, -y, z'
+'-x, y, -z'
+'-y, -x, z'
+'-y, x, -z'
+'y, -x, -z'
+'y, x, z'
+'x+1/2, y+1/2, z+1/2'
+'x+1/2, -y+1/2, -z+1/2'
+'-x+1/2, -y+1/2, z+1/2'
+'-x+1/2, y+1/2, -z+1/2'
+'-y+1/2, -x+1/2, z+1/2'
+'-y+1/2, x+1/2, -z+1/2'
+'y+1/2, -x+1/2, -z+1/2'
+'y+1/2, x+1/2, z+1/2'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_symmetry_multiplicity
+_atom_site_calc_flag
+_atom_site_refinement_flags
+Cu1 Cu 1.0947(2) 0.0947(2) 0.55107(16) 0.0900(10) Uani 1 2 d S
+Te1 Te 0.82673(11) 0.17327(11) 0.58472(9) 0.0891(6) Uani 1 2 d S
+C1 C 1.168(3) 0.329(3) 0.6681(17) 0.177(9) Uani 1 1 d D
+H1A H 1.2018 0.3809 0.7087 0.212 Uiso 1 1 calc R
+H1B H 1.0851 0.3457 0.6604 0.212 Uiso 1 1 calc R
+C2 C 1.202(3) 0.381(3) 0.5816(16) 0.32(3) Uani 1 1 d D
+H2A H 1.2150 0.5019 0.5796 0.381 Uiso 1 1 calc R
+H2B H 1.1674 0.3463 0.5416 0.381 Uiso 1 1 calc R
+C3 C 1.374(4) 0.374(4) 0.578(3) 0.48(9) Uani 1 2 d SD
+H3A H 1.4231 0.4231 0.6242 0.575 Uiso 1 2 calc SR
+H3B H 1.3820 0.3820 0.5435 0.575 Uiso 1 2 calc SR
+C4 C 1.173(5) 0.173(5) 0.706(2) 0.35(4) Uani 1 2 d S
+H4A H 1.0598 0.1727 0.7138 0.530 Uiso 0.50 1 calc PR
+H4B H 1.2051 0.2037 0.7434 0.530 Uiso 0.50 1 calc PR
+H4C H 1.1989 0.0829 0.7363 0.530 Uiso 0.50 1 calc PR
+N1 N 1.214(3) 0.214(3) 0.650(3) 0.239(19) Uani 1 2 d S
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+Cu1 0.0833(13) 0.0833(13) 0.103(2) -0.0102(11) -0.0102(11) -0.0031(16)
+Te1 0.0804(7) 0.0804(7) 0.1067(11) -0.0021(7) 0.0021(7) 0.0141(9)
+C1 0.124(18) 0.15(2) 0.25(3) -0.03(3) -0.02(2) -0.007(19)
+C2 0.68(9) 0.078(18) 0.20(3) -0.038(19) 0.14(4) -0.10(3)
+C3 0.65(13) 0.65(13) 0.14(4) 0.11(3) 0.11(3) -0.36(15)
+C4 0.48(7) 0.48(7) 0.11(3) -0.07(4) -0.07(4) 0.14(9)
+N1 0.22(2) 0.22(2) 0.28(5) -0.12(3) -0.12(3) 0.00(4)
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+C C 0.0033 0.0016 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Cu Cu 0.3201 1.2651 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Te I -0.4742 1.8119 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+N N 0.0061 0.0033 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

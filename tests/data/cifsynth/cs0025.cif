@@ -1,0 +1,59 @@
+data_cs0025
+_publ_section_title 'Synthetic structure for testing'
+_journal_year 2000
+_chemical_formula_sum 'D2 F2 H2 In N5'
+_space_group_IT_number 98
+_space_group_name_Hall 'I 4bw 2bw'
+_space_group_name_H-M_alt 'I 41 2 2'
+_symmetry_cell_setting tetragonal
+_symmetry_Int_Tables_number 98
+_symmetry_space_group_name_Hall 'I 4bw 2bw'
+_symmetry_space_group_name_H-M 'I 41 2 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 14.89740(13)
+_cell_length_b 14.89740(13)
+_cell_length_c 11.83825(19)
+
+loop_
+_symmetry_equiv_pos_site_id
+_symmetry_equiv_pos_as_xyz
+1 x,y,z
+2 -y,1/2+x,1/4+z
+3 1/2-x,1/2-y,1/2+z
+4 1/2+y,-x,3/4+z
+5 x,1/2-y,1/4-z
+6 1/2+y,1/2+x,1/2-z
+7 1/2-x,y,3/4-z
+8 -y,-x,-z
+9 1/2+x,1/2+y,1/2+z
+10 1/2-y,x,3/4+z
+11 -x,-y,z
+12 y,1/2-x,1/4+z
+13 1/2+x,-y,3/4-z
+14 y,x,-z
+15 -x,1/2+y,1/4-z
+16 1/2-y,1/2-x,1/2-z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_thermal_displace_type
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+In In Uiso 0.6755(3) 0.3245(3) 0.50000 1.000 0.040(3)
+F1 F Uiso 0.7426(3) 0.25000 0.62500 1.000 0.0569(11)
+F2 F Uiso 0.6284(5) 0.3679(5) 0.6340(4) 1.000 0.0569(11)
+N1 N Uiso 0.5811(4) 0.3824(3) 0.7077(3) 1.000 0.0416(8)
+N2 N Uiso 0.54225(14) 0.42096(12) 0.7591(3) 1.000 0.0416(8)
+N3 N Uiso 0.50000 0.50000 0.7050(3) 1.000 0.0416(8)
+N4 N Uiso 0.54225(14) 0.42096(12) 0.8661(2) 1.000 0.0416(8)
+N5 N Uiso 0.50000 0.50000 0.94519(19) 1.000 0.0416(8)
+H1 H Uiso 0.8339(7) 0.25000 0.62500 1.000 0.0569(11)
+H4 H Uiso 0.5902(3) 0.3660(3) 0.9077(3) 1.000 0.0416(8)
+D2_1 D Uiso 0.4528(4) 0.7417(6) 0.1790(6) 0.920(10) 0.195(5)
+D2_3 D Uiso 0.75000 0.9238(9) 0.87500 1.09(3) 0.407(15)

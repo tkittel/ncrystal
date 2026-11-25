@@ -1,0 +1,90 @@
+data_cs0322
+_chemical_formula_sum 'C27.5 H29.5 Fe N6.5 F3.5 P2'
+_space_group_crystal_system tetragonal
+_space_group_IT_number 97
+_space_group_name_Hall 'I 4 2'
+_space_group_name_H-M_alt 'I 4 2 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 9.3876(12)
+_cell_length_b 9.3876(12)
+_cell_length_c 16.018(4)
+
+loop_
+_space_group_symop_operation_xyz
+'x, y, z'
+'-x, -y, z'
+'-y, x, z'
+'y, -x, z'
+'-x, y, -z'
+'x, -y, -z'
+'y, x, -z'
+'-y, -x, -z'
+'x+1/2, y+1/2, z+1/2'
+'-x+1/2, -y+1/2, z+1/2'
+'-y+1/2, x+1/2, z+1/2'
+'y+1/2, -x+1/2, z+1/2'
+'-x+1/2, y+1/2, -z+1/2'
+'x+1/2, -y+1/2, -z+1/2'
+'y+1/2, x+1/2, -z+1/2'
+'-y+1/2, -x+1/2, -z+1/2'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_site_symmetry_order
+_atom_site_calc_flag
+_atom_site_refinement_flags_posn
+_atom_site_refinement_flags_adp
+_atom_site_refinement_flags_occupancy
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+Fe1 Fe 0.500000 0.500000 0.500000 0.0261(4) Uani 1 8 d S T P . .
+P1 P 0.500000 0.500000 0.79262(11) 0.1159(11) Uani 1 4 d S TU P . .
+N1 N 0.500000 0.500000 0.6252(3) 0.0362(11) Uani 1 4 d S T P . .
+N2 N 0.6721(2) 0.6721(2) 0.500000 0.0335(7) Uani 1 2 d S TU P . .
+C1 C 0.500000 0.500000 0.7023(4) 0.0447(14) Uani 1 4 d S T P . .
+C2 C 0.6721(4) 0.7456(4) 0.5401(2) 0.0419(9) Uani 1 1 d . U . . .
+H2 H 0.578002 0.748270 0.578313 0.050 Uiso 1 1 calc R U . . .
+C3 C 0.7447(4) 0.8708(4) 0.5434(2) 0.0441(9) Uani 1 1 d D U . . .
+H3 H 0.747900 0.914265 0.580633 0.052 Uiso 1 1 calc R U . . .
+C4 C 0.8733(3) 0.8733(3) 0.500000 0.0410(9) Uani 1 2 d DS TU P . .
+C5 C 0.9224(7) 1.0038(13) 0.500000 0.0316(16) Uani 0.25 1 d DS U P A -1
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+Fe1 0.0244(4) 0.0244(4) 0.0296(6) 0.000 0.000 0.000
+P1 0.1551(18) 0.1551(18) 0.0373(11) 0.000 0.000 0.000
+N1 0.0385(17) 0.0385(17) 0.032(2) 0.000 0.000 0.000
+N2 0.0307(10) 0.0307(10) 0.0391(15) -0.004(2) 0.004(2) -0.0057(13)
+C1 0.040(2) 0.040(2) 0.055(4) 0.000 0.000 0.000
+C2 0.0373(19) 0.0406(19) 0.048(2) -0.0091(16) 0.0119(16) 0.0017(15)
+C3 0.053(2) 0.0340(18) 0.0450(19) -0.0064(16) 0.0044(16) -0.0112(15)
+C4 0.0465(14) 0.0465(14) 0.0296(17) 0.000(2) 0.000(2) -0.0185(18)
+C5 0.037(3) 0.028(3) 0.030(3) -0.009(5) 0.004(6) -0.007(6)
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+C C 0.0033 0.0016 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Fe Fe 0.3463 0.8444 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+N N 0.0061 0.0033 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+F O 0.0106 0.0060 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+P S 0.1246 0.1234 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

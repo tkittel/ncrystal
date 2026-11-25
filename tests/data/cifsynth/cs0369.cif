@@ -1,0 +1,46 @@
+data_cs0369
+_chemical_formula_sum 'Be F'
+_space_group_IT_number 186
+_symmetry_space_group_name_Hall 'P 6c -2c'
+_symmetry_space_group_name_H-M 'P 63 m c'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 2.5679
+_cell_length_b 2.5679
+_cell_length_c 4.1661
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+-x,-x+y,1/2+z
+x-y,x,1/2+z
+-y,-x,z
+-y,x-y,z
+x-y,-y,1/2+z
+-x,-y,1/2+z
+x,x-y,z
+-x+y,-x,z
+y,x,1/2+z
+y,-x+y,1/2+z
+-x+y,y,z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Be 0.00954 0.00954 0.00770 0.00477 0.00000 0.00000
+F 0.00477 0.00477 0.00547 0.00254 0.00000 0.00000
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+Be 0.33333 0.66667 0.00000 0.00874
+F 0.33333 0.66667 0.38190 0.00509

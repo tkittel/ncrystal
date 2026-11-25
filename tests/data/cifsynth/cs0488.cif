@@ -1,0 +1,73 @@
+data_cs0488
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Cr H4 K N5 O'
+_space_group_IT_number 173
+_symmetry_cell_setting hexagonal
+_symmetry_space_group_name_Hall 'P 6c'
+_symmetry_space_group_name_H-M 'P 63'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 120.00
+_cell_length_a 8.8554(13)
+_cell_length_b 8.8554(13)
+_cell_length_c 18.678(4)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-y, x-y, z'
+'-x+y, -x, z'
+'-x, -y, z+1/2'
+'y, -x+y, z+1/2'
+'x-y, x, z+1/2'
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+Cr1 0.0437(4) 0.0437(4) 0.0708(8) 0.000 0.000 0.0219(2)
+K1 0.0355(13) 0.0355(13) 0.070(3) 0.000 0.000 0.0178(7)
+N11 0.034(7) 0.064(11) 0.095(10) -0.014(10) 0.002(8) -0.010(8)
+N21 0.038(5) 0.039(6) 0.076(9) 0.007(6) 0.009(6) 0.035(4)
+N22 0.056(9) 0.040(9) 0.077(11) -0.010(9) 0.017(10) -0.019(8)
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_thermal_displace_type
+_atom_site_occupancy
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_disorder_group
+Cr1 Cr 0.3333 0.6667 0.45384(15) 0.0527(4) Uani 1 d SD .
+K1 K 1.0000 1.0000 0.4168(2) 0.0470(13) Uani 0.50 d SPD 1
+N11 N 0.6258(6) 0.7721(7) 0.4172(4) 0.080(7) Uani 0.50 d PGDU 1
+H11 H 0.6109(6) 0.6864(7) 0.3742(4) 0.096 Uiso 0.50 calc PR 1
+H15 H 0.5848(11) 0.6674(11) 0.5014(5) 0.072 Uiso 0.50 calc PR 1
+N21 N 0.6257(4) 0.8346(5) 0.4125(3) 0.044(3) Uani 0.50 d PGDU 2
+N22 N 0.6426(4) 0.7090(6) 0.3783(3) 0.076(7) Uani 0.50 d PGDU 2
+H23 H 0.6708(5) 0.5420(6) 0.4590(3) 0.099 Uiso 0.50 calc PR 2
+H25 H 0.6101(6) 0.9304(6) 0.4992(3) 0.092 Uiso 0.50 calc PR 2
+O1S O 1.0007(7) 1.0006(9) 0.2701(4) 0.028(5) Uiso 0.25 d SPG 1
+N4S N 0.8915(14) -0.0830(12) 0.6674(6) 0.120(46) Uiso 0.08 d PG .
+N1V N 0.6660(8) 0.3333(7) 0.5867(4) 0.031(6) Uiso 0.25 d SPG .
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+N C 0.0033 0.0016 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+K K 0.2009 0.2494 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Cr Mn 0.3368 0.7283 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+O O 0.0106 0.0060 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

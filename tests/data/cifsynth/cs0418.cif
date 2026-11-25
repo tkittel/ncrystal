@@ -1,0 +1,61 @@
+data_cs0418
+_chemical_formula_sum 'B14 Ho4 Cu'
+_space_group_IT_number 128
+_symmetry_cell_setting tetragonal
+_symmetry_Int_Tables_number 128
+_symmetry_space_group_name_Hall '-P 4 2n'
+_symmetry_space_group_name_H-M 'P 4/m n c'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 6.9031(8)
+_cell_length_b 6.9031(8)
+_cell_length_c 7.1415(9)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-y, x, z'
+'-x, -y, z'
+'y, -x, z'
+'x+1/2, -y+1/2, -z+1/2'
+'-x+1/2, y+1/2, -z+1/2'
+'y+1/2, x+1/2, -z+1/2'
+'-y+1/2, -x+1/2, -z+1/2'
+'-x, -y, -z'
+'y, -x, -z'
+'x, y, -z'
+'-y, x, -z'
+'-x-1/2, y-1/2, z-1/2'
+'x-1/2, -y-1/2, z-1/2'
+'-y-1/2, -x-1/2, z-1/2'
+'y-1/2, x-1/2, z-1/2'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+Ho Ho 0.17954(13) 0.32734(13) 0.0000 0.0046(4) Uani 1 d S . .
+Cu Cu 0.0000 0.0000 0.0000 0.0032(11) Uiso 1 d S . .
+B1 B 0.192(3) 0.043(2) 0.222(2) 0.006(3) Uiso 1 d . . .
+B2 B 0.102(3) 0.602(3) 0.2500 0.007(4) Uiso 1 d S . .
+B3 B 0.0000 0.0000 0.403(6) 0.010(7) Uiso 1 d S . .
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+Ho 0.0049(6) 0.0049(6) 0.0039(5) 0.000 0.000 -0.0004(4)

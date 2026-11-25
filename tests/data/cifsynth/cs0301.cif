@@ -1,0 +1,53 @@
+data_cs0301
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Cu Se5 Ta2'
+_space_group_IT_number 59
+_space_group_name_Hall '-P 2c 2a'
+_space_group_name_H-M_alt 'P m n m :2'
+_symmetry_cell_setting orthorhombic
+_symmetry_space_group_name_H-M 'P m n m :2'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 3.2929(10)
+_cell_length_b 5.6153(10)
+_cell_length_c 14.86173(10)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-x+1/2, y, -z+1/2'
+'x+1/2, -y, -z'
+'-x, -y, z+1/2'
+'-x, -y, -z'
+'x-1/2, -y, z-1/2'
+'-x-1/2, y, z'
+'x, y, -z-1/2'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_symmetry_multiplicity
+_atom_site_calc_flag
+_atom_site_refinement_flags
+Ta01 Ta 0.2500 0.4878(6) 0.12545(5) 0.0046(3) Uiso 1 2 d S
+Cu02 Cu 0.7500 0.459(3) 0.2500 0.0036(8) Uiso 1 4 d S
+Se03 Se 0.2500 0.2463(17) 0.54547(11) 0.0048(4) Uiso 1 2 d S
+Se04 Se 0.7500 0.1642(16) 0.15385(12) 0.0053(5) Uiso 1 2 d S
+Se05 Se 0.7500 0.250(2) 0.7500 0.0052(5) Uiso 1 4 d S
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+Ta Ta -0.5000 2.6230 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Cu Ni 0.2300 0.4100 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Se Se 0.2910 0.8630 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

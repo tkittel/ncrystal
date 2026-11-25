@@ -1,0 +1,59 @@
+data_cs0398
+_chemical_formula_sum 'Mg0.377 O8 Sr0.754 Ti3.623'
+_space_group_IT_number 87
+_symmetry_space_group_name_Hall '-I 4'
+_symmetry_space_group_name_H-M 'I 4/m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 10.4941
+_cell_length_b 10.4941
+_cell_length_c 3.0558
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+1/2+x,1/2+y,1/2+z
+y,-x,-z
+1/2+y,1/2-x,1/2-z
+-y,x,z
+1/2-y,1/2+x,1/2+z
+x,y,-z
+1/2+x,1/2+y,1/2-z
+-x,-y,z
+1/2-x,1/2-y,1/2+z
+-y,x,-z
+1/2-y,1/2+x,1/2-z
+y,-x,z
+1/2+y,1/2-x,1/2+z
+-x,-y,-z
+1/2-x,1/2-y,1/2-z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Sr1 0.01358 0.01358 0.15571 0.00000 0.00000 0.00000
+Sr2 0.00588 0.00588 0.00994 0.00000 0.00000 0.00000
+Ti 0.00642 0.00719 0.00484 0.00075 0.00000 0.00000
+Mg 0.00642 0.00719 0.00484 0.00075 0.00000 0.00000
+O1 0.00547 0.00563 0.00538 -0.00008 0.00000 0.00000
+O2 0.00472 0.00878 0.00687 0.00017 0.00000 0.00000
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Sr1 0.00000 0.00000 0.50000 0.59200 0.06129
+Sr2 0.00000 0.00000 0.28632 0.08100 0.00737
+Ti 0.34049 0.16680 0.00000 0.90570 0.00615
+Mg 0.34049 0.16680 0.00000 0.09430 0.00615
+O1 0.17191 0.21028 0.00000 1.00000 0.00551
+O2 0.54426 0.16726 0.00000 1.00000 0.00678

@@ -1,0 +1,41 @@
+data_cs0293
+_chemical_formula_sum 'Al C Fe2 K Mg Na O4 Si'
+_space_group_IT_number 158
+_symmetry_space_group_name_Hall 'P 3 -2"c'
+_symmetry_space_group_name_H-M 'P 3 c 1'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 17.6837
+_cell_length_b 17.6837
+_cell_length_c 5.4732
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+-y,-x,1/2+z
+-y,x-y,z
+x,x-y,1/2+z
+-x+y,-x,z
+-x+y,y,1/2+z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_type_symbol
+_atom_site_attached_hydrogens
+K 0.32975 0.32939 0.50402 0.84000 K 0
+Mg 0.32975 0.32939 0.50402 0.08000 Mg 0
+Fe2+A 0.00000 0.00000 0.03762 0.43000 Fe 0
+Fe3+A 0.00000 0.00000 0.03762 0.25000 Fe 0
+SiA 0.00000 0.00000 0.03762 0.25000 Si 0
+NaA 0.00000 0.00000 0.03762 0.07000 Na 0
+AlA 0.21214 0.15179 0.79408 1.00000 Al 0
+O1A 0.07980 0.08340 0.78962 1.00000 O 0
+O1B 0.33081 0.58677 0.12889 1.00000 O 0
+O2B 0.33711 0.42062 0.12795 1.00000 O 0
+C 0.66666 0.33334 0.21509 0.59000 C 0
+WatB 0.48807 0.37154 0.69946 1.25000 O 2

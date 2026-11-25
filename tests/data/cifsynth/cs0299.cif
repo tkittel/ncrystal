@@ -1,0 +1,43 @@
+data_cs0299
+_chemical_formula_sum 'K F3 Sb'
+_space_group_IT_number 148
+_symmetry_cell_setting trigonal
+_symmetry_space_group_name_Hall '-P 3*'
+_symmetry_space_group_name_H-M 'R -3 :R'
+_cell_angle_alpha 54.42(3)
+_cell_angle_beta 54.42(3)
+_cell_angle_gamma 54.42(3)
+_cell_length_a 6.193(2)
+_cell_length_b 6.193(2)
+_cell_length_c 6.193(2)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+y,z,x
+z,x,y
+-x,-y,-z
+-y,-z,-x
+-z,-x,-y
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_Wyckoff_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_attached_hydrogens
+_atom_site_calc_flag
+Sb1 Sb4+ 2 c 0.1412(7) 0.1412(7) 0.1412(7) 1. 0 d
+K1 K2+ 2 c 0.354(2) 0.354(2) 0.354(2) 1. 0 d
+F1 F2- 6 f 0.567(4) -0.036(4) 0.186(4) 1. 0 d
+
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+Sb4+ 4.000
+K2+ 2.000
+F2- -2.000

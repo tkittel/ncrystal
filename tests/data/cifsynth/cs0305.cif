@@ -1,0 +1,57 @@
+data_cs0305
+_chemical_formula_sum 'C F H4 N5 Ni'
+_space_group_IT_number 14
+_symmetry_cell_setting monoclinic
+_symmetry_space_group_name_Hall '-P 2yab'
+_symmetry_space_group_name_H-M 'P 1 21/a 1'
+_cell_angle_alpha 90.00
+_cell_angle_beta 109.160(10)
+_cell_angle_gamma 90.00
+_cell_length_a 9.718(2)
+_cell_length_b 17.8750(10)
+_cell_length_c 11.2749(10)
+
+loop_
+_symmetry_equiv_pos_as_xyz
++x,+y,+z
+1/2-x,1/2+y,-z
+-x,-y,-z
+1/2+x,1/2-y,+z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Ni1 .0484(2) .0420(2) .0496(2) .0027(2) .01182(10) -.0012(2)
+F2 .0772(10) .0538(10) .0538(10) -.0023(10) .0105(10) -.0094(10)
+C6 .0562(10) .0492(10) .0562(10) .0059(10) .0070(10) .0023(10)
+N7 .049(2) .060(2) .059(2) -.0094(10) .0199(10) -.0152(10)
+N11 .373(8) .241(6) .096(3) -.233(6) .070(4) -.033(4)
+N17 .085(3) .192(4) .073(2) .019(3) .020(2) -.020(3)
+N18 .140(3) .070(2) .146(3) -.009(2) .092(3) -.019(2)
+N20 .101(3) .083(2) .104(3) .039(2) .016(2) -.014(2)
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_thermal_displace_type
+_atom_site_occupancy
+Ni1 .40681(3) .05991(2) .44074(3) .05091(10) Uani 1.000
+F2 .3562(2) -.01773(10) .3152(2) .0693(8) Uani 1.000
+C6 .2739(2) .14743(10) .3278(2) .0577(9) Uani 1.000
+N7 .4315(3) -.0995(2) .3161(3) .0644(10) Uani 1.000
+N11 .2280(8) -.2239(3) .3096(5) .263(4) Uani 1.000
+N17 .3501(4) -.0269(3) .8550(3) .129(2) Uani 1.000
+N18 .1871(4) .0640(2) .7318(4) .136(2) Uani 1.000
+N20 .1151(4) .2265(2) .3528(4) .108(2) Uani 1.000
+H8A .43911 -.19040 .22634 .23 Uiso 1.000
+H10B .11337 -.10406 .07917 .23 Uiso 1.000
+H10C .14600 -.09241 .22760 .23 Uiso 1.000
+H17B .41845 -.01954 .81544 .23 Uiso 1.000

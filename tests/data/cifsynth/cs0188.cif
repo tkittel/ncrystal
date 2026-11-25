@@ -1,0 +1,62 @@
+data_cs0188
+_chemical_formula_sum 'F3 Fe3 Na3 P3'
+_space_group_IT_number 147
+_symmetry_space_group_name_Hall '-P 3'
+_symmetry_space_group_name_H-M 'P -3'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 16.083
+_cell_length_b 16.083
+_cell_length_c 8.98
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+y,-x+y,-z
+-x+y,-x,z
+-x,-y,-z
+-y,x-y,z
+x-y,x,-z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Na1 0.01979 0.03194 0.02791 0.01522 -0.00265 -0.00447
+Na2 0.02491 0.02767 0.02755 0.00639 -0.00036 0.00244
+Na3 0.02420 0.02358 0.02785 0.00907 -0.00178 -0.00061
+Fe1 0.00851 0.00851 0.00632 0.00426 0.00000 0.00000
+Fe2 0.00875 0.00875 0.00576 0.00442 0.00000 0.00000
+Fe3 0.01009 0.01009 0.00695 0.00504 0.00000 0.00000
+P1 0.01151 0.01033 0.00816 0.00701 0.00112 0.00026
+P2 0.00883 0.00859 0.00832 0.00379 0.00021 0.00076
+P3 0.00851 0.01057 0.00832 0.00426 0.00021 -0.00026
+F1 0.01451 0.01119 0.01130 0.00442 0.00402 0.00218
+F6 0.01545 0.02066 0.01733 0.01230 0.00259 -0.00122
+F8 0.01893 0.01522 0.01249 0.00205 -0.00620 -0.00132
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_type_symbol
+_atom_site_attached_hydrogens
+Na1 0.08335 0.62634 0.07994 0.02549 Na 0
+Na2 0.11474 0.41691 0.28963 0.02864 Na 0
+Na3 0.20807 0.24982 0.40666 0.02592 Na 0
+Fe1 0.33334 0.66666 0.18492 0.00749 Fe 0
+Fe2 0.33334 0.66666 0.68672 0.00760 Fe 0
+Fe3 0.00000 0.00000 0.00000 0.00868 Fe 0
+P1 0.33159 0.50293 0.41792 0.00911 P 0
+P2 0.17222 0.49865 0.95370 0.00890 P 0
+P3 0.13835 0.16770 0.75218 0.00933 P 0
+F1 0.24830 0.54033 0.81631 0.01258 F 0
+F6 0.41441 0.50985 0.34597 0.01637 F 0
+F8 0.58282 0.74776 0.02635 0.01735 F 0

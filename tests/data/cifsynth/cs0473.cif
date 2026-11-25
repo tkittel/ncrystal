@@ -1,0 +1,85 @@
+data_cs0473
+_chemical_formula_sum 'C4 F H5 N Se'
+_space_group_IT_number 5
+_symmetry_cell_setting monoclinic
+_symmetry_space_group_name_Hall 'C 2y'
+_symmetry_space_group_name_H-M 'C 1 2 1'
+_cell_angle_alpha 90.00
+_cell_angle_beta 127.18(8)
+_cell_angle_gamma 90.00
+_cell_length_a 21.28(2)
+_cell_length_b 4.261(6)
+_cell_length_c 21.49(3)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-x,y,-z
+1/2+x,1/2+y,z
+1/2-x,1/2+y,-z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_calc_flag
+_atom_site_calc_attached_atom
+_atom_site_refinement_flags
+_atom_site_type_symbol
+Se .14436(2) .02125(10) .17425(2) .0881(3) aniso . . . Se
+C1 .3635(2) .1336(10) .3120(2) .061(2) aniso . . . C
+C6 .3547(2) .4598(10) .0502(2) .065(2) aniso . . . C
+N11 .4445(2) .4209(7) .27551(10) .051(2) aniso . . . N
+F12 .51411(10) .3726(6) .35614(10) .0580(10) aniso . . . F
+C13 .5693(2) .4719(10) .3801(2) .055(2) aniso . . . C
+C18 .7286(2) .3626(10) .5868(2) .080(2) aniso . . . C
+H1 .4050(2) .0626(10) .3546(2) .077 iso calc C1 R H
+H6 .3129(2) .5620(10) .0197(2) .081 iso calc C6 R H
+H8 .4790(2) .0703(10) .0609(2) .086 iso calc C8 R H
+H14B .6043(2) .1881(10) .3133(2) .073 iso calc C14 R H
+H17A .6126(6) .595(6) .5640(8) .113 iso calc C17 R H
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Se .0620(3) .1149(4) .1053(3) -.0213(3) .0600(2) -.0205(3)
+C1 .057(2) .082(3) .049(2) .001(2) .033(2) .002(2)
+C6 .056(2) .075(4) .050(2) -.017(2) .024(2) .003(2)
+N11 .043(2) .059(2) .041(2) -.0057(10) .0205(10) -.0068(10)
+F12 .0432(10) .082(2) .0387(10) -.0080(10) .0182(10) -.0080(10)
+C13 .050(2) .055(3) .044(2) -.008(2) .020(2) .001(2)
+C18 .068(3) .092(3) .049(2) -.005(2) .019(2) .000(2)
+
+loop_
+_atom_type_symbol
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+C .0033 .0016
+;
+International Tables for Crystallography (Vol. C)
+;
+H .0000 .0000
+;
+International Tables for Crystallography (Vol. C)
+;
+Se .0000 .0000
+;
+International Tables for Crystallography (Vol. C)
+;
+N .0061 .0033
+;
+International Tables for Crystallography (Vol. C)
+;
+F .0106 .0060
+;
+International Tables for Crystallography (Vol. C)
+;

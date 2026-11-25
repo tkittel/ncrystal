@@ -1,0 +1,86 @@
+data_cs0405
+_journal_year 2000
+_chemical_formula_sum 'As Br3 Ni P2 Pd4 Sb'
+_space_group_IT_number 164
+_symmetry_cell_setting trigonal
+_symmetry_space_group_name_Hall '-P 3 2"'
+_symmetry_space_group_name_H-M 'P -3 m 1'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 7.7654
+_cell_length_b 7.7654
+_cell_length_c 12.3440
+
+loop_
+_space_group_symop_operation_xyz
+_symmetry_equiv_pos_site_id
+x,y,z 1
+-y,-x,z 2
+y,-x+y,-z 3
+-x,-x+y,-z 4
+-x+y,-x,z 5
+-x+y,y,z 6
+-x,-y,-z 7
+y,x,-z 8
+-y,x-y,z 9
+x,x-y,z 10
+x-y,x,-z 11
+x-y,-y,-z 12
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+_atom_site_type_symbol
+_atom_site_adp_type
+_atom_site_calc_flag
+Sb 0.33333 0.66667 0.39971 0.83000 0.02711 Sb Uani d
+As 0.33333 0.66667 0.39937 0.17000 0.02711 As Uani d
+Pd1a 0.27437 0.13723 0.38580 0.68000 0.06074 Pd Uani d
+Pd1b 0.34691 0.17325 0.37308 0.25000 0.08429 Pd Uani d
+Ni1b 0.35435 0.17698 0.36512 0.07000 0.08429 Ni Uani d
+Pd2 0.24306 0.37239 0.11719 0.29600 0.18822 Pd Uani d
+Pd3 0.34098 0.31938 0.10841 0.45400 0.18129 Pd Uani d
+P1 0.00000 0.00000 0.18754 0.83000 0.03603 P Uani d
+Br1 0.00000 0.00000 0.19082 0.17000 0.03603 Br Uani d
+P2 0.01192 0.50596 0.30264 1.00000 0.04399 P Uani d
+Br3 0.00000 0.00000 0.50000 0.32000 0.13510 Br Uani d
+Br 0.66667 0.33333 0.01637 1.00000 0.05381 Br Uani d
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+_atom_site_aniso_type_symbol
+Sb 0.02806 0.02806 0.02529 0.01401 0.00000 0.00000 Sb
+As 0.02806 0.02806 0.02529 0.01401 0.00000 0.00000 As
+Pd1a 0.06790 0.05785 0.05981 0.03395 0.00381 0.00196 Pd
+Pd1b 0.12124 0.05935 0.09238 0.06085 0.05773 0.02887 Pd
+Ni1b 0.12124 0.05935 0.09238 0.06085 0.05773 0.02887 Ni
+Pd2 0.30830 0.04376 0.06339 -0.02194 -0.05773 0.00508 Pd
+Pd3 0.09122 0.33371 0.07967 0.07621 0.00531 -0.02425 Pd
+P1 0.04226 0.04226 0.02367 0.02113 0.00000 0.00000 P
+Br1 0.04226 0.04226 0.02367 0.02113 0.00000 0.00000 Br
+P2 0.02471 0.04469 0.05600 0.01236 -0.00416 -0.00208 P
+Br3 0.17551 0.17551 0.05427 0.08776 0.00000 0.00000 Br
+Br 0.05254 0.05254 0.05623 0.02621 0.00000 0.00000 Br
+
+loop_
+_atom_type_symbol
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+Pd -0.897 1.102 'International Tables Vol C Tables  4.2.6.8 and 6.1.1.1'
+As 0.050 2.006 'International Tables Vol C Tables  4.2.6.8 and 6.1.1.1'
+Ni 0.320 1.265 'International Tables Vol C Tables  4.2.6.8 and 6.1.1.1'
+P 0.125 0.123 'International Tables Vol C Tables  4.2.6.8 and 6.1.1.1'
+Sb -0.587 1.546 'International Tables Vol C Tables  4.2.6.8 and 6.1.1.1'
+Br -0.093 2.226 'International Tables Vol C Tables  4.2.6.8 and 6.1.1.1'

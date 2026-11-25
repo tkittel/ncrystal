@@ -1,0 +1,62 @@
+data_cs0181
+_journal_year 2000
+_chemical_formula_sum 'Co F4.5 Rb2 Hg0.482'
+_space_group_IT_number 139
+_symmetry_space_group_name_Hall '-I 4 2'
+_symmetry_space_group_name_H-M 'I 4/m m m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 3.6601
+_cell_length_b 3.6601
+_cell_length_c 29.30924
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+1/2+x,1/2+y,1/2+z
+-y,-x,z
+1/2-y,1/2-x,1/2+z
+y,x,-z
+1/2+y,1/2+x,1/2-z
+y,-x,-z
+1/2+y,1/2-x,1/2-z
+-y,x,z
+1/2-y,1/2+x,1/2+z
+x,-y,z
+1/2+x,1/2-y,1/2+z
+-x,y,-z
+1/2-x,1/2+y,1/2-z
+x,y,-z
+1/2+x,1/2+y,1/2-z
+-x,-y,z
+1/2-x,1/2-y,1/2+z
+y,x,z
+1/2+y,1/2+x,1/2+z
+-y,-x,-z
+1/2-y,1/2-x,1/2-z
+-y,x,-z
+1/2-y,1/2+x,1/2-z
+y,-x,z
+1/2+y,1/2-x,1/2+z
+-x,y,z
+1/2-x,1/2+y,1/2+z
+x,-y,-z
+1/2+x,1/2-y,1/2-z
+-x,-y,-z
+1/2-x,1/2-y,1/2-z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+Hg1 0.08219 0.00000 0.00000 0.24120
+Rb1 0.50000 0.50000 0.08185 1.00000
+Rb2 0.50000 0.50000 0.19694 1.00000
+Co1 0.00000 0.00000 0.14160 1.00000
+F1 0.15264 0.00000 0.50000 0.25000
+F2 0.00000 0.00000 0.05590 1.00000
+F3 0.50000 0.00000 0.14955 1.00000
+F4 0.00000 0.00000 0.22715 1.00000

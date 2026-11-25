@@ -1,0 +1,49 @@
+data_cs0061
+_publ_section_title 'Synthetic structure for testing'
+_journal_year 2000
+_chemical_formula_sum 'B H3 N4 O2 P2'
+_space_group_IT_number 62
+_symmetry_cell_setting orthorhombic
+_symmetry_Int_Tables_number 62
+_symmetry_space_group_name_Hall '-P 2ac 2n'
+_symmetry_space_group_name_H-M 'P n m a'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 8.6702(2)
+_cell_length_b 14.6116(6)
+_cell_length_c 16.2868(8)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+1/2+x,1/2-y,1/2-z
+-x,1/2+y,-z
+1/2-x,-y,1/2+z
+-x,-y,-z
+1/2-x,1/2+y,1/2+z
+x,1/2-y,z
+1/2+x,y,1/2-z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_calc_flag
+P(1) P 1.4223(1) 0.2500 0.41940(7) 0.0532(5) Uani 1.00 d
+P(2) P 1.1987(1) 0.2500 0.55906(7) 0.0556(5) Uani 1.00 d
+O(1) O 1.1852(3) 0.0782(1) 0.4364(2) 0.0769(9) Uani 1.00 d
+O(2) O 1.1852(3) 0.4218(1) 0.4364(2) 0.0769(9) Uani 1.00 d
+N(1) N 1.0660(4) 0.0645(2) 0.3969(2) 0.0521(9) Uani 1.00 d
+N(6) N 0.8570(6) 0.5077(3) 0.3128(3) 0.090(1) Uani 1.00 d
+N(13) N 0.9781(3) 0.3377(2) 0.3714(2) 0.0408(8) Uani 1.00 d
+N(21) N 1.4827(6) 0.2500 0.6665(3) 0.096(2) Uani 1.00 d
+B(1) B 1.2291(5) 0.2500 0.4482(3) 0.045(1) Uani 1.00 d
+H(1) H 1.021(4) -0.064(3) 0.388(2) 0.079(10) Uiso 1.00 calc
+H(10) H 1.226(10) -0.066(6) 0.476(5) 0.22(2) Uiso 1.00 calc
+H(13) H 1.271(9) 0.543(6) 0.393(6) 0.22(2) Uiso 1.00 calc

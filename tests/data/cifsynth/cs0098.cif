@@ -1,0 +1,35 @@
+data_cs0098
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'F7 P Te2'
+_space_group_IT_number 31
+_symmetry_space_group_name_Hall 'P -2ab 2ab'
+_symmetry_space_group_name_H-M 'P 21 m n'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 4.572
+_cell_length_b 8.713
+_cell_length_c 6.727
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+x+1/2,-y+1/2,-z
+x,-y,z
+x+1/2,y+1/2,-z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+F5 F-2 0.21 0 0.66 1 0.0
+P1 P+6 0.342 0 0.471 1 0.0
+F1 F-2 0.62 0.208 0.920 1 0.0
+F2 F-2 0.80 0 0.075 1 0.0
+F4 F-2 0.07 0 0.342 1 0.0
+F3 F-2 0.490 0.115 0.463 1 0.0
+Te1 Te+4 0.75 0.2176 0.1603 1 0.0

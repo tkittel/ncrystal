@@ -1,0 +1,67 @@
+data_cs0001
+_chemical_formula_sum 'O16 Bi1.32 V8.35'
+_space_group_IT_number 12
+_symmetry_cell_setting monoclinic
+_symmetry_Int_Tables_number 12
+_symmetry_space_group_name_Hall '-I 2'
+_symmetry_space_group_name_H-M 'I 1 1 2/m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90.84
+_cell_length_a 10.582(3)
+_cell_length_b 10.350(3)
+_cell_length_c 3.039(1)
+_cod_database_code 123456789
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-x,-y,z
+-x,-y,-z
+x,y,-z
+1/2+x,1/2+y,1/2+z
+1/2-x,1/2-y,1/2+z
+1/2-x,1/2-y,1/2-z
+1/2+x,1/2+y,1/2-z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_22
+_atom_site_aniso_U_23
+_atom_site_aniso_U_33
+Bi1 0.0394(17) 0.0010(8) 0. 0.027(1) 0. 0.011(1)
+Bi2 0.12(1) 0.078(6) 0. 0.117(8) 0. 0.09(1)
+V1 0.0106(6) 0.0006(4) 0. 0.0084(6) 0. 0.0066(6)
+V2 0.0112(7) -0.0018(5) 0. 0.0106(7) 0. 0.0055(6)
+V3 0.009(8) -0.006(6) 0. 0.02(1) 0. 0.001(7)
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_Wyckoff_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_attached_hydrogens
+_atom_site_calc_flag
+Bi1 Bi2+ 4 g 0. 0. 0.231(1) 0.208(5) 0 d
+Bi2 Bi2+ 4 i 0.540(1) 0.491(1) 0. 0.122(5) 0 d
+V1 V4+ 4 i 0.3532(1) 0.1651(1) 0. 1. 0 d
+V2 V4+ 4 i 0.8338(1) 0.3485(1) 0. 1. 0 d
+V3 V4+ 4 i 0.9899(17) 0.126(2) 0. 0.087(7) 0 d
+O1 O2- 4 i 0.1671(5) 0.2034(6) 0. 1. 0 d
+O2 O2- 4 i 0.7904(5) 0.1598(6) 0. 1. 0 d
+O3 O2- 4 i 0.5429(6) 0.1648(6) 0. 1. 0 d
+O4 O2- 4 i 0.8318(5) 0.5430(6) 0. 1. 0 d
+
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+Bi2+ 2.000
+V4+ 3.517
+O2- -2.000

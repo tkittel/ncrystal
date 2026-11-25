@@ -1,0 +1,50 @@
+data_cs0076
+_journal_year 2000
+_chemical_formula_sum 'Ca2 Cu F8 S'
+_space_group_IT_number 42
+_symmetry_space_group_name_Hall 'F -2 -2'
+_symmetry_space_group_name_H-M 'F m 2 m'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 23.79
+_cell_length_b 12.273
+_cell_length_c 9.019
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+x,1/2+y,1/2+z
+1/2+x,y,1/2+z
+1/2+x,1/2+y,z
+-x,y,z
+-x,1/2+y,1/2+z
+1/2-x,y,1/2+z
+1/2-x,1/2+y,z
+x,y,-z
+x,1/2+y,1/2-z
+1/2+x,y,1/2-z
+1/2+x,1/2+y,-z
+-x,y,-z
+-x,1/2+y,1/2-z
+1/2-x,y,1/2-z
+1/2-x,1/2+y,-z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_attached_hydrogens
+Cu1 0.00000 0.00000 0.00000 0
+Ca1 0.25000 0.04233 0.25000 0
+Ca2 0.12788 0.61333 0.00000 0
+S1 0.24714 0.27452 0.00000 0
+F1 0.19789 0.24489 0.13729 0
+F2 0.09683 0.32935 0.00000 0
+F4 0.24494 0.37509 0.00000 0
+F5 0.07884 0.24920 0.26194 0
+F6 0.12888 0.44777 0.20309 0
+F7 0.07809 -0.00477 0.00000 2
+F8 0.00000 0.12908 0.16463 2
+F10 0.00000 0.51389 0.00000 2

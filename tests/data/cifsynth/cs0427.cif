@@ -1,0 +1,79 @@
+data_cs0427
+_chemical_formula_sum 'N4 H9 Si3 C F12.75 S3'
+_space_group_crystal_system orthorhombic
+_space_group_IT_number 18
+_space_group_name_Hall 'P 2 2ab'
+_space_group_name_H-M_alt 'P 21 21 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 15.9442(2)
+_cell_length_b 16.6399(2)
+_cell_length_c 4.73647(4)
+
+loop_
+_space_group_symop_id
+_space_group_symop_operation_xyz
+1 x,y,z
+2 -x,-y,z
+3 -x+1/2,y+1/2,-z
+4 x+1/2,-y+1/2,-z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_symmetry_multiplicity
+_atom_site_Wyckoff_symbol
+_atom_site_adp_type
+_atom_site_U_iso_or_equiv
+_atom_site_type_symbol
+Si1 0.5334(4) 0.9184(3) 0.836(1) 1 4 c Uiso 0.0083(4) Si
+Si2 0.7107(4) 0.0442(3) 0.170(1) 1 4 c Uiso 0.0083(4) Si
+Si3 0.2100(4) 0.7922(3) 0.747(1) 1 4 c Uiso 0.0083(4) Si
+S1 0.8712(3) 0.1274(4) 0.247(1) 1 4 c Uiso 0.0083(4) S
+S2 0.6452(3) 0.1262(4) 0.665(1) 1 4 c Uiso 0.0083(4) S
+S3 0.6226(3) 0.8756(4) 0.304(1) 1 4 c Uiso 0.0083(4) S
+F1 0.5880(6) 0.8840(7) 0.581(2) 1 4 c Uiso 0.0139(9) F
+F2 0.6808(7) -0.0553(6) 0.224(3) 1 4 c Uiso 0.0139(9) F
+F3 0.5583(6) 0.8763(8) 0.120(2) 1 4 c Uiso 0.0139(9) F
+F4 0.505(2) 0.999(3) 0.919(3) 0.5 4 c Uiso 0.0139(9) F
+F5 0.1405(7) 0.8470(7) 0.554(2) 1 4 c Uiso 0.0139(9) F
+F6 0.1642(8) 0.8104(7) 0.084(2) 1 4 c Uiso 0.0139(9) F
+F7 0.6532(6) 0.0831(6) 0.373(2) 1 4 c Uiso 0.0139(9) F
+F8 0.1764(7) 0.7080(6) 0.699(3) 1 4 c Uiso 0.0139(9) F
+F9 0.7938(6) 0.0398(6) 0.224(3) 1 4 c Uiso 0.0139(9) F
+F10 -0.0403(6) 0.0953(6) 0.203(3) 1 4 c Uiso 0.0139(9) F
+F11 0.2896(7) 0.7976(6) 0.707(3) 1 4 c Uiso 0.0139(9) F
+F12 0.6726(7) 0.0480(6) 0.846(3) 1 4 c Uiso 0.0139(9) F
+F13 0.5538(6) 0.1272(6) 0.748(3) 1 4 c Uiso 0.0139(9) F
+C1 0.026(1) 0.127(1) 0.706(3) 1 4 c Uiso 0.024(3) C
+N2 0.136(1) 0.191(1) 0.828(4) 1 4 c Uiso 0.024(3) N
+N3 0.166(1) 0.124(1) 0.710(4) 1 4 c Uiso 0.024(3) N
+N4 0.044(1) 0.203(1) 0.736(5) 1 4 c Uiso 0.024(3) N
+N5 0.082(2) 0.066(1) 0.703(5) 1 4 c Uiso 0.024(3) N
+H6 0.16(1) 0.19(1) 1.00(3) 1 4 c Uiso 0.024(3) H
+H7 0.164(9) 0.226(7) 0.75(4) 1 4 c Uiso 0.024(3) H
+H8 0.208(8) 0.081(8) -0.19(4) 1 4 c Uiso 0.024(3) H
+H9 0.17(1) 0.13(1) 0.52(3) 1 4 c Uiso 0.024(3) H
+H10 0.04(1) 0.21(1) 0.56(4) 1 4 c Uiso 0.024(3) H
+H11 0.02(1) 0.209(9) 0.87(3) 1 4 c Uiso 0.024(3) H
+H12 0.08(1) 0.04(1) 0.52(4) 1 4 c Uiso 0.024(3) H
+H13 0.08(1) 0.04(1) 0.83(4) 1 4 c Uiso 0.024(3) H
+H14 0.00(1) 0.12(1) 0.58(3) 1 4 c Uiso 0.024(3) H
+ReO1 0.5 0 0.501(6) 0.50(1) 2 b Uiso 0.024(3) F
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+Si Al 0.2130 0.2455 'International Tables for Crystallography, Vol. C'
+F O 0.0492 0.0322 'International Tables for Crystallography, Vol. C'
+S P 0.2955 0.4335 'International Tables for Crystallography, Vol. C'
+C N 0.0311 0.0180 'International Tables for Crystallography, Vol. C'
+N C 0.0181 0.0091 'International Tables for Crystallography, Vol. C'
+H H 0.0000 0.0000 'International Tables for Crystallography, Vol. C'

@@ -1,0 +1,90 @@
+data_cs0283
+_chemical_formula_sum 'C7 F5 H10 N Ni'
+_space_group_IT_number 13
+_symmetry_cell_setting monoclinic
+_symmetry_space_group_name_Hall '-P 2yac'
+_symmetry_space_group_name_H-M 'P 1 2/n 1'
+_cell_angle_alpha 90
+_cell_angle_beta 116.1890(10)
+_cell_angle_gamma 90
+_cell_length_a 8.5066(3)
+_cell_length_b 11.5592(4)
+_cell_length_c 8.9772(3)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-x+1/2, y, -z+1/2'
+'-x, -y, -z'
+'x-1/2, -y, z-1/2'
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_occupancy
+_atom_site_type_symbol
+Ni 0.75 0.20917(2) 0.75 0.02872(12) Uani d S 1 Ni
+F1 0.58697(15) 0.07608(10) 0.69539(16) 0.0419(3) Uani d . 1 F
+F2 0.47505(16) -0.08528(10) 0.70062(15) 0.0440(3) Uani d . 1 F
+F3 0.77727(16) 0.20256(9) 0.99042(14) 0.0378(3) Uani d . 1 F
+H31 0.8281 0.1693 1.0499 0.053 Uiso d R 1 H
+H32 0.6597 0.2151 0.9909 0.053 Uiso d R 1 H
+F4 0.4851(2) 0.21535(12) 0.99468(19) 0.0593(4) Uani d . 1 F
+H41 0.5079 0.1750 1.0940 0.053 Uiso d R 1 H
+H42 0.4096 0.1739 0.9092 0.053 Uiso d R 1 H
+F5 0.25 0.09055(18) 0.75 0.0583(5) Uani d S 1 F
+H5 0.1640 0.0490 0.7608 0.053 Uiso d R 1 H
+N1 0.58089(17) 0.32660(11) 0.71662(15) 0.0297(3) Uani d . 1 N
+C1 0.4105(2) 0.32950(14) 0.65968(19) 0.0351(3) Uani d . 1 C
+H1 0.3833 0.2601 0.6167 0.042 Uiso calc R 1 H
+C2 0.3416(2) 0.41726(15) 0.6300(2) 0.0398(4) Uani d . 1 C
+H2 0.2053 0.4091 0.5796 0.048 Uiso calc R 1 H
+C3 0.4133(2) 0.54921(15) 0.6515(2) 0.0405(4) Uani d . 1 C
+H3 0.3261 0.5795 0.6180 0.048 Uiso calc R 1 H
+C4 0.5917(2) 0.54806(13) 0.71667(18) 0.0343(3) Uani d . 1 C
+C5 0.67417(19) 0.43695(12) 0.71186(17) 0.0285(3) Uani d . 1 C
+C6 0.6674(2) 0.62136(14) 0.7203(2) 0.0423(4) Uani d . 1 C
+H6 0.6237 0.7142 0.7033 0.051 Uiso calc R 1 H
+C8 0.7611(7) -0.0502(3) 0.7917(7) 0.070(2) Uani d P 0.50 C
+H82 0.7431 -0.1180 0.7827 0.085 Uiso calc PR 0.50 H
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Ni 0.02624(17) 0.02168(16) 0.03791(18) 0 0.01386(12) 0
+F1 0.0300(6) 0.0307(6) 0.0612(7) -0.0033(5) 0.0168(5) 0.0010(5)
+F2 0.0417(7) 0.0406(7) 0.0504(7) -0.0161(5) 0.0208(6) -0.0031(5)
+F3 0.0362(6) 0.0361(6) 0.0414(6) 0.0050(5) 0.0173(5) 0.0072(5)
+F4 0.0526(8) 0.0719(10) 0.0579(8) -0.0020(7) 0.0285(7) 0.0089(7)
+F5 0.0430(11) 0.0658(13) 0.0756(13) 0 0.0349(10) 0
+N1 0.0302(6) 0.0281(6) 0.0313(6) 0.0009(5) 0.0141(5) 0.0015(5)
+C1 0.0322(8) 0.0381(8) 0.0366(8) 0.0003(7) 0.0166(6) 0.0026(6)
+C2 0.0323(8) 0.0519(10) 0.0376(8) 0.0090(7) 0.0174(7) 0.0053(7)
+C3 0.0460(10) 0.0401(9) 0.0381(8) 0.0166(7) 0.0211(7) 0.0072(7)
+C4 0.0438(9) 0.0310(8) 0.0291(7) 0.0059(7) 0.0170(7) 0.0018(6)
+C5 0.0345(8) 0.0265(7) 0.0258(6) 0.0014(6) 0.0144(6) 0.0006(5)
+C6 0.0602(11) 0.0248(7) 0.0419(9) 0.0068(7) 0.0225(8) 0.0021(6)
+C8 0.040(3) 0.0282(15) 0.142(6) 0.0047(18) 0.037(4) 0.021(2)
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+C C 0.0033 0.0016 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+N N 0.0061 0.0033 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+F O 0.0106 0.0060 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Ni Ni 0.3393 1.1124 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

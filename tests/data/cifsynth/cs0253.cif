@@ -1,0 +1,29 @@
+data_cs0253
+_chemical_formula_sum 'Br C Cl H7 Mn N'
+_symmetry_cell_setting triclinic
+_symmetry_space_group_name_H-M 'A -1'
+_cell_angle_alpha 86.61(2)
+_cell_angle_beta 89.21(2)
+_cell_angle_gamma 105.13(3)
+_cell_length_a 6.254(3)
+_cell_length_b 16.1290(10)
+_cell_length_c 7.421(2)
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+Br(1) .5 .25 .25 .018(3)
+Mn(1) .0 .0 .0 .028(3)
+Cl(1) -.27020(10) .0211 -.19712(10) .038(3)
+C(1) -.2229(3) .02197(10) .1850(2) .026(10)
+N(2) -.1481(5) .1067(2) .2614(3) .036(14)
+H(1) -.3516 .0163 .1198 ?
+H(2) -.2726 .103 .3110 ?
+H(21) -.0146 .1059 .3524 ?
+H(4) .2445 .1484 .0703 ?
+H(51) .2267 .2286 -.1470 ?
+H(61) .4585 .1484 -.1896 ?
+H(7) -.3857 -.0577 .4207 ?

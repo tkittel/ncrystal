@@ -1,0 +1,71 @@
+data_cs0394
+_chemical_formula_sum 'C H6 N5'
+_space_group_IT_number 15
+_symmetry_cell_setting monoclinic
+_symmetry_space_group_name_Hall '-I 2ya'
+_symmetry_space_group_name_H-M 'I 1 2/a 1'
+_cell_angle_alpha 90.00000
+_cell_angle_beta 90.696(9)
+_cell_angle_gamma 90.00000
+_cell_length_a 14.7726(9)
+_cell_length_b 8.5901(6)
+_cell_length_c 17.4241(19)
+_cod_database_code 999999999
+
+loop_
+_symmetry_equiv_pos_as_xyz
++x,+y,+z
+1/2-x,+y,-z
+-x,-y,-z
+1/2+x,-y,+z
+1/2+x,1/2+y,1/2+z
+-x,1/2+y,1/2-z
+1/2-x,1/2-y,1/2-z
++x,1/2-y,1/2+z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+C21 .0574(9) .0416(8) .0515(8) -.0028(7) -.0020(7) -.0064(7)
+N23 .0521(9) .0387(8) .0517(9) .0016(7) .0006(7) -.0007(7)
+N28 .0807(14) .0703(13) .0561(11) .0065(11) .0118(10) -.0085(10)
+N13 .0447(8) .0507(10) .0473(9) .0022(7) .0035(7) .0038(7)
+N16 .0737(14) .0798(15) .0568(12) .0103(11) -.0100(10) .0095(11)
+N17 .085(2) .0443(16) .093(2) .00000 .020(2) .00000
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_thermal_displace_type
+_atom_site_calc_flag
+_atom_site_calc_attached_atom
+C21 .35362(12) .7307(2) .13728(10) .0502(8) Uani No No
+N23 .39516(13) .8863(2) .23019(11) .0476(9) Uani No No
+N28 .47753(19) .7275(3) .02213(14) .0689(13) Uani No No
+N13 .27290(12) .3142(2) .06359(11) .0476(9) Uani No No
+N16 .31823(19) .2725(4) .14720(14) .0702(13) Uani No No
+N17 .25000 .0202(4) .00000 .074(2) Uani No No
+H21 .314(3) .645(6) .103(3) .012(9) Uiso No No
+H26a .394(3) 1.075(7) .309(3) .109(15) Uiso No No
+H26c .438(4) .938(7) .350(3) .111(15) Uiso No No
+H28c .547(3) .689(5) .029(2) .084(11) Uiso No No
+H16c .283(4) .187(6) .172(3) .107(14) Uiso No No
+H17b .281(6) -.021(10) -.038(5) .07(2) Uiso No No
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+N ? .017 .009 IntTabIV
+H ? 0 0 IntTabIV
+C ? .029 .018 IntTabIV

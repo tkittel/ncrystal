@@ -1,0 +1,78 @@
+data_cs0298
+_chemical_formula_sum 'C2 H4 N O4 P'
+_space_group_IT_number 58
+_symmetry_cell_setting orthorhombic
+_symmetry_space_group_name_Hall '-P 2 2n'
+_symmetry_space_group_name_H-M 'P n n m'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 6.0176(8)
+_cell_length_b 21.191(3)
+_cell_length_c 5.2283(7)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-x, -y, z'
+'x+1/2, -y+1/2, -z+1/2'
+'-x+1/2, y+1/2, -z+1/2'
+'-x, -y, -z'
+'x, y, -z'
+'-x-1/2, y-1/2, z-1/2'
+'x-1/2, -y-1/2, z-1/2'
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_occupancy
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+_atom_site_type_symbol
+P1 0.1820(2) 0.34589(4) 0.5000 0.0284(4) Uani d SD 1 . . P
+O1 0.3447(10) 0.3154(3) 0.472(4) 0.039(2) Uani d PDU 0.25 A -1 O
+O3 0.221(3) 0.3856(5) 0.322(2) 0.045(4) Uani d PDU 0.25 A -1 O
+O7 0.198(3) 0.3137(8) 0.720(2) 0.037(4) Uani d PDU 0.25 A -2 O
+O1W 0.5000 0.5000 0.5000 0.184(5) Uani d SU 1 . . O
+N1 0.5252(6) 0.30278(16) 0.0000 0.0373(9) Uani d S 1 . . N
+C1 0.7066(8) 0.3072(2) 0.0000 0.0506(10) Uani d S 1 . . C
+C2 0.6791(7) 0.4037(2) 0.0000 0.0449(10) Uani d S 1 . . C
+H1W1 0.6142 0.5121 0.4883 0.221 Uiso d P 0.25 D -3 H
+H1N1 0.5103 0.2727 0.0000 0.045 Uiso calc SR 1 . . H
+H2N 0.9817 0.3918 -0.1298 0.041 Uiso calc R 1 . . H
+H3 0.8037 0.5008 0.1519 0.054 Uiso calc R 1 . . H
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+P1 0.0282(6) 0.0250(6) 0.0320(6) -0.0005(4) 0.000 0.000
+O1 0.047(4) 0.038(3) 0.031(6) 0.015(3) 0.005(7) 0.000(6)
+O3 0.056(7) 0.038(7) 0.041(6) -0.006(5) 0.002(5) 0.009(5)
+O7 0.037(7) 0.039(7) 0.035(6) 0.001(5) 0.008(5) -0.002(5)
+O1W 0.186(8) 0.138(7) 0.228(9) -0.078(6) 0.000 0.000
+N1 0.033(2) 0.024(2) 0.054(2) 0.002(2) 0.000 0.000
+C1 0.029(2) 0.029(2) 0.093(4) 0.002(2) 0.000 0.000
+C2 0.028(2) 0.026(2) 0.082(4) 0.000(2) 0.000 0.000
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+C C 0.0033 0.0016 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+N N 0.0061 0.0033 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+O O 0.0106 0.0060 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+P S 0.1246 0.1234 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

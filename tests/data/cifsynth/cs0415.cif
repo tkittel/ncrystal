@@ -1,0 +1,35 @@
+data_cs0415
+_journal_name_full 'Synthetic Test Data'
+_journal_year 2000
+_chemical_formula_sum 'Br3 Ca3'
+_space_group_IT_number 1
+_space_group_name_Hall 'P 1'
+_space_group_name_H-M_alt 'P 1'
+_symmetry_Int_Tables_number 1
+_symmetry_space_group_name_H-M 'P 1'
+_cell_angle_alpha 90.00000394
+_cell_angle_beta 89.99999941
+_cell_angle_gamma 120.00010945
+_cell_length_a 4.43214542
+_cell_length_b 4.43214438
+_cell_length_c 12.17925505
+
+loop_
+_symmetry_equiv_pos_site_id
+_symmetry_equiv_pos_as_xyz
+1 'x, y, z'
+
+loop_
+_atom_site_type_symbol
+_atom_site_label
+_atom_site_symmetry_multiplicity
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+Ca Ca0 1 0.00384474 0.00328678 0.43796397 1
+Ca Ca1 1 -0.00328569 0.00056611 0.77129731 1
+Ca Ca2 1 0.99943294 -0.00384430 0.10463064 1
+Br Br3 1 0.33517135 0.67380468 0.60475692 1
+Br Br4 1 0.32619449 0.66128014 0.93809025 1
+Br Br5 1 0.33872044 0.66482835 0.27142359 1

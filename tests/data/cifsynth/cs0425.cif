@@ -1,0 +1,74 @@
+data_cs0425
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Lu2.667 P4'
+_space_group_IT_number 220
+_symmetry_space_group_name_Hall 'I -4bd 2c 3'
+_symmetry_space_group_name_H-M 'I -4 3 d'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 8.503
+_cell_length_b 8.503
+_cell_length_c 8.503
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+y+1/4,-x+3/4,-z+1/4
+-x,-y+1/2,z
+-y+3/4,x+3/4,-z+1/4
+x,-y,-z+1/2
+-y+1/4,-x+3/4,z+3/4
+-x,y+1/2,-z+1/2
+y+3/4,x+3/4,z+3/4
+z,x,y
+x+1/4,-z+3/4,-y+1/4
+-z,-x+1/2,y
+-x+3/4,z+3/4,-y+1/4
+z,-x,-y+1/2
+-x+1/4,-z+3/4,y+3/4
+-z,x+1/2,-y+1/2
+x+3/4,z+3/4,y+3/4
+y,z,x
+y,-z,-x+1/2
+-z+1/4,-y+3/4,x+3/4
+-y,z+1/2,-x+1/2
+z+1/4,y+1/4,x+1/4
+-y+1/2,-z,x+1/2
+-z+1/4,y+1/4,-x+3/4
+z+3/4,-y+1/4,-x+3/4
+x+1/2,y+1/2,z+1/2
+y+3/4,-x+5/4,-z+3/4
+-x+1/2,-y+1,z+1/2
+-y+5/4,x+5/4,-z+3/4
+x+1/2,-y+1/2,-z+1
+-y+3/4,-x+5/4,z+5/4
+-x+1/2,y+1,-z+1
+y+5/4,x+5/4,z+5/4
+z+1/2,x+1/2,y+1/2
+x+3/4,-z+5/4,-y+3/4
+-z+1/2,-x+1,y+1/2
+-x+5/4,z+5/4,-y+3/4
+z+1/2,-x+1/2,-y+1
+-x+3/4,-z+5/4,y+5/4
+-z+1/2,x+1,-y+1
+x+5/4,z+5/4,y+5/4
+y+1/2,z+1/2,x+1/2
+y+1/2,-z+1/2,-x+1
+-z+3/4,-y+5/4,x+5/4
+-y+1/2,z+1,-x+1
+z+3/4,y+3/4,x+3/4
+-y+1,-z+1/2,x+1
+-z+3/4,y+3/4,-x+5/4
+z+5/4,-y+3/4,-x+5/4
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+P1 P-2 0.084 0.084 0.084 1 0.0
+Lu1 Lu+3 0.375 0 0.25 0.889 0.0

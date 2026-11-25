@@ -1,0 +1,84 @@
+data_cs0510
+_chemical_formula_sum 'C4 F4 H3 Ni'
+_space_group_crystal_system trigonal
+_space_group_IT_number 164
+_space_group_name_Hall '-P 3 2"'
+_space_group_name_H-M_alt 'P -3 m 1'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 17.9118(12)
+_cell_length_b 17.9118(12)
+_cell_length_c 6.5652(6)
+
+loop_
+_space_group_symop_operation_xyz
+'x, y, z'
+'-y, x-y, z'
+'-x+y, -x, z'
+'y, x, -z'
+'x-y, -y, -z'
+'-x, -x+y, -z'
+'-x, -y, -z'
+'y, -x+y, -z'
+'x-y, x, -z'
+'-y, -x, z'
+'-x+y, y, z'
+'x, x-y, z'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_site_symmetry_order
+_atom_site_calc_flag
+_atom_site_refinement_flags_posn
+_atom_site_refinement_flags_adp
+_atom_site_refinement_flags_occupancy
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+CU1 Ni 0.52863(2) 0.47137(2) 0.33261(5) 0.02369(12) Uani 1 2 d S T P . .
+F1 F 0.57994(10) 0.55264(13) 0.7473(3) 0.0500(4) Uani 1 1 d . . . . .
+F2 F 0.62228(11) 0.51777(13) 0.4972(3) 0.0494(4) Uani 1 1 d . . . . .
+F1W F 0.56340(8) 0.43660(8) 0.0800(4) 0.0481(6) Uani 1 2 d DS T P . .
+C1 C 0.63232(12) 0.53842(13) 0.6677(3) 0.0308(4) Uani 1 1 d . . . . .
+C2 C 0.71324(13) 0.58652(14) 0.7509(3) 0.0333(4) Uani 1 1 d . . . . .
+C3 C 0.78819(10) 0.5452(2) 0.6686(4) 0.0345(6) Uani 1 2 d S T P . .
+H3 H 0.755294 0.541231 0.545107 0.041 Uiso 1 2 calc R U P . .
+C4 C 0.75349(14) 0.62815(15) 0.9172(3) 0.0396(5) Uani 1 1 d . . . . .
+H7B H 0.919184 0.804189 1.417598 0.167 Uiso 0.5 1 calc R U P . .
+F4W F 0.7118(7) 0.4132(15) 0.008(4) 0.094 Uiso 0.169(8) 2 d S U . . .
+H1W H 0.521(4) 0.419(5) 0.000(11) 0.141 Uiso 0.5 1 d D U P . .
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+CU1 0.02668(15) 0.02668(15) 0.02490(18) 0.00015(5) -0.00015(5) 0.01874(14)
+F1 0.0335(8) 0.0868(13) 0.0418(9) -0.0164(8) -0.0074(7) 0.0390(9)
+F2 0.0329(8) 0.0826(13) 0.0421(9) -0.0207(8) -0.0101(7) 0.0358(9)
+F1W 0.0623(12) 0.0623(12) 0.0343(12) -0.0052(5) 0.0052(5) 0.0421(13)
+C1 0.0264(9) 0.0365(10) 0.0347(10) 0.0032(8) -0.0013(7) 0.0198(8)
+C2 0.0262(9) 0.0411(10) 0.0378(10) -0.0026(8) -0.0029(8) 0.0205(8)
+C3 0.0296(9) 0.0458(16) 0.0335(14) -0.0040(12) -0.0020(6) 0.0229(8)
+C4 0.0318(10) 0.0515(12) 0.0441(12) -0.0104(10) -0.0038(9) 0.0275(10)
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+C C 0.0040 0.0020 'Calculated using XDISP in WinGX (Farrugia, 1999)'
+H H 0.0000 0.0000 'Calculated using XDISP in WinGX (Farrugia, 1999)'
+F O 0.0132 0.0074 'Calculated using XDISP in WinGX (Farrugia, 1999)'
+Ni Cu 0.2913 1.4803 'Calculated using XDISP in WinGX (Farrugia, 1999)'

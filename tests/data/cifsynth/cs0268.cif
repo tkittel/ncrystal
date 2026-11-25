@@ -1,0 +1,47 @@
+data_cs0268
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'H6 N3 P2 S'
+_symmetry_cell_setting orthorhombic
+_symmetry_space_group_name_H-M 'P n a 21'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 22.737(6)
+_cell_length_b 6.4210(10)
+_cell_length_c 8.746(3)
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+P1 0.0335(10) 0.0593(10) 0.061(2) -0.0034(10) 0.0017(10) 0.003(2)
+P4 0.0421(10) 0.073(2) 0.058(2) 0.0129(10) 0.0052(10) 0.007(2)
+S1 0.0361(10) 0.0309(10) 0.0327(10) 0.0009(10) 0.0009(10) -0.0009(10)
+N1 0.056(6) 0.063(6) 0.052(6) 0.003(5) -0.001(6) 0.012(6)
+N2 0.048(5) 0.032(5) 0.069(7) -0.004(4) -0.001(6) -0.003(6)
+N3 0.049(5) 0.046(6) 0.059(7) 0.005(5) -0.001(5) -0.003(6)
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_thermal_displace_type
+_atom_site_calc_flag
+P1 0.56670(9) 0.1978(4) 0.5252(3) 0.0499(10) Uani ?
+P4 0.20115(10) 0.3201(4) 0.7684(3) 0.057(2) Uani ?
+S1 0.47471(9) 0.1950(3) 0.4724(3) 0.0335(10) Uani ?
+N1 0.4449(4) 0.2823(10) 0.3176(10) 0.057(6) Uani ?
+N2 0.4411(3) -0.0990(10) 0.4964(10) 0.047(5) Uani ?
+N3 0.3203(4) -0.0699(10) 0.7632(10) 0.051(6) Uani ?
+H1 0.4296 0.4445 0.3096 0.0733 Uiso calc
+H2 0.4301 0.2015 0.2366 0.0733 Uiso calc
+H4 0.4360 -0.1382 0.6058 0.0646 Uiso calc
+H6 0.4302 -0.1671 0.3919 0.0646 Uiso calc
+H8 0.3615 -0.0633 0.7635 0.0634 Uiso calc
+H9 0.2784 -0.1396 0.8483 0.0634 Uiso calc

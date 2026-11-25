@@ -1,0 +1,55 @@
+data_cs0134
+_chemical_formula_sum 'La2 Cu O4'
+_space_group_IT_number 138
+_symmetry_cell_setting tetragonal
+_symmetry_space_group_name_Hall '-P 4ac 2ac'
+_symmetry_space_group_name_H-M 'P 42/n c m :2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 5.3873(1)
+_cell_length_b 5.3873(1)
+_cell_length_c 12.2501(2)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+1/2-x,y,1/2+z
+x,1/2-y,1/2+z
+1/2-x,1/2-y,z
+y,x,z
+y,1/2-x,1/2+z
+1/2-y,x,1/2+z
+1/2-y,1/2-x,z
+-x,-y,-z
+1/2+x,-y,1/2-z
+-x,1/2+y,1/2-z
+1/2+x,1/2+y,-z
+-y,-x,-z
+-y,1/2+x,1/2-z
+1/2+y,-x,1/2-z
+1/2+y,1/2+x,-z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_Wyckoff_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_attached_hydrogens
+_atom_site_calc_flag
+La1 La3+ 8 i 0.0061(3) 0.0061(3) 0.3788(1) 1. 0 d
+Cu1 Cu2+ 4 d 0. 0. 0. 1. 0 d
+O1 O2- 4 e 0.25 0.25 -0.0047(4) 1. 0 d
+O2 O2- 4 a 0.25 0.75 0. 1. 0 d
+O3 O2- 8 i 0.0464(3) 0.0464(3) 0.1621(2) 1. 0 d
+
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+La3+ 3.000
+Cu2+ 2.000
+O2- -2.000

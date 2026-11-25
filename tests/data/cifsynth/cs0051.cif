@@ -1,0 +1,45 @@
+data_cs0051
+_chemical_formula_sum 'Al0.84 H Na0.07 O2 Si0.09'
+_space_group_IT_number 34
+_symmetry_space_group_name_Hall 'P 2 -2n'
+_symmetry_space_group_name_H-M 'P n n 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 4.4857
+_cell_length_b 4.0164
+_cell_length_c 2.7050
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+1/2+x,1/2-y,1/2+z
+1/2-x,1/2+y,1/2+z
+-x,-y,z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Al 0.00575 0.00781 0.00477 0.00076 0.00000 0.00000
+Si 0.00575 0.00781 0.00477 0.00076 0.00000 0.00000
+Na 0.00575 0.00781 0.00477 0.00076 0.00000 0.00000
+O 0.00716 0.00390 0.00770 0.00087 0.00542 0.00054
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Al 0.00000 0.50000 0.00000 0.84000 0.00618
+Si 0.00000 0.50000 0.00000 0.09000 0.00618
+Na 0.00000 0.50000 0.00000 0.07000 0.00618
+O 0.34177 0.75294 -0.00371 1.00000 0.00632
+H1 0.54921 0.49704 0.95464 0.30000 0.02802
+H2 0.00421 0.75110 0.50459 0.20000 0.00138

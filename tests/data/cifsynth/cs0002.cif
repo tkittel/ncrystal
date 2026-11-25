@@ -1,0 +1,70 @@
+data_cs0002
+_chemical_formula_sum 'C8.4 H10.6 N5.8 Ni F0.8'
+_space_group_crystal_system orthorhombic
+_space_group_IT_number 74
+_space_group_name_Hall '-I 2b 2'
+_space_group_name_H-M_alt 'I m m a'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 14.6271(19)
+_cell_length_b 6.77463(97)
+_cell_length_c 9.4096(13)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'-x, -y, -z'
+'-x, -y+1/2, z'
+'-x, y, z'
+'-x, y+1/2, -z'
+'-x+1/2, -y, z+1/2'
+'-x+1/2, -y+1/2, -z+1/2'
+'-x+1/2, y, -z+1/2'
+'-x+1/2, y+1/2, z+1/2'
+'x, -y, -z'
+'x, -y+1/2, z'
+'x, y, z'
+'x, y+1/2, -z'
+'x+1/2, -y, z+1/2'
+'x+1/2, -y+1/2, -z+1/2'
+'x+1/2, y, -z+1/2'
+'x+1/2, y+1/2, z+1/2'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_B_iso_or_equiv
+Ni Ni 4 0 0 0 1 0.008(77)
+C2 C 8 0.2060035 0.25 0.2089040 1 1.679(77)
+C1 C 16 0.1669042 0.4205017 0.170782 1 1.679(77)
+N1 N 16 0.08153484 0.3419596 0.08520314 1 1.679(77)
+N3 N 16 0.196159 0.6117478 0.1818236 0.25 1.679(77)
+H3a H 16 0.253804 0.6225699 0.2534349 0.25 1.679(77)
+H3b H 16 0.1683272 0.707800 0.1512200 0.25 1.679(77)
+H1 H 16 0.1738431 0.5412187 0.1641026 0.75 1.679(77)
+N4 N 8 0 0.12888 0.47681 0.3584(30) 7.5(14)
+C4 C 16 -0.04439486 -0.03076186 0.3715102 0.1792(15) 7.5(14)
+C5 C 16 0.08321370 0.1666645 0.4697565 0.1792(15) 7.5(14)
+C6 C 16 -0.04770957 0.2078391 0.5872412 0.1792(15) 7.5(14)
+F3 F 16 -0.02958373 0.329615 0.6692948 0.1792(15) 7.5(14)
+H6 H 16 -0.1214442 0.1994560 0.5874372 0.1792(15) 7.5(14)
+H51 H 16 0.1228590 0.06367255 0.3972332 0.1792(15) 7.5(14)
+H52 H 16 0.1132669 0.2988335 0.4624242 0.1792(15) 7.5(14)
+H53 H 16 0.1255053 0.1281086 0.5870272 0.1792(15) 7.5(14)
+H41 H 16 0.00468612 -0.08002523 0.3301019 0.1792(15) 7.5(14)
+H42 H 16 -0.08365473 -0.1290453 0.4555094 0.1792(15) 7.5(14)
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_source
+C C 'International Tables for Crystallography (Vol. IV)'
+H H 'International Tables for Crystallography (Vol. IV)'
+Ni Ni 'International Tables for Crystallography (Vol. IV)'
+N N 'International Tables for Crystallography (Vol. IV)'
+F O 'International Tables for Crystallography (Vol. IV)'

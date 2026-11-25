@@ -1,0 +1,39 @@
+data_cs0227
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'F Co H5 C O4 S'
+_space_group_IT_number 31
+_symmetry_space_group_name_Hall 'P 2bc -2bc'
+_symmetry_space_group_name_H-M 'P n m 21'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 8.644
+_cell_length_b 5.451
+_cell_length_c 4.642
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-x,-y+1/2,z+1/2
+x,-y,z
+-x,y+1/2,z+1/2
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+H3 H+1 0.024 0.169 0.08 1 0.0
+H4 H+1 0.29 0.17 0.69 0.5 0.0
+Co1 Co+2 0.4765 0 0 1 0.0
+H2 H+1 0.128 0 0.19 1 0.0
+O2 O-2 0.6257 0.2051 0.7113 1 0.0
+O3 O-2 0.8728 0 0.628 1 0.0
+C1 C-3 0.0152 0 0.13 1 0.0
+O1 O-2 0.6680 0 0.249 1 0.0
+H1 H+1 0.939 0 0.2 1 0.0
+S1 S+5 0.2999 0.5 0.0625 1 0.0
+F1 F-1 0.2918 0 0.710 1 0.0

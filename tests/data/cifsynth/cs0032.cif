@@ -1,0 +1,22 @@
+data_cs0032
+_journal_year 2000
+_chemical_formula_sum 'F Nb O2'
+_symmetry_cell_setting trigonal
+_symmetry_space_group_name_Hall '-R 3 2"c'
+_symmetry_space_group_name_H-M 'R -3 c'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 120.00
+_cell_length_a 4.8709(4)
+_cell_length_b 4.8709(4)
+_cell_length_c 12.9319(17)
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+Nb 0 0 0 .0182(5)
+O .4018(8) 0 .25 .0065(18)
+F .4018(8) 0 .25 .0065(18)

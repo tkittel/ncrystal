@@ -1,0 +1,85 @@
+data_cs0482
+_chemical_formula_sum 'C4 H3 Mg O3 P'
+_space_group_IT_number 97
+_symmetry_cell_setting tetragonal
+_symmetry_space_group_name_Hall 'I 4 2'
+_symmetry_space_group_name_H-M 'I 4 2 2'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 23.882(2)
+_cell_length_b 23.882(2)
+_cell_length_c 32.934(3)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-y, x, z'
+'-x, -y, z'
+'y, -x, z'
+'x, -y, -z'
+'y, x, -z'
+'-x, y, -z'
+'-y, -x, -z'
+'x+1/2, y+1/2, z+1/2'
+'-y+1/2, x+1/2, z+1/2'
+'-x+1/2, -y+1/2, z+1/2'
+'y+1/2, -x+1/2, z+1/2'
+'x+1/2, -y+1/2, -z+1/2'
+'y+1/2, x+1/2, -z+1/2'
+'-x+1/2, y+1/2, -z+1/2'
+'-y+1/2, -x+1/2, -z+1/2'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_symmetry_multiplicity
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+Mg1 Mg 0.4372(14) -0.0999(13) -0.0202(7) 0.361(14) Uiso 1 1 d . . .
+O1W O 0.3506(7) -0.1064(7) 0.0245(5) 0.164(5) Uiso 1 1 d . . .
+O2W O 0.5239(12) -0.1472(13) -0.0237(8) 0.157(10) Uiso 0.50 1 d P . .
+C102 C 0.6073(5) -0.2282(6) -0.1094(4) 0.088(3) Uani 1 1 d U . .
+H40A H 0.6373 -0.1846 -0.1236 0.105 Uiso 1 1 calc R . .
+C110 C 0.4830(7) -0.2258(9) -0.1837(4) 0.132(7) Uani 1 1 d DU . .
+P111 P 0.5225(2) -0.2674(3) -0.22677(11) 0.146(2) Uani 1 1 d DU . .
+H11C H 0.5195 -0.3162 -0.3135 0.205 Uiso 1 1 calc R . .
+H20A H 0.3707 -0.1877 -0.1113 0.091 Uiso 1 1 calc R . .
+C206 C 0.3108(4) -0.3145(5) -0.1422(3) 0.070(2) Uani 1 1 d DU . .
+C213 C 0.3219(9) -0.3090(9) -0.3090(4) 0.129(4) Uani 1 1 d DU . .
+O219 O 0.2699(7) -0.3584(8) -0.4412(4) 0.169(5) Uani 1 1 d DU . .
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+C102 0.080(6) 0.103(6) 0.080(6) 0.025(5) -0.003(5) -0.015(5)
+C110 0.126(13) 0.199(19) 0.068(8) 0.037(10) 0.020(9) 0.027(12)
+P111 0.128(4) 0.248(7) 0.062(2) -0.012(3) 0.011(2) -0.009(4)
+C206 0.079(5) 0.089(5) 0.040(4) 0.009(4) -0.007(4) 0.014(5)
+C213 0.162(9) 0.162(9) 0.061(5) 0.020(6) 0.014(6) 0.019(8)
+O219 0.208(11) 0.212(11) 0.088(7) -0.004(8) -0.002(7) 0.032(9)
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+C C 0.0033 0.0016 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Mg Na 0.0362 0.0249 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+O O 0.0106 0.0060 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+P S 0.1246 0.1234 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

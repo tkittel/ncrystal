@@ -1,0 +1,40 @@
+data_cs0275
+_chemical_formula_sum 'C6 Co Ca3 N6'
+_space_group_IT_number 60
+_symmetry_space_group_name_Hall '-P 2a 2n'
+_symmetry_space_group_name_H-M 'P n c a'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 14.012
+_cell_length_b 10.856
+_cell_length_c 8.749
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+x+1/2,-y+1/2,-z+1/2
+-x,y+1/2,-z+1/2
+-x+1/2,-y,z
+-x,-y,-z
+-x-1/2,y-1/2,z-1/2
+x,-y-1/2,z-1/2
+x-1/2,y,-z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+N3 N-3 0.4067 -0.0782 -0.1202 1 0.0
+Ca2 Ca+1 0.25 -0.5 0.1230 1 0.0
+N2 N-3 0.4007 -0.0835 0.3702 1 0.0
+C3 C+2 0.3295 -0.0398 -0.0469 1 0.0
+Ca1 Ca+1 0.4983 -0.2674 0.1238 1 0.0
+N1 N-3 0.338 0.2582 0.1305 1 0.0
+C2 C+2 0.3277 -0.0370 0.2969 1 0.0
+C1 C+2 0.308 0.1641 0.1266 1 0.0
+Co1 Co+3 0.25 0 0.1274 1 0.0

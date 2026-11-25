@@ -1,0 +1,41 @@
+data_cs0184
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'F7 Gd2 Mo3'
+_space_group_IT_number 32
+_symmetry_cell_setting orthorhombic
+_symmetry_space_group_name_Hall 'P 2 -2ab'
+_symmetry_space_group_name_H-M 'P b a 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 10.091355(61)
+_cell_length_b 10.120851(64)
+_cell_length_c 10.386753(66)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-x, -y, z'
+'-x+1/2, y+1/2, z'
+'x+1/2, -y+1/2, z'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_B_iso_or_equiv
+Gd1 Gd 0.18811(20) 0.48781(55) 0.72293(44) 1 0.300(66)
+Gd2 Gd 0.48164(48) 0.31276(19) 0.27713(44) 1 0.383(66)
+Mo1 Mo 0.19789(30) 0.47424(59) 0.35145(49) 1 0.215(82)
+Mo2 Mo 0.01103(74) 0.20434(29) 0.65009(52) 1 0.394(77)
+Mo3 Mo 0.22831(55) 0.22675(60) 0 1 0.223(62)
+F1 F 0.1813(19) 0.4894(41) 0.5167(28) 1 0.54(13)
+F4 F 0.4885(53) 0.1052(21) 0.6923(21) 1 0.54(13)
+F6 F 0.1485(23) 0.3086(28) 0.3153(30) 1 0.54(13)
+F8 F 0.4021(24) 0.1230(25) 0.3109(30) 1 0.54(13)
+F9 F 0.1521(28) 0.1513(29) 0.1031(26) 1 0.54(13)
+F11 F 0.3570(29) 0.3095(32) 0.0984(30) 1 0.54(13)
+F12 F 0.1892(29) 0.3526(31) 0.9016(35) 1 0.54(13)

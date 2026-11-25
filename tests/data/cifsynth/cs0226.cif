@@ -1,0 +1,35 @@
+data_cs0226
+_chemical_formula_sum 'H2 F10 S3 Yb'
+_space_group_IT_number 5
+_symmetry_space_group_name_Hall 'A 2y'
+_symmetry_space_group_name_H-M 'A 1 2 1'
+_cell_angle_alpha 90
+_cell_angle_beta 97.32
+_cell_angle_gamma 90
+_cell_length_a 5.429
+_cell_length_b 6.443
+_cell_length_c 9.676
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-x,y,-z
+x,y+1/2,z+1/2
+-x,y+1/2,-z+1/2
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Yb1 Yb+3 0.5 0 0 1 0.0
+S2 S+5 0.1825 0.355 0.1907 1 0.0
+F1 F-2 0.025 0.524 0.128 1 0.0
+F2 F-2 0.767 0.290 0.418 1 0.0
+F3 F-2 0.31 0.253 0.076 1 0.0
+F4 F-2 0.312 0.506 0.296 1 0.0
+F5 F-2 0.96 0.23 0.182 1 0.0
+S1 S+5 0 0.6756 0 1 0.0

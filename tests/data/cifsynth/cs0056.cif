@@ -1,0 +1,52 @@
+data_cs0056
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'Cs2 N16 Si12'
+_space_group_IT_number 44
+_symmetry_Int_Tables_number 44
+_symmetry_space_group_name_Hall 'I 2 -2'
+_symmetry_space_group_name_H-M 'I m m 2'
+_cell_angle_alpha 90.00000000
+_cell_angle_beta 90.00000000
+_cell_angle_gamma 90.00000000
+_cell_length_a 7.79637363
+_cell_length_b 9.18558408
+_cell_length_c 4.75008136
+
+loop_
+_symmetry_equiv_pos_site_id
+_symmetry_equiv_pos_as_xyz
+1 'x, y, z'
+2 '-x+1/2, -y+1/2, z+1/2'
+3 '-x, y, z'
+4 'x+1/2, -y+1/2, z+1/2'
+5 'x+1/2, y+1/2, z+1/2'
+6 '-x, -y, z'
+7 '-x+1/2, y+1/2, z+1/2'
+8 'x, -y, z'
+
+loop_
+_atom_site_aniso_type_symbol
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Cs 0 0 0 0 0 0
+Si 0 0 0 0 0 0
+N 0 0 0 0 0 0
+
+loop_
+_atom_site_type_symbol
+_atom_site_label
+_atom_site_symmetry_multiplicity
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+Cs Cs1 2 0.000000 0.000000 0.832451 1
+Si Si2 8 0.210958 0.330564 0.839297 1
+Si Si3 4 0.000000 0.377032 0.351662 1
+N N4 8 0.169250 0.288919 0.210504 1
+N N5 4 0.000000 0.323949 0.709111 1
+N N6 4 0.205629 0.000000 0.291902 1

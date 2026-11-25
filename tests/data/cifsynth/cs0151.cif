@@ -1,0 +1,63 @@
+data_cs0151
+_chemical_formula_sum 'Fe1.176 O5 P'
+_space_group_IT_number 141
+_symmetry_cell_setting tetragonal
+_symmetry_space_group_name_Hall '-I 4bd 2'
+_symmetry_space_group_name_H-M 'I 41/a m d :2'
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma 90.0
+_cell_length_a 5.41809(8)
+_cell_length_b 5.41809(8)
+_cell_length_c 13.6324(3)
+
+loop_
+_symmetry_equiv_pos_site_id
+_symmetry_equiv_pos_as_xyz
+1 +x,+y,+z
+2 -y+1/4,+x+3/4,+z+1/4
+3 -x+1/2,-y,+z+1/2
+4 +y+1/4,-x+1/4,+z+3/4
+5 -x,+y,+z
+6 -y+1/4,-x+3/4,+z+1/4
+7 +x+1/2,-y,+z+1/2
+8 +y+1/4,+x+1/4,+z+3/4
+-1 -x,-y,-z
+-2 +y+3/4,-x+1/4,-z+3/4
+-3 +x+1/2,+y,-z+1/2
+-4 -y+3/4,+x+3/4,-z+1/4
+-5 +x,-y,-z
+-6 +y+3/4,+x+1/4,-z+3/4
+-7 -x+1/2,+y,-z+1/2
+-8 -y+3/4,-x+3/4,-z+1/4
+101 +x+1/2,+y+1/2,+z+1/2
+102 -y+3/4,+x+1/4,+z+3/4
+103 -x,-y+1/2,+z
+104 +y+3/4,-x+3/4,+z+1/4
+105 -x+1/2,+y+1/2,+z+1/2
+106 -y+3/4,-x+1/4,+z+3/4
+107 +x,-y+1/2,+z
+108 +y+3/4,+x+3/4,+z+1/4
+-101 -x+1/2,-y+1/2,-z+1/2
+-102 +y+1/4,-x+3/4,-z+1/4
+-103 +x,+y+1/2,-z
+-104 -y+1/4,+x+1/4,-z+3/4
+-105 +x+1/2,-y+1/2,-z+1/2
+-106 +y+1/4,+x+3/4,-z+1/4
+-107 -x,+y+1/2,-z
+-108 -y+1/4,-x+1/4,-z+3/4
+
+loop_
+_atom_site_type_symbol
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_thermal_displace_type
+_atom_site_U_iso_or_equiv
+_atom_site_symmetry_multiplicity
+P P1 0.0 0.75 0.125 1.0 Uiso 0.0256(11) 4
+O O1 0.0 0.4994(5) 0.1946(2) 1.0 Uiso 0.0387(2) 16
+O O2 0.0 0.25 0.375 1.0 Uiso 0.0140(3) 4
+FE Fe1 0.0 0.0417(6) 0.5008(4) 0.2940(10) Uiso 0.0157(6) 16

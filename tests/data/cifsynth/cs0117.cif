@@ -1,0 +1,41 @@
+data_cs0117
+_journal_name_full 'Synthetic Test Data'
+_journal_year 2000
+_chemical_formula_sum 'Cs O9 S U'
+_space_group_IT_number 14
+_symmetry_space_group_name_Hall '-P 2ac'
+_symmetry_space_group_name_H-M 'P 1 1 21/a'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 89.95
+_cell_length_a 9.529
+_cell_length_b 9.620
+_cell_length_c 16.420
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-x+1/2,-y,z+1/2
+-x,-y,-z
+x-1/2,y,-z-1/2
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+O16 O-2 0.7220 0.6908 0.0674 1 0.0
+O7 O-2 0.5687 0.654 0.8188 1 0.0
+O13 O-2 0.9269 0.1050 0.9323 1 0.0
+O8 O-2 0.3509 0.6873 0.7024 1 0.0
+O11 O-2 0.3795 0.1938 0.8139 1 0.0
+S2 S+5 0.4781 0.2730 0.7741 1 0.0
+O12 O-2 0.5836 0.3384 0.8148 1 0.0
+O14 O-2 0.6048 0.8939 0.9305 1 0.0
+O10 O-2 0.3888 0.3470 0.7051 1 0.0
+Cs1 Cs+2 0.87163 0.8203 0.93156 1 0.0
+U2 U+6 0.72828 0.02124 0.68049 1 0.0
+O9 O-2 0.5647 0.1443 0.6878 1 0.0

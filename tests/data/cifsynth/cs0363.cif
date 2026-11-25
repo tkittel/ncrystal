@@ -1,0 +1,37 @@
+data_cs0363
+_chemical_formula_sum 'O2 Si'
+_symmetry_space_group_name_H-M 'P 31 2 1'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 5.118
+_cell_length_b 5.118
+_cell_length_c 5.6332
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+y,x,1/3-z
+-y,x-y,1/3+z
+-x,-x+y,2/3-z
+-x+y,-x,2/3+z
+x-y,-y,-z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Si 0.00564 0.00472 0.00529 0.00236 0.00012 0.00023
+O 0.01611 0.01174 0.01163 0.01047 0.00334 0.00414
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+Si 0.48868 0.00000 0.00000
+O 0.41062 0.27671 -0.10510

@@ -1,0 +1,60 @@
+data_cs0367
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'C H5 K O3 S Si'
+_space_group_IT_number 173
+_symmetry_space_group_name_Hall 'P 6c'
+_symmetry_space_group_name_H-M 'P 63'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 11.3596
+_cell_length_b 11.3596
+_cell_length_c 10.6890
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+x-y,x,1/2+z
+-y,x-y,z
+-x,-y,1/2+z
+-x+y,-x,z
+y,-x+y,1/2+z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+K 0.00335 0.00354 0.00177 0.00195 -0.00065 -0.00084
+Si 0.00140 0.00140 0.00047 0.00065 0.00000 0.00000
+C 0.00474 0.00474 0.00791 0.00233 0.00000 0.00000
+O1 0.00428 0.00474 0.01033 0.00140 -0.00028 -0.00279
+O3 0.00335 0.00400 0.00726 0.00130 0.00093 0.00186
+O4 0.00316 0.00400 0.00512 0.00121 0.00130 -0.00121
+H74 0.01116 0.01582 0.01861 0.00186 0.00372 0.00186
+H12 0.02186 0.01526 0.02977 0.01256 -0.00186 -0.00093
+H26 0.01861 0.01768 0.01768 0.00744 -0.00093 -0.00744
+H36 0.01675 0.01861 0.02419 0.00930 -0.00093 0.00279
+H46 0.01396 0.02419 0.02140 0.01209 0.00093 -0.00186
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+K 0.20096 0.99516 0.24888 0.00279
+Si 0.00000 0.00000 -0.00109 0.00102
+C 0.33333 0.66667 0.45735 0.00577
+S 0.33333 0.66667 0.99280 0.00102
+O1 0.38604 0.22452 0.24908 0.00679
+O3 -0.00109 0.33238 0.08071 0.00512
+O4 0.03139 0.34146 0.43203 0.00437
+H74 0.20754 0.20016 0.05923 0.01721
+H12 0.37401 0.29080 0.24901 0.02065
+H26 0.29109 0.45721 0.33420 0.01889
+H36 -0.08369 0.33248 0.04075 0.01972
+H46 -0.06109 0.33911 0.45862 0.01861

@@ -1,0 +1,119 @@
+data_cs0454
+_chemical_formula_sum 'C10 H12 Co N8 O'
+_space_group_IT_number 70
+_symmetry_cell_setting orthorhombic
+_symmetry_space_group_name_Hall '-F 2uv 2vw'
+_symmetry_space_group_name_H-M 'F d d d :2'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 10.899(3)
+_cell_length_b 16.875(5)
+_cell_length_c 30.537(8)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'x, -y+1/4, -z+1/4'
+'-x+1/4, y, -z+1/4'
+'-x+1/4, -y+1/4, z'
+'x, y+1/2, z+1/2'
+'x, -y+3/4, -z+3/4'
+'-x+1/4, y+1/2, -z+3/4'
+'-x+1/4, -y+3/4, z+1/2'
+'x+1/2, y, z+1/2'
+'x+1/2, -y+1/4, -z+3/4'
+'-x+3/4, y, -z+3/4'
+'-x+3/4, -y+1/4, z+1/2'
+'x+1/2, y+1/2, z'
+'x+1/2, -y+3/4, -z+1/4'
+'-x+3/4, y+1/2, -z+1/4'
+'-x+3/4, -y+3/4, z'
+'-x, -y, -z'
+'-x, y-1/4, z-1/4'
+'x-1/4, -y, z-1/4'
+'x-1/4, y-1/4, -z'
+'-x, -y+1/2, -z+1/2'
+'-x, y+1/4, z+1/4'
+'x-1/4, -y+1/2, z+1/4'
+'x-1/4, y+1/4, -z+1/2'
+'-x+1/2, -y, -z+1/2'
+'-x+1/2, y-1/4, z+1/4'
+'x+1/4, -y, z+1/4'
+'x+1/4, y-1/4, -z+1/2'
+'-x+1/2, -y+1/2, -z'
+'-x+1/2, y+1/4, z-1/4'
+'x+1/4, -y+1/2, z-1/4'
+'x+1/4, y+1/4, -z'
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+Co1 0.0142(2) 0.0172(2) 0.0171(2) 0.000 0.000 0.00019(14)
+N1 0.0347(14) 0.0215(12) 0.0182(11) 0.000 0.000 -0.0030(11)
+C1 0.057(2) 0.0248(11) 0.0226(11) -0.0005(9) -0.0029(11) -0.0108(11)
+C2 0.068(2) 0.0353(13) 0.0228(11) -0.0060(10) -0.0060(12) -0.0136(13)
+C3 0.054(2) 0.046(2) 0.0163(14) 0.000 0.000 -0.011(2)
+N2 0.0402(15) 0.0194(11) 0.0179(12) 0.000 0.000 0.0089(12)
+C4 0.060(2) 0.0259(11) 0.0289(12) -0.0042(9) -0.0170(12) 0.0077(11)
+C5 0.117(3) 0.0249(12) 0.0311(14) -0.0053(10) -0.033(2) 0.011(2)
+C6 0.174(6) 0.019(2) 0.018(2) 0.000 0.000 0.010(3)
+N11 0.0206(8) 0.0248(9) 0.0377(11) -0.0112(8) 0.0075(8) -0.0043(7)
+N12 0.0205(10) 0.0152(10) 0.0152(10) 0.000 -0.0031(9) 0.000
+N21 0.0198(8) 0.0193(8) 0.0332(9) 0.0003(7) -0.0004(7) 0.0011(6)
+N22 0.0172(15) 0.024(2) 0.019(2) 0.0029(13) -0.0001(13) 0.0031(14)
+N23 0.032(2) 0.015(3) 0.037(3) 0.005(3) 0.002(2) 0.0013(13)
+O1 0.0198(8) 0.0193(8) 0.0332(9) 0.0003(7) -0.0004(7) 0.0011(6)
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_thermal_displace_type
+_atom_site_occupancy
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_disorder_group
+Co1 Co 0.3750 0.3750 0.100337(13) 0.01612(12) Uani 1 d S .
+N1 N 0.3750 0.3750 0.19073(9) 0.0248(5) Uani 1 d S .
+C1 C 0.3936(3) 0.4340(2) 0.20339(8) 0.0349(6) Uani 1 d . .
+H1 H 0.4100 0.4781 0.18473 0.042 Uiso 1 calc R .
+C2 C 0.3925(3) 0.4337(2) 0.25803(8) 0.0420(7) Uani 1 d . .
+H2 H 0.4233 0.4813 0.27326 0.050 Uiso 1 calc R .
+C3 C 0.3750 0.3750 0.26710(12) 0.0385(8) Uani 1 d S .
+H3 H 0.3750 0.3750 0.31590 0.047 Uiso 1 calc SR .
+N2 N 0.3750 0.3750 0.03367(9) 0.0259(5) Uani 1 d S .
+C4 C 0.2686(3) 0.35446(15) 0.02451(9) 0.0386(6) Uani 1 d . .
+H4 H 0.1905 0.34802 0.01840 0.047 Uiso 1 calc R .
+C5 C 0.2709(4) 0.3550(2) -0.01882(10) 0.0577(10) Uani 1 d . .
+H5 H 0.1857 0.3458 -0.05447 0.069 Uiso 1 calc R .
+C6 C 0.3750 0.3750 -0.06612(13) 0.070(2) Uani 1 d S .
+H6 H 0.3750 0.3750 -0.09007 0.085 Uiso 1 calc SR .
+N11 N 0.2313(2) 0.28889(12) 0.10034(7) 0.0277(4) Uani 1 d . .
+N12 N 0.1250 0.29423(14) 0.1250 0.0170(4) Uani 1 d S .
+N21 N 0.5026(2) 0.26734(10) 0.10046(6) 0.0241(4) Uani 0.50 d P 1
+N22 N 0.4794(4) 0.1987(2) 0.10647(12) 0.0203(7) Uani 0.50 d P 1
+N23 N 0.4396(4) 0.1497(2) 0.1182(3) 0.0277(11) Uani 0.50 d P 1
+O1 O 0.5026(2) 0.26734(10) 0.10046(6) 0.0241(4) Uani 0.50 d P 2
+H7 H 0.5598 0.2695 0.1101 0.029 Uiso 0.50 d P 2
+H8 H 0.4799 0.2299 0.1003 0.029 Uiso 0.50 d P 2
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+C C 0.0033 0.0016 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+N N 0.0061 0.0033 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Co Co 0.3494 0.9721 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+O O 0.0106 0.0060 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

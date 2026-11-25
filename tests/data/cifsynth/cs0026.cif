@@ -1,0 +1,36 @@
+data_cs0026
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'Te7 Mo2.14 Hf0.86 I'
+_space_group_IT_number 156
+_symmetry_space_group_name_Hall 'P 3 -2"'
+_symmetry_space_group_name_H-M 'P 3 m 1'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 7.365
+_cell_length_b 7.365
+_cell_length_c 6.669
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-y,x-y,z
+-x+y,-x,z
+-y,-x,z
+x,x-y,z
+-x+y,y,z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+I1 I-2 0.3332 0.6668 0.5634 1 0.0
+Te1 Te-1 0.6668 0.3332 0.0234 1 0.0
+Mo1 Mo+3 0.48506 0.51494 0.25 0.714 0.0
+Hf1 Hf+3 0.48506 0.51494 0.25 0.286 0.0
+Te2 Te-1 0.15567 0.84433 -0.0299 1 0.0
+Te3 Te-1 0.83886 0.16114 0.4895 1 0.0

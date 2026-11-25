@@ -1,0 +1,58 @@
+data_cs0434
+_journal_year 2000
+_chemical_formula_sum 'C3 Cd D5 H2 O'
+_space_group_IT_number 98
+_space_group_name_Hall 'I 4bw 2bw'
+_space_group_name_H-M_alt 'I 41 2 2'
+_symmetry_cell_setting tetragonal
+_symmetry_Int_Tables_number 98
+_symmetry_space_group_name_Hall 'I 4bw 2bw'
+_symmetry_space_group_name_H-M 'I 41 2 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 16.16706(10)
+_cell_length_b 16.16706(10)
+_cell_length_c 12.8654(2)
+
+loop_
+_symmetry_equiv_pos_site_id
+_symmetry_equiv_pos_as_xyz
+1 x,y,z
+2 -y,1/2+x,1/4+z
+3 1/2-x,1/2-y,1/2+z
+4 1/2+y,-x,3/4+z
+5 x,1/2-y,1/4-z
+6 1/2+y,1/2+x,1/2-z
+7 1/2-x,y,3/4-z
+8 -y,-x,-z
+9 1/2+x,1/2+y,1/2+z
+10 1/2-y,x,3/4+z
+11 -x,-y,z
+12 y,1/2-x,1/4+z
+13 1/2+x,-y,3/4-z
+14 y,x,-z
+15 -x,1/2+y,1/4-z
+16 1/2-y,1/2-x,1/2-z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_thermal_displace_type
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Cd Cd Uiso 0.6779(4) 0.3221(4) 0.50000 1.000 0.064(3)
+O1 O Uiso 0.7479(4) 0.25000 0.62500 1.000 0.0669(13)
+C1 C Uiso 0.5834(5) 0.3744(4) 0.7082(4) 1.000 0.0643(9)
+H1 H Uiso 0.8221(8) 0.25000 0.62500 1.000 0.0669(13)
+H3 H Uiso 0.50000 0.50000 0.6251(7) 1.000 0.0643(9)
+C1_1 C Uiso 0.5179(3) 0.7524(5) 0.1674(4) 0.463(4) 0.143(4)
+D1_1 D Uiso 0.5413(8) 0.7519(9) 0.2499(6) 0.463(4) 0.172(4)
+D2_1 D Uiso 0.5484(8) 0.7932(8) 0.1298(10) 0.463(4) 0.172(4)
+D1_2 D Uiso 0.632(2) 0.5858(8) 0.5414(14) 0.298(3) 0.172(4)
+D4_2 D Uiso 0.668(2) 0.6776(14) 0.5406(14) 0.298(3) 0.172(4)
+C1_3 C Uiso 0.6134(5) 0.7483(5) 0.3739(7) 0.284(4) 0.143(4)
+D3_3 D Uiso 0.5392(12) 0.708(3) 0.3782(17) 0.284(4) 0.172(4)

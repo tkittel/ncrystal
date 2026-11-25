@@ -1,0 +1,69 @@
+data_cs0068
+_chemical_formula_sum 'Bi0.3 Ce1.7 Nb2 F9.002'
+_space_group_IT_number 198
+_symmetry_Int_Tables_number 198
+_symmetry_space_group_name_Hall 'P 2ac 2ab 3'
+_symmetry_space_group_name_H-M 'P 21 3'
+_cell_angle_alpha 90.000
+_cell_angle_beta 90.000
+_cell_angle_gamma 90.000
+_cell_length_a 7.4549(3)
+_cell_length_b 7.4549(3)
+_cell_length_c 7.4549(3)
+
+loop_
+_symmetry_equiv_pos_site_id
+_symmetry_equiv_pos_as_xyz
+1 'x, y, z'
+2 'z, x, y'
+3 'y, z, x'
+4 '0.500-y, -z, 0.500+x'
+5 '0.500+z, 0.500-x, -y'
+6 '-y, 0.500+z, 0.500-x'
+7 '0.500-z, -x, 0.500+y'
+8 '-z, 0.500+x, 0.500-y'
+9 '0.500+y, 0.500-z, -x'
+10 '0.500-x, -y, 0.500+z'
+11 '0.500+x, 0.500-y, -z'
+12 '-x, 0.500+y, 0.500-z'
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Ce 0.04241(159) 0.04241(159) 0.04241(159) -0.01152(125) -0.01152(125) -0.01152(125)
+Bi 0.04241(159) 0.04241(159) 0.04241(159) -0.01152(125) -0.01152(125) -0.01152(125)
+Nb 0.02381(45) 0.02381(45) 0.02381(45) 0.00781(96) 0.00781(96) 0.00781(96)
+F1 0.04390(116) 0.04390(116) 0.04390(116) -0.00404(160) -0.00404(160) -0.00404(160)
+F2 0.03238(129) 0.11041(340) 0.02572(163) -0.01678(210) 0.00266(148) 0.02077(323)
+F3 0.03238(129) 0.11041(340) 0.02572(163) -0.01678(210) 0.00266(148) 0.02077(323)
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_symmetry_multiplicity
+_atom_site_Wyckoff_symbol
+_atom_site_calc_flag
+Ce Ce+0 0.8322(4) 0.8322(4) 0.8322(4) 0.850 4 a d
+Bi Bi+0 0.8322(4) 0.8322(4) 0.8322(4) 0.150 4 a d
+Nb Nb+0 0.1666(9) 0.1666(9) 0.1666(9) 1.000 4 a d
+F1 F+0 0.3343(7) 0.3343(7) 0.3343(7) 1.000 4 a d
+F2 F+0 1.006(1) 0.158(1) 0.336(1) 0.843(9) 12 b d
+F3 F+0 0.907(2) 0.632(4) 0.534(2) 0.324(9) 12 b d
+
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+_atom_type_radius_bond
+Ce+0 3.000 1.060
+Bi+0 3.000 0.960
+Nb+0 6.000 0.420
+F+0 -2.000 1.210

@@ -1,0 +1,17 @@
+data_cs0295
+_journal_name_full 'Synthetic Test Data'
+_journal_year 2000
+_chemical_formula_sum 'Cd H4 F6 Se'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 10.12
+_cell_length_b 10.40
+_cell_length_c 9.092
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+? ? ? ?

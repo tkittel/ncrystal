@@ -1,0 +1,48 @@
+data_cs0095
+_publ_section_title 'Synthetic structure for testing'
+_journal_year 2000
+_chemical_formula_sum 'K1.33 Er0.27 Ce1.07 Mo4 Mg1.33 O16'
+_space_group_IT_number 88
+_symmetry_cell_setting tetragonal
+_symmetry_space_group_name_Hall '-I 4ad'
+_symmetry_space_group_name_H-M 'I 41/a :2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 5.51029(15)
+_cell_length_b 5.51029(15)
+_cell_length_c 12.07590(34)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-x, -y, -z'
+'-x, -y+1/2, z'
+'-x+1/2, -y, z+1/2'
+'-x+1/2, -y+1/2, -z+1/2'
+'-y+1/4, x+1/4, -z+1/4'
+'-y+1/4, x-1/4, z-1/4'
+'-y-1/4, x+1/4, z+1/4'
+'-y-1/4, x-1/4, -z-1/4'
+'y+1/4, -x+1/4, z+1/4'
+'y+1/4, -x-1/4, -z-1/4'
+'y-1/4, -x+1/4, -z+1/4'
+'y-1/4, -x-1/4, z-1/4'
+'x, y+1/2, -z'
+'x+1/2, y, -z+1/2'
+'x+1/2, y+1/2, z+1/2'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_B_iso_or_equiv
+Mg Mg 0 0.25 0.625 0.3333333 0.82(19)
+K K 0 0.25 0.625 0.3333333 0.82(19)
+Ce Ce 0 0.25 0.625 0.2666667 0.82(19)
+Er Er 0 0.25 0.625 0.06666667 0.82(19)
+Mo Mo 0 0.25 0.125 1 0.56(18)
+O O 0.2251(20) 0.1004(13) 0.04782(68) 1 0.56(28)

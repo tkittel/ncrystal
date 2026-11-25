@@ -1,0 +1,38 @@
+data_cs0074
+_chemical_formula_sum 'F2 Rh'
+_symmetry_cell_setting tetragonal
+_symmetry_space_group_name_Hall '-P 4n 2n'
+_symmetry_space_group_name_H-M 'P 42/m n m'
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma 90.0
+_cell_length_a 4.2910(2)
+_cell_length_b 4.2910(2)
+_cell_length_c 2.96278(10)
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+-y,-x,z
+y,x,-z
+1/2+y,1/2-x,1/2-z
+1/2-y,1/2+x,1/2+z
+1/2+x,1/2-y,1/2+z
+1/2-x,1/2+y,1/2-z
+x,y,-z
+-x,-y,z
+y,x,z
+-y,-x,-z
+1/2-y,1/2+x,1/2-z
+1/2+y,1/2-x,1/2+z
+1/2-x,1/2+y,1/2+z
+1/2+x,1/2-y,1/2-z
+-x,-y,-z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+Rh .0 .0 .0
+F .29001(10) .29001(10) .0

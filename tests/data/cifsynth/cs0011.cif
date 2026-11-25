@@ -1,0 +1,58 @@
+data_cs0011
+_publ_section_title 'Synthetic structure for testing'
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'C5 H12 O4'
+_space_group_IT_number 82
+_symmetry_cell_setting tetragonal
+_symmetry_space_group_name_Hall 'I -4'
+_symmetry_space_group_name_H-M 'I -4'
+_cell_angle_alpha 90.000
+_cell_angle_beta 90.000
+_cell_angle_gamma 90.000
+_cell_length_a 6.32601(10)
+_cell_length_b 6.32601(10)
+_cell_length_c 8.8298(4)
+
+loop_
+_symmetry_equiv_pos_site_id
+_symmetry_equiv_pos_as_xyz
+1 +X,+Y,+Z
+2 -X,-Y,+Z
+3 +Y,-X,-Z
+4 -Y,+X,-Z
+5 1/2+X,1/2+Y,1/2+Z
+6 1/2-X,1/2-Y,1/2+Z
+7 1/2+Y,1/2-X,1/2-Z
+8 1/2-Y,1/2+X,1/2-Z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+O(1) 0.00503(3) 0.00553(3) 0.01123(4) -0.00092(2) -0.00033(3) -0.00067(3)
+C(1) 0.00405(3) 0.00405(3) 0.00488(6) 0.00000 0.00000 0.00000
+C(2) 0.00568(3) 0.00557(3) 0.00612(3) -0.00083(2) 0.00070(3) 0.00028(3)
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_occupancy
+_atom_site_calc_flag
+O(1) O -0.31199(2) -0.23981(2) 0.02145(2) 0.007 1.0000 ?
+C(1) C 0.00000 0.00000 0.00000 0.004 1.0000 ?
+C(2) C -0.15297(2) -0.12567(2) 0.103416(10) 0.006 1.0000 ?
+H(1) H -0.06187 -0.22860 0.18844 0.021(2) 1.0000 ?
+H(2) H -0.24300 -0.02152 0.18845 0.022(2) 1.0000 ?
+H(3) H -0.27183 -0.39506 -0.00127 0.019(2) 1.0000 ?
+DUM0 . 1.00000 0.00000 0.00000 . . dum
+DUM1 . 0.00000 1.00000 0.00000 . . dum
+DUM2 . 0.14668 0.02181 -0.10351 . . dum
+DUM3 . -0.02163 0.14683 -0.10330 . . dum

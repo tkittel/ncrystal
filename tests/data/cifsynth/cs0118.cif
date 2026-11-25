@@ -1,0 +1,35 @@
+data_cs0118
+_symmetry_space_group_name_H-M P2/c
+_cell_length_a 8.7820
+_cell_length_b 8.9613
+_cell_length_c 13.9406
+_cell_angle_alpha 90.0000
+_cell_angle_beta 90.0000
+_cell_angle_gamma 112.0450
+_symmetry_Int_Tables_number 13
+_chemical_formula_sum P32
+
+loop_
+_symmetry_equiv_pos_site_id
+_symmetry_equiv_pos_as_xyz
+1 'x, y, z'
+2 '-x, -y, -z'
+3 '-x+1/2, -y+1/2, z'
+4 'x+1/2, y+1/2, -z'
+
+loop_
+_atom_site_type_symbol
+_atom_site_label
+_atom_site_symmetry_multiplicity
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+P P0 4 0.0418 0.3004 0.4665 1.0
+P P1 4 0.0504 0.8271 0.4126 1.0
+P P2 4 0.1341 0.7180 0.3415 1.0
+P P3 4 0.1751 0.4553 0.1143 1.0
+P P4 4 0.1565 0.8385 0.6565 1.0
+P P5 4 0.1565 0.3385 0.8716 1.0
+P P6 4 0.2182 0.1315 0.2175 1.0
+P P7 4 0.2031 0.9844 0.9551 1.0

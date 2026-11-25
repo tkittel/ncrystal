@@ -1,0 +1,40 @@
+data_cs0281
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'D5 K O5 S'
+_space_group_IT_number 9
+_symmetry_space_group_name_Hall 'I -2ya'
+_symmetry_space_group_name_H-M 'I 1 a 1'
+_cell_angle_alpha 90
+_cell_angle_beta 116.406
+_cell_angle_gamma 90
+_cell_length_a 6.0066
+_cell_length_b 15.7028
+_cell_length_c 6.4576
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+1/2+x,1/2+y,1/2+z
+1/2+x,-y,z
++x,1/2-y,1/2+z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_type_symbol
+_atom_site_attached_hydrogens
+K 0.50000 0.31706 0.25000 0.00860 K 0
+S -0.01839 0.31000 0.72966 0.00213 S 0
+OD1 -0.02362 0.35474 -0.03804 0.01110 O 0
+O2 0.26398 0.26977 0.80984 0.01193 O 0
+O3 -0.06589 0.39868 0.53947 0.01147 O 0
+OD2O1 0.35161 0.43814 0.47802 0.02118 O 0
+OD2O2 0.51897 0.43404 0.01917 0.02923 O 0
+D1 -0.10720 0.32616 0.01839 0.02886 D 0
+D2 0.39056 0.47630 0.47568 0.02460 D 0
+D3 0.19901 0.40519 0.48129 0.02692 D 0
+D4 0.51878 0.52115 0.02164 0.06808 D 0
+D5 0.51782 0.44007 0.85880 0.06244 D 0

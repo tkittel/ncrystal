@@ -1,0 +1,45 @@
+data_cs0212
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'N8 H24 S4 P8 Th'
+_symmetry_cell_setting tetragonal
+_symmetry_space_group_name_Hall 'P 4n 2n'
+_symmetry_space_group_name_H-M 'P 42 21 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 10.8304(10)
+_cell_length_b 10.8304(10)
+_cell_length_c 12.244(2)
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Th .0040(2) .0040 .00411(10) .00009(10) 0 0
+P(1) .0048(4) .0055(4) .0057(4) .0006(3) -.0012(3) -.0005(3)
+P(2) .0049(4) .0060(4) .0063(4) .0010(3) -.0021(3) -.0009(3)
+N(1) .015(2) .0032(15) .017(2) -.0049(14) .0018(16) .0008(14)
+N(2) .0108(19) .0119(19) .0076(18) .0004(15) -.0007(14) .0007(14)
+S .0046(4) .0043(4) .0043(4) .0001(3) -.0012(3) -.0002(3)
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+Th .0 .0 .0
+P(1) -.08251(9) .24959(9) .09281(8)
+P(2) .18162(9) .08582(9) .16748(9)
+N(1) .1674(5) .3838(5) .1256(5)
+N(2) .0515(5) .2908(5) .3338(4)
+S .08339(10) .25012(10) .17046(8)
+H(1) .195(5) .376(5) .041(4)
+H(2) .257(5) .374(5) .164(5)
+H(3) .125(6) .458(6) .125(5)
+H(4) .012(7) .213(5) .365(4)
+H(5) .126(5) .305(5) .365(3)
+H(6) .001(8) .354(6) .333(5)

@@ -1,0 +1,120 @@
+data_cs0474
+_publ_section_title 'Synthetic structure for testing'
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Ag H6 N2 O Os S'
+_space_group_IT_number 217
+_symmetry_cell_setting cubic
+_symmetry_space_group_name_Hall 'I -4 2 3'
+_symmetry_space_group_name_H-M 'I -4 3 m'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 15.8360(2)
+_cell_length_b 15.8360(2)
+_cell_length_c 15.8360(2)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-x, -y, z'
+'-x, y, -z'
+'x, -y, -z'
+'z, x, y'
+'z, -x, -y'
+'-z, -x, y'
+'-z, x, -y'
+'y, z, x'
+'-y, z, -x'
+'y, -z, -x'
+'-y, -z, x'
+'y, x, z'
+'-y, -x, z'
+'y, -x, -z'
+'-y, x, -z'
+'x, z, y'
+'-x, z, -y'
+'-x, -z, y'
+'x, -z, -y'
+'z, y, x'
+'z, -y, -x'
+'-z, y, -x'
+'-z, -y, x'
+'x+1/2, y+1/2, z+1/2'
+'-x+1/2, -y+1/2, z+1/2'
+'-x+1/2, y+1/2, -z+1/2'
+'x+1/2, -y+1/2, -z+1/2'
+'z+1/2, x+1/2, y+1/2'
+'z+1/2, -x+1/2, -y+1/2'
+'-z+1/2, -x+1/2, y+1/2'
+'-z+1/2, x+1/2, -y+1/2'
+'y+1/2, z+1/2, x+1/2'
+'-y+1/2, z+1/2, -x+1/2'
+'y+1/2, -z+1/2, -x+1/2'
+'-y+1/2, -z+1/2, x+1/2'
+'y+1/2, x+1/2, z+1/2'
+'-y+1/2, -x+1/2, z+1/2'
+'y+1/2, -x+1/2, -z+1/2'
+'-y+1/2, x+1/2, -z+1/2'
+'x+1/2, z+1/2, y+1/2'
+'-x+1/2, z+1/2, -y+1/2'
+'-x+1/2, -z+1/2, y+1/2'
+'x+1/2, -z+1/2, -y+1/2'
+'z+1/2, y+1/2, x+1/2'
+'z+1/2, -y+1/2, -x+1/2'
+'-z+1/2, y+1/2, -x+1/2'
+'-z+1/2, -y+1/2, x+1/2'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_symmetry_multiplicity
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+Os1 Os 0.440780(15) 0.440780(15) 0.559220(15) 0.03035(16) Uani 1 6 d S . .
+Ag1 Ag 0.40810(4) 0.40810(4) 0.40810(4) 0.0426(3) Uani 1 6 d S . .
+S1 S 0.32007(15) 0.32007(15) 0.32007(15) 0.0508(9) Uani 1 6 d S . .
+O11 O 0.4360(4) 0.4360(4) 0.7538(4) 0.070(2) Uani 1 2 d S . .
+N1 N 0.3719(9) 0.2669(8) 0.2211(8) 0.063(4) Uani 0.50 1 d PD A -1
+N2 N 0.4562(9) 0.2544(11) 0.2529(12) 0.066(7) Uani 0.50 1 d PD A -1
+H2A H 0.4982 0.2542 0.2127 0.100 Uiso 0.50 1 calc PR A -1
+H2C H 0.4670 0.2944 0.2961 0.100 Uiso 0.50 1 calc PR A -1
+H3B H 0.4125 0.3708 0.2018 0.135 Uiso 0.50 1 calc PR A -1
+H3C H 0.3315 0.3687 0.1475 0.135 Uiso 0.50 1 calc PR A -1
+H4A H 0.3295 0.2113 0.1227 0.172 Uiso 0.50 1 calc PR A -1
+H4C H 0.3782 0.1537 0.2119 0.172 Uiso 0.50 1 calc PR A -1
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+Os1 0.03035(16) 0.03035(16) 0.03035(16) 0.00167(9) 0.00167(9) -0.00167(9)
+Ag1 0.0426(3) 0.0426(3) 0.0426(3) -0.0072(2) -0.0072(2) -0.0072(2)
+S1 0.0508(9) 0.0508(9) 0.0508(9) -0.0104(9) -0.0104(9) -0.0104(9)
+O11 0.086(3) 0.086(3) 0.035(3) 0.000(2) 0.000(2) -0.024(6)
+N1 0.076(9) 0.065(8) 0.047(7) -0.026(6) -0.003(6) -0.011(7)
+N2 0.072(7) 0.050(9) 0.078(16) -0.012(11) 0.007(7) -0.002(6)
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+N C 0.0033 0.0016 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+O O 0.0106 0.0060 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+S P 0.1023 0.0942 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Ag Pd -0.9988 1.0072 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+Os Os -1.2165 7.6030 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'

@@ -1,0 +1,44 @@
+data_cs0058
+_journal_year 2000
+_chemical_formula_sum 'B5 Ba F6'
+_space_group_IT_number 91
+_symmetry_space_group_name_Hall 'P 4w 2c'
+_symmetry_space_group_name_H-M 'P 41 2 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 8.557
+_cell_length_b 8.557
+_cell_length_c 15.41
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-y,x,z+1/4
+-x,-y,z+1/2
+y,-x,z+3/4
+x,-y,-z+1/2
+y,x,-z+3/4
+-x,y,-z
+-y,-x,-z+1/4
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Ba1 Ba+1 0 0.4811 0 1 0.0
+B1 B+3 0.3410 0.1265 0.0428 1 0.0
+F5 F-2 0.3410 0.9670 0.0917 1 0.0
+B4 B+3 0.1609 0.0336 0.9578 1 0.0
+F4 F-2 0.4245 0.2242 0.0923 1 0.0
+B3 B+3 0.2700 0.868 0.049 1 0.0
+F3 F-2 0.3406 0.5003 0.1333 1 0.0
+B5 B+3 0.3586 0.3586 0.375 1 0.0
+F8 F-2 0.5906 0.5750 0.3752 0.5 0.0
+B2 B+3 0.4335 0.3727 0.128 1 0.0
+F6 F-2 0.2165 0.9248 0.9614 1 0.0
+F7 F-2 0.0911 0.0900 0.8701 0.5 0.0

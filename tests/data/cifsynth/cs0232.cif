@@ -1,0 +1,69 @@
+data_cs0232
+_journal_year 2000
+_chemical_formula_sum 'C8 H8 O4 W'
+_space_group_IT_number 64
+_symmetry_cell_setting orthorhombic
+_symmetry_space_group_name_Hall '-C 2ac 2'
+_symmetry_space_group_name_H-M 'C m c a'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 13.067(3)
+_cell_length_b 6.6288(13)
+_cell_length_c 12.964(3)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-x, -y+1/2, z+1/2'
+'-x, y+1/2, -z+1/2'
+'x, -y, -z'
+'x+1/2, y+1/2, z'
+'-x+1/2, -y+1, z+1/2'
+'-x+1/2, y+1, -z+1/2'
+'x+1/2, -y+1/2, -z'
+'-x, -y, -z'
+'x, y-1/2, -z-1/2'
+'x, -y-1/2, z-1/2'
+'-x, y, z'
+'-x+1/2, -y+1/2, -z'
+'x+1/2, y, -z-1/2'
+'x+1/2, -y, z-1/2'
+'-x+1/2, y+1/2, z'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+W1 W 0.0000 0.0000 0.0000 0.0287(3) Uani 1 d S . .
+O1 O 0.1670(5) -0.2842(13) -0.1225(6) 0.075(2) Uani 1 d . . .
+C1 C 0.1287(6) -0.1625(16) -0.0842(7) 0.044(2) Uani 1 d . . .
+C2 C -0.0412(13) 0.292(3) -0.1288(14) 0.047(4) Uani 0.50 d P . .
+H2A H -0.1239 0.2815 -0.1563 0.056 Uiso 0.50 d PR . .
+H2C H -0.0213 0.4152 -0.0793 0.056 Uiso 0.50 d PR . .
+C3 C 0.0430(13) 0.152(3) -0.1700(12) 0.038(4) Uani 0.50 d P . .
+H3C H 0.1210 0.2055 -0.1642 0.045 Uiso 0.50 d PR . .
+H3A H 0.0180 0.0781 -0.2198 0.045 Uiso 0.50 d PR . .
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+W1 0.0316(3) 0.0264(4) 0.0280(3) -0.0014(4) 0.000 0.000
+O1 0.050(3) 0.077(6) 0.096(5) -0.048(5) -0.005(4) 0.018(4)
+C1 0.036(4) 0.050(5) 0.046(4) -0.010(5) 0.000(4) -0.005(4)
+C2 0.069(10) 0.030(10) 0.042(9) 0.024(9) -0.008(8) -0.007(8)
+C3 0.055(9) 0.022(9) 0.036(8) -0.001(7) 0.007(7) -0.008(7)

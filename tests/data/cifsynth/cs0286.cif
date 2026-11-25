@@ -1,0 +1,60 @@
+data_cs0286
+_chemical_formula_sum 'Ce0.567 Li0.3 O3 V'
+_space_group_crystal_system tetragonal
+_space_group_IT_number 125
+_space_group_name_Hall '-P 4a 2b'
+_space_group_name_H-M_alt 'P 4/n b m'
+_symmetry_space_group_name_Hall '-P 4a 2b'
+_symmetry_space_group_name_H-M 'P 4/n b m :2'
+_cell_angle_alpha 90.00000
+_cell_angle_beta 90.00000
+_cell_angle_gamma 90.00000
+_cell_length_a 5.24394(1)
+_cell_length_b 5.24394(1)
+_cell_length_c 7.41158(1)
+
+loop_
+_symmetry_equiv_pos_site_id
+_symmetry_equiv_pos_as_xyz
+1 x,y,z
+2 -y+1/2,x,z
+3 -x+1/2,-y+1/2,z
+4 y,-x+1/2,z
+5 -x,y+1/2,z
+6 y+1/2,x+1/2,z
+7 x+1/2,-y,z
+8 -y,-x,z
+9 -x,-y,-z
+10 y+1/2,-x,-z
+11 x+1/2,y+1/2,-z
+12 -y,x+1/2,-z
+13 x,-y+1/2,-z
+14 -y+1/2,-x+1/2,-z
+15 -x+1/2,y,-z
+16 y,x,-z
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_occupancy
+_atom_site_adp_type
+_atom_site_type_symbol
+V 0.25000 0.25000 0.2506(8) 0.0000(4) 1.00000 Uiso TI
+Ce1 0.25000 0.75000 0.00000 0.00113 0.332(7) Uiso LA
+Ce2 0.25000 0.75000 0.50000 0.00113 0.802(7) Uiso LA
+O1 0.52377(17) 0.47623(17) 0.2497(4) 0.0023(4) 1.00000 Uiso O
+O2a 0.25000 0.25000 0.00000 0.0139(17) 1.00000 Uiso O
+O2b 0.25000 0.25000 0.50000 0.0123(17) 1.00000 Uiso O
+Li 0.079(3) -0.079(3) -0.004(5) 0.004(2) 0.15000 Uiso LI
+
+loop_
+_atom_type_symbol
+_atom_type_scat_length_neutron
+_atom_type_scat_source
+TI -0.34380 V.F._Sears_Neutron_News_3_26_(1992)
+LA 0.82400 V.F._Sears_Neutron_News_3_26_(1992)
+O 0.58030 V.F._Sears_Neutron_News_3_26_(1992)
+LI -0.19000 V.F._Sears_Neutron_News_3_26_(1992)

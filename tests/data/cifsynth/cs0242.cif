@@ -1,0 +1,31 @@
+data_cs0242
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Cl2 F4 Mg N4 U'
+_symmetry_cell_setting monoclinic
+_symmetry_space_group_name_Hall 'I -2y'
+_symmetry_space_group_name_H-M 'I 1 m 1'
+_cell_angle_alpha 90
+_cell_angle_beta 102.570(10)
+_cell_angle_gamma 90
+_cell_length_a 12.528(2)
+_cell_length_b 16.964(3)
+_cell_length_c 6.07124(10)
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_attached_hydrogens
+U .500 .500 .500 0
+Cl1 .228(4) .690(3) -.153(7) 0
+Cl2 .552(4) .822(3) .761(7) 0
+Mg1 .278(9) .500 .903(19) 0
+F1 .514(10) .649(6) .603(18) 0
+F7 .641(15) .500 .86(3) 2
+F9 .888(15) .500 .29(3) 2
+F10 .095(15) .500 .64(3) 2
+N1 .481(14) .677(3) .472(17) 0
+N3 .362(4) .740(2) .064(5) 0
+N4 .332(6) .811(2) .149(5) 0
+N5 .386(5) .811(2) .383(7) 0

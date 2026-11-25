@@ -1,0 +1,51 @@
+data_cs0107
+_journal_year 2000
+_chemical_formula_sum 'Al Be2 Ca F2 H2 Li Mg Si2'
+_space_group_IT_number 9
+_space_group_name_Hall 'C -2yc'
+_space_group_name_H-M_alt 'C 1 c 1'
+_symmetry_space_group_name_H-M 'C 1 c 1'
+_cell_angle_alpha 90
+_cell_angle_beta 95.459
+_cell_angle_gamma 90
+_cell_length_a 5.1852
+_cell_length_b 9.0102
+_cell_length_c 19.4920
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+1/2+x,1/2+y,z
+x,-y,1/2+z
+1/2+x,1/2-y,1/2+z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Ca 0.00805 0.00860 0.00816 0.00165 0.00121 0.00022
+Mg 0.00805 0.00860 0.00816 0.00165 0.00121 0.00022
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Ca 0.00328 0.10898 0.24672 0.79000 0.00827
+Mg 0.00328 0.10898 0.24672 0.21000 0.00827
+LiM1 0.26069 0.77619 0.00723 0.26650 0.00331
+SiM2 0.74242 0.91423 0.99672 1.00000 0.00342
+SiM3 0.26615 0.09044 -0.00110 1.00000 0.00397
+BeT1 0.48327 0.94259 0.15184 0.05000 0.00298
+AlT2 0.52140 0.05943 0.85391 1.00000 0.00298
+BeT4 0.55479 0.73267 0.85075 0.06000 0.00298
+F1 0.96294 0.42967 0.06986 1.00000 0.00474
+F4 0.26751 0.76296 0.17032 1.00000 0.00573
+H1 0.35517 0.63759 0.06382 0.54000 0.02756
+H3 0.65029 0.35171 0.92978 0.35000 0.01102

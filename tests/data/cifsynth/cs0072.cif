@@ -1,0 +1,40 @@
+data_cs0072
+_chemical_formula_sum 'C8 H6 Na3 F6'
+_space_group_IT_number 143
+_space_group_name_Hall 'P 3'
+_space_group_name_H-M_alt 'P 3'
+_cell_angle_alpha 90.000000
+_cell_angle_beta 90.000000
+_cell_angle_gamma 120.000000
+_cell_length_a 4.818947
+_cell_length_b 4.818947
+_cell_length_c 37.013062
+
+loop_
+_space_group_symop_id
+_space_group_symop_operation_xyz
+1 'x, y, z'
+2 '-y, x-y, z'
+3 '-x+y, -x, z'
+
+loop_
+_atom_site_label
+_atom_site_occupancy
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_adp_type
+_atom_site_B_iso_or_equiv
+H1 1.0 0.666667 0.000000 0.417307 Biso 0.908345
+F1 1.0 0.666667 0.000000 0.437695 Biso 0.908345
+Na1 1.0 0.333333 0.000000 0.458465 Biso 0.908345
+F2 1.0 0.000000 0.000000 0.500451 Biso 0.908345
+F3 1.0 0.666667 0.333333 0.500451 Biso 0.908345
+F4 1.0 0.333333 0.666667 0.500451 Biso 0.908345
+H2 1.0 0.000000 0.000000 0.515901 Biso 0.908345
+H3 1.0 0.666667 0.333333 0.515901 Biso 0.908345
+H4 1.0 0.333333 0.666667 0.515901 Biso 0.908345
+C1 1.0 0.000000 0.000000 0.583735 Biso 0.908345
+C2 1.0 0.500000 0.000000 0.583746 Biso 0.908345
+C3 1.0 0.166667 0.333333 0.583746 Biso 0.908345
+C4 1.0 0.666667 0.333333 0.583735 Biso 0.908345

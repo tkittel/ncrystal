@@ -1,0 +1,57 @@
+data_cs0148
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Bi2 Ni2 P5 Pb3'
+_space_group_IT_number 26
+_symmetry_space_group_name_Hall 'P 2c -2'
+_symmetry_space_group_name_H-M 'P m c 21'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 3.9396
+_cell_length_b 11.004
+_cell_length_c 11.346
+
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+x,-y,1/2+z
+-x,y,z
+-x,-y,1/2+z
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Pb1 0.02724 0.03014 0.03252 0.00000 0.00000 0.00315
+Pb2 0.02792 0.03312 0.03065 0.00000 0.00000 0.00060
+Bi1 0.03439 0.03473 0.03754 0.00000 0.00000 0.00434
+Ni1 0.03235 0.04257 0.03235 0.00000 0.00000 0.00000
+P1 0.03235 0.02213 0.02980 0.00000 0.00000 0.00341
+P2 0.02895 0.02724 0.03065 0.00000 0.00000 0.00170
+P3 0.02469 0.02299 0.02980 0.00000 0.00000 0.00085
+P4 0.02724 0.02554 0.03320 0.00000 0.00000 0.00085
+P6 0.02639 0.02895 0.02895 0.00000 0.00000 -0.00085
+
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+Pb1 0.00000 0.90884 0.40923 1.00000 0.02997
+Pb2 0.50000 0.56822 0.36849 1.00000 0.03056
+Pb3 0.50000 0.20497 0.54873 0.82000 0.03422
+Bi3 0.50000 0.24241 0.58544 0.18000 0.04427
+Bi1 0.00000 0.24748 0.23465 1.00000 0.03559
+Ni1 0.00000 0.45483 0.61696 1.00000 0.03576
+Ni2 0.50000 0.03553 0.16306 0.12000 0.03576
+P1 0.50000 0.78636 0.53024 1.00000 0.02809
+P2 0.50000 0.12646 0.36677 1.00000 0.02895
+P3 0.50000 0.46179 0.18463 1.00000 0.02639
+P4 0.00000 0.69702 0.29956 1.00000 0.02895
+P6 0.00000 0.03622 0.63304 1.00000 0.02809

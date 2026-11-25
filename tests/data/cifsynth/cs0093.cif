@@ -1,0 +1,42 @@
+data_cs0093
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'N4 Ba2 C4.555 Pt'
+_space_group_IT_number 117
+_symmetry_space_group_name_Hall 'P -4 -2ab'
+_symmetry_space_group_name_H-M 'P -4 b 2'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 90
+_cell_length_a 12.562
+_cell_length_b 12.562
+_cell_length_c 5.522
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+y,-x,-z
+-x,-y,z
+-y,x,-z
+-x+1/2,y+1/2,z
+y+1/2,x+1/2,-z
+x+1/2,-y+1/2,z
+-y+1/2,-x+1/2,-z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+N1 N+2 0.0368 0.1422 -0.001 1 0.0
+N2 N+2 0.4521 0.3683 0.504 1 0.0
+C3 C 0 0.5 0 0.37 0.0
+C1 C+2 0.09 0.2241 0.004 1 0.0
+Ba1 Ba+1 0.8364 0.3364 0 1 0.0
+Pt2 Pt+2 0 0 0.5 1 0.0
+C2 C+2 0.4226 0.2896 0.494 1 0.0
+C4 C 0 0.5 0.203 0.37 0.0
+Ba2 Ba+1 0.6697 0.1697 0.5 1 0.0
+Pt1 Pt+2 0 0 0 1 0.0

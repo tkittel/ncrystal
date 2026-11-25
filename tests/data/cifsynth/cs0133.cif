@@ -1,0 +1,75 @@
+data_cs0133
+_journal_name_full 'Synthetic Test Data'
+_chemical_formula_sum 'Ca Mn7 O12'
+_space_group_IT_number 148
+_symmetry_cell_setting trigonal
+_symmetry_space_group_name_Hall '-R 3'
+_symmetry_space_group_name_H-M 'R -3 :H'
+_cell_angle_alpha 90
+_cell_angle_beta 90
+_cell_angle_gamma 120
+_cell_length_a 10.026683(10)
+_cell_length_b 10.026683(10)
+_cell_length_c 6.081380(7)
+
+loop_
+_symmetry_equiv_pos_site_id
+_symmetry_equiv_pos_as_xyz
+1 x,y,z
+2 -y,x-y,z
+3 -x+y,-x,z
+4 -x,-y,-z
+5 y,-x+y,-z
+6 x-y,x,-z
+7 x+2/3,y+1/3,z+1/3
+8 -y+2/3,x-y+1/3,z+1/3
+9 -x+y+2/3,-x+1/3,z+1/3
+10 -x+2/3,-y+1/3,-z+1/3
+11 y+2/3,-x+y+1/3,-z+1/3
+12 x-y+2/3,x+1/3,-z+1/3
+13 x+1/3,y+2/3,z+2/3
+14 -y+1/3,x-y+2/3,z+2/3
+15 -x+y+1/3,-x+2/3,z+2/3
+16 -x+1/3,-y+2/3,-z+2/3
+17 y+1/3,-x+y+2/3,-z+2/3
+18 x-y+1/3,x+2/3,-z+2/3
+
+loop_
+_atom_site_type_symbol
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_occupancy
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+Ca Ca1 0 0 0 0.0113(5) Uiso d . 1 . .
+Mn Mn1 0.5 0 0 0.00893(15) Uiso d . 1 . .
+Mn Mn2 0.5 0.5 0.5 0.00613(14) Uiso d . 1 . .
+Mn Mn3 0 0 0.5 0.0061(3) Uiso d . 1 . .
+O O1 0.2303(3) 0.2700(3) 0.0768(4) 0.0079(4) Uiso d . 1 . .
+O O2 0.3505(3) 0.5203(3) 0.3505(4) 0.0058(4) Uiso d . 1 . .
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+_atom_site_aniso_type_symbol
+? ? ? ? ? ? ? ?
+
+loop_
+_atom_type_symbol
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+Ca 0.090 0.099 'International Tables Vol C tables 4.2.6.8 and 6.1.1.1'
+Mn 0.171 0.248 'International Tables Vol C tables 4.2.6.8 and 6.1.1.1'
+O 0.002 0.002 'International Tables Vol C tables 4.2.6.8 and 6.1.1.1'

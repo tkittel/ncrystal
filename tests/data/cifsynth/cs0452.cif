@@ -1,0 +1,63 @@
+data_cs0452
+_chemical_formula_sum 'C Cl F H6 N3'
+_space_group_IT_number 19
+_space_group_name_Hall 'P 2ac 2ab'
+_space_group_name_H-M_alt 'P 21 21 21'
+_symmetry_cell_setting orthorhombic
+_symmetry_space_group_name_Hall 'P 2ac 2ab'
+_symmetry_space_group_name_H-M 'P 21 21 21'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 7.1366(8)
+_cell_length_b 8.4430(10)
+_cell_length_c 22.295(3)
+
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-x+1/2, -y, z+1/2'
+'-x, y+1/2, -z+1/2'
+'x+1/2, -y+1/2, -z'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_symmetry_multiplicity
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+F1 F 0.89938(13) 0.22132(11) 0.81796(4) 0.0134(2) Uani 1 1 d . . .
+H4O H -0.317(3) 0.610(2) 0.8937(9) 0.031(5) Uiso 1 1 d . . .
+C1 C 1.05392(17) -0.05497(14) 0.80736(6) 0.0128(2) Uani 1 1 d . . .
+H2N H 0.539(2) 0.017(2) 0.8419(7) 0.014(4) Uiso 1 1 d . . .
+H3N H 0.322(2) 0.486(2) 0.8495(7) 0.013(4) Uiso 1 1 d . . .
+N1 N 0.8560(2) -0.05666(17) 0.81135(7) 0.0155(3) Uani 1 1 d . . .
+H1A H 0.815(2) -0.149(2) 0.7719(8) 0.018(4) Uiso 1 1 d . . .
+N6 N -0.05470(19) 0.52817(15) 0.87531(6) 0.0118(3) Uani 1 1 d . . .
+N8 N 0.1518(3) 0.6405(2) 0.98321(8) 0.0179(4) Uani 1 1 d . . .
+H8B H 0.278(3) 0.660(2) 0.9567(8) 0.030(5) Uiso 1 1 d . . .
+H8C H 0.182(3) 0.678(2) 1.0236(9) 0.034(5) Uiso 1 1 d . . .
+Cl1 Cl 0.47678(5) 0.73439(4) 0.833432(15) 0.01552(8) Uani 1 1 d . . .
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+F1 0.0135(5) 0.0090(4) 0.0176(5) -0.0003(4) 0.0007(4) -0.0003(4)
+C1 0.0128(6) 0.0099(6) 0.0157(6) -0.0012(5) 0.0000(5) 0.0019(5)
+N1 0.0115(7) 0.0090(7) 0.0261(8) -0.0008(6) 0.0013(6) 0.0000(5)
+N6 0.0122(7) 0.0073(6) 0.0160(7) -0.0047(5) -0.0004(5) -0.0013(5)
+N8 0.0215(9) 0.0248(9) 0.0262(10) -0.0119(7) -0.0014(7) -0.0022(7)
+Cl1 0.01255(15) 0.01043(14) 0.02356(17) 0.00394(13) -0.00111(13) -0.00078(13)

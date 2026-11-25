@@ -1,0 +1,33 @@
+data_cs0323
+_publ_section_title 'Synthetic structure for testing'
+_chemical_formula_sum 'Pb1.68 Co0.32 O2 P0.84'
+_space_group_IT_number 5
+_symmetry_space_group_name_Hall 'C 2y'
+_symmetry_space_group_name_H-M 'C 1 2 1'
+_cell_angle_alpha 90
+_cell_angle_beta 108.97
+_cell_angle_gamma 90
+_cell_length_a 5.842
+_cell_length_b 5.759
+_cell_length_c 8.41
+
+loop_
+_symmetry_equiv_pos_as_xyz
+x,y,z
+-x,y,-z
+x+1/2,y+1/2,z
+-x+1/2,y+1/2,-z
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_U_iso_or_equiv
+O1 O-2 0 0.267 0.5 1 0.0
+Pb1 Pb+3 0.3197 0.056 0.6492 0.84 0.0
+Co1 Co+2 0.3197 0.056 0.6492 0.16 0.0
+O2 O-2 0 0.765 0.5 1 0.0
+P1 P+6 0 0 0 0.84 0.0

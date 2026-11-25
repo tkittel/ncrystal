@@ -1,0 +1,94 @@
+data_cs0493
+_journal_name_full 'Synthetic Test Data'
+_journal_year 2000
+_chemical_formula_sum 'C H3 N5 O3'
+_space_group_crystal_system orthorhombic
+_space_group_IT_number 74
+_space_group_name_Hall '-I 2a 2a'
+_space_group_name_H-M_alt 'I m m b'
+_symmetry_space_group_name_Hall '-I 2a 2a'
+_symmetry_space_group_name_H-M 'I m m b'
+_cell_angle_alpha 90.00
+_cell_angle_beta 90.00
+_cell_angle_gamma 90.00
+_cell_length_a 22.123(4)
+_cell_length_b 12.5633(16)
+_cell_length_c 10.9413(13)
+
+loop_
+_space_group_symop_id
+_space_group_symop_operation_xyz
+1 'x, y, z'
+2 '-x+1/2, -y, z'
+3 'x+1/2, -y, -z'
+4 '-x, y, -z'
+5 'x+1/2, y+1/2, z+1/2'
+6 '-x+1, -y+1/2, z+1/2'
+7 'x+1, -y+1/2, -z+1/2'
+8 '-x+1/2, y+1/2, -z+1/2'
+9 '-x, -y, -z'
+10 'x-1/2, y, -z'
+11 '-x-1/2, y, z'
+12 'x, -y, z'
+13 '-x+1/2, -y+1/2, -z+1/2'
+14 'x, y+1/2, -z+1/2'
+15 '-x, y+1/2, z+1/2'
+16 'x+1/2, -y+1/2, z+1/2'
+
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_calc_flag
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+_atom_site_site_symmetry_order
+_atom_site_refinement_flags_posn
+_atom_site_refinement_flags_adp
+_atom_site_refinement_flags_occupancy
+O1 O 0.7500 0.1392(4) 0.2317(6) 0.098(4) Uani 1 d . . 2 S T P
+N2 N 0.8205(7) 0.1539(5) 0.4370(9) 0.114(4) Uani 1 d . . 1 . . .
+N5 N 0.7500 0.1539(10) 0.5960(14) 0.24(2) Uani 1 d . 1 2 S TU P
+O7 O 0.8609(8) 0.1536(7) 0.5964(10) 0.223(8) Uani 1 d . . 1 . . .
+C8 C 0.8472(6) 0.1026(6) 0.2686(9) 0.120(4) Uani 1 d . . 1 . . .
+H8 H 0.8372 0.1137 0.2143 0.145 Uiso 1 calc A . 1 R . .
+N16 N 0.9426(7) 0.0000 0.1413(16) 0.147(7) Uani 1 d . . 2 S T P
+O4 O 1.0000 0.193(3) 0.5000 0.316(17) Uani 1 d . . 2 DS T P
+H4 H 1.013(8) 0.164(4) 0.51(6) 0.474 Uiso 1 d . . 1 DR . .
+N8 N 0.7500 0.0000 0.9814(13) 0.22(2) Uani 1 d . . 4 S T P
+N13 N 0.7500 0.1122(9) 0.9377(10) 0.147(9) Uani 1 d . . 2 S T P
+H13 H 0.777(4) 0.150(7) 0.987(9) 0.13(4) Uiso 1 d . . 1 . . .
+
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+O1 0.162(9) 0.070(5) 0.064(4) -0.006(3) 0.000 0.000
+N2 0.202(12) 0.057(5) 0.083(6) 0.002(3) -0.030(7) 0.008(5)
+N5 0.61(7) 0.048(6) 0.054(8) 0.005(5) 0.000 0.000
+O7 0.40(2) 0.128(7) 0.141(9) -0.010(5) -0.134(12) 0.026(9)
+C8 0.148(10) 0.086(5) 0.129(8) 0.004(4) -0.021(6) -0.011(4)
+N16 0.129(12) 0.17(2) 0.134(13) 0.000 0.027(9) 0.000
+O4 0.26(3) 0.29(3) 0.40(4) 0.000 -0.12(3) 0.000
+N8 0.53(7) 0.065(9) 0.054(9) 0.000 0.000 0.000
+N13 0.33(3) 0.060(6) 0.055(6) -0.002(5) 0.000 0.000
+
+loop_
+_atom_type_symbol
+_atom_type_description
+_atom_type_scat_dispersion_real
+_atom_type_scat_dispersion_imag
+_atom_type_scat_source
+C N 0.0311 0.0180 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+H H 0.0000 0.0000 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+O O 0.0492 0.0322 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+N C 0.0181 0.0091 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
