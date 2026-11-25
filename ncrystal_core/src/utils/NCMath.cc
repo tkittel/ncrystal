@@ -170,6 +170,52 @@ void NC::sincos_mpi2pi2(double A, double& cosA, double& sinA) {
   NCRYSTAL_APPLY_C_NAMESPACE(detail_sincos_mpi2pi2)( A, &cosA, &sinA );
 }
 
+NC::sincosval_t NC::stable_sincos_deg( double x )
+{
+#ifndef NDEBUG
+  nc_assert_always( std::isfinite( x ) );
+#endif
+  //Reduce exactly to [0,45] degrees, tracking signs and a sin/cos swap. The
+  //fmod is exact, and so are the subtractions (Sterbenz lemma):
+  double a = std::fmod( x, 360.0 );//in (-360,360)
+  double ssign = 1.0, csign = 1.0;
+  if ( a < 0.0 ) {
+    a = -a;//sin(-a)=-sin(a), cos(-a)=cos(a)
+    ssign = -1.0;
+  }
+  if ( a >= 180.0 ) {
+    a -= 180.0;//sin(a+180)=-sin(a), cos(a+180)=-cos(a)
+    ssign = -ssign;
+    csign = -csign;
+  }
+  if ( a > 90.0 ) {
+    a = 180.0 - a;//sin(180-a)=sin(a), cos(180-a)=-cos(a)
+    csign = -csign;
+  }
+  const bool swap = ( a > 45.0 );
+  if ( swap )
+    a = 90.0 - a;//sin(90-a)=cos(a), cos(90-a)=sin(a)
+  double s, c;
+  if ( a == 0.0 ) {
+    s = 0.0;
+    c = 1.0;
+  } else if ( a == 30.0 ) {
+    s = 0.5;
+    c = 0.86602540378443864676372317075293618347140262690519;//sqrt(3)/2
+  } else if ( a == 45.0 ) {
+    s = c = 0.70710678118654752440084436210484903928483593768847;//sqrt(2)/2
+  } else {
+    sincos_mpi2pi2( a * kDeg, c, s );
+  }
+  if ( swap )
+    std::swap( s, c );
+  sincosval_t res;
+  //(no negative zeros):
+  res.sin = ( s == 0.0 ? 0.0 : ssign * s );
+  res.cos = ( c == 0.0 ? 0.0 : csign * c );
+  return res;
+}
+
 void NC::sincos_mpi8pi8(double A, double& cosA, double& sinA) {
   nc_assert(ncabs(A)<=kPi*0.12500001);
   //Evaluate at A/2 via two 6 terms Taylor expansions and get final

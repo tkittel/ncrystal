@@ -231,6 +231,7 @@ namespace NCRYSTAL_NAMESPACE {
       constexpr auto sv_wl2ekin = StrView::make("wl2ekin");
       constexpr auto sv_ekin2wl = StrView::make("ekin2wl");
       constexpr auto sv_mathval = StrView::make("mathval");
+      constexpr auto sv_sincosdeg = StrView::make("sincosdeg");
       constexpr auto sv_fmadiagnose = StrView::make("fmadiagnose");
       constexpr auto sv_kinutils = StrView::make("kinutils");
       constexpr auto sv_browsedb = StrView::make("browsedb");
@@ -246,7 +247,8 @@ namespace NCRYSTAL_NAMESPACE {
       if ( key == sv_list ) {
         if ( nargs != 0 )
           invalid("no arguments should come after: [\"util\",\"list\"]");
-        os<<"[\"wl2ekin\", \"ekin2wl\", \"mathval\", \"fmadiagnose\","
+        os<<"[\"wl2ekin\", \"ekin2wl\", \"mathval\", \"sincosdeg\","
+          " \"fmadiagnose\","
           " \"kinutils\", \"browsedb\", \"browsefactories\","
           " \"factorythreads\", \"atomdb\", \"eqrefl\", \"sgsym\","
           " \"jsontest\", \"numfmt\"]";
@@ -529,6 +531,26 @@ namespace NCRYSTAL_NAMESPACE {
         streamJSON( os, ( key==sv_wl2ekin
                           ? wl2ekin( val )
                           : ekin2wl( val ) ) );
+      } else if ( key == sv_sincosdeg ) {
+        //["util","sincosdeg",x1,x2,...]: [[sin,cos],...] of the angles in
+        //degrees, from stable_sincos_deg (cross platform reproducible). Angles
+        //can be prefixed with '@' (needed for negative values):
+        if ( nargs == 0 )
+          invalid("correct usage: [\"util\",\"sincosdeg\",x1,x2,...]");
+        os << '[';
+        for ( auto i : ncrange( nargs ) ) {
+          auto x = ( arg(i).startswith('@') ? arg(i).substr(1)
+                                            : arg(i) ).toDbl();
+          if ( !x.has_value() || !std::isfinite( x.value() ) )
+            invalid("angles must be finite numbers");
+          const auto sc = stable_sincos_deg( x.value() );
+          os << ( i ? ",[" : "[" );
+          streamJSON( os, sc.sin );
+          os << ',';
+          streamJSON( os, sc.cos );
+          os << ']';
+        }
+        os << ']';
       } else if ( key == sv_numfmt ) {
         //["util","numfmt",RTOL,GRID,STRIP,MAXDEN,HEXVALUES]: texts of the
         //values from fmtRelTolVector (GRID and STRIP 0 or 1, values encoded
