@@ -167,7 +167,8 @@ namespace {
   void testMixedAndDebye()
   {
     //A sum of Debye model tables (q parts, and p parts from the tails of
-    //tables ending inside the others):
+    //tables ending inside the others), as in the grouped VDOSDebye
+    //treatment:
     std::vector<NC::IsoXSTable> tbls;
     for ( double td : { 150.0, 300.0, 310.0, 600.0 } )
       tbls.push_back( NC::VDOS::VDOSDebyeXS( NC::DebyeTemperature{ td },

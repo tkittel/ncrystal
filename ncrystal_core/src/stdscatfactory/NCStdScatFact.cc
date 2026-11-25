@@ -21,6 +21,8 @@
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/internal/extd_utils/NCPlaneProvider.hh"
 #include "NCrystal/internal/dyninfoutils/NCDynInfoUtils.hh"
+#include "NCrystal/internal/dyninfoutils/NCVDOSDebyeGroup.hh"
+#include "NCrystal/internal/vdos/NCVDOSDebyeXS.hh"
 #include "NCrystal/interfaces/NCProcImpl.hh"
 #include "NCrystal/interfaces/NCInfo.hh"
 #include "NCrystal/interfaces/NCSCOrientation.hh"
@@ -32,9 +34,12 @@
 #include "NCrystal/internal/elincscatter/NCElIncScatter.hh"
 #include "NCrystal/internal/sablegacy/NCSABScatterLegacy.hh"
 #include "NCrystal/internal/sabscatter/NCSABScatter.hh"
+#include "NCrystal/internal/sabscatter/NCVDOSDebyeGroupScatter.hh"
 #include "NCrystal/internal/sab/NCSABFactory.hh"
 #include "NCrystal/internal/sablegacy/NCSABLegacyFactory.hh"
 #include "NCrystal/internal/utils/NCString.hh"
+#include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/extd_utils/NCProcCompBldr.hh"
 
 namespace NC = NCrystal;
@@ -51,6 +56,108 @@ namespace NCDI = NCrystal::DynInfoUtils;
 ///////////////////////////////////////////////////////////////////////////////////
 
 namespace NCRYSTAL_NAMESPACE {
+
+  namespace {
+
+    //A VDOSDebye entry (an @DYNINFO entry, or an AtomInfo with
+    //inelas=vdosdebye), and entries per (mass,temperature):
+    struct DebyeEntry {
+      const void * id;//the source object
+      std::string label;//for messages
+      double fraction;
+      SigmaBound boundXS;
+      DebyeTemperature debyeTemperature;
+    };
+    using DebyeGroups = std::map<std::pair<double,double>,
+                                 std::vector<DebyeEntry>>;
+
+    //Adds a VDOSDebyeGroupScatter component per group (see
+    //NCVDOSDebyeGroup.hh) if vdoslux and knllux allow grouping, except for
+    //groups with masses not supported by VDOSDebyeXS (with a warning). Throws
+    //CalcError for T/TDebye beyond the supported maximum. Scales are
+    //fraction*boundXS relative to the largest boundXS of the group, so they
+    //(and the cached data) do not change when all boundXS values of a group
+    //are changed by the same factor. Returns the ids of the entries handled:
+    std::set<const void*> addVDOSDebyeGroups( Utils::ProcCompBldr& components,
+                                              DebyeGroups groups,
+                                              VDOS::VDOSLux vdosluxCfg,
+                                              int knllux )
+    {
+      std::set<const void*> handled;
+      if ( !vdosluxCfg.allowGrouping() || knllux == -1 )
+        return handled;
+      const auto massRange = VDOS::VDOSDebyeXS::massRange();
+      for ( auto& g : groups ) {
+        const AtomMass mass{ g.first.first };
+        const Temperature temp{ g.first.second };
+        auto& entries = g.second;
+        if ( !( mass.dbl() >= massRange.first.dbl()
+                && mass.dbl() <= massRange.second.dbl() ) ) {
+          const bool one = entries.size() == 1;
+          NCRYSTAL_WARN("The "<<entries.size()<<" @DYNINFO "
+                        <<( one ? "entry" : "entries" )<<" of type"
+                        " vdosdebye with mass "<<mass<<" ("<<temp
+                        <<") "<<( one ? "is" : "are" )<<" not handled"
+                        " together (VDOSDebyeGroupScatter), since that mass"
+                        " is outside the supported range ("<<massRange.first
+                        <<"-"<<massRange.second<<"). Each entry gets its"
+                        " own phonon expansion instead, which can be"
+                        " slow.");
+          continue;
+        }
+        for ( auto& e : entries ) {
+          const double tt = temp.dbl() / e.debyeTemperature.dbl();
+          if ( tt > VDOS::VDOSDebyeXS::maxTOverTDebye() )
+            NCRYSTAL_THROW2(CalcError,"The VDOSDebye entry for "<<e.label
+                            <<" (TDebye="<<e.debyeTemperature<<") at T="
+                            <<temp<<" has T/TDebye="<<fmt(tt,"%.4g")
+                            <<", above the maximum of "
+                            <<fmt(VDOS::VDOSDebyeXS::maxTOverTDebye())
+                            <<" supported by the grouped VDOSDebye"
+                            " treatment. To instead use a separate phonon"
+                            " expansion for each entry (which has no such"
+                            " hard limit, but can be slower to initialise),"
+                            " add 100 to the vdoslux value, i.e. use"
+                            " vdoslux="<<vdosluxCfg.raw()+100<<".");
+        }
+        //Canonical order (results independent of the order of the sources):
+        std::sort( entries.begin(), entries.end(),
+                   []( const DebyeEntry& a, const DebyeEntry& b )
+                   {
+                     return std::make_tuple( a.debyeTemperature.dbl(),
+                                             a.fraction, a.boundXS.dbl() )
+                       < std::make_tuple( b.debyeTemperature.dbl(),
+                                          b.fraction, b.boundXS.dbl() );
+                   } );
+        double sbmax = 0.0;
+        for ( auto& e : entries )
+          sbmax = ncmax( sbmax, e.boundXS.dbl() );
+        std::vector<DynInfoUtils::DebyeTempAndScale> scales;
+        StableSum ftot, stot;
+        for ( auto& e : entries ) {
+          scales.push_back( { e.fraction * ( e.boundXS.dbl() / sbmax ),
+                              e.debyeTemperature } );
+          ftot.add( e.fraction );
+          stot.add( scales.back().scale );
+          handled.insert( e.id );
+        }
+        const double frac = ftot.sum();
+        const SigmaBound sb{ sbmax * stot.sum() / frac };
+        components.addfct_cl([scales,mass,temp,vdosluxCfg,knllux,frac,sb]()
+        {
+          ProcImpl::ProcComposition::ComponentList complist;
+          auto data = DynInfoUtils::createVDOSDebyeGroupData( scales, temp,
+                                                              mass,
+                                                              vdosluxCfg,
+                                                              knllux );
+          complist.emplace_back( frac, makeSO<VDOSDebyeGroupScatter>
+                                 ( std::move( data ), sb ) );
+          return complist;
+        });
+      }
+      return handled;
+    }
+  }
 
   class PlaneProviderWCutOff : public PlaneProvider {
   public:
@@ -113,7 +220,10 @@ namespace NCRYSTAL_NAMESPACE {
 
       const Info& info = cfg.info();
       const auto& inelas = ana.inelas;
-      const VDOS::VDOSLux vdoslux( cfg.get_vdoslux() );
+      //The expansions do not depend on whether VDOSDebye entries are grouped
+      //(cfg values 100..106), so vdoslux (for expansions) ignores that:
+      const VDOS::VDOSLux vdosluxCfg( cfg.get_vdoslux() );
+      const VDOS::VDOSLux vdoslux = vdosluxCfg.expansionLux();
 
       nc_assert_always(isOneOf(inelas,"0","external","dyninfo","vdosdebye","freegas"));
 
@@ -264,10 +374,29 @@ namespace NCRYSTAL_NAMESPACE {
             vdos2sabExcludeFlag = mode + 4*low + 40000*high;
           }
 
+          //At vdoslux 0-5, VDOSDebye entries with the same mass and
+          //temperature form a group (see addVDOSDebyeGroups), other entries
+          //are handled below:
+          DebyeGroups debyeGroups;
+          for ( auto& di : info.getDynamicInfoList() ) {
+            auto dd = dynamic_cast<const DI_VDOSDebye*>( di.get() );
+            if ( dd && dd->atomData().scatteringXS().dbl() > 0.0 )
+              debyeGroups[{ dd->atomData().averageMassAMU().dbl(),
+                            dd->temperature().dbl() }]
+                .push_back( { dd, info.displayLabel( dd->atom().index ),
+                              dd->fraction(), dd->atomData().scatteringXS(),
+                              dd->debyeTemperature() } );
+          }
+          const auto inDebyeGroup
+            = addVDOSDebyeGroups( components, std::move( debyeGroups ),
+                                  vdosluxCfg, knllux );
+
           for (auto& di : info.getDynamicInfoList()) {
             const DI_ScatKnl* di_scatknl = dynamic_cast<const DI_ScatKnl*>(di.get());
             if ( di->atomData().scatteringXS().dbl() == 0.0 )
               continue;//just ignore components with no scattering cross section
+            if ( inDebyeGroup.count( di.get() ) )
+              continue;//handled above
             if (di_scatknl) {
               if ( knllux == -1 ) {
                 //legacy:
@@ -348,9 +477,26 @@ namespace NCRYSTAL_NAMESPACE {
                             " atomic information");
 
           //Average numbers of atoms (positions*occupancy), as in the
-          //composition:
+          //composition. Treated like the corresponding @DYNINFO entries of
+          //type vdosdebye (grouped, or else separately below):
           const double ntot = info.getStructureInfo().n_atoms_average;
+          DebyeGroups debyeGroups;
+          for ( auto& ai : info.getAtomInfos() ) {
+            nc_assert_always( ai.debyeTemp().has_value() );
+            if ( ai.atomData().scatteringXS().dbl() > 0.0 )
+              debyeGroups[{ ai.atomData().averageMassAMU().dbl(),
+                            info.getTemperature().dbl() }]
+                .push_back( { &ai, info.displayLabel( ai.atom().index ),
+                              ai.averageNumberOfAtoms() / ntot,
+                              ai.atomData().scatteringXS(),
+                              ai.debyeTemp().value() } );
+          }
+          const auto inDebyeGroup
+            = addVDOSDebyeGroups( components, std::move( debyeGroups ),
+                                  vdosluxCfg, knllux );
           for ( auto& ai_orig : info.getAtomInfos() ) {
+            if ( inDebyeGroup.count( &ai_orig ) )
+              continue;//handled above
             auto * ai_ptr = &ai_orig;
             components.addfct_cl([&info,ai_ptr,vdoslux,knllux,ntot]()
             {

@@ -64,11 +64,20 @@ def _rdtol_for_cfgstr( cfgstr ):
         return 1e-6
     return 1e-5
 
+def _expansions( cfgstr ):
+    #These tests cover phonon expansions and kernel integration, so
+    #vdoslux=0..5 is mapped to 100..105 (the same without the grouped
+    #treatment of VDOSDebye entries). Other dynamic info types are not
+    #affected:
+    return re.sub( r';vdoslux=([0-5])(?=;|$)',
+                   lambda m : f';vdoslux={100+int(m.group(1))}', cfgstr )
+
 def _load_fct( cfgstr ):
     if cfgstr.endswith( _freegas_marker ):
-        return _FreeGasExtenderMaterial( cfgstr[:-len(_freegas_marker)] )
+        return _FreeGasExtenderMaterial(
+            _expansions( cfgstr[:-len(_freegas_marker)] ) )
     #only inelastic scattering is monitored:
-    return nccore.load( cfgstr + ';comp=inelas' )
+    return nccore.load( _expansions( cfgstr ) + ';comp=inelas' )
 
 #Entries with this suffix use the free-gas extender instead of the default SCT
 #extender:

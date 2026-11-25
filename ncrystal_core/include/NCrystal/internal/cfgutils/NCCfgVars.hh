@@ -207,7 +207,8 @@ namespace NCRYSTAL_NAMESPACE {
       //values (not in the description or error messages): 1000..1005 select
       //the legacy expansion (levels 0..5), 2000..2006 are synonyms of 0..6
       //(normalised to 0..6), and 100..106 are like 0..6 but without the
-      //grouped treatment of VDOSDebye entries. Cf. VDOSLux.
+      //grouped treatment of VDOSDebye entries (cf. NCVDOSDebyeGroup.hh).
+      //Cf. VDOSLux.
 
       static constexpr auto name = "vdoslux";
       static constexpr auto group = VarGroupId::ScatterBase;

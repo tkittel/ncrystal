@@ -35,7 +35,7 @@ namespace NCRYSTAL_NAMESPACE {
     public:
       //Raw values: 0..6 (2000..2006 are synonyms), 1000..1005 (legacy
       //expansion), and 100..106 (like 0..6, but without the grouped
-      //treatment of VDOSDebye entries):
+      //treatment of VDOSDebye entries, cf. NCVDOSDebyeGroup.hh):
       explicit VDOSLux( int vdoslux_raw );
       VDOSLux();
       VDOSLux reduceLvl( unsigned ) const;

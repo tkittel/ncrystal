@@ -1,0 +1,114 @@
+Cross sections agree within 2e-3
+Sampled distributions agree
+ProcComposition(2 components, isotropic)
+   |-- 0.2 * VDOSDebyeGroupScatter(n=1;nclusters=1;TDebye=600K;T=293.15K;M=1.00798u;sigma_free=20.4902barn)
+   \-- 0.8 * VDOSDebyeGroupScatter(n=5;nclusters=5;TDebye=250K..700K;T=293.15K;M=15.9993u;sigma_free=3.74537barn)
+0.2 {
+ "name": "VDOSDebyeGroupScatter",
+ "materialType": "Isotropic",
+ "processType": "Scatter",
+ "isOriented": false,
+ "domain": [
+  0.0,
+  Infinity
+ ],
+ "isNull": false,
+ "specific": {
+  "summarystr": "n=1;nclusters=1;TDebye=600K;T=293.15K;M=1.00798u;sigma_free=20.4902barn",
+  "n": 1,
+  "nclusters": 1,
+  "TDebye_min": 600.0,
+  "TDebye_max": 600.0,
+  "T": 293.15,
+  "M": 1.00798,
+  "sigma_bound": 82.0168,
+  "sigma_free": 20.4902,
+  "clusters": [
+   "n=1;scale=1;TDebye=600K;nalpha=280;nbeta=650;Emax=5eV"
+  ]
+ }
+}
+0.8 {
+ "name": "VDOSDebyeGroupScatter",
+ "materialType": "Isotropic",
+ "processType": "Scatter",
+ "isOriented": false,
+ "domain": [
+  0.0,
+  Infinity
+ ],
+ "isNull": false,
+ "specific": {
+  "summarystr": "n=5;nclusters=5;TDebye=250K..700K;T=293.15K;M=15.9993u;sigma_free=3.74537barn",
+  "n": 5,
+  "nclusters": 5,
+  "TDebye_min": 250.0,
+  "TDebye_max": 700.0,
+  "T": 293.15,
+  "M": 15.9993,
+  "sigma_bound": 4.2325,
+  "sigma_free": 3.74537,
+  "clusters": [
+   "n=1;scale=0.2;TDebye=700K;nalpha=110;nbeta=240;Emax=5eV",
+   "n=1;scale=0.2;TDebye=520K;nalpha=110;nbeta=240;Emax=5eV",
+   "n=1;scale=0.2;TDebye=400K;nalpha=110;nbeta=240;Emax=5eV",
+   "n=1;scale=0.2;TDebye=320K;nalpha=110;nbeta=240;Emax=5eV",
+   "n=1;scale=0.2;TDebye=250K;nalpha=110;nbeta=240;Emax=5eV"
+  ]
+ }
+}
+ProcComposition(6 components, isotropic)
+   |-- 0.2 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=1.00798u;extend=sct;sigma_free=20.4902barn)
+   |-- 0.16 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=15.9993u;extend=sct;sigma_free=3.74537barn)
+   |-- 0.16 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=15.9993u;extend=sct;sigma_free=3.74537barn)
+   |-- 0.16 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=15.9993u;extend=sct;sigma_free=3.74537barn)
+   |-- 0.16 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=15.9993u;extend=sct;sigma_free=3.74537barn)
+   \-- 0.16 * SABScatter(nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=15.9993u;extend=sct;sigma_free=3.74537barn)
+0.2 {
+ "name": "SABScatter",
+ "materialType": "Isotropic",
+ "processType": "Scatter",
+ "isOriented": false,
+ "domain": [
+  0.0,
+  Infinity
+ ],
+ "isNull": false,
+ "specific": {
+  "summarystr": "nalpha=280;nbeta=650;Emax=5eV;T=293.15K;M=1.00798u;extend=sct;sigma_free=20.4902barn",
+  "Emax": 5.0,
+  "Emin": 1.21635e-08,
+  "negrid": 229,
+  "T": 293.15,
+  "M": 1.00798,
+  "sigma_bound": 82.0168,
+  "sigma_free": 20.4902,
+  "nalpha": 280,
+  "nbeta": 650,
+  "extension_method": "sct"
+ }
+}
+High energy limit is the free-atom cross section
+vdoslux=0: VDOSDebyeGroupScatter
+vdoslux=5: VDOSDebyeGroupScatter
+vdoslux=6: SABScatter
+vdoslux=100: SABScatter
+vdoslux=105: SABScatter
+vdoslux=1003: SABScatter
+vdoslux=1:
+    n=10;scale=0.89999999999999991;TDebye=397.503K;nalpha=110;nbeta=240;Emax=5eV
+    n=1;scale=0.05;TDebye=1000K;nalpha=110;nbeta=240;Emax=5eV
+    n=1;scale=0.05;TDebye=150K;nalpha=110;nbeta=240;Emax=5eV
+vdoslux=2:
+    n=10;scale=0.89999999999999991;TDebye=397.503K;nalpha=110;nbeta=240;Emax=5eV
+    n=1;scale=0.05;TDebye=1000K;nalpha=110;nbeta=240;Emax=5eV
+    n=1;scale=0.05;TDebye=150K;nalpha=110;nbeta=240;Emax=5eV
+vdoslux=3:
+    n=10;scale=0.89999999999999991;TDebye=397.503K;nalpha=110;nbeta=240;Emax=5eV
+    n=1;scale=0.05;TDebye=1000K;nalpha=110;nbeta=240;Emax=5eV
+    n=1;scale=0.05;TDebye=150K;nalpha=110;nbeta=240;Emax=5eV
+vdoslux=5:
+    n=5;scale=0.44999999999999996;TDebye=407.882K;nalpha=280;nbeta=650;Emax=5eV
+    n=5;scale=0.44999999999999996;TDebye=387.876K;nalpha=280;nbeta=650;Emax=5eV
+    n=1;scale=0.05;TDebye=1000K;nalpha=280;nbeta=650;Emax=5eV
+    n=1;scale=0.05;TDebye=150K;nalpha=280;nbeta=650;Emax=5eV
