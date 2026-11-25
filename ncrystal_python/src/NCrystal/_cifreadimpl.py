@@ -33,8 +33,9 @@ import re as _re
 from fractions import Fraction as _Fraction
 
 from . import _common as _nc_common
+from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
-from ._cifsrcimpl import _codid2url, _mpid2url
+from ._cifsrcimpl import _codid2url, _mpid2url, mp_origin_note
 
 
 def _extract_descr_from_cif( raw_cif_dict, cifsrc, ciftextdata ):
@@ -81,7 +82,7 @@ def _extract_descr_from_cif( raw_cif_dict, cifsrc, ciftextdata ):
         extracted_codid = int(extracted_codid) if extracted_codid.isdigit() else None
 
     extracted_mpid = None
-    _sp = 'Note from NCrystal.cifutils: Data from materialsproject.org / mp-'# NB this exact format is produced elsewhere in this file.
+    _sp = mp_origin_note
     for e in ciftextdata.splitlines():
         if _sp in e:
             _ = e.split(_sp,1)
@@ -319,7 +320,6 @@ def parse_cif_number( s ):
         r = _math.nextafter( r, _math.inf )
     return value, max( r, floor )
 
-_uij_keys = ( 'u11', 'u22', 'u33', 'u12', 'u13', 'u23' )
 
 def _cell_from_cif( gemmi, block ):
     #Cell parameters as (value,rounding_error), or None if not available:
@@ -366,7 +366,7 @@ def ueq_from_cif( gemmi, block ):
     #cause (cf. parse_cif_number). Sites or cells with values which can not be
     #parsed or used (e.g. an impossible cell, rejected elsewhere) are
     #omitted.
-    from . import _sgsymimpl as sgs
+    sgs = _nc_sgsymimpl
     cell = _cell_from_cif( gemmi, block )
     if cell is None:
         return {}
@@ -383,12 +383,13 @@ def ueq_from_cif( gemmi, block ):
     idx = ( (0,0), (1,1), (2,2), (0,1), (0,2), (1,2) )
     res = {}
     for row in block.find( '_atom_site_aniso_',
-                           [ 'label' ] + [ f'U_{k[1:]}' for k in _uij_keys ] ):
+                           [ 'label' ] + [ f'U_{k[1:]}'
+                                           for k in _nc_sgsymimpl._uij_keys ] ):
         vals = [ parse_cif_number( gemmi.cif.as_string( row[i] ) )
                  for i in range( 1, 7 ) ]
         if any( v is None for v in vals ):
             continue
-        aniso = { k: v for k, ( v, _ ) in zip( _uij_keys, vals ) }
+        aniso = { k: v for k, ( v, _ ) in zip( _nc_sgsymimpl._uij_keys, vals ) }
         ueq = ueq_or_none( aniso, cellsg )
         if ueq is None:
             continue
@@ -432,7 +433,8 @@ def _plain_site( site ):
         #ignored later):
         raise _nc_core.NCBadInput( f'CIF site "{site.label}" has missing or'
                                    ' invalid fractional coordinates' )
-    aniso = { k: float( getattr( site.aniso, k ) ) for k in _uij_keys }
+    aniso = { k: float( getattr( site.aniso, k ) )
+              for k in _nc_sgsymimpl._uij_keys }
     if all( v == 0.0 for v in aniso.values() ):
         aniso = None
     en, Z = str( site.element.name ).strip(), int( site.element.atomic_number )

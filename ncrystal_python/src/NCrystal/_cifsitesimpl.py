@@ -21,18 +21,20 @@
 
 """
 
-Internal implementation of finding and grouping the sites of CIF data, for
-the cifutils module.
+Internal implementation of the sites of CIF data, for the cifutils module:
+collecting the atoms of the sites (elements, positions, a single displacement
+magnitude from Uiso and Ueq), merging those at the same positions, and finding
+and grouping the final sites (refined with spglib).
 
 """
 
 __all__ = []
 
+from . import _cifsymimpl as _nc_cifsymimpl
 from . import _common as _nc_common
 from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
 
-_uij_keys = ( 'u11', 'u22', 'u33', 'u12', 'u13', 'u23' )
 
 def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, permissive, quiet ):
     #Sites (one per orbit) of the CIF atoms (dicts with 'positions' and the
@@ -154,9 +156,11 @@ def _impl_find_sites( cellsg, cif_atoms, *, tols, refine, permissive, quiet ):
     return cellsg, res, setting
 
 def _impl_group_sites( sites, *, tols, merge_equiv ):
-    #Group sites into atoms (with merge_equiv, sites with equal composition
-    #and occupancies and uiso values within the tolerances are merged). Returns
-    #the atoms (sorted) and the atom index of each site.
+    #Group the sites into atoms (if merge_equiv is True, sites with equal
+    #composition and occupancies and uiso values within tols are merged).
+    #Returns (atoms, site2atom): the atoms (sorted) and the atom index of each
+    #site. NB: removes the '_positions' entries from the sites (as added by
+    #_impl_find_sites).
     sgs = _nc_sgsymimpl
     def opt_close( a, b, tol ):
         return ( ( a is None ) == ( b is None )
@@ -301,7 +305,7 @@ def collect_atoms( content, choice, *, tols, permissive ):
     #'element_marker' (e.g. "Al" or "H2"), 'occupancy', 'cif_label', and a
     #single magnitude of their displacements ('uiso', with 'aniso' rescaled to
     #it).
-    from . import _cifsymimpl as sym
+    sym = _nc_cifsymimpl
     cell = content['cell']
     fractcoord_approx_1angstrom = 1.0 / ( (cell['a']+cell['b']+cell['c'])/3.0 )
     p1_sites = choice['p1_sites']

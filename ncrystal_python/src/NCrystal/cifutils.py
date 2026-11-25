@@ -39,7 +39,7 @@ from . import _common as _nc_common
 from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
 from ._cifcomposerimpl import _impl_create_ncmat_composer
-from ._cifloadimpl import _actual_init_gemmicif
+from ._cifloadimpl import load_cif_data
 from ._cifsrcimpl import _cod_get_cifdata, _mp_get_cifdata
 
 
@@ -311,14 +311,16 @@ class CIFLoader:
                                                   tol_uij = tol_uij,
                                                   tol_occu = tol_occu )
         with _nc_common.WarningSpy( block = quiet ) as warnlist:
-            load, gemmi, struct = _actual_init_gemmicif( cifsrc,
-                                                         quiet = quiet,
-                                                         mp_apikey = mp_apikey,
-                                                         refine_with_spglib = refine_with_spglib,
-                                                         merge_equiv = merge_equiv,
-                                                         override_spacegroup = override_spacegroup,
-                                                         tols = tols,
-                                                         permissive = permissive )
+            if not isinstance( cifsrc, CIFSource ):
+                cifsrc = CIFSource( cifsrc )
+            cifdata = cifsrc.load_data( quiet = quiet, mp_apikey = mp_apikey )
+            load, gemmi, struct = load_cif_data( cifsrc, cifdata,
+                                                 quiet = quiet,
+                                                 refine_with_spglib = refine_with_spglib,
+                                                 merge_equiv = merge_equiv,
+                                                 override_spacegroup = override_spacegroup,
+                                                 tols = tols,
+                                                 permissive = permissive )
         assert len(load)==12
         self.__cifsrc = load['cifsrc']
         self.__actual_codid = load['actual_codid']
@@ -756,6 +758,3 @@ def produce_validation_plot( data_or_file, verbose_lbls = True, line_width_scale
         plt.tight_layout()
     if do_show:
         plt.show()
-
-
-####################### NEW GEMMI STUFF ############################################
