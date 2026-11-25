@@ -527,6 +527,14 @@ def _transform_ustar( m, ustar ):
     u = [ [ float( v ) for v in row ] for row in ustar ]
     return np.asarray( sm.transform_sym( m, u ), dtype = float )
 
+def _transformed_ustd( R, ustd, ustar, cellsg ):
+    #ustd transformed by the matrix R (symmetry operation or basis change),
+    #computed from ustar, the same tensor as Ustar (None for no tensor).
+    #Returns ustd unchanged for the identity (no round trip noise).
+    if ustar is None or _np_is_identity( R ):
+        return ustd
+    return _ustar_to_ustd( _transform_ustar( R, ustar ), cellsg )
+
 def _ucart_eigenvalues( ustar, cellsg ):
     #Returns the sorted eigenvalues of Ucart of the tensor ustar, i.e. of
     #ustar.G (G being the metric of cellsg). These do not depend on the basis.
@@ -742,8 +750,7 @@ def _expand_sites( ops, cellsg, sites ):
             e = dict( s )
             e['pos'] = tuple( _remap_fract_pos( v ) for v in x )
             if ustar is not None:
-                e['aniso'] = _ustar_to_ustd( _transform_ustar( R, ustar ),
-                                           cellsg )
+                e['aniso'] = _transformed_ustd( R, s['aniso'], ustar, cellsg )
             res.append( e )
     return res
 
