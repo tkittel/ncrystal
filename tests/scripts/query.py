@@ -182,17 +182,32 @@ def main():
     test_cli('util','eqrefl','relaxed','149','1,2,3','1,1,0')
     test_cli('util','eqrefl','relaxed','150','1,2,3','1,1,0')
     test_cli('util','eqrefl','strict','166:r','1,2,3','1,1,0')
-    test_cli('util','sgsym','strict','166:r')
-    test_cli('util','sgsym','strict','62:cab')
-    test_cli('util','sgsym','relaxed','1')
-    test_cli('util','sgsym','relaxed','227')#(default setting)
-    with ensure_error(NCBadInput,'Invalid util query: ["util","sgsym"]'
-                      ' (correct usage: ["util","sgsym","strict|relaxed",SG])'):
-        test_cli('util','sgsym')
+    test_cli('sgsym','info','strict','166:r')
+    test_cli('sgsym','info','strict','62:cab')
+    test_cli('sgsym','info','relaxed','1')
+    test_cli('sgsym','info','relaxed','227')#(default setting)
+    with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","info"]'
+                      ' (correct usage: ["sgsym","info","strict|relaxed",SG])'):
+        test_cli('sgsym','info')
     with ensure_error(NCBadInput,'Invalid space group specification: "227" (space'
                       ' group 227 has several settings, so one of them must be'
                       ' specified: 227:1 (default), 227:2)'):
-        test_cli('util','sgsym','strict','227')
+        test_cli('sgsym','info','strict','227')
+    test_cli('sgsym','list')
+    #Settings from operations and symbols ("@" prefix for a leading "-"):
+    test_cli('sgsym','fromops','x,y,z','@-x,-y,-z')
+    test_cli('sgsym','fromops','x,y,z','@-x+1/2,-y+1/2,-z+1/2')#(origin shift)
+    test_cli('sgsym','fromhall','@-P 2ybc')
+    test_cli('sgsym','fromhm','P 21/c')
+    test_cli('sgsym','fromhm','R -3 m')
+    test_cli('sgsym','fromhm','C m c e')
+    test_cli('sgsym','fromhm','C -1')#(no tabulated setting)
+    with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","fromhm"]'
+                      ' (correct usage: ["sgsym","fromhm",SYMBOL])'):
+        test_cli('sgsym','fromhm')
+    with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","foo"]'
+                      ' (unknown key)'):
+        test_cli('sgsym','foo')
 
     with ensure_error(ArgumentError,
                       'the following arguments are required: STR'):
@@ -323,28 +338,28 @@ def test_huge_arrays():
 
 
 def test_atomsites():
-    #["util","atompositions",...] expands sites, ["util","atomsites",...]
+    #["sgsym","positions",...] expands sites, ["sgsym","sites",...]
     #groups positions into sites (diamond in origin choice 2):
     site = 'Si,0.125,0.125,0.125'
-    r = ncquery( ['util','atompositions','strict','227:2',site] )
+    r = ncquery( [ 'sgsym', 'positions','strict','227:2',site] )
     print( f'227:2 site {site} -> {len(r)} positions' )
     assert len(r) == 8
     pos = [ f'{lbl},{x!r},{y!r},{z!r}' for lbl,(x,y,z) in r ]
-    test( 'util','atomsites','strict','227:2',*pos )
+    test( 'sgsym','sites','strict','227:2',*pos )
     #Relaxed: the setting is deduced from the positions:
-    r = ncquery( ['util','atomsites','relaxed','227',*pos] )
+    r = ncquery( [ 'sgsym', 'sites','relaxed','227',*pos] )
     print( 'relaxed 227 -> setting', r['spacegroup_setting'] )
     assert r['spacegroup_setting'] == '227:2'
     with ensure_error( NCBadInput, 'Atom positions are not consistent with'
                        ' space group 227:1 (largest deviation of a symmetry'
                        ' image from an atom of the same type: 0.25 in'
                        ' fractional coordinates)' ):
-        ncquery( ['util','atomsites','strict','227:1',*pos] )
-    with ensure_error( NCBadInput, 'Invalid util query: ["util","atomsites",'
+        ncquery( [ 'sgsym', 'sites','strict','227:1',*pos] )
+    with ensure_error( NCBadInput, 'Invalid sgsym query: ["sgsym","sites",'
                        '"227:2","Si,0.125,0.125,0.125"] (correct usage:'
-                       ' ["util","atomsites","strict|relaxed",SG,'
+                       ' ["sgsym","sites","strict|relaxed",SG,'
                        '"lbl,x,y,z",...])' ):
-        ncquery( ['util','atomsites','227:2',site] )
+        ncquery( [ 'sgsym', 'sites','227:2',site] )
 
 if __name__ == '__main__':
     main()

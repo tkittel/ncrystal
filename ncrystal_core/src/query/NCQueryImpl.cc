@@ -54,6 +54,28 @@ void NC::QueryImpl::validateQuery( const Query& query )
   }
 }
 
+NC::Query NC::QueryImpl::expandRawData( const Query& query )
+{
+  constexpr auto sv_rawdata = StrView::make("RAWDATA");
+  Query res;
+  std::size_t i = 0;
+  while ( i < query.size() ) {
+    const StrView& e = query[i++];
+    if ( e != sv_rawdata ) {
+      res.emplace_back( e );
+      continue;
+    }
+    if ( i == query.size() || query[i].empty() )
+      NCRYSTAL_THROW2(BadInput,"Invalid JSON query (\"RAWDATA\" must be"
+                      " followed by a separator character and the items"
+                      " separated by it)");
+    const StrView& raw = query[i++];
+    for ( auto& item : raw.substr(1).split( raw[0] ) )
+      res.emplace_back( item );
+  }
+  return res;
+}
+
 NC::VectD NC::QueryImpl::decodeHexDoubles( StrView s )
 {
   static_assert( std::numeric_limits<double>::is_iec559

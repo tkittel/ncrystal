@@ -270,7 +270,7 @@ def test_atomsites():
     print('with occupancy 0.9:',natoms(c),'atoms')
     #set_atompos with a given setting checks exactly that setting:
     allpos = [ (lbl,p[0],p[1],p[2]) for lbl,p in
-               NC.misc.evaluate_query(['util','atompositions','strict',
+               NC.misc.evaluate_query([ 'sgsym', 'positions','strict',
                                        '227:2','Si,0.125,0.125,0.125']) ]
     print('all positions with 227:2:',
           natoms( mk( '227:2', allpos, use_sites = False ) ),'atoms')
@@ -375,7 +375,7 @@ def test_refine_uij():
               [ ( lbl, *p, u ) for lbl, p, u in asym ] )
     ref = ref.load( 'dcutoff=0.5' ).info
     #All positions in the conventional cell:
-    ops = evaluate_query( [ 'util', 'sgsym', 'strict', '15:b1' ] )['ops']
+    ops = evaluate_query( [ 'sgsym', 'info', 'strict', '15:b1' ] )['ops']
     allc = sgs._expand_sites( ops, conv,
                               [ { 'key': lbl, 'pos': p,
                                   'aniso': dict( zip( keys, u ) ) }

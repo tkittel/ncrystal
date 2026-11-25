@@ -26,6 +26,7 @@
 #include "NCMatCfgQuery.hh"
 #include "NCIsoMacroXSTableQuery.hh"
 #include "NCUtilQuery.hh"
+#include "NCSGSymQuery.hh"
 #include "NCQueryImpl.hh"
 
 namespace NC = NCrystal;
@@ -42,6 +43,7 @@ void NC::JSONQuery( std::ostream& os, const Query& query )
   constexpr auto sv_vdos = StrView::make("vdos");
   constexpr auto sv_isomacroxstable = StrView::make("isomacroxstable");
   constexpr auto sv_matcfg = StrView::make("matcfg");
+  constexpr auto sv_sgsym = StrView::make("sgsym");
 
   if ( key == sv_mmc ) {
     MiniMC::Query::JSONQuery( os, query );
@@ -50,7 +52,7 @@ void NC::JSONQuery( std::ostream& os, const Query& query )
       NCRYSTAL_THROW2(BadInput, "Invalid JSON query (no arguments"
                       " should follow key \"list\")");
     os << "[\"version\", \"util\", \"mmc\", \"sab\", \"vdos\","
-          " \"isomacroxstable\", \"matcfg\"]";
+          " \"isomacroxstable\", \"matcfg\", \"sgsym\"]";
   } else if ( key == sv_version ) {
     queryimpl_version( os, query );
   } else if ( key == sv_util ) {
@@ -59,6 +61,8 @@ void NC::JSONQuery( std::ostream& os, const Query& query )
     SAB::JSONQuery( os, query );
   } else if ( key == sv_vdos ) {
     VDOS::JSONQuery( os, query );
+  } else if ( key == sv_sgsym ) {
+    SGSymQuery::JSONQuery( os, query );
   } else if ( key == sv_isomacroxstable ) {
     XSTable::JSONQuery( os, query );
   } else if ( key == sv_matcfg ) {

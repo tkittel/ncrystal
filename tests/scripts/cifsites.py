@@ -65,7 +65,7 @@ def cif_text( cell, hm, sites, ops = None, mults = None, header = '' ):
 
 def expand( setting, cell, asym ):
     #All positions of the asymmetric unit, with rotated tensors:
-    ops = evaluate_query( [ 'util', 'sgsym', 'strict', setting ] )['ops']
+    ops = evaluate_query( [ 'sgsym', 'info', 'strict', setting ] )['ops']
     res = []
     for lbl, el, p, occ, uiso, u in asym:
         e = sgs._expand_sites( ops, cell, [ { 'pos': p, 'aniso': u } ] )
@@ -158,7 +158,7 @@ def test_rutile():
 
 def test_symmetry_information():
     #Listed operations and multiplicities, consistent or not:
-    ops = evaluate_query( [ 'util', 'sgsym', 'strict', '136' ] )['ops']
+    ops = evaluate_query( [ 'sgsym', 'info', 'strict', '136' ] )['ops']
     good = cif_text( rutile, 'P 42/m n m', asym_rutile, ops = ops,
                      mults = [ 2, 4 ] )
     lc = load( good )
@@ -267,7 +267,7 @@ def test_primitive():
             comps.append( c )
         return ','.join( comps )
     ops = []
-    for o in evaluate_query( [ 'util', 'sgsym', 'strict', '15:b1' ] )['ops']:
+    for o in evaluate_query( [ 'sgsym', 'info', 'strict', '15:b1' ] )['ops']:
         R, t = sgs._parse_xyz_op( o )
         Rp, tp = Minv @ R @ M, ( Minv @ t ) % 1.0
         s = fmtop( Rp, tp )
