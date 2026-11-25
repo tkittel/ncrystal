@@ -123,10 +123,35 @@ def _load( f, permissive ):
         return None, _errmsg( e ), []
     return lc, None, [ msg for msg, _ in lc.warnings ]
 
+def _header_warnings( txt ):
+    #Distinct warning texts listed in the NCMAT comments (unwrapped, with a
+    #truncation note removed):
+    import re
+    res, cur, inblock = [], None, False
+    for line in txt.splitlines():
+        if line.startswith( '# Notice: The following WARNINGS were emitted' ):
+            inblock = True
+            continue
+        if not inblock:
+            continue
+        m = re.match( r'^#   (?:\([0-9]+x\) )?\S+ : (.*)$', line )
+        if m:
+            cur = [ m.group(1) ]
+            res.append( cur )
+        elif cur is not None and line.startswith( '#     ' ):
+            cur.append( line[1:].strip() )
+        elif line.strip() != '#' or cur is not None:
+            break
+    out = set()
+    for parts in res:
+        s = ' '.join( parts )
+        out.add( re.sub( r' ?<[0-9]+ more characters hidden>$', '', s ) )
+    return out
+
 def _check_header_warnings( f, permissive ):
-    #The NCrystal warnings shown when converting (not quiet) must be exactly
-    #those in the NCMAT header, which must not depend on quiet:
-    from NCrystalDev._cifcomposerimpl import _fmt_warnings_for_comments
+    #The NCrystal warnings shown when converting (not quiet) must be those in
+    #the NCMAT header (which lists repeats with their count, while they are
+    #shown once), and the NCMAT data must not depend on quiet:
     from NCrystalDev.msg import MsgCtrl
     with MsgCtrl( spy = ['warning'], block = ['info','warning','raw'] ) as mc:
         lc = nc_cifutils.CIFLoader( f, permissive = permissive )
@@ -134,7 +159,7 @@ def _check_header_warnings( f, permissive ):
             composer = lc.create_ncmat_composer( no_formula_check = True )
         except NC.NCException:
             return#(errors are reported elsewhere)
-    shown = [ e for e in mc.warnings if e[1] == 'NCrystalWarning' ]
+    shown = [ m for m, c in mc.warnings if c == 'NCrystalWarning' ]
     with MsgCtrl( block = ['info','warning','raw'] ):
         try:
             txt = composer.create_ncmat()
@@ -144,10 +169,12 @@ def _check_header_warnings( f, permissive ):
                                           quiet = True )
         txt_quiet = lc_quiet.create_ncmat_composer(
             no_formula_check = True, quiet = True ).create_ncmat()
-    expected = '\n'.join( f'# {e}'.rstrip() for e in
-                          _fmt_warnings_for_comments(
-                              shown, 'when loading the CIF data', nwmax = 10 ) )
-    if expected not in txt or txt != txt_quiet:
+    inheader = _header_warnings( txt )
+    def matches( m ):
+        m = ' '.join( m.split() )
+        return any( m == h or ( h and m.startswith( h ) ) for h in inheader )
+    if ( len( set( shown ) ) != len( shown ) or len( inheader ) != len( shown )
+         or not all( matches( m ) for m in shown ) or txt != txt_quiet ):
         raise SystemExit( f'NCMAT header warnings of {f.name} do not match'
                           ' those shown, or depend on quiet' )
 
