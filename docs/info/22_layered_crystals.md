@@ -90,9 +90,9 @@ single-crystal cross section is integrated over each interval. With
 $u = \cos\gamma = A\cos\phi + B$, the integral becomes
 $\int W(u)\,(A^2-(u-B)^2)^{-1/2}\,du$, where $W$ is only non-zero in a narrow
 window around $\lambda/2d$. When that window is well inside $[B-|A|, B+|A|]$
-(the usual case), the square-root factor is expanded to 4th order, which
+(the usual case), the square-root factor is expanded to 6th order, which
 needs the moments of $W$. These are exact and simple functions of
-$\lambda/2d$ and four averages over the mosaicity distribution, computed once.
+$\lambda/2d$ and six averages over the mosaicity distribution, computed once.
 The method is used only if a strict bound on the neglected terms is below
 `mosprec`/10. Otherwise the trapezoidal rule is used, starting with 17
 points and halving the step until two estimates agree to within `mosprec`,

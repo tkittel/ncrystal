@@ -741,7 +741,7 @@ NC::LCStdFrame::LCStdFrame(MosaicityFWHM mosaicity, double prec, double ntrunc)
   const double ta = gos.getTruncangle();
   constexpr unsigned n = 2048;
   const double h = ta / n;
-  StableSum sums[5];
+  StableSum sums[s_norder+1];
   for ( auto i : ncrange(n+1) ) {
     const double beta = i * h;
     const double sb = std::sin(0.5*beta);
@@ -753,7 +753,7 @@ NC::LCStdFrame::LCStdFrame(MosaicityFWHM mosaicity, double prec, double ntrunc)
       f *= w;
     }
   }
-  for ( auto m : ncrange(5) )
+  for ( auto m : ncrange(s_norder+1) )
     m_wmom[m] = sums[m].sum() * ( k2Pi * h / 3.0 );
 }
 
@@ -765,7 +765,7 @@ bool NC::LCStdFrame::calcXSIntegralApprox( const NeutronPars& neutron,
   //u=cos(angle between neutron and normal)=A*cos(phi)+B. Substituting u for
   //phi gives Q*integral(W(u)*g(u)du), with g(u)=1/sqrt(A^2-(u-B)^2). W is
   //only non-zero in a narrow window, |u-c|<=h, around c=wl/2d, and if that is
-  //well inside [B-|A|,B+|A|], g is expanded to 4th order around c. This
+  //well inside [B-|A|,B+|A|], g is expanded to 6th order around c. This
   //needs the moments M_n of W around c, which are exactly given by
   //M_n=s*E[<(-c*w+s*sin(beta)*cos(psi))^n>], s=sqrt(1-c^2) (with <..> an
   //average over psi in [0,2pi], and w and beta as for m_wmom). Returns false
@@ -783,30 +783,47 @@ bool NC::LCStdFrame::calcXSIntegralApprox( const NeutronPars& neutron,
   const double h = s*m_gm.mosaicitySinTruncationAngle() + c*(1.0-cta);
   if ( !( h < D ) )
     return false;//window not inside [B-|A|,B+|A|]
-  //Moments divided by s:
-  const double* mu = m_wmom;
-  const double cc(c*c), ss(s*s);
-  const double M[5] = {
-    mu[0],
-    -c * mu[1],
-    cc * mu[2] + ss * ( mu[1] - 0.5 * mu[2] ),
-    -c * ( cc * mu[3] + 1.5 * ss * ( 2.0 * mu[2] - mu[3] ) ),
-    cc * cc * mu[4] + 3.0 * cc * ss * ( 2.0 * mu[3] - mu[4] )
-    + 0.375 * ss * ss * ( 4.0 * ( mu[2] - mu[3] ) + mu[4] )
-  };
+  //Moments divided by s. With a=-c*w and b^2=s^2*w*(2-w), the average over
+  //psi of (a+b*cos(psi))^n is sum_j binom(n,2j)*a^(n-2j)*b^2j*binom(2j,j)/4^j,
+  //and E[w^(n-j)*(2-w)^j] is a sum of the m_wmom:
+  constexpr unsigned N = s_norder;
+  constexpr double binom[N+1][N+1] = { { 1 }, { 1, 1 }, { 1, 2, 1 },
+                                       { 1, 3, 3, 1 }, { 1, 4, 6, 4, 1 },
+                                       { 1, 5, 10, 10, 5, 1 },
+                                       { 1, 6, 15, 20, 15, 6, 1 } };
+  constexpr double avgcos2j[N/2+1] = { 1.0, 0.5, 0.375, 0.3125 };
+  double pmc[N+1], pss[N/2+1];//powers of -c and s^2
+  pmc[0] = pss[0] = 1.0;
+  for ( unsigned k = 1; k <= N; ++k )
+    pmc[k] = pmc[k-1] * (-c);
+  for ( unsigned k = 1; k <= N/2; ++k )
+    pss[k] = pss[k-1] * ( s * s );
+  double M[N+1];
+  for ( unsigned n = 0; n <= N; ++n ) {
+    double mn = 0.0;
+    for ( unsigned j = 0; 2*j <= n; ++j ) {
+      double e = 0.0;
+      for ( unsigned l = 0; l <= j; ++l )
+        e += binom[j][l] * std::ldexp( 1.0, int(j-l) ) * ( l%2 ? -1.0 : 1.0 )
+          * m_wmom[n-j+l];
+      mn += binom[n][2*j] * pmc[n-2*j] * pss[j] * avgcos2j[j] * e;
+    }
+    M[n] = mn;
+  }
   //Taylor coefficients of g, from those of (d1-t)^(-1/2) and (d2+t)^(-1/2):
-  constexpr double ck[5] = { 1.0, 0.5, 0.375, 0.3125, 0.2734375 };
+  constexpr double ck[N+1] = { 1.0, 0.5, 0.375, 0.3125, 0.2734375, 0.24609375,
+                               0.2255859375 };
   const double g0 = 1.0 / std::sqrt( d1 * d2 );
   const double e1 = 1.0 / d1;
   const double e2 = -1.0 / d2;
-  double pe1[5], pe2[5];
+  double pe1[N+1], pe2[N+1];
   pe1[0] = pe2[0] = 1.0;
-  for ( unsigned k = 1; k < 5; ++k ) {
+  for ( unsigned k = 1; k <= N; ++k ) {
     pe1[k] = pe1[k-1] * e1;
     pe2[k] = pe2[k-1] * e2;
   }
   double sum = 0.0;
-  for ( unsigned n = 0; n < 5; ++n ) {
+  for ( unsigned n = 0; n <= N; ++n ) {
     double an = 0.0;
     for ( unsigned k = 0; k <= n; ++k )
       an += ck[k] * ck[n-k] * pe1[k] * pe2[n-k];
@@ -814,10 +831,14 @@ bool NC::LCStdFrame::calcXSIntegralApprox( const NeutronPars& neutron,
   }
   sum *= g0;
   //The coefficients of g are bounded by g0/D^n, and since W>=0, |M_n| is
-  //bounded by h^(n-4)*M_4. Thus the remaining terms are bounded by:
+  //bounded by h^(n-N)*M_N for even N. Thus the remaining terms are bounded
+  //by:
+  static_assert( N%2 == 0, "" );
   const double x = h / D;
-  const double D2 = D * D;
-  const double bound = g0 * M[4] * x / ( D2 * D2 * ( 1.0 - x ) );
+  double DN = 1.0;
+  for ( unsigned k = 0; k < N; ++k )
+    DN *= D;
+  const double bound = g0 * M[N] * x / ( DN * ( 1.0 - x ) );
   const double acc = ncclamp( m_gm.precision(), 1e-7, 1e-2 );
   if ( !( sum > 0.0 && bound <= 0.1 * acc * sum ) )
     return false;
