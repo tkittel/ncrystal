@@ -31,7 +31,7 @@ Edit code (mostly `ncrystal_core/`, `ncrystal_python/`, `tests/`), then build an
 - How it works: `ncdevtool sb` runs `devel/simplebuild/sbgenerate.py`, generating git-ignored `devel/simplebuild/autogen/` full of simplebuild packages that are **symlinks to the real sources**. Always edit the real files. New/moved files are picked up on the next run.
 - `ncdevtool check` is the quick (~2 s) linter step: run it on its own before the costlier `sb -t`, and always before committing. It runs static checks (`ncdevtool check -l` lists them: `comps`, `copies`, `deps`, `fixme`, `incguards`, `license`, `misc`, `ruff` (ruff linter on all Python code), `toml`, `versions`, `yaml`). Run a subset by name (`ncdevtool check ruff`) or all-but with `-n`. On this branch the marker-word check fails by design, so use `ncdevtool check -n "fix""me"` (spelled so; this is what CI runs) to see the other checks.
 - Other modes (`ncdevtool` lists all): `grep|find|replace`, `cppcreate|cppmove|fixdeps|cppana|graph`, and `cmake` (pure CMake build+ctest in a temp dir, slow; options `-b`, `--dbg`, `--long`, `-c @-DVAR=VAL`, `-t @-R@<regex>`).
-- Non-test, developer-only benchmark/utility apps (`app_benchsab`, `app_benchsabsample`, `app_minimc`, `app_minimcbench`, `app_query`) live under `devel/simplebuild/static/NCDev/` rather than `tests/src/`, and are run with `ncdevtool sbrun sb_ncdev_<name>` (not built or picked up by `-t`).
+- Non-test, developer-only benchmark/utility apps (`app_benchsab`, `app_benchsabsample`, `app_benchscbragg`, `app_minimc`, `app_minimcbench`, `app_query`) live under `devel/simplebuild/static/NCDev/` rather than `tests/src/`, and are run with `ncdevtool sbrun sb_ncdev_<name>` (not built or picked up by `-t`).
 
 ## Repository layout
 
