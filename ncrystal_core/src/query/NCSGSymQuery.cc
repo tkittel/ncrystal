@@ -23,6 +23,7 @@
 #include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 #include "NCrystal/internal/sgsym/NCSGIdentify.hh"
 #include "NCrystal/internal/cif/NCCIFUtils.hh"
+#include "NCrystal/internal/phys_utils/NCUijUtils.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 
@@ -188,80 +189,117 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
     }
     os << "]}";
   } else if ( key == sv_sites || key == sv_positions ) {
-    //["sgsym","sites",MODE,SG,TOL,CELL,"lbl,x,y,z[,occupancy]",...]: group
-    //unit cell positions (fractional) into crystallographic sites, one per
-    //orbit of the space group, in the cell CELL ("a,b,c,alpha,beta,gamma"),
-    //with the site tolerances TOL ("strict" or "lenient", cf.
-    //SGSiteTolerances) and occupancies (default 1, the first given for a
-    //label applies to all of its positions): {"spacegroup_setting":"227:2",
-    //"is_default_setting":b,"sites":[[lbl,[x,y,z],multiplicity],...]}.
-    //SG is parsed in MODE "strict" or "relaxed" (cf. SpaceGroupParseMode),
-    //and in relaxed mode the setting is moreover deduced from the
-    //positions among all settings of the number with the same axes (so a
-    //bare number finds e.g. an origin choice 2 structure), while in strict
-    //mode the positions must have the symmetry of exactly the given
-    //setting (an error otherwise).
-    //["sgsym","positions",MODE,SG,TOL,CELL,"lbl,x,y,z[,occupancy]",...]:
-    //the inverse,
-    //expanding sites in the setting SG into all unit cell positions:
-    //[[lbl,[x,y,z]],...].
+    //["sgsym","positions",MODE,SG,TOL,CELL,ENTRY,...]: expand sites into all
+    //their positions in the setting SG (parsed in MODE "strict" or
+    //"relaxed", cf. SpaceGroupParseMode), in the cell CELL
+    //("a,b,c,alpha,beta,gamma"), with the site tolerances TOL ("strict" or
+    //"lenient", cf. SGSiteTolerances). Each ENTRY is a site,
+    //"lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]" (occupancy default 1,
+    //the first given for a label applies to all of its entries; uij as Ustd,
+    //cf. NCUijUtils.hh). Numbers may be printed CIF numbers (e.g.
+    //"0.0123(4)"), whose rounding errors are used with lenient tolerances.
+    //Result: {"spacegroup_setting":"227:2","sites":[{"label":..,
+    //"multiplicity":n,"split":null|{"positions":k,"distance":d},
+    //"uij":null|[6 values, snapped to the site symmetry],"positions":[[x,y,z],
+    //...],"uijs":null|[[6 values],...]},...]}, where "split" describes a
+    //split site (cf. expandSiteToOrbit) and "uijs" are the tensors at the
+    //positions.
+    //["sgsym","sites",MODE,SG,TOL,CELL,ENTRY,...]: the inverse, grouping unit
+    //cell positions (entries as above, with uij at each position) into sites,
+    //one per orbit: {"spacegroup_setting":"227:2","is_default_setting":b,
+    //"sites":[{"label":..,"position":[x,y,z],"multiplicity":n,"split":..,
+    //"uij":..},...]}, with the representative position (the first of the
+    //orbit, sorted) and its uij (snapped, and the uij at the other positions
+    //must be its symmetry images). In relaxed mode the setting is moreover
+    //deduced from the positions among all settings of the number with the
+    //same axes (so a bare number finds e.g. an origin choice 2 structure),
+    //while in strict mode the positions must have the symmetry of exactly the
+    //given setting (an error otherwise).
     const bool tosites = ( key == sv_sites );
     const auto usage = ( tosites
                          ? "correct usage: [\"sgsym\",\"sites\","
                          "\"strict|relaxed\",SG,\"strict|lenient\","
                          "\"a,b,c,alpha,beta,gamma\","
-                         "\"lbl,x,y,z[,occupancy]\",...]"
+                         "\"lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]\","
+                         "...]"
                          : "correct usage: [\"sgsym\",\"positions\","
                          "\"strict|relaxed\",SG,\"strict|lenient\","
                          "\"a,b,c,alpha,beta,gamma\","
-                         "\"lbl,x,y,z[,occupancy]\",...]" );
+                         "\"lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]\","
+                         "...]" );
     if ( nargs < 5 || ( arg(0) != "strict" && arg(0) != "relaxed" )
          || ( arg(2) != "strict" && arg(2) != "lenient" ) )
       invalid( usage );
-    const auto tol = ( arg(2) == "strict" ? SGSiteTolerances::strict()
-                       : SGSiteTolerances::lenient() );
+    const bool strict = ( arg(0) == "strict" );
+    const bool lenient = ( arg(2) == "lenient" );
+    const SpaceGroup given( arg(1), ( strict ? SpaceGroupParseMode::Strict
+                                      : SpaceGroupParseMode::Relaxed ) );
+    const auto tol = ( lenient ? SGSiteTolerances::lenient()
+                       : SGSiteTolerances::strict() );
+    auto number = [&invalid,&usage]( StrView s ) {
+      auto x = parseCIFNumber( s );
+      if ( !x.has_value() )
+        invalid( usage );
+      return x.value();
+    };
     CellParameters cell;
     {
       auto parts = arg(3).splitTrimmed(',');
-      double v[6];
       if ( parts.size() != 6 )
         invalid( usage );
+      double v[6];
       for ( auto j : ncrange( 6 ) ) {
-        auto x = parts.at(j).toDbl();
-        if ( !x.has_value() || !( x.value() > 0.0 ) )
+        v[j] = number( parts.at(j) ).value;
+        if ( !( v[j] > 0.0 ) )
           invalid( usage );
-        v[j] = x.value();
       }
       cell = { v[0], v[1], v[2], v[3], v[4], v[5] };
     }
-    const bool strict = ( arg(0) == "strict" );
-    const SpaceGroup given( arg(1), ( strict ? SpaceGroupParseMode::Strict
-                                      : SpaceGroupParseMode::Relaxed ) );
+    const auto metric = UijUtils::cellMetric( cell.a, cell.b, cell.c,
+                                              cell.alpha, cell.beta,
+                                              cell.gamma );
     auto wrap = []( double x ) {
       double r = x - std::floor( x );
       return ( r >= 1.0 || r == 0.0 ) ? 0.0 : r;
     };
-    //Positions grouped by label, in order of first appearance:
+    //Entries grouped by label, in order of first appearance:
+    struct Entry {
+      Vector pos;
+      Optional<UijUtils::Uij> uij;
+      UijUtils::Uij uijerr = UijUtils::Uij{};
+    };
     std::vector<std::string> labels;
-    std::vector<std::vector<Vector>> positions;
+    std::vector<std::vector<Entry>> entries;
     std::vector<double> occupancies;//(per label)
     for ( auto i : ncrange( std::size_t(4), nargs ) ) {
       auto parts = arg(i).splitTrimmed(',');
-      if ( parts.size() != 4 && parts.size() != 5 )
+      const std::size_t np = parts.size();
+      if ( np != 4 && np != 5 && np != 10 && np != 11 )
         invalid( usage );
-      double occ = 1.0;
-      if ( parts.size() == 5 ) {
-        auto x = parts.at(4).toDbl();
-        if ( !x.has_value() || !( x.value() > 0.0 && x.value() <= 1.0 ) )
-          invalid( usage );
-        occ = x.value();
-      }
+      Entry e;
       double v[3];
       for ( auto j : ncrange( 3 ) ) {
-        auto x = parts.at(j+1).toDbl();
-        if ( !x.has_value() || !std::isfinite( x.value() ) )
+        v[j] = number( parts.at(j+1) ).value;
+        if ( !std::isfinite( v[j] ) )
           invalid( usage );
-        v[j] = wrap( x.value() );
+        v[j] = wrap( v[j] );
+      }
+      e.pos = Vector( v[0], v[1], v[2] );
+      double occ = 1.0;
+      if ( np == 5 || np == 11 ) {
+        occ = number( parts.at(4) ).value;
+        if ( !( occ > 0.0 && occ <= 1.0 ) )
+          invalid( usage );
+      }
+      if ( np >= 10 ) {
+        UijUtils::Uij u;
+        for ( auto j : ncrange( 6 ) ) {
+          const auto x = number( parts.at( np - 6 + j ) );
+          u[j] = x.value;
+          if ( lenient )
+            e.uijerr[j] = x.roundingError;
+        }
+        e.uij = u;
       }
       const std::string lbl = parts.at(0).to_string();
       std::size_t ilbl = 0;
@@ -269,21 +307,64 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
         ++ilbl;
       if ( ilbl == labels.size() ) {
         labels.push_back( lbl );
-        positions.emplace_back();
+        entries.emplace_back();
         occupancies.push_back( occ );
       }
-      positions[ilbl].emplace_back( v[0], v[1], v[2] );
+      if ( !entries[ilbl].empty()
+           && entries[ilbl].front().uij.has_value() != e.uij.has_value() )
+        NCRYSTAL_THROW2(BadInput,"Anisotropic displacements (uij) must be"
+                        " given for all or none of the entries of "<<lbl);
+      entries[ilbl].push_back( std::move( e ) );
     }
-    auto streamPos = [&os]( const Vector& p ) {
+    auto streamVals = [&os]( const double* v, std::size_t n ) {
       os << '[';
-      streamJSON( os, p.x() );
-      os << ',';
-      streamJSON( os, p.y() );
-      os << ',';
-      streamJSON( os, p.z() );
+      for ( auto j : ncrange( n ) ) {
+        if ( j )
+          os << ',';
+        streamJSON( os, v[j] );
+      }
       os << ']';
     };
+    auto streamPos = [&streamVals]( const Vector& p ) {
+      const double v[3] = { p.x(), p.y(), p.z() };
+      streamVals( v, 3 );
+    };
+    auto streamUij = [&os,&streamVals]( const Optional<UijUtils::Uij>& u ) {
+      if ( u.has_value() )
+        streamVals( u.value().data(), 6 );
+      else
+        os << "null";
+    };
+    auto streamSplit = [&os]( const SGSiteOrbit& orbit ) {
+      if ( !orbit.nearCopies ) {
+        os << "null";
+        return;
+      }
+      streamJSONDictEntry( os, "positions", orbit.nearCopies + 1,
+                           JSONDictPos::FIRST );
+      streamJSONDictEntry( os, "distance", orbit.nearestCopyDistance,
+                           JSONDictPos::LAST );
+    };
+    auto maxErr = []( const std::vector<Entry>& v ) {
+      UijUtils::Uij m = UijUtils::Uij{};
+      for ( auto& e : v )
+        for ( auto j : ncrange( 6 ) )
+          m[j] = ncmax( m[j], e.uijerr[j] );
+      return m;
+    };
+    auto descr = [&labels]( std::size_t ilbl, const Vector& p ) {
+      std::ostringstream ss;
+      ss << '"' << labels[ilbl] << "\" (" << fmt( p.x(), "%.6g" ) << ", "
+         << fmt( p.y(), "%.6g" ) << ", " << fmt( p.z(), "%.6g" ) << ")";
+      return ss.str();
+    };
     if ( tosites ) {
+      std::vector<std::vector<Vector>> positions;
+      for ( auto& v : entries ) {
+        positions.emplace_back();
+        for ( auto& e : v )
+          positions.back().push_back( e.pos );
+      }
       Optional<SpaceGroup> setting;
       SGStructureCheck res;
       if ( strict ) {
@@ -311,42 +392,104 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
       bool first = true;
       for ( auto ilbl : ncrange( labels.size() ) ) {
         //(sorted, so the representative is the first of its orbit):
-        auto& plist = positions[ilbl];
-        std::sort( plist.begin(), plist.end(),
-                   []( const Vector& a, const Vector& b )
-                   { return std::make_tuple( a.x(), a.y(), a.z() )
-                            < std::make_tuple( b.x(), b.y(), b.z() ); } );
+        auto& elist = entries[ilbl];
+        std::stable_sort( elist.begin(), elist.end(),
+                          []( const Entry& a, const Entry& b )
+                          { return std::make_tuple( a.pos.x(), a.pos.y(),
+                                                    a.pos.z() )
+                              < std::make_tuple( b.pos.x(), b.pos.y(),
+                                                 b.pos.z() ); } );
+        std::vector<Vector> plist;
+        for ( auto& e : elist )
+          plist.push_back( e.pos );
         for ( auto& orbit : groupPositionsIntoOrbits( sym, cell, plist,
                                                       occupancies[ilbl],
                                                       tol ) ) {
-          os << ( first ? "[" : ",[" );
+          const Vector& rep = vectAt( plist, orbit.front() );
+          const auto expanded = expandSiteToOrbit( sym, cell, rep,
+                                                   occupancies[ilbl], tol );
+          Optional<UijUtils::Uij> uij;
+          if ( vectAt( elist, orbit.front() ).uij.has_value() ) {
+            std::vector<Vector> opos;
+            std::vector<UijUtils::Uij> ou;
+            std::vector<Entry> oe;
+            for ( auto i : orbit ) {
+              opos.push_back( vectAt( plist, i ) );
+              ou.push_back( vectAt( elist, i ).uij.value() );
+              oe.push_back( vectAt( elist, i ) );
+            }
+            uij = UijUtils::ustdOfOrbit( sym, metric, opos, ou,
+                                         descr( ilbl, rep ), 0.05,
+                                         maxErr( oe ) );
+          }
+          if ( !first )
+            os << ',';
           first = false;
-          streamJSON( os, labels[ilbl] );
-          os << ',';
-          streamPos( vectAt( plist, orbit.front() ) );
-          os << ',' << orbit.size() << ']';
+          streamJSONDictEntry( os, "label", labels[ilbl], JSONDictPos::FIRST );
+          os << ",\"position\":";
+          streamPos( rep );
+          streamJSONDictEntry( os, "multiplicity",
+                               static_cast<unsigned>( orbit.size() ) );
+          os << ",\"split\":";
+          streamSplit( expanded );
+          os << ",\"uij\":";
+          streamUij( uij );
+          os << '}';
         }
       }
       os << "]}";
     } else {
       const SGSymmetry& sym = SGSymmetry::get( given );
-      os << '[';
+      streamJSONDictEntry( os, "spacegroup_setting", given.toString(),
+                           JSONDictPos::FIRST );
+      os << ",\"sites\":[";
       bool first = true;
       for ( auto ilbl : ncrange( labels.size() ) ) {
-        for ( auto& site : positions[ilbl] ) {
-          const auto orbit = expandSiteToOrbit( sym, cell, site,
+        for ( auto& e : entries[ilbl] ) {
+          const auto orbit = expandSiteToOrbit( sym, cell, e.pos,
                                                 occupancies[ilbl], tol );
-          for ( auto& p : orbit.positions ) {
-            os << ( first ? "[" : ",[" );
-            first = false;
-            streamJSON( os, labels[ilbl] );
+          Optional<UijUtils::Uij> uij;
+          if ( e.uij.has_value() )
+            uij = UijUtils::snapUstdToSiteSymmetry( sym, metric,
+                                                    orbit.positions.front(),
+                                                    e.uij.value(),
+                                                    descr( ilbl, e.pos ),
+                                                    0.05, e.uijerr );
+          if ( !first )
             os << ',';
+          first = false;
+          streamJSONDictEntry( os, "label", labels[ilbl], JSONDictPos::FIRST );
+          streamJSONDictEntry( os, "multiplicity",
+                               static_cast<unsigned>( orbit.positions.size() ) );
+          os << ",\"split\":";
+          streamSplit( orbit );
+          os << ",\"uij\":";
+          streamUij( uij );
+          os << ",\"positions\":[";
+          for ( auto& p : orbit.positions ) {
+            if ( &p != &orbit.positions.front() )
+              os << ',';
             streamPos( p );
-            os << ']';
           }
+          os << "],\"uijs\":";
+          if ( uij.has_value() ) {
+            os << '[';
+            for ( auto& p : orbit.positions ) {
+              if ( &p != &orbit.positions.front() )
+                os << ',';
+              const auto u = UijUtils::mapUstdToPosition( sym, metric,
+                                                           orbit.positions.front(),
+                                                           p, uij.value() );
+              streamVals( u.data(), 6 );
+            }
+            os << ']';
+          } else {
+            os << "null";
+          }
+          os << '}';
         }
       }
-      os << ']';
+      os << "]}";
     }
   } else {
     invalid("unknown key");

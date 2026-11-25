@@ -21,7 +21,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "NCrystal/internal/sgsym/NCSymOp.hh"
+#include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -69,6 +69,46 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Eigenvalues (ascending) of Ucart:
     std::array<double,3> calcUcartEigenvalues( const Uij&, const CellMetric& );
+
+    //Ustd of a site at the position 'from', transformed to the
+    //symmetry-equivalent position 'to' (positions as fractional coordinates,
+    //compared periodically within 1e-4), by the first operation of the
+    //setting mapping one onto the other. Throws BadInput if there is none:
+    Uij mapUstdToPosition( const SGSymmetry&, const CellMetric&,
+                           const Vector& from, const Vector& to, const Uij& );
+
+    //Ustd of a site snapped to its site symmetry, i.e. averaged over the
+    //operations of the setting leaving the position invariant. Throws BadInput
+    //if the input clearly breaks the site symmetry (a component changing by
+    //more than relTol times the largest component, plus twice the largest
+    //rounding error of the input components, if given), or if the result is
+    //not positive definite. The site description (e.g. "Al (0, 0, 0)") is used
+    //in error messages:
+    Uij snapUstdToSiteSymmetry( const SGSymmetry&, const CellMetric&,
+                                const Vector& site, const Uij&,
+                                const std::string& siteDescr,
+                                double relTol = 0.05,
+                                const Uij& roundingErrors = Uij{} );
+
+    namespace detail {
+      //Whether the tensors invariant under the rotation parts of ops (a site
+      //symmetry) have the structure which snapUstdToSiteSymmetry imposes
+      //exactly: each component zero, free, or a power of two (with sign)
+      //times another free component, with the free components independent.
+      //For tests:
+      bool uijStructureIsExact( Span<const SymOp* const> ops );
+    }
+
+    //Ustd of an orbit given at each of its positions: the one at the first
+    //position snapped to its site symmetry (cf. snapUstdToSiteSymmetry, with
+    //the largest rounding errors of all given ones), which must map onto
+    //those given at the other positions within the same tolerance (BadInput
+    //otherwise):
+    Uij ustdOfOrbit( const SGSymmetry&, const CellMetric&,
+                     const std::vector<Vector>& positions,
+                     const std::vector<Uij>& ustds,
+                     const std::string& orbitDescr, double relTol = 0.05,
+                     const Uij& roundingErrors = Uij{} );
 
     //Mean-squared displacements n^T Ucart n (from Ustar) along a fixed set of
     //36 directions n, with weights (summing to 1), so weighted sums approximate

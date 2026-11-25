@@ -793,7 +793,7 @@ class NCMATComposerImpl:
                                     f'{float( occumap.get( lbl, 1.0 ) )!r}'
                                     for lbl, x, y, z in allpos ] )
             from collections import Counter
-            if ( Counter( lbl for lbl, _, _ in q['sites'] )
+            if ( Counter( s['label'] for s in q['sites'] )
                  != Counter( expanded[e['index']]['key'] for e in res_sites ) ):
                 _nc_common.warn( 'Anisotropic displacements (uij) dropped'
                                  ' since the refined sites could not be'
@@ -957,9 +957,11 @@ class NCMATComposerImpl:
         query += [ f'{lbl},{x!r},{y!r},{z!r},'
                    f'{float( occumap.get( lbl, 1.0 ) )!r}'
                    for lbl,x,y,z in atompos['sites'] ]
-        pos = [ ( lbl, _nc_sgsymimpl._remap_fract_pos(p[0]), _nc_sgsymimpl._remap_fract_pos(p[1]),
+        pos = [ ( s['label'], _nc_sgsymimpl._remap_fract_pos(p[0]),
+                  _nc_sgsymimpl._remap_fract_pos(p[1]),
                   _nc_sgsymimpl._remap_fract_pos(p[2]) )
-                for lbl, p in evaluate_query( query ) ]
+                for s in evaluate_query( query )['sites']
+                for p in s['positions'] ]
         res = dict( atompos.items() )
         res['pos'] = sorted( pos )
         return res
@@ -1027,10 +1029,11 @@ class NCMATComposerImpl:
             sites = []
             for lbl,x,y,z in atompos['sites']:
                 occu = float( atompos.get('occumap',{}).get( lbl, 1.0 ) )
-                mult = len( evaluate_query( [ 'sgsym', 'positions',
-                                              'strict', sgspec, 'strict',
-                                              _nc_sgsymimpl._cellarg( cellsg ),
-                                              f'{lbl},{x!r},{y!r},{z!r},{occu!r}' ] ) )
+                site, = evaluate_query( [ 'sgsym', 'positions',
+                                          'strict', sgspec, 'strict',
+                                          _nc_sgsymimpl._cellarg( cellsg ),
+                                          f'{lbl},{x!r},{y!r},{z!r},{occu!r}' ] )['sites']
+                mult = site['multiplicity']
                 sites.append( ( lbl, ( x, y, z ), mult ) )
             return { 'spacegroup_setting': setting['spacegroup'],
                      'sites': sites,
@@ -1052,7 +1055,12 @@ class NCMATComposerImpl:
         query += [ f'{lbl},{x!r},{y!r},{z!r},'
                    f'{float( occumap.get( lbl, 1.0 ) )!r}'
                    for lbl,x,y,z in atompos['pos'] ]
-        return evaluate_query( query )
+        q = evaluate_query( query )
+        #(as tuples (label,position,multiplicity), as for sites given above):
+        return { 'spacegroup_setting': q['spacegroup_setting'],
+                 'is_default_setting': q['is_default_setting'],
+                 'sites': [ ( s['label'], tuple( s['position'] ),
+                              s['multiplicity'] ) for s in q['sites'] ] }
 
     def __lines_dyninfo(self,lbl_map,fractions):
         dyninfos = self.__params.get('dyninfos',{})

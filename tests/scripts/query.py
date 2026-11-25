@@ -363,9 +363,11 @@ def test_atomsites():
     site = 'Si,0.125,0.125,0.125'
     cell = '5.43,5.43,5.43,90,90,90'
     r = ncquery( [ 'sgsym', 'positions','strict','227:2','strict',cell,site] )
-    print( f'227:2 site {site} -> {len(r)} positions' )
-    assert len(r) == 8
-    pos = [ f'{lbl},{x!r},{y!r},{z!r}' for lbl,(x,y,z) in r ]
+    s, = r['sites']
+    print( f'227:2 site {site} -> {len(s["positions"])} positions' )
+    assert s['multiplicity'] == len( s['positions'] ) == 8
+    assert s['split'] is None and s['uij'] is None and s['uijs'] is None
+    pos = [ f'Si,{x!r},{y!r},{z!r}' for x,y,z in s['positions'] ]
     test( 'sgsym','sites','strict','227:2','strict',cell,*pos )
     #Relaxed: the setting is deduced from the positions:
     r = ncquery( [ 'sgsym', 'sites','relaxed','227','strict',cell,*pos] )
@@ -379,12 +381,21 @@ def test_atomsites():
     with ensure_error( NCBadInput, 'Invalid sgsym query: ["sgsym","sites",'
                        '"227:2","Si,0.125,0.125,0.125"] (correct usage:'
                        ' ["sgsym","sites","strict|relaxed",SG,"strict|lenient",'
-                       '"a,b,c,alpha,beta,gamma","lbl,x,y,z[,occupancy]",...])' ):
+                       '"a,b,c,alpha,beta,gamma",'
+                       '"lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]",...])' ):
         ncquery( [ 'sgsym', 'sites','227:2',site] )
-    #A split site (two copies 0.054 Aa apart, about a mirror plane of Pm):
-    r = ncquery( [ 'sgsym', 'positions','strict','6:b','lenient',
-                   '5,5.4,6,90,90,90','O,0.1,0.005,0.2,0.5' ] )
-    print( f'6:b split site with occupancy 0.5 -> {len(r)} positions' )
+    with ensure_error( NCBadInput, 'Invalid sgsym query: ["sgsym","positions",'
+                       '"strict","227:2","strict","5.43,5.43,5.43,90,90,90",'
+                       '"Si,0.125,0.125,0.125,1,2"] (correct usage:'
+                       ' ["sgsym","positions","strict|relaxed",SG,'
+                       '"strict|lenient","a,b,c,alpha,beta,gamma",'
+                       '"lbl,x,y,z[,occupancy][,u11,u22,u33,u12,u13,u23]",...])' ):#(6 fields)
+        ncquery( [ 'sgsym', 'positions','strict','227:2','strict',cell,
+                   'Si,0.125,0.125,0.125,1,2'] )
+    #A split site (two positions 0.054 Aa apart, about a mirror plane of Pm):
+    pm = [ 'strict','6:b','lenient','5,5.4,6,90,90,90' ]
+    r = ncquery( [ 'sgsym', 'positions', *pm, 'O,0.1,0.005,0.2,0.5' ] )
+    print( 'split site:', rnd( r['sites'] ) )
     with ensure_error( NCBadInput, 'At most one of the 2 symmetry-equivalent'
                        ' positions of the site (0.1, 0.005, 0.2) within 0.5 Aa'
                        ' (the closest 0.054 Aa apart) can be occupied, so its'
@@ -392,8 +403,77 @@ def test_atomsites():
                        ' special positions, specify coordinates with'
                        ' sufficient precision, preferably as exact fractions'
                        ' like 1/3.' ):
-        ncquery( [ 'sgsym', 'positions','strict','6:b','lenient',
-                   '5,5.4,6,90,90,90','O,0.1,0.005,0.2' ] )
+        ncquery( [ 'sgsym', 'positions', *pm, 'O,0.1,0.005,0.2' ] )
+    test_uij()
+
+def rnd( o ):
+    #Round floats (also nested) to 10 digits, for platform-stable printouts:
+    if isinstance( o, float ):
+        return float( f'{o:.10g}' )
+    if isinstance( o, dict ):
+        return { k : rnd(v) for k,v in o.items() }
+    if isinstance( o, (list,tuple) ):
+        return [ rnd(v) for v in o ]
+    return o
+
+def test_uij():
+    #Anisotropic displacements (uij, as Ustd): on the mirror plane of Pm
+    #(y=0), U12 and U23 must vanish:
+    pm = [ 'strict','6:b','strict','5,5.4,6,90,95,90' ]
+    sym = 'O,0.1,0,0.2,0.012,0.009,0.015,0,0.003,0'
+    r = ncquery( [ 'sgsym', 'positions', *pm, sym ] )
+    s, = r['sites']
+    print( 'uij on the mirror plane:', rnd( s['uij'] ), 'multiplicity', s['multiplicity'] )
+    assert s['multiplicity'] == 1 and s['uijs'] == [ s['uij'] ]
+    #Slightly off (U12 2% of the largest component) is snapped, more is an error:
+    r = ncquery( [ 'sgsym', 'positions', *pm,
+                   'O,0.1,0,0.2,0.012,0.009,0.015,0.0003,0.003,0' ] )
+    print( 'U12=0.0003 snapped to:', rnd( r['sites'][0]['uij'] ) )
+    assert r['sites'][0]['uij'][3] == 0.0
+    with ensure_error( NCBadInput, 'The uij values of the site "O" (0.1, 0, 0.2)'
+                       ' do not obey the site symmetry' ):
+        ncquery( [ 'sgsym', 'positions', *pm,
+                   'O,0.1,0,0.2,0.012,0.009,0.015,0.0012,0.003,0' ] )
+    #With lenient tolerances, the rounding errors of printed numbers are also
+    #accepted (here U12=0.0012 printed with rounding error 0.0005 each):
+    pml = [ 'strict','6:b','lenient','5,5.4,6,90,95,90' ]
+    r = ncquery( [ 'sgsym', 'positions', *pml,
+                   'O,0.1,0,0.2,0.012,0.009,0.015,0.001,0.003,0' ] )
+    print( 'lenient, printed U12=0.001 snapped to:', rnd( r['sites'][0]['uij'] ) )
+    with ensure_error( NCBadInput, 'The uij values of the site "O" (0.1, 0, 0.2)'
+                       ' do not obey the site symmetry' ):
+        ncquery( [ 'sgsym', 'positions', *pml,
+                   'O,0.1,0,0.2,0.0120,0.0090,0.0150,0.0012,0.0030,0.0000' ] )
+    with ensure_error( NCBadInput, 'The uij values of the site "O" (0.1, 0, 0.2)'
+                       ' do not form a positive definite matrix' ):
+        ncquery( [ 'sgsym', 'positions', *pm, 'O,0.1,0,0.2,0.012,-0.009,0.015,0,0.003,0' ] )
+    #A general position: the uij at the mirror image (y -> -y), and back:
+    r = ncquery( [ 'sgsym', 'positions', *pm,
+                   'O,0.1,0.3,0.2,0.5,0.012,0.009,0.015,0.002,0.003,0.001' ] )
+    s, = r['sites']
+    print( 'uij at the two positions of a general site:', rnd( s['uijs'] ) )
+    assert s['uijs'][1][3] < 0.0 and s['uijs'][1][5] < 0.0
+    pos = [ 'O,' + ','.join( repr(v) for v in p ) + ',0.5,'
+            + ','.join( repr(v) for v in u ) for p, u in zip( s['positions'], s['uijs'] ) ]
+    r = ncquery( [ 'sgsym', 'sites', *pm, *pos ] )
+    print( 'grouped back into sites:', rnd( r['sites'] ) )
+    assert r['sites'][0]['multiplicity'] == 2
+    #Tensors at the two positions which are not symmetry images of each other:
+    bad = [ pos[0], pos[1].replace( ',-0.002', ',0.002' ) ]
+    assert bad[1] != pos[1]
+    with ensure_error( NCBadInput, 'The uij values of the symmetry-equivalent'
+                       ' positions of "O" (0.1, 0.3, 0.2) are not symmetry'
+                       ' images of each other' ):
+        ncquery( [ 'sgsym', 'sites', *pm, *bad ] )
+    #Uij must be given for all or none of the entries of a label:
+    with ensure_error( NCBadInput, 'Anisotropic displacements (uij) must be'
+                       ' given for all or none of the entries of O' ):
+        ncquery( [ 'sgsym', 'sites', *pm, pos[0], 'O,0.1,0.7,0.2,0.5' ] )
+    #Printed CIF numbers with uncertainties are accepted:
+    r = ncquery( [ 'sgsym', 'positions', *pml,
+                   *raw( 'O,0.1000(3),0,0.2000(2),0.0120(4),0.0090(3),'
+                         '0.0150(5),0,0.0030(2),0' ) ] )
+    print( 'printed CIF numbers:', rnd( r['sites'][0]['uij'] ) )
 
 if __name__ == '__main__':
     main()
