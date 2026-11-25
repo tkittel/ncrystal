@@ -404,13 +404,17 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
     //space group setting (cf. chooseSetting) and atoms (cf. getAtoms), parsed
     //in lenient mode (cf. CIFParseLenient), with PERMISSIVE "strict" or
     //"permissive" (cf. CIFPermissive), OPTIONs KEY=VALUE
-    //(override_spacegroup=SG, tol_uij=X with default 1e-3, and
-    //allow_cell_misfit=1 to accept a cell which does not fit the setting,
-    //e.g. for a later refinement of the structure), and SRC
+    //(override_spacegroup=SG, tol_uij=X with default 1e-3, tol_symprec=X in
+    //Aa with default 0.01, 0 to not look for a higher symmetry of the atoms,
+    //and allow_cell_misfit=1 to accept a cell which
+    //does not fit the setting, e.g. for a later refinement of the
+    //structure), and SRC
     //either the name of a TextData or "RAWDATA",NAME,"RAWDATA",TEXT (the CIF
     //data and its name, which can be empty). Result: {"block":name,
     //"block_line":n,"structure":{...},"provenance":{...}|null,
-    //"provenance_block":name|null,"spacegroup_setting":setting,"cell":
+    //"provenance_block":name|null,"spacegroup_setting":setting (a higher
+    //symmetry of the atoms is used unless override_spacegroup is given, cf.
+    //getAtoms),"cell":
     //{"a":..,...,"gamma":..}|null (snapped to the setting, cf. snapCell,
     //null if it does not fit and that is allowed),"atoms":
     //[{"labels":[..],"composition":[[fraction,"Al"],..],"occupancy":x,
@@ -429,8 +433,8 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
     const auto usage = "correct usage: [\"cif\",\"structure\",PERMISSIVE,"
       "OPTION...,NAME] or [\"cif\",\"structure\",PERMISSIVE,OPTION...,"
       "\"RAWDATA\",NAME,\"RAWDATA\",TEXT], with PERMISSIVE \"strict\" or"
-      " \"permissive\" and OPTIONs override_spacegroup=SG, tol_uij=X or"
-      " allow_cell_misfit=1";
+      " \"permissive\" and OPTIONs override_spacegroup=SG, tol_uij=X,"
+      " tol_symprec=X or allow_cell_misfit=1";
     if ( nargs < 2 || ( arg(0) != "strict" && arg(0) != "permissive" ) )
       invalid( usage );
     const bool raw = ( nargs >= 5 && arg(nargs-4) == sv_rawdata
@@ -440,9 +444,10 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
       invalid( usage );
     constexpr auto sv_override = StrView::make("override_spacegroup=");
     constexpr auto sv_toluij = StrView::make("tol_uij=");
+    constexpr auto sv_tolsymprec = StrView::make("tol_symprec=");
     constexpr auto sv_misfit = StrView::make("allow_cell_misfit=1");
     StrView overrideSG;
-    Optional<double> tolUij;
+    Optional<double> tolUij, tolSymprec;
     bool allowMisfit = false;
     for ( auto i : ncrange( nopts ) ) {
       const auto o = arg( 1 + i );
@@ -455,6 +460,11 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
         tolUij = o.substr( sv_toluij.size() ).toDbl();
         if ( !tolUij.has_value() || !( tolUij.value() > 0.0 )
              || !std::isfinite( tolUij.value() ) )
+          invalid( usage );
+      } else if ( o.startswith( sv_tolsymprec ) && !tolSymprec.has_value() ) {
+        tolSymprec = o.substr( sv_tolsymprec.size() ).toDbl();
+        if ( !tolSymprec.has_value() || !( tolSymprec.value() >= 0.0 )
+             || !std::isfinite( tolSymprec.value() ) )
           invalid( usage );
       } else {
         invalid( usage );
@@ -488,9 +498,16 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
                        " group of the CIF data: "
                        << snapped.errorMsg.value() );
     Optional<CellParameters> cell = snapped.cell;
-    const auto atoms = NCC::getAtoms( doc, r.structureItems, setting, perm,
-                                      tolUij.has_value() ? tolUij.value()
-                                      : 1e-3, warnfct );
+    //(no higher symmetry is looked for if the setting was given):
+    const auto res = NCC::getAtoms( doc, r.structureItems, setting, perm,
+                                    tolUij.has_value() ? tolUij.value() : 1e-3,
+                                    ( overrideSG.has_value() ? 0.0
+                                      : ( tolSymprec.has_value()
+                                          ? tolSymprec.value() : 0.01 ) ),
+                                    warnfct );
+    const auto& atoms = res.atoms;
+    if ( res.setting != setting )
+      cell = NCC::snapCell( doc, r.structureItems, res.setting ).cell;
     const auto b = r.structureItems.block( doc );
     os << "{\"block\":";
     streamJSON( os, b.name() );
@@ -510,7 +527,7 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
     else
       os << "null";
     os << ",\"spacegroup_setting\":";
-    streamJSON( os, setting.toString() );
+    streamJSON( os, res.setting.toString() );
     os << ",\"cell\":";
     if ( cell.has_value() ) {
       const auto& c = cell.value();

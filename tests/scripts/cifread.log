@@ -36,5 +36,6 @@ all-zero tensor: uiso 0.012, tensor None
 tensor not positive definite: rejected: The uij values of the site "Fe1" (0, 0, 0) do not form a positive definite matrix
 sites ['O1 O ? ? ? 1 ? 4']: rejected: Invalid CIF data in "raw CIF data" (data_test, line 25): tag _atom_site_fract_x has a value "?" or "."
 sites ['O1 O 0.1 0.2 0.3 1 ? 4', 'O2 O ? ? ? 0 ? 4']: rejected: Invalid CIF data in "raw CIF data" (data_test, line 26): tag _atom_site_fract_x has a value "?" or "."
+P1 data with Fm-3m symmetry, without spglib: space group 225 1 site(s), 225
 MP data item: ['The Materials Project', 'https://www.materialsproject.org/materials/mp-1234']
 MP note: ['The Materials Project', 'https://www.materialsproject.org/materials/mp-1234']

@@ -55,7 +55,7 @@ namespace {
   }
 
   void test( const char * descr, const std::string& data,
-             Permissive perm = Permissive::NO )
+             Permissive perm = Permissive::NO, double tolSymprec = 0.01 )
   {
     std::vector<std::string> warnings;
     const NCC::CIFWarnFct warnfct = [&warnings]( const std::string& w )
@@ -71,8 +71,11 @@ namespace {
       auto items = NCC::findUniqueStructProvItems( doc, perm, warnfct );
       const auto sg = NCC::chooseSetting( doc, items.structureItems, perm,
                                           NC::StrView(), warnfct );
-      const auto atoms = NCC::getAtoms( doc, items.structureItems, sg, perm,
-                                        1e-3, warnfct );
+      const auto res = NCC::getAtoms( doc, items.structureItems, sg, perm,
+                                      1e-3, tolSymprec, warnfct );
+      const auto& atoms = res.atoms;
+      if ( res.setting != sg )
+        std::cout << " setting " << res.setting.toString();
       std::cout << '\n';
       for ( auto& a : atoms ) {
         std::cout << "   ";
@@ -216,6 +219,44 @@ int main()
           cifData( "Na1 Na 0.1 0.2 0.3 1 0.01\nCl1 Cl 0.3 0.1 0.2 1 0.01\n",
                    extra ) );
   }
+  std::cout << "==== Higher symmetry in the same coordinates ====\n";
+  //(P1 data with the inversion symmetry of P-1):
+  const std::string p1bar = "Na1 Na 0.1 0.2 0.3 1 {u1}\n"
+    "Na2 Na 0.9 0.8 0.7 1 {u2}\nCl1 Cl 0.3 0.1 0.2 1 0.01\n"
+    "Cl2 Cl 0.7 0.9 0.8 1 0.01\n";
+  auto withU = [&p1bar]( const char * u1, const char * u2 )
+  {
+    std::string r = p1bar;
+    r.replace( r.find( "{u1}" ), 4, u1 );
+    r.replace( r.find( "{u2}" ), 4, u2 );
+    return r;
+  };
+  test( "P1 data with the symmetry of P-1",
+        cifData( withU( "0.01", "0.01" ), "", "P 1" ) );
+  test( "same, Uiso within tol_uij (mean used)",
+        cifData( withU( "0.01", "0.010005" ), "", "P 1" ) );
+  test( "same, different Uiso",
+        cifData( withU( "0.01", "0.02" ), "", "P 1" ) );
+  test( "same, different Uiso, permissive",
+        cifData( withU( "0.01", "0.02" ), "", "P 1" ), P );
+  test( "same, Uiso of only one site",
+        cifData( withU( "0.01", "?" ), "", "P 1" ) );
+  test( "same, tensors which are symmetry images (inversion: equal)",
+        cifData( withU( "?", "?" ), aniso( "Na1 0.01 0.012 0.014 0.001 0 0\n"
+                                         "Na2 0.01 0.012 0.014 0.001 0 0\n" ),
+                 "P 1" ) );
+  test( "same, tensors which are not symmetry images",
+        cifData( withU( "?", "?" ), aniso( "Na1 0.01 0.012 0.014 0.001 0 0\n"
+                                         "Na2 0.014 0.012 0.01 0.001 0 0\n" ),
+                 "P 1" ) );
+  test( "inversion symmetry only within 0.04 Aa (beyond tol_symprec)",
+        cifData( "Na1 Na 0.1 0.2 0.3 1 0.01\nNa2 Na 0.91 0.8 0.7 1 0.01\n",
+                 "", "P 1" ) );
+  test( "same, with tol_symprec 0.1 Aa",
+        cifData( "Na1 Na 0.1 0.2 0.3 1 0.01\nNa2 Na 0.91 0.8 0.7 1 0.01\n",
+                 "", "P 1" ), Permissive::NO, 0.1 );
+  test( "P1 data with the symmetry of P-1, not looked for",
+        cifData( withU( "0.01", "0.01" ), "", "P 1" ), Permissive::NO, 0.0 );
   std::cout << "==== Split sites ====\n";
   //(two positions 0.054 Aa apart in Pm):
   const char * pm = "P 1 m 1";

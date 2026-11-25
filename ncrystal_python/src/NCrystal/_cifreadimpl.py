@@ -160,12 +160,14 @@ class CIFContent:
 
 def read_cif( cifdata, *, name, permissive, quiet, warnfct,
               override_spacegroup = None, tol_uij = None,
-              allow_cell_misfit = False ):
+              tol_symprec = None, allow_cell_misfit = False ):
     #Returns the CIFContent of the CIF text cifdata (with the name for
     #messages), read via the ["cif","structure",...] query in permissive mode
-    #or not, with the space group setting overridden if requested, the
-    #tolerance tol_uij (None for the default), and accepting a cell which does
-    #not fit the setting if allow_cell_misfit. Warnings are passed to warnfct.
+    #or not, with the space group setting overridden if requested (else a
+    #higher symmetry of the atoms in the same coordinates is used, unless
+    #tol_symprec is 0), the tolerances tol_uij and tol_symprec (None for the
+    #defaults), and accepting a cell which does not fit the setting if
+    #allow_cell_misfit. Warnings are passed to warnfct.
     if not quiet:
         _nc_common.infomsg("Parsing CIF data")
     from .misc import evaluate_query
@@ -173,6 +175,8 @@ def read_cif( cifdata, *, name, permissive, quiet, warnfct,
              if override_spacegroup else [] )
     if tol_uij is not None:
         opts.append( f'tol_uij={float(tol_uij)!r}' )
+    if tol_symprec is not None:
+        opts.append( f'tol_symprec={float(tol_symprec)!r}' )
     if allow_cell_misfit:
         opts.append( 'allow_cell_misfit=1' )
     q = evaluate_query( [ 'cif', 'structure',

@@ -65,13 +65,24 @@ namespace NCRYSTAL_NAMESPACE {
     //    identical, and their total occupancy at most 1), and the total
     //    number of positions must agree with _atom_type_number_in_cell (1%)
     //    if given.
+    //  * If the cell and the atoms have the symmetry of a setting with more
+    //    operations in the same coordinates (within tolSymprec, in Aa, along
+    //    each axis; 0 to disable), that setting is used (the highest order,
+    //    the default setting among equal orders), with a warning, and atoms
+    //    which become equivalent are merged (Uiso values and tensors must
+    //    agree within tolUij, else BadInput, or the given setting is kept
+    //    with a warning if permissive).
     //  * Split sites (cf. expandSiteToOrbit) are BadInput unless permissive
     //    (with a warning).
     //Isotropic and anisotropic displacements given as B are converted to U
     //(B = 8 pi^2 U, also for the rounding errors):
-    std::vector<CIFAtom> getAtoms( const Document&, const StructureItems&,
-                                   const SpaceGroup&, CIFPermissive,
-                                   double tolUij, const CIFWarnFct& );
+    struct CIFAtoms {
+      SpaceGroup setting;//(the given one, or a higher symmetry)
+      std::vector<CIFAtom> atoms;
+    };
+    CIFAtoms getAtoms( const Document&, const StructureItems&,
+                       const SpaceGroup&, CIFPermissive, double tolUij,
+                       double tolSymprec, const CIFWarnFct& );
   }
 }
 

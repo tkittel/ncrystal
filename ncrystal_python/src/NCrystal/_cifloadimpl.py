@@ -55,6 +55,9 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
                             warnfct = warnfct,
                             override_spacegroup = override_spacegroup,
                             tol_uij = tols['uij'],
+                            #(spglib finds any higher symmetry itself):
+                            tol_symprec = ( 0.0 if refine_with_spglib
+                                            else tols['symprec'] ),
                             allow_cell_misfit = refine_with_spglib )
     result['cif_temperatures'] = cif_content.temperatures
 
