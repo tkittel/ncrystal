@@ -42,8 +42,8 @@ namespace NCRYSTAL_NAMESPACE {
   //Element (A=0) or isotope (D and T as Z=1 and A=2 or 3) of a CIF atom type
   //symbol: one or two letters (ignoring case, two if they form an element,
   //e.g. "CO" is cobalt) optionally followed by a charge of digits, decimal
-  //points and a sign (e.g. "O2-", "Fe3+", "Fe0", "Mn3.614+", "T+"). Returns
-  //NullOpt for anything else (incl. "?" and "."):
+  //points and a sign before or after them (e.g. "O2-", "O-2", "Fe3+", "Fe0",
+  //"Mn3.614+", "T+"). Returns NullOpt for anything else (incl. "?" and "."):
   struct CIFElement {
     unsigned Z;
     unsigned A;
@@ -51,11 +51,17 @@ namespace NCRYSTAL_NAMESPACE {
   Optional<CIFElement> elementFromCIFTypeSymbol( StrView );
 
   //Element or isotope deduced from a CIF site label, for data without type
-  //symbols: an element name (or D or T, as above) in its usual case at the
-  //start (two letters preferred), followed only by upper case letters and
-  //digits, and ending in a digit (e.g. "CaM1", "OA1", "Fe12"). Returns NullOpt
-  //if this does not apply (e.g. "Ow1", "X1", "C"):
-  Optional<CIFElement> elementFromCIFLabel( StrView );
+  //symbols: the element (or D or T, as above) named by the first two letters
+  //of the label (in their usual case, e.g. "Cl" in "Cl(1)"), or else by its
+  //first letter, which also appears in the chemical formula (e.g. the CIF
+  //_chemical_formula_sum, cf. tryDecodeChemicalFormula, isotopes counting as
+  //their element). Returns NullOpt if neither does, if the formula can not
+  //be decoded, or if the label is ambiguous because the first two letters
+  //form an element of the formula when ignoring case (e.g. "CL1" for a formula
+  //with both C and Cl). Without a formula (empty), only labels which are an
+  //element name in its usual case followed by nothing but digits and
+  //parentheses are accepted (e.g. "Al", "Fe2" or "O(1)", but not "CaM1"):
+  Optional<CIFElement> elementFromCIFLabel( StrView label, StrView formula );
 
 }
 
