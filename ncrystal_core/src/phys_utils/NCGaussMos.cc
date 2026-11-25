@@ -118,8 +118,13 @@ void NC::GaussMos::setDSpacingSpread(double dd)
 
 namespace NCRYSTAL_NAMESPACE {
   namespace {
-    //Planes are preselected in chunks of this size:
+    //Planes are preselected in chunks of this size, or in small chunks when
+    //few planes remain (so few planes are always cheap):
     constexpr std::size_t gmpl_chunk = 64;
+    constexpr std::size_t gmpl_chunksmall = 16;
+
+    //Neutron parameters for the preselection (eps is the tolerance).
+    struct GMPLNeutron { float kx, ky, kz, wl, eps; };
 
     //Preselection of the planes in a chunk which might contribute. A plane
     //with normal n and s=wl/(2*dspacing) only contributes to scattering of a
@@ -131,39 +136,41 @@ namespace NCRYSTAL_NAMESPACE {
     //Performance depends crucially on the first loop being auto-vectorised,
     //which is why it has a fixed length and no conditionals (needed for
     //MSVC). Selected planes are those with a negative value, i.e. a sign bit.
+    template<std::size_t NCHUNK>
     inline unsigned gmpl_preselect( const float* nx, const float* ny,
                                     const float* nz, const float* inv2dsp,
-                                    float kx, float ky, float kz,
-                                    float wl, float eps,
-                                    std::uint32_t idx0, std::uint32_t* idxout )
+                                    const GMPLNeutron& neutron,
+                                    std::size_t idx0, std::uint32_t* idxout )
     {
-      float q[gmpl_chunk];
-      for ( std::size_t j = 0; j < gmpl_chunk; ++j ) {
+      static_assert( NCHUNK%8 == 0 && sizeof(float) == 4
+                     && std::numeric_limits<float>::is_iec559, "" );
+      const float kx(neutron.kx), ky(neutron.ky), kz(neutron.kz);
+      const float wl(neutron.wl), eps(neutron.eps);
+      float q[NCHUNK];
+      for ( std::size_t j = 0; j < NCHUNK; ++j ) {
         const float dot = nx[j]*kx + ny[j]*ky + nz[j]*kz;
         q[j] = std::fabs( std::fabs(dot) - wl*inv2dsp[j] ) - eps;
       }
       //Check sign bits of 8 values at a time:
-      static_assert( gmpl_chunk == 64 && sizeof(float) == 4
-                     && std::numeric_limits<float>::is_iec559, "" );
-      std::uint64_t w[gmpl_chunk/2];
+      std::uint64_t w[NCHUNK/2];
       std::memcpy( w, q, sizeof(w) );
       constexpr std::uint64_t signbits = 0x8000000080000000ull;
-      std::uint64_t grp[8];
+      std::uint64_t grp[NCHUNK/8];
       std::uint64_t any = 0;
-      for ( std::size_t g = 0; g < 8; ++g ) {
+      for ( std::size_t g = 0; g < NCHUNK/8; ++g ) {
         grp[g] = ( w[4*g] | w[4*g+1] | w[4*g+2] | w[4*g+3] ) & signbits;
         any |= grp[g];
       }
       if ( !any )
         return 0;
       unsigned n = 0;
-      for ( std::size_t g = 0; g < 8; ++g ) {
+      for ( std::size_t g = 0; g < NCHUNK/8; ++g ) {
         if ( !grp[g] )
           continue;
         for ( std::size_t j = 8*g; j < 8*g+8; ++j ) {
           std::uint32_t b;
           std::memcpy( &b, &q[j], sizeof(b) );
-          idxout[n] = idx0 + static_cast<std::uint32_t>(j);
+          idxout[n] = static_cast<std::uint32_t>(idx0+j);
           n += ( b >> 31 );//branch-free
         }
       }
@@ -220,11 +227,14 @@ void NC::GaussMos::calcCrossSections( const PlaneList& pl,
                                 ? pl.m_planes.size() : itfamE->nbegin );
 
   const double cta = m_gos.getCosTruncangle();
-  const float fkx( static_cast<float>(indir.x()) );
-  const float fky( static_cast<float>(indir.y()) );
-  const float fkz( static_cast<float>(indir.z()) );
-  const float fwl( static_cast<float>(wl) );
-  const float feps( m_presel_eps );
+  const GMPLNeutron neutron{ static_cast<float>(indir.x()),
+                             static_cast<float>(indir.y()),
+                             static_cast<float>(indir.z()),
+                             static_cast<float>(wl), m_presel_eps };
+  const float * const nx( pl.m_nx.data() );
+  const float * const ny( pl.m_ny.data() );
+  const float * const nz( pl.m_nz.data() );
+  const float * const inv2dsp( pl.m_inv2dsp.data() );
   const double wl_rounded = GaussMos_cacheRound(wl);
   InteractionPars ip;
   constexpr auto nofam = std::numeric_limits<std::uint32_t>::max();
@@ -238,11 +248,18 @@ void NC::GaussMos::calcCrossSections( const PlaneList& pl,
   std::uint32_t idx[nbatch];
   for ( std::size_t i0 = 0; i0 < nplanes; ) {
     unsigned nsel = 0;
-    for ( ; i0 < nplanes && nsel <= nbatch - gmpl_chunk; i0 += gmpl_chunk )
-      nsel += gmpl_preselect( &pl.m_nx[i0], &pl.m_ny[i0],
-                              &pl.m_nz[i0], &pl.m_inv2dsp[i0],
-                              fkx, fky, fkz, fwl, feps,
-                              static_cast<std::uint32_t>(i0), idx + nsel );
+    while ( i0 < nplanes && nsel <= nbatch - gmpl_chunk ) {
+      if ( nplanes - i0 > gmpl_chunk - gmpl_chunksmall ) {
+        nsel += gmpl_preselect<gmpl_chunk>( nx+i0, ny+i0, nz+i0, inv2dsp+i0,
+                                            neutron, i0, idx + nsel );
+        i0 += gmpl_chunk;
+      } else {
+        nsel += gmpl_preselect<gmpl_chunksmall>( nx+i0, ny+i0, nz+i0,
+                                                 inv2dsp+i0, neutron, i0,
+                                                 idx + nsel );
+        i0 += gmpl_chunksmall;
+      }
+    }
     for ( unsigned isel = 0; isel < nsel; ++isel ) {
       const std::size_t i = idx[isel];
       if ( i >= nplanes )

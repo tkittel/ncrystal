@@ -121,10 +121,9 @@ processed only while $\lambda \le 2d$. For a given neutron state (cached
 per thread), the few planes able to contribute are first preselected: a
 normal $\hat n$ only contributes if $||\hat n\cdot\hat k_i|-\lambda/2d|$
 is at most $2\sin(\theta_t/2)$, with $\theta_t$ the truncation angle,
-which is tested in single precision (with a safety margin) for 64 planes at
-a time, in a loop written to be vectorised by compilers. For the surviving
-planes, an exact test on normal and
-anti-normal together decides whether the Bragg circle meets the truncated
+which is tested in single precision (with a safety margin) for up to 64
+planes at a time, in a loop written to be vectorised by compilers. For the
+surviving planes, an exact test on normal and anti-normal together decides whether the Bragg circle meets the truncated
 Gaussian at all, the geometric factor is then obtained from the closed-form
 approximation where it is accurate and from Romberg integration otherwise,
 and the per-plane cross sections are accumulated for later plane

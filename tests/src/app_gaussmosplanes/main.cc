@@ -182,9 +182,11 @@ int main()
 {
   auto rng = NC::createBuiltinRNG( 12345 );
   //Number of planes below, at, and above multiples of the preselection chunk
-  //size (64), and a wide range of mosaicities (incl. extreme values):
-  for ( std::size_t nplanes : { 0, 1, 2, 63, 64, 65, 127, 128, 129, 191,
-                                192, 193, 255, 256, 257, 1000, 4096, 5001 } ) {
+  //sizes (16 and 64), and a wide range of mosaicities (incl. extreme values):
+  for ( std::size_t nplanes : { 0, 1, 2, 15, 16, 17, 31, 32, 33, 47, 48, 49,
+                                63, 64, 65, 79, 80, 81, 111, 112, 113, 127,
+                                128, 129, 191, 192, 193, 255, 256, 257, 1000,
+                                4096, 5001 } ) {
     for ( double mosdeg : { 0.0003, 0.02, 0.5, 5.0, 30.0 } )
       testPlanes( rng, nplanes, NC::MosaicityFWHM{ mosdeg * NC::kDeg } );
   }
