@@ -22,7 +22,6 @@
 #include "NCrystal/internal/extd_utils/NCLCUtils.hh"
 #include "NCrystal/internal/extd_utils/NCPlaneProvider.hh"
 #include "NCrystal/internal/phys_utils/NCGaussMos.hh"
-#include "NCrystal/internal/utils/NCRomberg.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
 #include "NCrystal/internal/utils/NCRotMatrix.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
@@ -456,11 +455,12 @@ void NC::LCHelper::Cache::reset()
 }
 
 namespace NCRYSTAL_NAMESPACE {
-  class LCStdFrameIntegrator : public Romberg {
+  class LCStdFrameIntegrator final {
+    //Evaluates the cross section of a planeset for a range of crystallite
+    //rotations, phi, and integrates it over such a range.
   public:
     LCStdFrameIntegrator(const GaussMos* gm, const LCStdFrame::NormalPars& normal, const LCStdFrame::NeutronPars& neutron)
-      : Romberg(),
-        m_ip(neutron.wl, normal.planeset->inv_twodsp, normal.planeset->fsq),
+      : m_ip(neutron.wl, normal.planeset->inv_twodsp, normal.planeset->fsq),
         m_gm(gm),
         m_sinnormalmults3(normal.planeset->sinalpha*neutron.s3*normal.sign),//include normal.sign here, since it should multiply cos(phi) in evalFunc
         m_cosnormalmultc3(normal.planeset->cosalpha*normal.sign*neutron.c3),
@@ -470,18 +470,8 @@ namespace NCRYSTAL_NAMESPACE {
       nc_assert(gm&&neutron.wl>0);
     }
 
-    virtual bool accept(unsigned /*level*/, double prev_estimate, double estimate,double,double) const
-    {
-      return ncabs(estimate-prev_estimate) <= m_acc*ncabs(estimate);
-    }
-
-    virtual double evalFunc(double) const {
-      //Must be implemented, but should never be called since we provide
-      //evalFuncMany+evalFuncManySum.
-      nc_assert_always(false);
-    }
-
-    virtual void evalFuncMany(double* fvals, unsigned n, double offset, double delta) const
+    //Values at the n points phi=offset+i*delta, i=0..n-1:
+    void evalFuncMany(double* fvals, unsigned n, double offset, double delta) const
     {
       nc_assert(offset>=0&&offset<kPi*1.00001);
       nc_assert(delta>0&&delta*(n-1)<=kPi*1.00001);
@@ -494,7 +484,8 @@ namespace NCRYSTAL_NAMESPACE {
       } while (grid.step());
     }
 
-    virtual double evalFuncManySum(unsigned n, double offset, double delta) const
+    //Same, but returning the sum of the values:
+    double evalFuncManySum(unsigned n, double offset, double delta) const
     {
       nc_assert(offset>=0&&offset<kPi*1.00001);
       nc_assert(delta>0&&delta*n<=kPi*1.00001);
@@ -506,6 +497,39 @@ namespace NCRYSTAL_NAMESPACE {
         sum += m_gm->calcRawCrossSectionValue(m_ip,cosgamma);
       } while (grid.step());
       return sum;
+    }
+
+    //Integral over phi in [a,b], with the trapezoidal rule and an interval
+    //width which is halved until two estimates agree. The integrands are
+    //smooth, and at the end points they either vanish or are symmetric, so
+    //the rule converges very fast (unlike for Romberg integration, since
+    //its extrapolations assume an error expansion in powers of the width).
+    double integrate( double a, double b ) const
+    {
+      nc_assert( b > a );
+      double fvals[17];
+      double h = (b-a)*0.0625;
+      evalFuncMany( fvals, 17, a, h );
+      const double sum_coarse = ( 0.5*(fvals[0]+fvals[16])
+                                  + ( (fvals[2]+fvals[4])+(fvals[6]+fvals[8]) )
+                                  + ( (fvals[10]+fvals[12])+fvals[14] ) );
+      double sum = sum_coarse + ( ( (fvals[1]+fvals[3])+(fvals[5]+fvals[7]) )
+                                  + ( (fvals[9]+fvals[11])+(fvals[13]+fvals[15]) ) );
+      double prev = sum_coarse * ( 2.0 * h );
+      double res = sum * h;
+      unsigned n = 16;//number of intervals
+      while ( !( ncabs(res-prev) <= m_acc*ncabs(res) ) ) {
+        if ( n >= 65536 )
+          NCRYSTAL_THROW(CalcError,"Integration of layered crystal cross"
+                         " section over crystallite rotations did not converge.");
+        //Add the mid-points of all intervals:
+        sum += evalFuncManySum( n, a + 0.5*h, h );
+        h *= 0.5;
+        n *= 2;
+        prev = res;
+        res = sum * h;
+      }
+      return res;
     }
 
   private:

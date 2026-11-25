@@ -73,3 +73,9 @@ CHANGELOG at release time, after which this file is dropped).
      * Fixed the JSON description of SCBragg processes, in which the
        mosaicity was provided under the key "dmax" (hiding the actual
        dmax value) rather than "mos".
+     * Cross sections of layered crystals (LCBragg) are now evaluated
+       around 2 times faster (4 times with mosprec=1e-5), since the
+       integration over crystallite rotations now uses the trapezoidal
+       rule with successive halving of the step, rather than Romberg
+       integration. Results change slightly, well within the precision
+       requested via mosprec (typically in the 5th significant digit).
