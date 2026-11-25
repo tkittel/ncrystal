@@ -1709,9 +1709,9 @@ void NCS::SABProcessor::toJSONProcessInfo( std::ostream& os,
   streamJSONDictEntry( os, "T", sab.temperature().dbl()  );
   streamJSONDictEntry( os, "M", sab.elementMassAMU().dbl()  );
   if ( sigma_scale.has_value() ) {
-    streamJSONDictEntry( os, "sigma_bound=",
+    streamJSONDictEntry( os, "sigma_bound",
                          sigma_scale.value().dbl() );
-    streamJSONDictEntry( os, "sigma_free=",
+    streamJSONDictEntry( os, "sigma_free",
                          sigma_scale.value().free(sab.elementMassAMU()).dbl() );
   }
   streamJSONDictEntry( os, "nalpha", sab.alphaGrid().size()  );
