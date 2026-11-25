@@ -67,6 +67,17 @@ namespace NCRYSTAL_NAMESPACE {
     //Largest absolute value of the components:
     double maxAbs( const Uij& );
 
+    //Eigenvalues (ascending) of Ucart:
+    std::array<double,3> calcUcartEigenvalues( const Uij&, const CellMetric& );
+
+    //Mean-squared displacements n^T Ucart n (from Ustar) along a fixed set of
+    //36 directions n, with weights (summing to 1), so weighted sums approximate
+    //averages over all directions of smooth functions of them (6x6
+    //Gauss-Legendre points in an octant of the eigenframe; relative errors
+    //~1e-6 for typical tensors and ~2e-4 for eigenvalue ratios of 25 in
+    //the incoherent elastic cross section):
+    std::vector<PairDD> directionalMSDs( const Uij&, const CellMetric& );
+
   }
 }
 
