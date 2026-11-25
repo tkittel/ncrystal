@@ -276,7 +276,7 @@ AbsOOV(sigma_2200=0.231barn)
   ================> verify_crystal_structure
 
 
-Caught expected NCBadInput('The atom positions do not have the symmetry of space group 225: Atom positions are not consistent with space group 225 (largest deviation of a symmetry image from an atom of the same type: 0.42 in fractional coordinates)')
+Caught expected NCBadInput('Atom positions are not consistent with space group 225 (largest deviation of a symmetry image from an atom of the same type: 0.42 in fractional coordinates)')
 Origin-shifted fcc verified by spglib but rejected at creation
 Permuted SG-19 written as: 19 2
 Valid structures verified OK
@@ -310,7 +310,7 @@ same site with origin choice 1: 8.0 atoms
 CAUGHT ESCAPED WARNING (NCrystalUserWarning): Support for site_occupancy is highly experimental. Do *not* attempt to directly override value with the "density" cfg-parameter for this material (unless it is to simply scale it) [warn#1]
 with occupancy 0.9: 7.2 atoms
 all positions with 227:2: 8.0 atoms
-=> correctly refused positions in wrong setting: The atom positions do not have the symmetry of space group 227:1: Atom positions are not consistent with space group 227:1 (largest deviation of a symmetry image from an atom of the same type: 0.25 in fractional coordinates)
+=> correctly refused positions in wrong setting: Atom positions are not consistent with space group 227:1 (largest deviation of a symmetry image from an atom of the same type: 0.25 in fractional coordinates)
 
 
   ================> set_atomsites with uij

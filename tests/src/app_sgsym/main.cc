@@ -32,6 +32,44 @@
 namespace NC = NCrystal;
 #define REQUIRE(x) nc_assert_always(x)
 
+namespace {
+  //A cell with lengths of about len (Aa) consistent with the constraints of
+  //the setting (20 Aa by default, so general positions are not too close to
+  //each other even with 192 of them):
+  NC::CellParameters testCell( const NC::SGSymmetry& sym, double len = 20.0 )
+  {
+    using AC = NC::SGCellConstraints::AngleConstraint;
+    using LC = NC::SGCellConstraints::LengthConstraint;
+    const auto& cc = sym.cellConstraints();
+    NC::CellParameters cp{ len, cc.b == LC::Free ? 1.1 * len : 0.0,
+                           cc.c == LC::Free ? 1.2 * len : 0.0,
+                           cc.alpha == AC::Free
+                           ? ( cc.beta == AC::EqualToAlpha ? 80.0 : 90.0 ) : 0.0,
+                           cc.beta == AC::Free ? 90.0 : 0.0,
+                           cc.gamma == AC::Free ? 90.0 : 0.0 };
+    cc.complete( cp );
+    return cp;
+  }
+
+  //Orbit in the test cell, with strict tolerances by default:
+  NC::SGSiteOrbit orbitOf( const NC::SGSymmetry& sym, const NC::Vector& site,
+                           double occupancy = 1.0,
+                           const NC::SGSiteTolerances& tol
+                           = NC::SGSiteTolerances::strict(),
+                           double len = 20.0 )
+  {
+    return NC::expandSiteToOrbit( sym, testCell( sym, len ), site, occupancy,
+                                  tol );
+  }
+
+  std::vector<std::vector<unsigned>>
+  groupOrbits( const NC::SGSymmetry& sym, const std::vector<NC::Vector>& pos )
+  {
+    return NC::groupPositionsIntoOrbits( sym, testCell( sym ), pos, 1.0,
+                                         NC::SGSiteTolerances::strict() );
+  }
+}
+
 namespace NCRYSTAL_NAMESPACE {
   namespace detail {
     //fwd declare internal fct:
@@ -864,10 +902,14 @@ namespace {
              && v.z() >= 0.0 && v.z() < 1.0 );
   }
 
-  NC::SGSiteOrbit expand( const char * sg, const NC::Vector& site )
+  //(in a cell of about 5 Aa):
+  NC::SGSiteOrbit expand( const char * sg, const NC::Vector& site,
+                          double occupancy = 1.0,
+                          const NC::SGSiteTolerances& tol
+                          = NC::SGSiteTolerances::strict() )
   {
-    return NC::expandSiteToOrbit( NC::SGSymmetry::get( NC::SpaceGroup( sg, NC::SpaceGroupParseMode::Relaxed ) ),
-                                  site );
+    return orbitOf( NC::SGSymmetry::get( NC::SpaceGroup( sg, NC::SpaceGroupParseMode::Relaxed ) ),
+                    site, occupancy, tol, 5.0 );
   }
 
   void show( const char * sg, const NC::Vector& site, unsigned expected_mult )
@@ -881,10 +923,13 @@ namespace {
     REQUIRE( orbit.positions.size() == expected_mult );
   }
 
-  void expectBad( const char * sg, const NC::Vector& site )
+  void expectBad( const char * sg, const NC::Vector& site,
+                  double occupancy = 1.0,
+                  const NC::SGSiteTolerances& tol
+                  = NC::SGSiteTolerances::strict() )
   {
     try {
-      expand( sg, site );
+      expand( sg, site, occupancy, tol );
     } catch ( NC::Error::BadInput& e ) {
       std::cout << "  " << sg << " -> BadInput: " << e.what() << std::endl;
       return;
@@ -896,11 +941,12 @@ namespace {
 void run()
 {
   //General position in all settings:
-  const NC::Vector generic( 0.1234567, 0.2345678, 0.3456789 );
+  //(at least 1.4 Aa from its images in all settings, in the test cells):
+  const NC::Vector generic( 0.34, 0.4643, 0.0873 );
   for ( std::uint16_t hn = 1; hn <= 530; ++hn ) {
     const NC::SpaceGroup sg{ NC::SpaceGroupSettingIdx{ hn } };
     const auto& sym = NC::SGSymmetry::get( sg );
-    const auto orbit = NC::expandSiteToOrbit( sym, generic );
+    const auto orbit = orbitOf( sym, generic );
     REQUIRE( orbit.positions.size() == sym.order() );
     REQUIRE( orbit.siteSymmetryOrder == 1 );
     REQUIRE( pdist( orbit.positions.front(), generic ) == 0.0 );
@@ -967,8 +1013,8 @@ void run()
         const NC::Vector s( rnd24(), rnd24(), rnd24() );
         const NC::Vector s2( s.x() + 1.1e-11, s.y() + 3.7e-11,
                              s.z() + 8.3e-11 );
-        const auto o1 = NC::expandSiteToOrbit( sym, s );
-        const auto o2 = NC::expandSiteToOrbit( sym, s2 );
+        const auto o1 = orbitOf( sym, s );
+        const auto o2 = orbitOf( sym, s2 );
         REQUIRE( o1.positions.size() == o2.positions.size() );
         for ( auto& p : o1.positions ) {
           const NC::Vector* q = nullptr;
@@ -990,25 +1036,42 @@ void run()
     std::cout << "  sites k/24 in all settings: fixed coordinates identical"
               << " when expanded in doubles" << std::endl;
   }
-  //3 digits are rejected:
+  //3 digits are rejected (copies about 0.005 Aa apart) unless the occupancy
+  //allows the copies to coexist:
   expectBad( "194", NC::Vector( 0.333, 0.667, 0.25 ) );
   expectBad( "227:2", NC::Vector( 0.125, 0.125, 0.12 ) );
+  expectBad( "227:2", NC::Vector( 0.125, 0.125, 0.12 ), 0.3 );
 
-  std::cout << "Sites near a mirror plane (Pm with y->-y):" << std::endl;
+  std::cout << "Sites near a mirror plane (Pm with y->-y, b=5.5 Aa):"
+            << std::endl;
   {
-    //Merged and symmetrised (distance 4e-4):
-    const auto o1 = expand( "6:b", NC::Vector( 0.1, 0.0002, 0.2 ) );
+    using Tol = NC::SGSiteTolerances;
+    //Averaged (distance 2*0.00005*5.5=5.5e-4 Aa, below strict 1e-3 Aa):
+    const auto o1 = expand( "6:b", NC::Vector( 0.1, 0.00005, 0.2 ) );
     REQUIRE( o1.positions.size() == 1 && o1.siteSymmetryOrder == 2 );
-    REQUIRE( o1.positions.front().y() == 0.0 );
-    //Distinct (distance 1.2e-2):
-    const auto o2 = expand( "6:b", NC::Vector( 0.1, 0.006, 0.2 ) );
-    REQUIRE( o2.positions.size() == 2 && o2.siteSymmetryOrder == 1 );
-    std::cout << "  y=0.0002: merged (y=0), y=0.006: two positions" << std::endl;
-    //Rejected (distance 8e-3):
-    expectBad( "6:b", NC::Vector( 0.1, 0.004, 0.2 ) );
-    //Across the periodic boundary (y=0.9998 is close to y=0.0002):
-    const auto o3 = expand( "6:b", NC::Vector( 0.1, 0.9999, 0.2 ) );
-    REQUIRE( o3.positions.size() == 1 && o3.positions.front().y() == 0.0 );
+    REQUIRE( o1.positions.front().y() == 0.0 && o1.nearCopies == 0 );
+    //Distance 5.5e-3 Aa: averaged with lenient tolerances, but with strict
+    //ones a copy too close for occupancy 1:
+    const auto o2 = expand( "6:b", NC::Vector( 0.1, 0.0005, 0.2 ), 1.0,
+                            Tol::lenient() );
+    REQUIRE( o2.positions.size() == 1 && o2.positions.front().y() == 0.0 );
+    expectBad( "6:b", NC::Vector( 0.1, 0.0005, 0.2 ) );
+    //Distance 0.066 Aa: a split site, allowed for occupancy 1/2:
+    expectBad( "6:b", NC::Vector( 0.1, 0.006, 0.2 ), 0.51, Tol::lenient() );
+    const auto o3 = expand( "6:b", NC::Vector( 0.1, 0.006, 0.2 ), 0.5 );
+    REQUIRE( o3.positions.size() == 2 && o3.siteSymmetryOrder == 1 );
+    REQUIRE( o3.nearCopies == 1 );
+    REQUIRE( NC::ncabs( o3.nearestCopyDistance - 0.066 ) < 1e-12 );
+    //Distance 0.66 Aa: separate positions, for any occupancy:
+    const auto o4 = expand( "6:b", NC::Vector( 0.1, 0.06, 0.2 ) );
+    REQUIRE( o4.positions.size() == 2 && o4.nearCopies == 0 );
+    std::cout << "  y=0.00005: averaged (y=0); y=0.0005: averaged only with"
+              << " lenient tolerances; y=0.006: split site (1 copy at "
+              << NC::fmt( o3.nearestCopyDistance, "%.3g" ) << " Aa, needs occupancy"
+              << " <= 1/2); y=0.06: two positions" << std::endl;
+    //Across the periodic boundary (y=0.99995 is close to y=0.00005):
+    const auto o5 = expand( "6:b", NC::Vector( 0.1, 0.99995, 0.2 ) );
+    REQUIRE( o5.positions.size() == 1 && o5.positions.front().y() == 0.0 );
   }
 
   std::cout << "Wrapping and invalid input:" << std::endl;
@@ -1034,7 +1097,7 @@ void run()
     std::size_t ncoords = 0;
     for ( std::uint16_t hn = 1; hn <= 530; ++hn ) {
       const NC::SpaceGroup sg{ NC::SpaceGroupSettingIdx{ hn } };
-      const auto orbit = NC::expandSiteToOrbit( NC::SGSymmetry::get( sg ),
+      const auto orbit = orbitOf( NC::SGSymmetry::get( sg ),
                                                 NC::Vector( 0.1, 0.35, 0.7 ) );
       for ( auto& p : orbit.positions ) {
         for ( double c : { p.x(), p.y(), p.z() } ) {
@@ -1071,9 +1134,10 @@ void run()
     const double s2 = std::sqrt( 2.0 ) - 1.0;
     const auto o3 = expand( "62", NC::Vector( s2, 0.25, 0.2 ) );
     REQUIRE( o3.positions.size() == 4 && o3.positions.front().x() == s2 );
-    const double big1 = 12345677.0 / 99999989.0;
-    const double big2 = 23456789.0 / 99999971.0;
-    const auto o4 = expand( "191", NC::Vector( big1, big2, 0.1 ) );
+    const double big1 = 34000003.0 / 99999989.0;
+    const double big2 = 46430011.0 / 99999971.0;
+    const auto o4 = orbitOf( NC::SGSymmetry::get( NC::SpaceGroup( "191", NC::SpaceGroupParseMode::Relaxed ) ),
+                             NC::Vector( big1, big2, 0.0873 ) );
     REQUIRE( o4.positions.size() == 24 );
     REQUIRE( o4.positions.front().x() == big1 );
     for ( auto& p : o4.positions ) {
@@ -1114,7 +1178,7 @@ namespace {
     struct Entry { double key; NC::Vector p; unsigned site, idx; };
     std::vector<Entry> entries;
     for ( auto isite : NC::ncrange( c.sites.size() ) ) {
-      const auto orbit = NC::expandSiteToOrbit( sym, c.sites.at( isite ) );
+      const auto orbit = orbitOf( sym, c.sites.at( isite ) );
       for ( auto& p : orbit.positions ) {
         const double key = std::fmod( 13.7*p.x() + 7.3*p.y() + 3.1*p.z(), 1.0 );
         const NC::Vector shift( entries.size() % 2, 0.0,
@@ -1141,7 +1205,7 @@ void run()
 {
   const Case cases[] = {
     { "225", { NC::Vector( 0.0, 0.0, 0.0 ), NC::Vector( 0.25, 0.25, 0.25 ),
-               NC::Vector( 0.1234, 0.2345, 0.3456 ) } },
+               NC::Vector( 0.34, 0.4643, 0.0873 ) } },
     { "227:2", { NC::Vector( 0.125, 0.125, 0.125 ),
                  NC::Vector( 0.5, 0.5, 0.5 ) } },
     { "194", { NC::Vector( 1.0/3, 2.0/3, 0.25 ),
@@ -1154,7 +1218,7 @@ void run()
     std::vector<NC::Vector> pos;
     std::vector<unsigned> site_of;
     expandAll( sym, c, pos, site_of );
-    const auto orbits = NC::groupPositionsIntoOrbits( sym, pos );
+    const auto orbits = groupOrbits( sym, pos );
     REQUIRE( orbits.size() == c.sites.size() );
     std::size_t ntot = 0;
     std::cout << "  " << c.sg << ": " << pos.size() << " positions in "
@@ -1168,7 +1232,7 @@ void run()
       for ( auto i : orbit )
         REQUIRE( site_of.at( i ) == site );
       REQUIRE( orbit.size()
-               == NC::expandSiteToOrbit( sym, c.sites.at( site ) ).positions.size() );
+               == orbitOf( sym, c.sites.at( site ) ).positions.size() );
       ntot += orbit.size();
       std::cout << " " << orbit.size();
     }
@@ -1184,7 +1248,7 @@ void run()
   expandAll( sym, cases[0], pos, site_of );
   pos.pop_back();
   try {
-    NC::groupPositionsIntoOrbits( sym, pos );
+    groupOrbits( sym, pos );
     REQUIRE( false );
   } catch ( NC::Error::BadInput& e ) {
     std::cout << "  225 with one position missing -> BadInput: " << e.what()
@@ -1213,9 +1277,8 @@ namespace {
   std::vector<std::vector<NC::Vector>> structure( const NC::SGSymmetry& sym )
   {
     std::vector<std::vector<NC::Vector>> res;
-    res.push_back( NC::expandSiteToOrbit( sym, NC::Vector( 0.1234, 0.2345,
-                                                           0.3456 ) ).positions );
-    res.push_back( NC::expandSiteToOrbit( sym, NC::Vector( 0.0, 0.0,
+    res.push_back( orbitOf( sym, NC::Vector( 0.34, 0.4643, 0.0873 ) ).positions );
+    res.push_back( orbitOf( sym, NC::Vector( 0.0, 0.0,
                                                            0.0 ) ).positions );
     return res;
   }

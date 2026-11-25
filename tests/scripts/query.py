@@ -361,25 +361,39 @@ def test_atomsites():
     #["sgsym","positions",...] expands sites, ["sgsym","sites",...]
     #groups positions into sites (diamond in origin choice 2):
     site = 'Si,0.125,0.125,0.125'
-    r = ncquery( [ 'sgsym', 'positions','strict','227:2',site] )
+    cell = '5.43,5.43,5.43,90,90,90'
+    r = ncquery( [ 'sgsym', 'positions','strict','227:2','strict',cell,site] )
     print( f'227:2 site {site} -> {len(r)} positions' )
     assert len(r) == 8
     pos = [ f'{lbl},{x!r},{y!r},{z!r}' for lbl,(x,y,z) in r ]
-    test( 'sgsym','sites','strict','227:2',*pos )
+    test( 'sgsym','sites','strict','227:2','strict',cell,*pos )
     #Relaxed: the setting is deduced from the positions:
-    r = ncquery( [ 'sgsym', 'sites','relaxed','227',*pos] )
+    r = ncquery( [ 'sgsym', 'sites','relaxed','227','strict',cell,*pos] )
     print( 'relaxed 227 -> setting', r['spacegroup_setting'] )
     assert r['spacegroup_setting'] == '227:2'
     with ensure_error( NCBadInput, 'Atom positions are not consistent with'
                        ' space group 227:1 (largest deviation of a symmetry'
                        ' image from an atom of the same type: 0.25 in'
                        ' fractional coordinates)' ):
-        ncquery( [ 'sgsym', 'sites','strict','227:1',*pos] )
+        ncquery( [ 'sgsym', 'sites','strict','227:1','strict',cell,*pos] )
     with ensure_error( NCBadInput, 'Invalid sgsym query: ["sgsym","sites",'
                        '"227:2","Si,0.125,0.125,0.125"] (correct usage:'
-                       ' ["sgsym","sites","strict|relaxed",SG,'
-                       '"lbl,x,y,z",...])' ):
+                       ' ["sgsym","sites","strict|relaxed",SG,"strict|lenient",'
+                       '"a,b,c,alpha,beta,gamma","lbl,x,y,z[,occupancy]",...])' ):
         ncquery( [ 'sgsym', 'sites','227:2',site] )
+    #A split site (two copies 0.054 Aa apart, about a mirror plane of Pm):
+    r = ncquery( [ 'sgsym', 'positions','strict','6:b','lenient',
+                   '5,5.4,6,90,90,90','O,0.1,0.005,0.2,0.5' ] )
+    print( f'6:b split site with occupancy 0.5 -> {len(r)} positions' )
+    with ensure_error( NCBadInput, 'At most one of the 2 symmetry-equivalent'
+                       ' positions of the site (0.1, 0.005, 0.2) within 0.5 Aa'
+                       ' (the closest 0.054 Aa apart) can be occupied, so its'
+                       ' occupancy must be at most 1/2 (got 1). For sites on'
+                       ' special positions, specify coordinates with'
+                       ' sufficient precision, preferably as exact fractions'
+                       ' like 1/3.' ):
+        ncquery( [ 'sgsym', 'positions','strict','6:b','lenient',
+                   '5,5.4,6,90,90,90','O,0.1,0.005,0.2' ] )
 
 if __name__ == '__main__':
     main()

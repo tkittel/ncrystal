@@ -25,6 +25,7 @@
 # Tests of the sgsym component (space groups and their symmetries),
 # mostly by comparing with spglib and gemmi.
 
+import math
 import random
 from fractions import Fraction
 
@@ -267,9 +268,34 @@ def test_orbit():
         res = lib.nctest_sgsym_expandsite( hn, *( float(x) for x in site ) )
         if res.startswith('ERROR'):
             return None
-        order, pos = res.split('|')
+        order, cell, pos = res.split('|')
+        _cells[hn] = [ float(x) for x in cell.split() ]
         return int(order), [ np.array( [ float(x) for x in p.split() ] )
                              for p in pos.split(';') ]
+
+    _cells = {}
+    def lattice( hn ):
+        #(rows are the cell vectors, in Aa):
+        a, b, c, al, be, ga = _cells[hn]
+        al, be, ga = ( math.radians( x ) for x in ( al, be, ga ) )
+        cx = c * math.cos( be )
+        cy = c * ( math.cos( al ) - math.cos( be ) * math.cos( ga ) ) / math.sin( ga )
+        return np.array( [ [ a, 0, 0 ], [ b * math.cos( ga ), b * math.sin( ga ), 0 ],
+                           [ cx, cy, math.sqrt( c * c - cx * cx - cy * cy ) ] ] )
+
+    def cdist( hn, a, b ):
+        #Distance (Aa) between the nearest periodic copies:
+        d = np.asarray( a ) - np.asarray( b )
+        return float( np.linalg.norm( ( d - np.round( d ) ) @ lattice( hn ) ) )
+
+    def min_image_cdist( hn, orbit ):
+        o = np.asarray( orbit )
+        if len( o ) < 2:
+            return 1e99
+        diff = o[:,None,:] - o[None,:,:]
+        diff = ( diff - np.round( diff ) ) @ lattice( hn )
+        dist = np.linalg.norm( diff, axis = 2 )
+        return float( np.min( dist[ np.triu_indices( len( o ), 1 ) ] ) )
 
     def pdist( a, b ):
         d = np.asarray(a) - np.asarray(b)
@@ -291,14 +317,6 @@ def test_orbit():
                  if not np.any( dist[i,:i] < 1e-9 ) ]
         return imgs[keep]
 
-    def min_image_dist( orbit ):
-        o = np.asarray( orbit )
-        if len( o ) < 2:
-            return 1.0
-        diff = o[:,None,:] - o[None,:,:]
-        dist = np.max( np.abs( diff - np.round( diff ) ), axis = 2 )
-        return float( np.min( dist[ np.triu_indices( len( o ), 1 ) ] ) )
-
     rng = random.Random( 1234 )
     sites = [ (0,0,0), (1/2,1/2,1/2), (1/4,1/4,1/4), (1/8,1/8,1/8),
               (1/3,2/3,0.2), (0.2,0.2,0.2), (0.2,0,0), (0,0.2,0), (0,0,0.2),
@@ -311,18 +329,20 @@ def test_orbit():
             ref = reference_orbit( hn, site )
             if ours is None:
                 #Random sites can by chance be close to (but not on) a special
-                #position, in which case they must be rejected:
-                assert 5e-4 <= min_image_dist( ref ) < 1e-2, (hn,site)
+                #position, with copies of the (fully occupied) atom too close to
+                #each other, in which case they must be rejected (strict
+                #tolerances: averaged below 1e-3 Aa, copies within 0.5 Aa):
+                assert 1e-3 <= min_image_cdist( hn, ref ) < 0.5, (hn,site)
                 nrejected += 1
                 continue
             siteorder, pos = ours
             #Sites very close to special positions are symmetrised (moved by less
-            #than the merge tolerance), so compare with the orbit of the
+            #than the averaging tolerance), so compare with the orbit of the
             #symmetrised site:
-            assert pdist( pos[0], site ) < 5e-4, (hn,site)
-            if min_image_dist( ref ) < 5e-4:
+            assert cdist( hn, pos[0], site ) < 1e-3, (hn,site)
+            if min_image_cdist( hn, ref ) < 1e-3:
                 ref = reference_orbit( hn, pos[0] )
-            assert min_image_dist( ref ) >= 1e-2, (hn,site)
+            assert min_image_cdist( hn, ref ) >= 0.5, (hn,site)
             assert len( pos ) == len( ref ), (hn,site)
             assert siteorder * len( pos ) == order
             diff = np.asarray( pos )[:,None,:] - ref[None,:,:]

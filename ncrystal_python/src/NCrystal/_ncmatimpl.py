@@ -787,8 +787,10 @@ class NCMATComposerImpl:
                                  ' of each other' )
             sgspec = _nc_sgsymimpl._sgspec( newcell['spacegroup'],
                                             newcell['alpha'] )
-            q = evaluate_query( [ 'sgsym', 'sites', 'relaxed', sgspec ]
-                                + [ f'{lbl},{x!r},{y!r},{z!r}'
+            q = evaluate_query( [ 'sgsym', 'sites', 'relaxed', sgspec,
+                                  'strict', _nc_sgsymimpl._cellarg( newcell ) ]
+                                + [ f'{lbl},{x!r},{y!r},{z!r},'
+                                    f'{float( occumap.get( lbl, 1.0 ) )!r}'
                                     for lbl, x, y, z in allpos ] )
             from collections import Counter
             if ( Counter( lbl for lbl, _, _ in q['sites'] )
@@ -949,8 +951,11 @@ class NCMATComposerImpl:
             return atompos
         sgspec = _sgspec_for_sites( self.__params.get('cellsg') )
         from .misc import evaluate_query
-        query = [ 'sgsym', 'positions', 'strict', sgspec ]
-        query += [ f'{lbl},{x!r},{y!r},{z!r}'
+        occumap = atompos.get('occumap',{})
+        query = [ 'sgsym', 'positions', 'strict', sgspec, 'strict',
+                  _nc_sgsymimpl._cellarg( self.__params['cellsg'] ) ]
+        query += [ f'{lbl},{x!r},{y!r},{z!r},'
+                   f'{float( occumap.get( lbl, 1.0 ) )!r}'
                    for lbl,x,y,z in atompos['sites'] ]
         pos = [ ( lbl, _nc_sgsymimpl._remap_fract_pos(p[0]), _nc_sgsymimpl._remap_fract_pos(p[1]),
                   _nc_sgsymimpl._remap_fract_pos(p[2]) )
@@ -1021,9 +1026,11 @@ class NCMATComposerImpl:
             setting = evaluate_query([ 'sgsym', 'info', 'strict',sgspec])
             sites = []
             for lbl,x,y,z in atompos['sites']:
+                occu = float( atompos.get('occumap',{}).get( lbl, 1.0 ) )
                 mult = len( evaluate_query( [ 'sgsym', 'positions',
-                                              'strict', sgspec,
-                                              f'{lbl},{x!r},{y!r},{z!r}' ] ) )
+                                              'strict', sgspec, 'strict',
+                                              _nc_sgsymimpl._cellarg( cellsg ),
+                                              f'{lbl},{x!r},{y!r},{z!r},{occu!r}' ] ) )
                 sites.append( ( lbl, ( x, y, z ), mult ) )
             return { 'spacegroup_setting': setting['spacegroup'],
                      'sites': sites,
@@ -1039,14 +1046,13 @@ class NCMATComposerImpl:
             mode = 'relaxed'
             sgspec = ( f'{sg}:r' if _nc_sgsymimpl._uses_rhombohedral_axes( sg, cellsg['alpha'] )
                        else str(sg) )
-        query = [ 'sgsym', 'sites', mode, sgspec ]
-        query += [ f'{lbl},{x!r},{y!r},{z!r}' for lbl,x,y,z in atompos['pos'] ]
-        try:
-            return evaluate_query( query )
-        except _nc_core.NCBadInput as e:
-            raise _nc_core.NCBadInput( 'The atom positions do not have the'
-                                       ' symmetry of space group'
-                                       f' {sgsetting or sg}: {e}' )
+        occumap = atompos.get('occumap',{})
+        query = [ 'sgsym', 'sites', mode, sgspec, 'strict',
+                  _nc_sgsymimpl._cellarg( cellsg ) ]
+        query += [ f'{lbl},{x!r},{y!r},{z!r},'
+                   f'{float( occumap.get( lbl, 1.0 ) )!r}'
+                   for lbl,x,y,z in atompos['pos'] ]
+        return evaluate_query( query )
 
     def __lines_dyninfo(self,lbl_map,fractions):
         dyninfos = self.__params.get('dyninfos',{})

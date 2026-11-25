@@ -64,12 +64,19 @@ namespace NCRYSTAL_NAMESPACE {
     }
 
     namespace {
+      //Cell of the structure, for distances between positions:
+      CellParameters cellOf( const StructureInfo& si )
+      {
+        return { si.lattice_a, si.lattice_b, si.lattice_c,
+                 si.alpha, si.beta, si.gamma };
+      }
+
       //Tolerances: rounding noise in data files gives deviations well below
       //tol_warn (all stdlib files are O(1e-16), and positions given with 4
       //decimals stay below 1e-4), sites rounded to 3 decimals exceed it
-      //slightly, while structures beyond tol_error (comparable to the
-      //distinct-site threshold of expandSiteToOrbit) simply do not have the
-      //symmetry:
+      //slightly, while structures beyond tol_error (comparable to the largest
+      //coordinate deviations accepted by expandSiteToOrbit in typical cells)
+      //simply do not have the symmetry:
       constexpr double tol_warn = 5e-4;
       constexpr double tol_error = 1e-2;
 
@@ -485,7 +492,9 @@ namespace NCRYSTAL_NAMESPACE {
           nc_assert( !sites.empty() );
           for ( auto& site : sites ) {
             const auto input = site.position;
-            const auto orbit = expandSiteToOrbit( sym, input.as<Vector>() );
+            const auto orbit
+              = expandSiteToOrbit( sym, cellOf( si ), input.as<Vector>(),
+                                   ai.occupancy(), SGSiteTolerances::strict() );
             //(representative: the first in the sorted order of the positions,
             //as for sites derived from positions)
             AtomInfo::AtomPositions orbitpos;
@@ -528,7 +537,9 @@ namespace NCRYSTAL_NAMESPACE {
             positions.push_back( p.as<Vector>() );
           std::vector<std::vector<unsigned>> orbits;
           try {
-            orbits = groupPositionsIntoOrbits( sym, positions );
+            orbits = groupPositionsIntoOrbits( sym, cellOf( si ), positions,
+                                               ai.occupancy(),
+                                               SGSiteTolerances::strict() );
           } catch ( Error::BadInput& ) {
             continue;
           }
@@ -562,7 +573,21 @@ namespace NCRYSTAL_NAMESPACE {
           std::vector<AtomInfo::Pos> newrepr;
           for ( auto& site : ai.sites() ) {
             const auto orbit
-              = expandSiteToOrbit( sym, site.position.as<Vector>() );
+              = expandSiteToOrbit( sym, cellOf( si ), site.position.as<Vector>(),
+                                   ai.occupancy(), SGSiteTolerances::strict() );
+            if ( orbit.nearCopies )
+              NCRYSTAL_WARN("Split site \""<<ai.atomData().description(false)
+                            <<"\" ("<<fmt(site.position[0])<<','
+                            <<fmt(site.position[1])<<','
+                            <<fmt(site.position[2])<<"): "
+                            <<orbit.nearCopies + 1<<" symmetry-equivalent"
+                            " positions "
+                            <<fmt(orbit.nearestCopyDistance,"%.2g")
+                            <<" Aa apart (occupancy "<<fmt(ai.occupancy())
+                            <<"). NCrystal currently treats all vacancies as"
+                            " uncorrelated, so incoherent elastic scattering"
+                            " is overestimated for this material. This might"
+                            " become an error in future NCrystal versions.");
             //(both can not happen with the public AtomInfo constructors, which
             //take either positions or sites, and sites are expanded above):
             if ( orbit.positions.size() != site.multiplicity )
