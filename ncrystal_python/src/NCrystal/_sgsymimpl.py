@@ -33,6 +33,7 @@ import copy
 import math
 
 from . import _common as _nc_common
+from . import _stablemath as _nc_stablemath
 from . import core as _nc_core
 
 #Recurring arguments: cellsg is a dict with (at least) the cell parameters
@@ -43,13 +44,7 @@ def _lattice_params_to_vectors( a, b, c, alpha, beta, gamma ):
     if max(max(alpha,beta),gamma)<=math.pi:
         raise _nc_core.NCBadInput("angles are expected in degrees not radians")
     def _sincos( x ):
-        if x == 0:
-            return 0.0, 1.0
-        if x == 90.0:
-            return 1.0, 0.0
-        if x == 120.0:
-            return 0.86602540378443864676372317075293618347140262690519, -0.5
-        return math.sin( x*(math.pi/180) ), math.cos( x*(math.pi/180) )
+        return _nc_stablemath.sin_deg( x ), _nc_stablemath.cos_deg( x )
     _sa,ca = _sincos( alpha )
     sb,cb = _sincos( beta )
     sg,cg = _sincos( gamma )
@@ -437,7 +432,7 @@ def _cell_metric( cellsg ):
     #Returns (g,recilen) for the cell cellsg: the metric tensor g as 3x3 nested
     #lists, and the reciprocal axis lengths.
     a, b, c = ( cellsg[k] for k in 'abc' )
-    ca, cb, cg = ( 0.0 if cellsg[k] == 90 else math.cos(math.radians(cellsg[k]))
+    ca, cb, cg = ( _nc_stablemath.cos_deg( cellsg[k] )
                    for k in ('alpha','beta','gamma') )
     g = [ [ a*a, a*b*cg, a*c*cb ],
           [ a*b*cg, b*b, b*c*ca ],
@@ -507,11 +502,16 @@ def _ustar_to_ustd( ustar, cellsg ):
              'u12': f(0,1), 'u13': f(0,2), 'u23': f(1,2) }
 
 def _transform_ustar( m, ustar ):
-    #M.U_frac.M^T, for a basis change (M=P) or a symmetry operation (M=R).
+    #Returns m.ustar.m^T, for a basis change (m=P) or a symmetry operation
+    #(m=R). Computed in rational arithmetic (cross-platform reproducible), with
+    #the entries of m snapped to simple rationals (spglib gives them as
+    #floats).
     from ._numpy import _ensure_numpy
     np = _ensure_numpy()
-    m = np.asarray( m, dtype = float )
-    return np.dot( np.dot( m, np.asarray( ustar, dtype = float ) ), m.T )
+    sm = _nc_stablemath
+    m = [ [ sm.snap_rational( float( v ) ) for v in row ] for row in m ]
+    u = [ [ float( v ) for v in row ] for row in ustar ]
+    return np.asarray( sm.transform_sym( m, u ), dtype = float )
 
 def _ucart_eigenvalues( ustar, cellsg ):
     #Returns the sorted eigenvalues of Ucart of the tensor ustar, i.e. of
