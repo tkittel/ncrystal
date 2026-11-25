@@ -190,11 +190,14 @@ def _msgctrl_showwarning( message, category, *args, **kwargs ):
 def _recording_warnfct( quiet ):
     #Warning function for NCMAT production: records all warnings as
     #(msg,'NCrystalWarning') tuples (e.g. for NCMAT comments, independent of
-    #quiet and global state) and emits them unless quiet. Returns (list,fct).
-    lst = []
+    #quiet and global state) and emits each text once unless quiet. Returns
+    #(list,fct).
+    lst, shown = [], set()
     def warnfct( msg ):
-        lst.append( ( str(msg), 'NCrystalWarning' ) )
-        if not quiet:
+        msg = str(msg)
+        lst.append( ( msg, 'NCrystalWarning' ) )
+        if not quiet and msg not in shown:
+            shown.add( msg )
             warn( msg )
     return lst, warnfct
 
