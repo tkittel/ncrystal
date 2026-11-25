@@ -1367,11 +1367,11 @@ Caught expected NCBadInput('"(anonymous TextData, 79bytes, type=ncmat)": wrong n
 
 
 ==> Test 335
-==> Correct! NCBadInput: "(anonymous TextData, 120bytes, type=ncmat)": wrong number of data entries after element name "Al" in line 7 (expected three numbers)
+==> Correct! NCBadInput: "(anonymous TextData, 120bytes, type=ncmat)": wrong number of data entries after element name "Al" in line 7 (expected three numbers, optionally followed by "uij" and six numbers)
 
 
 ==> Test 336
-==> Correct! NCBadInput: "(anonymous TextData, 124bytes, type=ncmat)": wrong number of data entries after element name "Al" in line 7 (expected three numbers)
+==> Correct! NCBadInput: "(anonymous TextData, 124bytes, type=ncmat)": wrong number of data entries after element name "Al" in line 7 (expected three numbers, optionally followed by "uij" and six numbers)
 
 
 ==> Test 337
