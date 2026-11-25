@@ -22,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/cif/NCCIFItems.hh"
-#include "NCrystal/internal/sgsym/NCSpaceGroup.hh"
+#include "NCrystal/internal/sgsym/NCSGSymmetry.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -42,6 +42,13 @@ namespace NCRYSTAL_NAMESPACE {
     SpaceGroup chooseSetting( const Document&, const StructureItems&,
                               CIFPermissive, StrView overrideSpacegroup,
                               const CIFWarnFct& );
+
+    //The cell of the structure items snapped to the constraints of the
+    //setting (lenient tolerances, with the rounding errors of the printed
+    //values, cf. SGCellConstraints::trySnap), or why it does not fit. Throws
+    //BadInput if a cell value is not a number:
+    SGCellConstraints::SnapResult snapCell( const StructureItems&,
+                                            const SpaceGroup& );
   }
 }
 

@@ -31,40 +31,16 @@ __all__ = []
 from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
 from ._cifreadimpl import _extract_descr, read_cif
-from ._cifsitesimpl import (
-    _impl_find_sites,
-    _impl_group_sites,
-    check_split_sites,
-    collect_atoms,
-    merge_atoms,
-)
+from ._cifsitesimpl import _impl_find_sites, _impl_group_sites
 
-
-def _snapped_cell( setting, cell ):
-    #Returns the sgsym cell query result ({'cell':..,'error_msg':..}) for the
-    #cell (dict of printed values) in the setting, with lenient tolerances.
-    from .misc import evaluate_query
-    return evaluate_query( [ 'sgsym', 'cell', 'lenient', '0', setting,
-                             *( e for k in ( 'a', 'b', 'c', 'alpha', 'beta',
-                                             'gamma' )
-                                for e in ( 'RAWDATA', cell[k] ) ) ] )
-
-def _expected_atom_count( cif_content ):
-    #Total number of atoms in the cell, if stated in the CIF data:
-    from .misc import evaluate_query
-    v = cif_content.atom_type_number_in_cell
-    if not v or any( e is None for e in v ):
-        return None
-    n = evaluate_query( [ 'cif', 'numbers', *_nc_sgsymimpl._rawlist( v ) ] )
-    if any( e is None for e in n ):
-        return None#(values which are not numbers)
-    return sum( e[0] for e in n )
 
 def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
                    merge_equiv, tols, permissive, warnfct,
                    override_spacegroup = None ):
     #Returns the CIFLoader fields (a dict) for the CIF text cifdata, from the
-    #CIFSource cifsrc. Warnings are passed to warnfct.
+    #CIFSource cifsrc: read with its space group setting and atoms (from C++,
+    #cf. read_cif), and the final sites (refined with spglib if requested).
+    #Warnings are passed to warnfct.
     from types import MappingProxyType
 
     from .misc import evaluate_query
@@ -77,22 +53,19 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
     cif_content = read_cif( cifdata, name = cifsrc.name,
                             permissive = permissive, quiet = quiet,
                             warnfct = warnfct,
-                            override_spacegroup = override_spacegroup )
+                            override_spacegroup = override_spacegroup,
+                            tol_uij = tols['uij'],
+                            allow_cell_misfit = refine_with_spglib )
     result['cif_temperatures'] = cif_content.temperatures
 
     setting = cif_content.setting
     cell = cif_content.cell
     expect_sgno = None
-    snapped = _snapped_cell( setting, cell )
-    if snapped['cell'] is not None:
-        cellsg = dict( snapped['cell'] )
+    if cif_content.snapped_cell:
+        cellsg = dict( cif_content.snapped_cell )
     else:
         #The cell does not quite have the symmetry of the space group. This is
         #only accepted if refining the structure finds the same space group:
-        if not refine_with_spglib:
-            raise _nc_core.NCBadInput( 'Unit cell not compatible with the'
-                                       ' space group of the CIF data:'
-                                       f' {snapped["error_msg"]}' )
         expect_sgno = int( setting.split(':')[0] )
         keys = ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' )
         vals = evaluate_query( [ 'cif', 'numbers',
@@ -103,13 +76,7 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
     cellsg['spacegroup'] = dict_ro( { 'number': int( setting.split(':')[0] ),
                                       'hm': info['hm'] } )
 
-    collected_atoms = collect_atoms( cif_content, setting, cell, tols = tols,
-                                     permissive = permissive,
-                                     warnfct = warnfct )
-    final_atoms = merge_atoms( collected_atoms, _expected_atom_count( cif_content ),
-                               setting, cell )
-    check_split_sites( final_atoms, permissive = permissive,
-                       warnfct = warnfct )
+    final_atoms = cif_content.atoms
 
     if not refine_with_spglib:
         warnfct('Structure refinement and verification with spglib was disabled due to explicit request.')

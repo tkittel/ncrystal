@@ -47,22 +47,9 @@ namespace NCRYSTAL_NAMESPACE {
         return res;
       }
 
-      //Whether the cell fits the setting (lenient tolerances, with the
-      //rounding errors of the printed values):
       bool cellFits( const SpaceGroup& sg, const StructureItems& s )
       {
-        double v[6], e[6];
-        for ( auto i : ncrange( 6 ) ) {
-          const auto x = parseCIFNumber( s.cell[i].text );
-          if ( !x.has_value() )
-            return false;
-          v[i] = x.value().value;
-          e[i] = x.value().roundingError;
-        }
-        using Tol = SGCellConstraints::Tolerances;
-        return SGSymmetry::get( sg ).cellConstraints()
-          .trySnap( { v[0], v[1], v[2], v[3], v[4], v[5] }, Tol::lenient(),
-                    { e[0], e[1], e[2], e[3], e[4], e[5] } ).cell.has_value();
+        return snapCell( s, sg ).cell.has_value();
       }
 
       //The one of the candidate settings which the cell fits (what describes
@@ -257,4 +244,22 @@ NC::SpaceGroup NCC::chooseSetting( const Document& doc,
   warnfct( "The symmetry operations listed in the CIF data " + why + ", so the "
            + sym.descr + " is used (accepted due to permissive mode)" );
   return setting;
+}
+
+NC::SGCellConstraints::SnapResult
+NCC::snapCell( const StructureItems& s, const SpaceGroup& sg )
+{
+  double v[6], e[6];
+  for ( auto i : ncrange( 6 ) ) {
+    const auto x = parseCIFNumber( s.cell[i].text );
+    if ( !x.has_value() )
+      NCRYSTAL_THROW2( BadInput, "Invalid cell parameter in CIF data: \""
+                       << s.cell[i].text << "\"" );
+    v[i] = x.value().value;
+    e[i] = x.value().roundingError;
+  }
+  using Tol = SGCellConstraints::Tolerances;
+  return SGSymmetry::get( sg ).cellConstraints()
+    .trySnap( { v[0], v[1], v[2], v[3], v[4], v[5] }, Tol::lenient(),
+              { e[0], e[1], e[2], e[3], e[4], e[5] } );
 }

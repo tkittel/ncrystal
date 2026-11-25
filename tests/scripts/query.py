@@ -245,32 +245,24 @@ def main():
     #with rounding errors with lenient tolerances):
     def cellargs( *v ):
         return [ e for x in v for e in ( 'RAWDATA', x ) ]
-    test_cli('sgsym','cell','lenient','0','225',*cellargs('4.123(2)','4.124','4.1234','90','90.0','90'))
-    test_cli('sgsym','cell','strict','1','194',*cellargs('3','3','5','90','90','120'))
-    test_cli('sgsym','cell','strict','0','225',*cellargs('4.123','4.124','4.123','90','90','90'))
+    test_cli('sgsym','cell','lenient','225',*cellargs('4.123(2)','4.124','4.1234','90','90.0','90'))
+    test_cli('sgsym','cell','strict','194',*cellargs('3','3','5','90','90','120'))
     with ensure_error(NCBadInput,'Lattice parameters a and b must be equal for'
                       ' this space group (got a=4.123 and b=4.124)'):
-        test_cli('sgsym','cell','strict','1','225',*cellargs('4.123','4.124','4.123','90','90','90'))
+        test_cli('sgsym','cell','strict','225',*cellargs('4.123','4.124','4.123','90','90','90'))
     with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","cell","lenient",'
-                      '"0","225","4.1","4.1","4.1","90","90","90"] (correct usage:'
-                      ' ["sgsym","cell","strict|lenient",0|1,SG,"RAWDATA",a,'
+                      '"225","4.1","4.1","4.1","90","90","90"] (correct usage:'
+                      ' ["sgsym","cell","strict|lenient",SG,"RAWDATA",a,'
                       '"RAWDATA",b,"RAWDATA",c,"RAWDATA",alpha,"RAWDATA",beta,'
                       '"RAWDATA",gamma])'):
-        test_cli('sgsym','cell','lenient','0','225','4.1','4.1','4.1','90','90','90')
+        test_cli('sgsym','cell','lenient','225','4.1','4.1','4.1','90','90','90')
     with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","cell","lenient",'
-                      '"0","225","RAWDATA","4.1","RAWDATA","4.1","RAWDATA","4.1",'
+                      '"225","RAWDATA","4.1","RAWDATA","4.1","RAWDATA","4.1",'
                       '"RAWDATA","90","RAWDATA","90","RAWDATA","x"] (correct usage:'
-                      ' ["sgsym","cell","strict|lenient",0|1,SG,"RAWDATA",a,'
+                      ' ["sgsym","cell","strict|lenient",SG,"RAWDATA",a,'
                       '"RAWDATA",b,"RAWDATA",c,"RAWDATA",alpha,"RAWDATA",beta,'
                       '"RAWDATA",gamma])'):
-        test_cli('sgsym','cell','lenient','0','225',*cellargs('4.1','4.1','4.1','90','90','x'))
-    with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","cell","lenient",'
-                      '"2","225","RAWDATA","4.1","RAWDATA","4.1","RAWDATA","4.1",'
-                      '"RAWDATA","90","RAWDATA","90","RAWDATA","90"] (correct usage:'
-                      ' ["sgsym","cell","strict|lenient",0|1,SG,"RAWDATA",a,'
-                      '"RAWDATA",b,"RAWDATA",c,"RAWDATA",alpha,"RAWDATA",beta,'
-                      '"RAWDATA",gamma])'):
-        test_cli('sgsym','cell','lenient','2','225',*cellargs('4.1','4.1','4.1','90','90','90'))
+        test_cli('sgsym','cell','lenient','225',*cellargs('4.1','4.1','4.1','90','90','x'))
     for bad in ( [], [ 'P 21/c' ] ):
         with ensure_error(NCBadInput,'Invalid sgsym query: '
                           + json.dumps( [ 'sgsym', 'fromhm' ] + bad,
@@ -567,10 +559,27 @@ _atom_site_fract_z 0
     test( 'cif', 'structure', 'strict', 'query_test.cif' )
     test( 'cif', 'structure', 'strict', 'override_spacegroup=225',
           'query_test.cif' )
-    #Synthetic file with the publication only in a data_global block:
+    #Synthetic file with the publication only in a data_global block
+    #(permissive, as its Uiso values do not all fit the tensors):
     from NCTestUtils.dirs import test_data_dir
-    r = ncquery( [ 'cif', 'structure', 'strict',
+    r = ncquery( [ 'cif', 'structure', 'permissive',
                    str( test_data_dir / 'cif_globalblock.cif' ) ] )
+    #A cell which does not fit the setting is an error, unless allowed (e.g.
+    #for a later refinement of the structure):
+    misfit = cif.replace( '_cell_length_c 4.05(1)', '_cell_length_c 4.2' )
+    with ensure_error( NCBadInput, 'Unit cell not compatible with the space'
+                       ' group of the CIF data: Lattice parameters a and c must'
+                       ' be equal for this space group (got a=4.05 and'
+                       ' c=4.2)' ):
+        ncquery( [ 'cif', 'structure', 'permissive', 'RAWDATA', 'q.cif',
+                   'RAWDATA', misfit ] )
+    r2 = ncquery( [ 'cif', 'structure', 'permissive', 'allow_cell_misfit=1',
+                    'RAWDATA', 'q.cif', 'RAWDATA', misfit ] )
+    print( 'cell not fitting the setting, allowed:', r2['cell'] )
+    #(the Uiso values fit within a larger tolerance, without warnings):
+    r2 = ncquery( [ 'cif', 'structure', 'strict', 'tol_uij=0.1',
+                    str( test_data_dir / 'cif_globalblock.cif' ) ] )
+    print( 'cif_globalblock.cif with tol_uij=0.1: warnings', r2['warnings'] )
     print( 'cif_globalblock.cif: block', r['block'], 'provenance_block',
            r['provenance_block'] )
     import pprint
@@ -581,7 +590,11 @@ _atom_site_fract_z 0
                  [ 'strict', 'x', 'y' ], [ 'strict', 'override_spacegroup=',
                                            'x.cif' ],
                  [ 'strict', 'override_spacegroup=1',
-                   'override_spacegroup=2', 'x.cif' ] ):
+                   'override_spacegroup=2', 'x.cif' ],
+                 [ 'strict', 'tol_uij=0', 'x.cif' ],
+                 [ 'strict', 'tol_uij=x', 'x.cif' ],
+                 [ 'strict', 'tol_uij=1', 'tol_uij=1', 'x.cif' ],
+                 [ 'strict', 'allow_cell_misfit=0', 'x.cif' ] ):
         with ensure_error( NCBadInput, 'Invalid cif query: '
                            + json.dumps( [ 'cif', 'structure' ] + bad,
                                          separators = ( ',', ':' ) )
@@ -589,7 +602,8 @@ _atom_site_fract_z 0
                            'OPTION...,NAME] or ["cif","structure",PERMISSIVE,'
                            'OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with'
                            ' PERMISSIVE "strict" or "permissive" and OPTIONs'
-                           ' override_spacegroup=SG)' ):
+                           ' override_spacegroup=SG, tol_uij=X or'
+                           ' allow_cell_misfit=1)' ):
             ncquery( [ 'cif', 'structure', *bad ] )
 
 def rnd( o ):

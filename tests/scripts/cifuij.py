@@ -33,8 +33,6 @@ import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
 from NCrystalDev.cifutils import CIFLoader
 from NCrystalDev._sgsymimpl import _ueq_from_ustd, _relclose
-from NCrystalDev._cifreadimpl import read_cif
-from NCrystalDev._common import warn
 from NCrystalDev.misc import evaluate_query
 
 cell = { 'a': 5.1, 'b': 6.3, 'c': 7.2,
@@ -159,22 +157,19 @@ _atom_site_aniso_U_23
 def scenario( cellname, descr, uiso, expect_ok, **kw ):
     c = cells[cellname]
     if uiso is not None:
-        #(the printed values with their rounding errors, cf. the cif numbers
-        #and sgsym positions queries):
-        cif_content = read_cif( p1bar_cif( c, uiso ), name = 'p1bar.cif',
-                                permissive = False, quiet = True,
-                                warnfct = warn )
-        s, = cif_content.sites
+        #(the printed values of p1bar_cif with their rounding errors, cf. the
+        #cif numbers and sgsym positions queries):
         ( ui, ui_err ), = evaluate_query( [ 'cif', 'numbers', 'RAWDATA',
-                                            '@' + s['uiso'] ] )
+                                            '@' + repr( uiso ) ] )
         q, = evaluate_query( [ 'sgsym', 'positions', 'strict', '2', 'lenient',
                                'RAWDATA',
-                               ','.join( cif_content.cell[k] for k in
+                               ','.join( str( c[k] ) for k in
                                          ( 'a', 'b', 'c', 'alpha', 'beta',
                                            'gamma' ) ),
                                'RAWDATA',
-                               '@' + ','.join( [ 'X', s['x'], s['y'], s['z'] ]
-                                               + s['uij'] ) ] )['sites']
+                               '@' + ','.join( [ 'X', '0.11', '0.22', '0.33' ]
+                                               + aniso_line( 'Al1', uij_gen )
+                                               .split()[1:] ) ] )['sites']
         ue, ue_err = q['ueq']
         print( f'  {descr}: printed Uiso {ui:.6g} (rounding error {ui_err:.3g}),'
                f' Ueq {ue:.6g} (rounding error {ue_err:.3g})' )

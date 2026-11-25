@@ -1035,9 +1035,9 @@ class NCMATComposerImpl:
         setting = q['spacegroup_setting']
         keys = ( 'a', 'b', 'c', 'alpha', 'beta', 'gamma' )
         given = [ float( cellsg[k] ) for k in keys ]
-        snapped = evaluate_query( [ 'sgsym', 'cell', 'strict', '1', setting ]
+        snapped = evaluate_query( [ 'sgsym', 'cell', 'strict', setting ]
                                   + [ e for v in given
-                                      for e in ( 'RAWDATA', repr( v ) ) ] )['cell']
+                                      for e in ( 'RAWDATA', repr( v ) ) ] )
         if any( snapped[k] != v for k, v in zip( keys, given ) ):
             exp = ', '.join( f'{k}={snapped[k]:g}' for k in keys )
             raise _nc_core.NCBadInput( 'The cell parameters are not consistent'
