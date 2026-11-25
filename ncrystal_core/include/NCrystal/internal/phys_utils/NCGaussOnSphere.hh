@@ -130,9 +130,14 @@ namespace NCRYSTAL_NAMESPACE {
 
   private:
     double circleIntegralSlow( double cacg, double sasg, double ca, double sa ) const;
+    bool closedFormValid( double cd, double sasg, double cacg ) const;
     double m_cta;
     double m_circleint_k1;
     double m_circleint_k2;
+    //Constants for estimating the error of the closed form (closedFormValid):
+    double m_cf_s2h = -1.0;//sigma^2/2
+    double m_cf_s4 = -1.0;//0.75*sigma^4
+    double m_cf_lim = -1.0;//3*prec*sigma^2
     double m_norm;
     double m_expfact;
     double m_truncangle;
@@ -214,6 +219,25 @@ inline double NCrystal::GaussOnSphere::evalCosXInRange(double cosx) const {
   return res;
 }
 
+inline bool NCrystal::GaussOnSphere::closedFormValid( double cd, double sasg,
+                                                      double cacg ) const
+{
+  //Conditions of Eqs. 37-38 of the elastic paper (CPC 267 (2021) 108082),
+  //followed by a first order estimate of the relative error of Eq. 36, with
+  //u=cos(delta_0)-cos(delta) and w0=1-cos(delta_0): (E[u^2](1+1/sasg)
+  //+2w0E[u])/(6sigma^2) <= prec/2. Here E[u^2]/(6sigma^2 sasg) is from
+  //1-cos(t)~t^2/2, and the rest from delta^2-delta_0^2~2u, with E[u] <=
+  //min(sigma^2/2,umax/3) and E[u^2] <= min(0.75sigma^4,umax^2/5).
+  if ( !( cd > m_cta && sasg >= 1e-14
+          && m_circleint_k2 > m_circleint_k1*sasg+cacg ) )
+    return false;
+  const double umax = cd - m_cta;
+  const double eu = ncmin( m_cf_s2h, umax * ( 1.0 / 3.0 ) );
+  const double eu2 = ncmin( m_cf_s4, 0.2 * umax * umax );
+  return eu2 * ( 1.0 + sasg ) + 2.0 * ( 1.0 - cd ) * eu * sasg
+    <= m_cf_lim * sasg;
+}
+
 inline double NCrystal::GaussOnSphere::circleIntegral( double cg, double sg, double ca, double sa ) const
 {
   nc_assert(isValid());
@@ -223,7 +247,7 @@ inline double NCrystal::GaussOnSphere::circleIntegral( double cg, double sg, dou
   const double cacg = ca*cg;
   const double cd = cacg+sasg;
 
-  if (cd>m_cta&&sasg>=1e-14&&m_circleint_k2 > m_circleint_k1*sasg+cacg) {
+  if ( closedFormValid( cd, sasg, cacg ) ) {
     //closed-form approximation gives accurate result here:
     return m_lt_sofcosd.eval(cd)*std::sqrt(sa/sg);
   }

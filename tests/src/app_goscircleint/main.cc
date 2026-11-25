@@ -19,9 +19,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// Checks the precision of GaussOnSphere::circleIntegral where it is evaluated
-// numerically, by comparison with a brute-force integration of the exact
-// density along the circle.
+// Checks the precision of GaussOnSphere::circleIntegral, by comparison with a
+// brute-force integration of the exact density along the circle: within the
+// accuracy of numerical integration where the closed form is never used, and
+// otherwise within the precision parameter (relative to values which are not
+// negligible).
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/phys_utils/NCGaussOnSphere.hh"
@@ -64,19 +66,24 @@ namespace {
     return 2.0 * sa * sum.sum() * h / 3.0;
   }
 
-  void test( NC::RNG& rng, double mosdeg, double ntrunc, double prec )
+  void test( NC::RNG& rng, double mosdeg, double ntrunc, double prec,
+             bool allowcf = false )
   {
     const double sigma = mosdeg*NC::kDeg/2.354820045030949;
-    //Only test where the closed form is never used (it is valid for
-    //truncation angles x where x^4/24 < prec/2, roughly):
-    if ( !( ntrunc*sigma > 1.2 * std::pow( 12.0*prec, 0.25 )
-            && ntrunc*sigma < NC::kPiHalf ) )
+    //Closed form is never used where invalid for truncation angles x with
+    //x^4/24 > prec/2 (roughly), or sigma^2 > 2*prec:
+    const bool numonly = ( ntrunc*sigma > 1.2 * std::pow( 12.0*prec, 0.25 )
+                           || sigma*sigma > 2.0*prec );
+    if ( !( ( numonly || allowcf ) && ntrunc*sigma < NC::kPiHalf ) )
       return;
     ++s_nconfigs;
     NC::GaussOnSphere gos( sigma, ntrunc*sigma, prec );
     const double ta = gos.getTruncangle();
     //Required precision, with some room for the reference:
-    const double acc = NC::ncclamp( prec*0.1, 1e-7, 1e-4 ) + 1e-9;
+    const double acc = ( numonly ? NC::ncclamp( prec*0.1, 1e-7, 1e-4 )
+                         : prec ) + 1e-9;
+    const double floor = ( numonly ? 0.0
+                           : 1e-2 * gos.getNormFactor() * sigma );
     unsigned ntested = 0;
     for ( auto i : NC::ncrange(400) ) {
       //Circles of all sizes, also smaller than the truncation radius:
@@ -92,7 +99,7 @@ namespace {
       if ( !( ref > 1e-3 * gos.getNormFactor() * sigma ) )
         continue;
       ++ntested;
-      REQUIRE( NC::ncabs( val - ref ) <= acc * ref );
+      REQUIRE( NC::ncabs( val - ref ) <= acc * NC::ncmax( ref, floor ) );
     }
     REQUIRE( ntested > 100 );
   }
@@ -104,9 +111,14 @@ int main()
   for ( double mosdeg : { 2.0, 5.0, 20.0, 40.0 } )
     for ( double prec : { 1e-2, 1e-4, 1e-5, 1e-7 } )
       test( *rng, mosdeg, NC::GaussOnSphere::estimateNTruncFromPrec(prec), prec );
+  //Configurations where the closed form is used in places:
+  for ( double mosdeg : { 0.1, 0.5, 1.0, 3.0 } )
+    for ( double prec : { 1e-3, 1e-4, 1e-5 } )
+      test( *rng, mosdeg, NC::GaussOnSphere::estimateNTruncFromPrec(prec),
+            prec, true );
   //Large truncations (several segments), at small mosaicities:
   for ( double ntrunc : { 9.0, 15.0, 25.0 } )
     test( *rng, 1.0, ntrunc, 1e-6 );
-  REQUIRE( s_nconfigs >= 10 );
+  REQUIRE( s_nconfigs >= 20 );
   return 0;
 }

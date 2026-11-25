@@ -31,8 +31,8 @@ $-\hat k_i$, $\delta(t)$ the angle between $\hat n$ and the point $\hat p(t)$
 on the Bragg circle (\Eq{23}), $t'$ the upper limit of integration (\Eq{30}),
 $\sigma$ the mosaicity, and $\epsilon$ the configured precision
 (\texttt{mosprec}). The closed-form approximation of
-$g_{hkl}$ (\Eqs{35--36}), and the conditions for using it (\Eqs{37--38}), are
-unchanged.
+$g_{hkl}$ (\Eqs{35--36}) is unchanged, but there is an additional condition
+for using it.
 
 \section{Single crystals}
 
@@ -66,6 +66,28 @@ unchanged.
 
 \section{Numerical evaluation of the geometrical integral}
 
+\paragraph{Validity of the closed form.} The conditions of \Eqs{37--38} only
+bound the error of the expansion $\cos t \approx 1-t^2/2$ relative to
+$\cos t$, which is not what matters for \Eq{36}. In terms of
+$u = \cos\delta_0-\cos\delta(t)$, with $\delta_0 = |\gamma-\alpha|$ and
+$w_0 = 1-\cos\delta_0$, \Eq{36} neglects a change of $u^2/(6\sin\alpha
+\sin\gamma)$ in $\cos\delta$ (from that expansion), and uses
+$\delta^2-\delta_0^2 \approx 2u$, neglecting $(2w_0u+u^2)/3$. To first order,
+the relative error of $g_{hkl}$ is then
+\begin{equation}
+  \frac{1}{6\sigma^2}\Big(\mathrm{E}[u^2]\big(1+\frac{1}{\sin\alpha\sin\gamma}\big)
+  + 2w_0\mathrm{E}[u]\Big),
+\end{equation}
+with averages over the integrand bounded by
+\begin{equation}
+  \mathrm{E}[u] \le \min(\sigma^2/2,\,u_\text{max}/3), \qquad
+  \mathrm{E}[u^2] \le \min(3\sigma^4/4,\,u_\text{max}^2/5),
+\end{equation}
+where $u_\text{max} = \cos\delta_0-\cos\tau$. The closed form is now only used
+where this is at most $\epsilon/2$, and never if $\sigma^2 > 2\epsilon$.
+Before, it was off by up to a few times $\epsilon$ near $\alpha = \tau$, and
+by about $\sigma^2$ (in radians) for small values of $\epsilon$.
+
 \paragraph{Gauss-Legendre quadrature.} Where the closed form can not be used,
 \Eq{24} was integrated with Romberg integration, using a splined
 representation of the density (section 4.4 of~\cite{elastic}). It is now
@@ -86,9 +108,9 @@ of the truncation in units of $\sigma$ per segment, such that these are 10
 times below the accuracy target $\min(\max(0.1\epsilon,10^{-7}),10^{-4})$
 (which was also used with Romberg integration).
 
-\paragraph{Table of geometrical integrals.} When the closed form is never
-valid (i.e.\ $\tau > \psi$, which happens for large mosaicities, or small
-values of $\epsilon$), a two-dimensional table of $g_{hkl}$ replaces most
+\paragraph{Table of geometrical integrals.} When the closed form is not
+valid for $\delta_0 = 0$ and $\alpha = 1.2\tau$ (which happens for large
+mosaicities, or small values of $\epsilon$), a two-dimensional table of $g_{hkl}$ replaces most
 numerical integrations. It covers $1.2\tau \le \alpha \le \pi/2$ and
 $|\gamma-\alpha| < \tau$, with coordinates which are cheap to evaluate
 (without transcendental functions):
@@ -103,7 +125,7 @@ $\sqrt{\sin\alpha/\sin\gamma}$ is the one of \Eq{36}, and $\sqrt{1-z^2}$
 handles the square-root behaviour at the truncation edges. When set up, the
 table ($64\times256$ nodes or more) is validated against the numerical
 integration at cell centres, and refined until the maximum error is 10 times
-below the accuracy target (ignoring values below $10^{-3}N\sigma$, which are
+below the accuracy target (with errors relative to $\max(g_{hkl},10^{-2}N\sigma)$, as smaller values are
 negligible), or else not used.
 
 \section{Layered single crystals}
@@ -156,11 +178,10 @@ converges fast and the extrapolations of Romberg integration do not help.
 
 \section{Precision and performance}
 
-The changes in sections 3 and 4 change cross sections by much less than
-$\epsilon$ (typically in the 5th significant digit), and generally make them
-more precise. Note that the closed-form approximation of \Eq{36}, which is
-unchanged, integrates to up to $4\times10^{-5}$ too little near
-back-scattering, whatever the value of $\epsilon$. Typical speedups of cross
+Apart from the additional condition for the closed form, which changes cross
+sections by up to about $\sigma^2$, the changes in sections 3 and 4 change
+cross sections by much less than $\epsilon$ (typically in the 5th significant
+digit), and generally make them more precise. Typical speedups of cross
 section evaluations are 2--7 for single crystals (up to 17 for small
 mosaicities and low crystal symmetry), 3--15 for layered single crystals, and
 5--9 where the closed form is never valid. The sampling of scattering events

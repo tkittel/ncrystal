@@ -348,10 +348,16 @@ void NC::GaussOnSphere::set(double sigma, double trunc_angle, double prec ) {
 
   //analyse prec and trunc_angle parameters to establish some overall settings:
   nc_assert(prec>0);
+  m_cf_s2h = 0.5 * sigma * sigma;
+  m_cf_s4 = 3.0 * m_cf_s2h * m_cf_s2h;
   if (prec<1.0) {
+    m_cf_lim = 6.0 * prec * m_cf_s2h;
     double circleint_approx_maxangle = gos_cosexpansionradius(prec*0.5);//0.5 is safety
     nc_assert_always(circleint_approx_maxangle<kPiHalf);
-    if (m_truncangle>circleint_approx_maxangle||circleint_approx_maxangle<=1e-10) {
+    //NB: sigma^2>2*prec means that the error estimate in closedFormValid
+    //fails even at its minimum (sasg=1, cd=1).
+    if (m_truncangle>circleint_approx_maxangle||circleint_approx_maxangle<=1e-10
+        ||sigma*sigma>2.0*prec) {
       //approximation formula never valid at requested precision:
       m_circleint_k1 = kInfinity;
       m_circleint_k2 = 0.0;
@@ -370,6 +376,7 @@ void NC::GaussOnSphere::set(double sigma, double trunc_angle, double prec ) {
     m_numint_accuracy = 1e-4;//won't actually be used
     m_circleint_k1 = 0.0;
     m_circleint_k2 = kInfinity;
+    m_cf_lim = kInfinity;
   }
   nc_assert_always(nlt>=20&&nlt<=10000);
   //For extreme (sub-arcsecond mosaicity) crystals, the numerical integration
@@ -465,8 +472,8 @@ void NC::GaussOnSphere::set(double sigma, double trunc_angle, double prec ) {
 
 void NC::GaussOnSphere::setupTable()
 {
-  //Where the closed-form approximation is never valid, every circle integral
-  //would need numerical integration. Instead, a table is set up from such
+  //Where the closed-form approximation is not valid, circle integrals would
+  //need numerical integration. Instead, a table is set up from such
   //integrals, and used with 4x4-point Lagrange interpolation. It covers
   //alpha in [1.2*truncangle,pi/2] and gamma-alpha in [-truncangle,
   //truncangle], with coordinates which need no transcendental functions and
@@ -477,11 +484,15 @@ void NC::GaussOnSphere::setupTable()
   //10 times below the requested accuracy (or else not used), ignoring
   //negligible values.
   m_table = Table();
-  if ( m_circleint_k1 != kInfinity )
-    return;//closed form valid in places
   const double amin = 1.2 * m_truncangle;
   if ( !( amin < kPiHalf - 0.05 ) )
     return;
+  {
+    //Not needed if closed form valid at the peak for alpha=amin:
+    const double sa = std::sin( amin ), ca = std::cos( amin );
+    if ( closedFormValid( 1.0, sa * sa, ca * ca ) )
+      return;
+  }
   const double qmin = std::tan( 0.5 * amin );
   const double target = 0.1 * m_numint_accuracy;
   for ( unsigned na = 64, nz = 256; na <= 256; na *= 2, nz *= 2 ) {
@@ -521,10 +532,11 @@ void NC::GaussOnSphere::setupTable()
       }
     }
     m_table = std::move( t );
-    //Validate at the centres of cells of every second row (relative to
-    //values which are not negligible, i.e. a bit below the typical peak
-    //values of norm*sqrt(2pi)*sigma):
-    const double wfloor = 1e-3 * m_norm * m_sigma;
+    //Validate at the centres of cells of every second row. Errors are
+    //relative to max(g,wfloor), with wfloor 0.4% of typical peak values of
+    //norm*sqrt(2pi)*sigma (below that, e.g. at the truncation edges, only
+    //absolute errors matter):
+    const double wfloor = 1e-2 * m_norm * m_sigma;
     double maxerr = 0.0;
     for ( unsigned ia = 0; ia + 1 < na; ia += 2 ) {
       for ( unsigned iz = 0; iz + 1 < nz; ++iz ) {
@@ -667,7 +679,6 @@ void NC::GaussOnSphere::circleIntegrals( std::size_t n, const double* cg,
   constexpr std::size_t nchunk = 32;
   constexpr double tiny = 1e-300;
   double sg[nchunk], sqrt_sa_over_sg[nchunk];
-  const double cta(m_cta), k1(m_circleint_k1), k2(m_circleint_k2);
   while ( n ) {
     const std::size_t m = ncmin( n, nchunk );
     for ( std::size_t i = 0; i < m; ++i ) {
@@ -680,7 +691,7 @@ void NC::GaussOnSphere::circleIntegrals( std::size_t n, const double* cg,
       const double sasg = sa[i]*sg[i];
       const double cacg = ca[i]*cg[i];
       const double cd = cacg+sasg;
-      if (cd>cta&&sasg>=1e-14&&k2 > k1*sasg+cacg) {
+      if ( closedFormValid( cd, sasg, cacg ) ) {
         //closed-form approximation gives accurate result here:
         results[i] = m_lt_sofcosd.eval(cd)*sqrt_sa_over_sg[i];
       } else {

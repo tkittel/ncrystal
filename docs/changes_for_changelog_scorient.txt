@@ -88,8 +88,15 @@ CHANGELOG at release time, after which this file is dropped).
        approximation (large mosaicities, or small mosprec values), the
        integrals along circles now use Gauss-Legendre quadrature of the
        exact density rather than Romberg integration of a splined one.
-       Where the closed form is never valid, a validated 2D table of such
-       integrals (0.5-2 MB, set up in around 0.1-0.3 seconds) is used for
+       Where the closed form is often invalid, a validated 2D table of
+       such integrals (0.1-2 MB, set up in 0.01-0.3 seconds) is used for
        most of them. In such cases cross sections of single and layered
        crystals are now evaluated 5-9 times faster, and more precisely.
        Results change slightly (within mosprec).
+     * The closed-form approximation of the Gaussian mosaicity model is
+       now only used where an estimate of its error is below mosprec/2.
+       Before, it could be off by a few times mosprec, and by about the
+       squared mosaicity (in radians) for small mosprec values: e.g. by
+       1e-5 for 0.5 degrees, 6e-5 for 1 degree, and 5e-4 for 3 degrees.
+       Some cross sections at large mosaicities change by that much, and
+       their evaluation can be up to 1.5 times slower.
