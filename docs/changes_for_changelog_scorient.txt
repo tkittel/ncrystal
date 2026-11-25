@@ -93,10 +93,10 @@ CHANGELOG at release time, after which this file is dropped).
        most of them. In such cases cross sections of single and layered
        crystals are now evaluated 5-9 times faster, and more precisely.
        Results change slightly (within mosprec).
-     * The closed-form approximation of the Gaussian mosaicity model is
-       now only used where an estimate of its error is below mosprec/2.
-       Before, it could be off by a few times mosprec, and by about the
-       squared mosaicity (in radians) for small mosprec values: e.g. by
-       1e-5 for 0.5 degrees, 6e-5 for 1 degree, and 5e-4 for 3 degrees.
-       Some cross sections at large mosaicities change by that much, and
-       their evaluation can be up to 1.5 times slower.
+     * The closed-form approximation of the Gaussian mosaicity model now
+       uses the exact density, and is only used where an estimate of its
+       remaining error is below mosprec/2. Before, it could be off by a few
+       times mosprec, and by about the squared mosaicity (in radians) for
+       small mosprec values: e.g. by 1e-5 for 0.5 degrees, 6e-5 for 1
+       degree, and 5e-4 for 3 degrees. Some cross sections at large
+       mosaicities change by that much.

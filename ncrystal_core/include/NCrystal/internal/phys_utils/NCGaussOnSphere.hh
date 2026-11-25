@@ -48,9 +48,9 @@ namespace NCRYSTAL_NAMESPACE {
     //sphere, and to sample a point on a circle according to the density. The
     //circle integrals (the geometrical factor g of Eqs. 22-24 in the NCrystal
     //elastic paper, CPC 267 (2021) 108082) will be evaluated - where
-    //appropriate - via an approximation formula (Eqs. 35-36 there), which
-    //employs splined lookup tables to avoid expensive calls (exp+acos+sqrt+erf
-    //calls), and otherwise numerically with Gauss-Legendre quadrature or a
+    //appropriate - via a closed-form approximation (Eqs. 35-36 there, but with
+    //the exact density, cf. closedFormS), which employs a splined lookup table,
+    //and otherwise numerically with Gauss-Legendre quadrature or a
     //table of such results. Sampling points on circles is implemented
     //precisely as rejection sampling.
     //
@@ -131,11 +131,11 @@ namespace NCRYSTAL_NAMESPACE {
   private:
     double circleIntegralSlow( double cacg, double sasg, double ca, double sa ) const;
     bool closedFormValid( double cd, double sasg, double cacg ) const;
+    double closedFormS( double cosdelta0 ) const;
     double m_cta;
     double m_circleint_k1;
     double m_circleint_k2;
     //Constants for estimating the error of the closed form (closedFormValid):
-    double m_cf_s2h = -1.0;//sigma^2/2
     double m_cf_s4 = -1.0;//0.75*sigma^4
     double m_cf_lim = -1.0;//3*prec*sigma^2
     double m_norm;
@@ -223,19 +223,15 @@ inline bool NCrystal::GaussOnSphere::closedFormValid( double cd, double sasg,
                                                       double cacg ) const
 {
   //Conditions of Eqs. 37-38 of the elastic paper (CPC 267 (2021) 108082),
-  //followed by a first order estimate of the relative error of Eq. 36, with
-  //u=cos(delta_0)-cos(delta) and w0=1-cos(delta_0): (E[u^2](1+1/sasg)
-  //+2w0E[u])/(6sigma^2) <= prec/2. Here E[u^2]/(6sigma^2 sasg) is from
-  //1-cos(t)~t^2/2, and the rest from delta^2-delta_0^2~2u, with E[u] <=
-  //min(sigma^2/2,umax/3) and E[u^2] <= min(0.75sigma^4,umax^2/5).
+  //followed by a first order estimate of the relative error of the closed
+  //form from 1-cos(t)~t^2/2, which changes cos(delta) by u^2/(6sasg), with
+  //u=cos(delta_0)-cos(delta): E[u^2]/(6sigma^2 sasg) <= prec/2, with E[u^2]
+  //<= min(0.75sigma^4,umax^2/5). (See closedFormS for the closed form.)
   if ( !( cd > m_cta && sasg >= 1e-14
           && m_circleint_k2 > m_circleint_k1*sasg+cacg ) )
     return false;
   const double umax = cd - m_cta;
-  const double eu = ncmin( m_cf_s2h, umax * ( 1.0 / 3.0 ) );
-  const double eu2 = ncmin( m_cf_s4, 0.2 * umax * umax );
-  return eu2 * ( 1.0 + sasg ) + 2.0 * ( 1.0 - cd ) * eu * sasg
-    <= m_cf_lim * sasg;
+  return ncmin( m_cf_s4, 0.2 * umax * umax ) <= m_cf_lim * sasg;
 }
 
 inline double NCrystal::GaussOnSphere::circleIntegral( double cg, double sg, double ca, double sa ) const

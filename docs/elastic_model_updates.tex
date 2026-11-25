@@ -30,9 +30,7 @@ $\cos\alpha = \lambda/2d_{hkl}$, $\gamma$ is the angle between $\hat n$ and
 $-\hat k_i$, $\delta(t)$ the angle between $\hat n$ and the point $\hat p(t)$
 on the Bragg circle (\Eq{23}), $t'$ the upper limit of integration (\Eq{30}),
 $\sigma$ the mosaicity, and $\epsilon$ the configured precision
-(\texttt{mosprec}). The closed-form approximation of
-$g_{hkl}$ (\Eqs{35--36}) is unchanged, but there is an additional condition
-for using it.
+(\texttt{mosprec}).
 
 \section{Single crystals}
 
@@ -66,27 +64,31 @@ unchanged.
 
 \section{Numerical evaluation of the geometrical integral}
 
-\paragraph{Validity of the closed form.} The conditions of \Eqs{37--38} only
-bound the error of the expansion $\cos t \approx 1-t^2/2$ relative to
-$\cos t$, which is not what matters for \Eq{36}. In terms of
-$u = \cos\delta_0-\cos\delta(t)$, with $\delta_0 = |\gamma-\alpha|$ and
-$w_0 = 1-\cos\delta_0$, \Eq{36} neglects a change of $u^2/(6\sin\alpha
-\sin\gamma)$ in $\cos\delta$ (from that expansion), and uses
-$\delta^2-\delta_0^2 \approx 2u$, neglecting $(2w_0u+u^2)/3$. To first order,
-the relative error of $g_{hkl}$ is then
+\paragraph{Closed form.} The closed form of $g_{hkl}$ (\Eqs{35--36}) follows
+from the expansion $1-\cos t \approx t^2/2$ in \Eq{23}, and the further
+approximation $\delta^2-\delta_0^2 \approx 2u$, where
+$u = \cos\delta_0-\cos\delta(t)$ and $\delta_0 = |\gamma-\alpha|$. The
+latter approximation is now dropped: with $u = s^2$, the function of \Eq{35} is
+replaced by
 \begin{equation}
-  \frac{1}{6\sigma^2}\Big(\mathrm{E}[u^2]\big(1+\frac{1}{\sin\alpha\sin\gamma}\big)
-  + 2w_0\mathrm{E}[u]\Big),
+  S(\cos\delta_0) = 2\sqrt2\int_0^{s_\text{max}} W\big(\delta(s)\big)\,ds,
+  \qquad s_\text{max}^2 = \cos\delta_0-\cos\tau,
 \end{equation}
-with averages over the integrand bounded by
-\begin{equation}
-  \mathrm{E}[u] \le \min(\sigma^2/2,\,u_\text{max}/3), \qquad
-  \mathrm{E}[u^2] \le \min(3\sigma^4/4,\,u_\text{max}^2/5),
-\end{equation}
-where $u_\text{max} = \cos\delta_0-\cos\tau$. The closed form is now only used
-where this is at most $\epsilon/2$, and never if $\sigma^2 > 2\epsilon$.
-Before, it was off by up to a few times $\epsilon$ near $\alpha = \tau$, and
-by about $\sigma^2$ (in radians) for small values of $\epsilon$.
+with $\delta(s)$ as in the numerical integration below
+($w = 1-\cos\delta_0+s^2$). It is evaluated with Gauss-Legendre quadrature
+when filling its spline. This removes errors of about $\sigma^2$ (relative,
+with $\sigma$ in radians), which were not accounted for by the conditions for
+using the closed form. Also, these conditions (\Eqs{37--38}) only bound the
+error of the expansion of $\cos t$ relative to $\cos t$, which is not what
+matters. That expansion changes $\cos\delta$ by $u^2/(6\sin\alpha\sin\gamma)$,
+so to first order the relative error of $g_{hkl}$ is
+$\mathrm{E}[u^2]/(6\sigma^2\sin\alpha\sin\gamma)$, with the average over
+the integrand bounded by
+$\mathrm{E}[u^2] \le \min(3\sigma^4/4,u_\text{max}^2/5)$, where
+$u_\text{max} = s_\text{max}^2$. As an additional condition, the closed form
+is now only used where this is at most $\epsilon/2$. Before, the closed form
+was off by up to a few times $\epsilon$ near $\alpha = \tau$, and by about
+$\sigma^2$ for small values of $\epsilon$.
 
 \paragraph{Gauss-Legendre quadrature.} Where the closed form can not be used,
 \Eq{24} was integrated with Romberg integration, using a splined
@@ -178,8 +180,8 @@ converges fast and the extrapolations of Romberg integration do not help.
 
 \section{Precision and performance}
 
-Apart from the additional condition for the closed form, which changes cross
-sections by up to about $\sigma^2$, the changes in sections 3 and 4 change
+Apart from the changes to the closed form, which change cross sections by up
+to about $\sigma^2$, the changes in sections 3 and 4 change
 cross sections by much less than $\epsilon$ (typically in the 5th significant
 digit), and generally make them more precise. Typical speedups of cross
 section evaluations are 2--7 for single crystals (up to 17 for small

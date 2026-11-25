@@ -71,9 +71,9 @@ namespace {
   {
     const double sigma = mosdeg*NC::kDeg/2.354820045030949;
     //Closed form is never used where invalid for truncation angles x with
-    //x^4/24 > prec/2 (roughly), or sigma^2 > 2*prec:
+    //x^4/24 > prec/2 (roughly), or sigma^2 > 4*prec:
     const bool numonly = ( ntrunc*sigma > 1.2 * std::pow( 12.0*prec, 0.25 )
-                           || sigma*sigma > 2.0*prec );
+                           || sigma*sigma > 4.0*prec );
     if ( !( ( numonly || allowcf ) && ntrunc*sigma < NC::kPiHalf ) )
       return;
     ++s_nconfigs;

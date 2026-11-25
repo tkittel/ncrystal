@@ -206,21 +206,6 @@ namespace NCRYSTAL_NAMESPACE {
       return m_norm * std::exp(m_expval*x*x);
     }
   };
-  class SLTFct_SofCosD : public Fct1D {
-    double m_k, m_expfact, m_tasq;
-  public:
-    SLTFct_SofCosD(double norm, double expfact, double sigma, double truncangle)
-      : m_k(norm*2.506628274631000502415765284811045253006986740609938316629923576*sigma),//2.5066... is sqrt(2pi)
-        m_expfact(expfact), m_tasq(truncangle*truncangle) {}
-    virtual ~SLTFct_SofCosD(){}
-    virtual double eval(double cosd) const
-    {
-      nc_assert(ncabs(cosd)<1.000001);
-      double d = std::acos(ncmin(1.0,ncmax(-1.0,cosd)));
-      double d2 = d*d;
-      return m_k * std::exp(m_expfact*d2) * ncerf(std::sqrt(ncmax(0.0,-m_expfact*(m_tasq-d2))));
-    }
-  };
 
 
 
@@ -348,16 +333,12 @@ void NC::GaussOnSphere::set(double sigma, double trunc_angle, double prec ) {
 
   //analyse prec and trunc_angle parameters to establish some overall settings:
   nc_assert(prec>0);
-  m_cf_s2h = 0.5 * sigma * sigma;
-  m_cf_s4 = 3.0 * m_cf_s2h * m_cf_s2h;
+  m_cf_s4 = 0.75 * sigma * sigma * sigma * sigma;
   if (prec<1.0) {
-    m_cf_lim = 6.0 * prec * m_cf_s2h;
+    m_cf_lim = 3.0 * prec * sigma * sigma;
     double circleint_approx_maxangle = gos_cosexpansionradius(prec*0.5);//0.5 is safety
     nc_assert_always(circleint_approx_maxangle<kPiHalf);
-    //NB: sigma^2>2*prec means that the error estimate in closedFormValid
-    //fails even at its minimum (sasg=1, cd=1).
-    if (m_truncangle>circleint_approx_maxangle||circleint_approx_maxangle<=1e-10
-        ||sigma*sigma>2.0*prec) {
+    if (m_truncangle>circleint_approx_maxangle||circleint_approx_maxangle<=1e-10) {
       //approximation formula never valid at requested precision:
       m_circleint_k1 = kInfinity;
       m_circleint_k2 = 0.0;
@@ -449,7 +430,12 @@ void NC::GaussOnSphere::set(double sigma, double trunc_angle, double prec ) {
   SplinedLookupTable lt_sofcosd;
   {
     const double cta = cos_mpi2pi2(trunc_angle);
-    SLTFct_SofCosD fct_sofcosd(m_norm,m_expfact,m_sigma,m_truncangle);
+    class SofCosD final : public Fct1D {
+      const GaussOnSphere* m_gos;
+    public:
+      SofCosD( const GaussOnSphere* gos ) : m_gos(gos) {}
+      double eval( double x ) const override { return m_gos->closedFormS(x); }
+    } fct_sofcosd(this);
     //determine h, "epsilon" parameter for derivative estimation. It can not be
     //too small, or numerical impression results.
     double h = 0.01*(1.0-cta)/nlt;
@@ -462,7 +448,7 @@ void NC::GaussOnSphere::set(double sigma, double trunc_angle, double prec ) {
     double fprime_a = fct_sofcosd.eval(cta+(1.0-cta)/nlt)/((1.0-cta)/nlt);
     lt_sofcosd.set(&fct_sofcosd,cta,1.0,fprime_a,fprime_b,nlt,
                    "gosapproxcircleintegral",
-                   "Approximate value of circle integral as a function of cos(alpha-gamma). Must be multiplied by sqrt(sin(alpha)/sin(gamma)).");
+                   "Closed form of circle integral as a function of cos(alpha-gamma). Must be multiplied by sqrt(sin(alpha)/sin(gamma)).");
   }
 
   m_lt_sofcosd.swap(lt_sofcosd);
@@ -652,6 +638,33 @@ double NC::GaussOnSphere::circleIntegralNumerical( double cg, double sg,
 #endif
   //sa is the radius of circle (Jacobian):
   return 2.0 * sa * m_norm * ( 2.0 * halfdt ) * sum;
+}
+
+double NC::GaussOnSphere::closedFormS( double x ) const
+{
+  //S(x) of the closed form g=S(cos(delta_0))*sqrt(sin(alpha)/sin(gamma)),
+  //which follows from 1-cos(t)~t^2/2 in Eq. 23 of the elastic paper, but
+  //(unlike Eq. 35 there) with the exact density: With u=sasg*t^2/2=s^2 and
+  //w=1-cos(delta)=1-x+s^2, S(x)=2sqrt(2)*int_0^smax W(delta(w))ds, with
+  //smax^2=x-cos(truncangle). Gauss-Legendre with segments of 2 sigma in s
+  //(where W falls like exp(-s^2/sigma^2)).
+  const double smax2 = x - m_cta;
+  if ( !( smax2 > 0.0 ) )
+    return 0.0;
+  const double w0 = 1.0 - x;
+  const double smax = std::sqrt( smax2 );
+  const unsigned nseg = static_cast<unsigned>( ncmax( 1.0, std::ceil( 0.5 * smax / m_sigma ) ) );
+  const auto gl = gosGaussLegendre( 16 );
+  const double ds = smax / nseg;
+  StableSum sum;
+  for ( unsigned iseg = 0; iseg < nseg; ++iseg ) {
+    for ( unsigned i = 0; i < gl.n; ++i ) {
+      const double sv = ds * ( iseg + gl.x[i] );
+      sum.add( gl.w[i] * std::exp( m_expfact
+                                   * numIntDeltaSq( w0 + sv * sv ) ) );
+    }
+  }
+  return 2.0 * kSqrt2 * m_norm * ds * sum.sum();
 }
 
 double NC::GaussOnSphere::numIntDeltaSq( double w ) const
