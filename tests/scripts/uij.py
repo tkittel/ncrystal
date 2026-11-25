@@ -208,12 +208,74 @@ def test_dump():
     i = lines.index('Atomic sites:')
     print( '\n'.join( lines[i:i+2] ) )
 
+def fsq_python( info ):
+    #|F|^2 of the hkl families of the info, calculated independently: the
+    #tensor at each position is that of its site, transformed with the
+    #operation mapping the site to the position.
+    si = info.structure_info
+    ops = ops_of( si['spacegroup_setting'] )
+    _, r = metric( si )
+    rr = np.outer( r, r )
+    contribs = []
+    for ai in info.atominfos:
+        b = ai.atomData.coherentScatLen() * ai.occupancy
+        for p in ai.positions:
+            u = None
+            for s in ai.sites:
+                for rot, tr in ops:
+                    q = rot @ np.asarray( s['position'] ) + tr - np.asarray( p )
+                    if np.max( np.abs( q - np.round( q ) ) ) < 1e-6:
+                        u = rot @ ( rr * to_mat( s['uij'] ) ) @ rot.T
+                        break
+                if u is not None:
+                    break
+            assert u is not None
+            contribs.append( ( b, np.asarray( p ), u ) )
+    res = []
+    for h, k, ll, mult, d, f2 in info.hklList():
+        hkl = np.array( [ h, k, ll ], dtype = float )
+        f = sum( b * np.exp( -2.0 * np.pi**2 * ( hkl @ u @ hkl ) )
+                 * np.exp( 2j * np.pi * ( hkl @ p ) ) for b, p, u in contribs )
+        res.append( ( f2, abs( f )**2 ) )
+    return res
+
+def test_bragg():
+    setting = '14:b1'
+    cell = 'lengths 5.1 6.3 7.2\n  angles 90 105 90'
+    sites = [ 'O 0.21 0.13 0.37 uij 0.012 0.009 0.015 0.002 -0.003 0.001',
+              'Mg 0 0 0 uij 0.006 0.010 0.008 0.001 0.002 -0.001' ]
+    fr = { 'O' : '2/3', 'Mg' : '1/3' }
+    info = load( cell, setting, sites, fractions = fr )
+    vals = fsq_python( info )
+    maxrd = max( abs( a - b ) / b for a, b in vals )
+    print( f'Bragg |F|^2 with anisotropic displacements: {len(vals)}'
+           ' families agree with independent calculation' )
+    assert maxrd < 1e-10, maxrd
+    #Isotropic tensors (U_cart proportional to the identity) give the same
+    #results as no tensors:
+    si = info.structure_info
+    _, r = metric( si )
+    ginv = np.linalg.inv( metric( si )[0] )
+    uiso = from_mat( ginv / np.outer( r, r ) )
+    isosites = [ ' '.join( ll.split()[:4] + [ 'uij' ]
+                           + [ repr(float(x)) for x in uiso ] ) for ll in sites ]
+    plain = load( cell, setting, [ ' '.join( ll.split()[:4] ) for ll in sites ],
+                  fractions = fr )
+    iso = load( cell, setting, isosites, fractions = fr )
+    a = [ e[5] for e in plain.hklList() ]
+    b = [ e[5] for e in iso.hklList() ]
+    assert len(a) == len(b)
+    maxrd = max( abs( x - y ) / x for x, y in zip( a, b ) )
+    print( 'Bragg |F|^2 with isotropic tensors: same as without tensors' )
+    assert maxrd < 1e-10, maxrd
+
 def main():
     test_hexagonal()
     test_transformation()
     test_normalisation()
     test_errors()
     test_dump()
+    test_bragg()
 
 if __name__ == '__main__':
     main()
