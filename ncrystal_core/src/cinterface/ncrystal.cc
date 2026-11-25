@@ -318,7 +318,7 @@ namespace NCRYSTAL_NAMESPACE {
     ThreadID currentThreadID() { return 1; }//always the same
 #endif
     struct ErrorState {
-      char errmsg[512];
+      char errmsg[4096];
       char errtype[64];
       std::uint64_t seqno = 0;//higher means more recent
     };
