@@ -31,11 +31,8 @@ idempotent: True
     type vdosdebye
     debye_temp 333.33333333333
 occupancy 1.0: ['Al 0 0 0', 'fraction 1/2', 'fraction 1/2']
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Support for site_occupancy is highly experimental. Do *not* attempt to directly override value with the "density" cfg-parameter for this material (unless it is to simply scale it) [warn#1]
 occupancy 0.9: ['Al 0 0 0', 'Al 9/10', 'fraction 9/19', 'fraction 10/19']
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Support for site_occupancy is highly experimental. Do *not* attempt to directly override value with the "density" cfg-parameter for this material (unless it is to simply scale it) [warn#2]
 occupancy 0.88: ['Al 0 0 0', 'Al 22/25', 'fraction 22/47', 'fraction 25/47']
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Support for site_occupancy is highly experimental. Do *not* attempt to directly override value with the "density" cfg-parameter for this material (unless it is to simply scale it) [warn#3]
 occupancy 0.883: ['Al 0 0 0', 'Al .883', 'fraction .46893255443441', 'fraction .53106744556559']
 Caught expected NCBadInput('Atom positions are not consistent with space group 194 (largest deviation of a symmetry image from an atom of the same type: 0.43 in fractional coordinates)')
 Caught expected NCBadInput('Lattice parameters a and b must be equal for this space group (got a=4 and b=4.1)')
