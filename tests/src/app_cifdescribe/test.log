@@ -1,0 +1,42 @@
+nothing: cod_id 0, mp_id 0, formula ""
+one author, no journal: cod_id 0, mp_id 0, formula ""
+   | "A title"
+   | Author: Doe, J.
+two authors, journal and year: cod_id 0, mp_id 0, formula ""
+   | Doe, J. and Roe, R. [J. Test, 2001]
+three authors, journal only: cod_id 0, mp_id 0, formula ""
+   | A, et al. [J. Test]
+several authors without journal: cod_id 0, mp_id 0, formula ""
+   | Authors: A and B
+journal and year without authors: cod_id 0, mp_id 0, formula ""
+   | <unknown authors> [J. Test, 2001]
+multi-line title (trailing spaces removed): cod_id 0, mp_id 0, formula ""
+   | "First line
+   | Second line"
+DOI and audit items: cod_id 0, mp_id 0, formula ""
+   | DOI: https://dx.doi.org/10.1000/xyz
+   | CIF creation method: by hand
+   | CIF creation date: 2001-01-01
+   | CIF created by: A. B., C. D.
+DOI of the primary citation: cod_id 0, mp_id 0, formula ""
+   | "Cited title"
+   | DOI: https://dx.doi.org/10.1000/abc
+COD and MP ids embedded: cod_id 1234567, mp_id 55, formula ""
+   | Crystallography Open Database entry 1234567
+   | https://www.crystallography.net/cod/1234567.html
+   | The Materials Project
+   | https://www.materialsproject.org/materials/mp-55
+requested ids (the same, and others): cod_id 1234567, mp_id 66, formula ""
+   | Crystallography Open Database entry 1234567
+   | https://www.crystallography.net/cod/1234567.html
+   | The Materials Project
+   | https://www.materialsproject.org/materials/mp-66
+requested COD id differing from the embedded one: cod_id 7654321, mp_id 0, formula ""
+   | Crystallography Open Database entry 7654321
+   | https://www.crystallography.net/cod/7654321.html
+   warning: Embedded CODID 1234567 is different than requested 7654321!
+requested ids without provenance items: cod_id 1000001, mp_id 0, formula ""
+   | Crystallography Open Database entry 1000001
+   | https://www.crystallography.net/cod/1000001.html
+formula, and the COD original formula as fallback: cod_id 0, mp_id 0, formula "Al2 O3"
+formula given: cod_id 0, mp_id 0, formula "Al"

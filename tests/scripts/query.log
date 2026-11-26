@@ -315,6 +315,13 @@ Caught expected NCBadInput('Invalid cif query: ["cif","bla"] (unknown key)')
           'beta': 90.0,
           'c': 4.05,
           'gamma': 90.0},
+ 'description': {'cod_id': 1234567,
+                 'formula': 'Al',
+                 'lines': ['"A title"',
+                           'Doe, J. and Roe, R. [From data_info]',
+                           'Crystallography Open Database entry 1234567',
+                           'https://www.crystallography.net/cod/1234567.html'],
+                 'mp_id': None},
  'provenance': {'_cod_database_code': ['1234567', 33],
                 '_journal_name_full': ['From data_info', 2],
                 '_publ_author_name': [['Doe, J.', 32], ['Roe, R.', 32]],
@@ -374,6 +381,7 @@ Caught expected NCBadInput('Invalid CIF data in "raw CIF data" (data_s, line 29)
           'beta': 90.0,
           'c': 3.0,
           'gamma': 90.0},
+ 'description': {'cod_id': None, 'formula': '', 'lines': [], 'mp_id': None},
  'provenance': None,
  'provenance_block': None,
  'spacegroup_setting': '221',
@@ -416,6 +424,7 @@ Caught expected NCBadInput('Invalid CIF data in "raw CIF data" (data_s, line 29)
           'beta': 90.0,
           'c': 3.0,
           'gamma': 90.0},
+ 'description': {'cod_id': None, 'formula': '', 'lines': [], 'mp_id': None},
  'provenance': None,
  'provenance_block': None,
  'spacegroup_setting': '225',
@@ -444,6 +453,10 @@ P1 data with Fm-3m symmetry [] -> 225 1 atoms
 P1 data with Fm-3m symmetry ['tol_symprec=1e-9'] -> 99 3 atoms
 P1 data with Fm-3m symmetry ['override_spacegroup=P 1'] -> 1 4 atoms
 Hall symbol with origin shift as override: 180
+description with [] : {'lines': ['"A title"', 'Doe, J. and Roe, R. [From data_info]', 'Crystallography Open Database entry 1234567', 'https://www.crystallography.net/cod/1234567.html'], 'cod_id': 1234567, 'mp_id': None, 'formula': 'Al'} []
+description with ['cod_id=1234567'] : {'lines': ['"A title"', 'Doe, J. and Roe, R. [From data_info]', 'Crystallography Open Database entry 1234567', 'https://www.crystallography.net/cod/1234567.html'], 'cod_id': 1234567, 'mp_id': None, 'formula': 'Al'} []
+description with ['cod_id=7654321'] : {'lines': ['"A title"', 'Doe, J. and Roe, R. [From data_info]', 'Crystallography Open Database entry 7654321', 'https://www.crystallography.net/cod/7654321.html'], 'cod_id': 7654321, 'mp_id': None, 'formula': 'Al'} ['Embedded CODID 1234567 is different than requested 7654321!']
+description with ['mp_id=55'] : {'lines': ['"A title"', 'Doe, J. and Roe, R. [From data_info]', 'Crystallography Open Database entry 1234567', 'https://www.crystallography.net/cod/1234567.html', 'The Materials Project', 'https://www.materialsproject.org/materials/mp-55'], 'cod_id': 1234567, 'mp_id': 55, 'formula': 'Al'} []
 cif_globalblock.cif with tol_uij=0.1: warnings []
 cif_globalblock.cif: block I provenance_block global
 {'_audit_creation_method': ['TESTXL-1 CIF writer, edited test template', 15],
@@ -454,20 +467,22 @@ cif_globalblock.cif: block I provenance_block global
                          'K~2~[HPO~4~]\\\\cdotH~2~O with the publication\n'
                          'data in a separate block',
                          255]}
-Caught expected NCBadInput('Invalid cif query: ["cif","structure"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X or allow_cell_misfit=1)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X or allow_cell_misfit=1)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","1","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X or allow_cell_misfit=1)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","RAWDATA"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X or allow_cell_misfit=1)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","RAWDATA","x"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X or allow_cell_misfit=1)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","RAWDATA","n","x","y"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X or allow_cell_misfit=1)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","x","y"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X or allow_cell_misfit=1)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","override_spacegroup=","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X or allow_cell_misfit=1)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","override_spacegroup=1","override_spacegroup=2","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X or allow_cell_misfit=1)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_uij=0","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X or allow_cell_misfit=1)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_uij=x","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X or allow_cell_misfit=1)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_uij=1","tol_uij=1","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X or allow_cell_misfit=1)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","allow_cell_misfit=0","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X or allow_cell_misfit=1)')
-Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_symprec=-1","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","1","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","RAWDATA"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","RAWDATA","x"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","RAWDATA","n","x","y"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","x","y"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","override_spacegroup=","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","override_spacegroup=1","override_spacegroup=2","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_uij=0","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_uij=x","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_uij=1","tol_uij=1","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","allow_cell_misfit=0","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_symprec=-1","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","cod_id=x","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","mp_id=1","mp_id=2","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
 ============= CLI >>test wl2ekin 1.8<< ====================
 0.025248213035
 ===========================================

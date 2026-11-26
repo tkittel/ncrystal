@@ -596,6 +596,14 @@ _atom_site_fract_z 0
                     'RAWDATA', 'q.cif', 'RAWDATA', p1 ] )
     print( 'Hall symbol with origin shift as override:',
            r2['spacegroup_setting'] )
+    #The description, with the ids of the data source (requested ids are
+    #used, with a warning if they differ from the embedded ones):
+    for opts in ( [], [ 'cod_id=1234567' ], [ 'cod_id=7654321' ],
+                  [ 'mp_id=55' ] ):
+        r2 = ncquery( [ 'cif', 'structure', 'permissive', *opts, 'RAWDATA',
+                        'q.cif', 'RAWDATA', cif ] )
+        print( 'description with', opts, ':', r2['description'],
+               [ w for w in r2['warnings'] if 'Embedded' in w ] )
     #(the Uiso values fit within a larger tolerance, without warnings):
     r2 = ncquery( [ 'cif', 'structure', 'strict', 'tol_uij=0.1',
                     str( test_data_dir / 'cif_globalblock.cif' ) ] )
@@ -615,7 +623,9 @@ _atom_site_fract_z 0
                  [ 'strict', 'tol_uij=x', 'x.cif' ],
                  [ 'strict', 'tol_uij=1', 'tol_uij=1', 'x.cif' ],
                  [ 'strict', 'allow_cell_misfit=0', 'x.cif' ],
-                 [ 'strict', 'tol_symprec=-1', 'x.cif' ] ):
+                 [ 'strict', 'tol_symprec=-1', 'x.cif' ],
+                 [ 'strict', 'cod_id=x', 'x.cif' ],
+                 [ 'strict', 'mp_id=1', 'mp_id=2', 'x.cif' ] ):
         with ensure_error( NCBadInput, 'Invalid cif query: '
                            + json.dumps( [ 'cif', 'structure' ] + bad,
                                          separators = ( ',', ':' ) )
@@ -624,7 +634,8 @@ _atom_site_fract_z 0
                            'OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with'
                            ' PERMISSIVE "strict" or "permissive" and OPTIONs'
                            ' override_spacegroup=SG, tol_uij=X,'
-                           ' tol_symprec=X or allow_cell_misfit=1)' ):
+                           ' tol_symprec=X, cod_id=N, mp_id=N or'
+                           ' allow_cell_misfit=1)' ):
             ncquery( [ 'cif', 'structure', *bad ] )
 
 def rnd( o ):

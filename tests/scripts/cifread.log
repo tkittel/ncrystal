@@ -7,14 +7,14 @@ monoclinic, listed operations, tensors:
    atom: ('Si1',) ((1.0, 'Si'),) occupancy 0.5 multiplicity 4 uiso 0.0071 uij None
    atom: ('Fe1',) ((1.0, 'Fe'),) occupancy 1.0 multiplicity 2 uiso None uij None
    setting: 14:b1
-   formula: Fe O Si
+   description: {'lines': [], 'codid': None, 'mpid': None, 'formula': 'Fe O Si'}
 old tags, no H-M symbol:
    cell: {'a': '5.1', 'b': '6.3', 'c': '7.2', 'alpha': '90', 'beta': '105', 'gamma': '90'}
    atom: ('O1',) ((1.0, 'O'),) occupancy 1.0 multiplicity 4 uiso 0.0123 uij None
    atom: ('Si1',) ((1.0, 'Si'),) occupancy 0.5 multiplicity 4 uiso 0.0071 uij None
    atom: ('Fe1',) ((1.0, 'Fe'),) occupancy 1.0 multiplicity 2 uiso None uij None
    setting: 14:b1
-   formula: None
+   description: {'lines': [], 'codid': None, 'mpid': None, 'formula': ''}
 NCrystal WARNING: Overriding spacegroup to "P 1 21/n 1" due to explicit request
 tensors as B: [{'u11': 0.011738158746333325, 'u22': 0.011738158746333325, 'u33': 0.011738158746333325, 'u12': 0.0, 'u13': 0.0, 'u23': 0.0}, None, None] []
 NCrystal WARNING: Some CIF sites in "test.cif" (data_test) have no _atom_site_type_symbol, so their elements were taken from their labels (Ca from CaM1)
@@ -23,7 +23,7 @@ atom counts, missing type symbol, Biso:
    atom: ('O1',) ((1.0, 'O'),) occupancy 1.0 multiplicity 4 uiso 0.000155781 uij None
    atom: ('CaM1',) ((1.0, 'Ca'),) occupancy 1.0 multiplicity 4 uiso 8.99226e-05 uij None
    setting: 14:b1
-   formula: Ca O
+   description: {'lines': [], 'codid': None, 'mpid': None, 'formula': 'Ca O'}
 wrong atom count: rejected: The unit cell has 8 atoms in space group setting 14:b1, but the CIF data in "test.cif" (data_test) states 10 (_atom_type_number_in_cell), so the space group or its setting is probably wrong
 block with the sites selected among two
 missing cell angles: 90 degrees

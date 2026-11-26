@@ -30,7 +30,7 @@ __all__ = []
 
 from . import _sgsymimpl as _nc_sgsymimpl
 from . import core as _nc_core
-from ._cifreadimpl import _extract_descr, read_cif
+from ._cifreadimpl import read_cif
 from ._cifsitesimpl import _impl_find_sites, _impl_group_sites
 
 
@@ -58,7 +58,9 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
                             #(spglib finds any higher symmetry itself):
                             tol_symprec = ( 0.0 if refine_with_spglib
                                             else tols['symprec'] ),
-                            allow_cell_misfit = refine_with_spglib )
+                            allow_cell_misfit = refine_with_spglib,
+                            requested_codid = cifsrc.codid,
+                            requested_mpid = cifsrc.mpid )
     result['cif_temperatures'] = cif_content.temperatures
 
     setting = cif_content.setting
@@ -120,8 +122,8 @@ def load_cif_data( cifsrc, cifdata, *, quiet, refine_with_spglib,
     result['site2atom'] = tuple( site2atom )
     result['sgsetting'] = setting
 
+    d = cif_content.description
     ( result['cifdescr'], result['actual_codid'], result['actual_mpid'],
-      result['cif_chemformula'] ) = _extract_descr( cif_content.provenance,
-                                                  cif_content.formula, cifsrc,
-                                                  warnfct = warnfct )
+      result['cif_chemformula'] ) = ( d['lines'], d['codid'], d['mpid'],
+                                      d['formula'] )
     return result
