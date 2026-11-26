@@ -87,8 +87,9 @@ options and flexibility than the present script.  """,descrw)+f"""\n\nExample in
         return textwrap.fill(t,width=helpw)
     from ._sgsymimpl import _TOL_DEFAULT, _TOL_SYMPREC_AT_DEFAULT
 
-    #CIFFILE arg use nargs='?' if --valplots detected, to avoid spurious error:
-    parser.add_argument('CIFFILE', type=str,nargs=('?' if any( a.startswith('--val') for a in arglist ) else 1 ),
+    #CIFFILE arg use nargs='?' if --valplots or --list-spacegroups detected, to
+    #avoid spurious error:
+    parser.add_argument('CIFFILE', type=str,nargs=('?' if any( a.startswith(('--val','--list-sp')) for a in arglist ) else 1 ),
                         help=wrap('CIF file to use as source. This can either be a path '
                                   'to a physical file, or an online database ID, specified '
                                   'using a syntax like "codid::1000055" or "mpid::127". Do not specify with --valplot.'))
@@ -160,6 +161,8 @@ options and flexibility than the present script.  """,descrw)+f"""\n\nExample in
                         help=wrap('Override the space group (setting like "70:1", H-M symbol like "F d d d:1", or Hall symbol like "-F 2 2 2", optionally prefixed with "HM:" or "Hall:"), disregarding the symmetry information in the file.'))
     parser.add_argument('--via-ase',default=False,action='store_true',
                         help=wrap('Load input file via ASE (this can be useful to support non-CIF input files).'))
+    parser.add_argument('--list-spacegroups',default=False,action='store_true',
+                        help=wrap('List the space group settings with their H-M and Hall symbols (as accepted by --spacegroup) and exit.'))
 
 
     if return_parser:
@@ -193,6 +196,14 @@ def create_argparser_for_sphinx( progname ):
 @cli_entry_point
 def main( progname, arglist ):
     args = parseArgs( progname, arglist )
+    if args.list_spacegroups:
+        from .cifutils import spacegroup_settings
+        rows = spacegroup_settings()
+        w1, w2 = ( max( len( r[i] ) for r in rows ) for i in ( 0, 1 ) )
+        print( f'{"Setting".ljust(w1)}  {"H-M symbol".ljust(w2)}  Hall symbol' )
+        for s, hm, hall in rows:
+            print( f'{s.ljust(w1)}  {hm.ljust(w2)}  {hall}' )
+        return
     do_quiet = ( args.quiet or args.output == 'stdout' or args.showcif )
     with quiet_ctx( do_quiet ):
         out = _main_impl( args, do_quiet )

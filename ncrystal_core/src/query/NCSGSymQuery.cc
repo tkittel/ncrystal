@@ -179,11 +179,12 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& query )
                       static_cast<unsigned>( n.value() ) ) );
   } else if ( key == sv_info ) {
     //["sgsym","info",MODE,SG]: H-M symbol ("hm", ITVB computer-entry
-    //format) and symmetry operations of a space group setting (SG as e.g.
-    //"225", "166:r", "227:2", "14:c1" or "62:cab", parsed in MODE "strict" or
-    //"relaxed", cf. SpaceGroupParseMode), both as CIF-like strings ("ops",
-    //incl. centring) and as the distinct rotation parts (row-major integer
-    //matrices acting on fractional coordinates):
+    //format), Hall symbol ("hall", e.g. "-P 2ybc") and symmetry operations
+    //of a space group setting (SG as e.g. "225", "166:r", "227:2", "14:c1"
+    //or "62:cab", parsed in MODE "strict" or "relaxed", cf.
+    //SpaceGroupParseMode), both as CIF-like strings ("ops", incl. centring)
+    //and as the distinct rotation parts (row-major integer matrices acting
+    //on fractional coordinates):
     const auto usage
       = "correct usage: [\"sgsym\",\"info\",\"strict|relaxed\",SG]";
     if ( nargs != 2 || ( arg(0) != "strict" && arg(0) != "relaxed" ) )
@@ -197,6 +198,16 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& query )
     streamJSONDictEntry( os, "settingidx",
                          static_cast<unsigned>( sg.settingIdx().get() ) );
     streamJSONDictEntry( os, "hm", sg.hmSymbol() );
+    {
+      //(Hall symbol with the usual upper case lattice letter):
+      std::string hall = sg.hallSymbol();
+      for ( auto& c : hall )
+        if ( c >= 'a' && c <= 'z' ) {
+          c = static_cast<char>( c - 'a' + 'A' );
+          break;
+        }
+      streamJSONDictEntry( os, "hall", hall );
+    }
     streamJSONDictEntry( os, "order", sym.order() );
     streamJSONDictEntry( os, "latticesymbol",
                          std::string( 1, sym.latticeSymbol() ) );

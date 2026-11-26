@@ -99,6 +99,8 @@ options:
                         information in the file.
   --via-ase             Load input file via ASE (this can be useful to support non-
                         CIF input files).
+  --list-spacegroups    List the space group settings with their H-M and Hall
+                        symbols (as accepted by --spacegroup) and exit.
 
 =================================================
 ============= CLI >>codid::9005777 --showcif<< ====================

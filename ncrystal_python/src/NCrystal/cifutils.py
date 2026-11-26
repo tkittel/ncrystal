@@ -33,6 +33,7 @@ __all__ = [
     'CIFSource',
     'produce_validation_plot',
     'produce_validation_plots',
+    'spacegroup_settings',
 ]
 
 from . import _common as _nc_common
@@ -272,10 +273,9 @@ class CIFLoader:
         operations, and its space group symbol fits several settings (e.g.
         "F d d d" for origin choices "F d d d:1" and "F d d d:2", which is an
         error otherwise). It might require some investigation of course to
-        determine which one is right. A list of space group settings can be
-        found at:
-
-        https://cci.lbl.gov/sginfo/hall_symbols.html
+        determine which one is right. The settings and their symbols are
+        listed by the spacegroup_settings function of this module (and by
+        ncrystal_cif2ncmat --list-spacegroups).
 
         Setting merge_equiv=False will prevent usage of the same NCMAT label for
         multiple lists of equivalent atomic positions. However, note that this
@@ -505,6 +505,23 @@ class CIFLoader:
                                             remap = remap,
                                             no_formula_check = no_formula_check )
 
+
+def spacegroup_settings():
+    """All tabulated space group settings, in table order, as tuples (setting,
+    hm, hall) of the setting name (e.g. "227:2"), its Hermann-Mauguin symbol
+    (e.g. "F d -3 m:2") and its Hall symbol (e.g. "-F 4vw 2vw 3"). Each of
+    them selects the setting as override_spacegroup of CIFLoader, as do other
+    forms of the Hermann-Mauguin symbols (e.g. "Fd-3m:2", or "P21/c" for "P 1
+    21/c 1"), except that symbols which mean different settings as
+    Hermann-Mauguin and as Hall symbols (e.g. the Hall symbol "P 2") must then
+    be prefixed with "HM:" or "Hall:"."""
+    from .misc import evaluate_query as q
+    res = []
+    for n in range( 1, 231 ):
+        for s in q( [ 'sgsym', 'fromnumber', str( n ) ] ):
+            i = q( [ 'sgsym', 'info', 'strict', s ] )
+            res.append( ( s, i['hm'], i['hall'] ) )
+    return res
 
 def produce_validation_plots( files, verbose_lbls = True, pdf_target = None,
                               **plot_kwargs ):

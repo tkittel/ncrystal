@@ -403,8 +403,9 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
     //block with a crystal structure (cf. findUniqueStructProvItems), its
     //space group setting (cf. chooseSetting) and atoms (cf. getAtoms), parsed
     //in lenient mode (cf. CIFParseLenient), with PERMISSIVE "strict" or
-    //"permissive" (cf. CIFPermissive), OPTIONs KEY=VALUE
-    //(override_spacegroup=SG, tol_uij=X with default 1e-3, tol_symprec=X in
+    //"permissive" (cf. CIFPermissive), OPTIONs KEY=VALUE (each optionally
+    //preceded by "RAWDATA", for values with any characters, e.g. Hall symbols
+    //like "P 62 2 (0 0 4)"; override_spacegroup=SG, tol_uij=X with default 1e-3, tol_symprec=X in
     //Aa with default 0.01, 0 to not look for a higher symmetry of the atoms,
     //and allow_cell_misfit=1 to accept a cell which
     //does not fit the setting, e.g. for a later refinement of the
@@ -449,7 +450,9 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
     StrView overrideSG;
     Optional<double> tolUij, tolSymprec;
     bool allowMisfit = false;
-    for ( auto i : ncrange( nopts ) ) {
+    for ( std::size_t i = 0; i < nopts; ++i ) {
+      if ( arg( 1 + i ) == sv_rawdata && i + 1 < nopts )
+        ++i;
       const auto o = arg( 1 + i );
       if ( o.startswith( sv_override ) && !overrideSG.has_value()
            && o.size() > sv_override.size() ) {

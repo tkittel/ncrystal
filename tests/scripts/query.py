@@ -589,6 +589,13 @@ _atom_site_fract_z 0
                         'q.cif', 'RAWDATA', p1 ] )
         print( 'P1 data with Fm-3m symmetry', opts, '->',
                r2['spacegroup_setting'], len( r2['atoms'] ), 'atoms' )
+    #(options after RAWDATA can have any characters, e.g. Hall symbols with an
+    #origin shift):
+    r2 = ncquery( [ 'cif', 'structure', 'permissive', 'RAWDATA',
+                    'override_spacegroup=P 62 2 (0 0 4)', 'allow_cell_misfit=1',
+                    'RAWDATA', 'q.cif', 'RAWDATA', p1 ] )
+    print( 'Hall symbol with origin shift as override:',
+           r2['spacegroup_setting'] )
     #(the Uiso values fit within a larger tolerance, without warnings):
     r2 = ncquery( [ 'cif', 'structure', 'strict', 'tol_uij=0.1',
                     str( test_data_dir / 'cif_globalblock.cif' ) ] )

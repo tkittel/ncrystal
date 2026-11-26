@@ -443,6 +443,7 @@ cell not fitting the setting, allowed: None
 P1 data with Fm-3m symmetry [] -> 225 1 atoms
 P1 data with Fm-3m symmetry ['tol_symprec=1e-9'] -> 99 3 atoms
 P1 data with Fm-3m symmetry ['override_spacegroup=P 1'] -> 1 4 atoms
+Hall symbol with origin shift as override: 180
 cif_globalblock.cif with tol_uij=0.1: warnings []
 cif_globalblock.cif: block I provenance_block global
 {'_audit_creation_method': ['TESTXL-1 CIF writer, edited test template', 15],
@@ -489,6 +490,7 @@ Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_
 {'spacegroup': '166:r',
  'settingidx': 459,
  'hm': 'R -3 m:r',
+ 'hall': '-P 3* 2',
  'order': 12,
  'latticesymbol': 'p',
  'centrosymmetric': True,
@@ -521,6 +523,7 @@ Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_
 {'spacegroup': '62:cab',
  'settingidx': 294,
  'hm': 'P b n m',
+ 'hall': '-P 2c 2ab',
  'order': 8,
  'latticesymbol': 'p',
  'centrosymmetric': True,
@@ -545,6 +548,7 @@ Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_
 {'spacegroup': '1',
  'settingidx': 1,
  'hm': 'P 1',
+ 'hall': 'P 1',
  'order': 1,
  'latticesymbol': 'p',
  'centrosymmetric': False,
@@ -555,6 +559,7 @@ Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_
 {'spacegroup': '227:1',
  'settingidx': 525,
  'hm': 'F d -3 m:1',
+ 'hall': 'F 4d 2 3 -1d',
  'order': 192,
  'latticesymbol': 'f',
  'centrosymmetric': True,
