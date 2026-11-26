@@ -53,8 +53,8 @@ namespace {
   void expectBad( const char * s, NC::SpaceGroupParseMode mode
                   = NC::SpaceGroupParseMode::Relaxed )
   {
-    //tryParseSpaceGroup gives the same message, and the status:
-    const auto r = NC::tryParseSpaceGroup( s, mode );
+    //SpaceGroup::tryParse gives the same message, and the status:
+    const auto r = NC::SpaceGroup::tryParse( s, mode );
     nc_assert_always( !r.setting.has_value() );
     using St = NC::SpaceGroupParseResult::Status;
     nc_assert_always( r.status != St::OK );
@@ -126,7 +126,7 @@ void run()
     REQUIRE( NC::SpaceGroup( NC::StrView( str ), relaxed ) == sg );
     REQUIRE( NC::SpaceGroup( str.c_str(), relaxed ) == sg );
     {
-      const auto r = NC::tryParseSpaceGroup( str, strict );
+      const auto r = NC::SpaceGroup::tryParse( str, strict );
       REQUIRE( r.status == NC::SpaceGroupParseResult::Status::OK );
       REQUIRE( r.setting.has_value() && r.setting.value() == sg );
       REQUIRE( r.errorMsg.empty() );

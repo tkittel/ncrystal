@@ -205,10 +205,11 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& query )
     //thrown if DOTHROW is 1, and if it is 0 the result has "setting":null,
     //the "error_msg", and "status" "syntax" (SG not of the form "N" or
     //"N:choice" with N in 1..230) or "nosetting" (of that form, but no such
-    //setting), cf. tryParseSpaceGroup:
+    //setting), cf. SpaceGroup::tryParse:
     if ( nargs != 3 || ( arg(0) != "0" && arg(0) != "1" ) || !isRaw(1) )
       invalid( "correct usage: [\"sgsym\",\"setting\",0|1,\"RAWDATA\",SG]" );
-    const auto r = tryParseSpaceGroup( arg(2), SpaceGroupParseMode::Strict );
+    const auto r = SpaceGroup::tryParse( arg(2),
+                                         SpaceGroupParseMode::Strict );
     if ( !r.setting.has_value() && arg(0) == "1" )
       NCRYSTAL_THROW(BadInput,r.errorMsg);
     using St = SpaceGroupParseResult::Status;
