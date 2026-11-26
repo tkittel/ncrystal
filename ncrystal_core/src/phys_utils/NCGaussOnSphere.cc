@@ -104,21 +104,6 @@ namespace NCRYSTAL_NAMESPACE {
       return m_norm * std::exp(m_expval*x*x);
     }
   };
-  class SLTFct_SofCosD : public Fct1D {
-    double m_k, m_expfact, m_tasq;
-  public:
-    SLTFct_SofCosD(double norm, double expfact, double sigma, double truncangle)
-      : m_k(norm*2.506628274631000502415765284811045253006986740609938316629923576*sigma),//2.5066... is sqrt(2pi)
-        m_expfact(expfact), m_tasq(truncangle*truncangle) {}
-    virtual ~SLTFct_SofCosD(){}
-    virtual double eval(double cosd) const
-    {
-      nc_assert(ncabs(cosd)<1.000001);
-      double d = std::acos(ncmin(1.0,ncmax(-1.0,cosd)));
-      double d2 = d*d;
-      return m_k * std::exp(m_expfact*d2) * ncerf(std::sqrt(ncmax(0.0,-m_expfact*(m_tasq-d2))));
-    }
-  };
 
 
 
@@ -218,10 +203,18 @@ void NC::GaussOnSphere::set(double sigma, double trunc_angle, double prec ) {
 
   //analyse prec and trunc_angle parameters to establish some overall settings:
   nc_assert(prec>0);
+  m_cf_s4 = 0.75 * sigma * sigma * sigma * sigma;
+  m_inv_sigma2 = 1.0 / ( sigma * sigma );
   if (prec<1.0) {
+    m_cf_lim = 3.0 * prec * sigma * sigma;
     double circleint_approx_maxangle = gos_cosexpansionradius(prec*0.5);//0.5 is safety
     nc_assert_always(circleint_approx_maxangle<kPiHalf);
-    if (m_truncangle>circleint_approx_maxangle||circleint_approx_maxangle<=1e-10) {
+    //The closed form takes cos(delta_0), whose rounding (~eps) gives relative
+    //errors of ~eps/sigma^2 (relevant for sub-arcsec mosaicities):
+    const bool cf_rounding_ok
+      = ( 4.0 * std::numeric_limits<double>::epsilon() < 0.5 * prec * sigma * sigma );
+    if (m_truncangle>circleint_approx_maxangle||circleint_approx_maxangle<=1e-10
+        || !cf_rounding_ok ) {
       //approximation formula never valid at requested precision:
       m_circleint_k1 = kInfinity;
       m_circleint_k2 = 0.0;
@@ -240,6 +233,7 @@ void NC::GaussOnSphere::set(double sigma, double trunc_angle, double prec ) {
     m_numint_accuracy = 1e-4;//won't actually be used
     m_circleint_k1 = 0.0;
     m_circleint_k2 = kInfinity;
+    m_cf_lim = kInfinity;
   }
   nc_assert_always(nlt>=20&&nlt<=10000);
   //Settings for Gauss-Legendre integration of circles. Use segments of at
@@ -259,7 +253,7 @@ void NC::GaussOnSphere::set(double sigma, double trunc_angle, double prec ) {
     //Terms needed in series for delta^2 for relative precision 1e-17 (if
     //there are enough):
     m_numint_nseries = 0;
-    for ( unsigned k = 1; k <= 10; ++k ) {
+    for ( auto k : ncrange( 1u, 11u ) ) {
       if ( gos_deltasq_c[k] * std::pow( m_wtrunc, k ) < 2e-17 ) {
         m_numint_nseries = k;
         break;
@@ -291,34 +285,36 @@ void NC::GaussOnSphere::set(double sigma, double trunc_angle, double prec ) {
                     "Gaussian density on sphere as a function of cos(x)");
   }
 
-  SplinedLookupTable lt_sofcosd;
+  SplinedLookupTable lt_cf;
   {
-    const double cta = cos_mpi2pi2(trunc_angle);
-    SLTFct_SofCosD fct_sofcosd(m_norm,m_expfact,m_sigma,m_truncangle);
+    const double cta = m_cta;
+    class CFFct final : public Fct1D {
+      const GaussOnSphere* m_gos;
+    public:
+      CFFct( const GaussOnSphere* gos ) : m_gos(gos) {}
+      double eval( double x ) const override { return m_gos->closedFormF(x); }
+    } fct_cf(this);
     //determine h, "epsilon" parameter for derivative estimation. It can not be
     //too small, or numerical impression results.
     double h = 0.01*(1.0-cta)/nlt;
     double minh = ncmin(1e-4,(1.0-cta)*0.1);
     h=ncmax(h,minh);
-    double fprime_b = estimateSingleSidedDerivative(&fct_sofcosd, 1.0,-h);
-    //Actual derivative at cta is infinite, so to avoid
-    //oscillatory spline behaviour, it is better if we simply force the curve at
-    //the first point to have a derivate pointing at the second point:
-    double fprime_a = fct_sofcosd.eval(cta+(1.0-cta)/nlt)/((1.0-cta)/nlt);
-    lt_sofcosd.set(&fct_sofcosd,cta,1.0,fprime_a,fprime_b,nlt,
-                   "gosapproxcircleintegral",
-                   "Approximate value of circle integral as a function of cos(alpha-gamma). Must be multiplied by sqrt(sin(alpha)/sin(gamma)).");
+    lt_cf.set(&fct_cf,cta,1.0,
+              estimateSingleSidedDerivative(&fct_cf, cta, h),
+              estimateSingleSidedDerivative(&fct_cf, 1.0, -h),nlt,
+              "gosclosedform",
+              "Closed form of circle integral (cf. closedFormF)");
   }
 
-  m_lt_sofcosd.swap(lt_sofcosd);
+  m_lt_cf.swap(lt_cf);
   m_lt_evalcosx.swap(lt_evalcosx);
   setupTable();
 }
 
 void NC::GaussOnSphere::setupTable()
 {
-  //Where the closed-form approximation is never valid, every circle integral
-  //would need numerical integration. Instead, a table is set up from such
+  //Where the closed-form approximation is not valid, circle integrals would
+  //need numerical integration. Instead, a table is set up from such
   //integrals, and used with 4x4-point Lagrange interpolation. It covers
   //alpha in [1.2*truncangle,pi/2] and gamma-alpha in [-truncangle,
   //truncangle], with coordinates which need no transcendental functions and
@@ -329,11 +325,15 @@ void NC::GaussOnSphere::setupTable()
   //10 times below the requested accuracy (or else not used), ignoring
   //negligible values.
   m_table = Table();
-  if ( m_circleint_k1 != kInfinity )
-    return;//closed form valid in places
   const double amin = 1.2 * m_truncangle;
   if ( !( amin < kPiHalf - 0.05 ) )
     return;
+  {
+    //Not needed if closed form valid at the peak for alpha=amin:
+    const double sa = std::sin( amin ), ca = std::cos( amin );
+    if ( closedFormValid( 1.0, sa * sa, ca * ca ) )
+      return;
+  }
   const double qmin = std::tan( 0.5 * amin );
   const double target = 0.1 * m_numint_accuracy;
   for ( unsigned na = 64, nz = 256; na <= 256; na *= 2, nz *= 2 ) {
@@ -377,10 +377,11 @@ void NC::GaussOnSphere::setupTable()
       }
     }
     m_table = std::move( t );
-    //Validate at the centres of cells of every second row (relative to
-    //values which are not negligible, i.e. a bit below the typical peak
-    //values of norm*sqrt(2pi)*sigma):
-    const double wfloor = 1e-3 * m_norm * m_sigma;
+    //Validate at the centres of cells of every second row. Errors are
+    //relative to max(g,wfloor), with wfloor 0.4% of typical peak values of
+    //norm*sqrt(2pi)*sigma (below that, e.g. at the truncation edges, only
+    //absolute errors matter):
+    const double wfloor = 1e-2 * m_norm * m_sigma;
     double maxerr = 0.0;
     for ( unsigned ia = 0; ia + 1 < na; ia += 2 ) {
       for ( unsigned iz = 0; iz + 1 < nz; ++iz ) {
@@ -503,6 +504,28 @@ double NC::GaussOnSphere::circleIntegralNumerical( double cg, double sg,
   return 4.0 * sa * m_norm * halfdt * integral;
 }
 
+double NC::GaussOnSphere::closedFormF( double x ) const
+{
+  //Closed form of circle integrals, g=sqrt(u*sa/sg)*F(x)*(1+u*E[v^2]/(4sasg)),
+  //with x=cos(delta_0) and u=x-cos(truncangle). With s=sqrt(2sasg)*sin(t/2),
+  //Eq. 23 of the elastic paper gives w=1-cos(delta)=1-x+s^2 exactly, and
+  //dt=sqrt(2/sasg)ds/cos(t/2) with 1/cos(t/2)=1/sqrt(1-s^2/(2sasg)) which is
+  //~1+s^2/(4sasg). With s=sqrt(u)*v, F(x)=2sqrt(2)*int_0^1 W(delta(w))dv is
+  //smooth at u=0 (unlike S=sqrt(u)F, splined before), and E[v^2] is the mean
+  //of v^2 with weight W, approximated in closedFormCorr. Unlike Eq. 35 there,
+  //this uses the exact density and includes the correction. Gauss-Legendre
+  //with segments of 2 sigma in s (where W falls like exp(-s^2/sigma^2)).
+  const double u = ncmax( 0.0, x - m_cta );
+  const double w0 = 1.0 - x;
+  const unsigned nseg = static_cast<unsigned>( ncmax( 1.0, std::ceil( 0.5 * std::sqrt( u ) / m_sigma ) ) );
+  auto f = [this,w0,u]( double v )
+  {
+    return std::exp( m_expfact * numIntDeltaSq( w0 + u * v * v ) );
+  };
+  return 2.0 * kSqrt2 * m_norm
+    * integrateGaussLegendre( f, 0.0, 1.0, 16, nseg );
+}
+
 double NC::GaussOnSphere::numIntDeltaSq( double w ) const
 {
   //Squared angle, delta^2, from w=1-cos(delta).
@@ -521,14 +544,13 @@ void NC::GaussOnSphere::circleIntegrals( std::size_t n, const double* cg,
                                          const double* ca, const double* sa,
                                          double* results ) const
 {
-  //As circleIntegral, but for speed the square roots and divisions are
+  //As circleIntegral, but for speed some square roots and divisions are
   //carried out in a separate loop. The tiny value prevents division by zero,
   //and never affects results (cf. the check on sasg).
   nc_assert(isValid());
   constexpr std::size_t nchunk = 32;
   constexpr double tiny = 1e-300;
   double sg[nchunk], sqrt_sa_over_sg[nchunk];
-  const double cta(m_cta), k1(m_circleint_k1), k2(m_circleint_k2);
   while ( n ) {
     const std::size_t m = ncmin( n, nchunk );
     for ( std::size_t i = 0; i < m; ++i ) {
@@ -541,9 +563,9 @@ void NC::GaussOnSphere::circleIntegrals( std::size_t n, const double* cg,
       const double sasg = sa[i]*sg[i];
       const double cacg = ca[i]*cg[i];
       const double cd = cacg+sasg;
-      if (cd>cta&&sasg>=1e-14&&k2 > k1*sasg+cacg) {
+      if ( closedFormValid( cd, sasg, cacg ) ) {
         //closed-form approximation gives accurate result here:
-        results[i] = m_lt_sofcosd.eval(cd)*sqrt_sa_over_sg[i];
+        results[i] = closedFormValue( cd, sasg, sqrt_sa_over_sg[i] );
       } else {
         //special case, needs more careful treatment:
         results[i] = circleIntegralSlow( cg[i], sg[i], ca[i], sa[i] );

@@ -65,6 +65,7 @@ int main()
            std::unique_ptr<NC::LCStdFrame>> frames;
   unsigned nseries(0), nnoseries(0);
   double worst_series(0.0), worst_num(0.0);//relative errors over prec
+  double bias_num(0.0);//sum of signed relative errors over prec
   for ( auto& rc : loadRefs() ) {
     auto& frameptr = frames[ std::make_tuple( rc.mosdeg, rc.ntrunc, rc.prec ) ];
     if ( !frameptr )
@@ -93,10 +94,12 @@ int main()
     const auto series = frame.calcXSIntegralSeries( neutron, normal );
     //Tolerances: The series is only used when its error bound is below
     //0.1*prec, and the numerical integration (also relying on approximations
-    //in GaussOnSphere) aims at a precision of prec:
-    REQUIRE( relerr( num, rc.ref ) <= 3.0 * rc.prec );
-    REQUIRE( relerr( val, rc.ref ) <= rc.prec );
+    //in GaussOnSphere) aims at a precision of prec, but in practice does much
+    //better (and without a systematic bias, checked below):
+    REQUIRE( relerr( num, rc.ref ) <= 0.5 * rc.prec );
+    REQUIRE( relerr( val, rc.ref ) <= 0.5 * rc.prec );
     worst_num = NC::ncmax( worst_num, relerr( num, rc.ref ) / rc.prec );
+    bias_num += ( num / rc.ref - 1.0 ) / rc.prec;
     if ( series.has_value() ) {
       ++nseries;
       REQUIRE( relerr( series.value(), rc.ref ) <= 0.1 * rc.prec );
@@ -113,6 +116,10 @@ int main()
   std::cout << "Worst relative errors over prec: series "
             << NC::fmt( worst_series ) << ", numerical "
             << NC::fmt( worst_num ) << std::endl;
+  bias_num /= ( nseries + nnoseries );
+  std::cout << "Mean signed relative error over prec, numerical: "
+            << NC::fmt( bias_num ) << std::endl;
+  REQUIRE( NC::ncabs( bias_num ) <= 0.05 );
   //Both methods must be tested:
   REQUIRE( nseries >= 20 && nnoseries >= 20 );
   return 0;

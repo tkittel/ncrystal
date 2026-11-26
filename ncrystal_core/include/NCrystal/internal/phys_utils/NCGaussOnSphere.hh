@@ -48,9 +48,10 @@ namespace NCRYSTAL_NAMESPACE {
     //sphere, and to sample a point on a circle according to the density. The
     //circle integrals (the geometrical factor g of Eqs. 22-24 in the NCrystal
     //elastic paper, CPC 267 (2021) 108082) will be evaluated - where
-    //appropriate - via an approximation formula (Eqs. 35-36 there), which
-    //employs splined lookup tables to avoid expensive calls (exp+acos+sqrt+erf
-    //calls), and otherwise numerically with Gauss-Legendre quadrature or a
+    //appropriate - via a closed-form approximation (Eqs. 35-36 there, but with
+    //the exact density and a first order correction, cf. closedFormF), which
+    //employs a splined lookup table,
+    //and otherwise numerically with Gauss-Legendre quadrature or a
     //table of such results. Sampling points on circles is implemented
     //precisely as rejection sampling.
     //
@@ -141,9 +142,18 @@ namespace NCRYSTAL_NAMESPACE {
 
   private:
     double circleIntegralSlow( double cacg, double sasg, double ca, double sa ) const;
+    bool closedFormValid( double cd, double sasg, double cacg ) const;
+    double closedFormF( double cosdelta0 ) const;
+    double closedFormCorr( double u, double sasg ) const;
+    double closedFormValue( double cd, double sasg,
+                            double sqrt_sa_over_sg ) const;
     double m_cta = -1.0;
     double m_circleint_k1 = -1.0;
     double m_circleint_k2 = -1.0;
+    //Constants for estimating the error of the closed form (closedFormValid):
+    double m_cf_s4 = -1.0;//0.75*sigma^4
+    double m_cf_lim = -1.0;//3*prec*sigma^2
+    double m_inv_sigma2 = -1.0;//1/sigma^2
     double m_norm = -1.0;
     double m_expfact = -1.0;
     double m_truncangle = -1.0;
@@ -169,7 +179,7 @@ namespace NCRYSTAL_NAMESPACE {
       double cosamin = 0.0;
     } m_table;
     void setupTable();
-    SplinedLookupTable m_lt_sofcosd;
+    SplinedLookupTable m_lt_cf;//F(x) of closedFormF
     SplinedLookupTable m_lt_evalcosx;
     double m_prec = -1.0;//for reference
     double m_sta = -1.0;//for reference
@@ -228,6 +238,44 @@ inline double NCrystal::GaussOnSphere::evalCosXInRange(double cosx) const {
   return res;
 }
 
+inline bool NCrystal::GaussOnSphere::closedFormValid( double cd, double sasg,
+                                                      double cacg ) const
+{
+  //Conditions of Eqs. 37-38 of the elastic paper (CPC 267 (2021) 108082),
+  //followed by a first order estimate of the relative error of the closed
+  //form from 1-cos(t)~t^2/2, which changes cos(delta) by u^2/(6sasg), with
+  //u=cos(delta_0)-cos(delta): E[u^2]/(6sigma^2 sasg) <= prec/2, with E[u^2]
+  //<= min(0.75sigma^4,umax^2/5). (See closedFormF for the closed form. It now
+  //includes a first order correction, so actual errors are much smaller.)
+  if ( !( cd > m_cta && sasg >= 1e-14
+          && m_circleint_k2 > m_circleint_k1*sasg+cacg ) )
+    return false;
+  const double umax = cd - m_cta;
+  return ncmin( m_cf_s4, 0.2 * umax * umax ) <= m_cf_lim * sasg;
+}
+
+inline double NCrystal::GaussOnSphere::closedFormCorr( double u,
+                                                     double sasg ) const
+{
+  //First order correction factor of the closed form, 1+u*E[v^2]/(4sasg) (see
+  //closedFormF). E[v^2] with weight exp(-a*v^2) on [0,1], a=u/sigma^2, goes
+  //from 1/3 (a=0) to 1/(2a), and this rational fit is within 2.2% of it:
+  const double a = u * m_inv_sigma2;
+  return 1.0 + u * ( 1.0 + 0.347 * a )
+    / ( 4.0 * sasg * ( 3.0 + a * ( 1.55 + 0.694 * a ) ) );
+}
+
+inline double NCrystal::GaussOnSphere::closedFormValue( double cd,
+                                                      double sasg,
+                                                      double sqrt_sa_over_sg ) const
+{
+  //Closed form (see closedFormF), shared by circleIntegral and
+  //circleIntegrals for identical results (also with FMA contractions):
+  const double u = ncmax( 0.0, cd - m_cta );
+  return m_lt_cf.eval(cd) * closedFormCorr( u, sasg )
+    * ( std::sqrt( u ) * sqrt_sa_over_sg );
+}
+
 inline double NCrystal::GaussOnSphere::circleIntegral( double cg, double sg, double ca, double sa ) const
 {
   nc_assert(isValid());
@@ -237,9 +285,9 @@ inline double NCrystal::GaussOnSphere::circleIntegral( double cg, double sg, dou
   const double cacg = ca*cg;
   const double cd = cacg+sasg;
 
-  if (cd>m_cta&&sasg>=1e-14&&m_circleint_k2 > m_circleint_k1*sasg+cacg) {
+  if ( closedFormValid( cd, sasg, cacg ) ) {
     //closed-form approximation gives accurate result here:
-    return m_lt_sofcosd.eval(cd)*std::sqrt(sa/sg);
+    return closedFormValue( cd, sasg, std::sqrt( sa / sg ) );
   }
 
   //special case, needs more careful treatment:

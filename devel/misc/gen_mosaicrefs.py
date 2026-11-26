@@ -164,7 +164,7 @@ def circle_cases():
                                   ( 5.0, 1e-2, None ), ( 5.0, 1e-4, None ),
                                   ( 10.0, 1e-4, None ), ( 20.0, 1e-4, None ),
                                   ( 20.0, 1e-7, None ), ( 40.0, 1e-3, None ),
-                                  ( 40.0, 1e-4, None ) ):
+                                  ( 40.0, 1e-4, None ), ( 5.0, 1e-6, 30.0 ) ):
         if ntrunc is None:
             ntrunc = default_ntrunc( prec )
         ta = float( fwhm2sigma( mosdeg * mp.pi / 180 ) ) * ntrunc

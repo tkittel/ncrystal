@@ -44,7 +44,8 @@ void testlc(const std::string& cfg)
   {
     NC::NeutronEnergy ekin = NC::NeutronWavelength{*it};
     auto xs = scat.crossSection(ekin, neutron_dir );
-    printf( "xs@%geV (%g Aa): %g\n", ekin.dbl(), *it, xs.dbl() );
+    //5 digits, since some values are close to rounding boundaries:
+    printf( "xs@%geV (%g Aa): %.5g\n", ekin.dbl(), *it, xs.dbl() );
     //Only sample scattering for the final 3 wavelengths:
     if ( xs && std::distance(it,wls.end()) <= 3 )
     {

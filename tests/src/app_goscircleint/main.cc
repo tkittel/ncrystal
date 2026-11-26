@@ -20,7 +20,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // Checks the precision of GaussOnSphere::circleIntegral and the methods it
-// uses (table and numerical integration), against independent
+// uses (closed form, table and numerical integration), against independent
 // high precision reference values from devel/misc/gen_mosaicrefs.py. Also
 // checks which table (if any) is set up for each configuration.
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,13 +53,17 @@ namespace {
 
   //Expected table sizes (alpha points) for the configurations in the
   //reference file, by mosaicity and precision (zero if no table, e.g. since
-  //the closed form is valid in places, the table range is empty, or the
-  //density underflows within the truncation):
+  //the closed form is valid in places, the table range is empty, the table
+  //fails validation, or the density underflows within the truncation). The
+  //configurations pass or fail the table validation by wide margins, so the
+  //sizes do not depend on the platform:
   unsigned expectedTableSize( double mosdeg, double prec )
   {
     using Key = std::pair<double,double>;
     static const std::map<Key,unsigned> expected = {
-      { { 1.0, 1e-7 }, 128 }, { { 10.0, 1e-4 }, 64 }, { { 20.0, 1e-4 }, 64 },
+      { { 0.01, 1e-3 }, 64 }, { { 0.1, 1e-7 }, 128 }, { { 1.0, 1e-3 }, 64 },
+      { { 1.0, 1e-7 }, 128 }, { { 5.0, 1e-2 }, 64 }, { { 5.0, 1e-6 }, 256 },
+      { { 5.0, 1e-4 }, 64 }, { { 10.0, 1e-4 }, 64 }, { { 20.0, 1e-4 }, 64 },
       { { 20.0, 1e-7 }, 128 }, { { 40.0, 1e-3 }, 64 } };
     auto it = expected.find( { mosdeg, prec } );
     return it == expected.end() ? 0 : it->second;
@@ -70,7 +74,7 @@ int main()
 {
   std::map<std::tuple<double,double,double>,
            std::unique_ptr<NC::GaussOnSphere>> goss;
-  unsigned nnumint(0), ntable(0), nother(0);
+  unsigned nnumint(0), ntable(0), nclosedform(0);
   for ( auto& rc : loadRefs() ) {
     auto& gosptr = goss[ std::make_tuple( rc.mosdeg, rc.ntrunc, rc.prec ) ];
     const double sigma = NC::MosaicityFWHM{ rc.mosdeg * NC::kDeg }.sigma().dbl();
@@ -86,33 +90,37 @@ int main()
     const double cg( std::cos(rc.gamma) ), sg( std::sin(rc.gamma) );
     const double ca( std::cos(rc.alpha) ), sa( std::sin(rc.alpha) );
     //Errors relative to the reference, or to values which are not negligible
-    //(as in GaussOnSphere::setupTable):
-    const double wfloor = 1e-3 * gos.getNormFactor() * sigma;
-    auto relerr = [&rc,wfloor]( double val )
+    //(below that, e.g. at the truncation edges, only absolute errors matter).
+    //The floor is lower for the numerical integration:
+    const double wfloor = 1e-2 * gos.getNormFactor() * sigma;
+    auto relerr = [&rc]( double val, double floor )
     {
-      return NC::ncabs( val - rc.ref ) / NC::ncmax( rc.ref, wfloor );
+      return NC::ncabs( val - rc.ref ) / NC::ncmax( rc.ref, floor );
     };
     //Numerical integration and table aim at 10 times below the accuracy:
     const double acc = NC::ncclamp( rc.prec * 0.1, 1e-7, 1e-4 );
     const double num = gos.circleIntegralNumerical( cg, sg, ca, sa );
-    REQUIRE( relerr( num ) <= 0.1 * acc );
+    REQUIRE( relerr( num, 0.1 * wfloor ) <= 0.1 * acc );
     const bool table_range = ( gos.hasTable()
                                && rc.alpha >= 1.2 * gos.getTruncangle() );
+    const double tab = ( table_range
+                         ? gos.circleIntegralTable( cg, sg, ca, sa ) : -1.0 );
     if ( table_range )
-      REQUIRE( relerr( gos.circleIntegralTable( cg, sg, ca, sa ) ) <= acc );
-    //The final result, where not from the closed form:
+      REQUIRE( relerr( tab, wfloor ) <= acc );
+    //The final result, from one of the methods (otherwise from the closed
+    //form, which aims at prec but in practice does much better):
     const double val = gos.circleIntegral( cg, sg, ca, sa );
-    if ( val == num && !table_range ) {
-      ++nnumint;
-    } else if ( table_range ) {
+    if ( val == tab ) {
       ++ntable;
-      REQUIRE( relerr( val ) <= acc );
+    } else if ( val == num ) {
+      ++nnumint;
     } else {
-      ++nother;
+      ++nclosedform;
+      REQUIRE( relerr( val, wfloor ) <= 0.1 * rc.prec );
     }
   }
   std::cout << "Cases using numerical integration: " << nnumint << ", table: "
-            << ntable << ", other: " << nother << std::endl;
-  REQUIRE( nnumint >= 20 && ntable >= 20 && nother >= 20 );
+            << ntable << ", closed form: " << nclosedform << std::endl;
+  REQUIRE( nnumint >= 20 && ntable >= 20 && nclosedform >= 20 );
   return 0;
 }
