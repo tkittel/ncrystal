@@ -32,29 +32,6 @@ namespace NC=NCrystal;
 
 struct NC::SCBragg::pimpl {
 
-  class ReflectionFamily : private ::NC::MoveOnly {//"::NC::" is needed to avoid compilation error (SCBragg inherits from private MoveOnly)
-  public:
-    //A familiy is here taken to be all planes sharing d-spacing and fsquared.
-
-    std::vector<Vector> deminormals;
-    double xsfact;// = fsquared / (unit_cell_volume * unit_cell_natoms)
-    double inv2d;
-
-    ReflectionFamily(double xsfct, double dspacing) ncnoexceptndebug
-      : xsfact(xsfct), inv2d(0.5/dspacing) { nc_assert(xsfct>0&&dspacing>0); }
-
-    ReflectionFamily & operator= ( ReflectionFamily && ) = default;
-    ReflectionFamily( ReflectionFamily && ) = default;
-
-    constexpr bool operator<( const ReflectionFamily & o ) const ncnoexceptndebug
-    {
-      //sort by d-spacing (secondarily by xsfact for reproducibility):
-      if ( o.inv2d!=inv2d ) return o.inv2d > inv2d;
-      nc_assert(o.xsfact != xsfact);
-      return o.xsfact < xsfact;
-    }
-  };
-
   typedef std::map<std::pair<uint64_t,uint64_t>,std::vector<Vector>,
                    std::greater<std::pair<uint64_t,uint64_t> > > SCBraggSortMap;
 
@@ -72,9 +49,10 @@ struct NC::SCBragg::pimpl {
     void invalidateCache() override { ekin = -1.0; }
     //cache signature:
     double ekin = -1.0;//Start with invalid cache
-    Vector dir;
+    Vector dir_key;//snapped direction (cf. snapDirection)
+    Vector dir;//dir_key normalised, used in calculations
     //cache contents:
-    double wl;
+    double wl = 0.0;
     VectD xs_commul;
     std::vector<GaussMos::ScatCache> scatcache;
   };
@@ -82,16 +60,15 @@ struct NC::SCBragg::pimpl {
   void genScat( Cache&, RNG&, Vector& outdir ) const;
   void updateCache( Cache&, NeutronEnergy, const Vector& ) const;
 
-  double m_threshold_ekin;
-  std::vector<ReflectionFamily> m_reflfamilies;
+  double m_threshold_ekin = kInfinity;
+  GaussMos::PlaneList m_planes;//in families sharing d-spacing and fsquared.
   GaussMos m_gm;
 };
 
 NC::SCBragg::pimpl::pimpl(const NC::Info& cinfo, MosaicityFWHM mosaicity,
                           double dd, const SCOrientation& sco, PlaneProvider * plane_provider,
                           double prec, double ntrunc)
-  : m_threshold_ekin(kInfinity),
-    m_gm(mosaicity,prec,ntrunc)
+  : m_gm(mosaicity,prec,ntrunc)
 {
   m_gm.setDSpacingSpread(dd);
 
@@ -130,7 +107,7 @@ double NC::SCBragg::pimpl::setupFamilies( const NC::Info& cinfo,
   //expand crystal info
   nc_assert_always(cinfo.hasHKLInfo());
   nc_assert_always(cinfo.hasStructureInfo());
-  nc_assert(m_reflfamilies.empty());
+  nc_assert(m_planes.nFamilies()==0);
 
   //collect all planes, sorted by (dsp,fsq). To avoid issues connected to
   //floating point number keys, we store dspacing/fsquared as integers, keeping
@@ -194,27 +171,22 @@ double NC::SCBragg::pimpl::setupFamilies( const NC::Info& cinfo,
     }
   }
 
-  m_reflfamilies.reserve(planes.size());
-  SCBraggSortMap::const_iterator it = planes.begin();
-  for (;it!=planes.end();++it) {
-
-    std::map<uint64_t,double>::iterator itOrig = origvals_dsp.find(it->first.first);
+  //Transfer to m_planes (in the lab frame), in order of decreasing d-spacing:
+  std::vector<Vector> normals;
+  for ( auto& e : planes ) {
+    auto itOrig = origvals_dsp.find(e.first.first);
     nc_assert(itOrig!=origvals_dsp.end());
-    const double dsp = (itOrig->second > 0 ? itOrig->second : it->first.first / two30);
+    const double dsp = (itOrig->second > 0 ? itOrig->second : e.first.first / two30);
 
-    itOrig = origvals_fsq.find(it->first.second);
+    itOrig = origvals_fsq.find(e.first.second);
     nc_assert(itOrig!=origvals_fsq.end());
-    const double fsq = (itOrig->second > 0 ? itOrig->second : it->first.second / two30);
+    const double fsq = (itOrig->second > 0 ? itOrig->second : e.first.second / two30);
 
-    m_reflfamilies.emplace_back(fsq/V0numAtom,dsp);
-
-    //transfer it->second into final vector and put in the lab frame:
-    ReflectionFamily& fam = m_reflfamilies.back();
-    fam.deminormals.reserve(it->second.size());
-    std::vector<Vector>::const_iterator itDN(it->second.begin()), itDNE(it->second.end());
-    for (;itDN!=itDNE;++itDN)
-      fam.deminormals.push_back( cry2lab * (*itDN) );
-    nc_assert(m_reflfamilies.back().deminormals.size()==it->second.size());
+    normals.clear();
+    for ( auto& n : e.second )
+      normals.push_back( cry2lab * n );
+    nc_assert(fsq>0&&dsp>0);
+    m_planes.addFamily( 0.5/dsp, fsq/V0numAtom, normals );
   }
 
   return maxdspacing;
@@ -222,56 +194,48 @@ double NC::SCBragg::pimpl::setupFamilies( const NC::Info& cinfo,
 
 
 namespace NCRYSTAL_NAMESPACE {
-  inline double SCBragg_cacheRound(double x) {
-    //Cut off input at 15 decimals, which should be a negligible effect on any
-    //realistic value of ekin in eV, but ensures that we don't
-    //get call-order irreproducibilities.
-    return std::floor(x*1e15+0.5)*1e-15;
+  namespace {
+    double SCBragg_cacheRound(double x) {
+      //Cut off input at 15 decimals, which should be a negligible effect on any
+      //realistic value of ekin in eV, but ensures that we don't
+      //get call-order irreproducibilities.
+      return std::floor(x*1e15+0.5)*1e-15;
+    }
+    Vector snapDirection( const Vector& dir )
+    {
+      //Normalised direction with components snapped to a grid of 2^-47 (~7e-15)
+      //with exact operations. Used as cache key, so results only depend on the
+      //input direction and not on the call history:
+      constexpr double scale = 140737488355328.0;//2^47
+      constexpr double invscale = 1.0 / scale;
+      const Vector u = dir.unit();
+      return { std::round( u.x() * scale ) * invscale,
+               std::round( u.y() * scale ) * invscale,
+               std::round( u.z() * scale ) * invscale };
+    }
   }
 }
 
 void NC::SCBragg::pimpl::updateCache( Cache& cache, NeutronEnergy ekin_raw, const NC::Vector& dir ) const
 {
-  //We check the cache validity on the rounded ekin value, but for simplicity we
-  //keep the direction as it is. We could consider rounding the direction as
-  //well...
-  //NB: We used to check co-alignment of angles via a dot-product, but that is
-  //actually numerically imprecise for small angles, leading to occurances of
-  //cache validity where it should have been invalid.
-  double ekin = SCBragg_cacheRound(ekin_raw.get());
-  if ( cache.ekin==ekin && dir.angle_highres(cache.dir)<1.0e-12 ) {
-    //cache already valid!
-    return;
-  }
+  const double ekin = SCBragg_cacheRound(ekin_raw.get());
+  const Vector key = snapDirection( dir );
+  if ( cache.ekin == ekin && cache.dir_key == key )
+    return;//valid
 
-  //Cache not valid!
-  cache.dir = dir;
-  cache.dir.normalise();
-
-  //Energy or direction is new, we must recalculate.
-
-  cache.ekin = ekin;
+  //Cache not valid, we must recalculate:
+  cache.ekin = -1.0;//invalid until fully updated (also after exceptions)
+  cache.dir_key = key;
+  cache.dir = key.unit();
   cache.wl = ekin2wl(ekin);
   nc_assert(cache.wl>=0);
   cache.scatcache.clear();
   cache.xs_commul.clear();
-  if (cache.wl==0)
-    return;//done, all cross-sections will be zero
-
-  std::vector<ReflectionFamily>::const_iterator it(m_reflfamilies.begin()), itE(m_reflfamilies.end());
-
-  double inv2dcutoff = (1.0-2*std::numeric_limits<double>::epsilon())/cache.wl;
-
-  GaussMos::InteractionPars interactionpars;
-  for( ; it!=itE; ++it) {
-    const ReflectionFamily& fam = *it;
-    if( fam.inv2d >= inv2dcutoff )
-      break;//stop here, no more families fulfill w<2d requirement.
-    interactionpars.set(cache.wl, fam.inv2d, fam.xsfact);
-    m_gm.calcCrossSections(interactionpars, cache.dir, fam.deminormals, cache.scatcache,cache.xs_commul);
-  }
-
+  if ( cache.wl > 0.0 )//otherwise all cross sections are zero
+    m_gm.calcCrossSections( m_planes, cache.wl, cache.dir,
+                            cache.scatcache, cache.xs_commul );
   nc_assert(cache.xs_commul.empty()||cache.xs_commul.back()>0.0);
+  cache.ekin = ekin;
 }
 
 void NC::SCBragg::pimpl::genScat( Cache& cache, RNG& rng, NC::Vector& outdir ) const
@@ -319,18 +283,20 @@ NC::ScatterOutcome NC::SCBragg::sampleScatter( CachePtr& cp, RNG& rng, NeutronEn
 
   Vector outdir;
   m_pimpl->genScat( cache, rng, outdir );
+  if ( outdir == cache.dir )
+    return { ekin, indir };//unscattered, return exactly the input direction
   return { ekin, outdir.as<NeutronDirection>() };
 }
 
 NC::Optional<std::string> NC::SCBragg::specificJSONDescription() const
 {
-  auto nfam = m_pimpl->m_reflfamilies.size();
+  auto nfam = m_pimpl->m_planes.nFamilies();
   auto mos = m_pimpl->m_gm.mosaicityFWHM();
 
   double dmin(-1),dmax(-1);
   if ( nfam ) {
-    dmin = 0.5/m_pimpl->m_reflfamilies.back().inv2d;
-    dmax = 0.5/m_pimpl->m_reflfamilies.front().inv2d;
+    dmin = 0.5/m_pimpl->m_planes.maxInv2dsp();
+    dmax = 0.5/m_pimpl->m_planes.minInv2dsp();
   }
 
   std::ostringstream ss;
