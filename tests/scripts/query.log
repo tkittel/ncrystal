@@ -187,7 +187,7 @@ ueq in cell 5.0(1),5.4(2),6.0(1),90,95.0(3),90 : [0.0118932, 5.35699e-05]
 ueq in cell 5.0(1),5.4(2),6.0(1),90.0(1),95.0(3),90 : [0.0118932, 5.41477e-05]
 
 >>> Sending query: ['cif', 'list']
-['numbers', 'elements', 'structure']
+['numbers', 'elements', 'structure', 'uisotemperature']
 
 >>> Sending query: ['cif', 'numbers', 'RAWDATA', '@0.0283@2344@1.234e-2(6)@3400e-6@-0.000@0@0.000(2)@?@.@1,5@1.2(3)e-4@1e999']
 [[0.0283, 5e-05],
@@ -483,6 +483,57 @@ Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","allo
 Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","tol_symprec=-1","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
 Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","cod_id=x","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
 Caught expected NCBadInput('Invalid cif query: ["cif","structure","strict","mp_id=1","mp_id=2","x.cif"] (correct usage: ["cif","structure",PERMISSIVE,OPTION...,NAME] or ["cif","structure",PERMISSIVE,OPTION...,"RAWDATA",NAME,"RAWDATA",TEXT], with PERMISSIVE "strict" or "permissive" and OPTIONs override_spacegroup=SG, tol_uij=X, tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1)')
+
+>>> Sending query: ['cif', 'uisotemperature', 'strict', 'none', 'none', 'none']
+{'comment': 'When converting CIF to NCMAT, the Uiso (msd) values in the CIF '
+            'data were assumed to be associated with a fallback temperature of '
+            '293K, since the CIF data specified no temperature. This is likely '
+            'wrong.',
+ 'is_warning': True,
+ 'temperature': 293.0,
+ 'warnings': ['The CIF data specifies no temperature, so its Uiso (msd) values '
+              'are assumed to be associated with a fallback temperature of '
+              '293K. Specify the temperature explicitly, as this is likely '
+              'wrong.']}
+
+>>> Sending query: ['cif', 'uisotemperature', 'strict', '100', 'RAWDATA', '120(2)', 'none']
+{'comment': 'When converting CIF to NCMAT, the Uiso (msd) values in the CIF '
+            'data were explicitly chosen to be associated with a temperature '
+            'of 100K, overriding the _diffrn_ambient_temperature CIF field '
+            '("120(2)").',
+ 'is_warning': False,
+ 'temperature': 100.0,
+ 'warnings': []}
+
+>>> Sending query: ['cif', 'uisotemperature', 'strict', 'none', 'RAWDATA', '120(2)', 'RAWDATA', '121']
+{'comment': 'When converting CIF to NCMAT, the Uiso (msd) values in the CIF '
+            'data were assumed to be associated with a temperature of 120K, '
+            'based on the _diffrn_ambient_temperature CIF field ("120(2)"). '
+            'The _cell_measurement_temperature CIF field ("121") was '
+            'consistent with this (less than 5% different).',
+ 'is_warning': False,
+ 'temperature': 120.0,
+ 'warnings': []}
+
+>>> Sending query: ['cif', 'uisotemperature', 'permissive', 'none', 'RAWDATA', '120', 'RAWDATA', '300']
+{'comment': 'When converting CIF to NCMAT, the Uiso (msd) values in the CIF '
+            'data were assumed to be associated with a temperature of 120K, '
+            'based on the _diffrn_ambient_temperature CIF field ("120"). The '
+            '_cell_measurement_temperature CIF field differed ("300"), an '
+            'inconsistency which was only accepted because the conversion was '
+            'done in permissive mode.',
+ 'is_warning': True,
+ 'temperature': 120.0,
+ 'warnings': ['The _diffrn_ambient_temperature ("120") and '
+              '_cell_measurement_temperature ("300") CIF fields are '
+              'inconsistent, so the Uiso (msd) values are assumed to be '
+              'associated with a temperature of 120K, based on the former '
+              '(accepted due to permissive mode).']}
+Caught expected NCBadInput('The _diffrn_ambient_temperature ("120") and _cell_measurement_temperature ("300") CIF fields are inconsistent, so it is unclear with which temperature the Uiso (msd) values are associated. Specify the temperature explicitly, or try permissive mode to use the _diffrn_ambient_temperature value.')
+rejected: ['strict', 'none', 'none'] Invalid cif query: ["cif","uisotemperature","strict","none","none"]
+rejected: ['x', 'none', 'none', 'none'] Invalid cif query: ["cif","uisotemperature","x","none","none","none"]
+rejected: ['strict', 'abc', 'none', 'none'] Invalid cif query: ["cif","uisotemperature","strict","abc","none","none"]
+rejected: ['strict', 'none', 'RAWDATA', '1', 'none', 'none'] Invalid cif query: ["cif","uisotemperature","strict","none","RAWDATA","1","none","none"]
 ============= CLI >>test wl2ekin 1.8<< ====================
 0.025248213035
 ===========================================

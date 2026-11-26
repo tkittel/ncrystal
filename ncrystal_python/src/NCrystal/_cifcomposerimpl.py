@@ -136,103 +136,24 @@ def _apply_remap( src_atoms, remap ):
 
 #Allowed temperatures of Uiso values (kelvin), and the fallback when the CIF
 #data specifies none:
-_uiso_trange = ( 0.1, 3000.0 )
-_uiso_tfallback = 293.0
-
 def _uiso_temperature( cifloader, chosen, *, warnfct ):
-    #The temperature (kelvin) associated with the Uiso values: the chosen one,
-    #or from the CIF temperature fields, or else the fallback. Returns it with
-    #the header comment (string) and whether this comment is a warning.
-    #Inconsistent or invalid fields are errors, unless in permissive mode.
+    #The temperature (kelvin) associated with the Uiso values, with the header
+    #comment (string) and whether this comment is a warning (cf.
+    #resolveUisoTemperature in NCCIFTemperature.hh):
     from ._cifreadimpl import cif_temperature_fields as fields
-    lo, hi = _uiso_trange
-    raw = cifloader._cif_temperatures
-    permissive = cifloader._permissive
-    present = [ ( f, raw[f] ) for f in fields if raw.get( f ) is not None ]
-    head = ( 'When converting CIF to NCMAT, the Uiso (msd) values in the CIF'
-             ' data were' )
-    if chosen is not None:
-        T = float( chosen )
-        if not ( lo <= T <= hi ):
-            raise _nc_core.NCBadInput( 'Invalid temperature chosen for the Uiso'
-                                       f' (msd) values: {T:g}K (must be at'
-                                       f' least {lo:g}K and at most {hi:g}K).' )
-        s = ( f'{head} explicitly chosen to be associated with a temperature'
-              f' of {T:g}K' )
-        if len( present ) == 1:
-            s += f', overriding the {present[0][0]} CIF field ("{present[0][1]}")'
-        elif present:
-            vals = [ _cif_temperature( v ) for _, v in present ]
-            consistent = ( None not in vals
-                           and _consistent_temperatures( *vals ) )
-            s += ( ', overriding the ' + ( '' if consistent else 'inconsistent ' )
-                   + ' and '.join( f'{f} ("{v}")' for f, v in present )
-                   + ' CIF fields' )
-        return T, s + '.', False
-    notes, is_warning, valid = [], False, []
-    for f, v in present:
-        x = _cif_temperature( v )
-        if x is not None and lo <= x <= hi:
-            valid.append( ( f, v, x ) )
-            continue
-        if not permissive:
-            raise _nc_core.NCBadInput( f'The {f} CIF field ("{v}") is not a valid'
-                                       ' temperature. Specify the temperature of'
-                                       ' the Uiso (msd) values explicitly, or try'
-                                       ' permissive mode to ignore it.' )
-        warnfct( f'The {f} CIF field ("{v}") is not a valid temperature'
-                         ' and is ignored (accepted due to permissive mode).' )
-        notes.append( f'The {f} CIF field ("{v}") was not a valid temperature'
-                      ' and was ignored, which was only accepted because the'
-                      ' conversion was done in permissive mode.' )
-        is_warning = True
-    if not valid:
-        T = _uiso_tfallback
-        warnfct( f'The CIF data specifies no {"valid " if notes else ""}'
-                         'temperature, so its Uiso (msd) values are assumed to be'
-                         f' associated with a fallback temperature of {T:g}K.'
-                         ' Specify the temperature explicitly, as this is'
-                         ' likely wrong.' )
-        s = ( f'{head} assumed to be associated with a fallback temperature of'
-              f' {T:g}K, since the CIF data specified no'
-              f' {"valid " if notes else ""}temperature. This is likely wrong.' )
-        return T, ' '.join( [ s ] + notes ), True
-    f0, v0, T = valid[0]
-    s = ( f'{head} assumed to be associated with a temperature of {T:g}K,'
-          f' based on the {f0} CIF field ("{v0}").' )
-    for f, v, x in valid[1:]:
-        if _consistent_temperatures( T, x ):
-            notes.insert( 0, f'The {f} CIF field ("{v}") was consistent with'
-                          ' this (less than 5% different).' )
-            continue
-        if not permissive:
-            raise _nc_core.NCBadInput( f'The {f0} ("{v0}") and {f} ("{v}") CIF'
-                                       ' fields are inconsistent, so it is'
-                                       ' unclear with which temperature the Uiso'
-                                       ' (msd) values are associated. Specify'
-                                       ' the temperature explicitly, or try'
-                                       f' permissive mode to use the {f0}'
-                                       ' value.' )
-        warnfct( f'The {f0} ("{v0}") and {f} ("{v}") CIF fields are'
-                         ' inconsistent, so the Uiso (msd) values are assumed'
-                         f' to be associated with a temperature of {T:g}K,'
-                         ' based on the former (accepted due to permissive'
-                         ' mode).' )
-        notes.insert( 0, f'The {f} CIF field differed ("{v}"), an'
-                      ' inconsistency which was only accepted because the'
-                      ' conversion was done in permissive mode.' )
-        is_warning = True
-    return T, ' '.join( [ s ] + notes ), is_warning
-
-def _cif_temperature( value ):
-    #Printed CIF number (e.g. "100(2)") as float, or None if not a number:
-    from ._sgsymimpl import _rawlist
     from .misc import evaluate_query
-    r = evaluate_query( [ 'cif', 'numbers', *_rawlist( [ value ] ) ] )[0]
-    return float( r[0] ) if r else None
-
-def _consistent_temperatures( a, b ):
-    return abs( a - b ) < 0.05 * max( a, b )
+    raw = cifloader._cif_temperatures
+    args = []
+    for f in fields:
+        v = raw.get( f )
+        args += [ 'none' ] if v is None else [ 'RAWDATA', v ]
+    q = evaluate_query( [ 'cif', 'uisotemperature',
+                          'permissive' if cifloader._permissive else 'strict',
+                          'none' if chosen is None else repr( float( chosen ) ),
+                          *args ] )
+    for w in q['warnings']:
+        warnfct( w )
+    return q['temperature'], q['comment'], q['is_warning']
 
 def _add_compositions_and_dyninfo( ncmat, src_atoms, *, skip_dyninfo,
                                    uiso_temperature ):

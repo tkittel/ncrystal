@@ -24,6 +24,7 @@
 #include "NCrystal/internal/cif/NCCIFSetting.hh"
 #include "NCrystal/internal/cif/NCCIFSites.hh"
 #include "NCrystal/internal/cif/NCCIFDescribe.hh"
+#include "NCrystal/internal/cif/NCCIFTemperature.hh"
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 
@@ -347,10 +348,12 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
   constexpr auto sv_numbers = StrView::make("numbers");
   constexpr auto sv_elements = StrView::make("elements");
   constexpr auto sv_structure = StrView::make("structure");
+  constexpr auto sv_uisotemp = StrView::make("uisotemperature");
   if ( key == sv_list ) {
     if ( nargs != 0 )
       invalid("no arguments should come after: [\"cif\",\"list\"]");
-    os << "[\"numbers\", \"elements\", \"structure\"]";
+    os << "[\"numbers\", \"elements\", \"structure\","
+      " \"uisotemperature\"]";
   } else if ( key == sv_numbers ) {
     //["cif","numbers","RAWDATA",LIST]: printed CIF numbers (e.g.
     //"0.0283(4)") as [[value,rounding error],...], with null for strings
@@ -399,6 +402,54 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
         os << "null";
     }
     os << ']';
+  } else if ( key == sv_uisotemp ) {
+    //["cif","uisotemperature",PERMISSIVE,CHOSEN,AMBIENT,MEASUREMENT]: the
+    //temperature associated with the Uiso values of CIF data (cf.
+    //resolveUisoTemperature), with PERMISSIVE "strict" or "permissive", CHOSEN
+    //"none" or a temperature (K), and the printed values of
+    //_diffrn_ambient_temperature and _cell_measurement_temperature each
+    //"none" (absent) or "RAWDATA",TEXT. Result: {"temperature":T,
+    //"comment":..,"is_warning":b,"warnings":[..]}:
+    const auto usage = "correct usage: [\"cif\",\"uisotemperature\","
+      "PERMISSIVE,CHOSEN,AMBIENT,MEASUREMENT], with PERMISSIVE \"strict\" or"
+      " \"permissive\", CHOSEN \"none\" or a temperature, and AMBIENT and"
+      " MEASUREMENT each \"none\" or \"RAWDATA\",TEXT";
+    if ( nargs < 4 || ( arg(0) != "strict" && arg(0) != "permissive" ) )
+      invalid( usage );
+    Optional<double> chosen;
+    if ( arg(1) != "none" ) {
+      chosen = arg(1).toDbl();
+      if ( !chosen.has_value() )
+        invalid( usage );
+    }
+    StrView fields[2];
+    std::size_t i = 2;
+    for ( auto& fv : fields ) {
+      if ( i < nargs && arg(i) == "none" ) {
+        ++i;
+      } else if ( i + 1 < nargs && arg(i) == sv_rawdata ) {
+        fv = arg(i+1);
+        i += 2;
+      } else {
+        invalid( usage );
+      }
+    }
+    if ( i != nargs )
+      invalid( usage );
+    std::vector<std::string> warnings;
+    const auto r = NCC::resolveUisoTemperature(
+      fields[0], fields[1], chosen,
+      ( arg(0) == "permissive" ? NCC::CIFPermissive::YES
+        : NCC::CIFPermissive::NO ),
+      [&warnings]( const std::string& w ) { warnings.push_back( w ); } );
+    os << "{\"temperature\":";
+    streamJSON( os, r.temperature );
+    os << ",\"comment\":";
+    streamJSON( os, r.comment );
+    os << ",\"is_warning\":" << ( r.isWarning ? "true" : "false" )
+       << ",\"warnings\":";
+    streamJSON( os, warnings );
+    os << '}';
   } else if ( key == sv_structure ) {
     //["cif","structure",PERMISSIVE,OPTION...,SRC]: the structure of CIF data
     //(cf. findUniqueStructProvItems, chooseSetting, snapCell, getAtoms and
