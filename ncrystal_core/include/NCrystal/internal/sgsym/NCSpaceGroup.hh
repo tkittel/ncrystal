@@ -149,6 +149,19 @@ namespace NCRYSTAL_NAMESPACE {
   //streams as .toString():
   std::ostream& operator<<( std::ostream&, const SpaceGroup& );
 
+  //As the parsing SpaceGroup constructor, but returning the outcome instead
+  //of throwing BadInput: the setting, or why there is none (Syntax: not of
+  //the form "<number>" or "<number>:<choice>" with a number in 1..230;
+  //NoSetting: of that form, but not a setting in the given mode) and the
+  //message the constructor throws:
+  struct SpaceGroupParseResult {
+    enum class Status { OK, Syntax, NoSetting };
+    Status status;
+    Optional<SpaceGroup> setting;
+    std::string errorMsg;
+  };
+  SpaceGroupParseResult tryParseSpaceGroup( StrView, SpaceGroupParseMode );
+
   //Whether the space group is one of the rhombohedral (R) ones, and whether
   //a unit cell of such a space group with lattice angle alpha (degrees) is
   //described in rhombohedral axes (a=b=c, alpha=beta=gamma) rather than in

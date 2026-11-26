@@ -119,6 +119,7 @@ def main():
           override = '227:1' )
     test( 'override, ambiguous', content( cubic ), override = 'F d -3 m' )
     test( 'override, unknown', content( cubic ), override = 'bla' )
+    test( 'override, no such setting', content( cubic ), override = '227:3' )
 
 if __name__ == '__main__':
     main()

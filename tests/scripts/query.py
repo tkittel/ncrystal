@@ -211,6 +211,19 @@ def main():
     test_cli('sgsym','fromhm','C -1')#(no tabulated setting)
     test_cli('sgsym','fromnumber','227')
     test_cli('sgsym','fromnumber','14')
+    #A setting, or with DOTHROW=0 the reason it is none:
+    test_cli('sgsym','setting','0','70:1')
+    test_cli('sgsym','setting','1','225')
+    test_cli('sgsym','setting','0','70:9')
+    test_cli('sgsym','setting','0','70')
+    test_cli('sgsym','setting','0','F d d d')
+    with ensure_error(NCBadInput,'Invalid space group specification: "70:9"'
+                      ' (not a setting of space group 70, the settings are:'
+                      ' 70:1 (default), 70:2)'):
+        test_cli('sgsym','setting','1','70:9')
+    with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","setting","2",'
+                      '"70:1"] (correct usage: ["sgsym","setting",0|1,SG])'):
+        test_cli('sgsym','setting','2','70:1')
     test_cli('sgsym','fromnumber','225')
     for bad in ( '0', '231', 'x', '1.0' ):
         with ensure_error( NCBadInput, 'Invalid sgsym query: ["sgsym",'
