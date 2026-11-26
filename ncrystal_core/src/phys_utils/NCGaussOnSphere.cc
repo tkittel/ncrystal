@@ -432,6 +432,46 @@ double NC::GaussOnSphere::circleIntegralSlow( double cg, double sg, double ca, d
 
 }
 
+void NC::GaussOnSphere::circleIntegrals( std::size_t n, const double* cg,
+                                         const double* ca, const double* sa,
+                                         double* results ) const
+{
+  //As circleIntegral, but for speed the square roots and divisions are
+  //carried out in a separate loop. The tiny value prevents division by zero,
+  //and never affects results (cf. the check on sasg).
+  nc_assert(isValid());
+  constexpr std::size_t nchunk = 32;
+  constexpr double tiny = 1e-300;
+  double sg[nchunk], sqrt_sa_over_sg[nchunk];
+  const double cta(m_cta), k1(m_circleint_k1), k2(m_circleint_k2);
+  while ( n ) {
+    const std::size_t m = ncmin( n, nchunk );
+    for ( std::size_t i = 0; i < m; ++i ) {
+      nc_assert( ncabs(cg[i]) <= 1.0 && sa[i] >= 0.0 );
+      nc_assert(ncabs(ca[i]*ca[i]+sa[i]*sa[i]-1.0)<1e-6);
+      sg[i] = std::sqrt( 1.0 - cg[i]*cg[i] );
+      sqrt_sa_over_sg[i] = std::sqrt( sa[i] / ( sg[i] + tiny ) );
+    }
+    for ( std::size_t i = 0; i < m; ++i ) {
+      const double sasg = sa[i]*sg[i];
+      const double cacg = ca[i]*cg[i];
+      const double cd = cacg+sasg;
+      if (cd>cta&&sasg>=1e-14&&k2 > k1*sasg+cacg) {
+        //closed-form approximation gives accurate result here:
+        results[i] = m_lt_sofcosd.eval(cd)*sqrt_sa_over_sg[i];
+      } else {
+        //special case, needs more careful treatment:
+        results[i] = circleIntegralSlow( cg[i], sg[i], ca[i], sa[i] );
+      }
+    }
+    n -= m;
+    cg += m;
+    ca += m;
+    sa += m;
+    results += m;
+  }
+}
+
 bool NC::GaussOnSphere::genPointOnCircle( RNG& rng, double cg, double sg, double ca, double sa,
                                           double& ct, double& st ) const
 {

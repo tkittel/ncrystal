@@ -93,6 +93,12 @@ namespace NCRYSTAL_NAMESPACE {
     double calcRawCrossSectionValue( InteractionPars& ip,
                                      double cos_angle_indir_normal ) const;
 
+    //Same for n values in one go, which is faster than separate calls (same
+    //results):
+    void calcRawCrossSectionValues( InteractionPars& ip, std::size_t n,
+                                    const double* cos_angle_indir_normal,
+                                    double* results ) const;
+
     //Cross-sections for a large number of demi-normals can be found in one go,
     //by first collecting them in a PlaneList. This method DOES implement the
     //Gauss truncation internally (and exactly), and ignores planes with

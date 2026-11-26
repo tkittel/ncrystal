@@ -140,10 +140,18 @@ namespace NCRYSTAL_NAMESPACE {
     //The cross-section for off-axis normals can either be found for a
     //particular crystallite orientation...:
     double calcXS( const NeutronPars&, const NormalPars&, double cosphi ) const;
-    //... or it can be integrated over a range of crystallite orientations (the
-    //collect object will be passed to the internal AdaptiveSimpsons
-    //integrator):
+    //... or it can be integrated over all crystallite orientations, phi in
+    //[0,pi]. The range [phimin,phimax] must contain all phi values with
+    //non-vanishing contributions (as for LCROIs):
     double calcXSIntegral( const NeutronPars&, const NormalPars&, double phimin, double phimax ) const;
+
+    //The two methods used by calcXSIntegral: A series expansion (NullOpt if
+    //not precise enough) and otherwise numerical integration over
+    //[phimin,phimax] with the trapezoidal rule:
+    Optional<double> calcXSIntegralSeries( const NeutronPars&,
+                                           const NormalPars& ) const;
+    double calcXSIntegralNumerical( const NeutronPars&, const NormalPars&,
+                                    double phimin, double phimax ) const;
 
     //Scatterings (sinphi parameter required as well as cosphi, to allow calling
     //code to select phi values in all of [-pi,pi] range):
@@ -152,6 +160,8 @@ namespace NCRYSTAL_NAMESPACE {
 
   private:
     const GaussMos m_gm;
+    static constexpr unsigned s_norder = 6;//order of calcXSIntegralSeries
+    double m_wmom[s_norder+1];//E[w^m], w=1-cos(delta), cf. calcXSIntegralSeries
   };
 
   class LCHelper : private MoveOnly {

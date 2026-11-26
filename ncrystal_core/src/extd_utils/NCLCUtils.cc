@@ -22,7 +22,6 @@
 #include "NCrystal/internal/extd_utils/NCLCUtils.hh"
 #include "NCrystal/internal/extd_utils/NCPlaneProvider.hh"
 #include "NCrystal/internal/phys_utils/NCGaussMos.hh"
-#include "NCrystal/internal/utils/NCRomberg.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
 #include "NCrystal/internal/utils/NCRotMatrix.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
@@ -456,11 +455,12 @@ void NC::LCHelper::Cache::reset()
 }
 
 namespace NCRYSTAL_NAMESPACE {
-  class LCStdFrameIntegrator : public Romberg {
+  class LCStdFrameIntegrator final {
+    //Evaluates the cross section of a planeset for a range of crystallite
+    //rotations, phi, and integrates it over such a range.
   public:
     LCStdFrameIntegrator(const GaussMos* gm, const LCStdFrame::NormalPars& normal, const LCStdFrame::NeutronPars& neutron)
-      : Romberg(),
-        m_ip(neutron.wl, normal.planeset->inv_twodsp, normal.planeset->fsq),
+      : m_ip(neutron.wl, normal.planeset->inv_twodsp, normal.planeset->fsq),
         m_gm(gm),
         m_sinnormalmults3(normal.planeset->sinalpha*neutron.s3*normal.sign),//include normal.sign here, since it should multiply cos(phi) in evalFunc
         m_cosnormalmultc3(normal.planeset->cosalpha*normal.sign*neutron.c3),
@@ -470,45 +470,99 @@ namespace NCRYSTAL_NAMESPACE {
       nc_assert(gm&&neutron.wl>0);
     }
 
-    virtual bool accept(unsigned /*level*/, double prev_estimate, double estimate,double,double) const
+    //Values at the n points phi=offset+i*delta, i=0..n-1:
+    void evalFuncMany(double* fvals, unsigned n, double offset, double delta) const
     {
-      return ncabs(estimate-prev_estimate) <= m_acc*ncabs(estimate);
+      evalInBatches( n, offset, delta, [&fvals]( const double* v, unsigned m )
+      {
+        std::copy( v, v+m, fvals );
+        fvals += m;
+      });
     }
 
-    virtual double evalFunc(double) const {
-      //Must be implemented, but should never be called since we provide
-      //evalFuncMany+evalFuncManySum.
-      nc_assert_always(false);
-    }
-
-    virtual void evalFuncMany(double* fvals, unsigned n, double offset, double delta) const
+    //Same, but returning the sum of the values:
+    double evalFuncManySum(unsigned n, double offset, double delta) const
     {
-      nc_assert(offset>=0&&offset<kPi*1.00001);
-      nc_assert(delta>0&&delta*(n-1)<=kPi*1.00001);
-      CosSinGridGen grid(n,offset,delta);
-      unsigned i = 0;
-      do {
-        double cosgamma = m_sinnormalmults3 * grid.current_cosval() + m_cosnormalmultc3;
-        nc_assert(NC::ncabs(cosgamma)<1.000000001);
-        fvals[i++] = m_gm->calcRawCrossSectionValue(m_ip,cosgamma);
-      } while (grid.step());
-    }
-
-    virtual double evalFuncManySum(unsigned n, double offset, double delta) const
-    {
-      nc_assert(offset>=0&&offset<kPi*1.00001);
-      nc_assert(delta>0&&delta*n<=kPi*1.00001);
-      CosSinGridGen grid(n,offset,delta);
       double sum(0.);
-      do {
-        double cosgamma = m_sinnormalmults3 * grid.current_cosval() + m_cosnormalmultc3;
-        nc_assert(NC::ncabs(cosgamma)<1.000000001);
-        sum += m_gm->calcRawCrossSectionValue(m_ip,cosgamma);
-      } while (grid.step());
+      evalInBatches( n, offset, delta, [&sum]( const double* v, unsigned m )
+      {
+        for ( auto i : ncrange(m) )
+          sum += v[i];
+      });
       return sum;
     }
 
+    //Integral over phi in [a,b], with the trapezoidal rule and an interval
+    //width, h, which is halved until two estimates agree. Convergence is
+    //often very fast, but can also be like h^1.5 (non-smooth integrands),
+    //leaving an error of 0.55 times the last difference, with the same sign.
+    //Unless the last two differences show fast convergence, that error is
+    //thus added (a Richardson step for h^1.5, also an improvement for h^2).
+    double integrate( double a, double b ) const
+    {
+      nc_assert( b > a );
+      double fvals[17];
+      double h = (b-a)*0.0625;
+      evalFuncMany( fvals, 17, a, h );
+      const double sum_coarse = ( 0.5*(fvals[0]+fvals[16])
+                                  + ( (fvals[2]+fvals[4])+(fvals[6]+fvals[8]) )
+                                  + ( (fvals[10]+fvals[12])+fvals[14] ) );
+      double sum = sum_coarse + ( ( (fvals[1]+fvals[3])+(fvals[5]+fvals[7]) )
+                                  + ( (fvals[9]+fvals[11])+(fvals[13]+fvals[15]) ) );
+      double prev = sum_coarse * ( 2.0 * h );
+      double res = sum * h;
+      //Previous difference, from the estimate with 4 intervals:
+      double dprev = prev - 4.0 * h * ( 0.5 * ( fvals[0] + fvals[16] )
+                                        + ( fvals[4] + fvals[8] ) + fvals[12] );
+      unsigned n = 16;//number of intervals
+      while ( !( ncabs(res-prev) <= m_acc*ncabs(res) ) ) {
+        if ( !std::isfinite( res ) )
+          return res;//infinite integrand (e.g. wl=2d), do not refine
+        if ( n >= 65536 )
+          NCRYSTAL_THROW(CalcError,"Integration of layered crystal cross"
+                         " section over crystallite rotations did not converge.");
+        //Add the mid-points of all intervals:
+        sum += evalFuncManySum( n, a + 0.5*h, h );
+        h *= 0.5;
+        n *= 2;
+        dprev = res - prev;
+        prev = res;
+        res = sum * h;
+      }
+      const double d = res - prev;
+      //Fast convergence when d is much smaller than dprev (same sign). The
+      //constant is 1/(2^1.5-1):
+      if ( d != 0.0 && !( dprev / d >= 8.0 ) )
+        res += 0.54691816067802716 * d;
+      return res;
+    }
+
   private:
+    //Evaluates the n values in batches (which is faster), passing the values
+    //and size of each batch to the provided function.
+    template<class TFunc>
+    void evalInBatches( unsigned n, double offset, double delta,
+                        TFunc&& func ) const
+    {
+      nc_assert(offset>=0&&offset<kPi*1.00001);
+      nc_assert(delta>0&&delta*(n-1)<=kPi*1.00001);
+      constexpr unsigned nbatch = 64;
+      double cosgamma[nbatch], vals[nbatch];
+      CosSinGridGen grid(n,offset,delta);
+      bool more = true;
+      while ( more ) {
+        unsigned m = 0;
+        do {
+          //gamma is the angle between neutron and normal:
+          cosgamma[m] = m_sinnormalmults3 * grid.current_cosval() + m_cosnormalmultc3;
+          nc_assert(NC::ncabs(cosgamma[m])<1.000000001);
+          more = grid.step();
+        } while ( ++m < nbatch && more );
+        m_gm->calcRawCrossSectionValues( m_ip, m, cosgamma, vals );
+        func( vals, m );
+      }
+    }
+
     mutable GaussMos::InteractionPars m_ip;//NB: Mutable here is OK, since we use local per-thread LCStdFrameIntegrator objects.
     const GaussMos * m_gm;
     const double m_sinnormalmults3;
@@ -692,6 +746,120 @@ void NC::LCHelper::genScatter( LCHelper::Cache& cache, RNG& rng, double wl, cons
 NC::LCStdFrame::LCStdFrame(MosaicityFWHM mosaicity, double prec, double ntrunc)
   : m_gm(mosaicity,prec,ntrunc)
 {
+  //Moments E[w^m] of the mosaicity distribution, W(delta), where
+  //w=1-cos(delta) and delta is the angle to the nominal normal (Simpson's
+  //rule; w=2sin^2(delta/2) for precision at small angles):
+  const auto& gos = m_gm.gos();
+  const double ta = gos.getTruncangle();
+  constexpr unsigned n = 2048;
+  const double h = ta / n;
+  StableSum sums[s_norder+1];
+  for ( auto i : ncrange(n+1) ) {
+    const double delta = i * h;
+    const double sd = std::sin(0.5*delta);
+    const double w = 2.0*sd*sd;
+    double f = ( ( i==0 || i==n ) ? 1.0 : ( i%2 ? 4.0 : 2.0 ) )
+      * gos.evalXExact(delta) * std::sin(delta);
+    for ( auto& sum : sums ) {
+      sum.add(f);
+      f *= w;
+    }
+  }
+  for ( auto m : ncrange(s_norder+1) )
+    m_wmom[m] = sums[m].sum() * ( k2Pi * h / 3.0 );
+}
+
+NC::Optional<double>
+NC::LCStdFrame::calcXSIntegralSeries( const NeutronPars& neutron,
+                                      const NormalPars& normal ) const
+{
+  //Integral over phi in [0,pi] of the cross section, q*g_SC(u) (Eq. 43 in
+  //the NCrystal elastic paper, CPC 267 (2021) 108082), with u=cos(gamma)=
+  //A*cos(phi)+B (Eq. 42). Substituting u for phi gives
+  //q*integral(g_SC(u)*G(u)du), with G(u)=1/sqrt(A^2-(u-B)^2). g_SC is only
+  //non-zero in a narrow window, |u-c|<=h, around c=cos(alpha)=wl/2d, and if
+  //that is well inside [B-|A|,B+|A|], G is expanded to 6th order around c.
+  //This needs the moments M_n of g_SC around c, which are exactly given by
+  //M_n=s*E[<(-c*w+s*sin(delta)*cos(psi))^n>], s=sin(alpha) (with <..> an
+  //average over psi in [0,2pi], and E an average over the mosaicity
+  //distribution, cf. m_wmom). Returns NullOpt if the approximation is not
+  //precise enough.
+  const double c = neutron.wl * normal.planeset->inv_twodsp;
+  const double cta = m_gm.mosaicityCosTruncationAngle();
+  if ( !( c < cta ) )
+    return NullOpt;//window reaches u=1 (back-scattering), or wl>=2d
+  const double s = std::sqrt( 1.0 - c*c );
+  const double A = ncabs( normal.planeset->sinalpha * neutron.s3 );
+  const double B = normal.planeset->cosalpha * neutron.c3 * normal.sign;
+  const double d1 = ( B + A ) - c;
+  const double d2 = c - ( B - A );
+  const double D = ncmin( d1, d2 );
+  const double h = s*m_gm.mosaicitySinTruncationAngle() + c*(1.0-cta);
+  if ( !( h < D ) )
+    return NullOpt;//window not inside [B-|A|,B+|A|]
+  //Moments divided by s. With a=-c*w and b^2=s^2*w*(2-w), the average over
+  //psi of (a+b*cos(psi))^n is sum_j binom(n,2j)*a^(n-2j)*b^2j*binom(2j,j)/4^j,
+  //and E[w^(n-j)*(2-w)^j] is a sum of the m_wmom:
+  constexpr unsigned N = s_norder;
+  constexpr double binom[N+1][N+1] = { { 1 }, { 1, 1 }, { 1, 2, 1 },
+                                       { 1, 3, 3, 1 }, { 1, 4, 6, 4, 1 },
+                                       { 1, 5, 10, 10, 5, 1 },
+                                       { 1, 6, 15, 20, 15, 6, 1 } };
+  //binom(2k,k)/4^k, used both for averages of cos^2k and for the Taylor
+  //coefficients of (1-x)^(-1/2):
+  constexpr double bc[N+1] = { 1.0, 0.5, 0.375, 0.3125, 0.2734375, 0.24609375,
+                               0.2255859375 };
+  constexpr double pow2[N/2+1] = { 1.0, 2.0, 4.0, 8.0 };
+  double pmc[N+1], pss[N/2+1];//powers of -c and s^2
+  pmc[0] = pss[0] = 1.0;
+  for ( auto k : ncrange( 1u, N+1 ) )
+    pmc[k] = pmc[k-1] * (-c);
+  for ( auto k : ncrange( 1u, N/2+1 ) )
+    pss[k] = pss[k-1] * ( s * s );
+  double M[N+1];
+  for ( auto n : ncrange( N+1 ) ) {
+    double mn = 0.0;
+    for ( auto j : ncrange( n/2+1 ) ) {
+      double e = 0.0;
+      for ( auto l : ncrange( j+1 ) )
+        e += binom[j][l] * pow2[j-l] * ( l%2 ? -1.0 : 1.0 ) * m_wmom[n-j+l];
+      mn += binom[n][2*j] * pmc[n-2*j] * pss[j] * bc[j] * e;
+    }
+    M[n] = mn;
+  }
+  //Taylor coefficients of G, from those of (d1-t)^(-1/2) and (d2+t)^(-1/2):
+  const double G0 = 1.0 / std::sqrt( d1 * d2 );
+  const double e1 = 1.0 / d1;
+  const double e2 = -1.0 / d2;
+  double pe1[N+1], pe2[N+1];
+  pe1[0] = pe2[0] = 1.0;
+  for ( auto k : ncrange( 1u, N+1 ) ) {
+    pe1[k] = pe1[k-1] * e1;
+    pe2[k] = pe2[k-1] * e2;
+  }
+  double sum = 0.0;
+  for ( auto n : ncrange( N+1 ) ) {
+    double an = 0.0;
+    for ( auto k : ncrange( n+1 ) )
+      an += bc[k] * bc[n-k] * pe1[k] * pe2[n-k];
+    sum += an * M[n];
+  }
+  sum *= G0;
+  //The coefficients of G are bounded by G0/D^n, and since g_SC>=0, |M_n| is
+  //bounded by h^(n-N)*M_N for even N. Thus the remaining terms are bounded
+  //by:
+  static_assert( N%2 == 0, "" );
+  const double x = h / D;
+  double DN = 1.0;
+  for ( unsigned k = 0; k < N; ++k )
+    DN *= D;
+  const double bound = G0 * M[N] * x / ( DN * ( 1.0 - x ) );
+  const double acc = ncclamp( m_gm.precision(), 1e-7, 1e-2 );
+  if ( !( sum > 0.0 && bound <= 0.1 * acc * sum ) )
+    return NullOpt;
+  //Multiply by q*s (cf. GaussMos::InteractionPars):
+  const double wl = neutron.wl;
+  return sum * ( wl * wl * wl / c ) * ( 0.5 * normal.planeset->fsq );
 }
 
 double NC::LCStdFrame::calcXS_OnAxis( const NC::LCStdFrame::NeutronPars& neutron,
@@ -745,6 +913,17 @@ double NC::LCStdFrame::calcXS( const NC::LCStdFrame::NeutronPars& neutron,
 double NC::LCStdFrame::calcXSIntegral( const NC::LCStdFrame::NeutronPars& neutron,
                                        const NC::LCStdFrame::NormalPars& normal,
                                        double phimin, double phimax ) const
+{
+  const auto series = calcXSIntegralSeries( neutron, normal );
+  if ( series.has_value() )
+    return series.value();
+  return calcXSIntegralNumerical( neutron, normal, phimin, phimax );
+}
+
+double NC::LCStdFrame::calcXSIntegralNumerical( const NeutronPars& neutron,
+                                                const NormalPars& normal,
+                                                double phimin,
+                                                double phimax ) const
 {
   nc_assert(phimin>=0.0&&phimin<kPi);
   nc_assert(phimax>0.0&&phimax<=kPi);
