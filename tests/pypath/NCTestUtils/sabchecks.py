@@ -26,6 +26,7 @@ import math
 import numpy as np
 from NCrystalDev.misc import evaluate_query as ncquery
 
+from NCTestUtils.dirs import get_named_test_data_dir
 from NCTestUtils.sabsampleutils import onedim_projections
 from NCTestUtils.stat import kolmogorov_smirnov_pvalue
 
@@ -83,3 +84,17 @@ def compare_with_ref( cfg, lbl, ekins, nsample, seed ):
         proc, ref = [ proc ], [ ref ]
     return [ pval_from_samples( _AB(p), _AB(r) )[1]
              for p, r in zip( proc, ref ) ]
+
+def check_synth_kernel( name, ekins = None, nsample = None, seed = None,
+                        method = True, **method_kwargs ):
+    #Checks with tests/data/synth/sabsynth_<name>.ncmat (knllux=3): samples of
+    #SABProcessor against the reference sampler at the energies ekins (if
+    #given), and its choice of sampling method (unless method=False, with
+    #method_kwargs passed on to check_method_choice):
+    synthdir = get_named_test_data_dir('synth')
+    cfg = f'{synthdir}/sabsynth_{name}.ncmat;knllux=3'
+    if ekins is not None:
+        pvals = compare_with_ref( cfg, '', ekins, nsample, seed )
+        assert min( pvals ) > 1e-3, pvals
+    if method:
+        check_method_choice( cfg, '', name = name, **method_kwargs )

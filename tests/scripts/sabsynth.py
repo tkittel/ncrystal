@@ -23,20 +23,17 @@
 # NEEDS: numpy
 
 # Kernel sampling with some of the synthetic kernels in tests/data/synth
-# (long_sabsynth.py covers all): SABProcessor against the reference sampler,
+# (long_sabsynth*.py cover all): SABProcessor against the reference sampler,
 # and its choice of sampling method.
 
 import NCTestUtils.enable_fpe # noqa F401
 import NCrystalDev as NC
 from NCTestUtils.dirs import get_named_test_data_dir
-from NCTestUtils.sabchecks import check_method_choice, compare_with_ref
+from NCTestUtils.sabchecks import check_synth_kernel
 
 synthdir = get_named_test_data_dir('synth')
 for name in [ 'minimal', 'diagonal_sliver', 'alpha_far', 'tiny_values' ]:
-    cfg = f'{synthdir}/sabsynth_{name}.ncmat;knllux=3'
-    pvals = compare_with_ref( cfg, '', [ 1e-5, 0.05 ], 5000, 1000 )
-    assert min( pvals ) > 1e-3, pvals
-    check_method_choice( cfg, '', nperpt = 100, name = name )
+    check_synth_kernel( name, [ 1e-5, 0.05 ], 5000, 1000, nperpt = 100 )
 
 #Cross sections below the energy grid, sigma(E)*sqrt(E) being constant there
 #(even for extreme S values, where intermediate results could under- or

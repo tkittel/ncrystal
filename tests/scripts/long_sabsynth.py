@@ -22,24 +22,16 @@
 
 # NEEDS: numpy
 
-# Kernel sampling with all the synthetic kernels in tests/data/synth:
-# SABProcessor against the reference sampler, and its choice of sampling
-# method.
+# Kernel sampling with the synthetic kernels in tests/data/synth, except for
+# the slow "noise" (long_sabsynth_noise_*.py): SABProcessor against the
+# reference sampler, and its choice of sampling method.
 
 import NCTestUtils.enable_fpe # noqa F401
-from NCTestUtils.dirs import get_named_test_data_dir
-from NCTestUtils.sabchecks import check_method_choice, compare_with_ref
+from NCTestUtils.sabchecks import check_synth_kernel
 
-synthdir = get_named_test_data_dir('synth')
-names = [ 'alpha_far', 'diagonal_sliver', 'fine_beta_coarse_alpha',
-          'huge_values', 'minimal', 'noise', 'spike_alphamin',
-          'steep_alpha_coarse_beta', 'subnormal_values', 'tiny_values',
-          'zero_holes' ]
-for name in names:
-    cfg = f'{synthdir}/sabsynth_{name}.ncmat;knllux=3'
-    pvals = compare_with_ref( cfg, '', [ 1e-5, 1e-3, 0.05 ], 20000, 2000 )
-    assert min( pvals ) > 1e-3, pvals
-    #noise: the strip ladder leaves full-cell sampling at a few grid points
-    #where a dedicated strip sampler would be cheaper (to be improved):
-    check_method_choice( cfg, '', require_strips = False,
-                         check_fc = ( name != 'noise' ), name = name )
+for name in [ 'alpha_far', 'diagonal_sliver', 'fine_beta_coarse_alpha',
+              'huge_values', 'minimal', 'spike_alphamin',
+              'steep_alpha_coarse_beta', 'subnormal_values', 'tiny_values',
+              'zero_holes' ]:
+    check_synth_kernel( name, [ 1e-5, 1e-3, 0.05 ], 20000, 2000,
+                        require_strips = False )
