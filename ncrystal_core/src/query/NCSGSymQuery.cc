@@ -64,6 +64,7 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
   constexpr auto sv_fromnumber = StrView::make("fromnumber");
   constexpr auto sv_cell = StrView::make("cell");
   constexpr auto sv_fmtcoords = StrView::make("fmtcoords");
+  constexpr auto sv_setting = StrView::make("setting");
   //Settings as a JSON list like ["14:b1","14:b2"]:
   auto streamSettings = [&os]( const std::vector<SpaceGroup>& v ) {
     os << '[';
@@ -81,7 +82,7 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
       invalid("no arguments should come after: [\"sgsym\",\"list\"]");
     os<<"[\"info\", \"sites\", \"positions\", \"fromops\","
       " \"fromhall\", \"fromhm\", \"fromnumber\", \"cell\","
-      " \"fmtcoords\"]";
+      " \"fmtcoords\", \"setting\"]";
   } else if ( key == sv_fromops ) {
     //["sgsym","fromops",OP,...]: the settings with exactly these symmetry
     //operations (like "x,-y,z+1/2", cf. SymOp, with a "@" prefix if starting
@@ -168,6 +169,36 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
                : "correct usage: [\"sgsym\",\"fromhm\",SYMBOL]" );
     streamSettings( key == sv_fromhall ? settingsFromHallSymbol( argNoAt(0) )
                     : settingsFromHMSymbol( argNoAt(0) ) );
+  } else if ( key == sv_setting ) {
+    //["sgsym","setting",DOTHROW,SG]: the space group setting SG (parsed in
+    //strict mode, cf. SpaceGroupParseMode, with a "@" prefix if starting with
+    //"-"), as {"setting":"70:1","status":
+    //"ok","error_msg":null}. If SG is not a setting, a BadInput is thrown if
+    //DOTHROW is 1, and if it is 0 the result has "setting":null, the
+    //"error_msg", and "status" "syntax" (SG not of the form "N" or
+    //"N:choice" with N in 1..230) or "nosetting" (of that form, but no such
+    //setting), cf. tryParseSpaceGroup:
+    if ( nargs != 2 || ( arg(0) != "0" && arg(0) != "1" ) )
+      invalid( "correct usage: [\"sgsym\",\"setting\",0|1,SG]" );
+    const auto r = tryParseSpaceGroup( argNoAt(1),
+                                       SpaceGroupParseMode::Strict );
+    if ( !r.setting.has_value() && arg(0) == "1" )
+      NCRYSTAL_THROW(BadInput,r.errorMsg);
+    using St = SpaceGroupParseResult::Status;
+    os << "{\"setting\":";
+    if ( r.setting.has_value() )
+      streamJSON( os, r.setting.value().toString() );
+    else
+      os << "null";
+    os << ",\"status\":";
+    streamJSON( os, r.status == St::OK ? "ok"
+                : ( r.status == St::Syntax ? "syntax" : "nosetting" ) );
+    os << ",\"error_msg\":";
+    if ( r.setting.has_value() )
+      os << "null";
+    else
+      streamJSON( os, r.errorMsg );
+    os << '}';
   } else if ( key == sv_fromnumber ) {
     //["sgsym","fromnumber",N]: all settings of the space group number N
     //(1-230), in table order, as ["227:1","227:2"]:

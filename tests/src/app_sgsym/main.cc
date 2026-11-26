@@ -94,10 +94,17 @@ namespace {
   void expectBad( const char * s, NC::SpaceGroupParseMode mode
                   = NC::SpaceGroupParseMode::Relaxed )
   {
+    //tryParseSpaceGroup: the same message, and the status:
+    const auto r = NC::tryParseSpaceGroup( s, mode );
+    using St = NC::SpaceGroupParseResult::Status;
+    nc_assert_always( !r.setting.has_value() && r.status != St::OK );
     try {
       NC::SpaceGroup sg( s, mode );
     } catch ( NC::Error::BadInput& e ) {
-      std::cout << "  \"" << s << "\" -> BadInput: " << e.what() << std::endl;
+      nc_assert_always( r.errorMsg == e.what() );
+      std::cout << "  \"" << s << "\" -> BadInput ["
+                << ( r.status == St::Syntax ? "syntax" : "nosetting" )
+                << "]: " << e.what() << std::endl;
       return;
     }
     nc_assert_always( false );
@@ -158,6 +165,8 @@ void run()
     REQUIRE( NC::SpaceGroup( std::string( str ), relaxed ) == sg );//temporary
     REQUIRE( NC::SpaceGroup( NC::StrView( str ), relaxed ) == sg );
     REQUIRE( NC::SpaceGroup( str.c_str(), relaxed ) == sg );
+    const auto rp = NC::tryParseSpaceGroup( str, strict );
+    REQUIRE( rp.setting.has_value() && rp.setting.value() == sg );
     //setting index -> SpaceGroup -> string -> SpaceGroup -> setting index:
     REQUIRE( NC::SpaceGroup( str, relaxed ).settingIdx().get() == hn );
     std::ostringstream ss;

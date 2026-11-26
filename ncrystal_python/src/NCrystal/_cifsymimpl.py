@@ -111,10 +111,16 @@ def determine_setting( cif_content, *, permissive, override_spacegroup ):
         _nc_common.warn(f'Overriding spacegroup to "{o}" due to explicit request')
         s = _query( 'sgsym', 'fromhm', *_rawargs( [ o ] ) )
         if not s:
-            try:
-                s = [ _query( 'sgsym', 'info', 'strict', o )['spacegroup'] ]
-            except _nc_core.NCBadInput:
-                raise _nc_core.NCBadInput(f'Unknown spacegroup: "{o}"')
+            r = _query( 'sgsym', 'setting', '0', *_rawargs( [ o ] ) )
+            if r['status'] == 'syntax':
+                raise _nc_core.NCBadInput( f'Invalid override_spacegroup "{o}":'
+                                           ' neither the H-M symbol of a'
+                                           ' tabulated setting nor a setting'
+                                           f' ({r["error_msg"]})' )
+            if r['status'] != 'ok':
+                raise _nc_core.NCBadInput( f'Invalid override_spacegroup "{o}":'
+                                           f' {r["error_msg"]}' )
+            s = [ r['setting'] ]
         return _resolve( s, cell, f'space group "{o}"' )
     ops = cif_content.listed_ops
     symsettings, symdescr = _symbol_settings( cif_content )

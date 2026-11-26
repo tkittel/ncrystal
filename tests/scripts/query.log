@@ -590,7 +590,8 @@ Caught expected NCBadInput('Invalid space group specification: "227" (space grou
  'fromhm',
  'fromnumber',
  'cell',
- 'fmtcoords']
+ 'fmtcoords',
+ 'setting']
 ===========================================
 ============= CLI >>sgsym fromops x,y,z @-x,-y,-z<< ====================
 ['2']
@@ -627,6 +628,35 @@ Caught expected NCBadInput('Invalid space group specification: "227" (space grou
  '14:a2',
  '14:a3']
 ===========================================
+============= CLI >>sgsym setting 0 70:1<< ====================
+{'setting': '70:1', 'status': 'ok', 'error_msg': None}
+===========================================
+============= CLI >>sgsym setting 1 225<< ====================
+{'setting': '225', 'status': 'ok', 'error_msg': None}
+===========================================
+============= CLI >>sgsym setting 0 70:9<< ====================
+{'setting': None,
+ 'status': 'nosetting',
+ 'error_msg': 'Invalid space group specification: "70:9" (not a setting of '
+              'space group 70, the settings are: 70:1 (default), 70:2)'}
+===========================================
+============= CLI >>sgsym setting 0 70<< ====================
+{'setting': None,
+ 'status': 'nosetting',
+ 'error_msg': 'Invalid space group specification: "70" (space group 70 has '
+              'several settings, so one of them must be specified: 70:1 '
+              '(default), 70:2)'}
+===========================================
+============= CLI >>sgsym setting 0 'F d d d'<< ====================
+{'setting': None,
+ 'status': 'syntax',
+ 'error_msg': 'Invalid space group specification: "F d d d" (expected '
+              '"<number>" or "<number>:<choice>" with a number in 1..230)'}
+===========================================
+============= CLI >>sgsym setting 1 70:9<< ====================
+Caught expected NCBadInput('Invalid space group specification: "70:9" (not a setting of space group 70, the settings are: 70:1 (default), 70:2)')
+============= CLI >>sgsym setting 2 70:1<< ====================
+Caught expected NCBadInput('Invalid sgsym query: ["sgsym","setting","2","70:1"] (correct usage: ["sgsym","setting",0|1,SG])')
 ============= CLI >>sgsym fromnumber 225<< ====================
 ['225']
 ===========================================

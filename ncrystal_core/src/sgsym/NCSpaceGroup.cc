@@ -48,10 +48,12 @@ namespace NCRYSTAL_NAMESPACE {
       return lo;
     }
 
-    [[noreturn]] void throwBadSpec( StrView s, const std::string& extra )
+    SpaceGroupParseResult parseFailure( SpaceGroupParseResult::Status st,
+                                        StrView s, const std::string& extra )
     {
-      NCRYSTAL_THROW2(BadInput,"Invalid space group specification: \""<<s
-                      <<"\" ("<<extra<<")");
+      std::ostringstream ss;
+      ss << "Invalid space group specification: \""<<s<<"\" ("<<extra<<")";
+      return { st, NullOpt, ss.str() };
     }
   }
 }
@@ -85,40 +87,51 @@ NC::SpaceGroup::SpaceGroup( SpaceGroupSettingIdx hn )
 {
 }
 
-NC::SpaceGroup::SpaceGroup( StrView s, SpaceGroupParseMode mode )
+NC::SpaceGroupParseResult
+NC::tryParseSpaceGroup( StrView s, SpaceGroupParseMode mode )
 {
+  using St = SpaceGroupParseResult::Status;
+  auto ok = []( std::uint16_t hn )
+  {
+    return SpaceGroupParseResult{ St::OK,
+                                  SpaceGroup( SpaceGroupSettingIdx{ hn } ),
+                                  std::string() };
+  };
   //Parse "<number>" or "<number>:<choice>":
   const auto parts = s.split<2>( ':' );
   const char * expected = ( "expected \"<number>\" or \"<number>:<choice>\""
                             " with a number in 1..230" );
   if ( parts.size() > 2 || parts.front().empty()
        || parts.front().size() > 3 )
-    throwBadSpec( s, expected );
+    return parseFailure( St::Syntax, s, expected );
   unsigned number = 0;
   for ( char c : parts.front() ) {
     if ( !( c >= '0' && c <= '9' ) )
-      throwBadSpec( s, expected );
+      return parseFailure( St::Syntax, s, expected );
     number = 10 * number + static_cast<unsigned>( c - '0' );
   }
   if ( !( number >= 1 && number <= 230 ) )
-    throwBadSpec( s, expected );
+    return parseFailure( St::Syntax, s, expected );
   const std::uint16_t hn0 = firstSettingIdx( number );
-  const bool multi = SpaceGroup( SpaceGroupSettingIdx{ hn0 } ).hasMultipleSettings();
+  const bool multi
+    = SpaceGroup( SpaceGroupSettingIdx{ hn0 } ).hasMultipleSettings();
   if ( parts.size() == 1 ) {
     //Bare number: the default setting, which for numbers with several
     //settings is only allowed in relaxed mode:
     if ( multi && mode == SpaceGroupParseMode::Strict )
-      throwBadSpec( s, "space group " + std::to_string( number )
-                    + " has several settings, so one of them must be"
-                    " specified: " + listSettings( number ) );
-    m_idx = SpaceGroupSettingIdx{ hn0 };
-    return;
+      return parseFailure( St::NoSetting, s,
+                           "space group " + std::to_string( number )
+                           + " has several settings, so one of them must"
+                           " be specified: "
+                           + SpaceGroup::listSettings( number ) );
+    return ok( hn0 );
   }
   const StrView choice = parts.back();
   if ( !multi )
-    throwBadSpec( s, "space group " + std::to_string( number )
-                  + " has only one setting, which is written as just \""
-                  + std::to_string( number ) + "\"" );
+    return parseFailure( St::NoSetting, s,
+                         "space group " + std::to_string( number )
+                         + " has only one setting, which is written as just"
+                         " \"" + std::to_string( number ) + "\"" );
   auto matches = [choice,number]( std::uint16_t h, bool ignore_case )
   {
     const StrView c( entry( h ).choice, std::strlen( entry( h ).choice ) );
@@ -135,22 +148,31 @@ NC::SpaceGroup::SpaceGroup( StrView s, SpaceGroupParseMode mode )
   };
   for ( auto h = hn0; h <= SpaceGroupSettingIdx::max_value
           && entry( h ).number == number; ++h ) {
-    if ( matches( h, false ) ) {
-      m_idx = SpaceGroupSettingIdx{ h };
-      return;
-    }
+    if ( matches( h, false ) )
+      return ok( h );
   }
   //Codes are lower case as in the table, so point out a case-only mismatch:
   for ( auto h = hn0; h <= SpaceGroupSettingIdx::max_value
           && entry( h ).number == number; ++h ) {
     if ( matches( h, true ) )
-      throwBadSpec( s, "setting choice codes are case-sensitive and lower"
-                    " case, change it to \""
-                    + SpaceGroup( SpaceGroupSettingIdx{ h } ).toString()
-                    + "\" if that is the intention" );
+      return parseFailure( St::NoSetting, s,
+                           "setting choice codes are case-sensitive and"
+                           " lower case, change it to \""
+                           + SpaceGroup( SpaceGroupSettingIdx{ h } ).toString()
+                           + "\" if that is the intention" );
   }
-  throwBadSpec( s, "not a setting of space group " + std::to_string( number )
-                + ", the settings are: " + listSettings( number ) );
+  return parseFailure( St::NoSetting, s,
+                       "not a setting of space group "
+                       + std::to_string( number ) + ", the settings are: "
+                       + SpaceGroup::listSettings( number ) );
+}
+
+NC::SpaceGroup::SpaceGroup( StrView s, SpaceGroupParseMode mode )
+{
+  auto r = tryParseSpaceGroup( s, mode );
+  if ( !r.setting.has_value() )
+    NCRYSTAL_THROW(BadInput,r.errorMsg);
+  m_idx = r.setting.value().settingIdx();
 }
 
 unsigned NC::SpaceGroup::number() const ncnoexceptndebug
