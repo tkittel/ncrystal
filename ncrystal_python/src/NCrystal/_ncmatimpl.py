@@ -932,9 +932,6 @@ class NCMATComposerImpl:
 
         #remove occu==1.0 entries from map (and sort):
         occumap = dict( sorted( (k,v) for k,v in occumap.items() if v!=1.0 ) )
-        if occumap:
-            _nc_common.warn('Support for site_occupancy is highly experimental. Do *not* attempt to directly override'
-                            +' value with the "density" cfg-parameter for this material (unless it is to simply scale it)')
         self.__dirty()
         if is_sites:
             #Positions are expanded from the sites when needed (requiring the

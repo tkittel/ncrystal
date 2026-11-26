@@ -38,7 +38,6 @@ empty section: NCBadInput: "(anonymous TextData, 244bytes, type=ncmat)": no occu
 unweighted fractions (sites): NCBadInput: Fractions specified in DynamicInfoList are incompatible with those calculated from unit cell content forAtom(descr="Na",index=0): 0.5 vs 0.473684
 unweighted fractions (positions): NCBadInput: (anonymous TextData, 341bytes, type=ncmat) the fraction for Cl specified in the dyninfo section differs from the same fraction calculated from the number of each atom appearing in the list of atompositions (weighted by the occupancies)
 NCMAT v7: NCBadInput: "(anonymous TextData, 344bytes, type=ncmat)": has @ATOMOCCUPANCIES section which is not supported in the indicated NCMAT format version, "NCMAT v7". It is only available starting with "NCMAT v8".
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Support for site_occupancy is highly experimental. Do *not* attempt to directly override value with the "density" cfg-parameter for this material (unless it is to simply scale it) [warn#2]
   composer: C 0 0 0
   composer: @ATOMOCCUPANCIES
   composer: C 22/25

@@ -307,7 +307,6 @@ diamond Si from a single site (227:2): 8.0 atoms
 same site with origin choice 1: 8.0 atoms
 => correctly refused ambiguous setting: Invalid space group specification: "227" (space group 227 has several settings, so one of them must be specified: 227:1 (default), 227:2)
 => correctly refused invalid setting: Invalid space group specification: "227:3" (not a setting of space group 227, the settings are: 227:1 (default), 227:2)
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Support for site_occupancy is highly experimental. Do *not* attempt to directly override value with the "density" cfg-parameter for this material (unless it is to simply scale it) [warn#1]
 with occupancy 0.9: 7.2 atoms
 all positions with 227:2: 8.0 atoms
 => correctly refused positions in wrong setting: Atom positions are not consistent with space group 227:1 (largest deviation of a symmetry image from an atom of the same type: 0.25 in fractional coordinates)
@@ -319,7 +318,6 @@ all positions with 227:2: 8.0 atoms
 @ATOMSITES
   Mg 1/3 2/3 1/4 uij 0.01 0.01 0.012 0.005 0 0
 loaded uij: 0.0108069, 0.0108069, 0.0129682, 0.00540343, 0, 0 (msd=0.0115273)
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Support for site_occupancy is highly experimental. Do *not* attempt to directly override value with the "density" cfg-parameter for this material (unless it is to simply scale it) [warn#2]
 @ATOMSITES
   Mg 1/3 2/3 1/4 uij 0.01 0.01 0.012 0.005 0 0
 @ATOMOCCUPANCIES
@@ -347,7 +345,7 @@ P1 primitive cell: 6 sites
 Bragg reflections identical to direct C2/c: 1857 families
 Unit cell was transformed to the standard setting by spglib
 Self-consistency of structure was verified by spglib
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): Anisotropic displacements (uij) dropped for Si, since tensors of equivalent sites are not symmetry images of each other [warn#3]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): Anisotropic displacements (uij) dropped for Si, since tensors of equivalent sites are not symmetry images of each other [warn#1]
 @CELL
   lengths 9.7 8.9 5.3
   angles 90 105.6 90
@@ -356,7 +354,7 @@ CAUGHT ESCAPED WARNING (NCrystalUserWarning): Anisotropic displacements (uij) dr
 @ATOMSITES
   O 1/2 .91 1/4 uij 0.02 0.014 0.017 0 0.004 0
   Si .61 .73 .37
-CAUGHT ESCAPED WARNING (NCrystalUserWarning): The symprec parameter of NCMATComposer.refine_crystal_structure and .verify_crystal_structure is obsolete. Please use tol_symprec instead. [warn#4]
+CAUGHT ESCAPED WARNING (NCrystalUserWarning): The symprec parameter of NCMATComposer.refine_crystal_structure and .verify_crystal_structure is obsolete. Please use tol_symprec instead. [warn#2]
 Caught expected NCBadInput('Do not specify both symprec and tol_symprec')
 Caught expected NCBadInput('Invalid tol_symprec value: 0.6 (must not exceed 0.5Aa)')
 symprec alias OK
