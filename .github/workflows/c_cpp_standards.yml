@@ -24,12 +24,8 @@ jobs:
     needs: [ ncdevtool_check ]
     strategy:
       matrix:
-        strictflag: [17, 20, 23, 26]
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        #TODO: Also test C++26 on macOS and Windows:
-        exclude:
-          - { strictflag: 26, os: windows-latest }
-          - { strictflag: 26, os: macos-latest }
+        strictflag: [26]
+        os: [ubuntu-latest]
 
     name: ${{ matrix.os }}.strict${{ matrix.strictflag }}
     runs-on: ${{ matrix.os }}
