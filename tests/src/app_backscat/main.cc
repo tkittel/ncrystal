@@ -74,5 +74,39 @@ int main(int , char**)
     }
   }
 
+  //Neutrons exactly along plane normals near back-scattering: cross sections
+  //must be as for slightly tilted neutrons, and scatterings must be Bragg
+  //reflections.
+  for ( double wlfact : { 0.9999, 0.99995, 0.99999 } ) {
+    const NC::NeutronEnergy ekin = NC::NeutronWavelength{ thr*wlfact };
+    const double mu_bragg = 1.0 - 2.0*wlfact*wlfact;
+    for ( auto& n : { NC::Vector(1,0,0), NC::Vector(-1,0,0),
+                      NC::Vector(1,1,0), NC::Vector(-1,-1,0),
+                      NC::Vector(0,1,-1), NC::Vector(1,0,1),
+                      NC::Vector(-1,0,1), NC::Vector(0,-1,-1) } ) {
+      const NC::Vector v = n.unit();
+      const NC::Vector vt = NC::Vector( v.x()+1e-6, v.y()-2e-6,
+                                        v.z()+1e-6 ).unit();
+      const double xs = sc->crossSection( cp_sc, ekin,
+                                          v.as<NC::NeutronDirection>() ).get();
+      const double xst = sc->crossSection( cp_sc, ekin,
+                                           vt.as<NC::NeutronDirection>() ).get();
+      if ( n.mag2() == 1.0 ) {
+        //Not a normal of the 220 family.
+        nc_assert_always( xs == 0.0 && xst == 0.0 );
+        continue;
+      }
+      nc_assert_always( xs > 0.0 );
+      nc_assert_always( NC::floateq( xs, xst, 1e-3, 0.0 ) );
+      for ( unsigned i = 0; i < 100; ++i ) {
+        auto out = sc->sampleScatter( cp_sc, *rng, ekin,
+                                      v.as<NC::NeutronDirection>() );
+        nc_assert_always( out.ekin.get() == ekin.get() );
+        nc_assert_always( NC::floateq( out.direction.as<NC::Vector>().dot(v),
+                                       mu_bragg ) );
+      }
+    }
+  }
+
   return 0;
 }

@@ -164,14 +164,16 @@ double NC::GaussMos::calcCrossSections( InteractionPars& ip,
     double ds = dot * ip.m_sin_perfect_theta;
 
     //First a combined check, which usually allows us to skip both normal and
-    //anti-normal:
-    double A0 = ncmax( 0.0, cta - ncabs(ds) );
-    if ( sdotcptsq <= A0*A0 )
+    //anti-normal. NB: A normal contributes when sqrt(sdotcptsq) exceeds
+    //A=cta-/+ds, which is always the case for negative A. That includes
+    //sdotcptsq=0, i.e. a neutron exactly along a normal near back-scattering.
+    double A0 = cta - ncabs(ds);
+    if ( A0 >= 0.0 && sdotcptsq <= A0*A0 )
       continue;
 
     //At least one of the two normals should contribute, so deal with them:
-    double Am = ncmax( 0.0, cta - ds );
-    if ( sdotcptsq > Am*Am ) {
+    double Am = cta - ds;
+    if ( Am < 0.0 || sdotcptsq > Am*Am ) {
       //anti-normal is within truncated Gauss
       double xs = calcRawCrossSectionValue(ip, dot );
       if (xs) {
@@ -179,8 +181,8 @@ double NC::GaussMos::calcCrossSections( InteractionPars& ip,
         cache.emplace_back(-normal, ip.m_inv2dsp);
       }
     }
-    double Ap = ncmax( 0.0, cta + ds );
-    if ( sdotcptsq > Ap*Ap ) {
+    double Ap = cta + ds;
+    if ( Ap < 0.0 || sdotcptsq > Ap*Ap ) {
       //normal is within truncated Gauss
       double xs = calcRawCrossSectionValue(ip, -dot );
       if (xs) {
