@@ -23,6 +23,7 @@
 #include "NCrystal/internal/cif/NCCIFItems.hh"
 #include "NCrystal/internal/cif/NCCIFSetting.hh"
 #include "NCrystal/internal/cif/NCCIFSites.hh"
+#include "NCrystal/internal/cif/NCCIFDescribe.hh"
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 
@@ -399,43 +400,21 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
     }
     os << ']';
   } else if ( key == sv_structure ) {
-    //["cif","structure",PERMISSIVE,OPTION...,SRC]: the items of the only
-    //block with a crystal structure (cf. findUniqueStructProvItems), its
-    //space group setting (cf. chooseSetting) and atoms (cf. getAtoms), parsed
-    //in lenient mode (cf. CIFParseLenient), with PERMISSIVE "strict" or
-    //"permissive" (cf. CIFPermissive), OPTIONs KEY=VALUE (each optionally
-    //preceded by "RAWDATA", for values with any characters, e.g. Hall symbols
-    //like "P 62 2 (0 0 4)"; override_spacegroup=SG, tol_uij=X with default 1e-3, tol_symprec=X in
-    //Aa with default 0.01, 0 to not look for a higher symmetry of the atoms,
-    //and allow_cell_misfit=1 to accept a cell which
-    //does not fit the setting, e.g. for a later refinement of the
-    //structure), and SRC
-    //either the name of a TextData or "RAWDATA",NAME,"RAWDATA",TEXT (the CIF
-    //data and its name, which can be empty). Result: {"block":name,
-    //"block_line":n,"structure":{...},"provenance":{...}|null,
-    //"provenance_block":name|null,"spacegroup_setting":setting (a higher
-    //symmetry of the atoms is used unless override_spacegroup is given, cf.
-    //getAtoms),"cell":
-    //{"a":..,...,"gamma":..}|null (snapped to the setting, cf. snapCell,
-    //null if it does not fit and that is allowed),"atoms":
-    //[{"labels":[..],"composition":[[fraction,"Al"],..],"occupancy":x,
-    //"uiso":x|null,"uij":[6]|null,"positions":[[x,y,z],..],"uijs":[[6],..]
-    //|null,"split":null|{"positions":k,"distance":d}},..],"warnings":[..]},
-    //with values as [text,line] (line 0 for an absent cell
-    //angle) or null for "?" and ".", and items under their CIF tags: the cell
-    //and other single items "_tag":value, the site and aniso columns
-    //"_tag":[values] in "atom_site" and "atom_site_aniso" (with "form" "U"
-    //or "B", without rows ignored in permissive mode), and "symmetry":
-    //{"operations":[{"tag":..,"values":[..]}],"hm":[{"tag":..,"value":..}],
-    //"hall":[..],"number":[..]} (current tag first). "provenance_block" is
-    //the other block from which absent provenance items were taken, if any,
-    //"spacegroup_setting" e.g. "227:2", and "warnings" the list of warnings
-    //(which are not emitted). Absent optional items are omitted:
+    //["cif","structure",PERMISSIVE,OPTION...,SRC]: the structure of CIF data
+    //(cf. findUniqueStructProvItems, chooseSetting, snapCell, getAtoms and
+    //getDescription), for _cifreadimpl.read_cif. PERMISSIVE is "strict" or
+    //"permissive", OPTIONs are KEY=VALUE, optionally after "RAWDATA" (keys
+    //override_spacegroup, tol_uij, tol_symprec with 0 for no higher symmetry,
+    //cod_id, mp_id and allow_cell_misfit=1), and SRC a TextData name or
+    //"RAWDATA",NAME,"RAWDATA",TEXT. Result: {"block","block_line","structure",
+    //"provenance"|null,"provenance_block"|null,"spacegroup_setting","cell"
+    //(null if it does not fit and allow_cell_misfit=1),"atoms","description"
+    //{"lines","cod_id","mp_id","formula"},"warnings" (not emitted)}:
     const auto usage = "correct usage: [\"cif\",\"structure\",PERMISSIVE,"
       "OPTION...,NAME] or [\"cif\",\"structure\",PERMISSIVE,OPTION...,"
       "\"RAWDATA\",NAME,\"RAWDATA\",TEXT], with PERMISSIVE \"strict\" or"
       " \"permissive\" and OPTIONs override_spacegroup=SG, tol_uij=X,"
-      " tol_symprec=X or allow_cell_misfit=1";
+      " tol_symprec=X, cod_id=N, mp_id=N or allow_cell_misfit=1";
     if ( nargs < 2 || ( arg(0) != "strict" && arg(0) != "permissive" ) )
       invalid( usage );
     const bool raw = ( nargs >= 5 && arg(nargs-4) == sv_rawdata
@@ -447,6 +426,17 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
     constexpr auto sv_toluij = StrView::make("tol_uij=");
     constexpr auto sv_tolsymprec = StrView::make("tol_symprec=");
     constexpr auto sv_misfit = StrView::make("allow_cell_misfit=1");
+    constexpr auto sv_codid = StrView::make("cod_id=");
+    constexpr auto sv_mpid = StrView::make("mp_id=");
+    std::uint64_t reqCod = 0, reqMP = 0;
+    auto idValue = [&invalid,&usage]( StrView s, std::uint64_t& id )
+    {
+      const auto i = s.toInt();
+      if ( id || !s.contains_only( "0123456789" ) || !i.has_value()
+           || !( i.value() > 0 ) )
+        invalid( usage );
+      id = static_cast<std::uint64_t>( i.value() );
+    };
     StrView overrideSG;
     Optional<double> tolUij, tolSymprec;
     bool allowMisfit = false;
@@ -459,6 +449,10 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
         overrideSG = o.substr( sv_override.size() );
       } else if ( o == sv_misfit && !allowMisfit ) {
         allowMisfit = true;
+      } else if ( o.startswith( sv_codid ) ) {
+        idValue( o.substr( sv_codid.size() ), reqCod );
+      } else if ( o.startswith( sv_mpid ) ) {
+        idValue( o.substr( sv_mpid.size() ), reqMP );
       } else if ( o.startswith( sv_toluij ) && !tolUij.has_value() ) {
         tolUij = o.substr( sv_toluij.size() ).toDbl();
         if ( !tolUij.has_value() || !( tolUij.value() > 0.0 )
@@ -509,6 +503,9 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
                                           ? tolSymprec.value() : 0.01 ) ),
                                     warnfct );
     const auto& atoms = res.atoms;
+    const auto descr = NCC::getDescription( r.structureItems,
+                                            r.provenanceItems, reqCod, reqMP,
+                                            warnfct );
     if ( res.setting != setting )
       cell = NCC::snapCell( doc, r.structureItems, res.setting ).cell;
     const auto b = r.structureItems.block( doc );
@@ -545,6 +542,20 @@ void NC::CIFQuery::JSONQuery( std::ostream& os, const Query& query )
     }
     os << ",\"atoms\":";
     streamAtoms( os, atoms );
+    os << ",\"description\":{\"lines\":";
+    streamJSON( os, descr.lines );
+    auto idJSON = [&os]( const char * name, std::uint64_t id ) {
+      os << ",\"" << name << "\":";
+      if ( id )
+        os << id;
+      else
+        os << "null";
+    };
+    idJSON( "cod_id", descr.codID );
+    idJSON( "mp_id", descr.mpID );
+    os << ",\"formula\":";
+    streamJSON( os, descr.formula );
+    os << '}';
     os << ",\"warnings\":";
     streamJSON( os, warnings );
     os << '}';

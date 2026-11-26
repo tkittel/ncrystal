@@ -70,8 +70,8 @@ def show( descr, c ):
                a['occupancy'], 'multiplicity', len( a['positions'] ),
                'uiso', a['uiso'] and f'{a["uiso"]:.6g}', 'uij',
                u and ' '.join( f'{v:.6g}' for v in u.values() ) )
-    for k in ( 'setting', 'formula' ):
-        print( f'   {k}:', getattr( c, k ) )
+    print( '   setting:', c.setting )
+    print( '   description:', c.description )
 
 def expect_error( descr, txt ):
     try:
@@ -95,7 +95,8 @@ def main():
     #Uiso):
     assert o1['aniso'] and o1['uiso'] == 0.0123 and si1['occupancy'] == 0.5
     assert si1['aniso'] is None and fe1['aniso'] is None and fe1['uiso'] is None
-    assert c.setting == '14:b1' and c.formula == 'Fe O Si'
+    assert c.setting == '14:b1'
+    assert c.description['formula'] == 'Fe O Si'
     assert c.cell == { 'a': '5.1', 'b': '6.3', 'c': '7.2', 'alpha': '90',
                           'beta': '105', 'gamma': '90' }
     #Deprecated _symmetry_* tags, no H-M symbol, only the IT number:
