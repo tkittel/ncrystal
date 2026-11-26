@@ -98,6 +98,18 @@ namespace NCRYSTAL_NAMESPACE {
                                 double relTol = 0.05,
                                 const Uij& roundingErrors = Uij{} );
 
+    //Result of the try.. functions below, which return the message of the
+    //BadInput instead of throwing it (exactly one of the two is set):
+    struct UijResult {
+      Optional<Uij> uij;
+      Optional<std::string> errorMsg;
+    };
+    UijResult trySnapUstdToSiteSymmetry( const SGSymmetry&, const CellMetric&,
+                                         const Vector& site, const Uij&,
+                                         const std::string& siteDescr,
+                                         double relTol = 0.05,
+                                         const Uij& roundingErrors = Uij{} );
+
     namespace detail {
       //Whether the tensors invariant under the rotation parts of ops (a site
       //symmetry) have the structure which snapUstdToSiteSymmetry imposes
@@ -117,6 +129,12 @@ namespace NCRYSTAL_NAMESPACE {
                      const std::vector<Uij>& ustds,
                      const std::string& orbitDescr, double relTol = 0.05,
                      const Uij& roundingErrors = Uij{} );
+    UijResult tryUstdOfOrbit( const SGSymmetry&, const CellMetric&,
+                              const std::vector<Vector>& positions,
+                              const std::vector<Uij>& ustds,
+                              const std::string& orbitDescr,
+                              double relTol = 0.05,
+                              const Uij& roundingErrors = Uij{} );
 
     //Mean-squared displacements n^T Ucart n (from Ustar) along a fixed set of
     //36 directions n, with weights (summing to 1), so weighted sums approximate
