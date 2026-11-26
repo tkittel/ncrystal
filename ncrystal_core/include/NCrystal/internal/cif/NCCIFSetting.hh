@@ -35,8 +35,10 @@ namespace NCRYSTAL_NAMESPACE {
     //number; the first value of each which is not "?" or "."), where several
     //candidate settings are resolved by the cell (lenient tolerances, with
     //the rounding errors of the printed values). An overrideSpacegroup (if
-    //has_value: a Hermann-Mauguin symbol or a setting like "70:1") replaces
-    //the symmetry information of the data (with a warning). Inconsistent or
+    //has_value: a setting like "70:1", a Hermann-Mauguin or a Hall symbol,
+    //optionally prefixed with "HM:" or "Hall:"; unprefixed symbols whose two
+    //readings differ, like "P 2", are BadInput) replaces the symmetry
+    //information of the data (with a warning). Inconsistent or
     //unusable information is BadInput, unless permissive, where the listed
     //operations (or else the symbol) are used, with a warning:
     SpaceGroup chooseSetting( const Document&, const StructureItems&,

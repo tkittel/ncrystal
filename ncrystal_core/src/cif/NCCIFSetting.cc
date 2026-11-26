@@ -123,6 +123,56 @@ namespace NCRYSTAL_NAMESPACE {
         return res;
       }
 
+      //Settings and symbols for messages, e.g. '"P 1 2 1" (setting 3:b)', or
+      //'one of "R -3 m:H" (setting 166:h), "R -3 m:R" (setting 166:r)':
+      std::string describeSettings( const std::vector<SpaceGroup>& v )
+      {
+        std::string res = ( v.size() > 1 ? "one of " : "" );
+        for ( auto i : ncrange( v.size() ) )
+          res += ( i ? ", \"" : "\"" ) + std::string( v[i].hmSymbol() )
+            + "\" (setting " + v[i].toString() + ")";
+        return res;
+      }
+
+      //The settings of an explicitly given space group: a setting (e.g.
+      //"70:1"), a Hermann-Mauguin or a Hall symbol, or a symbol prefixed with
+      //"HM:" or "Hall:" (case-insensitive, empty if not such a symbol).
+      //Unprefixed strings whose Hermann-Mauguin and Hall readings differ (e.g.
+      //"P 2"), or which are neither a symbol nor a setting, are BadInput:
+      std::vector<SpaceGroup> overrideSettings( StrView given )
+      {
+        const auto t = given.trimmed();
+        constexpr auto pHM = StrView::make("HM:");
+        constexpr auto pHall = StrView::make("Hall:");
+        if ( t.startswithUncased( pHM ) )
+          return settingsFromHMSymbol( t.substr( pHM.size() ).trimmed() );
+        if ( t.startswithUncased( pHall ) )
+          return settingsFromHallSymbol( t.substr( pHall.size() ).trimmed() );
+        const auto hm = settingsFromHMSymbol( t );
+        const auto hall = settingsFromHallSymbol( t );
+        if ( !hm.empty() && !hall.empty() && hm != hall ) {
+          NCRYSTAL_THROW2( BadInput, "Space group \"" << t << "\" is"
+                           " ambiguous: as Hermann-Mauguin symbol it is "
+                           << describeSettings( hm ) << ", as Hall symbol "
+                           << describeSettings( hall ) << ". Please give the"
+                           " setting instead (e.g. \"" << hm.front().toString()
+                           << "\" or \"" << hall.front().toString() << "\"), or"
+                           " prefix the symbol with \"HM:\" or \"Hall:\"" );
+        }
+        if ( !hm.empty() )
+          return hm;
+        if ( !hall.empty() )
+          return hall;
+        auto p = SpaceGroup::tryParse( t, SpaceGroupParseMode::Strict );
+        if ( p.setting.has_value() )
+          return { p.setting.value() };
+        std::string why = p.errorMsg;
+        if ( !why.empty() && why.front() >= 'A' && why.front() <= 'Z' )
+          why.front() = static_cast<char>( why.front() - 'A' + 'a' );
+        NCRYSTAL_THROW2( BadInput, "Unknown spacegroup \"" << t << "\": not a"
+                         " known Hermann-Mauguin or Hall symbol, and " << why );
+      }
+
       bool containsUncased( StrView hay, StrView needle )
       {
         if ( needle.size() > hay.size() )
@@ -172,19 +222,9 @@ NC::SpaceGroup NCC::chooseSetting( const Document& doc,
   if ( overrideSpacegroup.has_value() ) {
     const auto o = overrideSpacegroup.to_string();
     warnfct( "Overriding spacegroup to \"" + o + "\" due to explicit request" );
-    auto settings = settingsFromHMSymbol( overrideSpacegroup );
-    if ( settings.empty() ) {
-      auto p = SpaceGroup::tryParse( overrideSpacegroup,
-                                     SpaceGroupParseMode::Strict );
-      if ( !p.setting.has_value() ) {
-        std::string why = p.errorMsg;
-        if ( !why.empty() && why.front() >= 'A' && why.front() <= 'Z' )
-          why.front() = static_cast<char>( why.front() - 'A' + 'a' );
-        NCRYSTAL_THROW2( BadInput, "Unknown spacegroup \"" << o << "\": not a"
-                         " known Hermann-Mauguin symbol, and " << why );
-      }
-      settings.push_back( p.setting.value() );
-    }
+    const auto settings = overrideSettings( overrideSpacegroup );
+    if ( settings.empty() )
+      NCRYSTAL_THROW2( BadInput, "Unknown spacegroup: \"" << o << "\"" );
     return resolve( settings, doc, s, "space group \"" + o + "\"" );
   }
 

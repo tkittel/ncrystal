@@ -39,7 +39,23 @@ override, setting: 227:1
    warning: Overriding spacegroup to "227:1" due to explicit request
 override, ambiguous: rejected: The space group "F d -3 m" has several settings fitting the unit cell (227:1, 227:2). Please specify which one to use (e.g. override_spacegroup="227:1", or --spacegroup=227:1 for ncrystal_cif2ncmat)
    warning: Overriding spacegroup to "F d -3 m" due to explicit request
-override, unknown: rejected: Unknown spacegroup "bla": not a known Hermann-Mauguin symbol, and invalid space group specification: "bla" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+override, unknown: rejected: Unknown spacegroup "bla": not a known Hermann-Mauguin or Hall symbol, and invalid space group specification: "bla" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
    warning: Overriding spacegroup to "bla" due to explicit request
-override, no such setting: rejected: Unknown spacegroup "227:3": not a known Hermann-Mauguin symbol, and invalid space group specification: "227:3" (not a setting of space group 227, the settings are: 227:1 (default), 227:2)
+override, no such setting: rejected: Unknown spacegroup "227:3": not a known Hermann-Mauguin or Hall symbol, and invalid space group specification: "227:3" (not a setting of space group 227, the settings are: 227:1 (default), 227:2)
    warning: Overriding spacegroup to "227:3" due to explicit request
+override, Hall symbol: 14:b1
+   warning: Overriding spacegroup to "-P 2ybc" due to explicit request
+override, same as both kinds: 1
+   warning: Overriding spacegroup to "P 1" due to explicit request
+override, ambiguous kind: rejected: Space group "P 2" is ambiguous: as Hermann-Mauguin symbol it is "P 1 2 1" (setting 3:b), as Hall symbol "P 1 1 2" (setting 3:c). Please give the setting instead (e.g. "3:b" or "3:c"), or prefix the symbol with "HM:" or "Hall:"
+   warning: Overriding spacegroup to "P 2" due to explicit request
+override, ambiguous kind (P 4 2): rejected: Space group "P 4 2" is ambiguous: as Hermann-Mauguin symbol it is "P 42" (setting 77), as Hall symbol "P 4 2 2" (setting 89). Please give the setting instead (e.g. "77" or "89"), or prefix the symbol with "HM:" or "Hall:"
+   warning: Overriding spacegroup to "P 4 2" due to explicit request
+override, HM: prefix: 3:b
+   warning: Overriding spacegroup to "HM:P 2" due to explicit request
+override, Hall: prefix: 3:c
+   warning: Overriding spacegroup to "Hall:P 2" due to explicit request
+override, prefixes are case-insensitive: 89
+   warning: Overriding spacegroup to "hall: P 4 2" due to explicit request
+override, prefix with an unknown symbol: rejected: Unknown spacegroup: "HM:-P 2ybc"
+   warning: Overriding spacegroup to "HM:-P 2ybc" due to explicit request

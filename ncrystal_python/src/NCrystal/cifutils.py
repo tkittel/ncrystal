@@ -263,8 +263,11 @@ class CIFLoader:
         resulting material.
 
         The override_spacegroup parameter replaces the symmetry information of
-        the CIF data (listed operations and symbols) with a Hermann-Mauguin
-        symbol or a setting like "70:1". This can for instance select a
+        the CIF data (listed operations and symbols) with a setting like
+        "70:1", a Hermann-Mauguin symbol (e.g. "F d d d:1" or "Fddd") or a Hall
+        symbol (e.g. "-F 2 2 2"). Symbols which mean different settings as
+        Hermann-Mauguin and as Hall symbols (e.g. "P 2") are an error unless
+        prefixed with "HM:" or "Hall:". This can for instance select a
         particular setting when the CIF data does not list its symmetry
         operations, and its space group symbol fits several settings (e.g.
         "F d d d" for origin choices "F d d d:1" and "F d d d:2", which is an
