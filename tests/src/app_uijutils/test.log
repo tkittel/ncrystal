@@ -23,3 +23,4 @@ Orbits:
   mapped (0.012, 0.009, 0.015, 0.002, 0.003, 0.001) -> (0.012, 0.009, 0.015, -0.002, 0.003, -0.001)
   BadInput: No symmetry operation of space group 6:b maps (0.1, 0.3, 0.2) onto (0.1, 0.4, 0.2)
   BadInput: The uij values of the symmetry-equivalent positions of O are not symmetry images of each other
+  tryUstdOfOrbit: The uij values of the symmetry-equivalent positions of O are not symmetry images of each other

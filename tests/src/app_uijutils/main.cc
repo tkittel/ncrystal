@@ -409,6 +409,15 @@ namespace {
     REQUIRE( uijeq( U::ustdOfOrbit( pm, m, pos, { u, uimg }, "O" ), u ) );
     expectBadInput( [&pm,&m,&pos,&u](){
       U::ustdOfOrbit( pm, m, pos, { u, u }, "O" ); } );
+    //(the non-throwing variant gives the same result or message):
+    {
+      const auto tr = U::tryUstdOfOrbit( pm, m, pos, { u, uimg }, "O" );
+      REQUIRE( tr.uij.has_value() && !tr.errorMsg.has_value() );
+      REQUIRE( uijeq( tr.uij.value(), u ) );
+      const auto tr2 = U::tryUstdOfOrbit( pm, m, pos, { u, u }, "O" );
+      REQUIRE( !tr2.uij.has_value() && tr2.errorMsg.has_value() );
+      std::cout << "  tryUstdOfOrbit: " << tr2.errorMsg.value() << std::endl;
+    }
     //Small deviations are accepted (the first tensor is the result):
     U::Uij uimg2 = uimg;
     uimg2[3] = -0.0021;

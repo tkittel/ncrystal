@@ -422,11 +422,41 @@ bool NCU::detail::uijStructureIsExact( Span<const SymOp* const> ops )
   return true;
 }
 
+namespace NCRYSTAL_NAMESPACE {
+  namespace UijUtils {
+    namespace {
+      UijResult uijError( std::string msg )
+      {
+        UijResult r;
+        r.errorMsg = std::move( msg );
+        return r;
+      }
+      Uij uijOrThrow( UijResult&& r )
+      {
+        if ( !r.uij.has_value() )
+          NCRYSTAL_THROW( BadInput, r.errorMsg.value() );
+        return r.uij.value();
+      }
+    }
+  }
+}
+
 NCU::Uij NCU::snapUstdToSiteSymmetry( const SGSymmetry& sym,
                                       const CellMetric& m, const Vector& site,
                                       const Uij& ustd,
                                       const std::string& descr,
                                       double relTol, const Uij& err )
+{
+  return uijOrThrow( trySnapUstdToSiteSymmetry( sym, m, site, ustd, descr,
+                                                relTol, err ) );
+}
+
+NCU::UijResult NCU::trySnapUstdToSiteSymmetry( const SGSymmetry& sym,
+                                               const CellMetric& m,
+                                               const Vector& site,
+                                               const Uij& ustd,
+                                               const std::string& descr,
+                                               double relTol, const Uij& err )
 {
   //The operations leaving the site invariant (at least the identity):
   std::array<const SymOp*,192> stabops;
@@ -501,12 +531,14 @@ NCU::Uij NCU::snapUstdToSiteSymmetry( const SGSymmetry& sym,
   for ( auto i : ncrange( 6 ) )
     diff[i] = snapped[i] - ustd[i];
   if ( !( maxAbs( diff ) <= relTol * maxAbs( ustd ) + 2.0 * maxAbs( err ) ) )
-    NCRYSTAL_THROW2(BadInput,"The uij values of the site "<<descr
-                    <<" do not obey the site symmetry");
+    return uijError( "The uij values of the site " + descr
+                     + " do not obey the site symmetry" );
   if ( !isPositiveDefinite( snapped ) )
-    NCRYSTAL_THROW2(BadInput,"The uij values of the site "<<descr
-                    <<" do not form a positive definite matrix");
-  return snapped;
+    return uijError( "The uij values of the site " + descr
+                     + " do not form a positive definite matrix" );
+  UijResult res;
+  res.uij = snapped;
+  return res;
 }
 
 NCU::Uij NCU::ustdOfOrbit( const SGSymmetry& sym, const CellMetric& m,
@@ -515,9 +547,22 @@ NCU::Uij NCU::ustdOfOrbit( const SGSymmetry& sym, const CellMetric& m,
                            const std::string& descr, double relTol,
                            const Uij& err )
 {
+  return uijOrThrow( tryUstdOfOrbit( sym, m, positions, ustds, descr,
+                                     relTol, err ) );
+}
+
+NCU::UijResult NCU::tryUstdOfOrbit( const SGSymmetry& sym, const CellMetric& m,
+                                    const std::vector<Vector>& positions,
+                                    const std::vector<Uij>& ustds,
+                                    const std::string& descr, double relTol,
+                                    const Uij& err )
+{
   nc_assert_always( !positions.empty() && positions.size() == ustds.size() );
-  const Uij rep = snapUstdToSiteSymmetry( sym, m, positions.front(),
-                                          ustds.front(), descr, relTol, err );
+  auto r = trySnapUstdToSiteSymmetry( sym, m, positions.front(),
+                                      ustds.front(), descr, relTol, err );
+  if ( !r.uij.has_value() )
+    return r;
+  const Uij rep = r.uij.value();
   for ( auto i : ncrange( std::size_t(1), positions.size() ) ) {
     const Uij expected = mapUstdToPosition( sym, m, positions.front(),
                                             vectAt( positions, i ), rep );
@@ -525,9 +570,9 @@ NCU::Uij NCU::ustdOfOrbit( const SGSymmetry& sym, const CellMetric& m,
     for ( auto k : ncrange( 6 ) )
       diff[k] = expected[k] - vectAt( ustds, i )[k];
     if ( !( maxAbs( diff ) <= relTol * maxAbs( rep ) + 2.0 * maxAbs( err ) ) )
-      NCRYSTAL_THROW2(BadInput,"The uij values of the symmetry-equivalent"
-                      " positions of "<<descr<<" are not symmetry images of"
-                      " each other");
+      return uijError( "The uij values of the symmetry-equivalent positions"
+                       " of " + descr + " are not symmetry images of each"
+                       " other" );
   }
-  return rep;
+  return r;
 }
