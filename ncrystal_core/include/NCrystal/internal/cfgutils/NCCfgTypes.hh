@@ -395,10 +395,22 @@ namespace NCRYSTAL_NAMESPACE {
       static constexpr auto value_type_descr = "crystal axis orientation";
       using Basis = OrientDir::CrysDir::Basis;
 
+      //Derived classes can allow the value "arbitrary", which has null
+      //vectors and a special tag:
+      static constexpr bool allow_arbitrary = false;
+      static constexpr auto arbitrary_str = StrView::make("arbitrary");
+      static constexpr unsigned char arbitrary_tag = 127;
+      static bool is_arbitrary( const VarBuf& buf )
+      {
+        return decodeDblsTagText<6>( buf ).tag == arbitrary_tag;
+      }
+
       static OrientDir get_val( const VarBuf& buf )
       {
         const auto d = decodeDblsTagText<6>( buf );
         OrientDir od;
+        if ( d.tag == arbitrary_tag )
+          return od;
         od.crystal.basis = static_cast<Basis>( d.tag );
         od.crystal.v = { d.vals[0], d.vals[1], d.vals[2] };
         od.lab = { d.vals[3], d.vals[4], d.vals[5] };
@@ -413,6 +425,9 @@ namespace NCRYSTAL_NAMESPACE {
       static VarBuf set_val( VarId varid, const OrientDir& od )
       {
         const auto& v = od.crystal.v;
+        if ( Derived::allow_arbitrary && od.lab == LabAxis{ 0.0, 0.0, 0.0 }
+             && v == ThreeVector{ 0.0, 0.0, 0.0 } )
+          return encodeArbitrary( varid );
         const auto c = checkVector( Vector( v[0], v[1], v[2] ), Derived::name );
         const auto l = checkVector( od.lab.as<Vector>(), Derived::name );
         return detail_encode( varid, od.crystal.basis, c, l,
@@ -426,6 +441,8 @@ namespace NCRYSTAL_NAMESPACE {
 
       static void asJSONObject( std::ostream& os, const VarBuf& buf )
       {
+        if ( is_arbitrary( buf ) )
+          return streamJSON( os, arbitrary_str );
         const auto od = get_val( buf );
         os << "{\"basis\":";
         streamJSON( os, crysBasisJSONName( od.crystal.basis ) );
@@ -444,6 +461,8 @@ namespace NCRYSTAL_NAMESPACE {
         standardInputStrSanityCheck( Derived::name, sv_in );
         auto throw_error = [&sv_in]() { throwSyntaxError( Derived::name, sv_in ); };
         const StrView sv = sv_in.trimmed();
+        if ( Derived::allow_arbitrary && sv == arbitrary_str )
+          return encodeArbitrary( varid );
         const auto i0 = ( sv.startswith('@')
                           ? sv.substr(1).find('@') : StrView::npos );
         if ( i0 == StrView::npos )
@@ -473,6 +492,11 @@ namespace NCRYSTAL_NAMESPACE {
       }
 
     private:
+      static VarBuf encodeArbitrary( VarId varid )
+      {
+        return encodeDblsTagText<6>( varid, { 0., 0., 0., 0., 0., 0. },
+                                     arbitrary_tag, arbitrary_str );
+      }
       static VarBuf detail_encode( VarId varid, Basis basis, const Vector& c,
                                    const Vector& l, const std::string& ctext,
                                    const std::string& ltext )

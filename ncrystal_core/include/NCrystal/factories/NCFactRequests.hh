@@ -98,13 +98,16 @@ namespace NCRYSTAL_NAMESPACE {
       //Parameters (advanced: single crystal, ucn, ...):
       MosaicityFWHM get_mos() const;
       OrientDir get_dir1() const;
-      OrientDir get_dir2() const;
+      OrientDir get_dir2() const;//resolved if arbitrary (rot not applied)
       double get_mosprec() const;
       double get_sccutoff() const;
       double get_dirtol() const;
       LCAxis get_lcaxis() const;
       std::int_least32_t get_lcmode() const;
 
+      //Unlike the MatCfg methods, these also require a single phase
+      //crystalline material (orientation parameters are ignored otherwise, as
+      //for the non-crystalline phases of a multiphase material):
       bool isSingleCrystal() const;
       bool isLayeredCrystal() const;
       SCOrientation createSCOrientation() const;

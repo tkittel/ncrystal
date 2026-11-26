@@ -23,6 +23,7 @@
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/internal/cfgutils/NCCfgManip.hh"
 #include "NCrystal/interfaces/NCSCOrientation.hh"
+#include "NCrystal/internal/extd_utils/NCOrientUtils.hh"
 namespace NC = NCrystal;
 namespace NCF = NCrystal::FactImpl;
 
@@ -163,6 +164,13 @@ namespace NCRYSTAL_NAMESPACE {
           NCRYSTAL_THROW2(MissingInfo,"Parameter "<<name<<" is not set");
         return od.value();
       }
+      LatticeRots requireLattice( const Info& info )
+      {
+        if ( !info.hasStructureInfo() )
+          NCRYSTAL_THROW(MissingInfo,"Single crystal orientations need a"
+                         " material with a crystal structure");
+        return getLatticeRots( info.getStructureInfo() );
+      }
     }
   }
 }
@@ -174,7 +182,10 @@ NC::OrientDir NCF::ScatterRequest::get_dir1() const
 
 NC::OrientDir NCF::ScatterRequest::get_dir2() const
 {
-  return requireDir( CfgManip::get_dir2(rawCfgData()), "dir2" );
+  auto dir2 = requireDir( CfgManip::get_dir2(rawCfgData()), "dir2" );
+  if ( dir2.lab == LabAxis{ 0.0, 0.0, 0.0 } )//arbitrary
+    dir2 = arbitrarySecondaryOrientDir( get_dir1(), requireLattice( info() ) );
+  return dir2;
 }
 
 double NCF::ScatterRequest::get_mosprec() const { return CfgManip::get_mosprec(rawCfgData()); }
@@ -185,17 +196,20 @@ std::int_least32_t NCF::ScatterRequest::get_lcmode() const { return CfgManip::ge
 
 bool NCF::ScatterRequest::isSingleCrystal() const
 {
-  return CfgManip::isSingleCrystal( rawCfgData() );
+  return ( CfgManip::isSingleCrystal( rawCfgData() )
+           && !info().isMultiPhase() && info().isCrystalline() );
 }
 
 bool NCF::ScatterRequest::isLayeredCrystal() const
 {
-  return CfgManip::isLayeredCrystal( rawCfgData() );
+  return ( CfgManip::isLayeredCrystal( rawCfgData() )
+           && !info().isMultiPhase() && info().isCrystalline() );
 }
 
 NC::SCOrientation NCF::ScatterRequest::createSCOrientation() const
 {
-  return CfgManip::createSCOrientation<SCOrientation>(rawCfgData());
+  return CfgManip::createSCOrientation<SCOrientation>( rawCfgData(),
+                                                      requireLattice( info() ) );
 }
 
 std::string NCF::AbsorptionRequest::get_absnfactory() const

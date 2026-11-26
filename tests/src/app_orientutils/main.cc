@@ -165,6 +165,46 @@ namespace {
     }
   }
 
+  void testArbitrary()
+  {
+    const auto lr = NC::getLatticeRots( 4.1, 5.2, 6.3, 75.*NC::kDeg,
+                                        82.*NC::kDeg, 101.*NC::kDeg );
+    const std::vector<NC::ThreeVector> dirs = {
+      {1.,0.,0.}, {0.,1.,0.}, {0.,0.,1.}, {0.,0.,-2.}, {1.,1.,0.},
+      {1.,1.,1.}, {-1.,1.,1.}, {0.3,-1.2,0.7}, {1e-3,2.,-1e-9},
+      {5e5,1.,2.}, {-1.,-1.,-1.000001}
+    };
+    for ( auto& e1 : dirs ) {
+      for ( auto& el : dirs ) {
+        for ( auto basis : { Basis::Cartesian, Basis::HKL, Basis::UVW } ) {
+          const OrientDir dir1{ { basis, e1 }, { el[0], el[1], el[2] } };
+          const Vector c1 = NC::crysDirToCartesian( dir1.crystal, lr );
+          const Vector l1 = dir1.lab.as<Vector>();
+          const auto dir2 = NC::arbitrarySecondaryOrientDir( dir1, lr );
+          REQUIRE( dir2.crystal.basis == Basis::Cartesian );
+          const Vector c2( dir2.crystal.v[0], dir2.crystal.v[1],
+                           dir2.crystal.v[2] );
+          const Vector l2 = dir2.lab.as<Vector>();
+          REQUIRE( c2.isUnitVector() && l2.isUnitVector() );
+          REQUIRE( NC::ncabs( c2.dot( c1 ) ) < 1e-14 );
+          REQUIRE( NC::ncabs( l2.dot( l1.unit() ) ) < 1e-14 );
+          //Deterministic, and independent of the length of the input (scaled
+          //by powers of 2 for exact results):
+          const OrientDir dir1b{ { basis, { 2*e1[0], 2*e1[1], 2*e1[2] } },
+                                 { 0.5*el[0], 0.5*el[1], 0.5*el[2] } };
+          const auto again = NC::arbitrarySecondaryOrientDir( dir1b, lr );
+          REQUIRE( again == dir2 );
+          //Always usable for a rotation (with any tolerance):
+          const auto rot
+            = NC::verifyLatticeOrientDefAndConstructCrystalRotation
+            ( dir1, dir2, 1e-10, lr );
+          REQUIRE( close( rot * c1, l1.unit() ) );
+          REQUIRE( close( rot * c2, l2 ) );
+        }
+      }
+    }
+  }
+
   void testBadInput()
   {
     const LabAxis l1{ 0., 0., 1. }, l2{ 0., 1., 0. };
@@ -226,6 +266,7 @@ int main()
   testCell( { 5.1, 5.1, 5.1, 57.3, 57.3, 57.3 } );//rhombohedral
   testCell( { 5.0, 6.0, 7.0, 90., 105., 90. } );//monoclinic
   testCell( { 4.1, 5.2, 6.3, 75., 82., 101. } );//triclinic
+  testArbitrary();
   testBadInput();
   testStream();
   return 0;

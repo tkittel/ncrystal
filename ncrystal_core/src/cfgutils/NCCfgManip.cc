@@ -511,24 +511,52 @@ void NC::Cfg::CfgManip::checkParamConsistency_ScatterExtra( const CfgData& data 
   }
 
   auto parval_dir1 = getValueFromBufPtr<vardef_dir1>(buf_dir1);
+  if ( vardef_dir2::is_arbitrary( *buf_dir2 ) )
+    return precheckLatticeOrientDir( parval_dir1 );
   auto parval_dir2 = getValueFromBufPtr<vardef_dir2>(buf_dir2);
   auto parval_dirtol = getValueFromBufPtr<vardef_dirtol>(buf_dirtol);
 
   precheckLatticeOrientDef( parval_dir1, parval_dir2, parval_dirtol );
 }
 
-void NC::Cfg::CfgManip::applyRot( const CfgData& data,
-                                  OrientDir& dir1, OrientDir& dir2 )
+NC::Cfg::CfgManip::Orientation
+NC::Cfg::CfgManip::getOrientation( const CfgData& data,
+                                   const LatticeRots& lattice )
 {
-  const auto rot = get_rot( data );
-  if ( !rot.has_value() )
-    return;
-  const auto sc = stable_sincos( rot.value().second );
-  const PhiRot phirot( sc.cos, sc.sin );
-  const Vector axis = rot.value().first.as<Vector>().unit();
-  for ( auto dir : { &dir1, &dir2 } )
-    dir->lab = phirot.rotateVectorAroundAxis( dir->lab.as<Vector>(),
-                                              axis ).as<LabAxis>();
+  auto bufptr_mos = searchBuf( data, VarId::mos );
+  auto bufptr_dir1 = searchBuf( data, VarId::dir1 );
+  auto bufptr_dir2 = searchBuf( data, VarId::dir2 );
+
+  int nOrient = (bufptr_dir1?1:0) + (bufptr_dir2?1:0) + (bufptr_mos?1:0);
+  if (nOrient!=0 && nOrient<3)
+    NCRYSTAL_THROW(BadInput,"Must set all or none of mos, dir1 and dir2 parameters");
+
+  if ( !nOrient ) {
+    if ( hasValueSet( data, VarId::dirtol ) )
+      NCRYSTAL_THROW(BadInput,"mos, dir1 and dir2 parameters must all be set when dirtol is set");
+    NCRYSTAL_THROW(BadInput,"Can only create SCOrientation object for oriented configurations");
+  }
+
+  //mos already validated:
+  nc_assert( vardef_mos::get_val( *bufptr_mos ) > 0.0 && vardef_mos::get_val( *bufptr_mos ) <= kPiHalf );
+
+  Orientation res{ vardef_dir1::get_val( *bufptr_dir1 ),
+                   vardef_dir2::get_val( *bufptr_dir2 ),
+                   get_dirtol(data) };
+  if ( vardef_dir2::is_arbitrary( *bufptr_dir2 ) )
+    res.dir2 = arbitrarySecondaryOrientDir( res.dir1, lattice );
+
+  //Apply any rotation to the lab directions:
+  if ( auto bufptr_rot = searchBuf( data, VarId::rot ) ) {
+    const auto rot = vardef_rot::get_val( *bufptr_rot );
+    const auto sc = stable_sincos( rot.second );
+    const PhiRot phirot( sc.cos, sc.sin );
+    const Vector axis = rot.first.as<Vector>().unit();
+    for ( auto dir : { &res.dir1, &res.dir2 } )
+      dir->lab = phirot.rotateVectorAroundAxis( dir->lab.as<Vector>(),
+                                                axis ).as<LabAxis>();
+  }
+  return res;
 }
 
 void NC::Cfg::CfgManip::checkParamConsistency_Absorption( const CfgData& )

@@ -279,17 +279,17 @@ namespace NCRYSTAL_NAMESPACE {
     bool get_sans() const;
     std::string get_inelas() const;
 
-    // Orientation of single crystals, with NullOpt if not set:
+    // Orientation of single crystals, with NullOpt if not set. A dir2 of
+    // "arbitrary" has null vectors. ScatterRequest provides the resulting
+    // orientation (which can need the crystal lattice):
     Optional<OrientDir> get_dir1() const;
     Optional<OrientDir> get_dir2() const;
     Optional<std::pair<LabAxis,double>> get_rot() const;//axis, angle [rad]
 
-    // Check if single/layered-single crystal, or access dir1+dir2+dirtol (with
-    // any rot applied) as SCOrientation (do not call any of these for
-    // multiphase cfgs):
+    // Check if single/layered-single crystal (do not call these for multiphase
+    // cfgs):
     bool isSingleCrystal() const;//true if mos or orientation parameters are set
     bool isLayeredCrystal() const;//true if lcaxis parameter is set
-    SCOrientation createSCOrientation() const;
 
     //Serialise in various forms. Note that if the MatCfg object was constructed
     //from anonymous text data and not named data (filename), the data returned

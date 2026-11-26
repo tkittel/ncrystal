@@ -391,6 +391,26 @@ NC::Vector NC::crysDirToCartesian( const OrientDir::CrysDir& dir,
            * v ).unit();
 }
 
+NC::OrientDir NC::arbitrarySecondaryOrientDir( const OrientDir& dir1,
+                                               const LatticeRots& lattice )
+{
+  //Use the part of the least parallel coordinate axis which is orthogonal to
+  //the primary direction.
+  auto mkOrthogonal = []( const Vector& primary )
+  {
+    const Vector u = primary.unit();
+    const double x(ncabs(u.x())), y(ncabs(u.y())), z(ncabs(u.z()));
+    const Vector e = ( ( x <= y && x <= z ) ? Vector(1.,0.,0.)
+                       : ( y <= z ? Vector(0.,1.,0.) : Vector(0.,0.,1.) ) );
+    return ( e - u * e.dot(u) ).unit();
+  };
+  const Vector c = mkOrthogonal( crysDirToCartesian( dir1.crystal, lattice ) );
+  OrientDir res;
+  res.crystal.v = { c.x(), c.y(), c.z() };
+  res.lab = mkOrthogonal( dir1.lab.as<Vector>() ).as<LabAxis>();
+  return res;
+}
+
 NC::RotMatrix NC::verifyLatticeOrientDefAndConstructCrystalRotation( const OrientDir& dir1,
                                                                      const OrientDir& dir2,
                                                                      double dirtol,

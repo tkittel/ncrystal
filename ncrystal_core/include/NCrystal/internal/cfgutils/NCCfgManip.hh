@@ -25,6 +25,8 @@
 
 namespace NCRYSTAL_NAMESPACE {
 
+  struct LatticeRots;
+
   /////////////////////////////////////////////////////////////////////////////////
   //                                                                             //
   // CfgManip: Internal helper class which is responsible for parsing parameter  //
@@ -171,7 +173,7 @@ namespace NCRYSTAL_NAMESPACE {
       static Optional<OrientDir> get_dir1(const CfgData&);//NullOpt if not set
       static void set_dir1( CfgData& data, const OrientDir& val ) { setValue<vardef_dir1>(data,val); }
 
-      static Optional<OrientDir> get_dir2(const CfgData&);//NullOpt if not set
+      static Optional<OrientDir> get_dir2(const CfgData&);//NullOpt if not set, null vectors if arbitrary
       static void set_dir2( CfgData& data, const OrientDir& val ) { setValue<vardef_dir2>(data,val); }
 
       static Optional<std::pair<LabAxis,double>> get_rot(const CfgData&);//NullOpt if not set
@@ -252,14 +254,20 @@ namespace NCRYSTAL_NAMESPACE {
       static void checkParamConsistency_Absorption( const CfgData& );
 
       //Validate orientation parameters (throws BadInput exception if not valid,
-      //or if not oriented) and return SCOrientation object. Using template to
-      //avoid direct dependencies here:
+      //or if not oriented) and return the orientation: dir1 and dir2 (with any
+      //rot applied to their lab directions) and dirtol. An arbitrary dir2 is
+      //resolved with arbitrarySecondaryOrientDir:
+      struct Orientation { OrientDir dir1, dir2; double dirtol; };
+      [[nodiscard]] static Orientation getOrientation( const CfgData&,
+                                                       const LatticeRots& );
+
+      //Same, as SCOrientation object. Using template to avoid direct
+      //dependencies here:
       template<class TSCOrientation>
-      [[nodiscard]] static TSCOrientation createSCOrientation(const CfgData&);
+      [[nodiscard]] static TSCOrientation createSCOrientation( const CfgData&,
+                                                               const LatticeRots& );
 
     private:
-      //Apply the rot parameter (if set) to the lab directions:
-      static void applyRot( const CfgData&, OrientDir& dir1, OrientDir& dir2 );
       template<class TBufCreateFct>
       static void detail_setVar( CfgData& data, VarId varid, TBufCreateFct& doCreate );
       static const VarBuf* searchBuf( const CfgData& data, VarId );
@@ -455,32 +463,14 @@ namespace NCRYSTAL_NAMESPACE {
     }
 
     template<class TSCOrientation>
-    [[nodiscard]] inline TSCOrientation CfgManip::createSCOrientation( const CfgData& data )
+    [[nodiscard]] inline TSCOrientation
+    CfgManip::createSCOrientation( const CfgData& data,
+                                   const LatticeRots& lattice )
     {
-      //Validate the 4 relevant parameters and create SCOrientation object (if relevant).
-      auto bufptr_mos = searchBuf( data, VarId::mos );
-      auto bufptr_dir1 = searchBuf( data, VarId::dir1 );
-      auto bufptr_dir2 = searchBuf( data, VarId::dir2 );
-
-      int nOrient = (bufptr_dir1?1:0) + (bufptr_dir2?1:0) + (bufptr_mos?1:0);
-      if (nOrient!=0 && nOrient<3)
-        NCRYSTAL_THROW(BadInput,"Must set all or none of mos, dir1 and dir2 parameters");
-
-      if ( !nOrient ) {
-        if ( hasValueSet( data, VarId::dirtol ) )
-          NCRYSTAL_THROW(BadInput,"mos, dir1 and dir2 parameters must all be set when dirtol is set");
-        NCRYSTAL_THROW(BadInput,"Can only create SCOrientation object for oriented configurations");
-      }
-
-      //mos already validated:
-      nc_assert( vardef_mos::get_val( *bufptr_mos ) > 0.0 && vardef_mos::get_val( *bufptr_mos ) <= kPiHalf );
-
-      auto dir1 = vardef_dir1::get_val( *bufptr_dir1 );
-      auto dir2 = vardef_dir2::get_val( *bufptr_dir2 );
-      applyRot( data, dir1, dir2 );
+      auto o = getOrientation( data, lattice );
       TSCOrientation orient;
-      orient.setPrimaryDirection( dir1 );
-      orient.setSecondaryDirection( dir2, get_dirtol(data) );
+      orient.setPrimaryDirection( o.dir1 );
+      orient.setSecondaryDirection( o.dir2, o.dirtol );
       nc_assert_always(orient.isComplete());
       return orient;
     }

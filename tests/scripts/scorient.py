@@ -164,6 +164,49 @@ def test_rot_nosc():
     require_equivalent( 'Ge_sg227.ncmat;dcutoff=0.5;comp=bragg',
                         'temp=293.15K', 'rot=0,1,0:1deg', 'rot=1,2,3:-2' )
 
+def test_arbitrary():
+    #The cross section of a neutron along the lab direction of dir1 does not
+    #depend on the rotation of the crystal around that direction.
+    def xs_along( cfgstr, direction ):
+        sc = nccore.createScatter( cfgstr )
+        res = [ sc.crossSection( wl2ekin( 0.5 + 0.002 * i ), direction )
+                for i in range( 3000 ) ]
+        assert sum( 1 for e in res if e > 0.0 ) > 50
+        return res
+    base = 'Ge_sg227.ncmat;dcutoff=0.5;mos=2deg;comp=bragg;'
+    lab1 = ( 0.1, 0.2, 1.0 )
+    #NB: Using directions which are not normals of any reflecting plane, since
+    #the cross section of a neutron exactly along such a normal is not
+    #numerically stable at back-scattering.
+    for c1 in ( '@crys_hkl:3,5,10', '@crys_uvw:2,1,0.1', '@crys:0.1,-0.3,1',
+                '@crys:1,0.01,0.02' ):
+        dir1 = f'dir1={c1}@lab:{vstr(lab1)}'
+        xs = [ xs_along( base + dir1 + ';' + dir2, lab1 )
+               for dir2 in ( 'dir2=arbitrary',
+                             'dir2=arbitrary;dirtol=1e-9',
+                             'dir2=@crys:1,2,3@lab:0,1,0;dirtol=180deg',
+                             'dir2=@crys_hkl:-3,0,1@lab:1,1,0;dirtol=180deg' ) ]
+        assert all( same_xs( xs[0], e ) for e in xs[1:] )
+        #Also when subsequently rotated:
+        axis, angle = ( 1.0, -2.0, 0.5 ), 0.7
+        rot = f';rot={vstr(axis)}:{angle!r}'
+        xs_rot = xs_along( base + dir1 + ';dir2=arbitrary' + rot,
+                           rotate( lab1, axis, angle ) )
+        assert same_xs( xs[0], xs_rot )
+        assert not same_xs( xs[0], xs_along( base + dir1 + ';dir2=arbitrary'
+                                             + rot, lab1 ) )
+    #For layered crystals with dir1 along lcaxis, the rotation around dir1 is
+    #of no importance at all:
+    pg = 'C_sg194_pyrolytic_graphite.ncmat;dcutoff=0.5;mos=2deg;comp=bragg'
+    require_equivalent(
+        pg,
+        'dir1=@crys_hkl:0,0,1@lab:0.1,0.2,1;dir2=arbitrary',
+        'dir1=@crys_hkl:0,0,1@lab:0.1,0.2,1;dir2=@crys:1,0,0@lab:0,1,0'
+        ';dirtol=180deg',
+        'dir1=@crys_uvw:0,0,1@lab:0.1,0.2,1;dir2=@crys_hkl:1,5,0@lab:1,0,0'
+        ';dirtol=180deg',
+    )
+
 def test_bad():
     from NCrystalDev.exceptions import NCBadInput
     ge = 'Ge_sg227.ncmat;dcutoff=0.5'
@@ -173,6 +216,10 @@ def test_bad():
                  ge + o + ';rot=0,1,0',
                  ge + o + ';rot=0,1,0:1degree',
                  ge + o + ';rot=@lab:0,1,0:1deg',
+                 ge + ';mos=2deg;dir1=arbitrary;dir2=arbitrary',
+                 ge + ';mos=2deg;dir2=arbitrary',
+                 ge + ';dir1=@crys_hkl:0,0,1@lab:0,0,1;dir2=arbitrary',
+                 ge + o.replace('dir2=','dir2=arbitrary;dir3='),
                 ]:
         try:
             nccore.createScatter( bad )
@@ -184,6 +231,7 @@ def main():
     test_crysdirs()
     test_rot()
     test_rot_nosc()
+    test_arbitrary()
     test_bad()
 
 if __name__ == '__main__':

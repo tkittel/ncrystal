@@ -22,6 +22,7 @@
 #include "NCrystal/factories/NCMatCfg.hh"
 #include "NCrystal/factories/NCDataSources.hh"
 #include "NCrystal/factories/NCFact.hh"
+#include "NCrystal/factories/NCFactRequests.hh"
 #include "NCrystal/interfaces/NCSCOrientation.hh"
 #include "NCrystal/dump/NCDump.hh"
 #include "NCrystal/internal/utils/NCString.hh"
@@ -32,6 +33,14 @@
 #include "NCrystal/interfaces/NCVersion.hh"
 
 namespace NC = NCrystal;
+
+namespace {
+  //Orientation as resolved in production, with the lattice of a real material:
+  NC::SCOrientation scOrient( const NC::MatCfg& cfg )
+  {
+    return NC::FactImpl::ScatterRequest( cfg ).createSCOrientation();
+  }
+}
 
 #define REQUIRE nc_assert_always
 
@@ -214,7 +223,10 @@ void test()
   cfg.set_density(NC::Density{1.2});
   std::cout<<"toStrCfg: "<<cfg.toStrCfg()<<std::endl;
   std::cout<<"toEmbeddableCfg: "<<cfg.toEmbeddableCfg()<<std::endl;
-  NCrystal::SCOrientation sco = cfg.createSCOrientation();
+  NCrystal::SCOrientation sco
+    = scOrient( NC::MatCfg( "Al_sg225.ncmat;mos=0.02;dirtol=180deg"
+                            ";dir1=@crys:1.0,2.0,3.0@lab:4.0,5.0,6.0"
+                            ";dir2=@crys_hkl:1.1,2.0,3.0@lab:4.01,5.0,6.0" ) );
   REQUIRE( sco.isComplete() );
 
   test_strrep_and_dump(cfg);
@@ -272,16 +284,16 @@ void test()
   test_strrep_and_dump(cfg);
 
   //A rotation is applied to the lab directions (right-handed):
-  cfg = NC::MatCfg( "Al_fake.ncmat;mos=1deg;dir1=@crys_hkl:0,0,1@lab:0,0,1"
+  cfg = NC::MatCfg( "Al_sg225.ncmat;mos=1deg;dir1=@crys_hkl:0,0,1@lab:0,0,1"
                     ";dir2=@crys_uvw:1,0,0@lab:1,0,0" );
-  REQUIRE( cfg.createSCOrientation().getData().dir1.lab
+  REQUIRE( scOrient( cfg ).getData().dir1.lab
            == ( NC::LabAxis{0,0,1} ) );
   REQUIRE( !cfg.get_rot().has_value() );
   cfg.applyStrCfg(" rot = 0, 2 ,0 : 90 deg");
   REQUIRE( cfg.get_rot().value().first == ( NC::LabAxis{0,2,0} ) );
   REQUIREFLTEQ( cfg.get_rot().value().second, NC::kPiHalf );
   {
-    auto od = cfg.createSCOrientation().getData();
+    auto od = scOrient( cfg ).getData();
     auto close = []( const NC::LabAxis& a, const NC::LabAxis& b )
     {
       return ( NC::ncabs(a[0]-b[0]) + NC::ncabs(a[1]-b[1])
@@ -300,10 +312,80 @@ void test()
   test_strrep_and_dump(cfg);
   {
     //Cyclic permutation z->y->x->z:
-    auto od = cfg.createSCOrientation().getData();
+    auto od = scOrient( cfg ).getData();
     REQUIRECLOSE( od.dir1.lab[1], 1.0 );
     REQUIRECLOSE( od.dir2.lab[2], 1.0 );
   }
+  //An arbitrary dir2 is resolved (with the lattice) by ScatterRequest, while
+  //MatCfg gives null vectors:
+  cfg = NC::MatCfg( "Al_sg225.ncmat;mos=1deg;dir1=@crys_hkl:0,3,4@lab:0,0,1"
+                    ";dir2=arbitrary;rot=1,0,0:90deg" );
+  cfg.checkConsistency();
+  test_strrep_and_dump(cfg);
+  REQUIRE( cfg.get_dir2().value() == NC::OrientDir() );
+  {
+    const NC::FactImpl::ScatterRequest req( cfg );
+    const auto od = req.createSCOrientation().getData();
+    REQUIRE( od.dir1.crystal == cfg.get_dir1().value().crystal );
+    REQUIRE( od.dir2.crystal.basis == NC::OrientDir::CrysDir::Basis::Cartesian );
+    const auto& v = od.dir2.crystal.v;
+    REQUIREFLTEQ( v[0]*v[0]+v[1]*v[1]+v[2]*v[2], 1.0 );
+    REQUIRECLOSE( 3*v[1] + 4*v[2], 0.0 );//cubic: (hkl) normal is hkl
+    //dir1 lab direction was rotated from z to -y:
+    REQUIRECLOSE( od.dir1.lab[1], -1.0 );
+    REQUIRECLOSE( od.dir2.lab[1], 0.0 );
+    //ScatterRequest::get_dir2 gives the resolved dir2 (before rot):
+    const auto rd2 = req.get_dir2();
+    REQUIRE( rd2.crystal == od.dir2.crystal );
+    REQUIRECLOSE( rd2.lab[2], 0.0 );
+    REQUIREFLTEQ( rd2.lab[0]*rd2.lab[0] + rd2.lab[1]*rd2.lab[1], 1.0 );
+  }
+  {
+    //Resolving an orientation needs a crystal structure:
+    bool failed = false;
+    try {
+      scOrient( NC::MatCfg( "LiquidWaterH2O_T293.6K.ncmat;mos=1deg"
+                            ";dir1=@crys:0,0,1@lab:0,0,1;dir2=arbitrary" ) );
+    } catch (NC::Error::MissingInfo&e) {
+      std::cout<<"NCrystal::"<<e.getTypeName()<< ": "<<e.what() << std::endl;
+      failed = true;
+    }
+    REQUIRE( failed );
+  }
+  {
+    //Orientation parameters are ignored for non-crystalline phases of a
+    //multiphase material:
+    const NC::FactImpl::ScatterRequest req( NC::FactImpl::createInfo(
+      NC::MatCfg( "phases<0.9*Al_sg225.ncmat&0.1*LiquidWaterH2O_T293.6K.ncmat>"
+                  ";mos=1deg;dir1=@crys:0,0,1@lab:0,0,1;dir2=arbitrary" ) ) );
+    REQUIRE( req.nPhases() == 2 && !req.isSingleCrystal() );
+    const auto crys = req.createChildRequest( 0 );
+    const auto water = req.createChildRequest( 1 );
+    REQUIRE( crys.isSingleCrystal() && !crys.isLayeredCrystal() );
+    REQUIRE( crys.createSCOrientation().isComplete() );
+    REQUIRE( !water.isSingleCrystal() && !water.isLayeredCrystal() );
+  }
+  //Explicitly setting null vectors gives an arbitrary dir2, but only all
+  //null vectors for dir2:
+  cfg.set_dir2( NC::OrientDir() );
+  REQUIRE( cfg.toStrCfg(false).find("dir2=arbitrary") != std::string::npos );
+  for ( auto& od : { NC::OrientDir{ { NC::OrientDir::CrysDir::Basis::HKL,
+                                      { 0, 0, 1 } }, { 0, 0, 0 } },
+                     NC::OrientDir{ {}, { 0, 0, 1 } } } ) {
+    bool failed = false;
+    try { cfg.set_dir2( od ); } catch (NC::Error::BadInput&) { failed = true; }
+    REQUIRE( failed );
+  }
+  {
+    bool failed = false;
+    try { cfg.set_dir1( NC::OrientDir() ); }
+    catch (NC::Error::BadInput&e) {
+      std::cout<<"NCrystal::"<<e.getTypeName()<< ": "<<e.what() << std::endl;
+      failed = true;
+    }
+    REQUIRE( failed );
+  }
+
   {
     //Allowed (but without effect) when the material is not a single crystal:
     NC::MatCfg c2( "Al_fake.ncmat;rot=0,1,0:1deg" );

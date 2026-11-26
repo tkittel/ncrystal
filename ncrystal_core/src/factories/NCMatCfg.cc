@@ -510,25 +510,6 @@ NC::Optional<std::pair<NC::LabAxis,double>> NC::MatCfg::get_rot() const
   return CfgManip::get_rot( m_impl->readVar(Cfg::VarId::rot) );
 }
 
-NC::SCOrientation NC::MatCfg::createSCOrientation() const
-{
-  if ( isMultiPhase() )
-    NCRYSTAL_THROW(CalcError,"MatCfg::createSCOrientation() should not be called for multiphase materials");
-  if ( !isSingleCrystal() )
-    NCRYSTAL_THROW(MissingInfo,"Can only create SCOrientation object for single crystals (must set dir1, dir2, and mos parameters)");
-
-
-  //Check that we are single phase or that none of the four relevant parameters
-  //have different values in different phases:
-  const auto& cfg_a = m_impl->readVar(Cfg::VarId::dir1);
-  const auto& cfg_b = m_impl->readVar(Cfg::VarId::dir2);
-  const auto& cfg_c = m_impl->readVar(Cfg::VarId::mos);
-  const auto& cfg = m_impl->readVar(Cfg::VarId::mos);
-  nc_assert_always( &cfg == &cfg_a && &cfg == &cfg_b && &cfg == &cfg_c );
-
-  return CfgManip::createSCOrientation<SCOrientation>(cfg);
-}
-
 namespace NCRYSTAL_NAMESPACE {
   namespace {
     void doSetSCOrient( Cfg::CfgData& data, const SCOrientation::Data& orient )

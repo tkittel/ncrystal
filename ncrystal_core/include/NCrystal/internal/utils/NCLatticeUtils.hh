@@ -62,6 +62,13 @@ namespace NCRYSTAL_NAMESPACE {
   //lattice is not used for Cartesian directions.
   Vector crysDirToCartesian( const OrientDir::CrysDir&, const LatticeRots& );
 
+  //For when the rotation of a crystal around its primary direction is of no
+  //importance: An arbitrary (but deterministic) secondary direction, which is
+  //orthogonal to the primary direction in both frames. The crystal direction
+  //of the result is Cartesian:
+  OrientDir arbitrarySecondaryOrientDir( const OrientDir& dir1,
+                                         const LatticeRots& );
+
   //Fully validate orientation parameters and construct crystal rotation matrix
   //(transforms crystal frame -> lab frame).
   RotMatrix verifyLatticeOrientDefAndConstructCrystalRotation( const OrientDir& dir1,

@@ -212,6 +212,12 @@ namespace {
     doTestBad("dir1=@crys:1e200,0,0@lab:0,0,1");
     doTestBad("dir1=@crys:0,0,1@lab:1e155,1e155,0");
 
+    doTest("dir2=arbitrary");
+    doTest(" dir2 = \tarbitrary ");
+    doTestBad("dir2=arbitrarily");
+    doTestBad("dir2=@crys:arbitrary@lab:0,0,1");
+    doTestBad("dir1=arbitrary");
+
     doTest("rot=0,1,0:30deg");
     doTest(" rot = 0 , 1.0 ,\t0 : 30 deg ");
     doTest("rot=0,0,2:1.5707963267948966");
@@ -276,6 +282,8 @@ namespace {
       applyAndPrint("dir1=@crys_hkl:4,5,6@lab:1,2,3");
       applyAndPrint("dir1=@crys_uvw:4,5,6@lab:1,2,3");
       applyAndPrint("rot= 0,0,2 : 0.25 deg");
+      applyAndPrint("dir2=@crys_hkl:4,5,6@lab:1,2,3");
+      applyAndPrint("dir2=arbitrary");
       {
         const auto r = CfgManip::get_rot(cd).value();
         std::cout<<"  => .get_rot() : "<<r.first<<" "<<NC::fmt(r.second)

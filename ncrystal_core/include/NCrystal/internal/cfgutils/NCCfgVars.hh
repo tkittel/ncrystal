@@ -161,12 +161,18 @@ namespace NCRYSTAL_NAMESPACE {
       static constexpr auto name = "dir2";
       static constexpr auto group = VarGroupId::ScatterExtra;
       static constexpr auto description =
-        "Secondary orientation axis of a single crystal. This is specified using the same syntax as for the dir1 parameter."
-        " In general the opening angle between the dir1 and dir2 vectors must be nonzero and identical in the crystal and lab frames, but a discrepancy"
-        " up to the value of the dirtol parameter is allowed. In any case, the components of the dir2 vectors parallel to the dir1 vectors are ignored."
-        " When this parameter is set, the parameters mos and dir1 must also be provided."
+        "Secondary orientation axis of a single crystal, which fixes the rotation of the"
+        " crystal around dir1. The dir2 parameter is specified with the same syntax as"
+        " dir1, or as \"arbitrary\". In general the opening angle between the dir1 and dir2"
+        " vectors must be nonzero and identical in the crystal and lab frames, but a"
+        " discrepancy up to the value of the dirtol parameter is allowed. In any case,"
+        " the components of the dir2 vectors parallel to the dir1 vectors are ignored."
+        " The value \"arbitrary\" can be used when any rotation of the crystal around dir1"
+        " will do, in which case an unspecified (but deterministic) rotation is used. When"
+        " dir2 is set, mos and dir1 must also be provided."
         ;
       static constexpr NullOptType default_value() { return NullOpt; }//no default value!
+      static constexpr bool allow_arbitrary = true;
     };
 
     struct vardef_dirtol final : public ValDbl<vardef_dirtol> {
