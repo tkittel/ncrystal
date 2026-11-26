@@ -22,8 +22,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/interfaces/NCProcImpl.hh"
-#include "NCrystal/interfaces/NCSCOrientation.hh"
 #include "NCrystal/internal/utils/NCVector.hh"
+#include "NCrystal/internal/utils/NCRotMatrix.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -35,7 +35,9 @@ namespace NCRYSTAL_NAMESPACE {
 
     //This class models the Bragg diffraction in a layered crystal such as
     //pyrolytic graphite. The lcaxis is the axis (in the crystal frame) around
-    //which the crystallites are randomly rotated. The mode parameter can be
+    //which the crystallites are randomly rotated. The model itself is set up
+    //in the frame of the crystal, and can be shared between LCBragg instances
+    //for crystals differing only in orientation. The mode parameter can be
     //used to modify which model is used internally to implement the layered
     //crystal:
     //
@@ -44,15 +46,21 @@ namespace NCRYSTAL_NAMESPACE {
     //     mode<0: LCBraggRndmRef(nsample=-mode)
     //
     //For a description of the prec and ntrunc parameters, see NCGaussMos.hh.
-    LCBragg( const Info&,
-             const SCOrientation&,
-             MosaicityFWHM,
-             const LCAxis& lcaxis,
-             int mode = 0,
-             double delta_d = 0,
-             PlaneProvider * plane_provider = 0,
-             double prec=1e-3,
-             double ntrunc=0.0 );
+    class Model;
+    using ModelPtr = shared_obj<const Model>;
+    static ModelPtr createModel( const Info&,
+                                 MosaicityFWHM,
+                                 const LCAxis& lcaxis,
+                                 int mode = 0,
+                                 double delta_d = 0,
+                                 PlaneProvider * plane_provider = 0,
+                                 double prec=1e-3,
+                                 double ntrunc=0.0 );
+
+    //Construct from a model and the rotation from the crystal to the lab frame
+    //(cf. getCrystal2LabRot):
+    LCBragg( ModelPtr, const RotMatrix& crystal2lab );
+    const ModelPtr& model() const { return m_model; }
 
     const char * name() const noexcept override { return "LCBragg"; }
 
@@ -69,9 +77,11 @@ namespace NCRYSTAL_NAMESPACE {
     bool isPureElasticScatter() const override { return true; }
 #endif
 
+  protected:
+    Optional<std::string> specificJSONDescription() const override;
   private:
-    struct pimpl;
-    std::unique_ptr<pimpl> m_pimpl;
+    ModelPtr m_model;
+    RotMatrix m_rot, m_invrot;//crystal to lab and vice versa
   };
 }
 

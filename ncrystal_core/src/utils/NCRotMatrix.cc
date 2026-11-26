@@ -145,3 +145,34 @@ void NCrystal::rotateToFrame( double sinab, double cosab, const Vector& a, const
   nc_assert(v.isUnitVector(1e-3));
   v.normalise();
 }
+
+const NCrystal::RotMatrix& NCrystal::identityRotMatrix()
+{
+  static const double data[9] = { 1., 0., 0., 0., 1., 0., 0., 0., 1. };
+  static const RotMatrix m( data );
+  return m;
+}
+
+bool NCrystal::isRotation( const RotMatrix& m, double tolerance )
+{
+  //Determinant 1 and m*transpose(m) the identity:
+  if ( !( ncabs( m.determinant() - 1.0 ) <= tolerance ) )
+    return false;
+  for ( auto i : ncrange(3) ) {
+    for ( auto j : ncrange(3) ) {
+      const double d = ( m[i][0]*m[j][0] + m[i][1]*m[j][1] + m[i][2]*m[j][2]
+                         - ( i == j ? 1.0 : 0.0 ) );
+      if ( !( ncabs( d ) <= tolerance ) )
+        return false;
+    }
+  }
+  return true;
+}
+
+std::vector<NCrystal::VectD> NCrystal::rotMatrixRows( const RotMatrix& m )
+{
+  std::vector<VectD> res;
+  for ( auto i : ncrange(3) )
+    res.push_back( VectD{ m[i][0], m[i][1], m[i][2] } );
+  return res;
+}

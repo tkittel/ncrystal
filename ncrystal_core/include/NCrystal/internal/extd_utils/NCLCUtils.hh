@@ -169,8 +169,7 @@ namespace NCRYSTAL_NAMESPACE {
     //normals not parallel to the lcaxis. Prec and ntrunc parameters will be
     //passed on directly to the internal GaussMos object.
   public:
-    LCHelper( LCAxis lcaxis_crystalframe,
-              LCAxis lcaxis_labframe,
+    LCHelper( LCAxis lcaxis,
               MosaicityFWHM mosaicity_fwhm,
               double unitcell_volume_times_natoms,
               PlaneProvider * pp,
@@ -195,11 +194,12 @@ namespace NCRYSTAL_NAMESPACE {
     double crossSectionNoCache( double wavelength, const Vector& indir ) const;
 
     double braggThreshold() const;//max wavelength, beyond which all cross-sections will be 0.
+    const std::vector<LCPlaneSet>& planeSets() const { return m_planes; }
 
     const GaussMos& gaussMos() { return m_lcstdframe.gaussMos(); }
 
   private:
-    Vector m_lcaxislab;
+    Vector m_lcaxis;
     std::vector<LCPlaneSet> m_planes;//sorted by dspacing, largest first.
     LCStdFrame m_lcstdframe;
     double m_xsfact;

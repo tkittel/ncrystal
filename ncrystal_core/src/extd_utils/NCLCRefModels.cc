@@ -23,9 +23,9 @@
 
 namespace NC = NCrystal;
 
-NC::LCBraggRef::LCBraggRef(ProcImpl::ProcPtr scb, LCAxis lcaxis_lab, unsigned nsample)
+NC::LCBraggRef::LCBraggRef(ProcImpl::ProcPtr scb, LCAxis lcaxis, unsigned nsample)
   : m_sc(std::move(scb)),
-    m_lcaxislab(lcaxis_lab.as<Vector>().unit()),
+    m_lcaxis(lcaxis.as<Vector>().unit()),
     m_nsample(nsample),
     m_nsampleprime(nsample)
 {
@@ -41,13 +41,13 @@ NC::EnergyDomain NC::LCBraggRef::domain() const noexcept
 NC::CrossSect NC::LCBraggRef::crossSection(CachePtr& cp, NeutronEnergy ekin, const NeutronDirection& indir_nd ) const
 {
   const Vector indir = indir_nd.as<Vector>().unit();
-  const Vector lccross = m_lcaxislab.cross(indir);
-  const double lcdot = m_lcaxislab.dot(indir);
+  const Vector lccross = m_lcaxis.cross(indir);
+  const double lcdot = m_lcaxis.dot(indir);
   StableSum sumxs;
   double dphi = k2Pi / m_nsampleprime;
   for (unsigned i = 0; i<m_nsampleprime; ++i) {
     const PhiRot phirot( i * dphi - kPi );
-    auto ndir = phirot.rotateVectorAroundAxis( indir, m_lcaxislab, lccross, lcdot ).as<NeutronDirection>();
+    auto ndir = phirot.rotateVectorAroundAxis( indir, m_lcaxis, lccross, lcdot ).as<NeutronDirection>();
     sumxs.add(m_sc->crossSection(cp,ekin,ndir).get());
   }
   return CrossSect{ sumxs.sum()/m_nsampleprime };
@@ -56,8 +56,8 @@ NC::CrossSect NC::LCBraggRef::crossSection(CachePtr& cp, NeutronEnergy ekin, con
 NC::ScatterOutcome NC::LCBraggRef::sampleScatter(CachePtr& cp, RNG& rng, NeutronEnergy ekin, const NeutronDirection& indir_nd ) const
 {
   const Vector indir = indir_nd.as<Vector>().unit();
-  const Vector lccross = m_lcaxislab.cross(indir);
-  const double lcdot = m_lcaxislab.dot(indir);
+  const Vector lccross = m_lcaxis.cross(indir);
+  const double lcdot = m_lcaxis.dot(indir);
 
   VectD xs;
   std::vector<PhiRot> pr;
@@ -71,7 +71,7 @@ NC::ScatterOutcome NC::LCBraggRef::sampleScatter(CachePtr& cp, RNG& rng, Neutron
     double cosphi,sinphi;
     std::tie(cosphi,sinphi) = randPointOnUnitCircle( rng );
     pr.emplace_back(cosphi,sinphi);
-    auto ndir = pr.back().rotateVectorAroundAxis( indir, m_lcaxislab, lccross, lcdot ).as<NeutronDirection>();
+    auto ndir = pr.back().rotateVectorAroundAxis( indir, m_lcaxis, lccross, lcdot ).as<NeutronDirection>();
     xs.push_back( sumxs += m_sc->crossSection(cp,ekin,ndir).get() );
   }
 
@@ -83,16 +83,16 @@ NC::ScatterOutcome NC::LCBraggRef::sampleScatter(CachePtr& cp, RNG& rng, Neutron
   const PhiRot& phirot = pr.at(RandIdxByWeightPicker::oneShotPick(rng,xs));
 
   //Scatter!
-  auto ndir = phirot.rotateVectorAroundAxis( indir, m_lcaxislab, lccross, lcdot ).as<NeutronDirection>();
+  auto ndir = phirot.rotateVectorAroundAxis( indir, m_lcaxis, lccross, lcdot ).as<NeutronDirection>();
   auto scatoutcome = m_sc->sampleScatter( cp, rng, ekin, ndir );
   auto outdir = phirot.rotateVectorAroundAxis( scatoutcome.direction.as<Vector>(),
-                                               m_lcaxislab, true/*reverse*/).as<NeutronDirection>();
+                                               m_lcaxis, true/*reverse*/).as<NeutronDirection>();
   return { ekin, outdir };
 }
 
-NC::LCBraggRndmRot::LCBraggRndmRot(ProcImpl::ProcPtr scb, LCAxis lcaxis_lab, unsigned nsample)
+NC::LCBraggRndmRot::LCBraggRndmRot(ProcImpl::ProcPtr scb, LCAxis lcaxis, unsigned nsample)
   : m_sc(std::move(scb)),
-    m_lcaxislab(lcaxis_lab.as<Vector>().unit()),
+    m_lcaxis(lcaxis.as<Vector>().unit()),
     m_nsample(nsample)
 {
   nc_assert_always(nsample>0);
@@ -111,8 +111,8 @@ void NC::LCBraggRndmRot::updateCache(Cache& cache, NeutronEnergy ekin, const Vec
   cache.xscommul.reserve(m_nsample);
   cache.rotations.clear();
   cache.xscommul.clear();
-  const Vector lccross = m_lcaxislab.cross(indir);
-  const double lcdot = m_lcaxislab.dot(indir);
+  const Vector lccross = m_lcaxis.cross(indir);
+  const double lcdot = m_lcaxis.dot(indir);
   StableSum sumxs;
   //This reference model is unusual and needs RNG even to calculate cross
   //sections. As a workaround we use a global method to get an RNG stream, which
@@ -125,7 +125,7 @@ void NC::LCBraggRndmRot::updateCache(Cache& cache, NeutronEnergy ekin, const Vec
     double cosphi, sinphi;
     std::tie(cosphi,sinphi) = randPointOnUnitCircle( rng );
     cache.rotations.emplace_back(cosphi, sinphi);
-    auto nd = cache.rotations.back().rotateVectorAroundAxis( indir, m_lcaxislab, lccross,
+    auto nd = cache.rotations.back().rotateVectorAroundAxis( indir, m_lcaxis, lccross,
                                                              lcdot ).as<NeutronDirection>();
     sumxs.add(m_sc->crossSection(cache.sc_cacheptr,ekin,nd).get());
     cache.xscommul.push_back(sumxs.sum());
@@ -164,9 +164,9 @@ NC::ScatterOutcome NC::LCBraggRndmRot::sampleScatter(CachePtr&cp, RNG& rng, Neut
     RandIdxByWeightPicker::oneShotPick(rng,cache.xscommul));
 
   //Scatter!
-  auto ndir = phirot.rotateVectorAroundAxis( indir, m_lcaxislab).as<NeutronDirection>();
+  auto ndir = phirot.rotateVectorAroundAxis( indir, m_lcaxis).as<NeutronDirection>();
   auto scatoutcome = m_sc->sampleScatter(cache.sc_cacheptr,rng,ekin,ndir);
-  auto outdir = phirot.rotateVectorAroundAxis( scatoutcome.direction.as<Vector>(), m_lcaxislab,
+  auto outdir = phirot.rotateVectorAroundAxis( scatoutcome.direction.as<Vector>(), m_lcaxis,
                                                true/*reverse*/).as<NeutronDirection>();
   return { ekin, outdir };
 }

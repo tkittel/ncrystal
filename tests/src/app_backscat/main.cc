@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/scbragg/NCSCBragg.hh"
+#include "NCrystal/internal/extd_utils/NCOrientUtils.hh"
 #include "NCrystal/factories/NCFactImpl.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
@@ -38,7 +39,9 @@ int main(int , char**)
   //focusing on the  0   2  -2 family
   NCrystal::MatCfg cfg("Ge_sg227.ncmat;dcutoff=2;dcutoffup=2.1;inelas=0;incoh_elas=0");
   auto ci = NC::FactImpl::createInfo(cfg);
-  auto sc = NC::makeSO<NC::SCBragg>(ci,orient,mosaicity);
+  auto sc = NC::makeSO<NC::SCBragg>
+    ( NC::SCBragg::createModel( ci, mosaicity ),
+      NC::getCrystal2LabRot( orient, NC::getLatticeRots( ci->getStructureInfo() ) ) );
   auto pc = NC::FactImpl::createScatter(cfg);
 
   auto rng  = NC::getRNG();

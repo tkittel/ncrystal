@@ -3676,7 +3676,7 @@ HKL planes (d_lower = 0.131143 Aa, d_upper = inf Aa):
 PowderBragg(nplanes=2061;2dmax=6.711Aa;max_contrib=7.41279barn)
 XS max-abs-diff converted laz vs. original < 1e-07?: yes
 ProcComposition(2 components, oriented)
-   |-- LCBragg
+   |-- LCBragg(nplanesets=129;dmin=0.400386Aa;dmax=3.3555Aa;mos=0.174533radians;lcaxis=(0,0,1))
    \-- PowderBragg(nplanes=1932;2dmax=0.797782Aa;max_contrib=0.349301barn)
 SC XS max-abs-diff converted laz vs. original < 1e-07?: yes
 
@@ -3880,7 +3880,7 @@ HKL planes (d_lower = 0.131143 Aa, d_upper = inf Aa):
 PowderBragg(nplanes=2061;2dmax=6.711Aa;max_contrib=7.41279barn)
 XS max-abs-diff converted lau vs. original < 1e-07?: yes
 ProcComposition(2 components, oriented)
-   |-- LCBragg
+   |-- LCBragg(nplanesets=129;dmin=0.400386Aa;dmax=3.3555Aa;mos=0.174533radians;lcaxis=(0,0,1))
    \-- PowderBragg(nplanes=1932;2dmax=0.797782Aa;max_contrib=0.349301barn)
 SC XS max-abs-diff converted lau vs. original < 1e-07?: yes
 ============= CLI >>--format laz stdlib::unknown_file.ncmat --override-prec=10<< ====================

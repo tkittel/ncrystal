@@ -23,7 +23,7 @@
 
 #include "NCrystal/interfaces/NCProcImpl.hh"
 #include "NCrystal/interfaces/NCInfo.hh"
-#include "NCrystal/interfaces/NCSCOrientation.hh"
+#include "NCrystal/internal/utils/NCRotMatrix.hh"
 
 namespace NCRYSTAL_NAMESPACE {
 
@@ -34,22 +34,29 @@ namespace NCRYSTAL_NAMESPACE {
 
     //Calculates Bragg diffraction in a single crystals with given orientation
     //and mosaicity, assuming a Gaussian distribution of crystallite
-    //orientations.
+    //orientations. The model itself is set up in the frame of the crystal,
+    //and can be shared between SCBragg instances for crystals differing only
+    //in orientation.
     //
     //Parameter delta_d is the deviation of d-spacing in a non-ideal crystal.
     //
     //plane_provider optional object which allows one to override the planes
     //otherwise present in the Info object. It will only be used during
-    //initialisation in the constructor, and the SCBragg instance will *not*
-    //assume ownership of it.
+    //initialisation, and will *not* be owned by the model.
     //
     //For a description of the prec and ntrunc parameters, see NCGaussMos.hh.
-    SCBragg( const Info&,
-             const SCOrientation&,
-             MosaicityFWHM,
-             double delta_d = 0,
-             PlaneProvider * plane_provider = nullptr,
-             double prec = 1e-3, double ntrunc = 0.0 );
+    class Model;
+    using ModelPtr = shared_obj<const Model>;
+    static ModelPtr createModel( const Info&,
+                                 MosaicityFWHM,
+                                 double delta_d = 0,
+                                 PlaneProvider * plane_provider = nullptr,
+                                 double prec = 1e-3, double ntrunc = 0.0 );
+
+    //Construct from a model and the rotation from the crystal to the lab frame
+    //(cf. getCrystal2LabRot):
+    SCBragg( ModelPtr, const RotMatrix& crystal2lab );
+    const ModelPtr& model() const { return m_model; }
 
     const char * name() const noexcept override { return "SCBragg"; }
 
@@ -69,8 +76,8 @@ namespace NCRYSTAL_NAMESPACE {
   protected:
     Optional<std::string> specificJSONDescription() const override;
   private:
-    struct pimpl;
-    std::unique_ptr<pimpl> m_pimpl;
+    ModelPtr m_model;
+    RotMatrix m_rot, m_invrot;//crystal to lab and vice versa
   };
 
 }

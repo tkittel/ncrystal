@@ -22,25 +22,24 @@
 #include "NCrystal/internal/scbragg/NCSCBragg.hh"
 #include "NCrystal/internal/phys_utils/NCGaussMos.hh"
 #include "NCrystal/internal/utils/NCRandUtils.hh"
-#include "NCrystal/interfaces/NCSCOrientation.hh"
 #include "NCrystal/internal/utils/NCVector.hh"
 #include "NCrystal/internal/utils/NCString.hh"
-#include "NCrystal/internal/extd_utils/NCOrientUtils.hh"
 #include "NCrystal/internal/extd_utils/NCPlaneProvider.hh"
 #include <functional>//std::greater
 namespace NC=NCrystal;
 
-struct NC::SCBragg::pimpl {
+class NC::SCBragg::Model final : public UniqueID {
+public:
+
+  //Everything here is in the frame of the crystal.
 
   typedef std::map<std::pair<uint64_t,uint64_t>,std::vector<Vector>,
                    std::greater<std::pair<uint64_t,uint64_t> > > SCBraggSortMap;
 
-  pimpl( const NC::Info&, MosaicityFWHM, double dd,
-         const SCOrientation&, PlaneProvider * plane_provider,
-         double prec, double ntrunc );
+  Model( const NC::Info&, MosaicityFWHM, double dd,
+         PlaneProvider * plane_provider, double prec, double ntrunc );
 
   double setupFamilies( const Info& cinfo,
-                        const RotMatrix& cry2lab,
                         PlaneProvider * plane_provider,
                         double V0numAtom );
 
@@ -65,8 +64,8 @@ struct NC::SCBragg::pimpl {
   GaussMos m_gm;
 };
 
-NC::SCBragg::pimpl::pimpl(const NC::Info& cinfo, MosaicityFWHM mosaicity,
-                          double dd, const SCOrientation& sco, PlaneProvider * plane_provider,
+NC::SCBragg::Model::Model(const NC::Info& cinfo, MosaicityFWHM mosaicity,
+                          double dd, PlaneProvider * plane_provider,
                           double prec, double ntrunc)
   : m_gm(mosaicity,prec,ntrunc)
 {
@@ -77,30 +76,36 @@ NC::SCBragg::pimpl::pimpl(const NC::Info& cinfo, MosaicityFWHM mosaicity,
     NCRYSTAL_THROW(MissingInfo,"Passed Info object lacks Structure information.");
 
   //Setup based on structure info:
-  RotMatrix cry2lab = getCrystal2LabRot( sco, getLatticeRots( cinfo.getStructureInfo() ) );
   double V0numAtom = ( cinfo.getStructureInfo().n_atoms_average
                        * cinfo.getStructureInfo().volume );
 
-  double maxdsp = setupFamilies( cinfo, cry2lab, plane_provider, V0numAtom );
+  double maxdsp = setupFamilies( cinfo, plane_provider, V0numAtom );
 
   m_threshold_ekin = wl2ekin(maxdsp * 2.0);
 
 }
 
-NC::SCBragg::SCBragg( const NC::Info& cinfo,
-                      const SCOrientation& sco,
-                      MosaicityFWHM mosaicity,
-                      double dd,
-                      PlaneProvider * plane_provider,
-                      double prec, double ntrunc)
-  : m_pimpl(NC::ncmake_unique<pimpl>(cinfo,mosaicity,dd,sco,plane_provider,prec,ntrunc))
+NC::SCBragg::ModelPtr NC::SCBragg::createModel( const NC::Info& cinfo,
+                                                MosaicityFWHM mosaicity,
+                                                double dd,
+                                                PlaneProvider * plane_provider,
+                                                double prec, double ntrunc )
 {
+  return makeSO<const Model>( cinfo, mosaicity, dd, plane_provider,
+                              prec, ntrunc );
+}
+
+NC::SCBragg::SCBragg( ModelPtr model, const RotMatrix& crystal2lab )
+  : m_model( std::move(model) ),
+    m_rot( Matrix( MatrixAllowCopy, crystal2lab ) ),
+    m_invrot( ~crystal2lab )
+{
+  nc_assert_always( isRotation( crystal2lab ) );
 }
 
 NC::SCBragg::~SCBragg() = default;
 
-double NC::SCBragg::pimpl::setupFamilies( const NC::Info& cinfo,
-                                          const NC::RotMatrix& cry2lab,
+double NC::SCBragg::Model::setupFamilies( const NC::Info& cinfo,
                                           NC::PlaneProvider * plane_provider,
                                           double V0numAtom )
 {
@@ -171,8 +176,7 @@ double NC::SCBragg::pimpl::setupFamilies( const NC::Info& cinfo,
     }
   }
 
-  //Transfer to m_planes (in the lab frame), in order of decreasing d-spacing:
-  std::vector<Vector> normals;
+  //Transfer to m_planes, in order of decreasing d-spacing:
   for ( auto& e : planes ) {
     auto itOrig = origvals_dsp.find(e.first.first);
     nc_assert(itOrig!=origvals_dsp.end());
@@ -182,11 +186,8 @@ double NC::SCBragg::pimpl::setupFamilies( const NC::Info& cinfo,
     nc_assert(itOrig!=origvals_fsq.end());
     const double fsq = (itOrig->second > 0 ? itOrig->second : e.first.second / two30);
 
-    normals.clear();
-    for ( auto& n : e.second )
-      normals.push_back( cry2lab * n );
     nc_assert(fsq>0&&dsp>0);
-    m_planes.addFamily( 0.5/dsp, fsq/V0numAtom, normals );
+    m_planes.addFamily( 0.5/dsp, fsq/V0numAtom, e.second );
   }
 
   return maxdspacing;
@@ -216,7 +217,7 @@ namespace NCRYSTAL_NAMESPACE {
   }
 }
 
-void NC::SCBragg::pimpl::updateCache( Cache& cache, NeutronEnergy ekin_raw, const NC::Vector& dir ) const
+void NC::SCBragg::Model::updateCache( Cache& cache, NeutronEnergy ekin_raw, const NC::Vector& dir ) const
 {
   const double ekin = SCBragg_cacheRound(ekin_raw.get());
   const Vector key = snapDirection( dir );
@@ -238,7 +239,7 @@ void NC::SCBragg::pimpl::updateCache( Cache& cache, NeutronEnergy ekin_raw, cons
   cache.ekin = ekin;
 }
 
-void NC::SCBragg::pimpl::genScat( Cache& cache, RNG& rng, NC::Vector& outdir ) const
+void NC::SCBragg::Model::genScat( Cache& cache, RNG& rng, NC::Vector& outdir ) const
 {
   nc_assert(!cache.xs_commul.empty());
   nc_assert(cache.xs_commul.back()>0.0);
@@ -253,28 +254,28 @@ void NC::SCBragg::pimpl::genScat( Cache& cache, RNG& rng, NC::Vector& outdir ) c
 
 NC::EnergyDomain NC::SCBragg::domain() const noexcept
 {
-  return { NeutronEnergy{m_pimpl->m_threshold_ekin}, NeutronEnergy{kInfinity} };
+  return { NeutronEnergy{m_model->m_threshold_ekin}, NeutronEnergy{kInfinity} };
 }
 
 NC::CrossSect NC::SCBragg::crossSection(CachePtr& cp, NeutronEnergy ekin, const NeutronDirection& dir ) const
 {
-  if ( ekin.get() <= m_pimpl->m_threshold_ekin )
+  if ( ekin.get() <= m_model->m_threshold_ekin )
     return CrossSect{ 0.0 };
-  auto& cache = accessCache<pimpl::Cache>(cp);
-  m_pimpl->updateCache( cache, ekin, dir.as<Vector>() );
+  auto& cache = accessCache<Model::Cache>(cp);
+  m_model->updateCache( cache, ekin, m_invrot * dir.as<Vector>() );
   return CrossSect{ cache.xs_commul.empty() ? 0.0 : cache.xs_commul.back() };
 }
 
 NC::ScatterOutcome NC::SCBragg::sampleScatter( CachePtr& cp, RNG& rng, NeutronEnergy ekin, const NeutronDirection& indir ) const
 {
-  if ( ekin.get() <= m_pimpl->m_threshold_ekin ) {
+  if ( ekin.get() <= m_model->m_threshold_ekin ) {
     //Scatterings not actually possible at this configuration, so don't change
     //state:
     return { ekin, indir };
   }
 
-  auto& cache = accessCache<pimpl::Cache>(cp);
-  m_pimpl->updateCache( cache, ekin, indir.as<Vector>() );
+  auto& cache = accessCache<Model::Cache>(cp);
+  m_model->updateCache( cache, ekin, m_invrot * indir.as<Vector>() );
 
   if ( cache.xs_commul.empty() || cache.xs_commul.back()<=0.0 ) {
     //Again, scatterings are not actually possible here:
@@ -282,21 +283,21 @@ NC::ScatterOutcome NC::SCBragg::sampleScatter( CachePtr& cp, RNG& rng, NeutronEn
   }
 
   Vector outdir;
-  m_pimpl->genScat( cache, rng, outdir );
+  m_model->genScat( cache, rng, outdir );
   if ( outdir == cache.dir )
     return { ekin, indir };//unscattered, return exactly the input direction
-  return { ekin, outdir.as<NeutronDirection>() };
+  return { ekin, ( m_rot * outdir ).as<NeutronDirection>() };
 }
 
 NC::Optional<std::string> NC::SCBragg::specificJSONDescription() const
 {
-  auto nfam = m_pimpl->m_planes.nFamilies();
-  auto mos = m_pimpl->m_gm.mosaicityFWHM();
+  auto nfam = m_model->m_planes.nFamilies();
+  auto mos = m_model->m_gm.mosaicityFWHM();
 
   double dmin(-1),dmax(-1);
   if ( nfam ) {
-    dmin = 0.5/m_pimpl->m_planes.maxInv2dsp();
-    dmax = 0.5/m_pimpl->m_planes.minInv2dsp();
+    dmin = 0.5/m_model->m_planes.maxInv2dsp();
+    dmax = 0.5/m_model->m_planes.minInv2dsp();
   }
 
   std::ostringstream ss;
@@ -311,6 +312,9 @@ NC::Optional<std::string> NC::SCBragg::specificJSONDescription() const
   streamJSONDictEntry( ss, "nfamilies", nfam );
   streamJSONDictEntry( ss, "dmin", dmin );
   streamJSONDictEntry( ss, "dmax", dmax );
-  streamJSONDictEntry( ss, "mos", mos.dbl(), JSONDictPos::LAST );
+  streamJSONDictEntry( ss, "mos", mos.dbl() );
+  streamJSONDictEntry( ss, "model_uid", m_model->getUniqueID().value );
+  streamJSONDictEntry( ss, "crystal2lab", rotMatrixRows( m_rot ),
+                       JSONDictPos::LAST );
   return ss.str();
 }

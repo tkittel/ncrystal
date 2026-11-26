@@ -31,8 +31,8 @@ namespace NCRYSTAL_NAMESPACE {
   public:
     //Simple but very slow implementation of layered crystals. Mainly provided
     //as a reference (should give increasingly better result with higher
-    //nsample).
-    LCBraggRef(ProcImpl::ProcPtr scbragg, LCAxis lcaxis_lab, unsigned nsample = 1000);
+    //nsample). The lcaxis is in the frame of the scbragg process.
+    LCBraggRef(ProcImpl::ProcPtr scbragg, LCAxis lcaxis, unsigned nsample = 1000);
 
     const char * name() const noexcept override { return "LCBraggRef"; }
     CrossSect crossSection(CachePtr&, NeutronEnergy, const NeutronDirection& ) const override;
@@ -40,7 +40,7 @@ namespace NCRYSTAL_NAMESPACE {
     ScatterOutcome sampleScatter(CachePtr&, RNG&, NeutronEnergy, const NeutronDirection& ) const override;
   private:
     ProcImpl::ProcPtr m_sc;
-    Vector m_lcaxislab;
+    Vector m_lcaxis;
     unsigned m_nsample;
     unsigned m_nsampleprime;
   };
@@ -54,14 +54,14 @@ namespace NCRYSTAL_NAMESPACE {
     //
     //WARNING: The crossSection function of this class use the global default
     //RNG stream, and is therefore NOT MT-safe.
-    LCBraggRndmRot(ProcImpl::ProcPtr scbragg, LCAxis lcaxis_lab, unsigned nsample = 1);
+    LCBraggRndmRot(ProcImpl::ProcPtr scbragg, LCAxis lcaxis, unsigned nsample = 1);
     const char * name() const noexcept override { return "LCBraggRndmRot"; }
     CrossSect crossSection(CachePtr&, NeutronEnergy, const NeutronDirection& ) const override;
     EnergyDomain domain() const noexcept override;
     ScatterOutcome sampleScatter(CachePtr&, RNG&, NeutronEnergy, const NeutronDirection& ) const override;
   private:
     ProcImpl::ProcPtr m_sc;
-    Vector m_lcaxislab;
+    Vector m_lcaxis;
     unsigned m_nsample;
     class Cache : public CacheBase {
     public:

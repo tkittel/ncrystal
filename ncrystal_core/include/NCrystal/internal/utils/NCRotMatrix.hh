@@ -83,6 +83,15 @@ namespace NCRYSTAL_NAMESPACE {
     double m_sinphi;
   };
 
+  //The identity matrix:
+  const RotMatrix& identityRotMatrix();
+
+  //Whether m is a rotation (proper orthogonal), within the tolerance:
+  bool isRotation( const RotMatrix& m, double tolerance = 1e-6 );
+
+  //Rows of a matrix (e.g. for JSON output):
+  std::vector<VectD> rotMatrixRows( const RotMatrix& );
+
   //With |a|=|b|=1, cosab=dot(a,b), sinab=sqrt(1-cosab^2), Rotate vector v from
   //the frame in which a=(sina,0,cosa), b=(0,0,1) into the frame in which they
   //have the provided values. If the two vectors are parallel (|sinab|~=0), the

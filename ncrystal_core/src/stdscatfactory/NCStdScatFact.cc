@@ -41,6 +41,8 @@
 #include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
 #include "NCrystal/internal/extd_utils/NCProcCompBldr.hh"
+#include "NCrystal/internal/extd_utils/NCOrientUtils.hh"
+#include "NCrystal/internal/fact_utils/NCFactoryUtils.hh"
 
 namespace NC = NCrystal;
 namespace NCDI = NCrystal::DynInfoUtils;
@@ -201,6 +203,114 @@ namespace NCRYSTAL_NAMESPACE {
     PowderBragg::VectDFM m_withheldPlanes;
   };
 
+  namespace {
+
+    //Single crystal Bragg diffraction is modelled in the frame of the crystal,
+    //so the models can be shared (via the cache below) between all
+    //orientations of a given crystal.
+
+    struct SCModel {
+      //Either an SCBragg or an LCBragg model:
+      std::shared_ptr<const SCBragg::Model> sc;
+      std::shared_ptr<const LCBragg::Model> lc;
+      ProcImpl::OptionalProcPtr powder;//planes below sccutoff (if any)
+    };
+
+    //Info uid, mos, mosprec, sccutoff, lcmode, and lcaxis (null vector if not
+    //a layered crystal):
+    using SCModelKey_Thin = std::tuple<UniqueIDValue,double,double,double,
+                                       std::int_least32_t,
+                                       double,double,double>;
+    struct SCModelKey {
+      SCModelKey_Thin thin_key;
+      InfoPtr info;
+    };
+
+    struct SCModelKeyThinner {
+      using key_type = SCModelKey;
+      using thinned_key_type = SCModelKey_Thin;
+      template <class TMap>
+      static typename TMap::mapped_type&
+      cacheMapLookup( TMap& map, const key_type& key,
+                      Optional<thinned_key_type>& tkey )
+      {
+        if ( !tkey.has_value() )
+          tkey = key.thin_key;
+        return map[tkey.value()];
+      }
+    };
+
+    //No strong refs kept: models are kept alive by the processes using them.
+    class SCModelFactory final
+      : public CachedFactoryBase<SCModelKey,SCModel,0,SCModelKeyThinner> {
+    public:
+      const char* factoryName() const final { return "SCModelFactory"; }
+
+      std::string keyToString( const SCModelKey& key ) const final
+      {
+        const auto& k = key.thin_key;
+        std::ostringstream ss;
+        ss<<"(Info id="<<std::get<0>(k).value
+          <<";mos="<<fmt(std::get<1>(k))
+          <<";mosprec="<<fmt(std::get<2>(k))
+          <<";sccutoff="<<fmt(std::get<3>(k))
+          <<";lcmode="<<std::get<4>(k)
+          <<";lcaxis="<<fmt(std::get<5>(k))<<','<<fmt(std::get<6>(k))
+          <<','<<fmt(std::get<7>(k))<<")";
+        return ss.str();
+      }
+
+    protected:
+      ShPtr actualCreate( const SCModelKey& key ) const final
+      {
+        const auto& k = key.thin_key;
+        const Info& info = key.info;
+        const MosaicityFWHM mos{ std::get<1>(k) };
+        const double mosprec = std::get<2>(k);
+        const double sccutoff = std::get<3>(k);
+        const Vector lcaxis( std::get<5>(k), std::get<6>(k), std::get<7>(k) );
+
+        //TODO: factory function somewhere for this, so can be easily created directly in test-code?
+        auto sc_pp = createStdPlaneProvider( key.info );
+        PlaneProviderWCutOff* ppwcutoff(nullptr);
+        if ( sccutoff && sccutoff > info.hklDMinVal() ) {
+          //Improve efficiency by treating planes with dspacing less than
+          //sccutoff as having isotropic mosaicity distribution.
+          auto tmp = ncmake_unique<PlaneProviderWCutOff>( sccutoff,
+                                                          std::move(sc_pp) );
+          ppwcutoff = tmp.get();
+          sc_pp = std::move(tmp);
+          nc_assert( sc_pp!=nullptr
+                     && (void*)sc_pp.get()==(void*)ppwcutoff );
+        }
+
+        SCModel model;
+        if ( lcaxis.isStrictNullVector() )
+          model.sc = SCBragg::createModel( info, mos, 0.0, sc_pp.get(),
+                                           mosprec, 0.0 );
+        else
+          model.lc = LCBragg::createModel( info, mos, lcaxis.as<LCAxis>(),
+                                           std::get<4>(k), 0.0, sc_pp.get(),
+                                           mosprec, 0.0 );
+        if ( ppwcutoff && ppwcutoff->hasPlanesWithheldInLastLoop() ) {
+          nc_assert_always(info.hasStructureInfo());
+          const double v0natoms
+            = ( info.getStructureInfo().volume
+                * info.getStructureInfo().n_atoms_average );
+          model.powder = makeSO<PowderBragg>
+            ( v0natoms, ppwcutoff->consumePlanesWithheldInLastLoop() );
+        }
+        return std::make_shared<const SCModel>( std::move(model) );
+      }
+    };
+
+    SCModelFactory& getSCModelFactory()
+    {
+      static SCModelFactory s_fact;
+      return s_fact;
+    }
+  }
+
   class StdScatFact : public FactImpl::ScatterFactory {
   public:
     const char * name() const noexcept final { return "stdscat"; }
@@ -263,36 +373,45 @@ namespace NCRYSTAL_NAMESPACE {
         if (cfg.isSingleCrystal()) {
           components.addfct_cl( [&cfg,&info]()
           {
+            //Orientation first, so it is validated before the model is set
+            //up:
+            auto cry2lab = getCrystal2LabRot
+              ( cfg.createSCOrientation(),
+                getLatticeRots( info.getStructureInfo() ) );
+            //Model key with equivalent values made identical: the lcaxis
+            //(a unit vector, of either sign) and lcmode only matter for
+            //layered crystals, and sccutoff only if above the smallest
+            //d-spacing:
+            Vector lcaxis( 0.0, 0.0, 0.0 );
+            if ( cfg.isLayeredCrystal() ) {
+              lcaxis = cfg.get_lcaxis().as<Vector>().unit();
+              const Vector neg = lcaxis * -1.0;
+              if ( std::make_tuple( neg.x(), neg.y(), neg.z() )
+                   > std::make_tuple( lcaxis.x(), lcaxis.y(), lcaxis.z() ) )
+                lcaxis = neg;
+            }
+            const auto lcmode = ( cfg.isLayeredCrystal() ? cfg.get_lcmode() : 0 );
+            const double sccutoff = ( cfg.get_sccutoff() > info.hklDMinVal()
+                                      ? cfg.get_sccutoff() : 0.0 );
+            auto model = getSCModelFactory().create
+              ( { SCModelKey_Thin{ cfg.infoUID(), cfg.get_mos().dbl(),
+                                   cfg.get_mosprec(), sccutoff, lcmode,
+                                   lcaxis.x(), lcaxis.y(), lcaxis.z() },
+                  cfg.infoPtr() } );
+            //Pointers owning the entire cache entry, to keep that alive:
             ProcImpl::ProcComposition::ComponentList cl;
-            //TODO: factory function somewhere for this, so can be easily created directly in test-code?
-            auto sc_pp = createStdPlaneProvider( cfg.infoPtr() );
-            PlaneProviderWCutOff* ppwcutoff(nullptr);
-            if ( cfg.get_sccutoff() && cfg.get_sccutoff() > info.hklDMinVal() ) {
-              //Improve efficiency by treating planes with dspacing less than
-              //sccutoff as having isotropic mosaicity distribution.
-              auto tmp = ncmake_unique<PlaneProviderWCutOff>(cfg.get_sccutoff(),std::move(sc_pp));
-              ppwcutoff = tmp.get();
-              sc_pp = std::move(tmp);
-              nc_assert( sc_pp!=nullptr && (void*)sc_pp.get()==(void*)ppwcutoff );
-            }
-            SCOrientation sco = cfg.createSCOrientation();
-            if (cfg.isLayeredCrystal()) {
-              cl.emplace_back(makeSO<LCBragg>( info, sco, cfg.get_mos(), cfg.get_lcaxis(), cfg.get_lcmode(),
-                                               0,sc_pp.get(),cfg.get_mosprec(),0.0 ));
-            } else {
-              cl.emplace_back(makeSO<SCBragg>( info, sco,cfg.get_mos(),0.0,
-                                               sc_pp.get(),cfg.get_mosprec(),0.));
-
-
-            }
-            if ( ppwcutoff && ppwcutoff->hasPlanesWithheldInLastLoop() ) {
-              nc_assert_always(info.hasStructureInfo());
-              const double v0natoms
-                = ( info.getStructureInfo().volume
-                    * info.getStructureInfo().n_atoms_average );
-              cl.emplace_back(makeSO<PowderBragg>(v0natoms,
-                                                  ppwcutoff->consumePlanesWithheldInLastLoop()));
-            }
+            if ( model->sc )
+              cl.emplace_back( makeSO<SCBragg>
+                               ( SCBragg::ModelPtr( std::shared_ptr<const SCBragg::Model>
+                                                    ( model, model->sc.get() ) ),
+                                 cry2lab ) );
+            else
+              cl.emplace_back( makeSO<LCBragg>
+                               ( LCBragg::ModelPtr( std::shared_ptr<const LCBragg::Model>
+                                                    ( model, model->lc.get() ) ),
+                                 cry2lab ) );
+            if ( model->powder )
+              cl.emplace_back( ProcImpl::ProcPtr{ model->powder } );
             return cl;
           });
         } else {

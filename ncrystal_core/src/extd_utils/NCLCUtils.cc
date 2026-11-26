@@ -55,13 +55,12 @@ namespace NCRYSTAL_NAMESPACE {
 }
 
 NC::LCHelper::LCHelper( NC::LCAxis lcaxis,
-                        NC::LCAxis lcaxis_labframe,
                         MosaicityFWHM mosaicity_fwhm,
                         double unitcell_volume_times_natoms,
                         PlaneProvider* pp,
                         double prec,
                         double ntrunc )
-  : m_lcaxislab(lcaxis_labframe.as<Vector>().unit()),
+  : m_lcaxis(lcaxis.as<Vector>().unit()),
     m_lcstdframe(mosaicity_fwhm,prec,ntrunc),
     m_xsfact( 1.0 / unitcell_volume_times_natoms )
 {
@@ -69,7 +68,6 @@ NC::LCHelper::LCHelper( NC::LCAxis lcaxis,
   nc_assert_always(unitcell_volume_times_natoms>0);
   nc_assert_always(m_xsfact>0);
   nc_assert_always(lcaxis.as<Vector>().isUnitVector());
-  nc_assert_always(lcaxis_labframe.as<Vector>().isUnitVector());
   Vector v = lcaxis.as<Vector>();
   v.normalise();//clear tiny errors
   lcaxis = v.as<LCAxis>();
@@ -327,14 +325,14 @@ bool NC::LCHelper::isValid(NC::LCHelper::Cache& cache, double wl, const NC::Vect
 {
   nc_assert(wl>0.0);
   nc_assert(indir.isUnitVector());
-  return isValid(cache,wl,m_lcaxislab.dot(indir));
+  return isValid(cache,wl,m_lcaxis.dot(indir));
 }
 
 void NC::LCHelper::ensureValid(NC::LCHelper::Cache& cache, double wl, const NC::Vector& indir) const
 {
   nc_assert(wl>0.0);
   nc_assert(indir.isUnitVector());
-  double c3 = m_lcaxislab.dot(indir);
+  double c3 = m_lcaxis.dot(indir);
   nc_assert(wl>=0&&wl<1e7&&c3>=-1.0&&c3<=1.0);
   uint64_t discrwl = LCdiscretizeValue(wl);
   uint64_t discrc3 = LCdiscretizeValue(ncabs(c3));
@@ -733,8 +731,8 @@ void NC::LCHelper::genScatter( LCHelper::Cache& cache, RNG& rng, double wl, cons
   //The scattering captured in outdir took place in the standard frame (see
   //description of LCStdFrame). Here, the lcaxis was aligned with the z-axis
   //while indir=(s3,0,c3). We rotate outdir from this frame to the lab frame:
-  double indirsign = m_lcaxislab.dot(indir) >= 0.0 ? 1.0 : -1.0;
-  rotateToFrame( cache.m_s3, cache.m_c3, indir, m_lcaxislab*indirsign, outdir, &rng );
+  double indirsign = m_lcaxis.dot(indir) >= 0.0 ? 1.0 : -1.0;
+  rotateToFrame( cache.m_s3, cache.m_c3, indir, m_lcaxis*indirsign, outdir, &rng );
 
   //Throughout LCUtils internals we have for (misguided attempts at?) clarity,
   //employed a sign convention for the neutron direction vector which is
