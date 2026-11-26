@@ -105,7 +105,7 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& query )
     std::vector<SymOp> ops;
     ops.reserve( items.size() );
     for ( auto& e : items ) {
-      auto r = tryParseSymOp( e );
+      auto r = SymOp::tryParse( e );
       if ( !r.op.has_value() ) {
         if ( arg(0) == "1" )
           NCRYSTAL_THROW(BadInput,r.errorMsg);

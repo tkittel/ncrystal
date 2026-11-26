@@ -48,6 +48,8 @@ namespace NCRYSTAL_NAMESPACE {
   //or ".25", as written by some CIF programs) which are exact multiples of
   //1/24 (so "0.333" is rejected).
 
+  struct SymOpParseResult;
+
   class SymOp final {
   public:
     static constexpr int tdenom = 24;
@@ -61,6 +63,9 @@ namespace NCRYSTAL_NAMESPACE {
 
     //From strings like "x,-y,z+1/2". Throws BadInput if invalid:
     explicit SymOp( StrView );
+    //As the constructor, but returning the message instead of throwing
+    //BadInput (the operation is then NullOpt):
+    static SymOpParseResult tryParse( StrView );
     explicit SymOp( const std::string& s ) : SymOp( StrView( s ) ) {}
     explicit SymOp( const char * s ) : SymOp( StrView( s ) ) {}
 
@@ -103,13 +108,11 @@ namespace NCRYSTAL_NAMESPACE {
 
   std::ostream& operator<<( std::ostream&, const SymOp& );
 
-  //As the SymOp( StrView ) constructor, but returning the message instead
-  //of throwing BadInput (the operation is then NullOpt):
+  //Result of SymOp::tryParse:
   struct SymOpParseResult {
     Optional<SymOp> op;
     std::string errorMsg;
   };
-  SymOpParseResult tryParseSymOp( StrView );
 
 }
 
