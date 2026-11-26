@@ -31,6 +31,7 @@ __all__ = []
 
 import copy
 import math
+import numbers
 
 from . import _stablemath as _nc_stablemath
 from . import core as _nc_core
@@ -570,13 +571,13 @@ def _resolve_tolerances( tol = None, *, tol_symprec = None, tol_uij = None,
     #two are relative. Values not given follow from tol (default _TOL_DEFAULT):
     #uij=occu=tol, and symprec=0.01Aa*tol/_TOL_DEFAULT.
     def check( name, v, vmax, unit ):
-        try:
-            v = float( v )
-        except (TypeError, ValueError):
-            pass
-        if not ( isinstance( v, float ) and math.isfinite( v ) and v > 0.0 ):
+        if isinstance( v, bool ) or not isinstance( v, numbers.Real ):
             raise _nc_core.NCBadInput( f'Invalid {name} value: {v!r} (must be'
-                                       ' a positive number)' )
+                                       ' a number)' )
+        v = float( v )
+        if not ( math.isfinite( v ) and v > 0.0 ):
+            raise _nc_core.NCBadInput( f'Invalid {name} value: {v!r} (must be'
+                                       ' a positive finite number)' )
         if not v <= vmax:
             raise _nc_core.NCBadInput( f'Invalid {name} value: {v!r} (must'
                                        f' not exceed {vmax:g}{unit})' )
