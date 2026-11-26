@@ -1,0 +1,251 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[hidelinks]{hyperref}
+
+\title{Updates to the single crystal models of NCrystal\\
+  since the elastic paper}
+\author{NCrystal developers}
+\date{NCrystal 5.0.0}
+
+\newcommand{\Eq}[1]{Eq.~(#1) of~\cite{elastic}}
+\newcommand{\Eqs}[1]{Eqs.~(#1) of~\cite{elastic}}
+
+\begin{document}
+\maketitle
+
+\noindent This note summarises how the Bragg diffraction models for single
+crystals with isotropic Gaussian mosaicity (\texttt{SCBragg}) and layered
+single crystals (\texttt{LCBragg}) in NCrystal 5.0.0 differ from their
+description in the NCrystal elastic paper~\cite{elastic} (sections 4 and 5
+there, valid for NCrystal 2.0--4.4). The physics model is unchanged: the
+cross section of a plane is still $\sigma^{hkl} = q_{hkl}\,g_{hkl}$
+(\Eqs{8--9}), with the truncated Gaussian mosaicity distribution $W(\delta)$
+of \Eq{18} (with truncation angle $\tau$ from \Eq{17}), and the geometrical
+factor $g_{hkl}$ of \Eq{24}. What changed is mostly how $g_{hkl}$ and its
+integral over crystallite rotations, $g^\text{LC}_{hkl}$ (\Eq{51}), are
+evaluated: faster, and in places more precisely. There are also two bug
+fixes.
+Notation is that of~\cite{elastic} throughout: $\alpha = \pi/2-\theta_B$ with
+$\cos\alpha = \lambda/2d_{hkl}$, $\gamma$ is the angle between $\hat n$ and
+$-\hat k_i$, $\delta(t)$ the angle between $\hat n$ and the point $\hat p(t)$
+on the Bragg circle (\Eq{23}), $t'$ the upper limit of integration (\Eq{30}),
+$\sigma$ the mosaicity, and $\epsilon$ the configured precision
+(\texttt{mosprec}).
+
+\section{Single crystals}\label{sec:single}
+
+\paragraph{Shared models.} Models are set up in the frame of the crystal, and
+shared between all materials differing only in the orientation of the
+crystal, with each \texttt{SCBragg} or \texttt{LCBragg} process rotating
+neutron directions to and from that frame. Results are unchanged. Cached
+results of \texttt{SCBragg} are keyed on the neutron direction normalised and
+snapped to a grid of $2^{-47}$, so that results only depend on the input and
+never on the order of calls.
+
+\paragraph{Bug fix near back-scattering.} The condition for a plane to
+contribute, \Eq{25}, is always fulfilled when its right hand side,
+$\cos\tau-\cos\alpha\cos\gamma$, is negative. Its squared forms,
+\Eqs{26--27}, correctly use $\max(0,\ldots)$ on the right hand side, but with
+a strict inequality, so they wrongly reject the case $\sin\gamma = 0$ when it
+is negative. That is a neutron exactly along a plane normal, near
+back-scattering ($\alpha < \tau$). Such planes are no longer ignored, and
+cross sections are continuous there.
+
+\paragraph{Bug fix at the Bragg threshold.} For $\lambda$ just below
+$2d_{hkl}$, the internal rounding of $\lambda$ and $1/2d_{hkl}$ could give
+$\cos\alpha > 1$. Such planes are now excluded, as for $\lambda \ge
+2d_{hkl}$.
+
+\paragraph{Preselection of planes.} The test of \Eq{27} was carried out for
+every pair of plane normals and every neutron. Now a cheaper test comes
+first: a pair of normals can only contribute if
+\begin{equation}
+  \big|\,|\cos\gamma| - \cos\alpha\,\big| \le 2\sin(\tau/2),
+\end{equation}
+since $|\cos\gamma-\cos\alpha| = 2|\sin\frac{\gamma+\alpha}{2}
+\sin\frac{\gamma-\alpha}{2}| \le 2\sin(\tau/2)$ when $|\alpha-\gamma| \le
+\tau$ (and likewise for $\pi-\gamma$). This is evaluated in single precision
+(with a safety margin, so it never rejects a contributing plane) for up to 64
+planes at a time, in a loop written for auto-vectorisation by compilers. The
+exact treatment then follows only for the few surviving planes. Results are
+unchanged.
+
+\section{Numerical evaluation of the geometrical integral}\label{sec:numint}
+
+\paragraph{Closed form.} The closed form of $g_{hkl}$ (\Eqs{35--36}) follows
+from the expansion $1-\cos t \approx t^2/2$ in \Eq{23}, and the further
+approximation $\delta^2-\delta_0^2 \approx 2u$, where
+$u = \cos\delta_0-\cos\delta(t)$ and $\delta_0 = |\gamma-\alpha|$. Both are
+now replaced. With $s = \sqrt{2\sin\alpha\sin\gamma}\,\sin(t/2)$, \Eq{23}
+gives $w = 1-\cos\delta = 1-\cos\delta_0+s^2$ exactly, and
+$dt = \sqrt{2/(\sin\alpha\sin\gamma)}\,ds/\cos(t/2)$, with
+$1/\cos(t/2) \approx 1+s^2/(4\sin\alpha\sin\gamma)$. With
+$s = \sqrt{u_\text{max}}\,v$ and $u_\text{max} = \cos\delta_0-\cos\tau$:
+\begin{equation}
+  g_{hkl} \approx \sqrt{\frac{u_\text{max}\sin\alpha}{\sin\gamma}}\,
+  F(\cos\delta_0)\Big(1+\frac{u_\text{max}\,\mathrm{E}[v^2]}
+  {4\sin\alpha\sin\gamma}\Big),
+  \qquad F(\cos\delta_0) = 2\sqrt2\int_0^1 W\big(\delta(v)\big)\,dv,
+\end{equation}
+with $\delta(v)$ as in the numerical integration below, and $\mathrm{E}[v^2]$
+the mean of $v^2$ with weight $W$. $F$ is evaluated with Gauss-Legendre
+quadrature when filling its spline. Unlike $S = \sqrt{u_\text{max}}F$ of
+\Eq{36}, $F$ is smooth at $u_\text{max} = 0$, where the spline of $S$ was off
+by many times $\epsilon$ (relative to small values). With
+$\delta^2 \approx 2w$, the weight is $e^{-av^2}$ with
+$a = u_\text{max}/\sigma^2$, and $\mathrm{E}[v^2]$ goes from $1/3$ ($a=0$)
+to $1/(2a)$. The rational approximation
+$(1+0.347a)/(3+1.55a+0.694a^2)$ is within 2.2\% of it. The exact $w$ removes
+errors of about $\sigma^2$ (relative, with $\sigma$ in radians), which were
+not accounted for by the conditions for using the closed form, and the
+correction removes an underestimate of up to about $\epsilon/2$. Also, these
+conditions (\Eqs{37--38}) only bound the
+error of the expansion of $\cos t$ relative to $\cos t$, which is not what
+matters. That expansion changes $\cos\delta$ by $u^2/(6\sin\alpha\sin\gamma)$,
+so to first order the relative error of $g_{hkl}$ is
+$\mathrm{E}[u^2]/(6\sigma^2\sin\alpha\sin\gamma)$, with the average over
+the integrand bounded by
+$\mathrm{E}[u^2] \le \min(3\sigma^4/4,u_\text{max}^2/5)$, where
+$u_\text{max} = s_\text{max}^2$. As an additional condition, the closed form
+is now only used where this is at most $\epsilon/2$ (kept, although the
+correction leaves a much smaller error). Before, the closed form
+was off by up to a few times $\epsilon$ near $\alpha = \tau$, and by about
+$\sigma^2$ for small values of $\epsilon$. Finally, the closed form takes
+$\cos\delta_0$ as input, whose rounding gives relative errors of about
+$\epsilon_\text{mach}/\sigma^2$ (with $\epsilon_\text{mach}$ the machine
+precision). The closed form is therefore not used at all when
+$4\epsilon_\text{mach}/\sigma^2 > \epsilon/2$, which only affects
+sub-arcsecond mosaicities (where the accuracy target of the numerical
+integration was previously reduced, which is no longer needed).
+
+\paragraph{Gauss-Legendre quadrature.} Where the closed form can not be used,
+\Eq{24} was integrated with Romberg integration, using a splined
+representation of the density (section 4.4 of~\cite{elastic}). It is now
+integrated with Gauss-Legendre quadrature, using the exact density. With
+$w = 1-\cos\delta(t)$, \Eq{23} gives
+\begin{equation}
+  w = w_0 + 2\sin\alpha\sin\gamma\sin^2(t/2), \qquad
+  w_0 = 1-\cos\delta_0 = \frac{\sin^2(\gamma-\alpha)}{1+\cos(\gamma-\alpha)},
+\end{equation}
+where the form of $w_0$ avoids cancellations at small angles. The exponent
+of \Eq{24} then follows from
+$\delta^2 = \sum_{m\ge1} 2^{m+1}w^m/(m^2\binom{2m}{m})$ (as many terms as
+needed for a relative precision of $10^{-17}$ at $w = 1-\cos\tau$), or else
+from $\delta^2 = 4\arcsin^2\sqrt{w/2}$. The interval $[0,t']$ is split into
+$\lceil\tau/10\sigma\rceil$ segments. The number of points per segment
+(8--24) is chosen from a table of the maximum errors observed, as a function
+of the truncation in units of $\sigma$ per segment, such that these are 10
+times below the accuracy target $\min(\max(0.1\epsilon,10^{-7}),10^{-4})$
+(which was also used with Romberg integration, and is thus clamped to
+$[10^{-7},10^{-4}]$).
+
+\paragraph{Table of geometrical integrals.} When the closed form is not
+valid for $\delta_0 = 0$ and $\alpha = 1.2\tau$ (which happens for large
+mosaicities, or small values of $\epsilon$), a two-dimensional table of $g_{hkl}$ replaces most
+numerical integrations. It covers $1.2\tau \le \alpha \le \pi/2$ and
+$|\gamma-\alpha| < \tau$, with coordinates which are cheap to evaluate
+(without transcendental functions):
+\begin{equation}
+  z = \frac{\sin(\gamma-\alpha)}{\sin\tau}, \qquad
+  r = \frac{\tan(\alpha/2)}{\tan(\alpha/2)+\kappa}, \quad \kappa = \tan(0.6\tau),
+\end{equation}
+both with uniformly spaced nodes. It holds the smooth function
+$\ln\!\big(g_{hkl}/(\sqrt{1-z^2}\sqrt{\sin\alpha/\sin\gamma})\big)$, which is
+interpolated with $4\times4$-point Lagrange polynomials. The factor
+$\sqrt{\sin\alpha/\sin\gamma}$ is the one of \Eq{36}, and $\sqrt{1-z^2}$
+handles the square-root behaviour at the truncation edges. When set up, the
+table ($64\times256$ nodes, or after refinement $128\times512$ or
+$256\times1024$) is validated against the numerical integration at the cell
+centres of every second row of $\alpha$ nodes, and refined until the maximum
+error is 10 times below the accuracy target (with errors relative to
+$\max(g_{hkl},10^{-2}N\sigma)$, as smaller values are negligible), or else
+not used. With $N$ the normalisation of $W$, $10^{-2}N\sigma$ is 0.4\% of
+typical peak values.
+
+\section{Layered single crystals}\label{sec:layered}
+
+With the definitions of section 5.1 of~\cite{elastic}, \Eq{42} reads
+$u \equiv \cos\gamma = A\cos\varphi + B$, with
+$A = \sin\theta_k\sin\theta_n$ and $B = \cos\theta_k\cos\theta_n$ (for
+planes at $\pi-\theta_n$, the sign of $B$ changes). Changing the variable of
+integration from $\varphi$ to $u$, \Eq{43} becomes
+\begin{equation}
+  g^\text{LC}_{hkl} = \frac{1}{\pi}\int g^\text{SC}_{hkl}(u)\,G(u)\,du,
+  \qquad G(u) = \big(A^2-(u-B)^2\big)^{-1/2},
+\end{equation}
+over $u \in [B-A,B+A]$.
+
+\paragraph{Series expansion.} The integrand is only non-zero in a narrow
+window, $|u-c| \le h$, around $c = \cos\alpha$, with
+$h = \sin\alpha\sin\tau + \cos\alpha(1-\cos\tau)$. If that window lies inside
+$[B-A,B+A]$, $G$ is expanded to 6th order around $c$, giving
+$g^\text{LC}_{hkl} \approx \frac{1}{\pi}\sum_{n=0}^6 a_n M_n$. With
+$d_1 = B+A-c$ and $d_2 = c-B+A$, the Taylor coefficients of $G$ are
+$a_n = G_0\sum_{k=0}^n b_k b_{n-k}d_1^{-k}(-d_2)^{-(n-k)}$, where
+$G_0 = (d_1d_2)^{-1/2}$ and $b_k = \binom{2k}{k}/4^k$. The moments
+$M_n = \int g^\text{SC}_{hkl}(u)(u-c)^n du$ are exactly
+\begin{equation}
+  \begin{split}
+  M_n &= \sin\alpha\,\mathrm{E}_W\Big[\big\langle(-c\,w +
+  \sin\alpha\sin\delta\cos\psi)^n\big\rangle_\psi\Big]\\
+  &= \sin\alpha\sum_j \binom{n}{2j}\frac{\binom{2j}{j}}{4^j}(-c)^{n-2j}
+  \sin^{2j}\!\alpha\;\mathrm{E}_W\big[w^{n-j}(2-w)^j\big],
+  \end{split}
+\end{equation}
+where $\mathrm{E}_W$ is an average over the mosaicity distribution $W(\delta)$,
+$w = 1-\cos\delta$, and $\langle\rangle_\psi$ an average over the azimuthal
+angle $\psi$ around the nominal normal. This follows from the symmetry of
+pairs of points at angular distance $\alpha$ on the unit sphere. Only the
+moments $\mathrm{E}_W[w^m]$, $m \le 6$, are needed, and these are computed
+once. Since $|a_n| \le G_0/D^n$ with $D = \min(d_1,d_2)$, and
+$|M_n| \le h^{n-6}M_6$ for $n > 6$ (as $g^\text{SC}_{hkl} \ge 0$), the
+neglected terms are bounded by $G_0M_6\,x/(D^6(1-x))$, with $x = h/D$. The
+expansion is used if this bound is at most $\epsilon'/10$ of the result, with
+$\epsilon' = \min(\max(\epsilon,10^{-7}),10^{-2})$, which is the usual case
+except for large mosaicities.
+
+\paragraph{Numerical integration.} Otherwise, \Eq{51} is integrated with the
+trapezoidal rule, starting with 17 points and halving the step until two
+estimates agree to within $\epsilon'$, with the integrand evaluated in
+batches. This replaces Romberg integration, whose extrapolations assume
+errors in powers of $h^2$ (with $h$ the step). Convergence is often very
+fast, but can also be like $h^{1.5}$, leaving an error of about 0.55 times
+the last difference, always with the same sign. Unless the last two
+differences show fast convergence (a ratio above 8), that error is added
+(a Richardson step for $h^{1.5}$). In tests, this reduces the largest error
+from $0.5\epsilon'$ to $0.1\epsilon'$, and removes a systematic
+underestimate.
+
+\section{Precision and performance}
+
+Apart from the changes to the closed form, which change cross sections by up
+to about $\sigma^2$, the changes in sections~\ref{sec:numint}
+and~\ref{sec:layered} change
+cross sections by much less than $\epsilon$ (typically in the 5th significant
+digit), and generally make them more precise. Typical speedups of cross
+section evaluations are 2--7 for single crystals (up to 17 for small
+mosaicities and low crystal symmetry), 3--15 for layered single crystals, and
+5--9 where the closed form is never valid. The sampling of scattering events
+(sections 4.5 and 5.3 of~\cite{elastic}) is unchanged.
+
+\section{Configuration}
+
+Not affecting the models themselves, the orientation of single crystals can
+now also be given with lattice directions (\texttt{@crys\_uvw:}), with an
+additional rotation of the whole material around a lab axis (\texttt{rot}),
+or with \texttt{dir2=arbitrary}. The axis $\hat L$ of layered crystals can be
+given as a plane normal, a lattice direction, in the lab frame, or as the
+crystal direction of \texttt{dir1} (\texttt{lcaxis=@dir1}, also via the
+\texttt{dir1avg} and \texttt{fibre} parameters for fibre textures), and
+\texttt{dir2} can then be left out. See the documentation of the cfg-string
+parameters.
+
+\begin{thebibliography}{9}
+\bibitem{elastic} T.~Kittelmann and X.-X.~Cai, \emph{Elastic neutron
+  scattering models for NCrystal}, Comput.\ Phys.\ Commun.\ \textbf{267}
+  (2021) 108082, \href{https://doi.org/10.1016/j.cpc.2021.108082}%
+  {doi:10.1016/j.cpc.2021.108082}.
+\end{thebibliography}
+
+\end{document}
