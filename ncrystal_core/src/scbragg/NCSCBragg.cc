@@ -311,6 +311,6 @@ NC::Optional<std::string> NC::SCBragg::specificJSONDescription() const
   streamJSONDictEntry( ss, "nfamilies", nfam );
   streamJSONDictEntry( ss, "dmin", dmin );
   streamJSONDictEntry( ss, "dmax", dmax );
-  streamJSONDictEntry( ss, "dmax", mos.dbl(), JSONDictPos::LAST );
+  streamJSONDictEntry( ss, "mos", mos.dbl(), JSONDictPos::LAST );
   return ss.str();
 }
