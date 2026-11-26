@@ -6,8 +6,8 @@
   strings also accept C and F), lengths in angstrom in data and in metres
   in MiniMC geometry, cross sections in barn per atom, scattering lengths
   in fm in NCMAT data (internally $\sqrt{\mathrm{barn}} = 10$ fm), densities
-  in g/cm3, kg/m3 or atoms/Aa3, angles in radians internally with `deg`
-  and `arcmin` accepted in cfg strings, masses in Daltons (amu).
+  in g/cm3, kg/m3 or atoms/Aa3, angles in radians internally with `deg`,
+  `arcmin` and `arcsec` accepted in cfg strings, masses in Daltons (amu).
 - Conversions (`NCDefs.hh`): $E = h^2/(2m_n\lambda^2)$ (`wl2ekin`,
   `ekin2wl`, `k2ekin`, `ekin2k`, `ksq2ekin`), $k = 2\pi/\lambda$; the
   constants are CODATA values (`const_neutron_mass_amu` = 1.00866491606,
@@ -57,7 +57,13 @@ $W = \frac12 Q^2\langle u^2\rangle$ and $\langle u^2\rangle$ the
 one-dimensional isotropic mean-squared displacement ($U_{iso}$;
 $B_{iso} = 8\pi^2 U_{iso}$). Multiplicities count both $hkl$ and $-h-k-l$.
 Mosaicity `mos` is a FWHM; `dir1`/`dir2` map crystal to laboratory
-directions.
+directions, and `rot` then rotates the material around a lab axis
+(right-handed). Cartesian vectors in the crystal frame (`@crys:`) have $x$
+along $\vec a$, $z$ along $\vec c^*$ (parallel to $\vec a\times\vec b$) and
+$y$ along $\vec c^*\times\vec a$, so $\vec b$ is in the $xy$-plane. Plane
+normals (`@crys_hkl:h,k,l`) are $h\vec a^*+k\vec b^*+l\vec c^*$ (reciprocal
+lattice), and lattice directions (`@crys_uvw:u,v,w`) are
+$u\vec a+v\vec b+w\vec c$ (direct lattice).
 
 ## Dynamics
 

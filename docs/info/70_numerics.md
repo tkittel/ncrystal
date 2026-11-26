@@ -49,7 +49,9 @@ the same reference cross sections, and `long double` is never used.
 
 Compensated summation (used for cumulative cross sections, kernel
 integrals and composition averages) and double-double arithmetic where
-extra precision matters; fixed and adaptive Romberg and Simpson quadrature;
+extra precision matters; fixed and adaptive Romberg and Simpson quadrature,
+and Gauss-Legendre rules with 6-24 points (`NCGaussLegendre.hh`, also over
+several segments);
 monotone cubic (PCHIP) and natural cubic spline interpolation; branchless
 binary searches on sorted grids (3-5 times faster than the standard
 library, up to 24% faster Bragg sampling and 15% faster kernel sampling);
@@ -75,7 +77,11 @@ dispatch invisible in the results.
 - Elastic models (2020-era core, elastic paper section 7): empty-call
   baseline 500 MHz, powder Bragg and incoherent elastic cross sections about
   50 MHz, powder sampling about 10 MHz, mosaic single crystal 1-10 MHz
-  above 1.5 Aa (0.1-1 MHz below), layered crystals ten times slower.
+  above 1.5 Aa (0.1-1 MHz below), layered crystals ten times slower. Since
+  5.0.0, single crystal cross sections are 2-6 times faster (plane
+  preselection, more for low symmetry), layered crystal ones 3-15 times
+  (chapters 21-22), and single crystal models are shared between
+  orientations.
 - Kernels: a cross section is one spline evaluation after a branchless
   search; a sample costs a few random numbers and a cell lookup at thermal
   energies; the free gas gives about 1 MHz for a full $(\alpha,\beta)$
@@ -92,8 +98,11 @@ dispatch invisible in the results.
 
 ## Validation
 
-Unit tests of every numerical utility (elementary functions, quadrature,
-interpolation, searches, FFT, point reduction, random numbers), the
+Unit tests of every numerical utility (elementary functions, quadrature
+including the Gauss-Legendre rules in `app_math`, interpolation, searches,
+FFT, point reduction, random numbers), the mosaic circle integrals and
+layered crystal integrals against `mpmath` references (`app_goscircleint`,
+`app_lcinteg`), the
 kinematic utilities and the $G_n$ functions against high-precision
 references, the reference cross sections of many materials across the CI
 platforms, and forced-contraction, 32-bit and WebAssembly builds in
@@ -111,8 +120,9 @@ developer setups.
 
 Everything under the reproducibility policy and the FMA dispatch is new in
 5.0.0, together with the branchless searches, the portable elementary
-functions, the per-thread C API error state, and the performance pass over
-the kernel and hkl hot paths. Release 4.4.6 was already multithread-safe
+functions, the per-thread C API error state, the performance pass over
+the kernel and hkl hot paths, the shared Gauss-Legendre rules, and the
+faster single and layered crystal models (chapters 21-22). Release 4.4.6 was already multithread-safe
 with caching and factory threads.
 
 ## References

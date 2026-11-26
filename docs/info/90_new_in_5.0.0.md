@@ -18,7 +18,8 @@ inelastic modelling (the VDOS expansion and kernel processing of chapters
 v8 format (chapter 50) as the other major additions. The list below is
 organised by what a user of the physics gains, with pointers to the
 chapters that carry the details. The curated changelog input is in
-`docs/changes_for_changelog.txt` and `docs/changes_for_changelog2.txt`.
+`docs/changes_for_changelog.txt`, `docs/changes_for_changelog2.txt` and
+`docs/changes_for_changelog_scorient.txt`.
 
 ## Crystallography and Bragg diffraction (chapters 10-12, 20-22)
 
@@ -37,6 +38,23 @@ chapters that carry the details. The curated changelog input is in
   space group.
 - Sites and the space-group setting on the `Info` object, with
   site/position utility queries.
+- Single crystals (chapters 21-22): models set up in the crystal frame and
+  shared between orientations, which makes many differently oriented
+  crystals of the same material cheap (issue #333). Orientations by lattice
+  directions (`@crys_uvw:`), with `dir2=arbitrary` (issue #156), and with a
+  subsequent rotation (`rot`). More forms of `lcaxis` (`@crys:`,
+  `@crys_hkl:`, `@crys_uvw:`, `@lab:` for spinning crystals, `@dir1`), no
+  `dir2` needed for an `lcaxis` along `dir1`, and `dir1avg` (alias `fibre`)
+  for fibre textures.
+- Single crystal fixes: planes exactly along the neutron were ignored near
+  back-scattering, the `SCBragg` JSON description gave the mosaicity under
+  `dmax`, and the closed form of the circle integrals is more precise
+  (it was off by up to about $\sigma^2$ at large mosaicities). Results no
+  longer depend on the call history of a cache.
+- Faster single crystals: plane preselection for `SCBragg` (2-6 times,
+  more for low symmetry, results unchanged), a series expansion for
+  `LCBragg` (3-15 times), and Gauss-Legendre quadrature and a validated
+  table of circle integrals where the closed form fails (5-9 times).
 
 ## Inelastic scattering (chapters 30-35)
 
@@ -87,7 +105,11 @@ chapters that carry the details. The curated changelog input is in
 ## ABI and API
 
 - ABI-breaking: the space-group setting and the sites on the `Info`
-  object, the public setting type, process-interface additions
+  object, the public setting type, the single crystal orientation types
+  (`OrientDir` as a plain struct with a basis, the new `LCAxisState`,
+  `CrystalAxis` and `HKLPoint` removed), `MatCfg` orientation getters
+  returning what the cfg-string specifies (with `createSCOrientation` moved
+  to `ScatterRequest` only), process-interface additions
   (multi-energy cross-section evaluation, combined cross-section and
   sampling calls, a pure-elastic flag), and the pending discussion items
   (site occupancy, anisotropic displacements, effective-temperature data on
@@ -106,5 +128,8 @@ by the `sabxs` reference values) and all kernels are extended above their
 energy range with the SCT model instead of the free gas at the material
 temperature (VDOS-expanded kernels always; direct kernels whenever an
 effective temperature is given or can be estimated, which is the case for
-the stdlib water files). Files that do not have the symmetry of
+the stdlib water files). Cross sections of single and layered crystals
+change slightly (within `mosprec`) due to the new integrations and the more
+precise closed form, and more near back-scattering where the bug fix
+applies. Files that do not have the symmetry of
 their declared space group are now rejected.

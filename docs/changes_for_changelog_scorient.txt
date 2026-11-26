@@ -1,0 +1,150 @@
+Input for the CHANGELOG from the single crystal orientation work, in the
+same spirit as changes_for_changelog.txt (to be curated into the real
+CHANGELOG at release time, after which this file is dropped).
+
+### Single crystals
+
+     * Bragg diffraction models of single crystals (SCBragg, LCBragg) are
+       now set up in the frame of the crystal and shared between all
+       materials differing only in the orientation of the crystal, with
+       each SCBragg or LCBragg process rotating neutron directions to and
+       from that frame. This greatly reduces memory usage and
+       initialisation time when many differently oriented crystals of the
+       same material are needed (github issue #333). Models are shared
+       when the material, mos, mosprec, sccutoff and (for layered
+       crystals) lcaxis and lcmode are the same. The JSON description of
+       these processes gained "model_uid" (identical for processes
+       sharing a model) and "crystal2lab" (the rotation matrix) entries,
+       and LCBragg processes now have a description and summary string.
+     * Crystal directions in the dir1 and dir2 parameters can now also be
+       given as lattice directions [uvw], i.e. along u*a+v*b+w*c, using
+       the new form "@crys_uvw:u,v,w". The description of the existing
+       "@crys:" form now states which Cartesian frame it refers to: x
+       along a, z along c*=cross(a,b), and y along cross(c*,a).
+     * New cfg-string parameter "rot" for rotating a single crystal around
+       an axis in the lab frame, after it has been oriented with dir1 and
+       dir2: "rot=a1,a2,a3:angle". The rotation is right-handed, and the
+       angle accepts the usual units (rad, deg, arcmin, arcsec). As an
+       example, "rot=0,1,0:30deg" rotates the crystal 30 degrees around
+       the y-axis, which is convenient for e.g. goniometer scans. The rot
+       parameter has no effect on materials which are not single
+       crystals, so it can be added to any cfg-string.
+     * The dir2 parameter can be set to "arbitrary" for when the rotation
+       of a single crystal around dir1 is of no importance, in which case
+       an unspecified (but deterministic) rotation is used. This fixes
+       github issue #156.
+     * The lcaxis parameter of layered crystals accepts more forms. In
+       addition to the existing "lcaxis=0,0,1" (which can now also be
+       written "@crys:0,0,1"), the axis can be given as the normal of an
+       (hkl) plane ("@crys_hkl:0,0,1"), as a lattice direction
+       ("@crys_uvw:0,0,1"), in the lab frame ("@lab:0,1,0"), or as the
+       crystal direction of dir1 ("@dir1"). The lab form can for instance
+       be used for a single crystal on a spinning sample holder. A rot
+       parameter rotates such a lab axis along with the crystal. The
+       description of the plain form was corrected: it is (and always
+       was) a Cartesian vector in the crystal frame, rather than being in
+       direct lattice coordinates (for "0,0,1" in e.g. hexagonal crystals
+       there is no difference).
+     * The dir2 parameter can be left out when lcaxis is a direction in
+       the crystal which is parallel to that of dir1, since the rotation
+       around dir1 is then of no importance. Thus, with the pyrolytic
+       graphite file of the standard data library, it is now enough to
+       add "mos=1deg;dir1=@crys_hkl:0,0,1@lab:0,1,0".
+     * New pseudo-parameter "dir1avg" for crystals averaged over all
+       rotations around a primary direction, i.e. fibre textures:
+       "dir1avg=X" is equivalent to "dir1=X;lcaxis=@dir1". The
+       pseudo-parameter "fibre" is an alias.
+     * Error messages for incomplete orientations now state when dir2 is
+       needed: "Single crystals need mos and dir1, and also dir2 unless
+       lcaxis is along dir1".
+     * Numbers given with a unit in cfg-strings are now normalised like
+       other numbers, e.g. "mos=30.000deg" becomes "mos=30deg". The values
+       of dir1, dir2, lcaxis and rot keep their form as given, with numbers
+       normalised in the same way (e.g. "0.50" becomes "0.5").
+     * C++ API: OrientDir is now a plain struct, with the crystal direction
+       given by a basis (Cartesian, HKL or UVW) and a vector, as in
+       cfg.set_dir1( { { OrientDir::CrysDir::Basis::HKL, { 5, 1, 1 } },
+       { 0, 0, 1 } } ). The CrystalAxis and HKLPoint types are removed,
+       along with the MatCfg and SCOrientation methods taking them. The new
+       LCAxisState type holds an lcaxis value (its form and vector).
+     * C++ API: The MatCfg getters get_dir1, get_dir2, get_lcaxis and the
+       new get_rot return what the cfg-string specifies (as Optional
+       values, NullOpt if not set), and never need the crystal lattice. A
+       dir2 of "arbitrary" has null vectors (as accepted by set_dir2).
+       Setters take the same types (set_lcaxis now takes an LCAxisState,
+       and set_rot is new). MatCfg::createSCOrientation is removed, since
+       an orientation can need the lattice: ScatterRequest provides the
+       resolved values, with createSCOrientation (including rot),
+       get_dir2 (with "arbitrary" or a left out dir2 resolved) and
+       get_lcaxis (always a Cartesian vector in the crystal frame). These
+       throw MissingInfo exceptions for materials without a crystal
+       structure. ScatterRequest::isSingleCrystal and isLayeredCrystal now
+       also require a single phase crystalline material, so they are false
+       e.g. for the non-crystalline phases of a multiphase material with
+       orientation parameters.
+     * Vectors in cfg values whose squared length overflows (components of
+       about 1e155 or more) are now rejected, rather than silently ignored.
+     * In JSON, dir1 and dir2 values have a "basis" entry ("cartesian",
+       "hkl" or "uvw") instead of "crystal_is_hkl", and dir2=arbitrary is
+       the string "arbitrary". Values of lcaxis are dictionaries with
+       "form" ("cartesian", "hkl", "uvw", "lab" or "primary") and "axis"
+       entries (no axis for "primary"), and values of rot have "axis" and
+       "angle" (in radians) entries.
+     * Fixed missing closing parenthesis when streaming SCOrientation
+       objects.
+     * Fixed a bug in the Gaussian mosaicity model of single crystals
+       (SCBragg): planes with a normal exactly along the neutron direction
+       were ignored near back-scattering, i.e. at wavelengths just below
+       2*dspacing. Cross sections were thus too low for e.g. a neutron
+       exactly along the lab direction of a "dir1=@crys_hkl:..." plane
+       normal, while fine for any slightly tilted neutron.
+     * Cross sections of single crystals (SCBragg) are now evaluated
+       faster, with unchanged results. The planes able to contribute for
+       a given neutron are preselected with a fast single-precision test
+       (written to be vectorised by compilers), and exact calculations
+       are only carried out for those. For a mosaicity of 0.5 degrees the
+       speedup is typically a factor of 2-3 (7 for crystals of low
+       symmetry), and for 0.05 degrees a factor of 4-6 (17 for low
+       symmetry).
+     * Results of SCBragg processes now only depend on the neutron state
+       given, and never on earlier calls with the same cache (the cached
+       neutron direction is snapped to a fine grid), and neutrons which
+       are not deflected keep their exact input direction. Rounding at
+       wavelengths just below the Bragg threshold, 2*dspacing, can no
+       longer give a sine of the Bragg angle above 1.
+     * Fixed the JSON description of SCBragg processes, in which the
+       mosaicity was provided under the key "dmax" (hiding the actual
+       dmax value) rather than "mos".
+     * Cross sections of layered crystals (LCBragg) are now evaluated
+       3-15 times faster, mostly via a new series expansion of the
+       integral over crystallite rotations, which uses exact moments of
+       the mosaicity distribution. Where the expansion is not precise
+       enough, the integration now uses the trapezoidal rule with
+       successive halving of the step and a final extrapolation step
+       (rather than Romberg integration),
+       with integrands evaluated in batches. Results change slightly, well
+       within the precision requested via mosprec (typically in the 5th
+       significant digit).
+     * Where the Gaussian mosaicity model can not use its closed-form
+       approximation (large mosaicities, or small mosprec values), the
+       integrals along circles now use Gauss-Legendre quadrature of the
+       exact density rather than Romberg integration of a splined one,
+       also with full precision for mosaicities below 10 arcseconds, where
+       the precision was reduced before. Where the closed form is often
+       invalid, a validated 2D table of such integrals (0.1-2 MB, set up in
+       0.01-0.3 seconds) is used for most of them. In such cases cross
+       sections of single and layered crystals are now evaluated 5-9 times
+       faster, and more precisely. Results change slightly (within
+       mosprec).
+     * The closed-form approximation of the Gaussian mosaicity model now
+       uses the exact density and a first order correction for the
+       curvature of the circles, and is only used where an estimate of its
+       remaining error is below mosprec/2. The correction removes an
+       underestimate of up to about mosprec/2. Before, it could be off by a few
+       times mosprec, and by about the squared mosaicity (in radians) for
+       small mosprec values: e.g. by 1e-5 for 0.5 degrees, 6e-5 for 1
+       degree, and 5e-4 for 3 degrees. Some cross sections at large
+       mosaicities change by that much. The closed form is also no longer
+       used where rounding of its input would spoil its precision (very
+       small mosaicities, e.g. sigma below 30 arcseconds for mosprec=1e-7,
+       or below 0.3 arcseconds for mosprec=1e-3).

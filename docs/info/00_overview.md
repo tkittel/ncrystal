@@ -54,8 +54,8 @@ processes (chapters 10, 30, 42, 43).
 | Class | Defined by | Elastic | Inelastic | Chapters |
 |---|---|---|---|---|
 | Crystal powder / polycrystal | unit cell, space group, positions or sites, displacements | powder Bragg + incoherent elastic | kernels from VDOS (or Debye fallback), direct kernels | 10-12, 20, 23, 30-35 |
-| Mosaic single crystal | same + `dir1`, `dir2`, `mos` | Gaussian mosaic Bragg (+ powder below `sccutoff`) + incoherent elastic | same | 21 |
-| Layered single crystal (PG) | same + `lcaxis` | rotation-averaged mosaic Bragg | same | 22 |
+| Mosaic single crystal | same + `dir1`, `dir2` (optional `rot`), `mos` | Gaussian mosaic Bragg (+ powder below `sccutoff`) + incoherent elastic | same | 21 |
+| Layered single crystal (PG), fibre texture | same + `lcaxis` (or `dir1avg`) | rotation-averaged mosaic Bragg | same | 22 |
 | Amorphous solid | composition, density, `solid`, VDOS/Debye/kernel dynamics | incoherent-approximation elastic | kernels | 24, 30-35 |
 | Liquid | composition, density, kernels or free gas (Liquids plugin for diffusion) | none (plugin: diffusion, $S(Q)$) | kernels, SCT-extended | 30-35, 53 |
 | Gas | composition, density (or `gasmix::`) | none | free gas | 34, 42 |
@@ -86,10 +86,12 @@ numerics in 70.
 `"<data>;par1=val1;par2=val2"`: the data name (a stdlib file, a path,
 `source::name`, a quick material, or `phases<...>`), then parameters:
 `temp`, `density`, `dcutoff`, `dcutoffup`, `mos`, `dir1`, `dir2`, `dirtol`,
-`mosprec`, `lcaxis`, `lcmode`, `sccutoff`, `strain`, `coh_elas`,
+`rot`, `mosprec`, `lcaxis`, `lcmode`, `sccutoff`, `strain`, `coh_elas`,
 `incoh_elas`, `inelas`, `sans`, `vdoslux`, `knllux`, `atomdb`, `ucnmode`,
 `infofactory`, `scatfactory`, `absnfactory`, and the pseudo-parameters
-`bragg`, `elas`, `comp`, `phasechoice`, `bkgd` (obsolete). The reference
+`bragg`, `elas`, `comp`, `dir1avg` (alias `fibre`), `phasechoice`, `bkgd`
+(obsolete). Numbers are normalised in the stored text (e.g. `mos=30.000deg`
+becomes `mos=30deg`). The reference
 is `nctool --doc` / `NCrystal.generateCfgStrDoc()`; files can embed
 defaults with `NCRYSTALMATCFG[...]`.
 

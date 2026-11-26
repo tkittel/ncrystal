@@ -40,7 +40,12 @@
   mpmath cell integrals and reference samplers), `app_symchecks`, `app_eqrefltables`, `app_cellconstraints`,
   `latticecells.py` (cells against metric tensors and spglib), `sgsym.py`
   (against spglib and gemmi), `cif2ncmatgen.py` (synthetic CIFs in all 230
-  groups).
+  groups), `app_goscircleint` and `app_lcinteg` (mosaic circle integrals
+  and layered crystal integrals against `mpmath` references from
+  `devel/misc/gen_mosaicrefs.py`).
+- Single crystals: `app_gaussmosplanes`, `app_scbraggcache`,
+  `app_backscat`, `app_rotscat`, `app_orientutils`, `app_lc`,
+  `scorient.py`, `scshare.py`, `azimuth.py`, `pgbe.py` (chapters 21-22).
 - Reproducibility: the same references on Linux, macOS, Windows, across
   compilers, with forced FMA contraction, in 32-bit and wasm32 developer
   builds; `app_fmaprobe`, `app_fmamath`, `app_ncerf`, `app_stablemathfct`.
@@ -51,7 +56,7 @@
 
 ## The test suite in numbers
 
-82 C++ test applications under `tests/src/` and 133 Python test scripts
+119 C++ test applications under `tests/src/` and 192 Python test scripts
 under `tests/scripts/` (30 of them `long_` tests enabled with `--long`),
 with shared utilities in `tests/pypath/NCTestUtils/` (reference samplers,
 mpmath contexts, histogram and statistics helpers, the `sabxs` driver, the
