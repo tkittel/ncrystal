@@ -499,12 +499,11 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& query )
       {
         bool firsthigher = true;
         for ( auto& cand : settingsWithMoreOperations( setting.value() ) ) {
-          CellParameters cp = cell;
-          try {
-            SGSymmetry::get( cand ).cellConstraints().complete( cp );
-          } catch ( Error::BadInput& ) {
+          const auto r = SGSymmetry::get( cand ).cellConstraints()
+            .tryComplete( cell );
+          if ( !r.cell.has_value() )
             continue;
-          }
+          const auto& cp = r.cell.value();
           if ( !( cp.a == cell.a && cp.b == cell.b && cp.c == cell.c
                   && cp.alpha == cell.alpha && cp.beta == cell.beta
                   && cp.gamma == cell.gamma ) )
