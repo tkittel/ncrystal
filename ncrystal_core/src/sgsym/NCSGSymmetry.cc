@@ -396,7 +396,11 @@ namespace NCRYSTAL_NAMESPACE {
       const unsigned rankM = exactRank( M );
       auto implied = [&M,rankM]( const Row& L )
       {
-        std::vector<Row> tmp = M;
+        //NB: reserve+assign (not copy+push_back) avoids a reallocation, which
+        //triggered a false -Wfree-nonheap-object with g++-16 (20260322):
+        std::vector<Row> tmp;
+        tmp.reserve( M.size() + 1 );
+        tmp.assign( M.begin(), M.end() );
         tmp.push_back( L );
         return exactRank( tmp ) == rankM;
       };
@@ -526,7 +530,17 @@ void NC::SGCellConstraints::check( const CellParameters& cp ) const
 
 void NC::SGCellConstraints::complete( CellParameters& cp ) const
 {
+  auto r = tryComplete( cp );
+  if ( !r.cell.has_value() )
+    NCRYSTAL_THROW(BadInput,r.errorMsg.value());
+  cp = r.cell.value();
+}
+
+NC::SGCellConstraints::SnapResult
+NC::SGCellConstraints::tryComplete( const CellParameters& given ) const
+{
   using LC = LengthConstraint;
+  CellParameters cp = given;
   using AC = AngleConstraint;
   if ( b == LC::EqualToA && cp.b == 0.0 )
     cp.b = cp.a;
@@ -544,7 +558,7 @@ void NC::SGCellConstraints::complete( CellParameters& cp ) const
     else if ( ac[i] == AC::EqualToAlpha )
       *angles[i] = cp.alpha;//(alpha is never EqualToAlpha itself)
   }
-  cp = snap( cp, Tolerances::strict() );
+  return trySnap( cp, Tolerances::strict() );
 }
 
 NC::CellParameters

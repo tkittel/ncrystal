@@ -72,6 +72,9 @@ namespace NCRYSTAL_NAMESPACE {
     //constraints (e.g. b and c for cubic space groups, or gamma=120 for
     //hexagonal axes), and then snap(..) the result with strict tolerances:
     void complete( CellParameters& ) const;
+    //As complete(..), but returning the result, or the message of the
+    //BadInput instead of throwing it:
+    SnapResult tryComplete( const CellParameters& ) const;
   private:
     //The message check(..) would throw, if any:
     Optional<std::string> checkError( const CellParameters& ) const;

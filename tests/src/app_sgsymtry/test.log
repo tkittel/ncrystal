@@ -1,0 +1,14 @@
+SpaceGroup::tryParse("70:1"): 70:1
+SpaceGroup::tryParse("225"): 225
+SpaceGroup::tryParse("70"): Invalid space group specification: "70" (space group 70 has several settings, so one of them must be specified: 70:1 (default), 70:2)
+SpaceGroup::tryParse("70:3"): Invalid space group specification: "70:3" (not a setting of space group 70, the settings are: 70:1 (default), 70:2)
+SpaceGroup::tryParse("70:A"): Invalid space group specification: "70:A" (not a setting of space group 70, the settings are: 70:1 (default), 70:2)
+SpaceGroup::tryParse("bla"): Invalid space group specification: "bla" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+SpaceGroup::tryParse("231"): Invalid space group specification: "231" (expected "<number>" or "<number>:<choice>" with a number in 1..230)
+SymOp::tryParse("-x,y+1/2,-z"): -x,y+1/2,-z
+SymOp::tryParse("x,y"): Invalid symmetry operation "x,y": expected three comma-separated components
+SymOp::tryParse("2x,y,z"): Invalid symmetry operation "2x,y,z": coefficients of x, y, z must be +1 or -1
+SymOp::tryParse("x+y,y,z"): Invalid symmetry operation "x+y,y,z": Symmetry operations must have a rotation part belonging to point group m-3m with orthogonal-type axes (i.e. a signed permutation matrix) or point group 6/mmm with hexagonal axes
+SymOp::tryParse("x,y,z+1/3"): x,y,z+1/3
+tryComplete: b=4
+tryComplete: Lattice parameters a and b must be equal for this space group (got a=4 and b=4.1)
