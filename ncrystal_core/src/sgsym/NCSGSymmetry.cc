@@ -1187,13 +1187,9 @@ NC::settingsCompatibleWithCell( unsigned number, const CellParameters& cell )
   for ( auto& sg : SpaceGroup::settingsOfNumber( number ) ) {
     if ( ( StrView( sg.choice() ) == "r" ) != rhombo )
       continue;
-    CellParameters cp = cell;
-    try {
-      SGSymmetry::get( sg ).cellConstraints().complete( cp );
-    } catch ( Error::BadInput& ) {
-      continue;
-    }
-    res.push_back( sg );
+    if ( SGSymmetry::get( sg ).cellConstraints().tryComplete( cell )
+         .cell.has_value() )
+      res.push_back( sg );
   }
   return res;
 }
