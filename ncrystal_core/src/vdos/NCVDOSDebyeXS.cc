@@ -20,6 +20,7 @@
 
 #include "NCrystal/internal/vdos/NCVDOSDebyeXS.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCGaussLegendre.hh"
 #include "NCVDOSDebyeXSData.hh"
 
 namespace NC = NCrystal;

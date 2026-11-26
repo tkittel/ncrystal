@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCGaussLegendre.hh"
 #include "NCrystal/internal/utils/NCString.hh"
 #include "NCrystal/internal/utils/NCRect.hh"
 #include "NCrystal/internal/utils/NCStableDbl.hh"
@@ -682,9 +683,73 @@ void testGaussLegendre8()
   std::cout<<"integrateGaussLegendre8 tests OK"<<std::endl;
 }
 
+void testGaussLegendreRules()
+{
+  //Positive ascending nodes in (0,1), positive weights summing to 1, and
+  //exact for polynomials up to degree 2n-1 (odd ones vanish by symmetry):
+  for ( unsigned n : { 6, 8, 10, 12, 14, 16, 20, 24 } ) {
+    const auto gl = NC::gaussLegendreRule( n );
+    nc_assert_always( gl.nhalf == n / 2 );
+    NC::StableSum sumw;
+    for ( auto i : NC::ncrange(gl.nhalf) ) {
+      nc_assert_always( gl.x[i] > 0.0 && gl.x[i] < 1.0 && gl.w[i] > 0.0 );
+      nc_assert_always( i == 0 || gl.x[i] > gl.x[i-1] );
+      sumw.add( gl.w[i] );
+    }
+    nc_assert_always( NC::floateq( sumw.sum(), 1.0, 1e-15, 0.0 ) );
+    for ( unsigned k = 2; k < 2*n; k += 2 ) {
+      NC::StableSum s;
+      for ( auto i : NC::ncrange(gl.nhalf) )
+        s.add( gl.w[i] * std::pow( gl.x[i], k ) );
+      //int_{-1}^{1} x^k dx = 2/(k+1), and the sum covers half the nodes:
+      nc_assert_always( NC::floateq( s.sum(), 1.0 / ( k + 1 ), 1e-13, 0.0 ) );
+    }
+  }
+  for ( unsigned n : { 0, 1, 7, 18, 26 } ) {
+    bool threw = false;
+    try {
+      (void)NC::gaussLegendreRule( n );
+    } catch ( NC::Error::LogicError& ) {
+      threw = true;
+    }
+    nc_assert_always( threw );
+  }
+  std::cout<<"gaussLegendreRule tests OK"<<std::endl;
+}
+
+void testIntegrateGaussLegendre()
+{
+  auto f = []( double x ) { return std::exp( 0.7 * x ) * std::cos( x ); };
+  //Antiderivative of f:
+  auto F = []( double x ) {
+    return std::exp( 0.7 * x ) * ( 0.7 * std::cos( x ) + std::sin( x ) ) / 1.49;
+  };
+  const double a( -1.3 ), b( 4.1 );
+  const double exact = F(b) - F(a);
+  for ( unsigned n : { 6, 8, 10, 12, 14, 16, 20, 24 } ) {
+    for ( unsigned nseg : { 1, 2, 3, 7 } ) {
+      const double v = NC::integrateGaussLegendre( f, a, b, n, nseg );
+      nc_assert_always( NC::floateq( v, exact, n >= 10 ? 1e-13 : 1e-5, 0.0 ) );
+      //Same as the sum over the segments:
+      NC::StableSum sum;
+      for ( auto i : NC::ncrange( nseg ) )
+        sum.add( NC::integrateGaussLegendre( f, a + i * ( b - a ) / nseg,
+                                             a + ( i + 1 ) * ( b - a ) / nseg,
+                                             n ) );
+      nc_assert_always( NC::floateq( v, sum.sum(), 1e-14, 1e-14 ) );
+    }
+  }
+  //The 8-point version is the same function:
+  nc_assert_always( NC::integrateGaussLegendre8( f, a, b )
+                    == NC::integrateGaussLegendre( f, a, b, 8 ) );
+  std::cout<<"integrateGaussLegendre tests OK"<<std::endl;
+}
+
 int main() {
 
   testGaussLegendre8();
+  testGaussLegendreRules();
+  testIntegrateGaussLegendre();
 
   testIntegration([](double x){return x*x+0.1;}, -1,2, 3.3, "x^2+1/10", true);
   testIntegration([](double x){return std::exp(-x*x)*x*x*x;}, 0,2,0.5-2.5*std::exp(-4.0), "exp(-x^2)*x^3 ", false);

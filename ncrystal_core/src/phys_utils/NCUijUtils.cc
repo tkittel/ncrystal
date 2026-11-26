@@ -20,6 +20,7 @@
 
 #include "NCrystal/internal/phys_utils/NCUijUtils.hh"
 #include "NCrystal/internal/utils/NCMath.hh"
+#include "NCrystal/internal/utils/NCGaussLegendre.hh"
 
 namespace NC = NCrystal;
 namespace NCU = NCrystal::UijUtils;
@@ -203,20 +204,23 @@ std::array<double,3> NCU::calcUcartEigenvalues( const Uij& u,
 std::vector<NC::PairDD> NCU::directionalMSDs( const Uij& u,
                                               const CellMetric& m )
 {
-  //6 point Gauss-Legendre on [-1,1]:
-  static constexpr double x[6] = { -0.9324695142031521, -0.6612093864662645,
-                                   -0.2386191860831969, 0.2386191860831969,
-                                   0.6612093864662645, 0.9324695142031521 };
-  static constexpr double w[6] = { 0.1713244923791704, 0.3607615730481386,
-                                   0.4679139345726910, 0.4679139345726910,
-                                   0.3607615730481386, 0.1713244923791704 };
+  //6 point Gauss-Legendre on [-1,1], nodes ascending:
+  constexpr unsigned n = 6;
+  const auto gl = gaussLegendreRule( n );
+  nc_assert( gl.nhalf == n/2 );
+  double x[n], w[n];
+  for ( auto i : ncrange(gl.nhalf) ) {
+    x[gl.nhalf-1-i] = -gl.x[i];
+    x[gl.nhalf+i] = gl.x[i];
+    w[gl.nhalf-1-i] = w[gl.nhalf+i] = gl.w[i];
+  }
   const auto ev = calcUcartEigenvalues( u, m );
   std::vector<PairDD> res;
   res.reserve( 36 );
-  for ( unsigned i = 0; i < 6; ++i ) {
+  for ( auto i : ncrange(n) ) {
     const double ct = 0.5 * ( x[i] + 1.0 );//cos(theta) in [0,1]
     const double st2 = 1.0 - ct * ct;
-    for ( unsigned j = 0; j < 6; ++j ) {
+    for ( auto j : ncrange(n) ) {
       const double ph = 0.25 * kPi * ( x[j] + 1.0 );//phi in [0,pi/2]
       const double cp = std::cos( ph );
       const double cp2 = cp * cp;

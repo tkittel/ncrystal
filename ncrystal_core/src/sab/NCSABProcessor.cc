@@ -29,6 +29,7 @@
 #include "NCrystal/internal/utils/NCFastSearch.hh"
 #include "NCrystal/internal/utils/NCSpline.hh"
 #include "NCrystal/internal/utils/NCMsg.hh"
+#include "NCrystal/internal/utils/NCGaussLegendre.hh"
 
 namespace NC = NCrystal;
 namespace NCS = NCrystal::SAB;
