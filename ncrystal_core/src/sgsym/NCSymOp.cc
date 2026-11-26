@@ -248,7 +248,7 @@ NC::SymOp::SymOp( const std::array<int,9>& rot,
     m_data[9+i] = reduceTrans( trans[i] % tdenom );
 }
 
-NC::SymOpParseResult NC::tryParseSymOp( StrView s )
+NC::SymOpParseResult NC::SymOp::tryParse( StrView s )
 {
   //Normalise (remove whitespace, lower case):
   std::string norm;
@@ -279,7 +279,7 @@ NC::SymOpParseResult NC::tryParseSymOp( StrView s )
 
 NC::SymOp::SymOp( StrView s )
 {
-  auto r = tryParseSymOp( s );
+  auto r = tryParse( s );
   if ( !r.op.has_value() )
     NCRYSTAL_THROW(BadInput,r.errorMsg);
   *this = r.op.value();
