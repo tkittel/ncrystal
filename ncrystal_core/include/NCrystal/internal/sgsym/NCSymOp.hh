@@ -103,6 +103,14 @@ namespace NCRYSTAL_NAMESPACE {
 
   std::ostream& operator<<( std::ostream&, const SymOp& );
 
+  //As the SymOp( StrView ) constructor, but returning the message instead
+  //of throwing BadInput (the operation is then NullOpt):
+  struct SymOpParseResult {
+    Optional<SymOp> op;
+    std::string errorMsg;
+  };
+  SymOpParseResult tryParseSymOp( StrView );
+
 }
 
 

@@ -125,12 +125,13 @@ def determine_setting( cif_content, *, permissive, override_spacegroup ):
     ops = cif_content.listed_ops
     symsettings, symdescr = _symbol_settings( cif_content )
     if ops:
-        try:
-            s = _query( 'sgsym', 'fromops', *_rawargs( ops ) )
+        r = _query( 'sgsym', 'fromops', '0', *_rawargs( ops ) )
+        s = r['settings']
+        if r['error_msg'] is not None:
+            why = f'could not be parsed ({r["error_msg"]})'
+        else:
             why = ( None if s else 'are not those of a tabulated space group'
                     ' setting' )
-        except _nc_core.NCBadInput as e:
-            s, why = [], f'could not be parsed ({e})'
         if s:
             setting = s[0]#(a few settings share operations, then any is fine)
             if symsettings and _number( setting ) not in { _number( e ) for e
