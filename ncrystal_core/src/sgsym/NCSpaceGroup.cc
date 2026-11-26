@@ -88,7 +88,7 @@ NC::SpaceGroup::SpaceGroup( SpaceGroupSettingIdx hn )
 }
 
 NC::SpaceGroupParseResult
-NC::tryParseSpaceGroup( StrView s, SpaceGroupParseMode mode )
+NC::SpaceGroup::tryParse( StrView s, SpaceGroupParseMode mode )
 {
   using St = SpaceGroupParseResult::Status;
   auto ok = []( std::uint16_t hn )
@@ -169,7 +169,7 @@ NC::tryParseSpaceGroup( StrView s, SpaceGroupParseMode mode )
 
 NC::SpaceGroup::SpaceGroup( StrView s, SpaceGroupParseMode mode )
 {
-  auto r = tryParseSpaceGroup( s, mode );
+  auto r = tryParse( s, mode );
   if ( !r.setting.has_value() )
     NCRYSTAL_THROW(BadInput,r.errorMsg);
   m_idx = r.setting.value().settingIdx();
