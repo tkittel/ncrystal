@@ -171,7 +171,8 @@ def read_cif( cifdata, *, name, permissive, quiet, warnfct,
     if not quiet:
         _nc_common.infomsg("Parsing CIF data")
     from .misc import evaluate_query
-    opts = ( [ f'override_spacegroup={override_spacegroup}' ]
+    #(RAWDATA, as symbols can have any characters):
+    opts = ( [ 'RAWDATA', f'override_spacegroup={override_spacegroup}' ]
              if override_spacegroup else [] )
     if tol_uij is not None:
         opts.append( f'tol_uij={float(tol_uij)!r}' )

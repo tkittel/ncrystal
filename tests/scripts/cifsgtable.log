@@ -1,0 +1,27 @@
+('1', 'P 1', 'P 1')
+('2', 'P -1', '-P 1')
+('3:b', 'P 1 2 1', 'P 2y')
+('229', 'I m -3 m', '-I 4 2 3')
+('230', 'I a -3 d', '-I 4bd 2c 3')
+3:c Hall "P 2": rejected: Space group "P 2" is ambiguous: as Hermann-Mauguin symbol it is "P 1 2 1" (setting 3:b), as Hall symbol "P 1 1 2" (setting 3:c). Please give the setting instead (e.g. "3:b" or "3:c"), or prefix the symbol with "HM:" or "Hall:"
+5:c1 Hall "A 2": rejected: Space group "A 2" is ambiguous: as Hermann-Mauguin symbol it is "A 1 2 1" (setting 5:b2), as Hall symbol "A 1 1 2" (setting 5:c1). Please give the setting instead (e.g. "5:b2" or "5:c1"), or prefix the symbol with "HM:" or "Hall:"
+5:c3 Hall "I 2": rejected: Space group "I 2" is ambiguous: as Hermann-Mauguin symbol it is "I 1 2 1" (setting 5:b3), as Hall symbol "I 1 1 2" (setting 5:c3). Please give the setting instead (e.g. "5:b3" or "5:c3"), or prefix the symbol with "HM:" or "Hall:"
+68:1 Hall "C 2 2 -1ac": rejected: The space group "C 2 2 -1ac" has several settings fitting the unit cell (68:1, 68:1ba-c). Please specify which one to use (e.g. override_spacegroup="68:1", or --spacegroup=68:1 for ncrystal_cif2ncmat)
+68:1ba-c Hall "C 2 2 -1ac": rejected: The space group "C 2 2 -1ac" has several settings fitting the unit cell (68:1, 68:1ba-c). Please specify which one to use (e.g. override_spacegroup="68:1", or --spacegroup=68:1 for ncrystal_cif2ncmat)
+68:1cab Hall "A 2 2 -1ab": rejected: The space group "A 2 2 -1ab" has several settings fitting the unit cell (68:1cab, 68:1-cba). Please specify which one to use (e.g. override_spacegroup="68:1cab", or --spacegroup=68:1cab for ncrystal_cif2ncmat)
+68:1-cba Hall "A 2 2 -1ab": rejected: The space group "A 2 2 -1ab" has several settings fitting the unit cell (68:1cab, 68:1-cba). Please specify which one to use (e.g. override_spacegroup="68:1cab", or --spacegroup=68:1cab for ncrystal_cif2ncmat)
+68:1bca Hall "B 2 2 -1ab": rejected: The space group "B 2 2 -1ab" has several settings fitting the unit cell (68:1bca, 68:1a-cb). Please specify which one to use (e.g. override_spacegroup="68:1bca", or --spacegroup=68:1bca for ncrystal_cif2ncmat)
+68:1a-cb Hall "B 2 2 -1ab": rejected: The space group "B 2 2 -1ab" has several settings fitting the unit cell (68:1bca, 68:1a-cb). Please specify which one to use (e.g. override_spacegroup="68:1bca", or --spacegroup=68:1bca for ncrystal_cif2ncmat)
+89 Hall "P 4 2": rejected: Space group "P 4 2" is ambiguous: as Hermann-Mauguin symbol it is "P 42" (setting 77), as Hall symbol "P 4 2 2" (setting 89). Please give the setting instead (e.g. "77" or "89"), or prefix the symbol with "HM:" or "Hall:"
+146:h Hall "R 3": rejected: Space group "R 3" is ambiguous: as Hermann-Mauguin symbol it is one of "R 3:h" (setting 146:h), "R 3:r" (setting 146:r), as Hall symbol "R 3:h" (setting 146:h). Please give the setting instead (e.g. "146:h" or "146:h"), or prefix the symbol with "HM:" or "Hall:"
+149 Hall "P 3 2": rejected: Space group "P 3 2" is ambiguous: as Hermann-Mauguin symbol it is "P 32" (setting 145), as Hall symbol "P 3 1 2" (setting 149). Please give the setting instead (e.g. "145" or "149"), or prefix the symbol with "HM:" or "Hall:"
+177 Hall "P 6 2": rejected: Space group "P 6 2" is ambiguous: as Hermann-Mauguin symbol it is "P 62" (setting 171), as Hall symbol "P 6 2 2" (setting 177). Please give the setting instead (e.g. "171" or "177"), or prefix the symbol with "HM:" or "Hall:"
+530 settings, 13 exceptions
+ncrystal_cif2ncmat --list-spacegroups:
+Setting   H-M symbol    Hall symbol
+1         P 1           P 1
+2         P -1          -P 1
+3:b       P 1 2 1       P 2y
+...
+229       I m -3 m      -I 4 2 3
+230       I a -3 d      -I 4bd 2c 3
