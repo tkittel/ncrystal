@@ -185,6 +185,7 @@ def main():
     test_atomsites()
     test_cif()
     test_structure()
+    test_uisotemperature()
     test_cli('test','wl2ekin','1.8')
     test_cli('test','ekin2wl','0.025')
     test_cli('test','eqrefl','relaxed','149','1,2,3','1,1,0')
@@ -637,6 +638,32 @@ _atom_site_fract_z 0
                            ' tol_symprec=X, cod_id=N, mp_id=N or'
                            ' allow_cell_misfit=1)' ):
             ncquery( [ 'cif', 'structure', *bad ] )
+
+def test_uisotemperature():
+    #Temperature of the Uiso values of CIF data (cf. the cifuisotemp test):
+    for args in ( [ 'strict', 'none', 'none', 'none' ],
+                  [ 'strict', '100', 'RAWDATA', '120(2)', 'none' ],
+                  [ 'strict', 'none', 'RAWDATA', '120(2)', 'RAWDATA', '121' ],
+                  [ 'permissive', 'none', 'RAWDATA', '120', 'RAWDATA', '300' ] ):
+        test( 'cif', 'uisotemperature', *args )
+    with ensure_error( NCBadInput, 'The _diffrn_ambient_temperature ("120")'
+                       ' and _cell_measurement_temperature ("300") CIF fields'
+                       ' are inconsistent, so it is unclear with which'
+                       ' temperature the Uiso (msd) values are associated.'
+                       ' Specify the temperature explicitly, or try'
+                       ' permissive mode to use the'
+                       ' _diffrn_ambient_temperature value.' ):
+        ncquery( [ 'cif', 'uisotemperature', 'strict', 'none', 'RAWDATA',
+                   '120', 'RAWDATA', '300' ] )
+    for bad in ( [ 'strict', 'none', 'none' ], [ 'x', 'none', 'none', 'none' ],
+                 [ 'strict', 'abc', 'none', 'none' ],
+                 [ 'strict', 'none', 'RAWDATA', '1', 'none', 'none' ] ):
+        try:
+            ncquery( [ 'cif', 'uisotemperature', *bad ] )
+        except NCBadInput as e:
+            print( 'rejected:', bad, str( e ).split( ' (' )[0] )
+        else:
+            raise SystemExit( f'not rejected: {bad}' )
 
 def rnd( o ):
     #Round floats (also nested) to 10 digits, for platform-stable printouts:
