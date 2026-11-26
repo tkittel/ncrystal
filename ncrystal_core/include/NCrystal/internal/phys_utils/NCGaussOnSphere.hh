@@ -46,13 +46,13 @@ namespace NCRYSTAL_NAMESPACE {
     //
     //Finally it is possible to integrate the density along a circle on the
     //sphere, and to sample a point on a circle according to the density. The
-    //circle integrals will be evaluated either via an efficient Romberg
-    //integration scheme, or - where appropriate - via an appropriate
-    //approximation formula. The latter once again employ splined lookup tables
-    //to avoid expensive calls (this time replacing exp+acos+sqrt+erf calls),
-    //and the former uses the CosSinGridGen to avoid expensive cosine
-    //calls. Sampling points on circles is implemented precisely as rejection
-    //sampling.
+    //circle integrals (the geometrical factor g of Eqs. 22-24 in the NCrystal
+    //elastic paper, CPC 267 (2021) 108082) will be evaluated - where
+    //appropriate - via an approximation formula (Eqs. 35-36 there), which
+    //employs splined lookup tables to avoid expensive calls (exp+acos+sqrt+erf
+    //calls), and otherwise numerically with Gauss-Legendre quadrature or a
+    //table of such results. Sampling points on circles is implemented
+    //precisely as rejection sampling.
     //
     //The precision parameter is used to control the rough precision of the
     //approximations used: When and how to carry out full numerical integration
@@ -125,23 +125,54 @@ namespace NCRYSTAL_NAMESPACE {
 
     bool isValid() const { return m_norm>0.0; }
 
+    //The methods used for circle integrals where the closed form is not used,
+    //for tests: Numerical integration (always available), and the table
+    //(available if hasTable(), and used for alpha >= 1.2*truncangle). The
+    //size of the table is (nalpha,nz), cf. setupTable:
+    double circleIntegralNumerical( double cosgamma, double singamma,
+                                    double cosalpha, double sinalpha ) const;
+    bool hasTable() const { return !m_table.g.empty(); }
+    std::pair<unsigned,unsigned> tableSize() const;
+    double circleIntegralTable( double cosgamma, double singamma,
+                                double cosalpha, double sinalpha ) const;
+
     GaussOnSphere(const GaussOnSphere&) = delete;
     void operator=(const GaussOnSphere&) = delete;
 
   private:
     double circleIntegralSlow( double cacg, double sasg, double ca, double sa ) const;
-    double m_cta;
-    double m_circleint_k1;
-    double m_circleint_k2;
-    double m_norm;
-    double m_expfact;
-    double m_truncangle;
-    double m_sigma;
-    double m_numint_accuracy;
+    double m_cta = -1.0;
+    double m_circleint_k1 = -1.0;
+    double m_circleint_k2 = -1.0;
+    double m_norm = -1.0;
+    double m_expfact = -1.0;
+    double m_truncangle = -1.0;
+    double m_sigma = -1.0;
+    double m_numint_accuracy = -1.0;
+    //Numerical integration of circles (Gauss-Legendre):
+    double m_wtrunc = -1.0;//1-cos(truncangle)
+    unsigned m_numint_npts = 0;//points per segment
+    unsigned m_numint_nseg = 0;//number of segments
+    unsigned m_numint_nseries = 0;//terms in series for delta^2 (0: use asin)
+    double numIntDeltaSq( double w ) const;
+    //Table of circle integrals, g, used instead of numerical integration if
+    //available (see setupTable for details):
+    struct Table {
+      std::vector<double> g;//log(g/(sqrt(1-z^2)*sqrt(sa/sg)))
+      unsigned na = 0;
+      unsigned nz = 0;
+      double r0 = 0.0;
+      double dr = 0.0;
+      double kappa = 0.0;
+      double dz = 0.0;
+      double sintrunc = 0.0;
+      double cosamin = 0.0;
+    } m_table;
+    void setupTable();
     SplinedLookupTable m_lt_sofcosd;
     SplinedLookupTable m_lt_evalcosx;
-    double m_prec;//for reference
-    double m_sta;//for reference
+    double m_prec = -1.0;//for reference
+    double m_sta = -1.0;//for reference
     //Enable sampling efficiency report when NCRYSTAL_DEBUG_GAUSSONSPHERE is set (only in debug builds):
     void produceStatReport(const char *);
 #ifndef NDEBUG

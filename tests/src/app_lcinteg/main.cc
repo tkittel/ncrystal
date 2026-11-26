@@ -44,20 +44,11 @@ namespace {
 
   std::vector<RefCase> loadRefs()
   {
-    std::ifstream ifs( nctest::find_test_data( "mosaicrefs", "lcinteg.txt" ) );
     std::vector<RefCase> res;
-    std::string line;
-    while ( std::getline( ifs, line ) ) {
-      if ( line.empty() || line[0] == '#' )
-        continue;
-      const auto parts = NC::StrView( line ).splitTrimmedNoEmpty(' ');
-      REQUIRE( parts.size() == 10 );
-      NC::VectD v;
-      for ( auto& p : parts )
-        v.push_back( p.toDbl().value() );
+    for ( auto& v : nctest::load_test_data_numbers( "mosaicrefs",
+                                                    "lcinteg.txt", 10 ) )
       res.push_back( { v[0], v[1], v[2], v[3], v[4],
                        v[5], v[6], v[7], v[8], v[9] } );
-    }
     REQUIRE( res.size() >= 100 );
     return res;
   }

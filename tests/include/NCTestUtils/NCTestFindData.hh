@@ -22,7 +22,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "NCrystal/internal/utils/NCFileUtils.hh"
+#include "NCrystal/internal/utils/NCString.hh"
 #include <cstdlib>
+#include <fstream>
 
 // Utility functions for locating the test data in <reporoot>/tests/data
 
@@ -61,6 +63,28 @@ namespace nctest {
 
   inline std::string find_test_data( const char * filename ){
     return find_test_data( nullptr, filename );
+  }
+
+  //Rows of numbers (separated by spaces) in a test data file, skipping empty
+  //lines and comment lines starting with '#'. Each row must have ncols
+  //numbers:
+  inline std::vector<NCrystal::VectD> load_test_data_numbers( const char * subdir,
+                                                              const char * filename,
+                                                              std::size_t ncols )
+  {
+    std::ifstream ifs( find_test_data( subdir, filename ) );
+    std::vector<NCrystal::VectD> res;
+    std::string line;
+    while ( std::getline( ifs, line ) ) {
+      if ( line.empty() || line[0] == '#' )
+        continue;
+      const auto parts = NCrystal::StrView( line ).splitTrimmedNoEmpty(' ');
+      nc_assert_always( parts.size() == ncols );
+      res.emplace_back();
+      for ( auto& p : parts )
+        res.back().push_back( p.toDbl().value() );
+    }
+    return res;
   }
 }
 
