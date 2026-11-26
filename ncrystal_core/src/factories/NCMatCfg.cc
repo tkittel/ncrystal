@@ -500,6 +500,16 @@ NC::Optional<NC::OrientDir> NC::MatCfg::get_dir2() const
   return CfgManip::get_dir2( m_impl->readVar(Cfg::VarId::dir2) );
 }
 
+void NC::MatCfg::set_rot( const std::pair<LabAxis,double>& r )
+{
+  m_impl.modify()->setVar( r, &CfgManip::set_rot );
+}
+
+NC::Optional<std::pair<NC::LabAxis,double>> NC::MatCfg::get_rot() const
+{
+  return CfgManip::get_rot( m_impl->readVar(Cfg::VarId::rot) );
+}
+
 NC::SCOrientation NC::MatCfg::createSCOrientation() const
 {
   if ( isMultiPhase() )

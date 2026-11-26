@@ -525,6 +525,24 @@ Test loading of :>>>phases<0.1*unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.nc
                                  'crystals.',
                   'name': 'mosprec',
                   'type': 'floating point number'},
+                 {'allowed_input_units': None,
+                  'default_value': None,
+                  'default_value_str': None,
+                  'description': 'Rotation of the material around an axis in '
+                                 'the lab frame, applied after the single '
+                                 'crystal orientation (if any) has been '
+                                 'determined by dir1 and the related '
+                                 'parameters. This right-handed rotation is '
+                                 'specified as the axis (a1,a2,a3) and an '
+                                 'angle, using the format "a1,a2,a3:angle", '
+                                 'with the angle in units of rad (the '
+                                 'default), deg, arcmin, or arcsec. Thus, '
+                                 '"rot=0,1,0:30deg" rotates the material 30 '
+                                 'degrees around the y-axis. The rot parameter '
+                                 'has no effect for materials which are not '
+                                 'single crystals.',
+                  'name': 'rot',
+                  'type': 'rotation'},
                  {'allowed_input_units': 'Aa [default], nm, mu, mm, cm, m',
                   'default_value': 0.4,
                   'default_value_str': '0.4',

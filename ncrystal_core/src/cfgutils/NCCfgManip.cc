@@ -517,6 +517,20 @@ void NC::Cfg::CfgManip::checkParamConsistency_ScatterExtra( const CfgData& data 
   precheckLatticeOrientDef( parval_dir1, parval_dir2, parval_dirtol );
 }
 
+void NC::Cfg::CfgManip::applyRot( const CfgData& data,
+                                  OrientDir& dir1, OrientDir& dir2 )
+{
+  const auto rot = get_rot( data );
+  if ( !rot.has_value() )
+    return;
+  const auto sc = stable_sincos( rot.value().second );
+  const PhiRot phirot( sc.cos, sc.sin );
+  const Vector axis = rot.value().first.as<Vector>().unit();
+  for ( auto dir : { &dir1, &dir2 } )
+    dir->lab = phirot.rotateVectorAroundAxis( dir->lab.as<Vector>(),
+                                              axis ).as<LabAxis>();
+}
+
 void NC::Cfg::CfgManip::checkParamConsistency_Absorption( const CfgData& )
 {
   //Currently all Absorption parameters can be set independently without
@@ -533,4 +547,12 @@ NC::Optional<NC::OrientDir> NC::Cfg::CfgManip::get_dir2( const CfgData& data )
 {
   auto buf = searchBuf( data, VarId::dir2 );
   return buf ? Optional<OrientDir>( vardef_dir2::get_val( *buf ) ) : NullOpt;
+}
+
+NC::Optional<std::pair<NC::LabAxis,double>>
+NC::Cfg::CfgManip::get_rot( const CfgData& data )
+{
+  auto buf = searchBuf( data, VarId::rot );
+  using TRot = std::pair<LabAxis,double>;
+  return buf ? Optional<TRot>( vardef_rot::get_val( *buf ) ) : NullOpt;
 }

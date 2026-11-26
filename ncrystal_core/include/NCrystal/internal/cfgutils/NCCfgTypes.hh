@@ -84,6 +84,10 @@ namespace NCRYSTAL_NAMESPACE {
     //Throws BadInput about a syntax error in the value of a parameter:
     [[noreturn]] void throwSyntaxError( const char * parname, StrView value );
 
+    //Numbers in cfg values which must be finite (BadInput exception
+    //otherwise). Returned with sanitiseDblValue applied:
+    double checkFiniteDbl( double, const char * parname );
+
     //Vectors in cfg values. The components and the squared length must be
     //finite and the vector non-null (BadInput exception otherwise).
     //Components are returned with
@@ -761,6 +765,7 @@ namespace NCRYSTAL_NAMESPACE {
 
     struct units_angle {
       static constexpr auto actual_unit = "rad";
+      static constexpr auto units_descr = "rad [default], deg, arcmin, arcsec";
       static void listAvailableUnits(std::ostream&);
       static Optional<std::pair<double,ValDbl_ShortStrOrigRep>> parse(StrView sv);
     };
@@ -769,6 +774,83 @@ namespace NCRYSTAL_NAMESPACE {
       static constexpr const char* actual_unit = nullptr;
       static void listAvailableUnits(std::ostream&){}
       static Optional<std::pair<double,ValDbl_ShortStrOrigRep>> parse(StrView sv);
+    };
+
+    template <class Derived>
+    class ValRot : public ValBase<Derived,std::pair<LabAxis,double>> {
+    public:
+      //Rotation around a lab axis, stored as the axis and the angle in rad (4
+      //doubles) and the normalised text (which keeps the angle unit).
+      using Base = ValRot;
+      using value_type = std::pair<LabAxis,double>;
+      static constexpr auto value_type_descr = "rotation";
+
+      static value_type get_val( const VarBuf& buf )
+      {
+        const auto d = decodeDblsTagText<4>( buf );
+        return { LabAxis{ d.vals[0], d.vals[1], d.vals[2] }, d.vals[3] };
+      }
+
+      static int cmp( const VarBuf& a, const VarBuf& b )
+      {
+        return cmpDblsTagText<4>( a, b );
+      }
+
+      static VarBuf set_val( VarId varid, const value_type& r )
+      {
+        const auto a = checkVector( r.first.as<Vector>(), Derived::name );
+        const double angle = checkFiniteDbl( r.second, Derived::name );
+        return detail_encode( varid, a, angle, vectorStr( a ) + ':'
+                              + dbl2shortstr( angle ).to_view().to_string() );
+      }
+
+      static void stream_val( std::ostream& os, const VarBuf& buf )
+      {
+        os << decodeDblsTagText<4>( buf ).text;
+      }
+
+      static void asJSONObject( std::ostream& os, const VarBuf& buf )
+      {
+        const auto r = get_val( buf );
+        os << "{\"axis\":";
+        streamJSON( os, r.first );
+        os << ",\"angle\":";
+        streamJSON( os, r.second );
+        os << '}';
+      }
+
+      static VarBuf from_str( VarId varid, StrView sv_in )
+      {
+        //"a1,a2,a3:angle", with optional angle unit and spaces allowed around
+        //all delimiters or at string ends.
+        standardInputStrSanityCheck( Derived::name, sv_in );
+        auto throw_error = [&sv_in]() { throwSyntaxError( Derived::name, sv_in ); };
+        const auto i = sv_in.find(':');
+        if ( i == StrView::npos )
+          throw_error();
+        const auto a = parseVector( sv_in.substr(0,i), Derived::name );
+        const auto ang = units_angle::parse( sv_in.substr(i+1) );
+        if ( !a.has_value() || !ang.has_value() )
+          throw_error();
+        const double angle = checkFiniteDbl( ang.value().first, Derived::name );
+        //Angle text as given (normalised by units_angle::parse), but with a
+        //plain number shortened as for ValDbl:
+        const auto generated = dbl2shortstr( angle );
+        StrView atext = ang.value().second.to_view().trimmed();
+        if ( atext.empty() || atext.toDbl().has_value() )
+          atext = shorterNumStr( atext.empty() ? generated.to_view() : atext,
+                                 generated );
+        return detail_encode( varid, a.value().first, angle,
+                              a.value().second + ':' + atext.to_string() );
+      }
+
+    private:
+      static VarBuf detail_encode( VarId varid, const Vector& a, double angle,
+                                   const std::string& text )
+      {
+        return encodeDblsTagText<4>( varid, { a[0], a[1], a[2], angle },
+                                     0, text );
+      }
     };
 
     namespace detail {

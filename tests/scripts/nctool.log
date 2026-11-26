@@ -224,6 +224,7 @@ Advanced parameters related to scattering processes (single crystals):
   lcmode
   mos
   mosprec
+  rot
   sccutoff
 Parameters related to absorption processes:
   absnfactory
@@ -478,6 +479,19 @@ Advanced parameters related to scattering processes (single crystals):
     Default value: 0.001
     Description: Approximate relative numerical precision in implementation of
                  mosaic model in single crystals.
+
+  rot:
+    Type: rotation
+    No default value.
+    Description: Rotation of the material around an axis in the lab frame,
+                 applied after the single crystal orientation (if any) has been
+                 determined by dir1 and the related parameters. This
+                 right-handed rotation is specified as the axis (a1,a2,a3) and
+                 an angle, using the format "a1,a2,a3:angle", with the angle in
+                 units of rad (the default), deg, arcmin, or arcsec. Thus,
+                 "rot=0,1,0:30deg" rotates the material 30 degrees around the
+                 y-axis. The rot parameter has no effect for materials which are
+                 not single crystals.
 
   sccutoff:
     Type: floating point number

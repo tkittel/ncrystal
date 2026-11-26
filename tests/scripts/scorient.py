@@ -101,8 +101,90 @@ def test_crysdirs():
         ';dirtol=180deg',
     )
 
+def rotate( v, axis, angle ):
+    #Right-handed rotation of v around axis (Rodrigues' formula).
+    n = math.sqrt( sum( e*e for e in axis ) )
+    k = [ e / n for e in axis ]
+    kxv = ( k[1]*v[2] - k[2]*v[1], k[2]*v[0] - k[0]*v[2], k[0]*v[1] - k[1]*v[0] )
+    kdotv = sum( a*b for a, b in zip(k,v) )
+    c, s = math.cos( angle ), math.sin( angle )
+    return tuple( v[i]*c + kxv[i]*s + k[i]*kdotv*(1.0-c) for i in range(3) )
+
+def vstr( v ):
+    return f'{v[0]!r},{v[1]!r},{v[2]!r}'
+
+def test_rot_impl( base, c1, c2 ):
+    lab1, lab2 = ( 0.1, 0.2, 1.0 ), ( 0.0, 1.0, -0.2 )
+    def orient( axis = None, angle = 0.0 ):
+        #dir1 and dir2, with lab directions optionally rotated.
+        a, b = ( ( rotate( v, axis, angle ) for v in ( lab1, lab2 ) )
+                 if axis else ( lab1, lab2 ) )
+        return f'dir1={c1}@lab:{vstr(a)};dir2={c2}@lab:{vstr(b)}'
+    o = orient()
+    xs = require_equivalent(
+        base, o,
+        o + ';rot=0,0,1:0',
+        o + ';rot=0,1,0:360deg',
+        o + ';rot=1,-2,3:-720deg',
+    )
+    deg = math.pi / 180
+    for axis, angle, anglestrs in [
+            ( (0,1,0), 30*deg,
+              ( '30deg', '1800arcmin', '108000 arcsec', '-330deg',
+                repr(30*deg), repr(30*deg)+'rad' ) ),
+            ( (1,-2,3), -77.7*deg, ( '-77.7deg', ) ),
+            ( (0.3,0,-1), 180*deg, ( '180deg', '-180deg' ) ),
+    ]:
+        #Opposite axis and angle is the same rotation:
+        neg = vstr( [ -e for e in axis ] ) + f':{-angle!r}'
+        xs_rot = require_equivalent(
+            base,
+            orient( axis, angle ),
+            o + ';rot=' + neg,
+            *( o + f';rot={vstr(axis)}:{a}' for a in anglestrs ),
+        )
+        assert not same_xs( xs, xs_rot )
+    #The rotation is applied after dir1 and dir2, also if these are not
+    #consistent (in which case the lab part of dir2 along dir1 is ignored):
+    require_equivalent(
+        base + ';dirtol=180deg',
+        orient( (0,1,0), 0.3 ),
+        o + ';rot=0,1,0:0.3',
+        'rot=0,1,0:0.3;' + o,
+    )
+
+def test_rot():
+    test_rot_impl( 'Ge_sg227.ncmat;dcutoff=0.5;mos=2deg;comp=bragg',
+                   '@crys_hkl:5,1,1', '@crys_hkl:0,-1,1' )
+    test_rot_impl( 'C_sg194_pyrolytic_graphite.ncmat;dcutoff=0.5;mos=2deg'
+                   ';comp=bragg', '@crys_hkl:0,0,1', '@crys_uvw:1,0,0' )
+
+def test_rot_nosc():
+    #The rot parameter has no effect on materials which are not single crystals:
+    require_equivalent( 'Ge_sg227.ncmat;dcutoff=0.5;comp=bragg',
+                        'temp=293.15K', 'rot=0,1,0:1deg', 'rot=1,2,3:-2' )
+
+def test_bad():
+    from NCrystalDev.exceptions import NCBadInput
+    ge = 'Ge_sg227.ncmat;dcutoff=0.5'
+    o = ';mos=2deg;dir1=@crys_hkl:0,0,1@lab:0,0,1;dir2=@crys_hkl:1,0,0@lab:1,0,0'
+    nccore.createScatter( ge + o + ';rot=0,1,0:1deg' )
+    for bad in [ ge + o + ';rot=0,0,0:1deg',
+                 ge + o + ';rot=0,1,0',
+                 ge + o + ';rot=0,1,0:1degree',
+                 ge + o + ';rot=@lab:0,1,0:1deg',
+                ]:
+        try:
+            nccore.createScatter( bad )
+        except NCBadInput:
+            continue
+        raise SystemExit( 'Did not fail: ' + bad )
+
 def main():
     test_crysdirs()
+    test_rot()
+    test_rot_nosc()
+    test_bad()
 
 if __name__ == '__main__':
     main()

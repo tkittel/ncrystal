@@ -25,6 +25,7 @@
 #include "NCrystal/interfaces/NCSCOrientation.hh"
 #include "NCrystal/dump/NCDump.hh"
 #include "NCrystal/internal/utils/NCString.hh"
+#include "NCrystal/internal/utils/NCMath.hh"
 #include "NCrystal/internal/utils/NCFileUtils.hh"
 #include <iostream>
 #include <sstream>
@@ -51,6 +52,7 @@ bool floateq(double a, double b, double rtol=1.0e-6, double atol=1.0e-6)
 }
 
 #define REQUIREFLTEQ(x,y) nc_assert_always(floateq(x,y))
+#define REQUIRECLOSE(x,y) nc_assert_always(NC::ncabs((x)-(y))<1e-12)
 
 void test_strrep_and_dump(const NC::MatCfg& cfg) {
   std::cout<< "Dump: ";
@@ -268,6 +270,58 @@ void test()
                   "dir2=@crys_uvw:0.1234567890123456789,1,0@lab:0,1,0");
   test_strrep_and_dump(cfg);
   test_strrep_and_dump(cfg);
+
+  //A rotation is applied to the lab directions (right-handed):
+  cfg = NC::MatCfg( "Al_fake.ncmat;mos=1deg;dir1=@crys_hkl:0,0,1@lab:0,0,1"
+                    ";dir2=@crys_uvw:1,0,0@lab:1,0,0" );
+  REQUIRE( cfg.createSCOrientation().getData().dir1.lab
+           == ( NC::LabAxis{0,0,1} ) );
+  REQUIRE( !cfg.get_rot().has_value() );
+  cfg.applyStrCfg(" rot = 0, 2 ,0 : 90 deg");
+  REQUIRE( cfg.get_rot().value().first == ( NC::LabAxis{0,2,0} ) );
+  REQUIREFLTEQ( cfg.get_rot().value().second, NC::kPiHalf );
+  {
+    auto od = cfg.createSCOrientation().getData();
+    auto close = []( const NC::LabAxis& a, const NC::LabAxis& b )
+    {
+      return ( NC::ncabs(a[0]-b[0]) + NC::ncabs(a[1]-b[1])
+               + NC::ncabs(a[2]-b[2]) ) < 1e-14;
+    };
+    REQUIRE( close( od.dir1.lab, NC::LabAxis{1,0,0} ) );
+    REQUIRE( close( od.dir2.lab, NC::LabAxis{0,0,-1} ) );
+    REQUIRE( od.dir1.crystal == cfg.get_dir1().value().crystal );
+    REQUIRE( od.dir2.crystal == cfg.get_dir2().value().crystal );
+    REQUIRE( cfg.get_dir1().value().lab == ( NC::LabAxis{0,0,1} ) );
+  }
+  test_strrep_and_dump(cfg);
+  cfg.set_rot( { { 1, 1, 1 }, -120*NC::kDeg } );
+  REQUIRE( cfg.get_rot().value().first == ( NC::LabAxis{1,1,1} ) );
+  REQUIRE( cfg.get_rot().value().second == -120*NC::kDeg );
+  test_strrep_and_dump(cfg);
+  {
+    //Cyclic permutation z->y->x->z:
+    auto od = cfg.createSCOrientation().getData();
+    REQUIRECLOSE( od.dir1.lab[1], 1.0 );
+    REQUIRECLOSE( od.dir2.lab[2], 1.0 );
+  }
+  {
+    //Allowed (but without effect) when the material is not a single crystal:
+    NC::MatCfg c2( "Al_fake.ncmat;rot=0,1,0:1deg" );
+    c2.checkConsistency();
+    REQUIRE( !c2.isSingleCrystal() );
+    REQUIRE( c2.get_rot().has_value() );
+    test_strrep_and_dump(c2);
+  }
+  {
+    //Bad values:
+    for ( auto& r : { std::make_pair( NC::LabAxis{ 0, 0, 0 }, 1.0 ),
+                      std::make_pair( NC::LabAxis{ 0, 1, 0 }, NC::kInfinity ),
+                      std::make_pair( NC::LabAxis{ 0, NC::kInfinity, 0 }, 1.0 ) } ) {
+      bool failed = false;
+      try { cfg.set_rot( r ); } catch (NC::Error::BadInput&) { failed = true; }
+      REQUIRE( failed );
+    }
+  }
 
   // std::cout<<"A:"<<NC::MatCfg( "Al_sg225.ncmat;atomdb= @ @ X :  :::: is Al  @  @@ @ Al is 0.99 Al 0.0100000000000000000000000000000000001  ::Cr"
   //                              "@Be10:0.1e-15u:1fm:1b:1e+5b").get_atomdb()<<std::endl;

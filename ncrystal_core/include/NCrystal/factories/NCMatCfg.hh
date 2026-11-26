@@ -225,6 +225,7 @@ namespace NCRYSTAL_NAMESPACE {
     void set_knllux( int );
     void set_atomdb( const std::string& );
     void set_lcaxis( const LCAxis& );
+    void set_rot( const std::pair<LabAxis,double>& );
     void set_dir1( const OrientDir& );
     void set_dir2( const OrientDir& );
     void setOrientation( const SCOrientation& );//sets dir1+dir2+dirtol
@@ -281,9 +282,11 @@ namespace NCRYSTAL_NAMESPACE {
     // Orientation of single crystals, with NullOpt if not set:
     Optional<OrientDir> get_dir1() const;
     Optional<OrientDir> get_dir2() const;
+    Optional<std::pair<LabAxis,double>> get_rot() const;//axis, angle [rad]
 
-    // Check if single/layered-single crystal, or access dir1+dir2+dirtol as
-    // SCOrientation (do not call any of these for multiphase cfgs):
+    // Check if single/layered-single crystal, or access dir1+dir2+dirtol (with
+    // any rot applied) as SCOrientation (do not call any of these for
+    // multiphase cfgs):
     bool isSingleCrystal() const;//true if mos or orientation parameters are set
     bool isLayeredCrystal() const;//true if lcaxis parameter is set
     SCOrientation createSCOrientation() const;

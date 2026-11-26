@@ -65,16 +65,22 @@ void test1()
 
 namespace {
 
-  std::ostream& operator<<( std::ostream& os,
-                            const NC::Optional<NC::OrientDir>& od )
+  using Rot = std::pair<NC::LabAxis,double>;
+  std::ostream& operator<<( std::ostream& os, const Rot& r )
   {
-    if ( od.has_value() )
-      return os << od.value();
+    return os << r.first << ':' << NC::fmt( r.second );
+  }
+
+  template<class T>
+  std::ostream& operator<<( std::ostream& os, const NC::Optional<T>& o )
+  {
+    if ( o.has_value() )
+      return os << o.value();
     return os << "<unset>";
   }
 
-  bool operator==( const NC::Optional<NC::OrientDir>& a,
-                   const NC::OrientDir& b )
+  template<class T>
+  bool operator==( const NC::Optional<T>& a, const T& b )
   {
     return a.has_value() && a.value() == b;
   }
@@ -172,6 +178,8 @@ void test2()
   testAccess<const ODir&,OptODir,&NC::MatCfg::get_dir2,&NC::MatCfg::set_dir2>("dir2","@crys_uvw:0.3,0.1,0.8@lab:0,1,1",
                                                                               ODir{{Basis::Cartesian,{1,-2,3}},{2,5,-6}},
                                                                               ODir{{Basis::HKL,{0,1,2}},{1,-1,0}},true);
+  testAccess<const Rot&,NC::Optional<Rot>,&NC::MatCfg::get_rot,&NC::MatCfg::set_rot>("rot","0,1,0:1deg",
+                                                                                     Rot{{1,0,0},0.5},Rot{{0,0,1},3.0});
 }
 
 int main(int,char**) {

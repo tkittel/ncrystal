@@ -107,7 +107,7 @@ void NC::Cfg::units_length::listAvailableUnits(std::ostream& os )
 
 void NC::Cfg::units_angle::listAvailableUnits(std::ostream& os)
 {
-  os << "rad [default], deg, arcmin, arcsec";
+  os << units_descr;
 }
 
 NC::Optional<std::pair<double,NC::Cfg::ValDbl_ShortStrOrigRep>>
@@ -176,15 +176,20 @@ NC::Cfg::units_angle::parse(StrView sv)
   return std::make_pair(p.value,p.origStrRep);
 }
 
+double NC::Cfg::checkFiniteDbl( double v, const char * parname )
+{
+  v = sanitiseDblValue( v, parname );
+  if ( !std::isfinite( v ) )
+    NCRYSTAL_THROW2(BadInput,"Infinite value provided for parameter \""
+                    <<parname<<"\"");
+  return v;
+}
+
 NC::Vector NC::Cfg::checkVector( const Vector& v, const char * parname )
 {
-  Vector res( no_init );
-  for ( auto i : ncrange(3) ) {
-    res[i] = sanitiseDblValue( v[i], parname );
-    if ( !std::isfinite( res[i] ) )
-      NCRYSTAL_THROW2(BadInput,"Infinite value provided for parameter \""
-                      <<parname<<"\"");
-  }
+  const Vector res( checkFiniteDbl( v[0], parname ),
+                    checkFiniteDbl( v[1], parname ),
+                    checkFiniteDbl( v[2], parname ) );
   const double m2 = res.mag2();
   if ( !( m2 > 0.0 ) )
     NCRYSTAL_THROW2(BadInput,"Null vector provided for parameter \""

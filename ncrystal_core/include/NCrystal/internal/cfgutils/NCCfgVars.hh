@@ -203,6 +203,25 @@ namespace NCRYSTAL_NAMESPACE {
       }
     };
 
+    struct vardef_rot final : public ValRot<vardef_rot> {
+      static constexpr auto name = "rot";
+      static constexpr auto group = VarGroupId::ScatterExtra;
+      static constexpr auto description =
+        "Rotation of the material around an axis in the lab frame, applied after the"
+        " single crystal orientation (if any) has been determined by dir1 and the"
+        " related parameters. This right-handed rotation is specified as the axis"
+        " (a1,a2,a3) and an angle, using the format \"a1,a2,a3:angle\", with the angle"
+        " in units of rad (the default), deg, arcmin, or arcsec. Thus,"
+        " \"rot=0,1,0:30deg\" rotates the material 30 degrees around the y-axis. The rot"
+        " parameter has no effect for materials which are not single crystals."
+        ;
+      //Update the description above if the angle units change:
+      static_assert( constexpr_cstrequal( units_angle::units_descr,
+                                          "rad [default], deg, arcmin, arcsec" ),
+                     "" );
+      static constexpr NullOptType default_value() { return NullOpt; }//no default value!
+    };
+
     struct vardef_vdoslux final : public ValInt<vardef_vdoslux> {
 
       //NB: Keep this carefully synchronised with implementation in NCVDOSLux.cc
@@ -593,6 +612,7 @@ namespace NCRYSTAL_NAMESPACE {
       make_varinfo<vardef_lcmode>(),
       make_varinfo<vardef_mos>(),
       make_varinfo<vardef_mosprec>(),
+      make_varinfo<vardef_rot>(),
       make_varinfo<vardef_sans>(),
       make_varinfo<vardef_scatfactory>(),
       make_varinfo<vardef_sccutoff>(),
@@ -620,6 +640,7 @@ namespace NCRYSTAL_NAMESPACE {
       mos = constexpr_varName2Idx("mos"),
       dir1 = constexpr_varName2Idx("dir1"),
       dir2 = constexpr_varName2Idx("dir2"),
+      rot = constexpr_varName2Idx("rot"),
       strain = constexpr_varName2Idx("strain"),
       sans = constexpr_varName2Idx("sans"),
       incoh_elas = constexpr_varName2Idx("incoh_elas"),
