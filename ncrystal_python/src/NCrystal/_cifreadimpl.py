@@ -151,19 +151,18 @@ def _import_gemmi( *, sysexit = False ):
     _import_gemmi_cache[1] = importlib.import_module('gemmi.cif')
     return _import_gemmi_cache[0], _import_gemmi_cache[1]
 
-def _decode_json( txt ):
-    #gemmi <= 0.6.5 writes CIF numbers like -.065 as invalid JSON numbers, so
-    #on failure add the missing zeros (outside JSON strings) and retry.
+def _decode_json( txt, gemmi_version ):
+    #Returns the JSON text txt from gemmi as_json() decoded. gemmi < 0.7.5
+    #writes CIF numbers like -.065 as invalid JSON numbers, so for those
+    #versions the missing zeros are added first (outside JSON strings):
     import json
-    try:
-        return json.loads( txt )
-    except json.decoder.JSONDecodeError:
+
+    from ._imports import _version_tuple
+    if _version_tuple( gemmi_version ) < ( 0, 7, 5 ):
         import re
-        fixed = re.sub( r'("(?:[^"\\]|\\.)*")|(?<![0-9])(-?)\.(?=[0-9])',
-                        lambda m : m.group(1) or m.group(2) + '0.', txt )
-        if fixed == txt:
-            raise
-        return json.loads( fixed )
+        txt = re.sub( r'("(?:[^"\\]|\\.)*")|(?<![0-9])(-?)\.(?=[0-9])',
+                      lambda m : m.group(1) or m.group(2) + '0.', txt )
+    return json.loads( txt )
 
 def _select_block( cif_doc ):
     #The block with the structure (the only one, or the only one with sites):
@@ -216,7 +215,7 @@ class CIFContent:
 
 def read_cif( cifdata, *, quiet ):
     #Returns the CIFContent of the CIF text cifdata.
-    _, gemmi_cif = _import_gemmi()
+    gemmi, gemmi_cif = _import_gemmi()
     if not quiet:
         _nc_common.print("Attempting to load CIF data with gemmi")
     try:
@@ -226,7 +225,7 @@ def read_cif( cifdata, *, quiet ):
         raise _nc_core.NCBadInput(f'CIF parsing error (from Gemmi): "{e}"')
     import json
     try:
-        cif_raw = _decode_json( cif_doc.as_json() )
+        cif_raw = _decode_json( cif_doc.as_json(), gemmi.__version__ )
     except json.decoder.JSONDecodeError as e:
         cif_raw = None
         _nc_common.warn(f'Could not decode raw CIF data to dictionary (Gemmi bug?): JSONDecodeError("{e}")')

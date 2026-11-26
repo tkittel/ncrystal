@@ -29,7 +29,7 @@
 import NCTestUtils.enable_fpe # noqa F401
 import NCTestUtils.reprint_escaped_warnings # noqa F401
 import NCrystalDev as NC
-from NCrystalDev._cifreadimpl import read_cif
+from NCrystalDev._cifreadimpl import read_cif, _decode_json
 
 def cif( *, hm = 'P 1 21/c 1', itno = '14', ops = None, extra = '',
          sites = None, aniso = None, cell = '5.1 6.3 7.2 90 105 90',
@@ -166,6 +166,13 @@ def main():
             print( f'sites {sites}: rejected: {e}' )
         else:
             print( f'sites {sites}: loaded {len(lc.sites)} site(s)' )
+
+    #JSON from gemmi < 0.7.5 has numbers like -.065, which are repaired
+    #(outside JSON strings) only for those versions:
+    print( 'json, old gemmi:', _decode_json( '{"a": [-.065, ".5", .25]}',
+                                             '0.6.5' ) )
+    print( 'json, new gemmi:', _decode_json( '{"a": [-0.065, ".5"]}',
+                                             '0.7.5' ) )
 
 if __name__ == '__main__':
     main()
