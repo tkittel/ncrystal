@@ -202,8 +202,19 @@ def main():
         test_cli('sgsym','info','strict','227')
     test_cli('sgsym','list')
     #Settings from operations and symbols ("@" prefix for a leading "-"):
-    test_cli('sgsym','fromops','x,y,z','@-x,-y,-z')
-    test_cli('sgsym','fromops','x,y,z','@-x+1/2,-y+1/2,-z+1/2')#(origin shift)
+    test_cli('sgsym','fromops','1','x,y,z','@-x,-y,-z')
+    test_cli('sgsym','fromops','1','x,y,z','@-x+1/2,-y+1/2,-z+1/2')#(origin shift)
+    test_cli('sgsym','fromops','0','x,y,z','x+1/5,y,z')#(not a multiple of 1/24)
+    #An operation which can not be parsed, with DOTHROW=0 and 1:
+    test_cli('sgsym','fromops','0','x,y,z','x,y,q')
+    test_cli('sgsym','fromops','0','x,y,z','x+y,y,z')
+    with ensure_error(NCBadInput,'Invalid symmetry operation "x,y,q":'
+                      ' unexpected character'):
+        test_cli('sgsym','fromops','1','x,y,z','x,y,q')
+    with ensure_error(NCBadInput,'Invalid sgsym query: ["sgsym","fromops",'
+                      '"x,y,z"] (correct usage: ["sgsym","fromops",0|1,OP,'
+                      '...])'):
+        test_cli('sgsym','fromops','x,y,z')
     test_cli('sgsym','fromhall','@-P 2ybc')
     test_cli('sgsym','fromhm','P 21/c')
     test_cli('sgsym','fromhm','R -3 m')
@@ -231,14 +242,14 @@ def main():
                            '"fromnumber",N], with N in 1..230)' ):
             ncquery( [ 'sgsym', 'fromnumber', bad ] )
     test( 'sgsym','fromhall',*raw('-P 2ybc') )#(raw data: no "@" needed)
-    test( 'sgsym','fromops','x,y,z',*raw('-x,-y,-z','x+1/2,y,z') )
-    test( 'sgsym','fromops',*raw('x,y,z','-x,-y,-z'),'@x+1/2,y,z' )
-    test( 'sgsym','fromops','RAWDATA','|x,y,z|-x,-y,-z' )
+    test( 'sgsym','fromops','1','x,y,z',*raw('-x,-y,-z','x+1/2,y,z') )
+    test( 'sgsym','fromops','1',*raw('x,y,z','-x,-y,-z'),'@x+1/2,y,z' )
+    test( 'sgsym','fromops','1','RAWDATA','|x,y,z|-x,-y,-z' )
     for bad in ( [ 'RAWDATA' ], [ 'RAWDATA', '' ] ):
         with ensure_error(NCBadInput,'Invalid JSON query ("RAWDATA" must be'
                           ' followed by a separator character and the items'
                           ' separated by it)'):
-            ncquery( [ 'sgsym', 'fromops', 'x,y,z', *bad ] )
+            ncquery( [ 'sgsym', 'fromops', '1', 'x,y,z', *bad ] )
     #Cell parameters snapped to the constraints of a setting (printed values
     #with rounding errors with lenient tolerances):
     test_cli('sgsym','cell','lenient','0','225',*raw('4.123(2)','4.124','4.1234','90','90.0','90'))

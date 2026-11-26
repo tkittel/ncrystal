@@ -123,18 +123,36 @@ namespace NCRYSTAL_NAMESPACE {
       return 0;
     }
 
-    [[noreturn]] void throwBadStr( StrView s, const char * reason )
+    std::string badStrMsg( StrView s, const char * reason )
     {
-      NCRYSTAL_THROW2(BadInput,"Invalid symmetry operation \""<<s<<"\": "
-                      <<reason);
+      std::ostringstream ss;
+      ss << "Invalid symmetry operation \""<<s<<"\": "<<reason;
+      return ss.str();
+    }
+
+    //The BadInput message of SymOp( rot, trans ), if the rotation is
+    //invalid (else nullptr):
+    const char * rotationError( const std::array<int,9>& rot )
+    {
+      for ( auto v : rot )
+        if ( !( v >= -1 && v <= 1 ) )
+          return ( "Symmetry operations must have rotation matrix entries in"
+                   " {-1,0,1}" );
+      if ( !SymOp::isAllowedRotation( rot ) )
+        return ( "Symmetry operations must have a rotation part belonging to"
+                 " point group m-3m with orthogonal-type axes (i.e. a signed"
+                 " permutation matrix) or point group 6/mmm with hexagonal"
+                 " axes" );
+      return nullptr;
     }
 
     //Parse one component like "-x+y+1/2" (lower case, no spaces) into
-    //coefficients of x, y, z and translation (in units of 1/24):
-    void parseComponent( StrView full, StrView c, int* coefs, int& trans )
+    //coefficients of x, y, z and translation (in units of 1/24). Returns
+    //the reason if invalid, else nullptr:
+    const char * parseComponent( StrView c, int* coefs, int& trans )
     {
       if ( c.empty() )
-        throwBadStr( full, "empty component" );
+        return "empty component";
       bool seen[3] = { false, false, false };
       trans = 0;
       std::size_t i = 0;
@@ -146,70 +164,75 @@ namespace NCRYSTAL_NAMESPACE {
           sign = ( c[i] == '-' ? -1 : 1 );
           ++i;
         } else if ( !first ) {
-          throwBadStr( full, "missing sign between terms" );
+          return "missing sign between terms";
         }
         first = false;
         if ( i >= n )
-          throwBadStr( full, "incomplete term" );
+          return "incomplete term";
         const char ch = c[i];
         if ( ch == 'x' || ch == 'y' || ch == 'z' ) {
           const int idx = ch - 'x';
           if ( seen[idx] )
-            throwBadStr( full, "repeated variable within component" );
+            return "repeated variable within component";
           seen[idx] = true;
           coefs[idx] = sign;
           ++i;
           continue;
         }
         if ( !( ch >= '0' && ch <= '9' ) && ch != '.' )
-          throwBadStr( full, "unexpected character" );
-        //Integer, fraction or decimal (exact, e.g. "0.5" or ".25"):
-        auto readUInt = [&full,&c,&i,n]()
+          return "unexpected character";
+        //Integer, fraction or decimal (exact, e.g. "0.5" or ".25"). Reads
+        //digits into v, returning false if there are too many:
+        auto readUInt = [&c,&i,n]( std::int64_t& v )
         {
-          std::int64_t v = 0;
+          v = 0;
           unsigned ndigits = 0;
           while ( i < n && c[i] >= '0' && c[i] <= '9' ) {
             if ( ++ndigits > 9 )
-              throwBadStr( full, "number too long" );
+              return false;
             v = 10 * v + ( c[i] - '0' );
             ++i;
           }
-          return v;
+          return true;
         };
-        std::int64_t num = ( ch == '.' ? 0 : readUInt() );
+        std::int64_t num = 0;
+        if ( ch != '.' && !readUInt( num ) )
+          return "number too long";
         std::int64_t den = 1;
         if ( i < n && c[i] == '.' ) {
           ++i;
           unsigned nfrac = 0;
           while ( i < n && c[i] >= '0' && c[i] <= '9' ) {
             if ( ++nfrac > 6 )
-              throwBadStr( full, "number too long" );
+              return "number too long";
             num = 10 * num + ( c[i] - '0' );
             den *= 10;
             ++i;
           }
           if ( ch == '.' && !nfrac )
-            throwBadStr( full, "invalid number" );
+            return "invalid number";
           if ( i < n && c[i] == '/' )
-            throwBadStr( full, "invalid fraction" );
+            return "invalid fraction";
         } else if ( i < n && c[i] == '/' ) {
           ++i;
           if ( !( i < n && c[i] >= '0' && c[i] <= '9' ) )
-            throwBadStr( full, "invalid fraction" );
-          den = readUInt();
+            return "invalid fraction";
+          if ( !readUInt( den ) )
+            return "number too long";
           if ( den == 0 )
-            throwBadStr( full, "division by zero" );
+            return "division by zero";
         }
         if ( i < n && ( c[i] == '.' ) )
-          throwBadStr( full, "invalid number" );
+          return "invalid number";
         if ( i < n && ( c[i] == 'x' || c[i] == 'y' || c[i] == 'z' ) )
-          throwBadStr( full, "coefficients of x, y, z must be +1 or -1" );
+          return "coefficients of x, y, z must be +1 or -1";
         if ( ( num * SymOp::tdenom ) % den != 0 )
-          throwBadStr( full, "translations must be multiples of 1/24" );
+          return "translations must be multiples of 1/24";
         //(reduced modulo 1, i.e. 24, to avoid overflows):
         trans += sign * static_cast<int>( ( num * SymOp::tdenom / den )
                                           % SymOp::tdenom );
       }
+      return nullptr;
     }
   }
 }
@@ -217,22 +240,15 @@ namespace NCRYSTAL_NAMESPACE {
 NC::SymOp::SymOp( const std::array<int,9>& rot,
                   const std::array<int,3>& trans )
 {
-  for ( auto v : rot )
-    if ( !( v >= -1 && v <= 1 ) )
-      NCRYSTAL_THROW(BadInput,"Symmetry operations must have rotation"
-                     " matrix entries in {-1,0,1}");
-  if ( !isAllowedRotation( rot ) )
-    NCRYSTAL_THROW(BadInput,"Symmetry operations must have a rotation part"
-                   " belonging to point group m-3m with orthogonal-type axes"
-                   " (i.e. a signed permutation matrix) or point group"
-                   " 6/mmm with hexagonal axes");
+  if ( const char * err = rotationError( rot ) )
+    NCRYSTAL_THROW(BadInput,err);
   for ( auto i : ncrange( 9 ) )
     m_data[i] = static_cast<std::int8_t>( rot[i] );
   for ( auto i : ncrange( 3 ) )
     m_data[9+i] = reduceTrans( trans[i] % tdenom );
 }
 
-NC::SymOp::SymOp( StrView s )
+NC::SymOpParseResult NC::tryParseSymOp( StrView s )
 {
   //Normalise (remove whitespace, lower case):
   std::string norm;
@@ -247,17 +263,26 @@ NC::SymOp::SymOp( StrView s )
   const StrView sv( norm );
   const auto parts = sv.split<3>( ',' );
   if ( parts.size() != 3 )
-    throwBadStr( s, "expected three comma-separated components" );
+    return { NullOpt, badStrMsg( s, "expected three comma-separated"
+                                 " components" ) };
   std::array<int,9> rot;
   std::array<int,3> trans;
   rot.fill( 0 );
   for ( auto i : ncrange( 3 ) )
-    parseComponent( s, parts.at( i ), &rot[3*i], trans[i] );
-  try {
-    *this = SymOp( rot, trans );
-  } catch ( Error::BadInput& e ) {
-    throwBadStr( s, e.what() );
-  }
+    if ( const char * err = parseComponent( parts.at( i ), &rot[3*i],
+                                            trans[i] ) )
+      return { NullOpt, badStrMsg( s, err ) };
+  if ( const char * err = rotationError( rot ) )
+    return { NullOpt, badStrMsg( s, err ) };
+  return { SymOp( rot, trans ), std::string() };
+}
+
+NC::SymOp::SymOp( StrView s )
+{
+  auto r = tryParseSymOp( s );
+  if ( !r.op.has_value() )
+    NCRYSTAL_THROW(BadInput,r.errorMsg);
+  *this = r.op.value();
 }
 
 bool NC::SymOp::isAllowedRotation( const std::array<int,9>& m ) ncnoexceptndebug

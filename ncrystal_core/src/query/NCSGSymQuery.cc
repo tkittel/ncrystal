@@ -84,14 +84,29 @@ void NC::SGSymQuery::JSONQuery( std::ostream& os, const Query& rawquery )
       " \"fromhall\", \"fromhm\", \"fromnumber\", \"cell\","
       " \"fmtcoords\", \"setting\"]";
   } else if ( key == sv_fromops ) {
-    //["sgsym","fromops",OP,...]: the settings with exactly these symmetry
-    //operations (like "x,-y,z+1/2", cf. SymOp, with a "@" prefix if starting
-    //with "-"), as ["14:b1",...]:
+    //["sgsym","fromops",DOTHROW,OP,...]: the settings with exactly these
+    //symmetry operations (like "x,-y,z+1/2", cf. SymOp, with a "@" prefix if
+    //starting with "-"), as {"settings":["14:b1",...],"error_msg":null}. If
+    //an operation can not be parsed, a BadInput is thrown if DOTHROW is 1,
+    //and if it is 0 the result is {"settings":[],"error_msg":".."}:
+    if ( nargs < 1 || ( arg(0) != "0" && arg(0) != "1" ) )
+      invalid( "correct usage: [\"sgsym\",\"fromops\",0|1,OP,...]" );
     std::vector<SymOp> ops;
-    ops.reserve( nargs );
-    for ( auto i : ncrange( nargs ) )
-      ops.emplace_back( argNoAt(i) );
+    ops.reserve( nargs - 1 );
+    for ( auto i : ncrange( std::size_t(1), nargs ) ) {
+      auto r = tryParseSymOp( argNoAt(i) );
+      if ( !r.op.has_value() ) {
+        if ( arg(0) == "1" )
+          NCRYSTAL_THROW(BadInput,r.errorMsg);
+        os << "{\"settings\":[]";
+        streamJSONDictEntry( os, "error_msg", r.errorMsg, JSONDictPos::LAST );
+        return;
+      }
+      ops.push_back( r.op.value() );
+    }
+    os << "{\"settings\":";
     streamSettings( settingsFromOperations( ops ) );
+    os << ",\"error_msg\":null}";
   } else if ( key == sv_fmtcoords ) {
     //["sgsym","fmtcoords",ATOL,HEXVALUES]: texts of fractional coordinates
     //for data files (cf. SgFmt::fractionalCoordinate), with the values
