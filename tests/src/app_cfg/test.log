@@ -42,6 +42,31 @@ Dump: MatCfg("Al_sg225.ncmat;dir1=@crys_hkl:0,3,4@lab:0,0,1;dir2=arbitrary;mos=1
 toStrCfg(false) : "dir1=@crys_hkl:0,3,4@lab:0,0,1;dir2=arbitrary;mos=1deg;rot=1,0,0:90deg"
 NCrystal::MissingInfo: Single crystal orientations need a material with a crystal structure
 NCrystal::BadInput: Null vector provided for parameter "dir1"
+Dump: MatCfg("Al_sg225.ncmat;lcaxis=0,0,2")
+toStrCfg(false) : "lcaxis=0,0,2"
+Dump: MatCfg("Al_sg225.ncmat;dir1=@crys:0,0,-1@lab:0,1,0;lcaxis=@crys_hkl:0,0,2;mos=1deg")
+toStrCfg(false) : "dir1=@crys:0,0,-1@lab:0,1,0;lcaxis=@crys_hkl:0,0,2;mos=1deg"
+NCrystal::BadInput: dir2 can only be left out when lcaxis is along dir1
+NCrystal::BadInput: dir2 can only be left out when lcaxis is along dir1
+NCrystal::BadInput: Single crystals need mos and dir1, and also dir2 unless lcaxis is along dir1
+NCrystal::BadInput: lcaxis=@dir1 needs dir1 to be set
+NCrystal::BadInput: lcaxis=@dir1 needs dir1 to be set
+NCrystal::BadInput: Single crystals need mos and dir1, and also dir2 unless lcaxis is along dir1
+NCrystal::BadInput: Single crystals need mos and dir1, and also dir2 unless lcaxis is along dir1
+NCrystal::BadInput: dirtol needs mos and dir1, and also dir2 unless lcaxis is along dir1
+NCrystal::BadInput: dirtol needs mos and dir1, and also dir2 unless lcaxis is along dir1
+NCrystal::BadInput: dir2 can only be left out when lcaxis is along dir1
+Dump: MatCfg("Al_sg225.ncmat;dir1=@crys_hkl:1,1,0@lab:0,0,1;lcaxis=@dir1;mos=1deg")
+toStrCfg(false) : "dir1=@crys_hkl:1,1,0@lab:0,0,1;lcaxis=@dir1;mos=1deg"
+Dump: MatCfg("Al_sg225.ncmat;dir1=@crys_hkl:1,1,0@lab:0,0,1;lcaxis=@dir1;mos=1deg")
+toStrCfg(false) : "dir1=@crys_hkl:1,1,0@lab:0,0,1;lcaxis=@dir1;mos=1deg"
+Dump: MatCfg("Al_sg225.ncmat;dir1=@crys_hkl:1,1,0@lab:0,0,1;lcaxis=@dir1;mos=1deg")
+toStrCfg(false) : "dir1=@crys_hkl:1,1,0@lab:0,0,1;lcaxis=@dir1;mos=1deg"
+Dump: MatCfg("Al_sg225.ncmat;dir1=@crys_hkl:0,0,-5@lab:0,1,0;dir2=@crys:1,0,0@lab:1,0,0;lcaxis=@lab:0,1,0;mos=1deg")
+toStrCfg(false) : "dir1=@crys_hkl:0,0,-5@lab:0,1,0;dir2=@crys:1,0,0@lab:1,0,0;lcaxis=@lab:0,1,0;mos=1deg"
+NCrystal::BadInput: Invalid layered crystal axis: the vector must be null exactly when the form is Primary
+NCrystal::BadInput: Invalid layered crystal axis: the vector must be null exactly when the form is Primary
+NCrystal::BadInput: Invalid layered crystal axis: @lab:1e+200,1e+200,0
 Dump: MatCfg("Al_fake.ncmat;rot=0,1,0:1deg")
 toStrCfg(false) : "rot=0,1,0:1deg"
 ======= COW =====================================
@@ -82,32 +107,32 @@ NCrystal::BadInput: Syntax error in parameter string: The "ignorefilecfg" keywor
 => Trying to load:
    -> NCMAT v999
    -> # NCRYSTALMATCFG[mos=2deg]
-=> Got expected MatCfg ERROR: NC::BadInput: Must set all or none of mos, dir1 and dir2 parameters
+=> Got expected MatCfg ERROR: NC::BadInput: Single crystals need mos and dir1, and also dir2 unless lcaxis is along dir1
 
 => Trying to load:
    -> NCMAT v999
    -> # NCRYSTALMATCFG[dir1=@crys:1,1,1@lab:0,0,1]
-=> Got expected MatCfg ERROR: NC::BadInput: Must set all or none of mos, dir1 and dir2 parameters
+=> Got expected MatCfg ERROR: NC::BadInput: Single crystals need mos and dir1, and also dir2 unless lcaxis is along dir1
 
 => Trying to load:
    -> NCMAT v999
    -> # NCRYSTALMATCFG[dir2=@crys:1,1,1@lab:0,0,1]
-=> Got expected MatCfg ERROR: NC::BadInput: Must set all or none of mos, dir1 and dir2 parameters
+=> Got expected MatCfg ERROR: NC::BadInput: Single crystals need mos and dir1, and also dir2 unless lcaxis is along dir1
 
 => Trying to load:
    -> NCMAT v999
    -> # NCRYSTALMATCFG[dir1=@crys:1,1,1@lab:0,0,1;mos=2deg;dirtol=2deg]
-=> Got expected MatCfg ERROR: NC::BadInput: Must set all or none of mos, dir1 and dir2 parameters
+=> Got expected MatCfg ERROR: NC::BadInput: Single crystals need mos and dir1, and also dir2 unless lcaxis is along dir1
 
 => Trying to load:
    -> NCMAT v999
    -> # NCRYSTALMATCFG[mos=2deg]
-=> Got expected MatCfg ERROR: NC::BadInput: Must set all or none of mos, dir1 and dir2 parameters
+=> Got expected MatCfg ERROR: NC::BadInput: Single crystals need mos and dir1, and also dir2 unless lcaxis is along dir1
 
 => Trying to load:
    -> NCMAT v999
    -> # NCRYSTALMATCFG[dirtol=2deg]
-=> Got expected MatCfg ERROR: NC::BadInput: mos, dir1 and dir2 parameters must all be set when dirtol is set
+=> Got expected MatCfg ERROR: NC::BadInput: dirtol needs mos and dir1, and also dir2 unless lcaxis is along dir1
 
 => Trying to load:
    -> NCMAT v999

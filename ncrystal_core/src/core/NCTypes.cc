@@ -72,6 +72,17 @@ std::ostream& NC::operator<<( std::ostream& os, const OrientDir& od )
   return os;
 }
 
+std::ostream& NC::operator<<( std::ostream& os, const LCAxisState& a )
+{
+  using Form = LCAxisState::Form;
+  if ( a.form == Form::Primary )
+    return os << "@dir1";
+  os << ( a.form == Form::Cartesian ? ""
+          : ( a.form == Form::HKL ? "@crys_hkl:"
+              : ( a.form == Form::UVW ? "@crys_uvw:" : "@lab:" ) ) );
+  return os << fmt(a.v[0]) << ',' << fmt(a.v[1]) << ',' << fmt(a.v[2]);
+}
+
 std::ostream& NC::operator<< (std::ostream& os, const DensityState& ds)
 {
   if ( ds.type == DensityState::Type::SCALEFACTOR ) {

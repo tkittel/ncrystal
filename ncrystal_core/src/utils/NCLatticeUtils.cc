@@ -284,6 +284,7 @@ double NC::KSqCalc::dspacing( int h, int k, int l ) const
 namespace NCRYSTAL_NAMESPACE {
   namespace  {
     static constexpr double orient_paralleltol = 1e-6;
+    static constexpr double crysdir_paralleltol = 1e-12;//on cos^2
     void checkNotNull( const ThreeVector& v, const char * what,
                        const char * designator = nullptr )
     {
@@ -389,6 +390,19 @@ NC::Vector NC::crysDirToCartesian( const OrientDir::CrysDir& dir,
     return v;
   return ( ( dir.basis == Basis::HKL ? lattice.reci : lattice.direct )
            * v ).unit();
+}
+
+NC::Optional<bool> NC::crysDirsParallel( const OrientDir::CrysDir& a,
+                                         const OrientDir::CrysDir& b,
+                                         const LatticeRots* lattice )
+{
+  if ( a.basis == b.basis )
+    return Vector( a.v[0], a.v[1], a.v[2] )
+      .isParallel( Vector( b.v[0], b.v[1], b.v[2] ), crysdir_paralleltol );
+  if ( !lattice )
+    return NullOpt;
+  return crysDirToCartesian( a, *lattice )
+    .isParallel( crysDirToCartesian( b, *lattice ), crysdir_paralleltol );
 }
 
 NC::OrientDir NC::arbitrarySecondaryOrientDir( const OrientDir& dir1,

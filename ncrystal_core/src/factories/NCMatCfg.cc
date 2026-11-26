@@ -510,6 +510,16 @@ NC::Optional<std::pair<NC::LabAxis,double>> NC::MatCfg::get_rot() const
   return CfgManip::get_rot( m_impl->readVar(Cfg::VarId::rot) );
 }
 
+void NC::MatCfg::set_lcaxis( const LCAxisState& a )
+{
+  m_impl.modify()->setVar( a, &CfgManip::set_lcaxis );
+}
+
+NC::Optional<NC::LCAxisState> NC::MatCfg::get_lcaxis() const
+{
+  return CfgManip::get_lcaxis( m_impl->readVar(Cfg::VarId::lcaxis) );
+}
+
 namespace NCRYSTAL_NAMESPACE {
   namespace {
     void doSetSCOrient( Cfg::CfgData& data, const SCOrientation::Data& orient )
@@ -899,7 +909,6 @@ std::string NC::MatCfg::get_inelas() const { return CfgManip::get_inelas( m_impl
 std::string NC::MatCfg::get_infofactory() const { return CfgManip::get_infofactory( m_impl->readVar(Cfg::VarId::infofactory) ).to_string(); }
 std::string NC::MatCfg::get_scatfactory() const { return CfgManip::get_scatfactory( m_impl->readVar(Cfg::VarId::scatfactory) ).to_string(); }
 std::string NC::MatCfg::get_absnfactory() const { return CfgManip::get_absnfactory( m_impl->readVar(Cfg::VarId::absnfactory) ).to_string(); }
-NC::LCAxis NC::MatCfg::get_lcaxis() const { return CfgManip::get_lcaxis( m_impl->readVar(Cfg::VarId::lcaxis) ); }
 
 void NC::MatCfg::set_temp( Temperature v ) { m_impl.modify()->setVar( v, &CfgManip::set_temp ); }
 void NC::MatCfg::set_dcutoff( double v ) { m_impl.modify()->setVar( v, &CfgManip::set_dcutoff ); }
@@ -919,7 +928,6 @@ void NC::MatCfg::set_absnfactory( const std::string& v ) { m_impl.modify()->setV
 void NC::MatCfg::set_lcmode( std::int_least32_t v ) { m_impl.modify()->setVar( v, &CfgManip::set_lcmode ); }
 void NC::MatCfg::set_vdoslux( int v ) { m_impl.modify()->setVar( v, &CfgManip::set_vdoslux ); }
 void NC::MatCfg::set_knllux( int v ) { m_impl.modify()->setVar( v, &CfgManip::set_knllux ); }
-void NC::MatCfg::set_lcaxis( const LCAxis& axis ) { m_impl.modify()->setVar( axis, &CfgManip::set_lcaxis ); }
 void NC::MatCfg::set_atomdb( const std::string& v ) { m_impl.modify()->setVar( v, &CfgManip::set_atomdb_stdstr ); }
 std::int_least32_t NC::MatCfg::get_lcmode() const { return CfgManip::get_lcmode( m_impl->readVar(Cfg::VarId::lcmode) ); }
 int NC::MatCfg::get_vdoslux() const { return CfgManip::get_vdoslux( m_impl->readVar(Cfg::VarId::vdoslux) ); }

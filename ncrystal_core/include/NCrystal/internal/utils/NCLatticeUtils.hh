@@ -62,6 +62,13 @@ namespace NCRYSTAL_NAMESPACE {
   //lattice is not used for Cartesian directions.
   Vector crysDirToCartesian( const OrientDir::CrysDir&, const LatticeRots& );
 
+  //Whether two crystal directions are parallel or antiparallel (with the
+  //cos^2 of their angle within 1e-12 of 1). Without the lattice this is only
+  //known for directions with the same basis (NullOpt otherwise):
+  Optional<bool> crysDirsParallel( const OrientDir::CrysDir&,
+                                   const OrientDir::CrysDir&,
+                                   const LatticeRots* );
+
   //For when the rotation of a crystal around its primary direction is of no
   //importance: An arbitrary (but deterministic) secondary direction, which is
   //orthogonal to the primary direction in both frames. The crystal direction

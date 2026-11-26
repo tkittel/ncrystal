@@ -128,8 +128,8 @@ namespace NCRYSTAL_NAMESPACE {
       static constexpr auto name = "mos";
       static constexpr auto group = VarGroupId::ScatterExtra;
       static constexpr auto description =
-        "Mosaic FWHM spread in mosaic single crystals."
-        " When this parameter is set, the parameters dir1 and dir2 must also be provided."
+        "Mosaic FWHM spread in mosaic single crystals. When mos is set, dir1 must also"
+        " be provided."
         ;
       static constexpr NullOptType default_value() { return NullOpt; }//no default value!
       using units = units_angle;
@@ -151,8 +151,9 @@ namespace NCRYSTAL_NAMESPACE {
         " with x along the lattice vector a, z along c*=cross(a,b), and y along"
         " cross(c*,a). Alternatively, the direction in the crystal can be given as the"
         " normal of an (hkl) plane, with \"@crys_hkl:h,k,l\", or as the lattice direction"
-        " [uvw], i.e. along ua+vb+wc, with \"@crys_uvw:u,v,w\". When dir1 is set, mos and"
-        " dir2 must also be provided."
+        " [uvw], i.e. along ua+vb+wc, with \"@crys_uvw:u,v,w\". When dir1 is set, mos must"
+        " also be provided. And dir2 must be provided as well, unless lcaxis is along"
+        " dir1."
         ;
       static constexpr NullOptType default_value() { return NullOpt; }//no default value!
     };
@@ -168,8 +169,9 @@ namespace NCRYSTAL_NAMESPACE {
         " discrepancy up to the value of the dirtol parameter is allowed. In any case,"
         " the components of the dir2 vectors parallel to the dir1 vectors are ignored."
         " The value \"arbitrary\" can be used when any rotation of the crystal around dir1"
-        " will do, in which case an unspecified (but deterministic) rotation is used. When"
-        " dir2 is set, mos and dir1 must also be provided."
+        " will do, in which case an unspecified (but deterministic) rotation is used. The"
+        " dir2 parameter can be left out when lcaxis is along dir1. When dir2 is set, mos"
+        " and dir1 must also be provided."
         ;
       static constexpr NullOptType default_value() { return NullOpt; }//no default value!
       static constexpr bool allow_arbitrary = true;
@@ -183,7 +185,7 @@ namespace NCRYSTAL_NAMESPACE {
         " (see the dir2 parameter description for more information)."
         " A value of 180deg can be used to easily set up a single crystal monochromator"
         " where one is only interested in the primary direction."
-        " When this parameter is set, the parameters mos, dir1, and dir2 must also be provided."
+        " When dirtol is set, dir1 must also be provided."
         ;
       static constexpr value_type default_value() { return 1e-4; }
       using units = units_angle;
@@ -297,28 +299,24 @@ namespace NCRYSTAL_NAMESPACE {
       }
     };
 
-    struct vardef_lcaxis final : public ValVector<vardef_lcaxis> {
+    struct vardef_lcaxis final : public ValLCAxis<vardef_lcaxis> {
       static constexpr auto name = "lcaxis";
       static constexpr auto group = VarGroupId::ScatterExtra;
       static constexpr auto description =
-        "Symmetry axis of anisotropic layered"
-        " crystals with a layout similar to pyrolytic graphite (PG). The axis"
-        " must be provided in direct lattice coordinates using a format"
-        " like \"0,0,1\". Specifying"
-        " this parameter along with an orientation (see dir1 and dir2"
-        " parameters) will result in the appropriate anisotropic single"
-        " crystal scatter model being used for Bragg diffraction."
+        "Symmetry axis of anisotropic layered crystals like pyrolytic graphite (PG),"
+        " i.e. the axis around which the crystallites are uniformly rotated. The same"
+        " model describes fibre textures (see dir1avg) and single crystals on a spinning"
+        " sample holder (with the axis given in the lab frame). Given like \"0,0,1\" (or"
+        " \"@crys:0,0,1\"), lcaxis is a Cartesian vector in the crystal frame (cf. the dir1"
+        " parameter). The axis can also be the normal of an (hkl) plane"
+        " (\"@crys_hkl:0,0,1\"), a lattice direction (\"@crys_uvw:0,0,1\"), a vector in the"
+        " lab frame (\"@lab:0,1,0\"), or the crystal direction of dir1 (\"@dir1\")."
+        " Specifying lcaxis along with an orientation (see the dir1 and dir2 parameters)"
+        " will result in the appropriate anisotropic single crystal scatter model being"
+        " used for Bragg diffraction. The dir2 parameter can be left out if the axis is a"
+        " direction in the crystal which is parallel to that of dir1."
         ;
       static constexpr NullOptType default_value() { return NullOpt; }//no default value!
-      static constexpr bool auto_normalise = false;
-      static void extraChecks( const Vector& v )
-      {
-        double m2 = v.mag2();
-        if ( !(m2>0.0) )
-          NCRYSTAL_THROW2(BadInput,"Null vector provided for parameter \""<<name<<"\"");
-        if ( std::isinf(m2) || std::isinf(v[0]) || std::isinf(v[1]) || std::isinf(v[2]) )
-          NCRYSTAL_THROW2(BadInput, "Infinities or too large values specified in "<<name<<" vector");
-      }
     };
 
     struct vardef_lcmode final : public ValInt<vardef_lcmode> {
@@ -326,7 +324,7 @@ namespace NCRYSTAL_NAMESPACE {
       static constexpr auto group = VarGroupId::ScatterExtra;
       static constexpr auto description =
         "Choose which modelling is used for layered crystals like PG"
-        " (ignored unless the lcaxis, dir1, and dir2 parameters are set)."
+        " (ignored unless lcaxis and an orientation are set, see the dir1 parameter)."
         " The default value 0"
         " enables the recommended model, which is both fast and"
         " accurate. A positive value N triggers a very slow but simple"

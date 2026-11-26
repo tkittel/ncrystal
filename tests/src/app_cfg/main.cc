@@ -242,7 +242,8 @@ void test()
   cfg = NC::MatCfg( "Al_fake.ncmat" );
   REQUIRE( !cfg.isLayeredCrystal() );
   REQUIRE( cfg.get_lcmode()== 0 );
-  cfg.set_lcaxis({0,0.5,0.666666666666666666666666666666666666666});
+  cfg.set_lcaxis( { NC::LCAxisState::Form::Cartesian,
+                    { 0, 0.5, 0.666666666666666666666666666666666666666 } } );
   REQUIRE( cfg.isLayeredCrystal() );
   REQUIRE( cfg.get_lcmode() == 0 );
   test_strrep_and_dump(cfg);
@@ -379,6 +380,122 @@ void test()
   {
     bool failed = false;
     try { cfg.set_dir1( NC::OrientDir() ); }
+    catch (NC::Error::BadInput&e) {
+      std::cout<<"NCrystal::"<<e.getTypeName()<< ": "<<e.what() << std::endl;
+      failed = true;
+    }
+    REQUIRE( failed );
+  }
+
+  //Forms of lcaxis, and leaving out dir2 when lcaxis is along dir1:
+  using LCForm = NC::LCAxisState::Form;
+  cfg = NC::MatCfg( "Al_sg225.ncmat;lcaxis=@crys:0,0,2" );
+  REQUIRE( cfg.get_lcaxis().value() == ( NC::LCAxisState{ LCForm::Cartesian,
+                                                           { 0, 0, 2 } } ) );
+  test_strrep_and_dump(cfg);
+  cfg.applyStrCfg("mos=1deg;dir1=@crys:0,0,-1@lab:0,1,0");
+  cfg.checkConsistency();
+  REQUIRE( cfg.isSingleCrystal() && cfg.isLayeredCrystal() );
+  REQUIRE( !cfg.get_dir2().has_value() );
+  {
+    const NC::FactImpl::ScatterRequest req( cfg );
+    REQUIRE( req.get_lcaxis() == ( NC::LCAxis{0,0,2} ) );
+    auto od = req.createSCOrientation().getData();
+    REQUIRE( od.dir1.lab == ( NC::LabAxis{0,1,0} ) );
+    REQUIRE( od.dir2.crystal == req.get_dir2().crystal );
+    REQUIREFLTEQ( 1.0 + od.dir2.crystal.v[2], 1.0 );
+    REQUIREFLTEQ( 1.0 + od.dir2.lab[1], 1.0 );
+  }
+  cfg.applyStrCfg("lcaxis=@crys_hkl:0,0,2");
+  cfg.checkConsistency();//can not be checked without a lattice
+  test_strrep_and_dump(cfg);
+  REQUIRE( cfg.get_lcaxis().value() == ( NC::LCAxisState{ LCForm::HKL,
+                                                           { 0, 0, 2 } } ) );
+  {
+    const NC::FactImpl::ScatterRequest req( cfg );
+    REQUIRE( req.get_lcaxis() == ( NC::LCAxis{0,0,1} ) );//cubic
+    (void)req.createSCOrientation();
+  }
+  cfg.applyStrCfg("dir1=@crys_hkl:0,0,-5@lab:0,1,0");
+  cfg.checkConsistency();//same type, can be checked
+  for ( auto badcfg : { "lcaxis=@crys_hkl:0,1,2",
+                        "dir1=@crys_hkl:0,1e-2,-5@lab:0,1,0",
+                        "lcaxis=@lab:0,1,0" } ) {
+    bool failed = false;
+    try {
+      auto cfg2 = cfg;
+      cfg2.applyStrCfg(badcfg);
+      cfg2.checkConsistency();
+    } catch (NC::Error::BadInput&e) {
+      std::cout<<"NCrystal::"<<e.getTypeName()<< ": "<<e.what() << std::endl;
+      failed = true;
+    }
+    REQUIRE( failed );
+  }
+  for ( auto badcfg : { "Al_sg225.ncmat;lcaxis=@dir1",
+                        "Al_sg225.ncmat;lcaxis=@dir1;mos=1deg",
+                        "Al_sg225.ncmat;dir1=@crys:0,0,1@lab:0,0,1",
+                        "Al_sg225.ncmat;mos=1deg;dir1=@crys:0,0,1@lab:0,0,1",
+                        "Al_sg225.ncmat;dirtol=1deg",
+                        "Al_sg225.ncmat;dirtol=1deg;lcaxis=0,0,1" } ) {
+    bool failed = false;
+    try {
+      NC::MatCfg( badcfg ).checkConsistency();
+    } catch (NC::Error::BadInput&e) {
+      std::cout<<"NCrystal::"<<e.getTypeName()<< ": "<<e.what() << std::endl;
+      failed = true;
+    }
+    REQUIRE( failed );
+  }
+  //Different basis, only detected with the lattice:
+  {
+    NC::MatCfg c2( "Al_sg225.ncmat;mos=1deg;dir1=@crys_uvw:0,1,1@lab:0,0,1"
+                   ";lcaxis=@crys_hkl:0,0,1" );
+    c2.checkConsistency();
+    bool failed = false;
+    try {
+      (void)NC::FactImpl::ScatterRequest( c2 ).createSCOrientation();
+    } catch (NC::Error::BadInput&e) {
+      std::cout<<"NCrystal::"<<e.getTypeName()<< ": "<<e.what() << std::endl;
+      failed = true;
+    }
+    REQUIRE( failed );
+    c2.applyStrCfg("lcaxis=@crys_hkl:0,2,2");//cubic: [011] parallel to (022)
+    (void)NC::FactImpl::ScatterRequest( c2 ).createSCOrientation();
+  }
+  //@dir1 and the dir1avg and fibre pseudo-parameters:
+  for ( auto cfgstr : { "Al_sg225.ncmat;mos=1deg;lcaxis=@dir1"
+                        ";dir1=@crys_hkl:1,1,0@lab:0,0,1",
+                        "Al_sg225.ncmat;mos=1deg;dir1avg=@crys_hkl:1,1,0@lab:0,0,1",
+                        "Al_sg225.ncmat;mos=1deg;fibre=@crys_hkl:1,1,0@lab:0,0,1" } ) {
+    NC::MatCfg c2( cfgstr );
+    c2.checkConsistency();
+    test_strrep_and_dump(c2);
+    REQUIRE( c2.get_lcaxis().value() == NC::LCAxisState() );
+    const NC::FactImpl::ScatterRequest req( c2 );
+    const auto a = req.get_lcaxis();
+    REQUIREFLTEQ( a[0], std::sqrt(0.5) );
+    REQUIREFLTEQ( a[1], std::sqrt(0.5) );
+    REQUIREFLTEQ( 1.0 + a[2], 1.0 );
+  }
+  //An @lab lcaxis is converted with the orientation before rot (rot rotates
+  //the whole material, including the lcaxis):
+  {
+    const std::string base = "Al_sg225.ncmat;mos=1deg;lcaxis=@lab:1,0,0"
+      ";dir1=@crys:0,0,1@lab:0,0,1;dir2=@crys:1,0,0@lab:0,1,0";
+    const auto a = NC::FactImpl::ScatterRequest( NC::MatCfg( base ) ).get_lcaxis();
+    const auto b = NC::FactImpl::ScatterRequest( NC::MatCfg( base + ";rot=0,0,1:30deg" ) ).get_lcaxis();
+    REQUIREFLTEQ( a[1], -1.0 );//lab x is crystal -y
+    REQUIRE( a == b );
+  }
+  cfg.applyStrCfg("lcaxis=@lab:0,1,0;dir2=@crys:1,0,0@lab:1,0,0");
+  cfg.checkConsistency();
+  test_strrep_and_dump(cfg);
+  for ( auto& bad : { NC::LCAxisState{ LCForm::Primary, { 0, 0, 1 } },
+                      NC::LCAxisState{ LCForm::Cartesian, { 0, 0, 0 } },
+                      NC::LCAxisState{ LCForm::Lab, { 1e200, 1e200, 0 } } } ) {
+    bool failed = false;
+    try { cfg.set_lcaxis( bad ); }
     catch (NC::Error::BadInput&e) {
       std::cout<<"NCrystal::"<<e.getTypeName()<< ": "<<e.what() << std::endl;
       failed = true;

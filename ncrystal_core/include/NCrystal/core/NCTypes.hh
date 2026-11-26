@@ -449,6 +449,22 @@ namespace NCRYSTAL_NAMESPACE {
     using StronglyTypedFixedVector::StronglyTypedFixedVector;
   };
 
+  struct NCRYSTAL_API LCAxisState {
+    //Layered crystal axis: a direction in the crystal (as for OrientDir) or
+    //in the lab, or the crystal direction of the primary orientation
+    //direction. The vector v is null exactly when form is Primary, which
+    //validate() checks.
+    enum class Form { Cartesian, HKL, UVW, Lab, Primary };
+    Form form = Form::Primary;
+    ThreeVector v = { 0.0, 0.0, 0.0 };
+    void validate() const;//throws BadInput if invalid
+  };
+  inline bool operator==( const LCAxisState& a, const LCAxisState& b ) noexcept
+  {
+    return a.form == b.form && a.v == b.v;
+  }
+  NCRYSTAL_API std::ostream& operator<<( std::ostream&, const LCAxisState& );
+
   //Composite value types used in some interfaces:
   struct NCRYSTAL_API EnergyDomain {
     NeutronEnergy elow = NeutronEnergy{ 0.0 };
@@ -1030,6 +1046,17 @@ namespace NCRYSTAL_NAMESPACE {
   {
     if ( !(value>0.0) || !( value <= 1.0e200) )
       NCRYSTAL_THROW2(BadInput,"Density value invalid or out of bounds: "<<*this);
+  }
+
+  inline void LCAxisState::validate() const
+  {
+    const bool isnull = !( v[0] || v[1] || v[2] );
+    if ( isnull != ( form == Form::Primary ) )
+      NCRYSTAL_THROW(BadInput,"Invalid layered crystal axis: the vector must"
+                     " be null exactly when the form is Primary");
+    const double m2 = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
+    if ( !std::isfinite( m2 ) )
+      NCRYSTAL_THROW2(BadInput,"Invalid layered crystal axis: "<<*this);
   }
 
   inline bool ThreadCount::indicatesAutoDetect() const noexcept

@@ -20,7 +20,10 @@
 
 #include "NCrystal/internal/cfgutils/NCCfgVars.hh"
 #include <iostream>
+#include <sstream>
 #include "NCrystal/internal/cfgutils/NCCfgManip.hh"
+
+#define REQUIRE(x) nc_assert_always(x)
 
 namespace NC = NCrystal;
 
@@ -218,6 +221,34 @@ namespace {
     doTestBad("dir2=@crys:arbitrary@lab:0,0,1");
     doTestBad("dir1=arbitrary");
 
+    doTest("lcaxis=0,0,1");
+    doTest("lcaxis=@crys:0,0,1");
+    doTest(" lcaxis = @ crys_hkl : 0 , 0 ,\t2e0 ");
+    doTest("lcaxis=@crys_uvw:1,0,0.5");
+    doTest("lcaxis=@lab:0,-1,1e-3");
+    doTestBad("lcaxis=@crys_xyz:0,0,1");
+    doTestBad("lcaxis=@lab:0,0,0");
+    doTestBad("lcaxis=@lab:0,1");
+    doTestBad("lcaxis=@lab0,1,0");
+    doTestBad("lcaxis=lab:0,1,0");
+    doTestBad("lcaxis=@:0,1,0");
+    doTestBad("lcaxis=@crys_hkl:0,0,inf");
+    doTestBad("lcaxis=@crys_hkl:0,0,nan");
+    doTestBad("lcaxis=1e200,1e200,0");
+    doTestBad("lcaxis=@lab:1e155,0,1e155");
+    doTestBad("lcaxis=@crys_hkl:0,0,1@lab:0,1,0");
+    doTest("lcaxis=0.50,0,1.0");
+    doTest("lcaxis=@crys_uvw:0.50,-0,1e0");
+    doTest("lcaxis=@dir1;dir1=@crys:0,0,1@lab:0,1,0");
+    doTest(" lcaxis = @ dir1 ;dir1=@crys:0,0,1@lab:0,1,0");
+    doTest("dir1avg=@crys_hkl:0,0,1@lab:0,1,0");
+    doTest("fibre= @crys_uvw:1,1,0@lab:1,0,0 ");
+    doTestBad("lcaxis=@dir2");
+    doTestBad("lcaxis=@dir1:0,0,1");
+    doTestBad("lcaxis=dir1");
+    doTestBad("dir1avg=0,0,1");
+    doTestBad("fibre=arbitrary");
+
     doTest("rot=0,1,0:30deg");
     doTest(" rot = 0 , 1.0 ,\t0 : 30 deg ");
     doTest("rot=0,0,2:1.5707963267948966");
@@ -257,11 +288,12 @@ namespace {
       CfgManip::set_mos( cd, NC::MosaicityFWHM{ 1*NC::kArcMin } );
       std::cout<<"  => .get_mos() : "<<CfgManip::get_mos(cd)<<std::endl;
 
+      using LCForm = NC::LCAxisState::Form;
       std::cout<<"  => .set_lcaxis( {0,0,1} )"<<std::endl;
-      CfgManip::set_lcaxis( cd, {0,0,1} );
-      std::cout<<"  => .get_lcaxis() : "<<CfgManip::get_lcaxis(cd)<<std::endl;
-      CfgManip::set_lcaxis( cd, {1,1,1} );
-      std::cout<<"  => .get_lcaxis() : "<<CfgManip::get_lcaxis(cd)<<std::endl;
+      CfgManip::set_lcaxis( cd, { LCForm::Cartesian, {0,0,1} } );
+      std::cout<<"  => .get_lcaxis() : "<<CfgManip::get_lcaxis(cd).value()<<std::endl;
+      CfgManip::set_lcaxis( cd, { LCForm::Cartesian, {1,1,1} } );
+      std::cout<<"  => .get_lcaxis() : "<<CfgManip::get_lcaxis(cd).value()<<std::endl;
       std::cout<<"  => cfgstr: "<<cd<<"\n";
       (void)CfgManip::applyStrCfg(cd,"mos=1arcmin");
       std::cout<<"  => .applyStrCfg(\"mos=1arcmin\") : "<<std::endl;
@@ -292,9 +324,65 @@ namespace {
       std::cout<<"  => JSON: ";
       CfgManip::streamJSON(cd,std::cout);
       std::cout<<"\n";
+      applyAndPrint("lcaxis=@crys_hkl:0,0,2");
+      std::cout<<"  => JSON: ";
+      CfgManip::streamJSON(cd,std::cout);
+      std::cout<<"\n";
     }
   }
 
+
+  //ValVector is not used by any parameter in NCrystal itself, but is
+  //available for plugins (e.g. for directions). Test it via test-only
+  //variable definitions, normalised (the default) or not:
+  struct testvar_vec final : public NC::Cfg::ValVector<testvar_vec> {
+    static constexpr auto name = "testvec";
+  };
+  struct testvar_vecraw final : public NC::Cfg::ValVector<testvar_vecraw> {
+    static constexpr auto name = "testvecraw";
+    static constexpr bool auto_normalise = false;
+  };
+
+  template<class TVar>
+  void testValVectorStr( const char * str )
+  {
+    using namespace NC::Cfg;
+    std::cout<<"ValVector \""<<TVar::name<<"\" from \""<<str<<"\": ";
+    try {
+      const auto buf = TVar::from_str( VarId::lcaxis, str );
+      const auto v = TVar::get_val( buf );
+      std::ostringstream ss;
+      TVar::stream_val( ss, buf );
+      std::cout<<ss.str()<<" JSON=";
+      TVar::asJSONObject( std::cout, buf );
+      std::cout<<std::endl;
+      //Round trip, and same as set_val:
+      const std::string text = ss.str();
+      const auto buf2 = TVar::from_str( VarId::lcaxis, text );
+      REQUIRE( TVar::cmp( buf, buf2 ) == 0 );
+      REQUIRE( TVar::cmp( buf, TVar::set_val( VarId::lcaxis, v ) ) == 0 );
+      if ( TVar::auto_normalise )
+        REQUIRE( v.isUnitVector() );
+    } catch ( NC::Error::BadInput& e ) {
+      std::cout<<"BadInput: "<<e.what()<<std::endl;
+    }
+  }
+
+  void testValVector()
+  {
+    using namespace NC::Cfg;
+    for ( auto s : { "1,2,2", " 1 , 2 ,\t2 ", "0,0,-5", "1e-200,0,0", "1,2",
+                     "1,2,3,4", "a,b,c", "1,,2", "0,0,0", "inf,0,0", "nan,0,0",
+                     "1e200,1e200,0" } ) {
+      testValVectorStr<testvar_vec>( s );
+      testValVectorStr<testvar_vecraw>( s );
+    }
+    //Comparisons are lexicographic in the components:
+    const auto a = testvar_vecraw::set_val( VarId::lcaxis, { 1.0, 2.0, 3.0 } );
+    const auto b = testvar_vecraw::set_val( VarId::lcaxis, { 1.0, 2.5, 0.0 } );
+    REQUIRE( testvar_vecraw::cmp( a, b ) < 0 && testvar_vecraw::cmp( b, a ) > 0 );
+    REQUIRE( testvar_vecraw::cmp( a, a ) == 0 );
+  }
 
   void test_cfgdata() {
 
@@ -365,6 +453,7 @@ namespace {
 }
 
 int main() {
+  testValVector();
   test_cfgdata();
   //  std::cout<<sizeof(B)<<std::endl;
   //  std::cout<<sizeof(NC::SmallVector<B,8,NC::SVMode::FASTACCESS>)<<std::endl;

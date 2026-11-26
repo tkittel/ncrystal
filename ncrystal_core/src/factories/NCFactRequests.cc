@@ -182,16 +182,19 @@ NC::OrientDir NCF::ScatterRequest::get_dir1() const
 
 NC::OrientDir NCF::ScatterRequest::get_dir2() const
 {
-  auto dir2 = requireDir( CfgManip::get_dir2(rawCfgData()), "dir2" );
-  if ( dir2.lab == LabAxis{ 0.0, 0.0, 0.0 } )//arbitrary
-    dir2 = arbitrarySecondaryOrientDir( get_dir1(), requireLattice( info() ) );
-  return dir2;
+  const auto dir2 = CfgManip::get_dir2( rawCfgData() );
+  if ( dir2.has_value() && !( dir2.value().lab == LabAxis{ 0.0, 0.0, 0.0 } ) )
+    return dir2.value();
+  //Arbitrary or left out:
+  if ( !dir2.has_value() && !isSingleCrystal() )
+    NCRYSTAL_THROW(MissingInfo,"Parameter dir2 is not set");
+  return CfgManip::getOrientationBeforeRot( rawCfgData(),
+                                            requireLattice( info() ) ).dir2;
 }
 
 double NCF::ScatterRequest::get_mosprec() const { return CfgManip::get_mosprec(rawCfgData()); }
 double NCF::ScatterRequest::get_sccutoff() const { return CfgManip::get_sccutoff(rawCfgData()); }
 double NCF::ScatterRequest::get_dirtol() const { return CfgManip::get_dirtol(rawCfgData()); }
-NC::LCAxis NCF::ScatterRequest::get_lcaxis() const { return CfgManip::get_lcaxis(rawCfgData()); }
 std::int_least32_t NCF::ScatterRequest::get_lcmode() const { return CfgManip::get_lcmode(rawCfgData()); }
 
 bool NCF::ScatterRequest::isSingleCrystal() const
@@ -204,6 +207,30 @@ bool NCF::ScatterRequest::isLayeredCrystal() const
 {
   return ( CfgManip::isLayeredCrystal( rawCfgData() )
            && !info().isMultiPhase() && info().isCrystalline() );
+}
+
+NC::LCAxis NCF::ScatterRequest::get_lcaxis() const
+{
+  using Form = LCAxisState::Form;
+  const auto lc = CfgManip::get_lcaxis( rawCfgData() );
+  if ( !lc.has_value() )
+    NCRYSTAL_THROW(MissingInfo,"Parameter lcaxis is not set");
+  const auto& a = lc.value();
+  if ( a.form == Form::Cartesian )
+    return { a.v[0], a.v[1], a.v[2] };
+  const auto lattice = requireLattice( info() );
+  if ( a.form == Form::Primary )
+    return crysDirToCartesian( get_dir1().crystal, lattice ).as<LCAxis>();
+  if ( a.form != Form::Lab )
+    return crysDirToCartesian( { Cfg::lcAxisBasis( a.form ), a.v },
+                               lattice ).as<LCAxis>();
+  //From the lab frame, with the orientation before rot (since rot rotates the
+  //whole material, including such an axis):
+  const auto o = CfgManip::getOrientationBeforeRot( rawCfgData(), lattice );
+  const auto cry2lab = verifyLatticeOrientDefAndConstructCrystalRotation
+    ( o.dir1, o.dir2, o.dirtol, lattice );
+  return ( RotMatrix( ~cry2lab )
+           * Vector( a.v[0], a.v[1], a.v[2] ).unit() ).as<LCAxis>();
 }
 
 NC::SCOrientation NCF::ScatterRequest::createSCOrientation() const

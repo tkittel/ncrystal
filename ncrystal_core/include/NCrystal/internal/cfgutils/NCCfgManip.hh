@@ -195,8 +195,8 @@ namespace NCRYSTAL_NAMESPACE {
       static void set_lcmode( CfgData& data, std::int_least32_t val ) { setValue<vardef_lcmode>( data,static_cast<std::int_least32_t>(val) ); }
 
 
-      static LCAxis get_lcaxis(const CfgData& data) { return getValue<vardef_lcaxis>(data).as<LCAxis>(); }
-      static void set_lcaxis( CfgData& data, const LCAxis& val ) { setValue<vardef_lcaxis>(data, val.as<Vector>()); }
+      static Optional<LCAxisState> get_lcaxis(const CfgData&);//NullOpt if not set
+      static void set_lcaxis( CfgData& data, const LCAxisState& val ) { setValue<vardef_lcaxis>(data,val); }
 
       static double get_strain(const CfgData& data) { return getValue<vardef_strain>(data); }
       static void set_strain( CfgData& data, double val ) { setValue<vardef_strain>(data,val); }
@@ -254,10 +254,13 @@ namespace NCRYSTAL_NAMESPACE {
       static void checkParamConsistency_Absorption( const CfgData& );
 
       //Validate orientation parameters (throws BadInput exception if not valid,
-      //or if not oriented) and return the orientation: dir1 and dir2 (with any
-      //rot applied to their lab directions) and dirtol. An arbitrary dir2 is
-      //resolved with arbitrarySecondaryOrientDir:
+      //or if not oriented) and return the orientation: dir1, dir2 and dirtol.
+      //An arbitrary or left out dir2 is resolved with
+      //arbitrarySecondaryOrientDir:
       struct Orientation { OrientDir dir1, dir2; double dirtol; };
+      [[nodiscard]] static Orientation getOrientationBeforeRot( const CfgData&,
+                                                                const LatticeRots& );
+      //Same, with any rot applied to the lab directions:
       [[nodiscard]] static Orientation getOrientation( const CfgData&,
                                                        const LatticeRots& );
 
@@ -268,6 +271,11 @@ namespace NCRYSTAL_NAMESPACE {
                                                                const LatticeRots& );
 
     private:
+      //Check which orientation parameters are set. Returns false if not
+      //oriented, and throws BadInput if inconsistent:
+      static bool checkOrientPars( const CfgData& );
+      //For a left out dir2 (NullOpt if the lattice is needed but absent):
+      static Optional<bool> lcaxisAlongDir1( const CfgData&, const LatticeRots* );
       template<class TBufCreateFct>
       static void detail_setVar( CfgData& data, VarId varid, TBufCreateFct& doCreate );
       static const VarBuf* searchBuf( const CfgData& data, VarId );

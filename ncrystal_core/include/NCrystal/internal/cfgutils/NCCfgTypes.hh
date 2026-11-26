@@ -107,6 +107,24 @@ namespace NCRYSTAL_NAMESPACE {
     const char * crysBasisJSONName( OrientDir::CrysDir::Basis );
     Optional<OrientDir::CrysDir::Basis> crysBasisFromName( StrView );
 
+    //The crystal basis of an lcaxis form which is a crystal direction
+    //(Cartesian, HKL or UVW), and vice versa:
+    inline OrientDir::CrysDir::Basis lcAxisBasis( LCAxisState::Form f )
+    {
+      using Form = LCAxisState::Form;
+      using Basis = OrientDir::CrysDir::Basis;
+      nc_assert( f != Form::Lab && f != Form::Primary );
+      return ( f == Form::Cartesian ? Basis::Cartesian
+               : ( f == Form::HKL ? Basis::HKL : Basis::UVW ) );
+    }
+    inline LCAxisState::Form lcAxisForm( OrientDir::CrysDir::Basis b )
+    {
+      using Form = LCAxisState::Form;
+      using Basis = OrientDir::CrysDir::Basis;
+      return ( b == Basis::Cartesian ? Form::Cartesian
+               : ( b == Basis::HKL ? Form::HKL : Form::UVW ) );
+    }
+
     //Storage of structured values as N doubles, a tag (char), and the
     //normalised text (null-terminated). Comparisons are by tag (in
     //descending order), then by the doubles, then by the text:
@@ -313,7 +331,9 @@ namespace NCRYSTAL_NAMESPACE {
     template <class Derived>
     class ValVector : public ValBase<Derived,Vector> {
     public:
-      //Simply stores a Vector directly in the buffer.
+      //Simply stores a Vector directly in the buffer. Not used by parameters
+      //in NCrystal itself, but available for those of plugins (e.g. for a
+      //direction).
       static_assert(VarBuf::buffer_local_size>=sizeof(Vector),"");
       static_assert(alignof(VarBuf)%alignof(Vector)==0,"");
       static_assert(std::is_trivially_copyable<Vector>::value,"");
@@ -337,14 +357,15 @@ namespace NCRYSTAL_NAMESPACE {
         static_assert(std::is_trivially_copyable<Vector>::value,"");
         alignas(Vector) char tmp[sizeof(Vector)];
         Vector & v = *(new (&tmp[0]) Vector(no_init));
-        v[0] = sanitiseDblValue( value[0], Derived::name );
-        v[1] = sanitiseDblValue( value[1], Derived::name );
-        v[2] = sanitiseDblValue( value[2], Derived::name );
         if ( Derived::auto_normalise ) {
-          double m2 = v.mag2();
-          if ( !m2 )
-            NCRYSTAL_THROW2(BadInput,"Null vector provided for parameter \""<<Derived::name<<"\"");
+          //Finite, not null, and with a finite squared length:
+          v = checkVector( value, Derived::name );
           v.normalise();//slower but safer than "v /= std::sqrt(m2)"
+        } else {
+          //Finite (null vectors can be rejected in extraChecks):
+          v[0] = checkFiniteDbl( value[0], Derived::name );
+          v[1] = checkFiniteDbl( value[1], Derived::name );
+          v[2] = checkFiniteDbl( value[2], Derived::name );
         }
         //Extra sanity checks:
         for ( auto& e : v )
@@ -506,6 +527,124 @@ namespace NCRYSTAL_NAMESPACE {
         return encodeDblsTagText<6>( varid,
                                      { c[0], c[1], c[2], l[0], l[1], l[2] },
                                      static_cast<unsigned char>( basis ),
+                                     text );
+      }
+    };
+
+    template <class Derived>
+    class ValLCAxis : public ValBase<Derived,LCAxisState> {
+    public:
+      //Stored as the vector (3 doubles), the form (tag) and the normalised
+      //text. Cartesian vectors are written without a prefix.
+      using Base = ValLCAxis;
+      static constexpr auto value_type_descr = "axis";
+      using Form = LCAxisState::Form;
+
+      static LCAxisState get_val( const VarBuf& buf )
+      {
+        const auto d = decodeDblsTagText<3>( buf );
+        LCAxisState a;
+        a.form = static_cast<Form>( d.tag );
+        a.v = { d.vals[0], d.vals[1], d.vals[2] };
+        return a;
+      }
+
+      static int cmp( const VarBuf& a, const VarBuf& b )
+      {
+        return cmpDblsTagText<3>( a, b );
+      }
+
+      static VarBuf set_val( VarId varid, const LCAxisState& a )
+      {
+        a.validate();
+        if ( a.form == Form::Primary )
+          return detail_encode( varid, a.form, Vector( 0., 0., 0. ), {} );
+        const auto& v = a.v;
+        const auto c = checkVector( Vector( v[0], v[1], v[2] ), Derived::name );
+        return detail_encode( varid, a.form, c, vectorStr( c ) );
+      }
+
+      static void stream_val( std::ostream& os, const VarBuf& buf )
+      {
+        os << decodeDblsTagText<3>( buf ).text;
+      }
+
+      static void asJSONObject( std::ostream& os, const VarBuf& buf )
+      {
+        const auto a = get_val( buf );
+        os << "{\"form\":";
+        streamJSON( os, formJSONName( a.form ) );
+        if ( a.form != Form::Primary ) {
+          os << ",\"axis\":";
+          streamJSON( os, a.v );
+        }
+        os << '}';
+      }
+
+      static VarBuf from_str( VarId varid, StrView sv_in )
+      {
+        //"x,y,z", "@crys:x,y,z", "@crys_hkl:h,k,l", "@crys_uvw:u,v,w",
+        //"@lab:x,y,z" or "@dir1", with spaces allowed around all delimiters
+        //or at string ends.
+        standardInputStrSanityCheck( Derived::name, sv_in );
+        auto throw_error = [&sv_in]() {
+          NCRYSTAL_THROW2(BadInput,"Syntax error - invalid value \""
+                          <<sv_in<<"\" provided for parameter \""
+                          <<Derived::name<<"\"");
+        };
+        StrView sv = sv_in.trimmed();
+        Form form = Form::Cartesian;
+        if ( sv.startswith('@') ) {
+          sv = sv.substr(1).trimmed();
+          if ( sv == StrView::make("dir1") )
+            return detail_encode( varid, Form::Primary,
+                                  Vector( 0., 0., 0. ), {} );
+          const auto i = sv.find(':');
+          if ( i == StrView::npos )
+            throw_error();
+          const auto name = sv.substr(0,i).trimmed();
+          sv = sv.substr(i+1);
+          const auto basis = crysBasisFromName( name );
+          if ( basis.has_value() )
+            form = lcAxisForm( basis.value() );
+          else if ( name == StrView::make("lab") )
+            form = Form::Lab;
+          else
+            throw_error();
+        }
+        const auto v = parseVector( sv, Derived::name );
+        if ( !v.has_value() )
+          throw_error();
+        return detail_encode( varid, form, v.value().first, v.value().second );
+      }
+
+    private:
+      static const char * formJSONName( Form f )
+      {
+        if ( f == Form::Lab )
+          return "lab";
+        if ( f == Form::Primary )
+          return "primary";
+        return crysBasisJSONName( lcAxisBasis( f ) );
+      }
+      static VarBuf detail_encode( VarId varid, Form form, const Vector& v,
+                                   const std::string& vtext )
+      {
+        std::string text;
+        if ( form == Form::Primary ) {
+          text = "@dir1";
+        } else if ( form == Form::Cartesian ) {
+          text = vtext;
+        } else {
+          text = '@';
+          text += ( form == Form::Lab
+                    ? "lab"
+                    : crysBasisName( lcAxisBasis( form ) ) );
+          text += ':';
+          text += vtext;
+        }
+        return encodeDblsTagText<3>( varid, { v[0], v[1], v[2] },
+                                     static_cast<unsigned char>( form ),
                                      text );
       }
     };

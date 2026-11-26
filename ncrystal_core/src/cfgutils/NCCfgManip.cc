@@ -146,7 +146,14 @@ NC::Cfg::TopLvlVarList NC::Cfg::CfgManip::applyStrCfg( CfgData& data, StrView st
     static constexpr auto sv_bkgd = StrView::make("bkgd");
     static constexpr auto sv_none = StrView::make("none");
     static constexpr auto sv_0 = StrView::make("0");
-    if ( par_str == sv_bragg ) {
+    static constexpr auto sv_dir1avg = StrView::make("dir1avg");
+    static constexpr auto sv_fibre = StrView::make("fibre");
+    static constexpr auto sv_atdir1 = StrView::make("@dir1");
+    if ( par_str == sv_dir1avg || par_str == sv_fibre ) {
+      setVarByStr( data, VarId::dir1, val_str );
+      setVarByStr( data, VarId::lcaxis, sv_atdir1 );
+      continue;
+    } else if ( par_str == sv_bragg ) {
       setVarByStr( data, VarId::coh_elas, val_str );
       continue;
     } else if ( par_str == sv_elas ) {
@@ -493,62 +500,91 @@ void NC::Cfg::CfgManip::checkParamConsistency_ScatterBase( const CfgData& )
 
 #include "NCrystal/internal/utils/NCLatticeUtils.hh"
 
+bool NC::Cfg::CfgManip::checkOrientPars( const CfgData& data )
+{
+  const bool has_mos = hasValueSet( data, VarId::mos );
+  const bool has_dir1 = hasValueSet( data, VarId::dir1 );
+  const bool has_dir2 = hasValueSet( data, VarId::dir2 );
+  const auto lc = get_lcaxis( data );
+  using Form = LCAxisState::Form;
+  if ( lc.has_value() && lc.value().form == Form::Primary && !has_dir1 )
+    NCRYSTAL_THROW(BadInput,"lcaxis=@dir1 needs dir1 to be set");
+  if ( !has_mos && !has_dir1 && !has_dir2 ) {
+    if ( hasValueSet( data, VarId::dirtol ) )
+      NCRYSTAL_THROW(BadInput,"dirtol needs mos and dir1, and also dir2 unless"
+                     " lcaxis is along dir1");
+    return false;
+  }
+  const bool dir2_optional = lc.has_value() && lc.value().form != Form::Lab;
+  if ( !has_mos || !has_dir1 || !( has_dir2 || dir2_optional ) )
+    NCRYSTAL_THROW(BadInput,"Single crystals need mos and dir1, and also dir2"
+                   " unless lcaxis is along dir1");
+  return true;
+}
+
+NC::Optional<bool>
+NC::Cfg::CfgManip::lcaxisAlongDir1( const CfgData& data,
+                                    const LatticeRots* lattice )
+{
+  using Form = LCAxisState::Form;
+  const auto lc = get_lcaxis( data ).value();
+  if ( lc.form == Form::Primary )
+    return true;
+  if ( lc.form == Form::Lab )
+    return false;
+  const OrientDir::CrysDir lcdir{ lcAxisBasis( lc.form ), lc.v };
+  return crysDirsParallel( lcdir, get_dir1( data ).value().crystal, lattice );
+}
+
 void NC::Cfg::CfgManip::checkParamConsistency_ScatterExtra( const CfgData& data )
 {
-  auto buf_mos = searchBuf( data, VarId::mos );
-  auto buf_dir1 = searchBuf( data, VarId::dir1 );
+  if ( !checkOrientPars( data ) )
+    return;
+  const auto dir1 = get_dir1( data ).value();
   auto buf_dir2 = searchBuf( data, VarId::dir2 );
-  auto buf_dirtol = searchBuf( data, VarId::dirtol );
-
-  int nOrient = (buf_dir1?1:0) + (buf_dir2?1:0) + (buf_mos?1:0);
-  if (nOrient!=0 && nOrient<3)
-    NCRYSTAL_THROW(BadInput,"Must set all or none of mos, dir1 and dir2 parameters");
-
-  if ( !nOrient ) {
-    if ( buf_dirtol )
-      NCRYSTAL_THROW(BadInput,"mos, dir1 and dir2 parameters must all be set when dirtol is set");
+  if ( buf_dir2 && !vardef_dir2::is_arbitrary( *buf_dir2 ) ) {
+    precheckLatticeOrientDef( dir1, vardef_dir2::get_val( *buf_dir2 ),
+                              get_dirtol(data) );
     return;
   }
+  precheckLatticeOrientDir( dir1 );
+  if ( !buf_dir2 ) {
+    const auto along = lcaxisAlongDir1( data, nullptr );
+    if ( along.has_value() && !along.value() )
+      NCRYSTAL_THROW(BadInput,"dir2 can only be left out when lcaxis is"
+                     " along dir1");
+  }
+}
 
-  auto parval_dir1 = getValueFromBufPtr<vardef_dir1>(buf_dir1);
-  if ( vardef_dir2::is_arbitrary( *buf_dir2 ) )
-    return precheckLatticeOrientDir( parval_dir1 );
-  auto parval_dir2 = getValueFromBufPtr<vardef_dir2>(buf_dir2);
-  auto parval_dirtol = getValueFromBufPtr<vardef_dirtol>(buf_dirtol);
+NC::Cfg::CfgManip::Orientation
+NC::Cfg::CfgManip::getOrientationBeforeRot( const CfgData& data,
+                                            const LatticeRots& lattice )
+{
+  if ( !checkOrientPars( data ) )
+    NCRYSTAL_THROW(BadInput,"Can only create SCOrientation object for oriented configurations");
+  //mos already validated:
+  nc_assert( get_mos( data ).dbl() > 0.0 && get_mos( data ).dbl() <= kPiHalf );
 
-  precheckLatticeOrientDef( parval_dir1, parval_dir2, parval_dirtol );
+  const auto dir1 = get_dir1( data ).value();
+  auto buf_dir2 = searchBuf( data, VarId::dir2 );
+  if ( buf_dir2 && !vardef_dir2::is_arbitrary( *buf_dir2 ) )
+    return { dir1, vardef_dir2::get_val( *buf_dir2 ), get_dirtol(data) };
+  if ( !buf_dir2 && !lcaxisAlongDir1( data, &lattice ).value() )
+    NCRYSTAL_THROW(BadInput,"dir2 can only be left out when lcaxis is"
+                   " along dir1");
+  return { dir1, arbitrarySecondaryOrientDir( dir1, lattice ),
+           get_dirtol(data) };
 }
 
 NC::Cfg::CfgManip::Orientation
 NC::Cfg::CfgManip::getOrientation( const CfgData& data,
                                    const LatticeRots& lattice )
 {
-  auto bufptr_mos = searchBuf( data, VarId::mos );
-  auto bufptr_dir1 = searchBuf( data, VarId::dir1 );
-  auto bufptr_dir2 = searchBuf( data, VarId::dir2 );
-
-  int nOrient = (bufptr_dir1?1:0) + (bufptr_dir2?1:0) + (bufptr_mos?1:0);
-  if (nOrient!=0 && nOrient<3)
-    NCRYSTAL_THROW(BadInput,"Must set all or none of mos, dir1 and dir2 parameters");
-
-  if ( !nOrient ) {
-    if ( hasValueSet( data, VarId::dirtol ) )
-      NCRYSTAL_THROW(BadInput,"mos, dir1 and dir2 parameters must all be set when dirtol is set");
-    NCRYSTAL_THROW(BadInput,"Can only create SCOrientation object for oriented configurations");
-  }
-
-  //mos already validated:
-  nc_assert( vardef_mos::get_val( *bufptr_mos ) > 0.0 && vardef_mos::get_val( *bufptr_mos ) <= kPiHalf );
-
-  Orientation res{ vardef_dir1::get_val( *bufptr_dir1 ),
-                   vardef_dir2::get_val( *bufptr_dir2 ),
-                   get_dirtol(data) };
-  if ( vardef_dir2::is_arbitrary( *bufptr_dir2 ) )
-    res.dir2 = arbitrarySecondaryOrientDir( res.dir1, lattice );
-
+  auto res = getOrientationBeforeRot( data, lattice );
   //Apply any rotation to the lab directions:
-  if ( auto bufptr_rot = searchBuf( data, VarId::rot ) ) {
-    const auto rot = vardef_rot::get_val( *bufptr_rot );
+  const auto optrot = get_rot( data );
+  if ( optrot.has_value() ) {
+    const auto& rot = optrot.value();
     const auto sc = stable_sincos( rot.second );
     const PhiRot phirot( sc.cos, sc.sin );
     const Vector axis = rot.first.as<Vector>().unit();
@@ -575,6 +611,12 @@ NC::Optional<NC::OrientDir> NC::Cfg::CfgManip::get_dir2( const CfgData& data )
 {
   auto buf = searchBuf( data, VarId::dir2 );
   return buf ? Optional<OrientDir>( vardef_dir2::get_val( *buf ) ) : NullOpt;
+}
+
+NC::Optional<NC::LCAxisState> NC::Cfg::CfgManip::get_lcaxis( const CfgData& data )
+{
+  auto buf = searchBuf( data, VarId::lcaxis );
+  return buf ? Optional<LCAxisState>( vardef_lcaxis::get_val( *buf ) ) : NullOpt;
 }
 
 NC::Optional<std::pair<NC::LabAxis,double>>

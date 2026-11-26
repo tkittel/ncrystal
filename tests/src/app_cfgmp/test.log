@@ -175,12 +175,12 @@ Testing get_vdoslux() and set_vdoslux():
   Calling again get_vdoslux() with result: 5
 
 Testing get_lcaxis() and set_lcaxis():
-  initial cfg: MatCfg("phases<0.2*Al.ncmat;lcaxis=0,1,0&0.75*water.ncmat&0.05*Be.ncmat;lcaxis=1,0,0>")
+  initial cfg: MatCfg("phases<0.2*Al.ncmat;lcaxis=0,1,0&0.75*water.ncmat&0.05*Be.ncmat;lcaxis=@lab:1,0,0>")
   trying get_lcaxis() with result: BadInputException[Could not determine unique value of parameter "lcaxis" on multiphase MatCfg object (different values found in different phases).]
   Calling set_lcaxis() changing state to: MatCfg("phases<0.2*Al.ncmat&0.75*water.ncmat&0.05*Be.ncmat>;lcaxis=0,1,0")
-  Calling again get_lcaxis() with result: { 0, 1, 0 }
-  Applying str cfg "lcaxis=0,0.5,0.5" changing state to: MatCfg("phases<0.2*Al.ncmat&0.75*water.ncmat&0.05*Be.ncmat>;lcaxis=0,0.5,0.5")
-  Calling again get_lcaxis() with result: { 0, 0.5, 0.5 }
+  Calling again get_lcaxis() with result: 0,1,0
+  Applying str cfg "lcaxis=@crys_hkl:0,0.5,0.5" changing state to: MatCfg("phases<0.2*Al.ncmat&0.75*water.ncmat&0.05*Be.ncmat>;lcaxis=@crys_hkl:0,0.5,0.5")
+  Calling again get_lcaxis() with result: @crys_hkl:0,0.5,0.5
 
 Testing get_dir1() and set_dir1():
   initial cfg: MatCfg("phases<0.2*Al.ncmat;dir1=@crys:1,2,3@lab:4,5,6&0.75*water.ncmat;dir1=@crys:0,0,1@lab:0,0,1&0.05*Be.ncmat;dir1=@crys_hkl:0,1,0@lab:1,0,0>;dir2=@crys:0,1,0@lab:0,1,0;dirtol=120deg;mos=0.123arcsec")

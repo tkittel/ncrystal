@@ -438,8 +438,10 @@ Test loading of :>>>phases<0.1*unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.nc
                                  'normal of an (hkl) plane, with '
                                  '"@crys_hkl:h,k,l", or as the lattice '
                                  'direction [uvw], i.e. along ua+vb+wc, with '
-                                 '"@crys_uvw:u,v,w". When dir1 is set, mos and '
-                                 'dir2 must also be provided.',
+                                 '"@crys_uvw:u,v,w". When dir1 is set, mos '
+                                 'must also be provided. And dir2 must be '
+                                 'provided as well, unless lcaxis is along '
+                                 'dir1.',
                   'name': 'dir1',
                   'type': 'crystal axis orientation'},
                  {'allowed_input_units': None,
@@ -459,8 +461,10 @@ Test loading of :>>>phases<0.1*unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.nc
                                  'The value "arbitrary" can be used when any '
                                  'rotation of the crystal around dir1 will do, '
                                  'in which case an unspecified (but '
-                                 'deterministic) rotation is used. When dir2 '
-                                 'is set, mos and dir1 must also be provided.',
+                                 'deterministic) rotation is used. The dir2 '
+                                 'parameter can be left out when lcaxis is '
+                                 'along dir1. When dir2 is set, mos and dir1 '
+                                 'must also be provided.',
                   'name': 'dir2',
                   'type': 'crystal axis orientation'},
                  {'allowed_input_units': 'rad [default], deg, arcmin, arcsec',
@@ -472,9 +476,8 @@ Test loading of :>>>phases<0.1*unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.nc
                                  'information). A value of 180deg can be used '
                                  'to easily set up a single crystal '
                                  'monochromator where one is only interested '
-                                 'in the primary direction. When this '
-                                 'parameter is set, the parameters mos, dir1, '
-                                 'and dir2 must also be provided.',
+                                 'in the primary direction. When dirtol is '
+                                 'set, dir1 must also be provided.',
                   'name': 'dirtol',
                   'type': 'floating point number',
                   'unit': 'rad'},
@@ -482,26 +485,39 @@ Test loading of :>>>phases<0.1*unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.nc
                   'default_value': None,
                   'default_value_str': None,
                   'description': 'Symmetry axis of anisotropic layered '
-                                 'crystals with a layout similar to pyrolytic '
-                                 'graphite (PG). The axis must be provided in '
-                                 'direct lattice coordinates using a format '
-                                 'like "0,0,1". Specifying this parameter '
-                                 'along with an orientation (see dir1 and dir2 '
-                                 'parameters) will result in the appropriate '
-                                 'anisotropic single crystal scatter model '
-                                 'being used for Bragg diffraction.',
+                                 'crystals like pyrolytic graphite (PG), i.e. '
+                                 'the axis around which the crystallites are '
+                                 'uniformly rotated. The same model describes '
+                                 'fibre textures (see dir1avg) and single '
+                                 'crystals on a spinning sample holder (with '
+                                 'the axis given in the lab frame). Given like '
+                                 '"0,0,1" (or "@crys:0,0,1"), lcaxis is a '
+                                 'Cartesian vector in the crystal frame (cf. '
+                                 'the dir1 parameter). The axis can also be '
+                                 'the normal of an (hkl) plane '
+                                 '("@crys_hkl:0,0,1"), a lattice direction '
+                                 '("@crys_uvw:0,0,1"), a vector in the lab '
+                                 'frame ("@lab:0,1,0"), or the crystal '
+                                 'direction of dir1 ("@dir1"). Specifying '
+                                 'lcaxis along with an orientation (see the '
+                                 'dir1 and dir2 parameters) will result in the '
+                                 'appropriate anisotropic single crystal '
+                                 'scatter model being used for Bragg '
+                                 'diffraction. The dir2 parameter can be left '
+                                 'out if the axis is a direction in the '
+                                 'crystal which is parallel to that of dir1.',
                   'name': 'lcaxis',
-                  'type': 'vector (3D)'},
+                  'type': 'axis'},
                  {'allowed_input_units': None,
                   'default_value': 0,
                   'default_value_str': '0',
                   'description': 'Choose which modelling is used for layered '
-                                 'crystals like PG (ignored unless the lcaxis, '
-                                 'dir1, and dir2 parameters are set). The '
-                                 'default value 0 enables the recommended '
-                                 'model, which is both fast and accurate. A '
-                                 'positive value N triggers a very slow but '
-                                 'simple reference model, in which N '
+                                 'crystals like PG (ignored unless lcaxis and '
+                                 'an orientation are set, see the dir1 '
+                                 'parameter). The default value 0 enables the '
+                                 'recommended model, which is both fast and '
+                                 'accurate. A positive value N triggers a very '
+                                 'slow but simple reference model, in which N '
                                  'crystallite orientations are sampled '
                                  'internally (the model is accurate only when '
                                  'N is very high). A negative value -N '
@@ -515,8 +531,7 @@ Test loading of :>>>phases<0.1*unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.nc
                   'default_value': None,
                   'default_value_str': None,
                   'description': 'Mosaic FWHM spread in mosaic single '
-                                 'crystals. When this parameter is set, the '
-                                 'parameters dir1 and dir2 must also be '
+                                 'crystals. When mos is set, dir1 must also be '
                                  'provided.',
                   'name': 'mos',
                   'type': 'floating point number',
@@ -557,7 +572,19 @@ Test loading of :>>>phases<0.1*unicodedir_test䔀abc{{NATIVEPATHSEP}}Al_sg225.nc
                                  'disables this approximation entirely.',
                   'name': 'sccutoff',
                   'type': 'floating point number',
-                  'unit': 'Aa'}]},
+                  'unit': 'Aa'},
+                 {'description': 'Convenience parameter for crystals averaged '
+                                 'over all rotations around a primary '
+                                 'direction. The dir1avg parameter takes the '
+                                 'same kind of value as dir1 does, and '
+                                 '"dir1avg=X" is equivalent to '
+                                 '"dir1=X;lcaxis=@dir1".',
+                  'name': 'dir1avg',
+                  'type': 'pseudo'},
+                 {'description': 'Alias for dir1avg, since the averaging '
+                                 'exactly describes a fibre texture model.',
+                  'name': 'fibre',
+                  'type': 'pseudo'}]},
  {'group_description': 'Parameters related to absorption processes',
   'parameters': [{'allowed_input_units': None,
                   'default_value': '',

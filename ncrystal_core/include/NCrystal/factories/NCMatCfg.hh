@@ -224,11 +224,11 @@ namespace NCRYSTAL_NAMESPACE {
     void set_vdoslux( int );
     void set_knllux( int );
     void set_atomdb( const std::string& );
-    void set_lcaxis( const LCAxis& );
+    void set_lcaxis( const LCAxisState& );
     void set_rot( const std::pair<LabAxis,double>& );
     void set_dir1( const OrientDir& );
     void set_dir2( const OrientDir& );
-    void setOrientation( const SCOrientation& );//sets dir1+dir2+dirtol
+    void setOrientation( const SCOrientation& );//sets dir1+dir2+dirtol (not rot)
 
     ///////////////////////////////////////////////////////////////////////////////////
     //As explained above, MatCfg objects optionally retain a "density state",
@@ -265,7 +265,6 @@ namespace NCRYSTAL_NAMESPACE {
     double get_mosprec() const;
     double get_sccutoff() const;
     double get_dirtol() const;
-    LCAxis get_lcaxis() const;
     std::string get_infofactory() const;
     std::string get_scatfactory() const;
     std::string get_absnfactory() const;
@@ -285,6 +284,7 @@ namespace NCRYSTAL_NAMESPACE {
     Optional<OrientDir> get_dir1() const;
     Optional<OrientDir> get_dir2() const;
     Optional<std::pair<LabAxis,double>> get_rot() const;//axis, angle [rad]
+    Optional<LCAxisState> get_lcaxis() const;
 
     // Check if single/layered-single crystal (do not call these for multiphase
     // cfgs):

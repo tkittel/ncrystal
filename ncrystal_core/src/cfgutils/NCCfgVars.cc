@@ -141,6 +141,22 @@ namespace NCRYSTAL_NAMESPACE {
           PseudoVar( sv_elas, sv_elas_descr ),
         };
       }
+      if ( gr == VarGroupId::ScatterExtra ) {
+        static constexpr auto sv_dir1avg = StrView::make("dir1avg");
+        static constexpr auto sv_dir1avg_descr
+          = StrView::make("Convenience parameter for crystals averaged over all rotations"
+                          " around a primary direction. The dir1avg parameter takes the same"
+                          " kind of value as dir1 does, and \"dir1avg=X\" is equivalent to"
+                          " \"dir1=X;lcaxis=@dir1\".");
+        static constexpr auto sv_fibre = StrView::make("fibre");
+        static constexpr auto sv_fibre_descr
+          = StrView::make("Alias for dir1avg, since the averaging exactly describes a fibre"
+                          " texture model.");
+        return {
+          PseudoVar( sv_dir1avg, sv_dir1avg_descr ),
+          PseudoVar( sv_fibre, sv_fibre_descr ),
+        };
+      }
       return {};
     }
   }
