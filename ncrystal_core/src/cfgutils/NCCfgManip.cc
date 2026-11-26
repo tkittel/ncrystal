@@ -522,3 +522,15 @@ void NC::Cfg::CfgManip::checkParamConsistency_Absorption( const CfgData& )
   //Currently all Absorption parameters can be set independently without
   //consistency constraints.
 }
+
+NC::Optional<NC::OrientDir> NC::Cfg::CfgManip::get_dir1( const CfgData& data )
+{
+  auto buf = searchBuf( data, VarId::dir1 );
+  return buf ? Optional<OrientDir>( vardef_dir1::get_val( *buf ) ) : NullOpt;
+}
+
+NC::Optional<NC::OrientDir> NC::Cfg::CfgManip::get_dir2( const CfgData& data )
+{
+  auto buf = searchBuf( data, VarId::dir2 );
+  return buf ? Optional<OrientDir>( vardef_dir2::get_val( *buf ) ) : NullOpt;
+}

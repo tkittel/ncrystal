@@ -26,13 +26,19 @@
 namespace NC = NCrystal;
 
 NC::RotMatrix NC::getCrystal2LabRot( const NC::SCOrientation& sco,
-                                     const NC::RotMatrix& reci_lattice )
+                                     const NC::LatticeRots& lattice )
 {
   auto data = sco.getData();
   return verifyLatticeOrientDefAndConstructCrystalRotation( data.dir1,
                                                             data.dir2,
                                                             data.dirtol,
-                                                            reci_lattice );
+                                                            lattice );
+}
+
+NC::LatticeRots NC::getLatticeRots( const NC::StructureInfo& si )
+{
+  return getLatticeRots( si.lattice_a, si.lattice_b, si.lattice_c,
+                         si.alpha*kDeg, si.beta*kDeg, si.gamma*kDeg );
 }
 
 NC::RotMatrix NC::getReciprocalLatticeRot( const NC::StructureInfo& si )

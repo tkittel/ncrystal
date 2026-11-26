@@ -81,6 +81,45 @@ namespace NCRYSTAL_NAMESPACE {
 
     void standardInputStrSanityCheck( const char * parname, StrView strrep );
 
+    //Throws BadInput about a syntax error in the value of a parameter:
+    [[noreturn]] void throwSyntaxError( const char * parname, StrView value );
+
+    //Vectors in cfg values. The components and the squared length must be
+    //finite and the vector non-null (BadInput exception otherwise).
+    //Components are returned with
+    //sanitiseDblValue applied:
+    Vector checkVector( const Vector&, const char * parname );
+    //Parses "x,y,z" (spaces allowed), returning NullOpt in case of syntax
+    //errors. The checked vector is returned along with its normalised text,
+    //where each component is normalised with shorterNumStr:
+    Optional<std::pair<Vector,std::string>> parseVector( StrView,
+                                                         const char * parname );
+    //Normalised text of a vector given only by its value:
+    std::string vectorStr( const Vector& );
+
+    //Bases of crystal directions, as named in cfg-strings ("crys", "crys_hkl"
+    //and "crys_uvw") and in JSON ("cartesian", "hkl" and "uvw"):
+    const char * crysBasisName( OrientDir::CrysDir::Basis );
+    const char * crysBasisJSONName( OrientDir::CrysDir::Basis );
+    Optional<OrientDir::CrysDir::Basis> crysBasisFromName( StrView );
+
+    //Storage of structured values as N doubles, a tag (char), and the
+    //normalised text (null-terminated). Comparisons are by tag (in
+    //descending order), then by the doubles, then by the text:
+    template<std::size_t N>
+    struct DblsTagText {
+      std::array<double,N> vals;
+      unsigned char tag;
+      StrView text;//refers to the VarBuf
+    };
+    template<std::size_t N>
+    VarBuf encodeDblsTagText( VarId, const std::array<double,N>&,
+                              unsigned char tag, StrView text );
+    template<std::size_t N>
+    DblsTagText<N> decodeDblsTagText( const VarBuf& );
+    template<std::size_t N>
+    int cmpDblsTagText( const VarBuf&, const VarBuf& );
+
     template <class Derived, class TValueType>
     class ValBase {
     public:
@@ -346,157 +385,100 @@ namespace NCRYSTAL_NAMESPACE {
     template <class Derived>
     class ValOrientDir : public ValBase<Derived,OrientDir> {
     public:
-      //Store OrientDir by converting to 2*3=6 doubles and a bool (1
-      //char). Presumably this will always be too large for the local buffer,
-      //but usage is rare.
-      static_assert(alignof(VarBuf)%alignof(OrientDir)==0,"");
+      //Stored as the crystal and lab directions (6 doubles), the basis of the
+      //crystal direction (tag) and the normalised text.
       using Base = ValOrientDir;
       static constexpr auto value_type_descr = "crystal axis orientation";
-
-      struct DecodedBuffer{ std::array<double,6> vals; bool crystal_is_hkl; };
-      static DecodedBuffer detail_bufdecode( const VarBuf& buf )
-      {
-        const char* bufdata = buf.data();
-        DecodedBuffer res;
-        std::memcpy( res.vals.data(), bufdata, 6*sizeof(double) );
-        res.crystal_is_hkl = ( *std::next(bufdata,6*sizeof(double)) == 1 );
-        return res;
-      }
+      using Basis = OrientDir::CrysDir::Basis;
 
       static OrientDir get_val( const VarBuf& buf )
       {
-        auto db = detail_bufdecode(buf);
-        Vector vcrys( db.vals[0], db.vals[1], db.vals[2] );
-        LabAxis vlab( db.vals[3], db.vals[4], db.vals[5] );
-        if ( db.crystal_is_hkl )
-          return { vcrys.as<HKLPoint>(), vlab };
-        else
-          return { vcrys.as<CrystalAxis>(), vlab };
+        const auto d = decodeDblsTagText<6>( buf );
+        OrientDir od;
+        od.crystal.basis = static_cast<Basis>( d.tag );
+        od.crystal.v = { d.vals[0], d.vals[1], d.vals[2] };
+        od.lab = { d.vals[3], d.vals[4], d.vals[5] };
+        return od;
       }
 
       static int cmp( const VarBuf& a, const VarBuf& b )
       {
-        auto db_A = detail_bufdecode(a);
-        auto db_B = detail_bufdecode(b);
-        if ( db_A.crystal_is_hkl != db_B.crystal_is_hkl )
-          return db_A.crystal_is_hkl ? -1 : 1;
-        for ( auto i : ncrange(6) ) {
-          if ( db_A.vals[i] != db_B.vals[i] )
-            return db_A.vals[i] < db_B.vals[i] ? -1 : 1;
-        }
-        return 0;
+        return cmpDblsTagText<6>( a, b );
       }
 
-      static VarBuf set_val( VarId varid, const OrientDir& value ) {
-        //nc_assert_always(!value.crystal.empty());//fails if moved-from
-        alignas(double) char tmp[6*sizeof(double)+1];
-        Vector vcrys;
-        if ( value.crystal.has_value<HKLPoint>() ) {
-          tmp[6*sizeof(double)] = 1;
-          vcrys = value.crystal.get<HKLPoint>().as<Vector>();
-        } else if ( value.crystal.has_value<CrystalAxis>() ) {
-          tmp[6*sizeof(double)] = 0;
-          vcrys = value.crystal.get<CrystalAxis>().as<Vector>();
-        } else {
-          NCRYSTAL_THROW2(BadInput,"Moved-from crystal direction object"
-                          " provided for parameter \""<<Derived::name<<"\"");
-        }
-        if ( std::min<double>( value.lab.as<Vector>().mag2(), vcrys.mag2() ) < 1e-100 )
-          NCRYSTAL_THROW2(BadInput,"Null vector provided for parameter \""<<Derived::name<<"\"");
-        double tmp_vals[6];
-        tmp_vals[0] = sanitiseDblValue( vcrys[0], Derived::name );
-        tmp_vals[1] = sanitiseDblValue( vcrys[1], Derived::name );
-        tmp_vals[2] = sanitiseDblValue( vcrys[2], Derived::name );
-        tmp_vals[3] = sanitiseDblValue( value.lab[0], Derived::name );
-        tmp_vals[4] = sanitiseDblValue( value.lab[1], Derived::name );
-        tmp_vals[5] = sanitiseDblValue( value.lab[2], Derived::name );
-        std::memcpy( &tmp[0], tmp_vals, sizeof(tmp_vals) );
-        return VarBuf( &tmp[0], sizeof(tmp), varid );
+      static VarBuf set_val( VarId varid, const OrientDir& od )
+      {
+        const auto& v = od.crystal.v;
+        const auto c = checkVector( Vector( v[0], v[1], v[2] ), Derived::name );
+        const auto l = checkVector( od.lab.as<Vector>(), Derived::name );
+        return detail_encode( varid, od.crystal.basis, c, l,
+                              vectorStr( c ), vectorStr( l ) );
       }
 
       static void stream_val( std::ostream& os, const VarBuf& buf )
       {
-        auto db = detail_bufdecode(buf);
-        os << ( db.crystal_is_hkl?"@crys_hkl:":"@crys:")
-           << fmt(db.vals[0]) << "," << fmt(db.vals[1]) << ","
-           << fmt(db.vals[2]) << "@lab:" << fmt(db.vals[3]) << ","
-           << fmt(db.vals[4]) << "," << fmt(db.vals[5]);
+        os << decodeDblsTagText<6>( buf ).text;
       }
 
       static void asJSONObject( std::ostream& os, const VarBuf& buf )
       {
-        auto db = detail_bufdecode(buf);
-        os << "{\"crystal_is_hkl\":";
-        os << (db.crystal_is_hkl?"true":"false");
-        os<<",\"crystal\":[";
-        streamJSON(os,db.vals[0]);
-        os << ",";
-        streamJSON(os,db.vals[1]);
-        os << ",";
-        streamJSON(os,db.vals[2]);
-        os << "], \"lab\":[";
-        streamJSON(os,db.vals[3]);
-        os << ",";
-        streamJSON(os,db.vals[4]);
-        os << ",";
-        streamJSON(os,db.vals[5]);
-        os << "]}";
+        const auto od = get_val( buf );
+        os << "{\"basis\":";
+        streamJSON( os, crysBasisJSONName( od.crystal.basis ) );
+        os << ",\"crystal\":";
+        streamJSON( os, od.crystal.v );
+        os << ",\"lab\":";
+        streamJSON( os, od.lab );
+        os << '}';
       }
 
-      static VarBuf from_str( VarId varid, StrView sv_in ) {
-        standardInputStrSanityCheck(Derived::name,sv_in);
-        //"@crys:c1,c2,c3@lab:l1,l2,l3" or "@crys_hkl:c1,c2,c3@lab:l1,l2,l3",
-        //and spaces allowed around all delimeters or at string ends.
-
-        //Split into parts:
-        const char delims[] = "@:,,@:,,";
-        constexpr unsigned ndelims = sizeof(delims)-1;
-        static_assert(ndelims==8,"");
-        StrView parts[ndelims+1];
-        StrView sv = sv_in;
-        auto throw_error = [&sv_in]() {
-          NCRYSTAL_THROW2(BadInput,"Syntax error - invalid value \""
-                          <<sv_in<<"\" provided for parameter \""<<Derived::name<<"\"");
-        };
-        for ( auto ipart : ncrange(ndelims) ) {
-          auto i = sv.find(delims[ipart]);
-          if ( i == StrView::npos )
-            throw_error();
-          parts[ipart] = sv.substr(0,i).trimmed();
-          sv = sv.substr(i+1);
-        }
-        parts[ndelims] = sv.trimmed();
-
-        //Parse parts:
-        if (!parts[0].empty())
-          throw_error();//part before the initial '@'.
-        if ( parts[5] != StrView::make("lab") )
+      static VarBuf from_str( VarId varid, StrView sv_in )
+      {
+        //"@crys:c1,c2,c3@lab:l1,l2,l3", with "@crys_hkl:" or "@crys_uvw:" as
+        //alternatives to "@crys:", and spaces allowed around all delimiters
+        //or at string ends.
+        standardInputStrSanityCheck( Derived::name, sv_in );
+        auto throw_error = [&sv_in]() { throwSyntaxError( Derived::name, sv_in ); };
+        const StrView sv = sv_in.trimmed();
+        const auto i0 = ( sv.startswith('@')
+                          ? sv.substr(1).find('@') : StrView::npos );
+        if ( i0 == StrView::npos )
           throw_error();
-
-        if ( ! ( parts[1]==StrView::make("crys")
-                 || parts[1] == StrView::make("crys_hkl")) )
-          throw_error();
-
-        const bool is_crystal_hkl = (parts[1]==StrView::make("crys_hkl"));
-
-        LabAxis lab{no_init};
-        Vector crystal{no_init};
-        auto trySetVal = [&throw_error](double& val, const StrView& sv_val) {
-          auto opt_val = sv_val.toDbl();
-          if ( !opt_val.has_value() )
+        const auto i = i0 + 1;
+        auto splitName = [&throw_error]( StrView part,
+                                         StrView& name ) -> StrView
+        {
+          const auto j = part.find(':');
+          if ( j == StrView::npos )
             throw_error();
-          val = opt_val.value();
+          name = part.substr(0,j).trimmed();
+          return part.substr(j+1);
         };
-        trySetVal(crystal[0],parts[2]);
-        trySetVal(crystal[1],parts[3]);
-        trySetVal(crystal[2],parts[4]);
-        trySetVal(lab[0],parts[6]);
-        trySetVal(lab[1],parts[7]);
-        trySetVal(lab[2],parts[8]);
-        if ( is_crystal_hkl )
-          return set_val( varid, OrientDir{ crystal.as<HKLPoint>(), lab } );
-        else
-          return set_val( varid, OrientDir{ crystal.as<CrystalAxis>(), lab } );
+        StrView cname, lname;
+        const auto c = parseVector( splitName( sv.substr(1,i-1), cname ),
+                                    Derived::name );
+        const auto l = parseVector( splitName( sv.substr(i+1), lname ),
+                                    Derived::name );
+        const auto basis = crysBasisFromName( cname );
+        if ( !c.has_value() || !l.has_value() || !basis.has_value()
+             || lname != StrView::make("lab") )
+          throw_error();
+        return detail_encode( varid, basis.value(), c.value().first,
+                              l.value().first, c.value().second,
+                              l.value().second );
+      }
+
+    private:
+      static VarBuf detail_encode( VarId varid, Basis basis, const Vector& c,
+                                   const Vector& l, const std::string& ctext,
+                                   const std::string& ltext )
+      {
+        std::string text = std::string("@") + crysBasisName( basis ) + ':'
+          + ctext + "@lab:" + ltext;
+        return encodeDblsTagText<6>( varid,
+                                     { c[0], c[1], c[2], l[0], l[1], l[2] },
+                                     static_cast<unsigned char>( basis ),
+                                     text );
       }
     };
 
@@ -801,6 +783,53 @@ namespace NCRYSTAL_NAMESPACE {
     inline constexpr unsigned constexpr_name2Idx( const T& list, const char * name )
     {
       return detail::constexpr_name2Idx_helper<T>(list,name,0);
+    }
+
+  }
+}
+
+
+////////////////////////////
+// Inline implementations //
+////////////////////////////
+
+namespace NCRYSTAL_NAMESPACE {
+  namespace Cfg {
+
+    template<std::size_t N>
+    inline VarBuf encodeDblsTagText( VarId varid,
+                                     const std::array<double,N>& vals,
+                                     unsigned char tag, StrView text )
+    {
+      std::string buf( N*sizeof(double) + 1 + text.size() + 1, '\0' );
+      std::memcpy( &buf[0], vals.data(), N*sizeof(double) );
+      buf[N*sizeof(double)] = static_cast<char>( tag );
+      std::memcpy( &buf[N*sizeof(double)+1], text.data_begin(), text.size() );
+      return VarBuf( buf.data(), buf.size(), varid );
+    }
+
+    template<std::size_t N>
+    inline DblsTagText<N> decodeDblsTagText( const VarBuf& buf )
+    {
+      const char * data = buf.data();
+      DblsTagText<N> res;
+      std::memcpy( res.vals.data(), data, N*sizeof(double) );
+      res.tag = static_cast<unsigned char>( data[N*sizeof(double)] );
+      res.text = StrView( data + N*sizeof(double) + 1 );
+      return res;
+    }
+
+    template<std::size_t N>
+    inline int cmpDblsTagText( const VarBuf& a, const VarBuf& b )
+    {
+      const auto da = decodeDblsTagText<N>( a );
+      const auto db = decodeDblsTagText<N>( b );
+      if ( da.tag != db.tag )
+        return da.tag > db.tag ? -1 : 1;
+      for ( auto i : ncrange(N) )
+        if ( da.vals[i] != db.vals[i] )
+          return da.vals[i] < db.vals[i] ? -1 : 1;
+      return da.text == db.text ? 0 : ( da.text < db.text ? -1 : 1 );
     }
 
   }

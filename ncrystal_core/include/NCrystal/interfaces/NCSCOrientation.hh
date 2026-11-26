@@ -39,31 +39,14 @@ namespace NCRYSTAL_NAMESPACE {
     //with calls to both setPrimaryDirection and setSecondaryDirection:
     SCOrientation() = default;
 
-    //Provide vectors in the crystal frame and specify their desired direction
-    //in the laboratory frame. This is well-formed as long as the opening angle
-    //between primary and secondary vectors is similar in the two frames within
-    //the stated tolerance in radians, because only the component of each
-    //secondary direction ortogonal to the corresponding primary direction will
-    //be used. The vectors do not need to be normalised:
-    void setPrimaryDirection( const CrystalAxis&, const LabAxis& );
-    void setSecondaryDirection( const CrystalAxis&, const LabAxis&,
-                                double tolerance = default_tolerance );
-
-    //Often, however, it is more convenient and useful to specify the directions
-    //in the crystal frame by simply indicating a point in hkl space, and
-    //letting the corresponding direction be the normal of the hkl-plane in
-    //question, defined as:
-    //
-    // a_reci*h + b_reci*k + c_reci*l
-    //
-    //with (a_reci, b_reci, c_reci) being the reciprocal lattice indices. To
-    //define directions in this fashion, use the following methods:
-    void setPrimaryDirection( const HKLPoint&, const LabAxis& );
-    void setSecondaryDirection( const HKLPoint&, const LabAxis&,
-                                double tolerance = default_tolerance );
-
-    //Alternatively, set with OrientDir objects which already encodes the
-    //CrystalAxis vs. HKLPoint concept:
+    //Specify directions in the crystal frame (as Cartesian vectors, normals of
+    //(hkl) planes, or lattice directions [uvw], cf. OrientDir) and their
+    //desired directions in the laboratory frame. This is well-formed as long
+    //as the opening angle between primary and secondary directions is similar
+    //in the two frames within the stated tolerance in radians, because only
+    //the component of each secondary direction orthogonal to the
+    //corresponding primary direction will be used. The vectors do not need to
+    //be normalised:
     void setPrimaryDirection( const OrientDir& );
     void setSecondaryDirection( const OrientDir&, double tolerance = default_tolerance );
 
@@ -101,26 +84,6 @@ namespace NCRYSTAL_NAMESPACE {
   {
     sco.stream(os);
     return os;
-  }
-
-  inline void SCOrientation::setPrimaryDirection( const CrystalAxis& c, const LabAxis& l )
-  {
-    setPrimaryDirection( OrientDir{c,l} );
-  }
-
-  inline void SCOrientation::setSecondaryDirection( const CrystalAxis& c, const LabAxis& l, double t )
-  {
-    setSecondaryDirection( OrientDir{c,l}, t );
-  }
-
-  inline void SCOrientation::setPrimaryDirection( const HKLPoint& c, const LabAxis& l )
-  {
-    setPrimaryDirection( OrientDir{c,l} );
-  }
-
-  inline void SCOrientation::setSecondaryDirection( const HKLPoint& c, const LabAxis& l, double t )
-  {
-    setSecondaryDirection( OrientDir{c,l}, t );
   }
 
   inline bool SCOrientation::isComplete() const

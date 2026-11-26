@@ -225,10 +225,6 @@ namespace NCRYSTAL_NAMESPACE {
     void set_knllux( int );
     void set_atomdb( const std::string& );
     void set_lcaxis( const LCAxis& );
-    void set_dir1( const HKLPoint&, const LabAxis& );
-    void set_dir1( const CrystalAxis&, const LabAxis& );
-    void set_dir2( const HKLPoint&, const LabAxis& );
-    void set_dir2( const CrystalAxis&, const LabAxis& );
     void set_dir1( const OrientDir& );
     void set_dir2( const OrientDir& );
     void setOrientation( const SCOrientation& );//sets dir1+dir2+dirtol
@@ -281,8 +277,10 @@ namespace NCRYSTAL_NAMESPACE {
     bool get_incoh_elas() const;
     bool get_sans() const;
     std::string get_inelas() const;
-    OrientDir get_dir1() const;
-    OrientDir get_dir2() const;
+
+    // Orientation of single crystals, with NullOpt if not set:
+    Optional<OrientDir> get_dir1() const;
+    Optional<OrientDir> get_dir2() const;
 
     // Check if single/layered-single crystal, or access dir1+dir2+dirtol as
     // SCOrientation (do not call any of these for multiphase cfgs):

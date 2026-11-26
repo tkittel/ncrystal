@@ -28,10 +28,11 @@ namespace NC = NCrystal;
 int main(int , char**)
 {
   NC::SCOrientation orient;
-  const NC::CrystalAxis ux = {1.,0.,0.};
-  const NC::CrystalAxis uy = {0.,1.,0.};
-  orient.setPrimaryDirection( ux, ux.as<NC::LabAxis>() );
-  orient.setSecondaryDirection( uy,uy.as<NC::LabAxis>() );
+  using Basis = NC::OrientDir::CrysDir::Basis;
+  orient.setPrimaryDirection( { { Basis::Cartesian, { 1, 0, 0 } },
+                                { 1, 0, 0 } } );
+  orient.setSecondaryDirection( { { Basis::Cartesian, { 0, 1, 0 } },
+                                  { 0, 1, 0 } }, 1e-6 );
   const NC::MosaicityFWHM mosaicity{ 1 * NCrystal::kDeg };
 
   //focusing on the  0   2  -2 family

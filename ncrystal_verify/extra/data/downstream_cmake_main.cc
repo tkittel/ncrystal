@@ -124,8 +124,9 @@ int main()
   //Now validate single crystal slightly:
   NC::MatCfg cfg("stdlib::Ge_sg227.ncmat;dcutoff=0.5");
   cfg.set_mos( NC::MosaicityFWHM{ 40.0*NC::kArcSec });
-  cfg.set_dir1( NC::HKLPoint{5,1,1}, NC::LabAxis{0,0,1} );
-  cfg.set_dir2( NC::HKLPoint{0,-1,1}, NC::LabAxis{0,1,0} );
+  using Basis = NC::OrientDir::CrysDir::Basis;
+  cfg.set_dir1( { { Basis::HKL, { 5, 1, 1 } }, { 0, 0, 1 } } );
+  cfg.set_dir2( { { Basis::HKL, { 0, -1, 1 } }, { 0, 1, 0 } } );
   auto sc =  NC::createScatter( cfg );
   auto wlsc = NC::NeutronWavelength{1.540};
   {

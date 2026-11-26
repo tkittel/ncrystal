@@ -244,9 +244,8 @@ void test()
   cfg = NC::MatCfg( "Al_fake.ncmat" );
   try { cfg.get_mos(); }
   catch (NC::Error::MissingInfo&e) { std::cout<<"NCrystal::"<<e.getTypeName()<< ": "<<e.what() << std::endl; }
-  try {
-    cfg.get_dir1();
-  } catch (NC::Error::MissingInfo&e) { std::cout<<"NCrystal::"<<e.getTypeName()<< ": "<<e.what() << std::endl; }
+  REQUIRE( !cfg.get_dir1().has_value() );
+  REQUIRE( !cfg.get_dir2().has_value() );
   cfg.applyStrCfg("mos=0.5");
   REQUIRE(cfg.get_mos()==NC::MosaicityFWHM{0.5});
   test_strrep_and_dump(cfg);
@@ -254,12 +253,20 @@ void test()
   cfg = NC::MatCfg( "Al_fake.ncmat" );
   test_strrep_and_dump(cfg);
   cfg.set_mos(NC::MosaicityFWHM{0.001});
-  NC::HKLPoint c1 = {5,1,1};
-  NC::LabAxis l1 = {1,0,0};
-  cfg.set_dir1( c1,l1 );
-  NC::CrystalAxis c2 = {0,0,1/3.};
-  NC::LabAxis l2 = {0,1,1};
-  cfg.set_dir2( c2, l2 );
+  using Basis = NC::OrientDir::CrysDir::Basis;
+  const NC::OrientDir d1{ { Basis::HKL, { 5, 1, 1 } }, { 1, 0, 0 } };
+  cfg.set_dir1( d1 );
+  cfg.set_dir2( { { Basis::Cartesian, { 0, 0, 1/3. } }, { 0, 1, 1 } } );
+  test_strrep_and_dump(cfg);
+  const NC::OrientDir d2{ { Basis::UVW, { 0.5, -2, 3 } }, { 0, 1, 1 } };
+  cfg.set_dir2( d2 );
+  REQUIRE( cfg.get_dir2().value() == d2 );
+  REQUIRE( cfg.get_dir1().value() == d1 );
+  test_strrep_and_dump(cfg);
+  //Numbers are stored with the shorter of the original and generated text:
+  cfg.applyStrCfg("dir1=@crys_hkl:0.50,0,1.0@lab:1.0e0,0,1;"
+                  "dir2=@crys_uvw:0.1234567890123456789,1,0@lab:0,1,0");
+  test_strrep_and_dump(cfg);
   test_strrep_and_dump(cfg);
 
   // std::cout<<"A:"<<NC::MatCfg( "Al_sg225.ncmat;atomdb= @ @ X :  :::: is Al  @  @@ @ Al is 0.99 Al 0.0100000000000000000000000000000000001  ::Cr"

@@ -168,10 +168,10 @@ namespace NCRYSTAL_NAMESPACE {
       static MosaicityFWHM get_mos(const CfgData& data) { return MosaicityFWHM{ getValue<vardef_mos>(data) }; }
       static void set_mos( CfgData& data, MosaicityFWHM val ) { setValue<vardef_mos>(data,val.dbl()); }
 
-      static OrientDir get_dir1(const CfgData& data) { return getValue<vardef_dir1>(data); }
+      static Optional<OrientDir> get_dir1(const CfgData&);//NullOpt if not set
       static void set_dir1( CfgData& data, const OrientDir& val ) { setValue<vardef_dir1>(data,val); }
 
-      static OrientDir get_dir2(const CfgData& data) { return getValue<vardef_dir2>(data); }
+      static Optional<OrientDir> get_dir2(const CfgData&);//NullOpt if not set
       static void set_dir2( CfgData& data, const OrientDir& val ) { setValue<vardef_dir2>(data,val); }
 
       static double get_mosprec(const CfgData& data) { return getValue<vardef_mosprec>(data); }

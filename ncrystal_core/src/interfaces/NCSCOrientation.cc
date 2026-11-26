@@ -51,33 +51,17 @@ void NC::SCOrientation::setSecondaryDirection( const OrientDir& odir, double dir
 
 void NC::SCOrientation::stream( std::ostream &os ) const
 {
-  auto fmtodir = [&os]( const OrientDir& odir )
-  {
-    auto& c  = odir.crystal;
-    auto& l  = odir.lab;
-    std::ostringstream ss;
-    if ( c.has_value<CrystalAxis>() ) {
-      auto& v = c.get<CrystalAxis>();
-      os << "@crys:" << fmt(v[0]) << ',' << fmt(v[1]) << ',' << fmt(v[2]);
-    } else if ( c.has_value<HKLPoint>() ) {
-      auto& v = c.get<HKLPoint>();
-      os << "@crys_hkl:" << fmt(v[0]) << ',' << fmt(v[1]) << ',' << fmt(v[2]);
-    } else {
-      os << "@crys:UNSET";
-    }
-    os << "@lab:" << fmt(l[0]) << ',' << fmt(l[1]) << ',' << fmt(l[2]);
-  };
   const char * unsetfmt = "@crys:UNSET@lab:UNSET";
   os << "SCOrientation(dir1=";
   if ( m_dir1data.has_value() )
-    fmtodir( m_dir1data.value() );
+    os << m_dir1data.value();
   else
     os << unsetfmt;
   os << ";dir2=";
   if ( m_dir2data.has_value() )
-    fmtodir( m_dir2data.value().first );
+    os << m_dir2data.value().first
+       << ";dirtol=" << fmt(m_dir2data.value().second);
   else
     os << unsetfmt;
-  if ( m_dir2data.has_value() )
-    os << ";dirtol=" << fmt(m_dir2data.value().second) << ")";
+  os << ")";
 }

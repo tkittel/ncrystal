@@ -154,8 +154,29 @@ bool NCF::ScatterRequest::get_sans() const { return CfgManip::get_sans(rawCfgDat
 std::string NCF::ScatterRequest::get_inelas() const { return CfgManip::get_inelas(rawCfgData()).to_string(); }
 std::string NCF::ScatterRequest::get_scatfactory() const { return CfgManip::get_scatfactory(rawCfgData()).to_string(); }
 NC::MosaicityFWHM NCF::ScatterRequest::get_mos() const { return CfgManip::get_mos(rawCfgData()); }
-NC::OrientDir NCF::ScatterRequest::get_dir1() const { return CfgManip::get_dir1(rawCfgData()); }
-NC::OrientDir NCF::ScatterRequest::get_dir2() const { return CfgManip::get_dir2(rawCfgData()); }
+namespace NCRYSTAL_NAMESPACE {
+  namespace FactImpl {
+    namespace {
+      OrientDir requireDir( const Optional<OrientDir>& od, const char * name )
+      {
+        if ( !od.has_value() )
+          NCRYSTAL_THROW2(MissingInfo,"Parameter "<<name<<" is not set");
+        return od.value();
+      }
+    }
+  }
+}
+
+NC::OrientDir NCF::ScatterRequest::get_dir1() const
+{
+  return requireDir( CfgManip::get_dir1(rawCfgData()), "dir1" );
+}
+
+NC::OrientDir NCF::ScatterRequest::get_dir2() const
+{
+  return requireDir( CfgManip::get_dir2(rawCfgData()), "dir2" );
+}
+
 double NCF::ScatterRequest::get_mosprec() const { return CfgManip::get_mosprec(rawCfgData()); }
 double NCF::ScatterRequest::get_sccutoff() const { return CfgManip::get_sccutoff(rawCfgData()); }
 double NCF::ScatterRequest::get_dirtol() const { return CfgManip::get_dirtol(rawCfgData()); }

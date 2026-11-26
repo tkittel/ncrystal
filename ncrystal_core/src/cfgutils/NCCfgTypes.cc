@@ -176,6 +176,90 @@ NC::Cfg::units_angle::parse(StrView sv)
   return std::make_pair(p.value,p.origStrRep);
 }
 
+NC::Vector NC::Cfg::checkVector( const Vector& v, const char * parname )
+{
+  Vector res( no_init );
+  for ( auto i : ncrange(3) ) {
+    res[i] = sanitiseDblValue( v[i], parname );
+    if ( !std::isfinite( res[i] ) )
+      NCRYSTAL_THROW2(BadInput,"Infinite value provided for parameter \""
+                      <<parname<<"\"");
+  }
+  const double m2 = res.mag2();
+  if ( !( m2 > 0.0 ) )
+    NCRYSTAL_THROW2(BadInput,"Null vector provided for parameter \""
+                    <<parname<<"\"");
+  if ( !std::isfinite( m2 ) )
+    NCRYSTAL_THROW2(BadInput,"Too large vector provided for parameter \""
+                    <<parname<<"\"");
+  return res;
+}
+
+void NC::Cfg::throwSyntaxError( const char * parname, StrView value )
+{
+  NCRYSTAL_THROW2(BadInput,"Syntax error - invalid value \""<<value
+                  <<"\" provided for parameter \""<<parname<<"\"");
+}
+
+NC::Optional<std::pair<NC::Vector,std::string>>
+NC::Cfg::parseVector( StrView sv, const char * parname )
+{
+  const auto parts = sv.splitTrimmed(',');
+  if ( parts.size() != 3 )
+    return NullOpt;
+  Vector v( no_init );
+  for ( auto i : ncrange(3) ) {
+    const auto x = parts.at(i).toDbl();
+    if ( !x.has_value() )
+      return NullOpt;
+    v[i] = x.value();
+  }
+  v = checkVector( v, parname );
+  std::string text;
+  for ( auto i : ncrange(3) ) {
+    if ( i )
+      text += ',';
+    const auto generated = dbl2shortstr( v[i] );
+    text += shorterNumStr( parts.at(i), generated ).to_string();
+  }
+  return std::make_pair( v, std::move(text) );
+}
+
+std::string NC::Cfg::vectorStr( const Vector& v )
+{
+  std::string text;
+  for ( auto i : ncrange(3) ) {
+    if ( i )
+      text += ',';
+    text += dbl2shortstr( v[i] ).to_view().to_string();
+  }
+  return text;
+}
+
+const char * NC::Cfg::crysBasisName( OrientDir::CrysDir::Basis b )
+{
+  using Basis = OrientDir::CrysDir::Basis;
+  return ( b == Basis::Cartesian ? "crys"
+           : ( b == Basis::HKL ? "crys_hkl" : "crys_uvw" ) );
+}
+
+const char * NC::Cfg::crysBasisJSONName( OrientDir::CrysDir::Basis b )
+{
+  using Basis = OrientDir::CrysDir::Basis;
+  return ( b == Basis::Cartesian ? "cartesian"
+           : ( b == Basis::HKL ? "hkl" : "uvw" ) );
+}
+
+NC::Optional<NC::OrientDir::CrysDir::Basis>
+NC::Cfg::crysBasisFromName( StrView name )
+{
+  using Basis = OrientDir::CrysDir::Basis;
+  for ( auto b : { Basis::Cartesian, Basis::HKL, Basis::UVW } )
+    if ( name == StrView( crysBasisName( b ) ) )
+      return b;
+  return NullOpt;
+}
+
 void NC::Cfg::standardInputStrSanityCheck( const char * parname, StrView strrep )
 {
   if ( !strrep.has_value() )

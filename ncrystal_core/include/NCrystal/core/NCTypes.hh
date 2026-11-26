@@ -406,13 +406,6 @@ namespace NCRYSTAL_NAMESPACE {
     using StronglyTypedFixedVector::StronglyTypedFixedVector;
   };
 
-  class NCRYSTAL_API CrystalAxis final : public StronglyTypedFixedVector<CrystalAxis,double,3> {
-    //Axis or direction in crystal-space (i.e. in the coordinate system of the
-    //unit cell of a single crystal).
-  public:
-    using StronglyTypedFixedVector::StronglyTypedFixedVector;
-  };
-
   struct NCRYSTAL_API HKL {
     //Small structure containing hkl point. Comparisons use an inverse
     //lexicographic sort, to ensure the first point in a sorted list always have
@@ -426,22 +419,28 @@ namespace NCRYSTAL_NAMESPACE {
     constexpr HKL flipped() const noexcept { return HKL{-h,-k,-l}; }
   };
 
-  class NCRYSTAL_API HKLPoint final : public StronglyTypedFixedVector<HKLPoint,double,3> {
-    //Point in (h,k,l)-space (unlike the HKL structure this is a floating pointer vector).
-  public:
-    using StronglyTypedFixedVector::StronglyTypedFixedVector;
-  };
-
   struct NCRYSTAL_API OrientDir {
-    //Orientation of crystal axis, combining a laboratory direction with either
-    //a direction in the unit cell coordinate system or a HKL point (indicating
-    //the plane-normal of that HKL plane).
-    using CrysDir = Variant<CrystalAxis,HKLPoint,VariantAllowEmpty::No>;
-    using LabDir = LabAxis;
+    //Orientation of crystal axis, combining a laboratory direction with a
+    //direction in the crystal. The latter is either Cartesian (with x along
+    //the lattice vector a, z along c*=cross(a,b), and y along cross(c*,a)),
+    //the normal of an (hkl) plane, or a lattice direction [uvw]:
+    struct CrysDir {
+      enum class Basis { Cartesian, HKL, UVW };
+      Basis basis = Basis::Cartesian;
+      ThreeVector v = { 0.0, 0.0, 0.0 };
+    };
     CrysDir crystal;
-    LabDir lab;
-    bool operator==(const OrientDir&o) const noexcept { return crystal == o.crystal && lab == o.lab; }
+    LabAxis lab;
   };
+  inline bool operator==( const OrientDir::CrysDir& a,
+                          const OrientDir::CrysDir& b ) noexcept
+  {
+    return a.basis == b.basis && a.v == b.v;
+  }
+  inline bool operator==( const OrientDir& a, const OrientDir& b ) noexcept
+  {
+    return a.crystal == b.crystal && a.lab == b.lab;
+  }
   NCRYSTAL_API std::ostream& operator<<( std::ostream&, const OrientDir& );
 
   class NCRYSTAL_API LCAxis final : public StronglyTypedFixedVector<LCAxis,double,3> {

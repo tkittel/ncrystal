@@ -490,32 +490,12 @@ void NC::MatCfg::set_dir2( const OrientDir& od )
   m_impl.modify()->setVar( od, &CfgManip::set_dir2 );
 }
 
-void NC::MatCfg::set_dir1( const HKLPoint& c, const LabAxis& l )
-{
-  m_impl.modify()->setVar( OrientDir{ c, l }, &CfgManip::set_dir1 );
-}
-
-void NC::MatCfg::set_dir1( const CrystalAxis& c, const LabAxis& l )
-{
-  m_impl.modify()->setVar( OrientDir{ c, l }, &CfgManip::set_dir1 );
-}
-
-void NC::MatCfg::set_dir2( const HKLPoint& c, const LabAxis& l )
-{
-  m_impl.modify()->setVar( OrientDir{c, l}, &CfgManip::set_dir2 );
-}
-
-void NC::MatCfg::set_dir2( const CrystalAxis& c, const LabAxis& l )
-{
-  m_impl.modify()->setVar( OrientDir{c, l}, &CfgManip::set_dir2 );
-}
-
-NC::OrientDir NC::MatCfg::get_dir1() const
+NC::Optional<NC::OrientDir> NC::MatCfg::get_dir1() const
 {
   return CfgManip::get_dir1( m_impl->readVar(Cfg::VarId::dir1) );
 }
 
-NC::OrientDir NC::MatCfg::get_dir2() const
+NC::Optional<NC::OrientDir> NC::MatCfg::get_dir2() const
 {
   return CfgManip::get_dir2( m_impl->readVar(Cfg::VarId::dir2) );
 }

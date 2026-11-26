@@ -45,8 +45,7 @@ namespace NCRYSTAL_NAMESPACE {
 
       //Convert lcaxis to lab frame:
       const StructureInfo& si = cinfo.getStructureInfo();
-      RotMatrix reci_lattice = getReciprocalLatticeRot( si );
-      RotMatrix cry2lab = getCrystal2LabRot( sco, reci_lattice );
+      RotMatrix cry2lab = getCrystal2LabRot( sco, getLatticeRots( si ) );
       LCAxis lcaxis_labframe = (cry2lab * lcaxis.as<Vector>()).unit().as<LCAxis>();
 
       if (mode==0) {

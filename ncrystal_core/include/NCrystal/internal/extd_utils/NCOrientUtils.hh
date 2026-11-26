@@ -31,18 +31,14 @@ namespace NCRYSTAL_NAMESPACE {
   struct StructureInfo;
 
   //Helper function which finally constructs the rotation between the crystal
-  //frame and the laboratory frame based on a completed SCOrientation
-  //object. Additionally, a reciprocal lattice rotation matrix is needed
-  //(typically from getReciprocalLatticeRot(..)). The reciprocal lattice matrix
-  //is needed for the case where one or more directions are defined in hkl (RL)
-  //coordinates (if is is known that both crystal directions are defined in
-  //direct space, it is safe to pass a dummy RotMatrix as the reci_lattice
-  //parameter):
+  //frame and the laboratory frame based on a completed SCOrientation object,
+  //using the lattice (cf. getLatticeRots below) for crystal directions given
+  //as (hkl) normals or [uvw] directions:
+  RotMatrix getCrystal2LabRot( const SCOrientation&, const LatticeRots& );
 
-  RotMatrix getCrystal2LabRot( const SCOrientation&, const RotMatrix& reci_lattice );
-
-  //Convenience wrapper, providing the reciprocal lattice matrix needed above
-  //directly from aStructureInfo object:
+  //Convenience wrappers, providing the (reciprocal) lattice matrices directly
+  //from a StructureInfo object:
+  LatticeRots getLatticeRots( const StructureInfo& );
   RotMatrix getReciprocalLatticeRot( const StructureInfo& );
   KSqCalc getKSqCalc( const StructureInfo& );
 

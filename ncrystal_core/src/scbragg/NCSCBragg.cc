@@ -100,8 +100,7 @@ NC::SCBragg::pimpl::pimpl(const NC::Info& cinfo, MosaicityFWHM mosaicity,
     NCRYSTAL_THROW(MissingInfo,"Passed Info object lacks Structure information.");
 
   //Setup based on structure info:
-  RotMatrix reci_lattice = getReciprocalLatticeRot( cinfo.getStructureInfo() );
-  RotMatrix cry2lab = getCrystal2LabRot( sco, reci_lattice );
+  RotMatrix cry2lab = getCrystal2LabRot( sco, getLatticeRots( cinfo.getStructureInfo() ) );
   double V0numAtom = ( cinfo.getStructureInfo().n_atoms_average
                        * cinfo.getStructureInfo().volume );
 

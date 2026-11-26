@@ -35,22 +35,39 @@ namespace NCRYSTAL_NAMESPACE {
   // etc.). Throws BadInput exception in case of issues.
   void precheckLatticeOrientTol( double dirtol );
   void precheckLatticeOrientDir( const OrientDir& );
-  void verifyLatticeOrientDef( const LabAxis& l1, const CrystalAxis& c1,
-                               const LabAxis& l2, const CrystalAxis& c2,
+  //Same with both directions given as vectors (the crystal ones Cartesian):
+  void verifyLatticeOrientDef( const Vector& l1, const Vector& c1,
+                               const Vector& l2, const Vector& c2,
                                double dirtol );
 
-  //Same, but on OrientDir's which might include HKLPoint's, in which case the
-  //validation won't be complete (due to the absence of a lattice rotation
-  //matrix):
+  //Same, but on OrientDir's which might have crystal directions given as
+  //(hkl) normals or [uvw] directions, in which case the validation won't be
+  //complete (due to the absence of the lattice):
   void precheckLatticeOrientDef( const OrientDir& dir1, const OrientDir& dir2, double dirtol );
 
+  //The lattice of a crystal, for conversions of crystal directions into the
+  //Cartesian crystal frame: direct has the lattice vectors a, b and c as
+  //columns (for [uvw] directions), and reci the reciprocal lattice vectors
+  //(for normals of (hkl) planes), cf. getLatticeRot and
+  //getReciprocalLatticeRot:
+  struct LatticeRots {
+    RotMatrix direct;
+    RotMatrix reci;
+  };
+  LatticeRots getLatticeRots( double lattice_a, double lattice_b,
+                              double lattice_c, double alpha, double beta,
+                              double gamma );
+
+  //Crystal direction as a Cartesian unit vector in the crystal frame. The
+  //lattice is not used for Cartesian directions.
+  Vector crysDirToCartesian( const OrientDir::CrysDir&, const LatticeRots& );
+
   //Fully validate orientation parameters and construct crystal rotation matrix
-  //(transforms lab frame -> crystal frame). Requires a reciprocal lattice
-  //rotation matrix.
+  //(transforms crystal frame -> lab frame).
   RotMatrix verifyLatticeOrientDefAndConstructCrystalRotation( const OrientDir& dir1,
                                                                const OrientDir& dir2,
                                                                double dirtol,
-                                                               const RotMatrix& reci_lattice );
+                                                               const LatticeRots& );
 
 
   //Reciprocal lattice rotation (inverted lattice transform, multiplied by 2pi):

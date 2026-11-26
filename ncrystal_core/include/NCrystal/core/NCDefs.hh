@@ -511,7 +511,7 @@ namespace NCRYSTAL_NAMESPACE {
   //important one for convenience:
   using ThreeVector = FixedVector<double,3>;
 
-  //Strongly typed vectors (such as NeutronDirection or CrystalAxis) should be
+  //Strongly typed vectors (such as NeutronDirection or LabAxis) should be
   //implemented via the following CRTP base class. In addition to the
   //FixedVector interfaces, it also provides a mechanism for explitly (not
   //implicitly!) interpreting a vector as a diffent kind of strongly typed

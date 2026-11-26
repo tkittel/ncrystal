@@ -65,6 +65,20 @@ void test1()
 
 namespace {
 
+  std::ostream& operator<<( std::ostream& os,
+                            const NC::Optional<NC::OrientDir>& od )
+  {
+    if ( od.has_value() )
+      return os << od.value();
+    return os << "<unset>";
+  }
+
+  bool operator==( const NC::Optional<NC::OrientDir>& a,
+                   const NC::OrientDir& b )
+  {
+    return a.has_value() && a.value() == b;
+  }
+
   template <class TSetType,class TGetType,
             TGetType(NC::MatCfg::*get_xxx)() const,
             void(NC::MatCfg::*set_xxx)(TSetType)>
@@ -150,23 +164,14 @@ void test2()
   testAccess<const NC::LCAxis&,NC::LCAxis,&NC::MatCfg::get_lcaxis,&NC::MatCfg::set_lcaxis>("lcaxis","0,0.5,0.5",NC::LCAxis(0.0,1.0,0.0),NC::LCAxis(1.0,0.0,0.0));
 
   using ODir = NC::OrientDir;
-  testAccess<const ODir&,ODir,&NC::MatCfg::get_dir1,&NC::MatCfg::set_dir1>("dir1","@crys:0.2,0,0.8@lab:0,0,1",
-                                                                           ODir{NC::CrystalAxis{1,2,3},NC::LabAxis{4,5,6}},
-                                                                           ODir{NC::HKLPoint{0,1,0},NC::LabAxis{1,0,0}},true);
-  testAccess<const ODir&,ODir,&NC::MatCfg::get_dir2,&NC::MatCfg::set_dir2>("dir2","@crys:0.3,0.1,0.8@lab:0,1,1",
-                                                                           ODir{NC::CrystalAxis{1,-2,3},NC::LabAxis{2,5,-6}},
-                                                                           ODir{NC::HKLPoint{0,1,2},NC::LabAxis{1,-1,0}},true);
-
-  //Obsolete code which was needed before get_dir1/get_dir2 worked independently
-  // //Test dir1 and dir2 via SCOrientation interface:
-  // NC::SCOrientation sco1, sco2;
-  // sco1.setPrimaryDirection(NC::CrystalAxis{0.5,0.5,0.0},NC::LabAxis{1,0,0});
-  // sco1.setSecondaryDirection(NC::HKLPoint{0,0,2},NC::LabAxis{1,1,0});
-  // sco2.setPrimaryDirection(NC::HKLPoint{1,1,1},NC::LabAxis{0,1,0});
-  // sco2.setSecondaryDirection(NC::CrystalAxis{0.5,0.5,0.5},NC::LabAxis{1,0,1});
-  // testAccess<const NC::SCOrientation&,NC::SCOrientation,&NC::MatCfg::createSCOrientation,&NC::MatCfg::setOrientation>("SCORIENTDUMMY",
-  //                                                                                                                 "dir1=@crys:0.2,0,0.8@lab:0,0,1;dir2=@crys:0,0.6,0.4@lab:0,1,0",
-  //                                                                                                                 sco1,sco2,true);
+  using Basis = ODir::CrysDir::Basis;
+  using OptODir = NC::Optional<ODir>;
+  testAccess<const ODir&,OptODir,&NC::MatCfg::get_dir1,&NC::MatCfg::set_dir1>("dir1","@crys:0.2,0,0.8@lab:0,0,1",
+                                                                              ODir{{Basis::Cartesian,{1,2,3}},{4,5,6}},
+                                                                              ODir{{Basis::HKL,{0,1,0}},{1,0,0}},true);
+  testAccess<const ODir&,OptODir,&NC::MatCfg::get_dir2,&NC::MatCfg::set_dir2>("dir2","@crys_uvw:0.3,0.1,0.8@lab:0,1,1",
+                                                                              ODir{{Basis::Cartesian,{1,-2,3}},{2,5,-6}},
+                                                                              ODir{{Basis::HKL,{0,1,2}},{1,-1,0}},true);
 }
 
 int main(int,char**) {
