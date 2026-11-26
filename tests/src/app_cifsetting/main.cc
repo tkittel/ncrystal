@@ -187,5 +187,19 @@ int main()
   test( "override, ambiguous", { cubic }, Permissive::NO, "F d -3 m" );
   test( "override, unknown", { cubic }, Permissive::NO, "bla" );
   test( "override, no such setting", { cubic }, Permissive::NO, "227:3" );
+  //Hall symbols, prefixes, and symbols whose Hermann-Mauguin and Hall
+  //readings differ:
+  const char * mono = "5 6 7 90 100 90";
+  test( "override, Hall symbol", { mono }, Permissive::NO, "-P 2ybc" );
+  test( "override, same as both kinds", { cubic }, Permissive::NO, "P 1" );
+  test( "override, ambiguous kind", { mono }, Permissive::NO, "P 2" );
+  test( "override, ambiguous kind (P 4 2)", { cubic }, Permissive::NO,
+        "P 4 2" );
+  test( "override, HM: prefix", { mono }, Permissive::NO, "HM:P 2" );
+  test( "override, Hall: prefix", { mono }, Permissive::NO, "Hall:P 2" );
+  test( "override, prefixes are case-insensitive", { cubic }, Permissive::NO,
+        "hall: P 4 2" );
+  test( "override, prefix with an unknown symbol", { cubic }, Permissive::NO,
+        "HM:-P 2ybc" );
   return 0;
 }
