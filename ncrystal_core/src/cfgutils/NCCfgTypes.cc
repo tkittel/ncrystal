@@ -47,6 +47,8 @@ namespace NCRYSTAL_NAMESPACE {
       if ( !val.has_value() )
         return NullOpt;
       auto sv_unit = sv.substr(n);
+      const auto generated = dbl2shortstr( val.value() );
+      sv_val = shorterNumStr( sv_val, generated );
 
       auto n_val_plus_unit = sv_val.size() + sv_unit.size();
       if ( n_val_plus_unit < ValDbl_ShortStrOrigRep::max_strlen ) {

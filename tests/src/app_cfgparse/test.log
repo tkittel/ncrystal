@@ -219,7 +219,7 @@ sccutoff  ->  18  ->  sccutoff
 
 ------> Parsing "temp=100.0F":
   => Parsed 1 entries (+0 toplvl entries)
-  => cfgstr: temp=100.0F
+  => cfgstr: temp=100F
   => .get_temp(): 310.928K
   => .set_temp(500)
   => cfgstr: temp=500
@@ -235,7 +235,7 @@ sccutoff  ->  18  ->  sccutoff
 
 ------> Parsing "temp=30.0C":
   => Parsed 1 entries (+0 toplvl entries)
-  => cfgstr: temp=30.0C
+  => cfgstr: temp=30C
   => .get_temp(): 303.15K
   => .set_temp(500)
   => cfgstr: temp=500
@@ -243,7 +243,7 @@ sccutoff  ->  18  ->  sccutoff
 
 ------> Parsing "temp=-20.0C":
   => Parsed 1 entries (+0 toplvl entries)
-  => cfgstr: temp=-20.0C
+  => cfgstr: temp=-20C
   => .get_temp(): 253.15K
   => .set_temp(500)
   => cfgstr: temp=500
@@ -353,6 +353,78 @@ sccutoff  ->  18  ->  sccutoff
   => .get_temp(): -1K
   => .set_temp(500)
   => cfgstr: dcutoff=1e-3;temp=500
+  => .get_temp(): 500K
+
+------> Parsing "dcutoff=0.0400nm":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: dcutoff=0.4
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: dcutoff=0.4;temp=500
+  => .get_temp(): 500K
+
+------> Parsing "dcutoff= 1.50 Aa ":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: dcutoff=1.5
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: dcutoff=1.5;temp=500
+  => .get_temp(): 500K
+
+------> Parsing "dcutoff=1.0e-1nm":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: dcutoff=1
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: dcutoff=1;temp=500
+  => .get_temp(): 500K
+
+------> Parsing "temp=293.150K":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: temp=293.15
+  => .get_temp(): 293.15K
+  => .set_temp(500)
+  => cfgstr: temp=500
+  => .get_temp(): 500K
+
+------> Parsing "temp=+20.0 C":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: temp=20C
+  => .get_temp(): 293.15K
+  => .set_temp(500)
+  => cfgstr: temp=500
+  => .get_temp(): 500K
+
+------> Parsing "mos=30.000deg":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: mos=30deg
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: mos=30deg;temp=500
+  => .get_temp(): 500K
+
+------> Parsing "mos=1e-3deg":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: mos=1e-3deg
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: mos=1e-3deg;temp=500
+  => .get_temp(): 500K
+
+------> Parsing "mos=0.50 arcmin":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: mos=0.5arcmin
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: mos=0.5arcmin;temp=500
+  => .get_temp(): 500K
+
+------> Parsing "mos=1.0000000000000000001deg":
+  => Parsed 1 entries (+0 toplvl entries)
+  => cfgstr: mos=1deg
+  => .get_temp(): -1K
+  => .set_temp(500)
+  => cfgstr: mos=1deg;temp=500
   => .get_temp(): 500K
 
 ------> Parsing "dcutoff=1e5":

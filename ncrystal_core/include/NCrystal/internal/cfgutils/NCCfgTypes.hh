@@ -60,12 +60,21 @@ namespace NCRYSTAL_NAMESPACE {
       static Optional<std::pair<double,ValDbl_ShortStrOrigRep>> parse(StrView){ return NullOpt; }
     };
 
+    //Normalised text of a number in a cfg value: the shorter of its original
+    //text and the generated one (dbl2shortstr of its value), preferring the
+    //latter if equally long. The result refers to one of the two inputs:
+    inline StrView shorterNumStr( StrView orig, const ShortStrDbl& generated )
+    {
+      return ( generated.size() <= orig.size() ? generated.to_view() : orig );
+    }
+
     //Helper util for parsing doubles with units:
     struct ParsedDblValue {
       double value;
       StrView unit;
-      //Original str rep must be kept in a dedicated buffer, since internal
-      //whitespace must be edited away, e.g. "1.0 Aa" -> "1.0Aa".
+      //Normalised str rep (number normalised with shorterNumStr, followed by
+      //the unit), kept in a dedicated buffer since internal whitespace must
+      //be edited away, e.g. "1.0 Aa" -> "1Aa".
       ValDbl_ShortStrOrigRep origStrRep;//empty if did not fit.
     };
     Optional<ParsedDblValue> unitSplit(StrView sv);

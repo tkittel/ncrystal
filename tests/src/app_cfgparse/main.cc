@@ -173,6 +173,17 @@ namespace {
     doTestBad("dcutoff=-0.1");
     doTestBad("dcutoff=1e-4Aa");
     doTest("dcutoff=1e-3Aa");
+    //Normalisation of numbers followed by a unit (shorter of original text
+    //and generated text):
+    doTest("dcutoff=0.0400nm");
+    doTest("dcutoff= 1.50 Aa ");
+    doTest("dcutoff=1.0e-1nm");
+    doTest("temp=293.150K");
+    doTest("temp=+20.0 C");
+    doTest("mos=30.000deg");
+    doTest("mos=1e-3deg");
+    doTest("mos=0.50 arcmin");
+    doTest("mos=1.0000000000000000001deg");
     doTest("dcutoff=1e5");
     doTestBad("dcutoff=1.1e5");
 
